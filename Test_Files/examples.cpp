@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
   // Setting up the app
   QApplication ESD(argc, argv);
   QSqlDatabase* db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE")); // ("QMYSQL"));
-  db->setDatabaseName("/home/wouterspekkink/Programming/ESD/ESD_Linux/Test.db");
+  db->setDatabaseName("./Test.db");
   bool ok = db->open();
   QSqlQuery *query = new QSqlQuery;
   
