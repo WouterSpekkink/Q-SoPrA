@@ -9,4 +9,4 @@ QT += widgets sql
 LIBS += -lmysqld 
 
 # Input
-SOURCES += main.cpp
+SOURCES += examples.cpp
