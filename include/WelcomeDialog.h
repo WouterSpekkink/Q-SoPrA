@@ -7,21 +7,37 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QVBoxLayout>
+#include <QFileDialog>
+#include <QMessageBox>
 #include <QPointer>
+#include <QFileInfo>
+#include <QtSql>
+#include "EventSequenceDatabase.h"
 
 class WelcomeDialog : public QDialog {
   Q_OBJECT
 
 public:
-  WelcomeDialog(QWidget *parent=0);
+  WelcomeDialog(EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);				  
+  ~WelcomeDialog() {};
 
+  int getExitStatus();		     
+		     
 private slots:
+  void newDatabase();
+
+  void quitApp();
 
 private:
   QPointer<QLabel> titleLabel;
-  QPointer<QPushButton> newDataBaseButton;
-  QPointer<QPushButton> openDataBaseButton;
+
+  QPointer<QPushButton> newDatabaseButton;
+  QPointer<QPushButton> openDatabaseButton;
   QPointer<QPushButton> exitButton;
+
+  EventSequenceDatabase *esd;
+
+  int exitStatus;
 };
 
 #endif
