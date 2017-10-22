@@ -1,17 +1,17 @@
 #include <QtWidgets/QApplication>
 #include "./include/WelcomeDialog.h"
-#include "./include/MainDialog.h"
+#include "./include/MainWindow.h"
 #include "./include/EventSequenceDatabase.h"
 
 int main(int argc, char *argv[]) {
   QApplication ED(argc, argv);
   EventSequenceDatabase *esd = new EventSequenceDatabase;
   
-  WelcomeDialog *welcome = new WelcomeDialog(esd);
+  WelcomeDialog *welcome = new WelcomeDialog(0, esd);
   welcome->exec();
   if (welcome->getExitStatus() != 1) {
-    MainDialog *dialog = new MainDialog(esd);
-    dialog->exec();
+    MainWindow *window = new MainWindow(0, esd);
+    window->show();
   } else {
     return ED.exec();
   }

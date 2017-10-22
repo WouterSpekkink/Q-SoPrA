@@ -8,6 +8,7 @@
 class EventSequenceDatabase : public QObject {
   friend class WelcomeDialog;
   friend class MainDialog;
+  friend class AddRecordDialog;
   Q_OBJECT
 
 public:

@@ -1,6 +1,6 @@
 #include "../include/WelcomeDialog.h"
 
-WelcomeDialog::WelcomeDialog(EventSequenceDatabase *submittedEsd) {
+WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEsd) : QDialog(parent) {
   esd = submittedEsd;
   exitStatus = 0;
   

@@ -1,7 +1,5 @@
 #ifndef MAINDIALOG_H
 #define MAINDIALOG_H
-
-#include <QtWidgets/QDialog>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
@@ -10,27 +8,23 @@
 #include <QTableView>
 #include <QHeaderView>
 #include "EventSequenceDatabase.h"
+#include "RecordDialog.h"
 
-class MainDialog : public QDialog {
+class DataWidget : public QWidget {
   Q_OBJECT
 
 public:
-  MainDialog(EventSequenceDatabase *submittedEsd);
-  ~MainDialog() {};
+  DataWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
+  ~DataWidget() {};
 
 private slots:
 
   void appendRecord();
   
 private:
-  EventSequenceDatabase *esd;
+  QPointer<EventSequenceDatabase> esd;
+  QPointer<RecordDialog> recordDialog;
   
-  QPointer<QPushButton> dataViewButton;
-  QPointer<QPushButton> linkageViewButton;
-  QPointer<QPushButton> attributesViewButton;
-  QPointer<QPushButton> relationshipsViewButton;
-  QPointer<QPushButton> exitButton;
-
   QPointer<QPushButton> appendRecordButton;
   
   QSqlTableModel *incidentsModel;

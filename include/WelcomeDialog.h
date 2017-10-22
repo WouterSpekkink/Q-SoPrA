@@ -18,7 +18,7 @@ class WelcomeDialog : public QDialog {
   Q_OBJECT
 
 public:
-  WelcomeDialog(EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);				  
+  WelcomeDialog(QWidget *parent = 0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);				  
   ~WelcomeDialog() {};
 
   int getExitStatus();		     
@@ -29,13 +29,13 @@ private slots:
   void quitApp();
 
 private:
+  QPointer<EventSequenceDatabase> esd;
+  
   QPointer<QLabel> titleLabel;
 
   QPointer<QPushButton> newDatabaseButton;
   QPointer<QPushButton> openDatabaseButton;
   QPointer<QPushButton> exitButton;
-
-  EventSequenceDatabase *esd;
 
   int exitStatus;
 };
