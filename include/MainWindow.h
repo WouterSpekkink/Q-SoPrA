@@ -6,6 +6,10 @@
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QMenuBar>
+#include <QFileDialog>
+#include <fstream>
+#include <sstream>
+#include <string>
 #include "EventSequenceDatabase.h"
 #include "DataWidget.h"
 
@@ -16,15 +20,19 @@ public:
   MainWindow(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
 
   ~MainWindow() {};
-    
+
 private slots:
   void createActions();
   void createMenus();
 
+  void importFromCsv();
+  void splitCsvLine(std::vector<std::string> *tokens, std::string line);
+
 private:
   QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
-  QPointer<QAction> exitAct; 
+  QPointer<QAction> exitAct;
+  QPointer<QAction> importAct;
 
   QPointer<EventSequenceDatabase> esd;
 

@@ -62,7 +62,7 @@ void WelcomeDialog::newDatabase() {
 }
 
 void WelcomeDialog::openDatabase() {
-  QString dbName = QFileDialog::getOpenFileName(this, tr("New database"),"", tr("db files (*.db)"));
+  QString dbName = QFileDialog::getOpenFileName(this, tr("Select database"),"", tr("db files (*.db)"));
   esd->openDB(dbName);
   bool ok = esd->db->open();
   if (!ok) {

@@ -32,7 +32,6 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
-  
 
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident");

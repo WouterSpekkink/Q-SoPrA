@@ -15,13 +15,13 @@
 class DataWidget : public QWidget {
   Q_OBJECT
 
+  friend class MainWindow;
 public:
   DataWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
   ~DataWidget() {};
 
 private slots:
 
-  //  void expandRow(const QModelIndex &newRow, const QModelIndex &oldRow);
   void setData(const int index, RecordDialog *recordDialog, const QString type);
   void appendRecord();
   void editRecord();
