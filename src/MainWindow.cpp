@@ -25,7 +25,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   QPointer<QVBoxLayout> windowLayout = new QVBoxLayout;
   windowLayout->addWidget(stacked);
   centralWidget->setLayout(windowLayout);
-  setLayout(windowLayout);
 
   // Functions to create the menu bar.
   createActions();

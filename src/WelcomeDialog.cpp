@@ -10,6 +10,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEs
   exitButton = new QPushButton("Exit program");
 
   connect(newDatabaseButton, SIGNAL(clicked()), this, SLOT(newDatabase()));
+  connect(openDatabaseButton, SIGNAL(clicked()), this, SLOT(openDatabase()));
   connect(exitButton, SIGNAL(clicked()), this, SLOT(quitApp()));
 
   QPointer<QVBoxLayout> welcomeLayout = new QVBoxLayout;
@@ -33,7 +34,7 @@ void WelcomeDialog::newDatabase() {
       QFile::remove(dbName);
     }
 
-    esd->createNew(dbName);
+    esd->openDB(dbName);
     bool ok = esd->db->open();
     if (!ok) {
       QPointer<QMessageBox> errorBox = new QMessageBox;
@@ -52,8 +53,28 @@ void WelcomeDialog::newDatabase() {
 		  "comments text, "
 		  "source text)");
     }
+  } else {
+    exitStatus = 2;
   }
-  this->close();
+  if (exitStatus == 0) {
+    this->close();
+  }
+}
+
+void WelcomeDialog::openDatabase() {
+  QString dbName = QFileDialog::getOpenFileName(this, tr("New database"),"", tr("db files (*.db)"));
+  esd->openDB(dbName);
+  bool ok = esd->db->open();
+  if (!ok) {
+    QPointer<QMessageBox> errorBox = new QMessageBox;
+    errorBox->setText(tr("<b>ERROR</b>"));
+    errorBox->setInformativeText("Creation of new database failed.");
+    errorBox->exec();
+    return;
+  } else {
+    exitStatus = 0;
+    this->close();
+  }
 }
 
 void WelcomeDialog::quitApp() {

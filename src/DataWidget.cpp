@@ -4,11 +4,12 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   esd = submittedEsd;
 
   // This widget uses a table model.
-  incidentsModel = new QSqlTableModel;
+  incidentsModel = new EventTableModel;
   tableView = new QTableView(this);
 
   // And the model shows data from the incidents table.
   incidentsModel->setTable("incidents");
+  incidentsModel->setSort(1, Qt::AscendingOrder);
   incidentsModel->select();
   tableView->setModel(incidentsModel);
   
@@ -28,18 +29,49 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setColumnWidth(6, parent->width()/8);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
-
+  tableView->verticalHeader()->setDefaultSectionSize(30);
+  tableView->setWordWrap(true);
+  tableView->setTextElideMode(Qt::ElideMiddle);
+  
 
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident");
-
+  editRecordButton = new QPushButton("Edit incident");
+  insertRecordBeforeButton = new QPushButton("Insert before");
+  insertRecordAfterButton = new QPushButton("Insert after");
+  moveUpButton = new QPushButton("Move up");
+  moveDownButton = new QPushButton("Move down");
+  duplicateRowButton = new QPushButton("Duplicate incident");
+  removeRowButton = new QPushButton("Remove incident");
+  
   // We set the connections
   connect(appendRecordButton, SIGNAL(clicked()), this, SLOT(appendRecord()));
+  connect(editRecordButton, SIGNAL(clicked()), this, SLOT(editRecord()));
+  connect(insertRecordBeforeButton, SIGNAL(clicked()), this, SLOT(insertRecordBefore()));
+  connect(insertRecordAfterButton, SIGNAL(clicked()), this, SLOT(insertRecordAfter()));
+  connect(moveUpButton, SIGNAL(clicked()), this, SLOT(moveUp()));
+  connect(moveDownButton, SIGNAL(clicked()), this, SLOT(moveDown()));
+  connect(duplicateRowButton, SIGNAL(clicked()), this, SLOT(duplicateRow()));
+  connect(removeRowButton, SIGNAL(clicked()), this, SLOT(removeRow()));
   
   // Then we create the layout.
   QPointer<QHBoxLayout> recordButtonsLayout = new QHBoxLayout;
-  recordButtonsLayout->addWidget(appendRecordButton);
-  
+  QPointer<QVBoxLayout> recordButtonsLeftLayout = new QVBoxLayout;
+  recordButtonsLeftLayout->addWidget(appendRecordButton);
+  recordButtonsLeftLayout->addWidget(editRecordButton);
+  recordButtonsLayout->addLayout(recordButtonsLeftLayout);
+  QPointer<QVBoxLayout> recordButtonsMiddleLeftLayout = new QVBoxLayout;
+  recordButtonsMiddleLeftLayout->addWidget(insertRecordBeforeButton);
+  recordButtonsMiddleLeftLayout->addWidget(insertRecordAfterButton);
+  recordButtonsLayout->addLayout(recordButtonsMiddleLeftLayout);
+  QPointer<QVBoxLayout> recordButtonsMiddleRightLayout = new QVBoxLayout;
+  recordButtonsMiddleRightLayout->addWidget(moveUpButton);
+  recordButtonsMiddleRightLayout->addWidget(moveDownButton);
+  recordButtonsLayout->addLayout(recordButtonsMiddleRightLayout);
+  QPointer<QVBoxLayout> recordButtonsRightLayout = new QVBoxLayout;
+  recordButtonsRightLayout->addWidget(duplicateRowButton);
+  recordButtonsRightLayout->addWidget(removeRowButton);
+  recordButtonsLayout->addLayout(recordButtonsRightLayout);
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
   mainLayout->addLayout(recordButtonsLayout);
@@ -48,27 +80,178 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   setLayout(mainLayout);
 }
 
+void DataWidget::setData(const int index, RecordDialog *recordDialog, const QString type) {
+  QString timeStamp = recordDialog->getTimeStamp();
+  QString description = recordDialog->getDescription();
+  QString raw = recordDialog->getRaw();
+  QString comment = recordDialog->getComment();
+  QString source = recordDialog->getSource();
+  if (type == NEW) {
+    incidentsModel->insertRow(index);
+  } 
+  incidentsModel->setData(incidentsModel->index(index, 1), index + 1);
+  incidentsModel->setData(incidentsModel->index(index, 2), timeStamp);
+  incidentsModel->setData(incidentsModel->index(index, 3), description);
+  incidentsModel->setData(incidentsModel->index(index, 4), raw);
+  incidentsModel->setData(incidentsModel->index(index, 5), comment);
+  incidentsModel->setData(incidentsModel->index(index, 6), source);
+  incidentsModel->submitAll();
+}
+
 void DataWidget::appendRecord() {
-  recordDialog = new RecordDialog;
+  recordDialog = new RecordDialog(this, esd, NEW);
   recordDialog->exec();
   if (recordDialog->getExitStatus() != 1) {
-    QString timeStamp = recordDialog->getTimeStamp();
-    QString description = recordDialog->getDescription();
-    QString raw = recordDialog->getRaw();
-    QString comment = recordDialog->getComment();
-    QString source = recordDialog->getSource();
-    // I should abstract this to a function maybe?
-    int max = incidentsModel->rowCount();
-    incidentsModel->insertRows(max, 1);
-    incidentsModel->setData(incidentsModel->index(max, 1), max + 1);
-    incidentsModel->setData(incidentsModel->index(max, 2), timeStamp);
-    incidentsModel->setData(incidentsModel->index(max, 3), description);
-    incidentsModel->setData(incidentsModel->index(max, 4), raw);
-    incidentsModel->setData(incidentsModel->index(max, 5), comment);
-    incidentsModel->setData(incidentsModel->index(max, 6), source);
-    incidentsModel->submitAll();
+    int max = tableView->verticalHeader()->count();
+    setData(max, recordDialog, NEW);
     delete recordDialog;
   } else {
     delete recordDialog;
+  }
+}
+
+void DataWidget::editRecord() {
+  if (tableView->currentIndex().isValid()) {
+    int currentRow = tableView->selectionModel()->currentIndex().row();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM incidents");
+    QString timeStamp = query->record(currentRow).value("timestamp").toString();
+    QString source = query->record(currentRow).value("source").toString();
+    QString description = query->record(currentRow).value("description").toString();
+    QString raw = query->record(currentRow).value("raw").toString();
+    QString comment = query->record(currentRow).value("comment").toString();
+    
+    recordDialog = new RecordDialog(this, esd, OLD);
+    recordDialog->setTimeStamp(timeStamp);
+    recordDialog->setSource(source);
+    recordDialog->setDescription(description);
+    recordDialog->setRaw(raw);
+    recordDialog->setComment(comment);
+    recordDialog->initialize();
+    recordDialog->exec();
+    if (recordDialog->getExitStatus() != 1) {
+      setData(currentRow, recordDialog, OLD);
+      delete recordDialog;
+    } else {
+      delete recordDialog;
+    }
+  }
+}
+
+void DataWidget::insertRecordBefore() {
+  if (tableView->currentIndex().isValid()) {
+    int currentRow = tableView->selectionModel()->currentIndex().row();
+    recordDialog = new RecordDialog(this, esd, NEW);    
+    recordDialog->exec();
+    if (recordDialog->getExitStatus() != 1) {
+      setData(currentRow, recordDialog, NEW);
+      delete recordDialog;
+      for (int i = currentRow + 1; i != incidentsModel->rowCount(); i++) {
+	incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
+	incidentsModel->submitAll();
+      }
+     } else {
+      delete recordDialog;
+    }
+  }
+}
+
+void DataWidget::insertRecordAfter() {
+  if (tableView->currentIndex().isValid()) {
+    int nextRow = tableView->selectionModel()->currentIndex().row() + 1;
+    recordDialog = new RecordDialog(this, esd, NEW);
+    recordDialog->exec();
+    if (recordDialog->getExitStatus() != 1) {
+      setData(nextRow, recordDialog, NEW);
+      delete recordDialog;
+      for (int i = nextRow; i != incidentsModel->rowCount(); i++) {
+	incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
+	incidentsModel->submitAll();
+      }
+    } else {
+      delete recordDialog;
+    }
+  }
+}
+
+void DataWidget::moveUp() {
+  if (tableView->currentIndex().isValid()) {
+    int currentRow = tableView->selectionModel()->currentIndex().row();
+    if (currentRow + 1 != 1) {
+      incidentsModel->setData(incidentsModel->index(currentRow - 1, 1), currentRow + 1);
+      incidentsModel->submitAll();
+      incidentsModel->setData(incidentsModel->index(currentRow, 1), currentRow);
+      incidentsModel->submitAll();
+      incidentsModel->sort(1, Qt::AscendingOrder);
+      QModelIndex newIndex = tableView->model()->index(currentRow - 1, 0);
+      tableView->setCurrentIndex(newIndex);
+    }
+  }
+}
+
+void DataWidget::moveDown() {
+  if (tableView->currentIndex().isValid()) {
+    int currentRow = tableView->selectionModel()->currentIndex().row();
+    if (currentRow + 1 != tableView->verticalHeader()->count()) {
+      incidentsModel->setData(incidentsModel->index(currentRow + 1, 1), currentRow + 1);
+      incidentsModel->submitAll();
+      incidentsModel->setData(incidentsModel->index(currentRow, 1), currentRow + 2);
+      incidentsModel->submitAll();
+      incidentsModel->sort(1, Qt::AscendingOrder);
+      QModelIndex newIndex = tableView->model()->index(currentRow + 1, 0);
+      tableView->setCurrentIndex(newIndex);
+    }
+  }
+}
+
+void DataWidget::duplicateRow() {
+  if (tableView->currentIndex().isValid()) {
+    int currentRow = tableView->selectionModel()->currentIndex().row();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM incidents");
+    QString timeStamp = query->record(currentRow).value("timestamp").toString();
+    QString source = query->record(currentRow).value("source").toString();
+    QString description = query->record(currentRow).value("description").toString();
+    QString raw = query->record(currentRow).value("raw").toString();
+    QString comment = query->record(currentRow).value("comment").toString();
+    recordDialog = new RecordDialog(this, esd, OLD);
+    recordDialog->setTimeStamp(timeStamp);
+    recordDialog->setSource(source);
+    recordDialog->setDescription(description);
+    recordDialog->setRaw(raw);
+    recordDialog->setComment(comment);
+    recordDialog->initialize();
+    recordDialog->exec();
+    if (recordDialog->getExitStatus() != 1) {
+      setData(currentRow + 1, recordDialog, NEW);
+      delete recordDialog;
+    } else {
+      delete recordDialog;
+    }
+    for (int i = currentRow + 1; i != incidentsModel->rowCount(); i++) {
+      incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
+      incidentsModel->submitAll();
+    }
+  }
+}
+
+void DataWidget::removeRow() {
+  if (tableView->currentIndex().isValid()) {
+    QPointer<QMessageBox> warningBox = new QMessageBox;
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("Removing an incident cannot be undone. Are you sure you want to remove this incident?");
+    if (warningBox->exec() == QMessageBox::Yes) {
+      int currentRow = tableView->selectionModel()->currentIndex().row();
+      incidentsModel->removeRow(currentRow);
+      incidentsModel->submitAll();
+      incidentsModel->select();
+      for (int i = currentRow; i != incidentsModel->rowCount(); i++) {
+	incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
+	incidentsModel->submitAll();
+      }
+    }
   }
 }

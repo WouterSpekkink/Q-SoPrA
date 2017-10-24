@@ -7,19 +7,30 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QPlainTextEdit>
+#include <QtWidgets/QTextEdit>
 #include "EventSequenceDatabase.h"
+#include "Constants.h"
 
 class RecordDialog : public QDialog {
   Q_OBJECT
 
 public:
-  RecordDialog(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
-  ~RecordDialog() {};						     QString getTimeStamp();
+  RecordDialog(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase, QString type = NEW);
+  ~RecordDialog() {};
+
+  QString getTimeStamp();
   QString getSource();
   QString getDescription();
   QString getRaw();
   QString getComment();
+
+  void setTimeStamp(QString &text);
+  void setSource(QString &text);
+  void setDescription(QString &text);
+  void setRaw(QString &text);
+  void setComment(QString &text);
+  void initialize();
+  
   int getExitStatus();		      
 		     
 private slots:
@@ -44,9 +55,9 @@ private:
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   
-  QPointer<QPlainTextEdit> descriptionField;
-  QPointer<QPlainTextEdit> rawField;
-  QPointer<QPlainTextEdit> commentField;
+  QPointer<QTextEdit> descriptionField;
+  QPointer<QTextEdit> rawField;
+  QPointer<QTextEdit> commentField;
 
   int exitStatus;
 

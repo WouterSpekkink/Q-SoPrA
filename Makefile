@@ -49,23 +49,29 @@ OBJECTS_DIR   = ./
 ####### Files
 
 SOURCES       = main.cpp \
+		src/Constants.cpp \
 		src/DataWidget.cpp \
 		src/EventSequenceDatabase.cpp \
+		src/EventTableModel.cpp \
 		src/MainWindow.cpp \
 		src/RecordDialog.cpp \
 		src/WelcomeDialog.cpp moc_DataWidget.cpp \
 		moc_EventSequenceDatabase.cpp \
+		moc_EventTableModel.cpp \
 		moc_MainWindow.cpp \
 		moc_RecordDialog.cpp \
 		moc_WelcomeDialog.cpp
 OBJECTS       = main.o \
+		Constants.o \
 		DataWidget.o \
 		EventSequenceDatabase.o \
+		EventTableModel.o \
 		MainWindow.o \
 		RecordDialog.o \
 		WelcomeDialog.o \
 		moc_DataWidget.o \
 		moc_EventSequenceDatabase.o \
+		moc_EventTableModel.o \
 		moc_MainWindow.o \
 		moc_RecordDialog.o \
 		moc_WelcomeDialog.o
@@ -125,13 +131,17 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/exceptions.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
-		ED_Linux.pro include/DataWidget.h \
+		ED_Linux.pro include/Constants.h \
+		include/DataWidget.h \
 		include/EventSequenceDatabase.h \
+		include/EventTableModel.h \
 		include/MainWindow.h \
 		include/RecordDialog.h \
 		include/WelcomeDialog.h main.cpp \
+		src/Constants.cpp \
 		src/DataWidget.cpp \
 		src/EventSequenceDatabase.cpp \
+		src/EventTableModel.cpp \
 		src/MainWindow.cpp \
 		src/RecordDialog.cpp \
 		src/WelcomeDialog.cpp
@@ -302,8 +312,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/DataWidget.h include/EventSequenceDatabase.h include/MainWindow.h include/RecordDialog.h include/WelcomeDialog.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/DataWidget.cpp src/EventSequenceDatabase.cpp src/MainWindow.cpp src/RecordDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Constants.h include/DataWidget.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/RecordDialog.h include/WelcomeDialog.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Constants.cpp src/DataWidget.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/RecordDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -326,24 +336,32 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_DataWidget.cpp moc_EventSequenceDatabase.cpp moc_MainWindow.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
+compiler_moc_header_make_all: moc_DataWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_DataWidget.cpp moc_EventSequenceDatabase.cpp moc_MainWindow.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
+	-$(DEL_FILE) moc_DataWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
 moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/RecordDialog.h \
+		include/Constants.h \
+		include/EventTableModel.h \
 		include/DataWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DataWidget.h -o moc_DataWidget.cpp
 
 moc_EventSequenceDatabase.cpp: include/EventSequenceDatabase.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventSequenceDatabase.h -o moc_EventSequenceDatabase.cpp
 
+moc_EventTableModel.cpp: include/EventTableModel.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventTableModel.h -o moc_EventTableModel.cpp
+
 moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/DataWidget.h \
 		include/RecordDialog.h \
+		include/Constants.h \
+		include/EventTableModel.h \
 		include/MainWindow.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
 
 moc_RecordDialog.cpp: include/EventSequenceDatabase.h \
+		include/Constants.h \
 		include/RecordDialog.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RecordDialog.h -o moc_RecordDialog.cpp
 
@@ -369,25 +387,38 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/EventSequenceDatabase.h \
 		include/MainWindow.h \
 		include/DataWidget.h \
-		include/RecordDialog.h
+		include/RecordDialog.h \
+		include/Constants.h \
+		include/EventTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
+
+Constants.o: src/Constants.cpp include/Constants.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Constants.o src/Constants.cpp
 
 DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/EventSequenceDatabase.h \
-		include/RecordDialog.h
+		include/RecordDialog.h \
+		include/Constants.h \
+		include/EventTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DataWidget.o src/DataWidget.cpp
 
 EventSequenceDatabase.o: src/EventSequenceDatabase.cpp include/EventSequenceDatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventSequenceDatabase.o src/EventSequenceDatabase.cpp
 
+EventTableModel.o: src/EventTableModel.cpp include/EventTableModel.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventTableModel.o src/EventTableModel.cpp
+
 MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/EventSequenceDatabase.h \
 		include/DataWidget.h \
-		include/RecordDialog.h
+		include/RecordDialog.h \
+		include/Constants.h \
+		include/EventTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
 RecordDialog.o: src/RecordDialog.cpp include/RecordDialog.h \
-		include/EventSequenceDatabase.h
+		include/EventSequenceDatabase.h \
+		include/Constants.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RecordDialog.o src/RecordDialog.cpp
 
 WelcomeDialog.o: src/WelcomeDialog.cpp include/WelcomeDialog.h \
@@ -399,6 +430,9 @@ moc_DataWidget.o: moc_DataWidget.cpp
 
 moc_EventSequenceDatabase.o: moc_EventSequenceDatabase.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EventSequenceDatabase.o moc_EventSequenceDatabase.cpp
+
+moc_EventTableModel.o: moc_EventTableModel.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EventTableModel.o moc_EventTableModel.cpp
 
 moc_MainWindow.o: moc_MainWindow.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_MainWindow.o moc_MainWindow.cpp

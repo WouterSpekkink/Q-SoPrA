@@ -25,7 +25,7 @@ public:
 		     
 private slots:
   void newDatabase();
-
+  void openDatabase();
   void quitApp();
 
 private:

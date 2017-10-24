@@ -9,10 +9,10 @@ int main(int argc, char *argv[]) {
   
   WelcomeDialog *welcome = new WelcomeDialog(0, esd);
   welcome->exec();
-  if (welcome->getExitStatus() != 1) {
+  if (welcome->getExitStatus() == 0) {
     MainWindow *window = new MainWindow(0, esd);
     window->show();
-  } else {
+  } else if (welcome->getExitStatus() == 1) {
     return ED.exec();
   }
   return ED.exec();

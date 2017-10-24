@@ -15,7 +15,7 @@ public:
   EventSequenceDatabase();
   ~EventSequenceDatabase() {};
 
-  void createNew(const QString &name);
+  void openDB(const QString &name);
   
 private:
   QSqlDatabase* db;

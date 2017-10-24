@@ -9,6 +9,8 @@
 #include <QHeaderView>
 #include "EventSequenceDatabase.h"
 #include "RecordDialog.h"
+#include "EventTableModel.h"
+#include "Constants.h"
 
 class DataWidget : public QWidget {
   Q_OBJECT
@@ -19,15 +21,31 @@ public:
 
 private slots:
 
+  //  void expandRow(const QModelIndex &newRow, const QModelIndex &oldRow);
+  void setData(const int index, RecordDialog *recordDialog, const QString type);
   void appendRecord();
+  void editRecord();
+  void insertRecordBefore();
+  void insertRecordAfter();
+  void moveUp();
+  void moveDown();
+  void duplicateRow();
+  void removeRow();
   
 private:
   QPointer<EventSequenceDatabase> esd;
   QPointer<RecordDialog> recordDialog;
   
   QPointer<QPushButton> appendRecordButton;
+  QPointer<QPushButton> editRecordButton;
+  QPointer<QPushButton> insertRecordBeforeButton;
+  QPointer<QPushButton> insertRecordAfterButton;
+  QPointer<QPushButton> moveUpButton;
+  QPointer<QPushButton> moveDownButton;
+  QPointer<QPushButton> duplicateRowButton;
+  QPointer<QPushButton> removeRowButton;
   
-  QSqlTableModel *incidentsModel;
+  EventTableModel *incidentsModel;
   
   QTableView *tableView;
 };
