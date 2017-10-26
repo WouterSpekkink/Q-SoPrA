@@ -12,6 +12,7 @@
 #include <string>
 #include "EventSequenceDatabase.h"
 #include "DataWidget.h"
+#include "ProgressBar.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -29,6 +30,7 @@ private slots:
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
 
 private:
+  QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
   QPointer<QAction> exitAct;

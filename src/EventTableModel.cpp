@@ -5,7 +5,7 @@ EventTableModel::EventTableModel(QWidget *parent) : QSqlTableModel(parent) {};
 QVariant EventTableModel::data(const QModelIndex &index, int role) const {
   
   if (role == Qt::ToolTipRole) {
-    QString toolTip = QString("<FONT SIZE = 5>");
+    QString toolTip = QString("<FONT SIZE = 3>");
     toolTip += QSqlTableModel::data(index, Qt::DisplayRole).toString();
     toolTip += QString("</FONT>");
     return toolTip;

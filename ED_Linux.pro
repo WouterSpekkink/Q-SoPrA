@@ -14,7 +14,9 @@ HEADERS += include/Constants.h \
            include/EventTableModel.h \
            include/MainWindow.h \
            include/RecordDialog.h \
-           include/WelcomeDialog.h
+           include/WelcomeDialog.h \
+           include/ProgressBar.h \
+           
 SOURCES += main.cpp \
            src/Constants.cpp \
            src/DataWidget.cpp \
@@ -23,4 +25,5 @@ SOURCES += main.cpp \
            src/MainWindow.cpp \
            src/RecordDialog.cpp \
            src/WelcomeDialog.cpp \
+           src/ProgressBar.cpp
 

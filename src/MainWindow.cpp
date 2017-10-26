@@ -50,8 +50,8 @@ void MainWindow::createMenus() {
   menuBar = new QMenuBar(this);
 
   fileMenu = menuBar->addMenu("File");
-  fileMenu->addAction(exitAct);
   fileMenu->addAction(importAct);
+  fileMenu->addAction(exitAct);
 }
 
 void MainWindow::importFromCsv() {
@@ -61,10 +61,30 @@ void MainWindow::importFromCsv() {
   bool headerFound = false;
   while (file) {
     std::string buffer;
+
+    // First we find out if there are any break lines in the file we should get rid of.
+    bool quoteFound = false;
+    for (std::string::size_type i = 0; i != buffer.length(); i++) {
+      if (quoteFound == false && buffer[i] == '"') {
+	quoteFound = true;
+      } else if (quoteFound == true && buffer[i] == '"') {
+	  quoteFound = false;
+      }
+    }
+    if (quoteFound == true) {
+      QPointer<QMessageBox> errorBox = new QMessageBox;
+      errorBox->setText(tr("<b>ERROR: Import cancelled</b>"));
+      errorBox->setInformativeText("Unmatched quotes (\") were found in one of the lines of the file.");
+      errorBox->exec();
+      return;
+    }
+    
     if (!getline(file, buffer)) break;
+    
     std::vector<std::string> tokens;
     std::vector<std::string>::iterator it;
     splitCsvLine(&tokens, buffer);
+    
     if (headerFound == false) {
       if (tokens[0] != "Timing" && tokens[0] != "timing") {
 	QPointer<QMessageBox> errorBox = new QMessageBox;
@@ -110,6 +130,11 @@ void MainWindow::importFromCsv() {
       data.push_back(row);
     }
   }
+  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  loadProgress->setAttribute(Qt::WA_DeleteOnClose);
+  loadProgress->setModal(true);
+  loadProgress->show();
+  
   std::vector<std::vector <std::string> >::iterator it;
   int counter = 0;
   for (it = data.begin(); it != data.end(); it++) {
@@ -130,28 +155,43 @@ void MainWindow::importFromCsv() {
     dw->incidentsModel->setData(dw->incidentsModel->index(counter, 6), source);
     dw->incidentsModel->submitAll();
     counter++;
+    loadProgress->setProgress(counter + 1);
+    qApp->processEvents();
   }
+  loadProgress->close();
+  delete loadProgress;
 }
 
 void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line) {
-  std::string elem;
-  std::istringstream buffer(line);
-  
-  while(buffer) {
-    std::string temp;
-    if (std::getline(buffer, temp, ',')) {
-      elem += temp;
-    } else {
-      if (!elem.empty()) {
-	tokens->push_back(elem);
-	return;
-      }
+  bool inTextField = false;
+  std::string::size_type stringLength = 0;
+  std::string::size_type previousPos = 0;
+  for (std::string::size_type i = 0; i != line.length(); i++) {
+    if (inTextField == false && line[i] == '"') {
+      inTextField = true;
+      previousPos++;
+      stringLength--;
+    } else if (inTextField == true && line[i] == '"' && (line[i + 1] == ',' || i == line.length() - 1)) {
+      inTextField = false;
+      stringLength--;
     }
-    if (0 == (std::count(elem.begin(), elem.end(), '\"') % 2)) {
-      tokens->push_back(elem);
-      elem = "";
+    if (inTextField == false && line[i] == ',') {
+      while (line[previousPos] == ' ') {
+	previousPos++;
+	stringLength--;
+      }
+      std::string tempString = line.substr(previousPos, stringLength);
+      tokens->push_back(tempString);
+      previousPos = i + 1;
+      stringLength = 0;
     } else {
-      elem += ",";
+      stringLength++;
     }
   }
+  while (line[previousPos] == ' ') {
+    previousPos++;
+    stringLength--;
+  }
+  std::string tempString = line.substr(previousPos, stringLength);
+  tokens->push_back(tempString);
 }

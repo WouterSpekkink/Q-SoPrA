@@ -62,7 +62,7 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
   mainLayout->addLayout(buttonLayout);
 
   setLayout(mainLayout);
-  this->setMinimumWidth(800);
+  this->setMinimumWidth(1000);
   setWindowTitle("Set incident data"); 
 }
 
