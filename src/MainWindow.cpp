@@ -166,12 +166,16 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line
   bool inTextField = false;
   std::string::size_type stringLength = 0;
   std::string::size_type previousPos = 0;
+  int quoteCount = 0;
   for (std::string::size_type i = 0; i != line.length(); i++) {
+    if (line[i] == '"') {
+      quoteCount++;
+    }
     if (inTextField == false && line[i] == '"') {
       inTextField = true;
       previousPos++;
       stringLength--;
-    } else if (inTextField == true && line[i] == '"' && (line[i + 1] == ',' || i == line.length() - 1)) {
+    } else if (inTextField == true && line[i] == '"' && line[i + 1] != '"' && quoteCount % 2 == 0) {
       inTextField = false;
       stringLength--;
     }
