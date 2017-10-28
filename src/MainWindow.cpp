@@ -12,7 +12,9 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   // Creating the stack and te  widgets it can display.
   stacked = new QStackedWidget;
   dataWidget = new DataWidget(this, esd);
+  attributesWidget = new AttributesWidget(this, esd);
   stacked->addWidget(dataWidget);
+  stacked->addWidget(attributesWidget);
 
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget; 
@@ -36,6 +38,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 }
 
 void MainWindow::createActions() {
+  // File menu actions
   exitAct = new QAction(tr("&Exit program"), this);
   exitAct->setShortcuts(QKeySequence::Close);
   exitAct->setStatusTip("Exit the program");
@@ -44,6 +47,15 @@ void MainWindow::createActions() {
   importAct = new QAction(tr("&Import from csv"), this);
   importAct->setStatusTip("Import existing data from csv file");
   connect(importAct, SIGNAL(triggered()), this, SLOT(importFromCsv()));
+
+  // View menu actions
+  dataViewAct = new QAction(tr("&Data view"), this);
+  dataViewAct->setStatusTip("Switch to data view");
+  connect(dataViewAct, SIGNAL(triggered()), this, SLOT(switchToDataView()));
+
+  attributeViewAct = new QAction(tr("&Attribute view"), this);
+  dataViewAct->setStatusTip("Switch to attribute view");
+  connect(attributeViewAct, SIGNAL(triggered()), this, SLOT(switchToAttributeView()));
 }
 
 void MainWindow::createMenus() {
@@ -52,6 +64,10 @@ void MainWindow::createMenus() {
   fileMenu = menuBar->addMenu("File");
   fileMenu->addAction(importAct);
   fileMenu->addAction(exitAct);
+
+  viewMenu = menuBar->addMenu("View");
+  viewMenu->addAction(dataViewAct);
+  viewMenu->addAction(attributeViewAct);
 }
 
 void MainWindow::importFromCsv() {
@@ -198,4 +214,12 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line
   }
   std::string tempString = line.substr(previousPos, stringLength);
   tokens->push_back(tempString);
+}
+
+void MainWindow::switchToDataView() {
+  stacked->setCurrentWidget(dataWidget);
+}
+
+void MainWindow::switchToAttributeView() {
+  stacked->setCurrentWidget(attributesWidget);
 }

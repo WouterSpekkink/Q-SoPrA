@@ -52,6 +52,19 @@ void WelcomeDialog::newDatabase() {
 		  "raw text, "
 		  "comments text, "
 		  "source text)");
+      query->exec("CREATE TABLE incident_attributes "
+		  "(id integer PRIMARY KEY, "
+		  "label varchar(20) UNIQUE, "
+		  "description text)");
+      query->exec("CREATE TABLE attributes_to_incidents"
+		  "(id integer PRIMARY KEY, "
+		  "attribute integer, "
+		  "incident integer)");
+      // I should later set a way to store data in this table.
+      query->exec("CREATE TABLE save_data"
+		  "attributes_record integer, "
+		  "linkages_record integer, "
+		  "relationships_record integer)");
     }
   } else {
     exitStatus = 2;

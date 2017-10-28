@@ -12,6 +12,7 @@
 #include <string>
 #include "EventSequenceDatabase.h"
 #include "DataWidget.h"
+#include "AttributesWidget.h"
 #include "ProgressBar.h"
 
 class MainWindow : public QMainWindow {
@@ -26,6 +27,9 @@ private slots:
   void createActions();
   void createMenus();
 
+  void switchToDataView();
+  void switchToAttributeView();
+
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
 
@@ -33,8 +37,13 @@ private:
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
+  QPointer<QMenu> viewMenu;
+  
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;
+
+  QPointer<QAction> dataViewAct;
+  QPointer<QAction> attributeViewAct;
 
   QPointer<EventSequenceDatabase> esd;
 
@@ -45,6 +54,7 @@ private:
   
   QStackedWidget *stacked;
   QWidget *dataWidget;
+  QWidget *attributesWidget;
   
 };
 
