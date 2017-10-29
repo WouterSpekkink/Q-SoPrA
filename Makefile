@@ -53,6 +53,7 @@ SOURCES       = main.cpp \
 		src/AttributesWidget.cpp \
 		src/Constants.cpp \
 		src/DataWidget.cpp \
+		src/DeselectableTreeView.cpp \
 		src/EventSequenceDatabase.cpp \
 		src/EventTableModel.cpp \
 		src/MainWindow.cpp \
@@ -72,6 +73,7 @@ OBJECTS       = main.o \
 		AttributesWidget.o \
 		Constants.o \
 		DataWidget.o \
+		DeselectableTreeView.o \
 		EventSequenceDatabase.o \
 		EventTableModel.o \
 		MainWindow.o \
@@ -147,6 +149,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/AttributesWidget.h \
 		include/Constants.h \
 		include/DataWidget.h \
+		include/DeselectableTreeView.h \
 		include/EventSequenceDatabase.h \
 		include/EventTableModel.h \
 		include/MainWindow.h \
@@ -157,6 +160,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/AttributesWidget.cpp \
 		src/Constants.cpp \
 		src/DataWidget.cpp \
+		src/DeselectableTreeView.cpp \
 		src/EventSequenceDatabase.cpp \
 		src/EventTableModel.cpp \
 		src/MainWindow.cpp \
@@ -330,8 +334,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/AttributeDialog.h include/AttributesWidget.h include/Constants.h include/DataWidget.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/WelcomeDialog.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/AttributeDialog.cpp src/AttributesWidget.cpp src/Constants.cpp src/DataWidget.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/AttributeDialog.h include/AttributesWidget.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/WelcomeDialog.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/AttributeDialog.cpp src/AttributesWidget.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -363,6 +367,7 @@ moc_AttributeDialog.cpp: include/EventSequenceDatabase.h \
 
 moc_AttributesWidget.cpp: include/EventSequenceDatabase.h \
 		include/AttributeDialog.h \
+		include/DeselectableTreeView.h \
 		include/AttributesWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributesWidget.h -o moc_AttributesWidget.cpp
 
@@ -386,6 +391,7 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/EventTableModel.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
+		include/DeselectableTreeView.h \
 		include/ProgressBar.h \
 		include/MainWindow.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
@@ -425,6 +431,7 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/EventTableModel.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
+		include/DeselectableTreeView.h \
 		include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
@@ -434,7 +441,8 @@ AttributeDialog.o: src/AttributeDialog.cpp include/AttributeDialog.h \
 
 AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/EventSequenceDatabase.h \
-		include/AttributeDialog.h
+		include/AttributeDialog.h \
+		include/DeselectableTreeView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributesWidget.o src/AttributesWidget.cpp
 
 Constants.o: src/Constants.cpp include/Constants.h
@@ -446,6 +454,9 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/Constants.h \
 		include/EventTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DataWidget.o src/DataWidget.cpp
+
+DeselectableTreeView.o: src/DeselectableTreeView.cpp include/DeselectableTreeView.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DeselectableTreeView.o src/DeselectableTreeView.cpp
 
 EventSequenceDatabase.o: src/EventSequenceDatabase.cpp include/EventSequenceDatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventSequenceDatabase.o src/EventSequenceDatabase.cpp
@@ -461,6 +472,7 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/EventTableModel.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
+		include/DeselectableTreeView.h \
 		include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
