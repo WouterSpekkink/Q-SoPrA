@@ -176,6 +176,8 @@ void MainWindow::importFromCsv() {
   }
   loadProgress->close();
   delete loadProgress;
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+  aw->retrieveData();
 }
 
 void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line) {

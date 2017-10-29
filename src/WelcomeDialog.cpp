@@ -61,10 +61,15 @@ void WelcomeDialog::newDatabase() {
 		  "attribute integer, "
 		  "incident integer)");
       // I should later set a way to store data in this table.
-      query->exec("CREATE TABLE save_data"
-		  "attributes_record integer, "
+      query->exec("CREATE TABLE save_data "
+		  "(attributes_record integer, "
 		  "linkages_record integer, "
 		  "relationships_record integer)");
+      query->exec("INSERT INTO save_data "
+		  "(attributes_record, "
+		  "linkages_record, "
+		  "relationships_record) "
+		  "VALUES (1, 1, 1)");
     }
   } else {
     exitStatus = 2;

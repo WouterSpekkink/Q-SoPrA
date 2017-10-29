@@ -3,10 +3,13 @@
 AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
 
-  tableModel = new QSqlTableModel;
+  incidentsModel = new QSqlTableModel;  
+  incidentsModel->setTable("incidents");
+  incidentsModel->select();
 
-  tableModel->setTable("incident_attributes");
-  tableModel->select();
+  attributesModel = new QSqlTableModel;
+  attributesModel->setTable("incident_attributes");
+  attributesModel->select();
   
   timeStampLabel = new QLabel("Timing:");
   sourceLabel = new QLabel("Source");
@@ -25,8 +28,12 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   commentField = new QTextEdit();
   commentField->setReadOnly(true);
 
+  previousIncidentButton = new QPushButton("Previous incident");
+  nextIncidentButton = new QPushButton("Next incident");
   newAttributeButton = new QPushButton("New attribute");
 
+  connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
+  connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
   connect(newAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -43,13 +50,47 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   mainLayout->addWidget(commentLabel);
   mainLayout->addWidget(commentField);
   QPointer<QHBoxLayout> buttonLayout = new QHBoxLayout;
+  buttonLayout->addWidget(previousIncidentButton);
+  buttonLayout->addWidget(nextIncidentButton);
   buttonLayout->addWidget(newAttributeButton);
   mainLayout->addLayout(buttonLayout);
   setLayout(mainLayout);
 
-  // I should think of a way to store this at some point.
-  // Probably just in a separate table.
-  retrieveData(1);
+  retrieveData();
+}
+
+void AttributesWidget::previousIncident() {
+  incidentsModel->select();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT attributes_record FROM save_data");
+  int order = 0;
+  query->first();
+  order = query->value(0).toInt();
+  if (order != 1) {
+    query->prepare("UPDATE save_data "
+		   "SET attributes_record=:new");
+    query->bindValue(":new", order - 1);
+    query->exec();
+    retrieveData();
+  }
+}
+
+void AttributesWidget::nextIncident() {
+  incidentsModel->select();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT attributes_record FROM save_data");
+  int order = 0;
+  query->first();
+  order = query->value(0).toInt();
+  while(incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
+  if (order != incidentsModel->rowCount()) {
+    query->prepare("UPDATE save_data "
+		   "SET attributes_record=:new");
+    query->bindValue(":new", order + 1);
+    query->exec();
+    retrieveData();
+  }
 }
 
 void AttributesWidget::newAttribute() {
@@ -60,18 +101,21 @@ void AttributesWidget::newAttribute() {
     QString name = attributeDialog->getName();
     QString description = attributeDialog->getDescription();
     
-    int newIndex = tableModel->rowCount();
+    int newIndex = attributesModel->rowCount();
     
-    tableModel->insertRow(newIndex);
-    tableModel->setData(tableModel->index(newIndex, 1), name);
-    tableModel->setData(tableModel->index(newIndex, 2), description);
-    tableModel->submitAll();
+    attributesModel->insertRow(newIndex);
+    attributesModel->setData(attributesModel->index(newIndex, 1), name);
+    attributesModel->setData(attributesModel->index(newIndex, 2), description);
+    attributesModel->submitAll();
   }
   delete attributeDialog;
 }
 
-void AttributesWidget::retrieveData(int order) {
+void AttributesWidget::retrieveData() {
   QSqlQueryModel *query = new QSqlQueryModel;
+  query->setQuery("SELECT * FROM save_data");
+  int order = 0;
+  order = query->record(order).value("attributes_record").toInt();
   query->setQuery("SELECT * FROM incidents");
   QString timeStamp = query->record(order - 1).value("timestamp").toString();
   QString source = query->record(order - 1).value("source").toString();

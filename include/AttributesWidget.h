@@ -12,19 +12,23 @@
 
 class AttributesWidget : public QWidget {
   Q_OBJECT
+  friend class MainWindow;
 
 public:
   AttributesWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
   ~AttributesWidget() {};
 
 private slots:
+  void previousIncident();
+  void nextIncident();
+  void retrieveData();
   void newAttribute();
-  void retrieveData(int order);
   
 private:
   QPointer<EventSequenceDatabase> esd;
   QPointer<AttributeDialog> attributeDialog;
-  QPointer<QSqlTableModel> tableModel;
+  QPointer<QSqlTableModel> incidentsModel;
+  QPointer<QSqlTableModel> attributesModel;
   
   QPointer<QLabel> timeStampLabel;
   QPointer<QLabel> sourceLabel;
@@ -39,6 +43,8 @@ private:
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
 
+  QPointer<QPushButton> previousIncidentButton;
+  QPointer<QPushButton> nextIncidentButton;
   QPointer<QPushButton> newAttributeButton;
   
 };
