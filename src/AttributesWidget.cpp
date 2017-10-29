@@ -23,7 +23,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   setTree();
   
   timeStampLabel = new QLabel("Timing:");
-  sourceLabel = new QLabel("Source");
+  sourceLabel = new QLabel("Source:");
   descriptionLabel = new QLabel("Description:");
   rawLabel = new QLabel("Raw:");
   commentLabel = new QLabel("Comments:");
