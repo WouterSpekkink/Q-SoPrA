@@ -70,6 +70,8 @@ void AttributeDialog::cancelAndClose() {
 // TO DO: Check for attributes with same name.
 void AttributeDialog::saveAndClose() {
   description =  descriptionField->toPlainText();
+  name = name.trimmed();
+  description = description.trimmed();
   if (description == "") {
     QPointer <QMessageBox> warningBox = new QMessageBox;
     warningBox->addButton(QMessageBox::Ok);
@@ -88,6 +90,22 @@ void AttributeDialog::saveAndClose() {
     warningBox->exec();
     return;
   }
+  bool empty = false;
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
+  query->bindValue(":name", name);
+  query->exec();
+  query->first();
+  empty = query->isNull(0);
+  if (!empty) {
+   QPointer <QMessageBox> warningBox = new QMessageBox;
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Duplicate name.");
+    warningBox->setInformativeText("You cannot create attributes with identical names.");
+    warningBox->exec();
+    return;
+  } 
   exitStatus = 0;
   this->close();
 }

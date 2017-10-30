@@ -9,6 +9,7 @@
 #include <QSqlTableModel>
 #include <QStandardItemModel>
 #include <QTreeView>
+#include <QDropEvent>
 #include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
@@ -28,10 +29,13 @@ private slots:
   void newAttribute();
   void assignAttribute();
   void unassignAttribute();
+  void removeUnusedAttributes();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
-  void boldSelected(QAbstractItemModel* model, QString name = "", QModelIndex parent = QModelIndex());
-  void resetFont(QAbstractItemModel* model, QModelIndex parent = QModelIndex());
+  void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
+  void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void treeOrder(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void finalBusiness();
   
 private:
   QPointer<EventSequenceDatabase> esd;
@@ -61,6 +65,7 @@ private:
   QPointer<QPushButton> newAttributeButton;
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
+  QPointer<QPushButton> removeUnusedAttributesButton;
   
 };
 

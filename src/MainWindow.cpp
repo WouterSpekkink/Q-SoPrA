@@ -224,4 +224,7 @@ void MainWindow::switchToDataView() {
 
 void MainWindow::switchToAttributeView() {
   stacked->setCurrentWidget(attributesWidget);
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+  aw->retrieveData();
 }
+

@@ -4,14 +4,18 @@
 #include <QTreeView>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QSqlQuery>
+#include <QStandardItem>
 
 class DeselectableTreeView : public QTreeView {
 public:
   DeselectableTreeView(QWidget *parent);
   ~DeselectableTreeView() {};
+  void resetSelection();
 
 private:
   void mousePressEvent(QMouseEvent *event);
+  void dropEvent(QDropEvent *event);
 };
 
 #endif

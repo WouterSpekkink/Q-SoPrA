@@ -28,7 +28,6 @@ void WelcomeDialog::newDatabase() {
     if (!dbName.endsWith(".db")) {
       dbName.append(".db");
     }
-
     QFileInfo check_file(dbName);
     if (check_file.exists() && check_file.isFile()) {
       QFile::remove(dbName);
@@ -54,6 +53,7 @@ void WelcomeDialog::newDatabase() {
 		  "source text)");
       query->exec("CREATE TABLE incident_attributes "
 		  "(id integer PRIMARY KEY, "
+		  "sort_order integer, "
 		  "name varchar(20) UNIQUE, "
 		  "description text, "
 		  "father varchar(20))");
@@ -71,6 +71,7 @@ void WelcomeDialog::newDatabase() {
 		  "relationships_record) "
 		  "VALUES (1, 1, 1)");
     }
+    exitStatus = 0;
   } else {
     exitStatus = 2;
   }
@@ -81,17 +82,21 @@ void WelcomeDialog::newDatabase() {
 
 void WelcomeDialog::openDatabase() {
   QString dbName = QFileDialog::getOpenFileName(this, tr("Select database"),"", tr("db files (*.db)"));
-  esd->openDB(dbName);
-  bool ok = esd->db->open();
-  if (!ok) {
-    QPointer<QMessageBox> errorBox = new QMessageBox;
-    errorBox->setText(tr("<b>ERROR</b>"));
-    errorBox->setInformativeText("Creation of new database failed.");
-    errorBox->exec();
-    return;
+  if (!dbName.trimmed().isEmpty()) {
+    esd->openDB(dbName);
+    bool ok = esd->db->open();
+    if (!ok) {
+      QPointer<QMessageBox> errorBox = new QMessageBox;
+      errorBox->setText(tr("<b>ERROR</b>"));
+      errorBox->setInformativeText("Creation of new database failed.");
+      errorBox->exec();
+      return;
+    } else {
+      exitStatus = 0;
+      this->close();
+    }
   } else {
-    exitStatus = 0;
-    this->close();
+    exitStatus = 2;
   }
 }
 

@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     MainWindow *window = new MainWindow(0, esd);
     window->show();
   } else if (welcome->getExitStatus() == 1) {
-    return ED.exec();
+    return 0;
   }
   return ED.exec();
 }

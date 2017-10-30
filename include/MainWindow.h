@@ -32,7 +32,7 @@ private slots:
 
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
-
+  
 private:
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
