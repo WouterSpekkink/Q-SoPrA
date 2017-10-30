@@ -62,6 +62,7 @@ SOURCES       = main.cpp \
 		src/WelcomeDialog.cpp moc_AttributeDialog.cpp \
 		moc_AttributesWidget.cpp \
 		moc_DataWidget.cpp \
+		moc_DeselectableTreeView.cpp \
 		moc_EventSequenceDatabase.cpp \
 		moc_EventTableModel.cpp \
 		moc_MainWindow.cpp \
@@ -83,6 +84,7 @@ OBJECTS       = main.o \
 		moc_AttributeDialog.o \
 		moc_AttributesWidget.o \
 		moc_DataWidget.o \
+		moc_DeselectableTreeView.o \
 		moc_EventSequenceDatabase.o \
 		moc_EventTableModel.o \
 		moc_MainWindow.o \
@@ -358,9 +360,9 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
+compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
+	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
 moc_AttributeDialog.cpp: include/EventSequenceDatabase.h \
 		include/AttributeDialog.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeDialog.h -o moc_AttributeDialog.cpp
@@ -377,6 +379,9 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/EventTableModel.h \
 		include/DataWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DataWidget.h -o moc_DataWidget.cpp
+
+moc_DeselectableTreeView.cpp: include/DeselectableTreeView.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DeselectableTreeView.h -o moc_DeselectableTreeView.cpp
 
 moc_EventSequenceDatabase.cpp: include/EventSequenceDatabase.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventSequenceDatabase.h -o moc_EventSequenceDatabase.cpp
@@ -496,6 +501,9 @@ moc_AttributesWidget.o: moc_AttributesWidget.cpp
 
 moc_DataWidget.o: moc_DataWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_DataWidget.o moc_DataWidget.cpp
+
+moc_DeselectableTreeView.o: moc_DeselectableTreeView.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_DeselectableTreeView.o moc_DeselectableTreeView.cpp
 
 moc_EventSequenceDatabase.o: moc_EventSequenceDatabase.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EventSequenceDatabase.o moc_EventSequenceDatabase.cpp

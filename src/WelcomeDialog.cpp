@@ -60,7 +60,8 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE attributes_to_incidents"
 		  "(id integer PRIMARY KEY, "
 		  "attribute integer, "
-		  "incident integer)");
+		  "incident integer, "
+		  "value varchar(20))");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
 		  "linkages_record integer, "

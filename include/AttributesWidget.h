@@ -27,6 +27,7 @@ private slots:
   void nextIncident();
   void retrieveData();
   void newAttribute();
+  void editAttribute();
   void assignAttribute();
   void unassignAttribute();
   void removeUnusedAttributes();
@@ -36,6 +37,8 @@ private slots:
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void treeOrder(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();
+  void setValue();
+  void getValue();
   
 private:
   QPointer<EventSequenceDatabase> esd;
@@ -52,9 +55,11 @@ private:
   QPointer<QLabel> rawLabel;
   QPointer<QLabel> commentLabel;
   QPointer<QLabel> attributesLabel;
+  QPointer<QLabel> valueLabel;
 
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
+  QPointer<QLineEdit> valueField;
 
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;
@@ -63,10 +68,11 @@ private:
   QPointer<QPushButton> previousIncidentButton;
   QPointer<QPushButton> nextIncidentButton;
   QPointer<QPushButton> newAttributeButton;
+  QPointer<QPushButton> editAttributeButton;
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;
-  
+  QPointer<QPushButton> valueButton;
 };
 
 

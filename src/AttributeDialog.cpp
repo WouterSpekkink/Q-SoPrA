@@ -14,7 +14,7 @@ AttributeDialog::AttributeDialog(QWidget *parent, EventSequenceDatabase *submitt
 
   nameField = new QLineEdit();
 
-  descriptionField = new QPlainTextEdit();
+  descriptionField = new QTextEdit();
 
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
@@ -44,6 +44,7 @@ void AttributeDialog::setName(const QString &newName) {
 
 void AttributeDialog::setDescription(const QString &newDescription) {
   description =  newDescription;
+  descriptionField->setText(newDescription);
 }
 
 QString AttributeDialog::getName() {
@@ -52,6 +53,7 @@ QString AttributeDialog::getName() {
 
 void AttributeDialog::submitName(const QString &submittedName) {
   name = submittedName;
+  nameField->setText(submittedName);
 }
 
 QString AttributeDialog::getDescription() {

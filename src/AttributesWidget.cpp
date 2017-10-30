@@ -1,4 +1,4 @@
-#include "../include/AttributesWidget.h"
+ #include "../include/AttributesWidget.h"
 
 AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
@@ -30,7 +30,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   rawLabel = new QLabel("Raw:");
   commentLabel = new QLabel("Comments:");
   attributesLabel = new QLabel("<h2>Attributes</h2>");
-
+  valueLabel = new QLabel("Value:");
+  
   timeStampField = new QLineEdit();
   timeStampField->setReadOnly(true);
   sourceField = new QLineEdit();
@@ -41,20 +42,27 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   rawField->setReadOnly(true);
   commentField = new QTextEdit();
   commentField->setReadOnly(true);
+  valueField = new QLineEdit();
 
   previousIncidentButton = new QPushButton("Previous incident");
   nextIncidentButton = new QPushButton("Next incident");
   newAttributeButton = new QPushButton("New attribute");
+  editAttributeButton = new QPushButton("Edit attribute");
   assignAttributeButton = new QPushButton("Assign attribute");
   unassignAttributeButton = new QPushButton("Unassign attribute");
   removeUnusedAttributesButton = new QPushButton("Remove unused attributes");
+  valueButton = new QPushButton("Store value");
+  valueButton->setEnabled(false);
   
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
   connect(newAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
+  connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
+  connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(getValue()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 									       
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
@@ -79,8 +87,14 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   rightLayout->addWidget(attributesLabel);
   rightLayout->addWidget(attributesTreeView);
+  QPointer<QHBoxLayout> valueLayout = new QHBoxLayout;
+  valueLayout->addWidget(valueLabel);
+  valueLayout->addWidget(valueField);
+  valueLayout->addWidget(valueButton);
+  rightLayout->addLayout(valueLayout);
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(newAttributeButton);
+  rightButtonTopLayout->addWidget(editAttributeButton);
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(assignAttributeButton);
   rightButtonBottomLayout->addWidget(unassignAttributeButton);
@@ -179,6 +193,51 @@ void AttributesWidget::newAttribute() {
   }
 }
 
+void AttributesWidget::editAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString name = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    attributeDialog = new AttributeDialog(this, esd);
+    attributeDialog->submitName(name);
+    attributeDialog->setDescription(description);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QString newName = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attribute->setToolTip(description);
+      QStandardItem *father = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+      father->setChild(father->rowCount(), attribute);
+      attribute->setToolTip(description);
+      attribute->setEditable(false);
+      query->prepare("UPDATE incident_attributes SET name = :newname, description = :newdescription WHERE name = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":newdescription", description);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE incident_attributes SET father = :newname WHERE father = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents SET attribute = :newname WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      this->setCursor(Qt::WaitCursor);
+      treeOrder(attributesTree);
+      setTree();
+      retrieveData();
+      this->setCursor(Qt::ArrowCursor);
+    }
+    delete attributeDialog;
+  } 
+}
+
 void AttributesWidget::assignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     QSqlQueryModel *query = new QSqlQueryModel;
@@ -215,6 +274,7 @@ void AttributesWidget::assignAttribute() {
 	QFont font;
 	font.setBold(true);
 	currentAttribute->setFont(font);
+	valueButton->setEnabled(true);
       }
     }
   }
@@ -255,6 +315,7 @@ void AttributesWidget::unassignAttribute() {
 	QFont font;
 	font.setBold(false);
 	currentAttribute->setFont(font);
+	valueButton->setEnabled(false);
       }
     }
   }
@@ -284,6 +345,66 @@ void AttributesWidget::removeUnusedAttributes() {
   setTree();
   retrieveData();
   this->setCursor(Qt::ArrowCursor);
+}
+
+void AttributesWidget::setValue() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int order = 0; 
+    order = query->record(0).value("attributes_record").toInt();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+    query2->bindValue(":order", order);
+    query2->exec();
+    query2->first();
+    if (!(query2->isNull(0))) {
+      int id = 0;
+      id = query2->value(0).toInt();
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      query2->prepare("UPDATE attributes_to_incidents SET value = :val WHERE attribute = :attribute AND incident = :id");
+      query2->bindValue(":val", valueField->text());
+      query2->bindValue(":attribute", attribute);
+      query2->bindValue(":id", id);
+      query2->exec();
+    }
+    valueField->setText("");
+  }
+}
+
+void AttributesWidget::getValue() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int order = 0; 
+    order = query->record(0).value("attributes_record").toInt();
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+    query2->bindValue(":order", order);
+    query2->exec();
+    query2->first();
+    int id = 0;
+    id = query2->value(0).toInt();    
+    query2->prepare("SELECT attribute, value FROM attributes_to_incidents WHERE incident = :id AND attribute =:att");
+    query2->bindValue(":id", id);
+    query2->bindValue(":att", attribute);
+    query2->exec();
+    query2->first();
+    if (!(query2->isNull(0))) {
+      valueButton->setEnabled(true);
+    } else {
+      valueButton->setEnabled(false);
+    }
+    if (!(query2->isNull(1))) {
+      QString value = query2->value(0).toString();
+      valueField->setText(value);
+    } else {
+      valueField->setText("");
+    }
+  } else {
+    valueField->setText("");
+  }
 }
 
 void AttributesWidget::retrieveData() {

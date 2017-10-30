@@ -9,7 +9,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QMessageBox>
-#include <QtWidgets/QPlainTextEdit>
+#include <QtWidgets/QTextEdit>
 #include "EventSequenceDatabase.h"
 
 class AttributeDialog : public QDialog {
@@ -41,7 +41,7 @@ private:
 
   QPointer<QLineEdit> nameField;
 
-  QPointer<QPlainTextEdit> descriptionField;
+  QPointer<QTextEdit> descriptionField;
 
   QString name;
   QString description;

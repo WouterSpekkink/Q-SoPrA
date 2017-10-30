@@ -8,11 +8,17 @@
 #include <QStandardItem>
 
 class DeselectableTreeView : public QTreeView {
+  Q_OBJECT
+
+  
 public:
   DeselectableTreeView(QWidget *parent);
   ~DeselectableTreeView() {};
   void resetSelection();
 
+signals:
+  void selectionChanged();
+  
 private:
   void mousePressEvent(QMouseEvent *event);
   void dropEvent(QDropEvent *event);
