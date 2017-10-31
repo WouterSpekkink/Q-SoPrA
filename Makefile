@@ -33,7 +33,7 @@ MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
 DISTNAME      = ED_Linux1.0.0
-DISTDIR = /home/mcmonty/Programming/ED/ED_Linux/.tmp/ED_Linux1.0.0
+DISTDIR = /home/wouterspekkink/Programming/ED/ED_Linux/.tmp/ED_Linux1.0.0
 LINK          = g++
 LFLAGS        = -m64 -Wl,-O1
 LIBS          = $(SUBLIBS) -L/usr/X11R6/lib64 -lQt5Widgets -lQt5Gui -lQt5Sql -lQt5Core -lGL -lpthread 
@@ -50,6 +50,7 @@ OBJECTS_DIR   = ./
 
 SOURCES       = main.cpp \
 		src/AttributeDialog.cpp \
+		src/AttributeIndexDialog.cpp \
 		src/AttributesWidget.cpp \
 		src/Constants.cpp \
 		src/DataWidget.cpp \
@@ -60,6 +61,7 @@ SOURCES       = main.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
 		src/WelcomeDialog.cpp moc_AttributeDialog.cpp \
+		moc_AttributeIndexDialog.cpp \
 		moc_AttributesWidget.cpp \
 		moc_DataWidget.cpp \
 		moc_DeselectableTreeView.cpp \
@@ -71,6 +73,7 @@ SOURCES       = main.cpp \
 		moc_WelcomeDialog.cpp
 OBJECTS       = main.o \
 		AttributeDialog.o \
+		AttributeIndexDialog.o \
 		AttributesWidget.o \
 		Constants.o \
 		DataWidget.o \
@@ -82,6 +85,7 @@ OBJECTS       = main.o \
 		RecordDialog.o \
 		WelcomeDialog.o \
 		moc_AttributeDialog.o \
+		moc_AttributeIndexDialog.o \
 		moc_AttributesWidget.o \
 		moc_DataWidget.o \
 		moc_DeselectableTreeView.o \
@@ -148,6 +152,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		ED_Linux.pro include/AttributeDialog.h \
+		include/AttributeIndexDialog.h \
 		include/AttributesWidget.h \
 		include/Constants.h \
 		include/DataWidget.h \
@@ -159,6 +164,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/RecordDialog.h \
 		include/WelcomeDialog.h main.cpp \
 		src/AttributeDialog.cpp \
+		src/AttributeIndexDialog.cpp \
 		src/AttributesWidget.cpp \
 		src/Constants.cpp \
 		src/DataWidget.cpp \
@@ -336,8 +342,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/AttributeDialog.h include/AttributesWidget.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/WelcomeDialog.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/AttributeDialog.cpp src/AttributesWidget.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/WelcomeDialog.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -360,34 +366,38 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
+compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
+	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_WelcomeDialog.cpp
 moc_AttributeDialog.cpp: include/EventSequenceDatabase.h \
 		include/AttributeDialog.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeDialog.h -o moc_AttributeDialog.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeDialog.h -o moc_AttributeDialog.cpp
+
+moc_AttributeIndexDialog.cpp: include/AttributeIndexDialog.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeIndexDialog.h -o moc_AttributeIndexDialog.cpp
 
 moc_AttributesWidget.cpp: include/EventSequenceDatabase.h \
 		include/AttributeDialog.h \
 		include/DeselectableTreeView.h \
+		include/AttributeIndexDialog.h \
 		include/AttributesWidget.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributesWidget.h -o moc_AttributesWidget.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributesWidget.h -o moc_AttributesWidget.cpp
 
 moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/RecordDialog.h \
 		include/Constants.h \
 		include/EventTableModel.h \
 		include/DataWidget.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DataWidget.h -o moc_DataWidget.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DataWidget.h -o moc_DataWidget.cpp
 
 moc_DeselectableTreeView.cpp: include/DeselectableTreeView.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DeselectableTreeView.h -o moc_DeselectableTreeView.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DeselectableTreeView.h -o moc_DeselectableTreeView.cpp
 
 moc_EventSequenceDatabase.cpp: include/EventSequenceDatabase.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventSequenceDatabase.h -o moc_EventSequenceDatabase.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventSequenceDatabase.h -o moc_EventSequenceDatabase.cpp
 
 moc_EventTableModel.cpp: include/EventTableModel.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventTableModel.h -o moc_EventTableModel.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventTableModel.h -o moc_EventTableModel.cpp
 
 moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/DataWidget.h \
@@ -397,21 +407,22 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/DeselectableTreeView.h \
+		include/AttributeIndexDialog.h \
 		include/ProgressBar.h \
 		include/MainWindow.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
 
 moc_ProgressBar.cpp: include/ProgressBar.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/ProgressBar.h -o moc_ProgressBar.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/ProgressBar.h -o moc_ProgressBar.cpp
 
 moc_RecordDialog.cpp: include/EventSequenceDatabase.h \
 		include/Constants.h \
 		include/RecordDialog.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RecordDialog.h -o moc_RecordDialog.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RecordDialog.h -o moc_RecordDialog.cpp
 
 moc_WelcomeDialog.cpp: include/EventSequenceDatabase.h \
 		include/WelcomeDialog.h
-	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/mcmonty/Programming/ED/ED_Linux -I/home/mcmonty/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/WelcomeDialog.h -o moc_WelcomeDialog.cpp
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/WelcomeDialog.h -o moc_WelcomeDialog.cpp
 
 compiler_moc_source_make_all:
 compiler_moc_source_clean:
@@ -437,6 +448,7 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/DeselectableTreeView.h \
+		include/AttributeIndexDialog.h \
 		include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
@@ -444,10 +456,14 @@ AttributeDialog.o: src/AttributeDialog.cpp include/AttributeDialog.h \
 		include/EventSequenceDatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributeDialog.o src/AttributeDialog.cpp
 
+AttributeIndexDialog.o: src/AttributeIndexDialog.cpp include/AttributeIndexDialog.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributeIndexDialog.o src/AttributeIndexDialog.cpp
+
 AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/EventSequenceDatabase.h \
 		include/AttributeDialog.h \
-		include/DeselectableTreeView.h
+		include/DeselectableTreeView.h \
+		include/AttributeIndexDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributesWidget.o src/AttributesWidget.cpp
 
 Constants.o: src/Constants.cpp include/Constants.h
@@ -478,6 +494,7 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/DeselectableTreeView.h \
+		include/AttributeIndexDialog.h \
 		include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
@@ -495,6 +512,9 @@ WelcomeDialog.o: src/WelcomeDialog.cpp include/WelcomeDialog.h \
 
 moc_AttributeDialog.o: moc_AttributeDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AttributeDialog.o moc_AttributeDialog.cpp
+
+moc_AttributeIndexDialog.o: moc_AttributeIndexDialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AttributeIndexDialog.o moc_AttributeIndexDialog.cpp
 
 moc_AttributesWidget.o: moc_AttributesWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AttributesWidget.o moc_AttributesWidget.cpp

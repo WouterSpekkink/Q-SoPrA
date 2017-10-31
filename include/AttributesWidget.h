@@ -13,6 +13,7 @@
 #include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
+#include "AttributeIndexDialog.h"
 
 class AttributesWidget : public QWidget {
   Q_OBJECT
@@ -25,9 +26,23 @@ public:
 private slots:
   void previousIncident();
   void nextIncident();
+  void jumpIncident();
+  void toggleMark();
+  void previousMarked();
+  void nextMarked();
+  void setDescriptionFilter(const QString &text);
+  void previousDescription();
+  void nextDescription();
+  void setRawFilter(const QString &text);
+  void previousRaw();
+  void nextRaw();
+  void setCommentFilter(const QString &text);
+  void previousComment();
+  void nextComment();
   void retrieveData();
   void newAttribute();
   void editAttribute();
+  void decideAttributeAction();
   void assignAttribute();
   void unassignAttribute();
   void removeUnusedAttributes();
@@ -49,16 +64,24 @@ private:
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   
+  QPointer<QLabel> indexLabel;
+  QPointer<QLabel> markLabel;
   QPointer<QLabel> timeStampLabel;
   QPointer<QLabel> sourceLabel;
   QPointer<QLabel> descriptionLabel;
   QPointer<QLabel> rawLabel;
   QPointer<QLabel> commentLabel;
   QPointer<QLabel> attributesLabel;
+  QPointer<QLabel> descriptionFilterLabel;
+  QPointer<QLabel> rawFilterLabel;
+  QPointer<QLabel> commentFilterLabel;
   QPointer<QLabel> valueLabel;
 
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
+  QPointer<QLineEdit> descriptionFilterField;
+  QPointer<QLineEdit> rawFilterField;
+  QPointer<QLineEdit> commentFilterField;
   QPointer<QLineEdit> valueField;
 
   QPointer<QTextEdit> descriptionField;
@@ -67,12 +90,26 @@ private:
 
   QPointer<QPushButton> previousIncidentButton;
   QPointer<QPushButton> nextIncidentButton;
+  QPointer<QPushButton> jumpButton;
+  QPointer<QPushButton> markButton;
+  QPointer<QPushButton> previousMarkedButton;
+  QPointer<QPushButton> nextMarkedButton;
+  QPointer<QPushButton> descriptionPreviousButton;
+  QPointer<QPushButton> descriptionNextButton;
+  QPointer<QPushButton> rawPreviousButton;
+  QPointer<QPushButton> rawNextButton;
+  QPointer<QPushButton> commentPreviousButton;
+  QPointer<QPushButton> commentNextButton;
   QPointer<QPushButton> newAttributeButton;
   QPointer<QPushButton> editAttributeButton;
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;
   QPointer<QPushButton> valueButton;
+
+  QString descriptionFilter;
+  QString rawFilter;
+  QString commentFilter;
 };
 
 

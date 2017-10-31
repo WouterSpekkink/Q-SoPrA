@@ -169,6 +169,7 @@ void MainWindow::importFromCsv() {
     dw->incidentsModel->setData(dw->incidentsModel->index(counter, 4), raw);
     dw->incidentsModel->setData(dw->incidentsModel->index(counter, 5), comment);
     dw->incidentsModel->setData(dw->incidentsModel->index(counter, 6), source);
+    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 7), 0);
     dw->incidentsModel->submitAll();
     counter++;
     loadProgress->setProgress(counter + 1);

@@ -49,8 +49,9 @@ void WelcomeDialog::newDatabase() {
 		  "timestamp varchar(20), "
 		  "description text, "
 		  "raw text, "
-		  "comments text, "
-		  "source text)");
+		  "comment text, "
+		  "source text, "
+		  "mark integer)");
       query->exec("CREATE TABLE incident_attributes "
 		  "(id integer PRIMARY KEY, "
 		  "sort_order integer, "

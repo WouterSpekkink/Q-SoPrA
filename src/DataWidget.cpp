@@ -21,6 +21,7 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsModel->setHeaderData(6, Qt::Horizontal, QObject::tr("Source"));
   tableView->setColumnHidden(0, true);
   tableView->setColumnHidden(1, true);
+  tableView->setColumnHidden(7, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setColumnWidth(2, parent->width()/15);
   tableView->setColumnWidth(3, parent->width()/4);
@@ -94,6 +95,7 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
   incidentsModel->setData(incidentsModel->index(index, 4), raw);
   incidentsModel->setData(incidentsModel->index(index, 5), comment);
   incidentsModel->setData(incidentsModel->index(index, 6), source);
+  incidentsModel->setData(incidentsModel->index(index, 7), 0);
   incidentsModel->submitAll();
 }
 

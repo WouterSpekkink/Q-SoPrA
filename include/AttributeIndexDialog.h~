@@ -1,0 +1,36 @@
+#ifndef ATTRIBUTEINDEXDIALOG_H
+#define ATTRIBUTEINDEXDIALOG_H
+
+#include <QtWidgets/QWidget>
+#include <QtWidgets/QDialog>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
+#include <QPointer>
+#include <string>
+
+class IndexDialog : public QDialog {
+  friend class MainDialog;
+  Q_OBJECT
+
+public:
+  IndexDialog(QWidget *parent = 0, std::vector <std::vector <std::string> >::size_type max = 1);
+  ~IndexDialog() {};
+
+private slots:
+  void go();
+  void cancel();
+  void setIndexText(const QString newIndex);
+  std::string getIndexText();
+
+private:
+  QPointer<QLabel> indexLabel;
+  QPointer<QLineEdit> indexField;
+  QPointer<QPushButton> goButton;
+  QPointer<QPushButton> cancelButton;
+  std::string indexText;
+};
+
+#endif

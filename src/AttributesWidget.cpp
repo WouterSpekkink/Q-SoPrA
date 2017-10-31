@@ -3,6 +3,8 @@
 AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
 
+  descriptionFilter = "";
+
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
   incidentsModel->select();
@@ -22,15 +24,22 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   attributesTreeView->setAcceptDrops(true);
   attributesTreeView->setDropIndicatorShown(true);
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
+  attributesTreeView->setExpandsOnDoubleClick(false);
   setTree();
-  
-  timeStampLabel = new QLabel("Timing:");
-  sourceLabel = new QLabel("Source:");
-  descriptionLabel = new QLabel("Description:");
-  rawLabel = new QLabel("Raw:");
-  commentLabel = new QLabel("Comments:");
+
+  indexLabel = new QLabel("<b>Incident ( / )</b>");
+  markLabel = new QLabel();
+  markLabel->setStyleSheet("QLabel {color: red}");
+  timeStampLabel = new QLabel("<b>Timing:</b>");
+  sourceLabel = new QLabel("<b>Source:</b>");
+  descriptionLabel = new QLabel("<b>Description:</b>");
+  rawLabel = new QLabel("<b>Raw:</b>");
+  commentLabel = new QLabel("<b>Comments:</b>");
   attributesLabel = new QLabel("<h2>Attributes</h2>");
-  valueLabel = new QLabel("Value:");
+  descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>");
+  rawFilterLabel = new QLabel("<i>Search raw texts:</i>");
+  commentFilterLabel = new QLabel("<i>Search comments:</i>");
+  valueLabel = new QLabel("<b>Value:</b>");
   
   timeStampField = new QLineEdit();
   timeStampField->setReadOnly(true);
@@ -42,10 +51,25 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   rawField->setReadOnly(true);
   commentField = new QTextEdit();
   commentField->setReadOnly(true);
+  descriptionFilterField = new QLineEdit();
+  rawFilterField = new QLineEdit();
+  commentFilterField = new QLineEdit();
   valueField = new QLineEdit();
 
   previousIncidentButton = new QPushButton("Previous incident");
+  previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
   nextIncidentButton = new QPushButton("Next incident");
+  nextIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
+  jumpButton = new QPushButton("Jump to");
+  markButton = new QPushButton("Mark incident");
+  previousMarkedButton = new QPushButton("Previous marked");
+  nextMarkedButton = new QPushButton("Next marked");
+  descriptionPreviousButton = new QPushButton("Previous");
+  descriptionNextButton = new QPushButton("Next");
+  rawPreviousButton = new QPushButton("Previous");
+  rawNextButton = new QPushButton("Next");
+  commentPreviousButton = new QPushButton("Previous");
+  commentNextButton = new QPushButton("Next");
   newAttributeButton = new QPushButton("New attribute");
   editAttributeButton = new QPushButton("Edit attribute");
   assignAttributeButton = new QPushButton("Assign attribute");
@@ -56,6 +80,19 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
+  connect(jumpButton, SIGNAL(clicked()), this, SLOT(jumpIncident()));
+  connect(markButton, SIGNAL(clicked()), this, SLOT(toggleMark()));
+  connect(previousMarkedButton, SIGNAL(clicked()), this, SLOT(previousMarked()));
+  connect(nextMarkedButton, SIGNAL(clicked()), this, SLOT(nextMarked()));
+  connect(descriptionFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setDescriptionFilter(const QString &)));
+  connect(descriptionPreviousButton, SIGNAL(clicked()), this, SLOT(previousDescription()));
+  connect(descriptionNextButton, SIGNAL(clicked()), this, SLOT(nextDescription()));
+  connect(rawFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setRawFilter(const QString &)));
+  connect(rawPreviousButton, SIGNAL(clicked()), this, SLOT(previousRaw()));
+  connect(rawNextButton, SIGNAL(clicked()), this, SLOT(nextRaw()));
+  connect(commentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentFilter(const QString &)));
+  connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
+  connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
   connect(newAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
@@ -63,26 +100,72 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(getValue()));
+  connect(attributesTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideAttributeAction()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 									       
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
+  QPointer<QHBoxLayout> indexLayout = new QHBoxLayout;
+  indexLayout->addWidget(indexLabel);
+  indexLabel->setAlignment(Qt::AlignHCenter);
+  indexLayout->addWidget(markLabel);
+  markLabel->setAlignment(Qt::AlignHCenter);
+  leftLayout->addLayout(indexLayout);
   QPointer<QHBoxLayout> topFieldsLayout = new QHBoxLayout;
   topFieldsLayout->addWidget(timeStampLabel);
   topFieldsLayout->addWidget(timeStampField);
   topFieldsLayout->addWidget(sourceLabel);
   topFieldsLayout->addWidget(sourceField);
   leftLayout->addLayout(topFieldsLayout);
-  leftLayout->addWidget(descriptionLabel);
+  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
+  QPointer<QHBoxLayout> descriptionLayoutLeft = new QHBoxLayout;
+  descriptionLayoutLeft->addWidget(descriptionLabel);
+  descriptionLayout->addLayout(descriptionLayoutLeft);
+  QPointer<QHBoxLayout> descriptionLayoutRight = new QHBoxLayout;
+  descriptionLayoutRight->addWidget(descriptionFilterLabel);
+  descriptionLayoutRight->addWidget(descriptionPreviousButton);
+  descriptionLayoutRight->addWidget(descriptionFilterField);
+  descriptionLayoutRight->addWidget(descriptionNextButton);
+  descriptionLayout->addLayout(descriptionLayoutRight);
+  descriptionLayoutRight->setContentsMargins(200,0,0,0);
+  leftLayout->addLayout(descriptionLayout);
   leftLayout->addWidget(descriptionField);
-  leftLayout->addWidget(rawLabel);
+  QPointer<QHBoxLayout> rawLayout = new QHBoxLayout;
+  QPointer<QHBoxLayout> rawLayoutLeft = new QHBoxLayout;
+  rawLayoutLeft->addWidget(rawLabel);
+  rawLayout->addLayout(rawLayoutLeft);
+  QPointer<QHBoxLayout> rawLayoutRight = new QHBoxLayout;
+  rawLayoutRight->addWidget(rawFilterLabel);
+  rawLayoutRight->addWidget(rawPreviousButton);
+  rawLayoutRight->addWidget(rawFilterField);
+  rawLayoutRight->addWidget(rawNextButton);
+  rawLayout->addLayout(rawLayoutRight);
+  rawLayoutRight->setContentsMargins(270,0,0,0);
+  leftLayout->addLayout(rawLayout);
   leftLayout->addWidget(rawField);
-  leftLayout->addWidget(commentLabel);
+  QPointer<QHBoxLayout> commentLayout = new QHBoxLayout;
+  QPointer<QHBoxLayout> commentLayoutLeft = new QHBoxLayout;
+  commentLayoutLeft->addWidget(commentLabel);
+  commentLayout->addLayout(commentLayoutLeft);
+  QPointer<QHBoxLayout> commentLayoutRight = new QHBoxLayout;
+  commentLayoutRight->addWidget(commentFilterLabel);
+  commentLayoutRight->addWidget(commentPreviousButton);
+  commentLayoutRight->addWidget(commentFilterField);
+  commentLayoutRight->addWidget(commentNextButton);
+  commentLayout->addLayout(commentLayoutRight);
+  commentLayoutRight->setContentsMargins(270,0,0,0);
+  leftLayout->addLayout(commentLayout);
   leftLayout->addWidget(commentField);
-  QPointer<QHBoxLayout> leftButtonLayout = new QHBoxLayout;
-  leftButtonLayout->addWidget(previousIncidentButton);
-  leftButtonLayout->addWidget(nextIncidentButton);
-  leftLayout->addLayout(leftButtonLayout);
+  QPointer<QHBoxLayout> leftButtonTopLayout = new QHBoxLayout;
+  leftButtonTopLayout->addWidget(previousIncidentButton);
+  leftButtonTopLayout->addWidget(jumpButton);
+  leftButtonTopLayout->addWidget(nextIncidentButton);
+  leftLayout->addLayout(leftButtonTopLayout);
+  QPointer<QHBoxLayout> leftButtonBottomLayout = new QHBoxLayout;
+  leftButtonBottomLayout->addWidget(previousMarkedButton);
+  leftButtonBottomLayout->addWidget(markButton);
+  leftButtonBottomLayout->addWidget(nextMarkedButton);
+  leftLayout->addLayout(leftButtonBottomLayout);
   mainLayout->addLayout(leftLayout);
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   rightLayout->addWidget(attributesLabel);
@@ -122,6 +205,27 @@ void AttributesWidget::previousIncident() {
   }  
 }
 
+void AttributesWidget::jumpIncident() {
+  incidentsModel->select();
+  while(incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
+  AttributeIndexDialog *indexDialog = new AttributeIndexDialog(this, incidentsModel->rowCount());
+  indexDialog->deleteLater();
+  indexDialog->exec();
+  int order = 0;
+  if (indexDialog->getExitStatus() != 1) {
+    order = indexDialog->getIndex();
+    QSqlQuery *query = new QSqlQuery;
+    if (order > 0) {
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
 void AttributesWidget::nextIncident() {
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
@@ -137,6 +241,282 @@ void AttributesWidget::nextIncident() {
     query->bindValue(":new", order + 1);
     query->exec();
     retrieveData();
+  }
+}
+
+void AttributesWidget::toggleMark() {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT attributes_record FROM save_data");
+  query->first();
+  int order = 0;
+  order = query->value(0).toInt();
+  query->prepare("SELECT mark FROM incidents WHERE ch_order = :order");
+  query->bindValue(":order", order);
+  query->exec();
+  query->first();
+  int currentMark = 0;
+  currentMark = query->value(0).toInt();
+  if (currentMark == 0) {
+    int newMark = 1;
+    query->prepare("UPDATE incidents SET mark = :newMark WHERE ch_order = :order");
+    query->bindValue(":order", order);
+    query->bindValue(":newMark", newMark);
+    query->exec();
+    markLabel->setText("MARKED");
+  } else if (currentMark == 1) {
+    int newMark = 0;
+    query->prepare("UPDATE incidents SET mark = :newMark WHERE ch_order = :order");
+    query->bindValue(":order", order);
+    query->bindValue(":newMark", newMark);
+    query->exec();
+    markLabel->setText("");
+  }
+}
+
+void AttributesWidget::previousMarked() {
+  incidentsModel->select();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT attributes_record FROM save_data");
+  int order = 0;
+  query->first();
+  order = query->value(0).toInt();
+  query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
+  query->bindValue(":order", order);
+  query->exec();
+  query->first();
+  if (order != 1) {
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::nextMarked() {
+  incidentsModel->select();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT attributes_record FROM save_data");
+  int order = 0;
+  query->first();
+  order = query->value(0).toInt();
+  query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
+  query->bindValue(":order", order);
+  query->exec();
+  query->first();
+
+  while(incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
+  if (order != incidentsModel->rowCount()) {
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::setRawFilter(const QString &text) {
+  rawFilter = text;
+}
+
+void AttributesWidget::previousRaw() {
+  if (rawFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + rawFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE raw LIKE :text "
+		   "AND ch_order < :order "
+		   "ORDER BY ch_order desc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::nextRaw() {
+  if (rawFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + rawFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE raw LIKE :text "
+		   "AND ch_order > :order "
+		   "ORDER BY ch_order asc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::setCommentFilter(const QString &text) {
+  commentFilter = text;
+}
+
+void AttributesWidget::previousComment() {
+  if (commentFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + commentFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE comment LIKE :text "
+		   "AND ch_order < :order "
+		   "ORDER BY ch_order desc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::nextComment() {
+  if (commentFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + commentFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE comment LIKE :text "
+		   "AND ch_order > :order "
+		   "ORDER BY ch_order asc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::setDescriptionFilter(const QString &text) {
+  descriptionFilter = text;
+}
+
+void AttributesWidget::previousDescription() {
+  if (descriptionFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + descriptionFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE description LIKE :text "
+		   "AND ch_order < :order "
+		   "ORDER BY ch_order desc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::nextDescription() {
+  if (descriptionFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + descriptionFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE description LIKE :text "
+		   "AND ch_order > :order "
+		   "ORDER BY ch_order asc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
   }
 }
 
@@ -236,6 +616,18 @@ void AttributesWidget::editAttribute() {
     }
     delete attributeDialog;
   } 
+}
+
+void AttributesWidget::decideAttributeAction() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+    QFont currentFont = currentAttribute->font();
+    if (currentFont.bold()) {
+      unassignAttribute();
+    } else {
+      assignAttribute();
+    }
+  }
 }
 
 void AttributesWidget::assignAttribute() {
@@ -412,6 +804,13 @@ void AttributesWidget::retrieveData() {
   query->setQuery("SELECT * FROM save_data");
   int order = 0;
   order = query->record(0).value("attributes_record").toInt();
+  while(incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
+  int total = incidentsModel->rowCount();
+
+  QString indexText = "<b>Incident (" + QString::number(order) + " / " + QString::number(total) + ")<b>";
+  indexLabel->setText(indexText);
+  
   query->setQuery("SELECT * FROM incidents");
   int id = query->record(order - 1).value("id").toInt();
   QString timeStamp = query->record(order - 1).value("timestamp").toString();
@@ -419,11 +818,17 @@ void AttributesWidget::retrieveData() {
   QString description = query->record(order - 1).value("description").toString();
   QString raw = query->record(order - 1).value("raw").toString();
   QString comment = query->record(order - 1).value("comment").toString();
+  int mark = query->record(order - 1).value("mark").toInt();
   timeStampField->setText(timeStamp);
   sourceField->setText(source);
   descriptionField->setText(description);
   rawField->setText(raw);
   commentField->setText(comment);
+  if (mark == 0) {
+    markLabel->setText("");
+  } else {
+    markLabel->setText("MARKED");
+  }
 
   resetFont(attributesTree);
   QSqlQuery *query2 = new QSqlQuery;
