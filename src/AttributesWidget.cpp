@@ -4,6 +4,9 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   esd = submittedEsd;
 
   descriptionFilter = "";
+  rawFilter = "";
+  commentFilter = "";
+  commentBool = false;
 
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
@@ -50,7 +53,6 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   rawField = new QTextEdit();
   rawField->setReadOnly(true);
   commentField = new QTextEdit();
-  commentField->setReadOnly(true);
   descriptionFilterField = new QLineEdit();
   rawFilterField = new QLineEdit();
   commentFilterField = new QLineEdit();
@@ -78,6 +80,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   valueButton = new QPushButton("Store value");
   valueButton->setEnabled(false);
   
+  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
   connect(jumpButton, SIGNAL(clicked()), this, SLOT(jumpIncident()));
@@ -100,6 +103,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(getValue()));
+  connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
   connect(attributesTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideAttributeAction()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 									       
@@ -153,7 +157,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   commentLayoutRight->addWidget(commentFilterField);
   commentLayoutRight->addWidget(commentNextButton);
   commentLayout->addLayout(commentLayoutRight);
-  commentLayoutRight->setContentsMargins(270,0,0,0);
+  commentLayoutRight->setContentsMargins(200,0,0,0);
   leftLayout->addLayout(commentLayout);
   leftLayout->addWidget(commentField);
   QPointer<QHBoxLayout> leftButtonTopLayout = new QHBoxLayout;
@@ -189,7 +193,29 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   setLayout(mainLayout);
 }
 
+void AttributesWidget::setCommentBool() {
+  commentBool = true;
+}
+
+void AttributesWidget::setComment() {
+  if (commentBool) {
+    QString comment = commentField->toPlainText();
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+    query->prepare("UPDATE incidents SET comment = :comment WHERE ch_order = :order");
+    query->bindValue(":comment", comment);
+    query->bindValue(":order", order);
+    query->exec();
+    commentBool = false;
+  }
+}
+
 void AttributesWidget::previousIncident() {
+  setComment();
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
@@ -206,6 +232,7 @@ void AttributesWidget::previousIncident() {
 }
 
 void AttributesWidget::jumpIncident() {
+  setComment();
   incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
@@ -227,6 +254,7 @@ void AttributesWidget::jumpIncident() {
 }
 
 void AttributesWidget::nextIncident() {
+  setComment();
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
@@ -274,6 +302,7 @@ void AttributesWidget::toggleMark() {
 }
 
 void AttributesWidget::previousMarked() {
+  setComment();
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
@@ -297,6 +326,7 @@ void AttributesWidget::previousMarked() {
 }
 
 void AttributesWidget::nextMarked() {
+  setComment();
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
@@ -327,6 +357,7 @@ void AttributesWidget::setRawFilter(const QString &text) {
 }
 
 void AttributesWidget::previousRaw() {
+  setComment();
   if (rawFilter != "") {
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
@@ -358,6 +389,7 @@ void AttributesWidget::previousRaw() {
 }
 
 void AttributesWidget::nextRaw() {
+  setComment();
   if (rawFilter != "") {
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
@@ -393,6 +425,7 @@ void AttributesWidget::setCommentFilter(const QString &text) {
 }
 
 void AttributesWidget::previousComment() {
+  setComment();
   if (commentFilter != "") {
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
@@ -424,6 +457,7 @@ void AttributesWidget::previousComment() {
 }
 
 void AttributesWidget::nextComment() {
+  setComment();
   if (commentFilter != "") {
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
@@ -459,6 +493,7 @@ void AttributesWidget::setDescriptionFilter(const QString &text) {
 }
 
 void AttributesWidget::previousDescription() {
+  setComment();
   if (descriptionFilter != "") {
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
@@ -490,6 +525,7 @@ void AttributesWidget::previousDescription() {
 }
 
 void AttributesWidget::nextDescription() {
+  setComment();
   if (descriptionFilter != "") {
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
@@ -630,6 +666,64 @@ void AttributesWidget::decideAttributeAction() {
   }
 }
 
+void AttributesWidget::highlightText() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+    QString currentName = attributesTreeView->currentIndex().data().toString();
+    QFont currentFont = currentAttribute->font();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    if (currentFont.bold()) {
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("attributes_record").toInt();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = 0;
+      id = query2->value(0).toInt();
+      query2->prepare("SELECT source_text FROM attributes_to_incidents WHERE attribute = :attribute AND incident = :id");
+      query2->bindValue(":attribute", currentName);
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      QTextCharFormat format;
+      format.setFontWeight(QFont::Normal);
+      rawField->selectAll();
+      rawField->textCursor().mergeCharFormat(format);
+      QTextCursor cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+      QString currentText = query2->value(0).toString();
+      rawField->find(currentText);
+      format.setFontWeight(QFont::Bold);
+      rawField->textCursor().mergeCharFormat(format);
+      cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+    } else {
+      QString currentSelected = rawField->textCursor().selectedText();
+      QTextCharFormat format;
+      format.setFontWeight(QFont::Normal);
+      rawField->selectAll();
+      rawField->textCursor().mergeCharFormat(format);
+      QTextCursor cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+      rawField->find(currentSelected);      
+    }
+  }else {
+    QTextCharFormat format;
+    format.setFontWeight(QFont::Normal);
+    rawField->selectAll();
+    rawField->textCursor().mergeCharFormat(format);
+    QTextCursor cursor = rawField->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    rawField->setTextCursor(cursor);
+  }
+}
+
 void AttributesWidget::assignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     QSqlQueryModel *query = new QSqlQueryModel;
@@ -661,6 +755,17 @@ void AttributesWidget::assignAttribute() {
 	assignedModel->insertRow(max);
 	assignedModel->setData(assignedModel->index(max, 1), attribute);
 	assignedModel->setData(assignedModel->index(max, 2), id);
+	if (rawField->textCursor().selectedText().trimmed() != "") {
+	  QString sourceText = rawField->textCursor().selectedText().trimmed();
+	  assignedModel->setData(assignedModel->index(max, 4), sourceText);
+	}
+	QTextCharFormat format;
+	format.setFontWeight(QFont::Bold);
+	rawField->textCursor().mergeCharFormat(format);
+	QTextCursor cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
+
 	assignedModel->submitAll();
 	QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
 	QFont font;
@@ -708,6 +813,14 @@ void AttributesWidget::unassignAttribute() {
 	font.setBold(false);
 	currentAttribute->setFont(font);
 	valueButton->setEnabled(false);
+	QTextCharFormat format;
+	format.setFontWeight(QFont::Normal);
+	rawField->selectAll();
+	rawField->textCursor().mergeCharFormat(format);
+	rawField->setFontWeight(QFont::Normal);
+	QTextCursor cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
       }
     }
   }
@@ -804,6 +917,7 @@ void AttributesWidget::retrieveData() {
   query->setQuery("SELECT * FROM save_data");
   int order = 0;
   order = query->record(0).value("attributes_record").toInt();
+  incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   int total = incidentsModel->rowCount();
@@ -925,6 +1039,7 @@ void AttributesWidget::treeOrder(QAbstractItemModel *model, QModelIndex parent) 
 }
 
 void AttributesWidget::finalBusiness() {
+  setComment();
   treeOrder(attributesTree);
 }
 

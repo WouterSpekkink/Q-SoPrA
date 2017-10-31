@@ -24,6 +24,8 @@ public:
   ~AttributesWidget() {};
 
 private slots:
+  void setCommentBool();
+  void setComment();
   void previousIncident();
   void nextIncident();
   void jumpIncident();
@@ -43,6 +45,7 @@ private slots:
   void newAttribute();
   void editAttribute();
   void decideAttributeAction();
+  void highlightText();
   void assignAttribute();
   void unassignAttribute();
   void removeUnusedAttributes();
@@ -110,6 +113,8 @@ private:
   QString descriptionFilter;
   QString rawFilter;
   QString commentFilter;
+
+  bool commentBool;
 };
 
 

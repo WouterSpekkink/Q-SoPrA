@@ -220,6 +220,10 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line
 }
 
 void MainWindow::switchToDataView() {
+  DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
+  dw->incidentsModel->select();
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
   stacked->setCurrentWidget(dataWidget);
 }
 
