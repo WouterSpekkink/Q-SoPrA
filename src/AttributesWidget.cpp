@@ -690,6 +690,7 @@ void AttributesWidget::highlightText() {
       query2->first();
       QTextCharFormat format;
       format.setFontWeight(QFont::Normal);
+      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
       rawField->selectAll();
       rawField->textCursor().mergeCharFormat(format);
       QTextCursor cursor = rawField->textCursor();
@@ -698,6 +699,8 @@ void AttributesWidget::highlightText() {
       QString currentText = query2->value(0).toString();
       rawField->find(currentText);
       format.setFontWeight(QFont::Bold);
+      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+      format.setUnderlineColor(Qt::blue);
       rawField->textCursor().mergeCharFormat(format);
       cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
@@ -706,6 +709,7 @@ void AttributesWidget::highlightText() {
       QString currentSelected = rawField->textCursor().selectedText();
       QTextCharFormat format;
       format.setFontWeight(QFont::Normal);
+      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
       rawField->selectAll();
       rawField->textCursor().mergeCharFormat(format);
       QTextCursor cursor = rawField->textCursor();
@@ -716,6 +720,7 @@ void AttributesWidget::highlightText() {
   }else {
     QTextCharFormat format;
     format.setFontWeight(QFont::Normal);
+    format.setUnderlineStyle(QTextCharFormat::NoUnderline);
     rawField->selectAll();
     rawField->textCursor().mergeCharFormat(format);
     QTextCursor cursor = rawField->textCursor();
@@ -761,6 +766,8 @@ void AttributesWidget::assignAttribute() {
 	}
 	QTextCharFormat format;
 	format.setFontWeight(QFont::Bold);
+	format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	format.setUnderlineColor(Qt::blue);
 	rawField->textCursor().mergeCharFormat(format);
 	QTextCursor cursor = rawField->textCursor();
 	cursor.movePosition(QTextCursor::Start);
@@ -815,6 +822,7 @@ void AttributesWidget::unassignAttribute() {
 	valueButton->setEnabled(false);
 	QTextCharFormat format;
 	format.setFontWeight(QFont::Normal);
+	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
 	rawField->selectAll();
 	rawField->textCursor().mergeCharFormat(format);
 	rawField->setFontWeight(QFont::Normal);
