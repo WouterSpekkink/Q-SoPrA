@@ -81,6 +81,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   removeUnusedAttributesButton = new QPushButton("Remove unused attributes");
   valueButton = new QPushButton("Store value");
   valueButton->setEnabled(false);
+  expandTreeButton = new QPushButton("Expand");
+  collapseTreeButton = new QPushButton("Collapse");
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -107,6 +109,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(getValue()));
   connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
   connect(attributesTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideAttributeAction()));
+  connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
+  connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 									       
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
@@ -184,6 +188,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(newAttributeButton);
   rightButtonTopLayout->addWidget(editAttributeButton);
+  rightButtonTopLayout->addWidget(expandTreeButton);
+  rightButtonTopLayout->addWidget(collapseTreeButton);
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(assignAttributeButton);
   rightButtonBottomLayout->addWidget(unassignAttributeButton);
@@ -974,8 +980,24 @@ void AttributesWidget::retrieveData() {
   attributesTreeView->resetSelection();
   attributesTree->sort(0, Qt::AscendingOrder);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  QTextCharFormat format;
+  format.setFontWeight(QFont::Normal);
+  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+  rawField->selectAll();
+  rawField->textCursor().mergeCharFormat(format);
+  QTextCursor cursor = rawField->textCursor();
+  cursor.movePosition(QTextCursor::Start);
+  rawField->setTextCursor(cursor);
 }
 
+void AttributesWidget::expandTree() {
+  attributesTreeView->expandAll();
+}
+
+void AttributesWidget::collapseTree() {
+  attributesTreeView->collapseAll();
+}
+ 
 void AttributesWidget::setTree() {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;

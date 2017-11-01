@@ -50,6 +50,8 @@ private slots:
   void unassignAttribute();
   void removeUnusedAttributes();
   void setTree();
+  void expandTree();
+  void collapseTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
@@ -108,6 +110,8 @@ private:
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;
   QPointer<QPushButton> valueButton;
+  QPointer<QPushButton> expandTreeButton;
+  QPointer<QPushButton> collapseTreeButton;
 
   QString descriptionFilter;
   QString rawFilter;

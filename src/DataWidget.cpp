@@ -145,12 +145,14 @@ void DataWidget::insertRecordBefore() {
     recordDialog = new RecordDialog(this, esd, NEW);    
     recordDialog->exec();
     if (recordDialog->getExitStatus() != 1) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
+      query->bindValue(":oldOrder", currentRow);
+      query->exec();
+      incidentsModel->select();
+      incidentsModel->submitAll();
       setData(currentRow, recordDialog, NEW);
       delete recordDialog;
-      for (int i = currentRow + 1; i != incidentsModel->rowCount(); i++) {
-	incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
-	incidentsModel->submitAll();
-      }
      } else {
       delete recordDialog;
     }
@@ -163,12 +165,14 @@ void DataWidget::insertRecordAfter() {
     recordDialog = new RecordDialog(this, esd, NEW);
     recordDialog->exec();
     if (recordDialog->getExitStatus() != 1) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
+      query->bindValue(":oldOrder", nextRow);
+      query->exec();
+      incidentsModel->select();
+      incidentsModel->submitAll();
       setData(nextRow, recordDialog, NEW);
       delete recordDialog;
-      for (int i = nextRow; i != incidentsModel->rowCount(); i++) {
-	incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
-	incidentsModel->submitAll();
-      }
     } else {
       delete recordDialog;
     }
@@ -224,14 +228,16 @@ void DataWidget::duplicateRow() {
     recordDialog->initialize();
     recordDialog->exec();
     if (recordDialog->getExitStatus() != 1) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
+      query->bindValue(":oldOrder", currentRow + 1);
+      query->exec();
+      incidentsModel->select();
+      incidentsModel->submitAll();
       setData(currentRow + 1, recordDialog, NEW);
       delete recordDialog;
     } else {
       delete recordDialog;
-    }
-    for (int i = currentRow + 1; i != incidentsModel->rowCount(); i++) {
-      incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
-      incidentsModel->submitAll();
     }
   }
 }
@@ -249,10 +255,12 @@ void DataWidget::removeRow() {
       incidentsModel->removeRow(currentRow);
       incidentsModel->submitAll();
       incidentsModel->select();
-      for (int i = currentRow; i != incidentsModel->rowCount(); i++) {
-	incidentsModel->setData(incidentsModel->index(i, 1), i + 1);
-	incidentsModel->submitAll();
-      }
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
+      query->bindValue(":oldOrder", currentRow);
+      query->exec();
+      incidentsModel->select();
+      incidentsModel->submitAll();
     }
   }
 }
