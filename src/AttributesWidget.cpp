@@ -360,6 +360,75 @@ void AttributesWidget::nextMarked() {
   }
 }
 
+
+void AttributesWidget::setDescriptionFilter(const QString &text) {
+  descriptionFilter = text;
+}
+
+void AttributesWidget::previousDescription() {
+  setComment();
+  if (descriptionFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + descriptionFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE description LIKE :text "
+		   "AND ch_order < :order "
+		   "ORDER BY ch_order desc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::nextDescription() {
+  setComment();
+  if (descriptionFilter != "") {
+    incidentsModel->select();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    int order = 0;
+    query->first();
+    order = query->value(0).toInt();
+
+    QString searchText = "%" + descriptionFilter + "%";
+    query->prepare("SELECT ch_order FROM incidents "
+		   "WHERE description LIKE :text "
+		   "AND ch_order > :order "
+		   "ORDER BY ch_order asc");
+    query->bindValue(":text", searchText);
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    while(incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
+      query->prepare("UPDATE save_data "
+		     "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
 void AttributesWidget::setRawFilter(const QString &text) {
   rawFilter = text;
 }
@@ -477,74 +546,6 @@ void AttributesWidget::nextComment() {
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE comment LIKE :text "
-		   "AND ch_order > :order "
-		   "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0)) {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
-      query->bindValue(":new", order);
-      query->exec();
-      retrieveData();
-    }
-  }
-}
-
-void AttributesWidget::setDescriptionFilter(const QString &text) {
-  descriptionFilter = text;
-}
-
-void AttributesWidget::previousDescription() {
-  setComment();
-  if (descriptionFilter != "") {
-    incidentsModel->select();
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT attributes_record FROM save_data");
-    int order = 0;
-    query->first();
-    order = query->value(0).toInt();
-
-    QString searchText = "%" + descriptionFilter + "%";
-    query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
-		   "AND ch_order < :order "
-		   "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0)) {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
-      query->bindValue(":new", order);
-      query->exec();
-      retrieveData();
-    }
-  }
-}
-
-void AttributesWidget::nextDescription() {
-  setComment();
-  if (descriptionFilter != "") {
-    incidentsModel->select();
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT attributes_record FROM save_data");
-    int order = 0;
-    query->first();
-    order = query->value(0).toInt();
-
-    QString searchText = "%" + descriptionFilter + "%";
-    query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
 		   "AND ch_order > :order "
 		   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);

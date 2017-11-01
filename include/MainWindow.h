@@ -13,6 +13,7 @@
 #include "EventSequenceDatabase.h"
 #include "DataWidget.h"
 #include "AttributesWidget.h"
+#include "RelationshipsWidget.h"
 #include "ProgressBar.h"
 
 class MainWindow : public QMainWindow {
@@ -29,7 +30,8 @@ private slots:
 
   void switchToDataView();
   void switchToAttributeView();
-
+  void switchToRelationshipView();
+  
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
   
@@ -44,18 +46,14 @@ private:
 
   QPointer<QAction> dataViewAct;
   QPointer<QAction> attributeViewAct;
+  QPointer<QAction> relationshipViewAct;
 
   QPointer<EventSequenceDatabase> esd;
 
-  QPointer<QPushButton> dataViewButton;
-  QPointer<QPushButton> linkagesViewButton;
-  QPointer<QPushButton> attributesViewButton;
-  QPointer<QPushButton> relationsViewButton;
-  
   QStackedWidget *stacked;
   QWidget *dataWidget;
   QWidget *attributesWidget;
-  
+  QWidget *relationshipsWidget;
 };
 
 #endif

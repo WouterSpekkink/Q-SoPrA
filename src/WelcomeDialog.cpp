@@ -66,7 +66,10 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE entity_relationships "
 		  "(id integer PRIMARY KEY, "
 		  "name text, "
-		  "comment text)");
+		  "comment text, "
+		  "type text, "
+		  "directedness text, "
+		  "type_description text)");
       query->exec("CREATE TABLE relationships_to_incidents "
 		  "(id integer, "
 		  "relationship text, "
@@ -74,13 +77,15 @@ void WelcomeDialog::newDatabase() {
 		  "source_text text)");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
-		  "linkages_record integer, "
+		  "linkages_source_record integer, "
+		  "linkages_target_record integer, "
 		  "relationships_record integer)");
       query->exec("INSERT INTO save_data "
 		  "(attributes_record, "
-		  "linkages_record, "
+		  "linkages_source_record, "
+		  "linkages_target_record, "
 		  "relationships_record) "
-		  "VALUES (1, 1, 1)");
+		  "VALUES (1, 1, 2, 1)");
     }
     exitStatus = 0;
   } else {

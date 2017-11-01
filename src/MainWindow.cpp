@@ -12,8 +12,10 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked = new QStackedWidget;
   dataWidget = new DataWidget(this, esd);
   attributesWidget = new AttributesWidget(this, esd);
+  relationshipsWidget = new RelationshipsWidget(this, esd);
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);
+  stacked->addWidget(relationshipsWidget);
 
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget; 
@@ -55,6 +57,10 @@ void MainWindow::createActions() {
   attributeViewAct = new QAction(tr("&Attribute view"), this);
   dataViewAct->setStatusTip("Switch to attribute view");
   connect(attributeViewAct, SIGNAL(triggered()), this, SLOT(switchToAttributeView()));
+
+  relationshipViewAct = new QAction(tr("&Relationship view"), this);
+  relationshipViewAct->setStatusTip("Switch to relationship view");
+  connect(relationshipViewAct, SIGNAL(triggered()), this, SLOT(switchToRelationshipView()));
 }
 
 void MainWindow::createMenus() {
@@ -67,6 +73,7 @@ void MainWindow::createMenus() {
   viewMenu = menuBar->addMenu("View");
   viewMenu->addAction(dataViewAct);
   viewMenu->addAction(attributeViewAct);
+  viewMenu->addAction(relationshipViewAct);
 }
 
 void MainWindow::importFromCsv() {
@@ -227,8 +234,13 @@ void MainWindow::switchToDataView() {
 }
 
 void MainWindow::switchToAttributeView() {
-  stacked->setCurrentWidget(attributesWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->retrieveData();
+  stacked->setCurrentWidget(attributesWidget);
 }
 
+void MainWindow::switchToRelationshipView() {
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->retrieveData();
+  stacked->setCurrentWidget(relationshipsWidget);
+}
