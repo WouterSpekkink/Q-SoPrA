@@ -629,12 +629,12 @@ void AttributesWidget::editAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       QString newName = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      QStandardItem *attribute = new QStandardItem(name);    
-      attribute->setToolTip(description);
-      QStandardItem *father = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
-      father->setChild(father->rowCount(), attribute);
-      attribute->setToolTip(description);
-      attribute->setEditable(false);
+      //    QStandardItem *attribute = new QStandardItem(name);    
+      //      attribute->setToolTip(description);
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+      currentAttribute->setData(newName);
+      currentAttribute->setData(newName, Qt::DisplayRole);      
+      currentAttribute->setToolTip(description);
       query->prepare("UPDATE incident_attributes SET name = :newname, description = :newdescription WHERE name = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":newdescription", description);
@@ -858,6 +858,10 @@ void AttributesWidget::removeUnusedAttributes() {
     }
   }
   this->setCursor(Qt::WaitCursor);
+  attributesTreeView->setSortingEnabled(false);
+  setTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
   this->setCursor(Qt::ArrowCursor);
 }
