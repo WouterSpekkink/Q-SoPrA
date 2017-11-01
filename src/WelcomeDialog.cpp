@@ -56,13 +56,22 @@ void WelcomeDialog::newDatabase() {
 		  "(id integer PRIMARY KEY, "
 		  "name varchar text, "
 		  "description text, "
-		  "father varchar(20))");
-      query->exec("CREATE TABLE attributes_to_incidents"
+		  "father text)");
+      query->exec("CREATE TABLE attributes_to_incidents "
 		  "(id integer PRIMARY KEY, "
 		  "attribute text, "
 		  "incident integer, "
-		  "value varchar(20), "
+		  "value text, "
 		  "source_text)");
+      query->exec("CREATE TABLE entity_relationships "
+		  "(id integer PRIMARY KEY, "
+		  "name text, "
+		  "comment text)");
+      query->exec("CREATE TABLE relationships_to_incidents "
+		  "(id integer, "
+		  "relationship text, "
+		  "incident integer, "
+		  "source_text text)");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
 		  "linkages_record integer, "

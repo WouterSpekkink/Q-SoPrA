@@ -252,10 +252,23 @@ void DataWidget::removeRow() {
     warningBox->setInformativeText("Removing an incident cannot be undone. Are you sure you want to remove this incident?");
     if (warningBox->exec() == QMessageBox::Yes) {
       int currentRow = tableView->selectionModel()->currentIndex().row();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query->bindValue(":order", currentRow + 1);
+      query->exec();
+      query->first();
+      int id = 0;
+      id = query->value(0).toInt();
+      qDebug() << id;
       incidentsModel->removeRow(currentRow);
       incidentsModel->submitAll();
       incidentsModel->select();
-      QSqlQuery *query = new QSqlQuery;
+      query->prepare("DELETE FROM attributes_to_incidents WHERE incident = :inc");
+      query->bindValue(":inc", id);
+      query->exec();
+      query->prepare("DELETE FROM relationships_to_incidents WHERE incident = :inc");
+      query->bindValue(":inc", id);
+      query->exec();
       query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentRow);
       query->exec();
