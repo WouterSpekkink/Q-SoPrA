@@ -42,6 +42,7 @@ private slots:
   void previousComment();
   void nextComment();
   void newType();
+  void editType();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
@@ -94,6 +95,7 @@ private:
   QPointer<QPushButton> commentPreviousButton;
   QPointer<QPushButton> commentNextButton;
   QPointer<QPushButton> newTypeButton;
+  QPointer<QPushButton> editTypeButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
 

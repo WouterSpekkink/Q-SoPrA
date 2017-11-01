@@ -1,4 +1,4 @@
- #include "../include/AttributesWidget.h"
+#include "../include/AttributesWidget.h"
 
 AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
@@ -636,8 +636,6 @@ void AttributesWidget::editAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       QString newName = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      //    QStandardItem *attribute = new QStandardItem(name);    
-      //      attribute->setToolTip(description);
       QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);      

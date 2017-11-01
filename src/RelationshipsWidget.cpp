@@ -77,6 +77,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   commentPreviousButton = new QPushButton("Previous");
   commentNextButton = new QPushButton("Next");
   newTypeButton = new QPushButton("Add relationship type");
+  editTypeButton = new QPushButton("Edit relationship type");
   expandTreeButton = new QPushButton("Expand");
   collapseTreeButton = new QPushButton("Collapse");
 
@@ -97,6 +98,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
+  connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
   //connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
   //connect(relationshipsTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideRelationshipsAction()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
@@ -172,6 +174,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rightLayout->addWidget(relationshipsTreeView);
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(newTypeButton);
+  rightButtonTopLayout->addWidget(editTypeButton);
   rightButtonTopLayout->addWidget(expandTreeButton);
   rightButtonTopLayout->addWidget(collapseTreeButton);
   //QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
@@ -283,6 +286,54 @@ void RelationshipsWidget::newType() {
   delete typeDialog;
   relationshipsTree->sort(0, Qt::AscendingOrder);
   relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void RelationshipsWidget::editType() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(relationshipsTreeView->currentIndex());
+    QString currentName = relationshipsTreeView->currentIndex().data().toString();
+    // Check if this is a type, and not a relationship
+    if (!currentItem->parent()) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT directedness, description FROM relationship_types WHERE name = :name");
+      query->bindValue(":name", currentName);
+      query->exec();
+      query->first();
+      QString directedness = query->value(0).toString();
+      QString description = query->value(1).toString();
+      typeDialog = new RelationshipTypeDialog(this);
+      typeDialog->submitName(currentName);
+      typeDialog->submitDescription(description);
+      typeDialog->submitDirectedness(directedness);
+      typeDialog->exec();
+      if (typeDialog->getExitStatus() == 0) {
+	QString newName = typeDialog->getName();
+	description = typeDialog->getDescription();
+	directedness = typeDialog->getDirectedness();
+	QStandardItem *currentType = relationshipsTree->itemFromIndex(relationshipsTreeView->currentIndex());
+	currentType->setData(newName);
+	currentType->setData(newName, Qt::DisplayRole);      
+	currentType->setToolTip(description);
+	query->prepare("UPDATE relationship_types SET name = :newname, "
+		       "directedness = :newdirectedness, description = :newdescription "
+		       "WHERE name = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":newdirectedness", directedness);
+	query->bindValue(":newdescription", description);
+	query->bindValue(":oldname", currentName);
+	query->exec();
+	query->prepare("UPDATE entity_relationships SET type = :newtype WHERE type = :oldtype");
+	query->bindValue(":newtype", newName);
+	query->bindValue(":oldtype", currentName);
+	query->exec();
+	this->setCursor(Qt::WaitCursor);
+	retrieveData();
+	this->setCursor(Qt::ArrowCursor);
+      }
+    }
+    relationshipsTree->sort(0, Qt::AscendingOrder);
+    relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+  }
 }
 
 void RelationshipsWidget::setTree() {
