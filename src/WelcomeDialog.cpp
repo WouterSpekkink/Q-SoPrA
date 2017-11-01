@@ -67,11 +67,14 @@ void WelcomeDialog::newDatabase() {
 		  "(id integer PRIMARY KEY, "
 		  "name text, "
 		  "comment text, "
-		  "type text, "
-		  "directedness text, "
-		  "type_description text)");
+		  "type text)");
+      query->exec("CREATE TABLE relationship_types "
+		  "(id integer PRIMARY KEY, "
+		  "name text, "
+		  "directedness, "
+		  "description)");
       query->exec("CREATE TABLE relationships_to_incidents "
-		  "(id integer, "
+		  "(id integer PRIMARY KEY, "
 		  "relationship text, "
 		  "incident integer, "
 		  "source_text text)");

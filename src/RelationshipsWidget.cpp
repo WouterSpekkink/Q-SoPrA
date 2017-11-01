@@ -12,12 +12,16 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   incidentsModel->setTable("incidents");
   incidentsModel->select();
 
+  typeModel = new QSqlTableModel(this);
+  typeModel->setTable("relationship_types");
+  typeModel->select();
+ 
   relationshipsModel = new QSqlTableModel(this);
-  relationshipsModel->setTable("incident_attributes");
+  relationshipsModel->setTable("entity_relationships");
   relationshipsModel->select();
 
   assignedModel = new QSqlTableModel(this);
-  assignedModel->setTable("attributes_to_incidents");
+  assignedModel->setTable("relationships_to_incidents");
   assignedModel->select();
 
   relationshipsTreeView = new DeselectableTreeView(this);
@@ -72,7 +76,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rawNextButton = new QPushButton("Next");
   commentPreviousButton = new QPushButton("Previous");
   commentNextButton = new QPushButton("Next");
-
+  newTypeButton = new QPushButton("Add relationship type");
   expandTreeButton = new QPushButton("Expand");
   collapseTreeButton = new QPushButton("Collapse");
 
@@ -92,6 +96,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(commentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentFilter(const QString &)));
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
+  connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   //connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
   //connect(relationshipsTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideRelationshipsAction()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
@@ -166,6 +171,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rightLayout->addWidget(relationshipsLabel);
   rightLayout->addWidget(relationshipsTreeView);
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
+  rightButtonTopLayout->addWidget(newTypeButton);
   rightButtonTopLayout->addWidget(expandTreeButton);
   rightButtonTopLayout->addWidget(collapseTreeButton);
   //QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
@@ -254,10 +260,35 @@ void RelationshipsWidget::retrieveData() {
   rawField->setTextCursor(cursor);
 }
 
+void RelationshipsWidget::newType() {
+  typeDialog = new RelationshipTypeDialog(this);
+  typeDialog->exec();
+  if (typeDialog->getExitStatus() == 0) {
+    QString name = typeDialog->getName();
+    QString description = typeDialog->getDescription();
+    QString directedness = typeDialog->getDirectedness();
+    QStandardItem *type = new QStandardItem(name);
+    QString hint =  "<FONT SIZE = 3>" + directedness + " - " + description + "<FONT SIZE = 3>";
+    type->setToolTip(hint);
+    type->setEditable(false);
+    relationshipsTree->appendRow(type);
+    typeModel->select();
+    int newIndex = typeModel->rowCount();
+    typeModel->insertRow(newIndex);
+    typeModel->setData(typeModel->index(newIndex, 1), name);
+    typeModel->setData(typeModel->index(newIndex, 2), directedness);
+    typeModel->setData(typeModel->index(newIndex, 3), description);
+    typeModel->submitAll();
+  }
+  delete typeDialog;
+  relationshipsTree->sort(0, Qt::AscendingOrder);
+  relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
 void RelationshipsWidget::setTree() {
   relationshipsTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT DISTINCT type, directedness, type_description FROM entity_relationships ORDER BY type asc");
+  query->exec("SELECT name, directedness, description FROM relationship_types");
   while (query->next()) {
     QString currentType = query->value(0).toString();
     QString currentDirection = query->value(1).toString();

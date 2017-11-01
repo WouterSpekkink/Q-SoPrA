@@ -13,6 +13,7 @@
 #include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
+#include "RelationshipTypeDialog.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
@@ -40,6 +41,7 @@ private slots:
   void setCommentFilter(const QString &text);
   void previousComment();
   void nextComment();
+  void newType();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
@@ -50,10 +52,12 @@ private slots:
 private:
   QPointer<EventSequenceDatabase> esd;
   QPointer<QSqlTableModel> incidentsModel;
+  QPointer<QSqlTableModel> typeModel;
   QPointer<QSqlTableModel> relationshipsModel;
   QPointer<QSqlTableModel> assignedModel;
   QPointer<QStandardItemModel> relationshipsTree;
   QPointer<DeselectableTreeView> relationshipsTreeView;
+  QPointer<RelationshipTypeDialog> typeDialog;
 
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;
@@ -89,6 +93,7 @@ private:
   QPointer<QPushButton> rawNextButton;
   QPointer<QPushButton> commentPreviousButton;
   QPointer<QPushButton> commentNextButton;
+  QPointer<QPushButton> newTypeButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
 

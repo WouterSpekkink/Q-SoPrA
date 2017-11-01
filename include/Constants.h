@@ -3,6 +3,8 @@
 
 #include <QString>
 extern QString NEW; 
-extern QString OLD; 
+extern QString OLD;
+extern QString DIRECTED;
+extern QString UNDIRECTED;
 
 #endif
