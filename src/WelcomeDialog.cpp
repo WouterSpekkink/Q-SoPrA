@@ -46,7 +46,7 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE incidents "
 		  "(id integer PRIMARY KEY, "
 		  "ch_order integer, "
-		  "timestamp varchar(20), "
+		  "timestamp text, "
 		  "description text, "
 		  "raw text, "
 		  "comment text, "
@@ -54,12 +54,12 @@ void WelcomeDialog::newDatabase() {
 		  "mark integer)");
       query->exec("CREATE TABLE incident_attributes "
 		  "(id integer PRIMARY KEY, "
-		  "name varchar(20) UNIQUE, "
+		  "name varchar text, "
 		  "description text, "
 		  "father varchar(20))");
       query->exec("CREATE TABLE attributes_to_incidents"
 		  "(id integer PRIMARY KEY, "
-		  "attribute integer, "
+		  "attribute text, "
 		  "incident integer, "
 		  "value varchar(20), "
 		  "source_text)");
