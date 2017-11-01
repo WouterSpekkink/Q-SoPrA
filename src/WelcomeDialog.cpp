@@ -54,7 +54,6 @@ void WelcomeDialog::newDatabase() {
 		  "mark integer)");
       query->exec("CREATE TABLE incident_attributes "
 		  "(id integer PRIMARY KEY, "
-		  "sort_order integer, "
 		  "name varchar(20) UNIQUE, "
 		  "description text, "
 		  "father varchar(20))");

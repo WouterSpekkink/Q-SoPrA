@@ -36,6 +36,8 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
   query->bindValue(":child", childName);
   query->exec();
   QTreeView::dropEvent(event);
+  this->model()->sort(0, Qt::AscendingOrder);
+  this->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void DeselectableTreeView::resetSelection() {

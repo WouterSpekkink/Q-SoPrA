@@ -4,6 +4,7 @@ AttributeDialog::AttributeDialog(QWidget *parent, EventSequenceDatabase *submitt
   esd = submittedEsd;
   name = "";
   description = "";
+  oldName = "";
   exitStatus = 1;
   
   nameLabel = new QLabel("Name:");
@@ -53,6 +54,7 @@ QString AttributeDialog::getName() {
 
 void AttributeDialog::submitName(const QString &submittedName) {
   name = submittedName;
+  oldName = submittedName;
   nameField->setText(submittedName);
 }
 
@@ -99,7 +101,7 @@ void AttributeDialog::saveAndClose() {
   query->exec();
   query->first();
   empty = query->isNull(0);
-  if (!empty) {
+  if (!empty && name != oldName) {
    QPointer <QMessageBox> warningBox = new QMessageBox;
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);

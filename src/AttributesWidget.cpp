@@ -29,6 +29,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   attributesTreeView->setExpandsOnDoubleClick(false);
   setTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 
   indexLabel = new QLabel("<b>Incident ( / )</b>");
   markLabel = new QLabel();
@@ -576,9 +578,9 @@ void AttributesWidget::newAttribute() {
       attributesModel->select();
       int newIndex = attributesModel->rowCount();
       attributesModel->insertRow(newIndex);
-      attributesModel->setData(attributesModel->index(newIndex, 2), name);
-      attributesModel->setData(attributesModel->index(newIndex, 3), description);
-      attributesModel->setData(attributesModel->index(newIndex, 4), currentParent);
+      attributesModel->setData(attributesModel->index(newIndex, 1), name);
+      attributesModel->setData(attributesModel->index(newIndex, 2), description);
+      attributesModel->setData(attributesModel->index(newIndex, 3), currentParent);
       attributesModel->submitAll();
     }
     delete attributeDialog;
@@ -596,9 +598,9 @@ void AttributesWidget::newAttribute() {
       
       attributesModel->insertRow(newIndex);
       
-      attributesModel->setData(attributesModel->index(newIndex, 2), name);
-      attributesModel->setData(attributesModel->index(newIndex, 3), description);
-      attributesModel->setData(attributesModel->index(newIndex, 4), "NONE");
+      attributesModel->setData(attributesModel->index(newIndex, 1), name);
+      attributesModel->setData(attributesModel->index(newIndex, 2), description);
+      attributesModel->setData(attributesModel->index(newIndex, 3), "NONE");
       attributesModel->submitAll();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
@@ -607,6 +609,8 @@ void AttributesWidget::newAttribute() {
     }
     delete attributeDialog;
   }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void AttributesWidget::editAttribute() {
@@ -645,13 +649,13 @@ void AttributesWidget::editAttribute() {
       query->bindValue(":oldname", name);
       query->exec();
       this->setCursor(Qt::WaitCursor);
-      treeOrder(attributesTree);
-      setTree();
       retrieveData();
       this->setCursor(Qt::ArrowCursor);
     }
     delete attributeDialog;
-  } 
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void AttributesWidget::decideAttributeAction() {
@@ -717,7 +721,7 @@ void AttributesWidget::highlightText() {
       rawField->setTextCursor(cursor);
       rawField->find(currentSelected);      
     }
-  }else {
+  } else {
     QTextCharFormat format;
     format.setFontWeight(QFont::Normal);
     format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -854,8 +858,6 @@ void AttributesWidget::removeUnusedAttributes() {
     }
   }
   this->setCursor(Qt::WaitCursor);
-  treeOrder(attributesTree);
-  setTree();
   retrieveData();
   this->setCursor(Qt::ArrowCursor);
 }
@@ -945,7 +947,9 @@ void AttributesWidget::retrieveData() {
   sourceField->setText(source);
   descriptionField->setText(description);
   rawField->setText(raw);
+  commentField->blockSignals(true);
   commentField->setText(comment);
+  commentField->blockSignals(false);
   if (mark == 0) {
     markLabel->setText("");
   } else {
@@ -964,12 +968,14 @@ void AttributesWidget::retrieveData() {
   }
   attributesTreeView->setModel(attributesTree);
   attributesTreeView->resetSelection();
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void AttributesWidget::setTree() {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE' ORDER BY sort_order asc");
+  query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
   while (query->next()) {
     QString name = query->value(0).toString();
     QString description = query->value(1).toString();
@@ -979,13 +985,12 @@ void AttributesWidget::setTree() {
     father->setEditable(false);
     buildHierarchy(father, name);
   }
-  attributesTreeView->setModel(attributesTree);
   attributesTreeView->expandAll();
 }
 
 void AttributesWidget::buildHierarchy(QStandardItem *top, QString name) {
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father ORDER BY sort_order asc");
+  query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
   query->bindValue(":father", name);
   query->exec();
   int children = 0;
@@ -1031,23 +1036,7 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
   }
 }
 
-void AttributesWidget::treeOrder(QAbstractItemModel *model, QModelIndex parent) {
-  for(int i = 0; i != model->rowCount(parent); i++) {
-    QModelIndex index = model->index(i, 0, parent);
-    QString currentName = model->data(index).toString();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("UPDATE incident_attributes SET sort_order = :so WHERE name = :current");
-    query->bindValue(":so", i);
-    query->bindValue(":current", currentName);
-    query->exec();
-    if (model->hasChildren(index)) {
-      treeOrder(model, index);
-    }
-  }
-}
-
 void AttributesWidget::finalBusiness() {
   setComment();
-  treeOrder(attributesTree);
 }
 

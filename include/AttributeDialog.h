@@ -44,6 +44,7 @@ private:
   QPointer<QTextEdit> descriptionField;
 
   QString name;
+  QString oldName;
   QString description;
 
   int exitStatus;

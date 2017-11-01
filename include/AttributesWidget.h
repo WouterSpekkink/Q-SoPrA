@@ -53,7 +53,6 @@ private slots:
   void buildHierarchy(QStandardItem *top, QString name);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
-  void treeOrder(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();
   void setValue();
   void getValue();
