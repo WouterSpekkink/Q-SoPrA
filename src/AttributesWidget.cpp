@@ -28,6 +28,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   attributesTreeView->setExpandsOnDoubleClick(false);
   treeFilter = new AttributeTreeFilter(this);
+  treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -573,7 +574,7 @@ void AttributesWidget::nextComment() {
 }
 
 void AttributesWidget::changeFilter(const QString &text) {
-  QRegExp regExp(text);
+  QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
 

@@ -32,6 +32,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   relationshipsTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   relationshipsTreeView->setExpandsOnDoubleClick(false);
   treeFilter = new RelationshipTreeFilter(this);
+  treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
   setTree();
   relationshipsTreeView->setSortingEnabled(true);
   relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -271,7 +272,7 @@ void RelationshipsWidget::retrieveData() {
 }
 
 void RelationshipsWidget::changeFilter(const QString &text) {
-  QRegExp regExp(text);
+  QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
 
@@ -302,7 +303,7 @@ void RelationshipsWidget::newType() {
 
 void RelationshipsWidget::editType() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(relationshipsTreeView->currentIndex());
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     QString currentName = relationshipsTreeView->currentIndex().data().toString();
     // Check if this is a type, and not a relationship
     if (!currentItem->parent()) {
@@ -322,7 +323,7 @@ void RelationshipsWidget::editType() {
 	QString newName = typeDialog->getName();
 	description = typeDialog->getDescription();
 	directedness = typeDialog->getDirectedness();
-	QStandardItem *currentType = relationshipsTree->itemFromIndex(relationshipsTreeView->currentIndex());
+	QStandardItem *currentType = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	currentType->setData(newName);
 	currentType->setData(newName, Qt::DisplayRole);      
 	currentType->setToolTip(description);
