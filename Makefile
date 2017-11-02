@@ -56,11 +56,13 @@ SOURCES       = main.cpp \
 		src/Constants.cpp \
 		src/DataWidget.cpp \
 		src/DeselectableTreeView.cpp \
+		src/EntityTableModel.cpp \
 		src/EventSequenceDatabase.cpp \
 		src/EventTableModel.cpp \
 		src/MainWindow.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
+		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
 		src/RelationshipTreeFilter.cpp \
 		src/RelationshipTypeDialog.cpp \
@@ -70,11 +72,13 @@ SOURCES       = main.cpp \
 		moc_AttributeTreeFilter.cpp \
 		moc_DataWidget.cpp \
 		moc_DeselectableTreeView.cpp \
+		moc_EntityTableModel.cpp \
 		moc_EventSequenceDatabase.cpp \
 		moc_EventTableModel.cpp \
 		moc_MainWindow.cpp \
 		moc_ProgressBar.cpp \
 		moc_RecordDialog.cpp \
+		moc_RelationshipsDialog.cpp \
 		moc_RelationshipsWidget.cpp \
 		moc_RelationshipTreeFilter.cpp \
 		moc_RelationshipTypeDialog.cpp \
@@ -87,11 +91,13 @@ OBJECTS       = main.o \
 		Constants.o \
 		DataWidget.o \
 		DeselectableTreeView.o \
+		EntityTableModel.o \
 		EventSequenceDatabase.o \
 		EventTableModel.o \
 		MainWindow.o \
 		ProgressBar.o \
 		RecordDialog.o \
+		RelationshipsDialog.o \
 		RelationshipsWidget.o \
 		RelationshipTreeFilter.o \
 		RelationshipTypeDialog.o \
@@ -102,11 +108,13 @@ OBJECTS       = main.o \
 		moc_AttributeTreeFilter.o \
 		moc_DataWidget.o \
 		moc_DeselectableTreeView.o \
+		moc_EntityTableModel.o \
 		moc_EventSequenceDatabase.o \
 		moc_EventTableModel.o \
 		moc_MainWindow.o \
 		moc_ProgressBar.o \
 		moc_RecordDialog.o \
+		moc_RelationshipsDialog.o \
 		moc_RelationshipsWidget.o \
 		moc_RelationshipTreeFilter.o \
 		moc_RelationshipTypeDialog.o \
@@ -175,11 +183,13 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/Constants.h \
 		include/DataWidget.h \
 		include/DeselectableTreeView.h \
+		include/EntityTableModel.h \
 		include/EventSequenceDatabase.h \
 		include/EventTableModel.h \
 		include/MainWindow.h \
 		include/ProgressBar.h \
 		include/RecordDialog.h \
+		include/RelationshipsDialog.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTreeFilter.h \
 		include/RelationshipTypeDialog.h \
@@ -191,11 +201,13 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/Constants.cpp \
 		src/DataWidget.cpp \
 		src/DeselectableTreeView.cpp \
+		src/EntityTableModel.cpp \
 		src/EventSequenceDatabase.cpp \
 		src/EventTableModel.cpp \
 		src/MainWindow.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
+		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
 		src/RelationshipTreeFilter.cpp \
 		src/RelationshipTypeDialog.cpp \
@@ -369,8 +381,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/WelcomeDialog.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/EntityTableModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/WelcomeDialog.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/EntityTableModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/WelcomeDialog.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -393,9 +405,9 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_WelcomeDialog.cpp
+compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EntityTableModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_WelcomeDialog.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_WelcomeDialog.cpp
+	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_EntityTableModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_MainWindow.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_WelcomeDialog.cpp
 moc_AttributeDialog.cpp: include/EventSequenceDatabase.h \
 		include/AttributeDialog.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeDialog.h -o moc_AttributeDialog.cpp
@@ -424,6 +436,9 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 moc_DeselectableTreeView.cpp: include/DeselectableTreeView.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DeselectableTreeView.h -o moc_DeselectableTreeView.cpp
 
+moc_EntityTableModel.cpp: include/EntityTableModel.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EntityTableModel.h -o moc_EntityTableModel.cpp
+
 moc_EventSequenceDatabase.cpp: include/EventSequenceDatabase.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventSequenceDatabase.h -o moc_EventSequenceDatabase.cpp
 
@@ -443,6 +458,8 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		include/RelationshipTreeFilter.h \
+		include/RelationshipsDialog.h \
+		include/EntityTableModel.h \
 		include/ProgressBar.h \
 		include/MainWindow.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
@@ -455,12 +472,19 @@ moc_RecordDialog.cpp: include/EventSequenceDatabase.h \
 		include/RecordDialog.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RecordDialog.h -o moc_RecordDialog.cpp
 
+moc_RelationshipsDialog.cpp: include/Constants.h \
+		include/EntityTableModel.h \
+		include/RelationshipsDialog.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationshipsDialog.h -o moc_RelationshipsDialog.cpp
+
 moc_RelationshipsWidget.cpp: include/EventSequenceDatabase.h \
 		include/AttributeDialog.h \
 		include/DeselectableTreeView.h \
 		include/RelationshipTypeDialog.h \
 		include/Constants.h \
 		include/RelationshipTreeFilter.h \
+		include/RelationshipsDialog.h \
+		include/EntityTableModel.h \
 		include/RelationshipsWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterspekkink/Programming/ED/ED_Linux -I/home/wouterspekkink/Programming/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationshipsWidget.h -o moc_RelationshipsWidget.cpp
 
@@ -504,6 +528,8 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		include/RelationshipTreeFilter.h \
+		include/RelationshipsDialog.h \
+		include/EntityTableModel.h \
 		include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
@@ -538,6 +564,9 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 DeselectableTreeView.o: src/DeselectableTreeView.cpp include/DeselectableTreeView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DeselectableTreeView.o src/DeselectableTreeView.cpp
 
+EntityTableModel.o: src/EntityTableModel.cpp include/EntityTableModel.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EntityTableModel.o src/EntityTableModel.cpp
+
 EventSequenceDatabase.o: src/EventSequenceDatabase.cpp include/EventSequenceDatabase.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventSequenceDatabase.o src/EventSequenceDatabase.cpp
 
@@ -558,6 +587,8 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		include/RelationshipTreeFilter.h \
+		include/RelationshipsDialog.h \
+		include/EntityTableModel.h \
 		include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
@@ -569,13 +600,20 @@ RecordDialog.o: src/RecordDialog.cpp include/RecordDialog.h \
 		include/Constants.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RecordDialog.o src/RecordDialog.cpp
 
+RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h \
+		include/Constants.h \
+		include/EntityTableModel.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipsDialog.o src/RelationshipsDialog.cpp
+
 RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h \
 		include/EventSequenceDatabase.h \
 		include/AttributeDialog.h \
 		include/DeselectableTreeView.h \
 		include/RelationshipTypeDialog.h \
 		include/Constants.h \
-		include/RelationshipTreeFilter.h
+		include/RelationshipTreeFilter.h \
+		include/RelationshipsDialog.h \
+		include/EntityTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipsWidget.o src/RelationshipsWidget.cpp
 
 RelationshipTreeFilter.o: src/RelationshipTreeFilter.cpp include/RelationshipTreeFilter.h
@@ -607,6 +645,9 @@ moc_DataWidget.o: moc_DataWidget.cpp
 moc_DeselectableTreeView.o: moc_DeselectableTreeView.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_DeselectableTreeView.o moc_DeselectableTreeView.cpp
 
+moc_EntityTableModel.o: moc_EntityTableModel.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EntityTableModel.o moc_EntityTableModel.cpp
+
 moc_EventSequenceDatabase.o: moc_EventSequenceDatabase.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EventSequenceDatabase.o moc_EventSequenceDatabase.cpp
 
@@ -621,6 +662,9 @@ moc_ProgressBar.o: moc_ProgressBar.cpp
 
 moc_RecordDialog.o: moc_RecordDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RecordDialog.o moc_RecordDialog.cpp
+
+moc_RelationshipsDialog.o: moc_RelationshipsDialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipsDialog.o moc_RelationshipsDialog.cpp
 
 moc_RelationshipsWidget.o: moc_RelationshipsWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipsWidget.o moc_RelationshipsWidget.cpp

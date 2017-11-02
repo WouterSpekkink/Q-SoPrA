@@ -1,11 +1,9 @@
 #include "../include/RelationshipsDialog.h"
 
-RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
+RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   // First we declare the entities of this dialog.
   tailLabel = new QLabel(DIRECTEDTAIL);
   headLabel = new QLabel(DIRECTEDHEAD);
-  currentLeftEntity = "";
-  currentRightEntity = "";
   currentLeftEntityFilter = "";
   currentRightEntityFilter = "";
   selectedSourceLabel = new QLabel(DEFAULT);
@@ -13,28 +11,32 @@ RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
   name = "";
   oldName = "";
   currentLeftEntitySelected = "";
-  typeLabel = "";
+  type = "";
   currentRightEntitySelected = "";
   currentDirectedness = DIRECTED;
+  exitStatus = 1;
   
   sourceLabel = new QLabel(tr("Source filter:"));
+  typeLabel = new QLabel("PLACEHOLDER");
   targetLabel = new QLabel(tr("Target filter:"));
-
-  entitiesTable = new QSqlTableModel;
+  entitiesTable = new EntityTableModel;
+  entitiesTable->setTable("entities");
+  entitiesTable->select();
+  leftEntitiesFilter = new QSortFilterProxyModel;
+  leftEntitiesFilter->setSourceModel(entitiesTable);
+  leftEntitiesFilter->setFilterKeyColumn(1);
+  rightEntitiesFilter = new QSortFilterProxyModel;
+  rightEntitiesFilter->setSourceModel(entitiesTable);
+  rightEntitiesFilter->setFilterKeyColumn(1);
   leftEntitiesView = new QListView;
   rightEntitiesView = new QListView;
-  leftEntitiesFilter = new QSortFilterProxyModel;
-  rightEntitiesFilter = new QSortFilterProxyModel;
-    
-  //sourceListWidget = new QListWidget();
-  //sourceListWidget->setSortingEnabled(true);
-  //targetListWidget = new QListWidget();
-  //targetListWidget->setSortingEnabled(true);
+  leftEntitiesView->setModel(leftEntitiesFilter);
+  leftEntitiesView->setModelColumn(1);
+  rightEntitiesView->setModel(rightEntitiesFilter);
+  rightEntitiesView->setModelColumn(1);
   
   assignLeftEntityButton = new QPushButton("use selected");
-  assignLeftEntityButton->setEnabled(false);
   assignRightEntityButton = new QPushButton("use selected");
-  assignRightEntityButton->setEnabled(false);
   
   leftEntityFilterField = new QLineEdit();
   rightEntityFilterField = new QLineEdit();
@@ -48,12 +50,10 @@ RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
   resetButton = new QPushButton(tr("Reset"));
   saveCloseButton = new QPushButton(tr("Save relationship"));
   
-  // Then we wire the signals.
-
-  connect(sourceListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(setCurrentEntityLeft(QListWidgetItem*)));
-  connect(targetListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(setCurrentEntityRight(QListWidgetItem*)));
-  connect(sourceListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
-  connect(targetListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
+  //connect(leftEntitiesView, SIGNAL(clicked(QModelIndex &)), this, SLOT(setCurrentEntityLeft(QModelIndex &)));
+  //connect(rightEntitiesView, SIGNAL(clicked(QModelIndex &)), this, SLOT(setCurrentEntityRight(QModelIndex &)));
+  //connect(sourceListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
+  //connect(targetListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
   connect(leftEntityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterLeftEntity(const QString &)));
   connect(rightEntityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterRightEntity(const QString &)));
   connect(assignLeftEntityButton, SIGNAL(clicked()), this, SLOT(assignLeftEntity()));
@@ -67,11 +67,7 @@ RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   connect(resetButton, SIGNAL(clicked()), this, SLOT(reset()));
   
-  // Then we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(informativeLabel);
-  informativeLabel->setAlignment(Qt::AlignHCenter);
-
   QPointer<QHBoxLayout> labelLayout = new QHBoxLayout;
   labelLayout->addWidget(sourceLabel);
   labelLayout->addWidget(leftEntityFilterField);
@@ -79,8 +75,8 @@ RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
   labelLayout->addWidget(rightEntityFilterField);
   mainLayout->addLayout(labelLayout);
   QPointer<QHBoxLayout> listsLayout = new QHBoxLayout;
-  listsLayout->addWidget(sourceListWidget);
-  listsLayout->addWidget(targetListWidget);
+  listsLayout->addWidget(leftEntitiesView);
+  listsLayout->addWidget(rightEntitiesView);
   mainLayout->addLayout(listsLayout);
   QPointer<QHBoxLayout> assignLayout = new QHBoxLayout;
   assignLayout->addWidget(assignLeftEntityButton);
@@ -103,7 +99,7 @@ RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
 
-  QPointer<QVBoxLayout`> buttonsLayout = new QVBoxLayout;
+  QPointer<QVBoxLayout> buttonsLayout = new QVBoxLayout;
   buttonsLayout->addWidget(newEntityButton);
   buttonsLayout->addWidget(editEntityButton);
   buttonsLayout->addWidget(editLeftAssignedEntityButton);
@@ -127,43 +123,37 @@ RelationsDialog::RelationsDialog(QWidget *parent) : QDialog(parent) {
   resize(600, 600);
 }
 
-
-void RelationshipsDialog::setCurrentEntityLeft(QListWidgetItem *item) {
-  currentLeftEntity = item->text();
-  lastSelectedEntity = item->text();
-  assignLeftEntityButton->setEnabled(true);
-  assignRightEntityButton->setEnabled(false);
-}
-
-void RelationshipsDialog::setCurrentEntityRight(QListWidgetItem *item) {
-  currentRightEntity = item->text();
-  lastSelectedEntity = item->text();
-  assignLeftEntityButton->setEnabled(false);
-  assignRightEntityButton->setEnabled(true);
-}
-
 void RelationshipsDialog::assignLeftEntity() {
-  if (currentLeftEntity != "") {
-    currentLeftEntitySelected = currentLeftEntity;
-    selectedSourceLabel->setText(currentLeftEntitySelected);
+  if (leftEntitiesView->currentIndex().isValid()) {
+    for (int i = 0; i != entitiesTable->rowCount(); i++) {
+      leftEntitiesView->setRowHidden(i, false);
+      rightEntitiesView->setRowHidden(i, false);
+    }
+    QString selected = leftEntitiesView->currentIndex().data(Qt::DisplayRole).toString();
+    int row = leftEntitiesView->currentIndex().row();
+    leftEntitiesView->setRowHidden(row, true);
+    rightEntitiesView->setRowHidden(row, true);
+    currentLeftEntitySelected = selected;
+    selectedSourceLabel->setText(selected);
   }
-  disableAssign();
 }
 
 void RelationshipsDialog::assignRightEntity() {
-  if (currentRightEntity != "") {
+  /*  if (currentRightEntity != "") {
     currentRightEntitySelected = currentRightEntity;
     selectedTargetLabel->setText(currentRightEntitySelected);
   }
-  disableAssign();
+  disableAssign();*/
 }
 
 void RelationshipsDialog::filterLeftEntity(const QString &text) {
-  // TODO
+  QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::Wildcard);
+  leftEntitiesFilter->setFilterRegExp(regExp);
 }
 
 void RelationshipsDialog::filterRightEntity(const QString &text) {
-  // TODO
+  QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::Wildcard);
+  rightEntitiesFilter->setFilterRegExp(regExp);
 }
 
 void RelationshipsDialog::addEntity() {
@@ -252,14 +242,26 @@ void RelationshipsDialog::removeEntities() {
 
 void RelationshipsDialog::disableAssign() {
   lastSelectedEntity = "";
-  currentRelType = "";
   assignLeftEntityButton->setEnabled(false);
   assignRightEntityButton->setEnabled(false);
-  assignTypeButton->setEnabled(false);
 }
 
-void RelationsDialog::updateTexts() {
-
+void RelationshipsDialog::cancelAndClose() {
+  exitStatus = 1;
+  this->close();
 }
 
+void RelationshipsDialog::saveAndClose() {
+  // to do
 
+  exitStatus = 0;
+  this->close();  
+}
+
+int RelationshipsDialog::getExitStatus() {
+  return exitStatus;
+}
+
+void RelationshipsDialog::reset() {
+  // to do 
+}

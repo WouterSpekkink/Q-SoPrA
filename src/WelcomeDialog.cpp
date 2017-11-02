@@ -78,6 +78,10 @@ void WelcomeDialog::newDatabase() {
 		  "relationship text, "
 		  "incident integer, "
 		  "source_text text)");
+      query->exec("CREATE TABLE entities "
+		  "(id integer, "
+		  "name text, "
+		  "description text)");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
 		  "linkages_source_record integer, "

@@ -82,6 +82,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   newTypeButton = new QPushButton("Add relationship type");
   editTypeButton = new QPushButton("Edit relationship type");
   removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
+  newRelationshipButton = new QPushButton("Add relationship");
   expandTreeButton = new QPushButton("Expand");
   collapseTreeButton = new QPushButton("Collapse");
 
@@ -107,6 +108,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
   //connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
   //connect(relationshipsTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideRelationshipsAction()));
+  connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
@@ -185,12 +187,13 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(newTypeButton);
   rightButtonTopLayout->addWidget(editTypeButton);
-  rightButtonTopLayout->addWidget(removeUnusedRelationshipsButton);
   rightButtonTopLayout->addWidget(expandTreeButton);
   rightButtonTopLayout->addWidget(collapseTreeButton);
-  //QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
+  QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
+  rightButtonBottomLayout->addWidget(newRelationshipButton);
+  rightButtonBottomLayout->addWidget(removeUnusedRelationshipsButton);
   rightLayout->addLayout(rightButtonTopLayout);
-  //  rightLayout->addLayout(rightButtonBottomLayout);
+  rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
 
   setLayout(mainLayout);
@@ -349,6 +352,12 @@ void RelationshipsWidget::editType() {
     relationshipsTree->sort(0, Qt::AscendingOrder);
     relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
   }
+}
+
+void RelationshipsWidget::newRelationship() {
+  RelationshipsDialog *relationshipsDialog = new RelationshipsDialog;
+  relationshipsDialog->exec();
+  delete relationshipsDialog;
 }
 
 void RelationshipsWidget::removeUnusedRelationships() {
@@ -774,4 +783,5 @@ void RelationshipsWidget::collapseTree() {
 void RelationshipsWidget::finalBusiness() {
   setComment();
 }
+
 

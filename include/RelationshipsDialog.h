@@ -1,37 +1,38 @@
-#ifndef RelationshipsDialog.h
-#define RelationshipsDialog.h
+#ifndef RELATIONSHIPSDIALOG_H
+#define RELATIONSHIPSDIALOG_H
 
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
+#include <QListView>
+#include <QSortFilterProxyModel>
+#include <QPointer>
+#include "Constants.h"
+#include <QSqlTableModel>
+#include "EntityTableModel.h"
 
-/*
-  TO DO:
-  - I should add QSortFilterProxyModels to filter the listwidgets
-
-  - Probably I should use QListView
-
-*/
-
-class RelationsDialog : public QDialog {
+class RelationshipsDialog : public QDialog {
   Q_OBJECT
 
 public:
   RelationshipsDialog(QWidget *parent = 0);
   ~RelationshipsDialog() {};
 
+  int getExitStatus();
+  
   void submitLeftEntity(QString entity);
   void submitRightEntity(QString entity);
   void submitRelationshipType(QString type);
 			   
 private slots:
-  void setCurrentEntityLeft(QListWidgetItem *item);
-  void setCurrentEntityRight(QListWidgetItem *item);
-
   void filterLeftEntity(const QString &text);
   void filterRightEntity(const QString &text);
   
   void assignLeftEntity();
-  void assignRelType();
   void assignRightEntity();
   void addEntity();
   void editEntity();
@@ -44,7 +45,7 @@ private slots:
   void saveAndClose();
 
 private:
-  QPointer<QSqlTableModel> entitiesTable;
+  QPointer<EntityTableModel> entitiesTable;
   QPointer<QListView> leftEntitiesView;
   QPointer<QListView> rightEntitiesView;
   QPointer<QSortFilterProxyModel> leftEntitiesFilter;
@@ -77,16 +78,16 @@ private:
 
   QString name;
   QString oldName;
-  QString typeLabel;
+  QString type;
 
   QString lastSelectedEntity;
-  QString currentLeftEntity;
-  QString currentRightEntity;
   QString currentLeftEntitySelected;
   QString currentRightEntitySelected;
   QString currentLeftEntityFilter;
   QString currentRightEntityFilter;
   QString currentDirectedness;
+
+  int exitStatus;
 };
 
 #endif

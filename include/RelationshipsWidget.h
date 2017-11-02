@@ -15,6 +15,7 @@
 #include "DeselectableTreeView.h"
 #include "RelationshipTypeDialog.h"
 #include "RelationshipTreeFilter.h"
+#include "RelationshipsDialog.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
@@ -45,6 +46,7 @@ private slots:
   void changeFilter(const QString &text);
   void newType();
   void editType();
+  void newRelationship();
   void removeUnusedRelationships();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
@@ -103,6 +105,7 @@ private:
   QPointer<QPushButton> newTypeButton;
   QPointer<QPushButton> editTypeButton;
   QPointer<QPushButton> removeUnusedRelationshipsButton;
+  QPointer<QPushButton> newRelationshipButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
 
