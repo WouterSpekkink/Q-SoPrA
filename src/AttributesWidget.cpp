@@ -589,7 +589,7 @@ void AttributesWidget::newAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
-      QStandardItem *father = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+      QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->setChild(father->rowCount(), attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
@@ -648,7 +648,7 @@ void AttributesWidget::editAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       QString newName = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);      
       currentAttribute->setToolTip(description);
@@ -677,7 +677,7 @@ void AttributesWidget::editAttribute() {
 
 void AttributesWidget::decideAttributeAction() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
     QFont currentFont = currentAttribute->font();
     if (currentFont.bold()) {
       unassignAttribute();
@@ -689,11 +689,10 @@ void AttributesWidget::decideAttributeAction() {
 
 void AttributesWidget::highlightText() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
     QString currentName = attributesTreeView->currentIndex().data().toString();
-    QFont currentFont = currentAttribute->font();
     QSqlQueryModel *query = new QSqlQueryModel;
-    if (currentFont.bold()) {
+    if (currentAttribute->font().bold()) {
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("attributes_record").toInt();
@@ -795,7 +794,7 @@ void AttributesWidget::assignAttribute() {
 	rawField->setTextCursor(cursor);
 
 	assignedModel->submitAll();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
 	QFont font;
 	font.setBold(true);
 	currentAttribute->setFont(font);
@@ -836,7 +835,7 @@ void AttributesWidget::unassignAttribute() {
 	query2->bindValue(":inc", id);
 	query2->exec();
 	assignedModel->select();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(attributesTreeView->currentIndex());
+	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
 	QFont font;
 	font.setBold(false);
 	currentAttribute->setFont(font);
@@ -933,7 +932,7 @@ void AttributesWidget::getValue() {
       valueButton->setEnabled(false);
     }
     if (!(query2->isNull(1))) {
-      QString value = query2->value(0).toString();
+      QString value = query2->value(1).toString();
       valueField->setText(value);
     } else {
       valueField->setText("");
