@@ -102,6 +102,7 @@ private:
   QPointer<QPushButton> commentNextButton;
   QPointer<QPushButton> newTypeButton;
   QPointer<QPushButton> editTypeButton;
+  QPointer<QPushButton> removeUnusedRelationshipsButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
 

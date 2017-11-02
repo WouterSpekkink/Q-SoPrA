@@ -81,6 +81,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   commentNextButton = new QPushButton("Next");
   newTypeButton = new QPushButton("Add relationship type");
   editTypeButton = new QPushButton("Edit relationship type");
+  removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
   expandTreeButton = new QPushButton("Expand");
   collapseTreeButton = new QPushButton("Collapse");
 
@@ -103,6 +104,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(relationshipFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
+  connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
   //connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
   //connect(relationshipsTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideRelationshipsAction()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
@@ -183,6 +185,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(newTypeButton);
   rightButtonTopLayout->addWidget(editTypeButton);
+  rightButtonTopLayout->addWidget(removeUnusedRelationshipsButton);
   rightButtonTopLayout->addWidget(expandTreeButton);
   rightButtonTopLayout->addWidget(collapseTreeButton);
   //QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
@@ -288,7 +291,6 @@ void RelationshipsWidget::newType() {
     type->setToolTip(hint);
     type->setEditable(false);
     relationshipsTree->appendRow(type);
-    typeModel->select();
     int newIndex = typeModel->rowCount();
     typeModel->insertRow(newIndex);
     typeModel->setData(typeModel->index(newIndex, 1), name);
@@ -352,21 +354,21 @@ void RelationshipsWidget::editType() {
 void RelationshipsWidget::removeUnusedRelationships() {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
-  bool unfinished = true;
-  while (unfinished) {
-    query->exec("SELECT name FROM entity_relationships EXCEPT SELECT relationship "
-		"FROM relationships_to_incidents EXCEPT SELECT type "
-		"FROM entity_relationships");
-    while (query->next()) {
-      QString current = query->value(0).toString();
-      query2->prepare("DELETE FROM entity_relationships WHERE name = :current");
-      query2->bindValue(":current", current);
-      query2->exec();
-    }
-    query->first();
-    if (query->isNull(0)) {
-      unfinished = false;
-    }
+  query->exec("SELECT name FROM entity_relationships EXCEPT SELECT relationship "
+	      "FROM relationships_to_incidents");
+  while (query->next()) {
+    QString current = query->value(0).toString();
+    query2->prepare("DELETE FROM entity_relationships WHERE name = :current");
+    query2->bindValue(":current", current);
+    query2->exec();
+  }
+  query->exec("SELECT name FROM relationship_types EXCEPT SELECT type "
+  	      "FROM entity_relationships");
+  while(query->next()) {
+    QString current = query->value(0).toString();
+    query2->prepare("DELETE FROM relationship_types WHERE name = :current");
+    query2->bindValue(":current", current);
+    query2->exec();
   }
   this->setCursor(Qt::WaitCursor);
   relationshipsTreeView->setSortingEnabled(false);
