@@ -31,6 +31,10 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   relationshipsTreeView->setDropIndicatorShown(true);
   relationshipsTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   relationshipsTreeView->setExpandsOnDoubleClick(false);
+  relationshipsTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
+  relationshipsTreeView->header()->setStretchLastSection(false);
+  relationshipsTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
   treeFilter = new RelationshipTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
   setTree();

@@ -27,6 +27,9 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   attributesTreeView->setDropIndicatorShown(true);
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   attributesTreeView->setExpandsOnDoubleClick(false);
+  attributesTreeView->header()->setStretchLastSection(false);
+  attributesTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  
   treeFilter = new AttributeTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
   setTree();
@@ -580,7 +583,7 @@ void AttributesWidget::changeFilter(const QString &text) {
 
 void AttributesWidget::newAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QString currentParent = attributesTreeView->currentIndex().data().toString();
+    QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";
     QString description = "";
     attributeDialog = new AttributeDialog(this, esd);
@@ -591,12 +594,13 @@ void AttributesWidget::newAttribute() {
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
       QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-      father->setChild(father->rowCount(), attribute);
+      father->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
 
       attributesModel->select();
       int newIndex = attributesModel->rowCount();
+
       attributesModel->insertRow(newIndex);
       attributesModel->setData(attributesModel->index(newIndex, 1), name);
       attributesModel->setData(attributesModel->index(newIndex, 2), description);
@@ -800,6 +804,7 @@ void AttributesWidget::assignAttribute() {
 	font.setBold(true);
 	currentAttribute->setFont(font);
 	valueButton->setEnabled(true);
+	qDebug() << "TRIGGERED";
       }
     }
   }

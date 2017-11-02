@@ -4,16 +4,11 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   // First we declare the entities of this dialog.
   tailLabel = new QLabel(DIRECTEDTAIL);
   headLabel = new QLabel(DIRECTEDHEAD);
-  currentLeftEntityFilter = "";
-  currentRightEntityFilter = "";
   selectedSourceLabel = new QLabel(DEFAULT);
   selectedTargetLabel = new QLabel(DEFAULT);
   name = "";
   oldName = "";
-  currentLeftEntitySelected = "";
   type = "";
-  currentRightEntitySelected = "";
-  currentDirectedness = DIRECTED;
   exitStatus = 1;
   
   sourceLabel = new QLabel(tr("Source filter:"));
@@ -133,17 +128,22 @@ void RelationshipsDialog::assignLeftEntity() {
     int row = leftEntitiesView->currentIndex().row();
     leftEntitiesView->setRowHidden(row, true);
     rightEntitiesView->setRowHidden(row, true);
-    currentLeftEntitySelected = selected;
     selectedSourceLabel->setText(selected);
   }
 }
 
 void RelationshipsDialog::assignRightEntity() {
-  /*  if (currentRightEntity != "") {
-    currentRightEntitySelected = currentRightEntity;
-    selectedTargetLabel->setText(currentRightEntitySelected);
+  if (rightEntitiesView->currentIndex().isValid()) {
+    for (int i = 0; i != entitiesTable->rowCount(); i++) {
+      leftEntitiesView->setRowHidden(i, false);
+      rightEntitiesView->setRowHidden(i, false);
+    }
+    QString selected = rightEntitiesView->currentIndex().data(Qt::DisplayRole).toString();
+    int row = rightEntitiesView->currentIndex().row();
+    leftEntitiesView->setRowHidden(row, true);
+    rightEntitiesView->setRowHidden(row, true);
+    selectedTargetLabel->setText(selected);
   }
-  disableAssign();*/
 }
 
 void RelationshipsDialog::filterLeftEntity(const QString &text) {
@@ -157,19 +157,13 @@ void RelationshipsDialog::filterRightEntity(const QString &text) {
 }
 
 void RelationshipsDialog::addEntity() {
-  disableAssign();
   //EntityDialog *entityDialog = new EntityDialog(this, dataInterface, EMPTY, logger);
   //entityDialog->exec();
   //delete entityDialog;
 }
 
 void RelationshipsDialog::editEntity() {
-  if (lastSelectedEntity != "") {
-    //EntityDialog *entityDialog = new EntityDialog(this, dataInterface, lastSelectedEntity, logger);
-    //entityDialog->exec();
-    //disableAssign();
-    //delete entityDialog;
-  }
+
 }
 
 void RelationshipsDialog::editLeftAssignedEntity() {
@@ -235,15 +229,7 @@ void RelationshipsDialog::editRightAssignedEntity() {
 }
 
 void RelationshipsDialog::removeEntities() {
-  disableAssign();
   // TO DO
-}
-
-
-void RelationshipsDialog::disableAssign() {
-  lastSelectedEntity = "";
-  assignLeftEntityButton->setEnabled(false);
-  assignRightEntityButton->setEnabled(false);
 }
 
 void RelationshipsDialog::cancelAndClose() {

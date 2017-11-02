@@ -39,7 +39,6 @@ private slots:
   void editLeftAssignedEntity();
   void editRightAssignedEntity();
   void removeEntities();
-  void disableAssign();
   void reset();
   void cancelAndClose();
   void saveAndClose();
@@ -79,14 +78,6 @@ private:
   QString name;
   QString oldName;
   QString type;
-
-  QString lastSelectedEntity;
-  QString currentLeftEntitySelected;
-  QString currentRightEntitySelected;
-  QString currentLeftEntityFilter;
-  QString currentRightEntityFilter;
-  QString currentDirectedness;
-
   int exitStatus;
 };
 

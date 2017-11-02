@@ -10,6 +10,7 @@
 #include <QStandardItemModel>
 #include <QTreeView>
 #include <QDropEvent>
+#include <QHeaderView>
 #include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
