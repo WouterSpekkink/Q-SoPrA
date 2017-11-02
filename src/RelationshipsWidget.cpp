@@ -349,6 +349,34 @@ void RelationshipsWidget::editType() {
   }
 }
 
+void RelationshipsWidget::removeUnusedRelationships() {
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  bool unfinished = true;
+  while (unfinished) {
+    query->exec("SELECT name FROM entity_relationships EXCEPT SELECT relationship "
+		"FROM relationships_to_incidents EXCEPT SELECT type "
+		"FROM entity_relationships");
+    while (query->next()) {
+      QString current = query->value(0).toString();
+      query2->prepare("DELETE FROM entity_relationships WHERE name = :current");
+      query2->bindValue(":current", current);
+      query2->exec();
+    }
+    query->first();
+    if (query->isNull(0)) {
+      unfinished = false;
+    }
+  }
+  this->setCursor(Qt::WaitCursor);
+  relationshipsTreeView->setSortingEnabled(false);
+  setTree();
+  relationshipsTreeView->setSortingEnabled(true);
+  relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+  retrieveData();
+  this->setCursor(Qt::ArrowCursor);
+}
+
 void RelationshipsWidget::setTree() {
   relationshipsTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;

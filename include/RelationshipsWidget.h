@@ -45,6 +45,7 @@ private slots:
   void changeFilter(const QString &text);
   void newType();
   void editType();
+  void removeUnusedRelationships();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
