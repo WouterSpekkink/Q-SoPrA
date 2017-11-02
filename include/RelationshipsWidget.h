@@ -14,6 +14,7 @@
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
 #include "RelationshipTypeDialog.h"
+#include "RelationshipTreeFilter.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
@@ -41,6 +42,7 @@ private slots:
   void setCommentFilter(const QString &text);
   void previousComment();
   void nextComment();
+  void changeFilter(const QString &text);
   void newType();
   void editType();
   void setTree();
@@ -59,7 +61,8 @@ private:
   QPointer<QStandardItemModel> relationshipsTree;
   QPointer<DeselectableTreeView> relationshipsTreeView;
   QPointer<RelationshipTypeDialog> typeDialog;
-
+  QPointer<RelationshipTreeFilter> treeFilter;
+  
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;
   QPointer<QLabel> timeStampLabel;
@@ -71,12 +74,14 @@ private:
   QPointer<QLabel> descriptionFilterLabel;
   QPointer<QLabel> rawFilterLabel;
   QPointer<QLabel> commentFilterLabel;
+  QPointer<QLabel> relationshipFilterLabel;
 
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> descriptionFilterField;
   QPointer<QLineEdit> rawFilterField;
   QPointer<QLineEdit> commentFilterField;
+  QPointer<QLineEdit> relationshipFilterField;
 
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;

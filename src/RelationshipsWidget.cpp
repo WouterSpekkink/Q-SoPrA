@@ -25,13 +25,13 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   assignedModel->select();
 
   relationshipsTreeView = new DeselectableTreeView(this);
-  relationshipsTreeView->setModel(relationshipsTree);
   relationshipsTreeView->setHeaderHidden(true);
   relationshipsTreeView->setDragEnabled(true);
   relationshipsTreeView->setAcceptDrops(true);
   relationshipsTreeView->setDropIndicatorShown(true);
   relationshipsTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   relationshipsTreeView->setExpandsOnDoubleClick(false);
+  treeFilter = new RelationshipTreeFilter(this);
   setTree();
   relationshipsTreeView->setSortingEnabled(true);
   relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -48,6 +48,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>");
   rawFilterLabel = new QLabel("<i>Search raw texts:</i>");
   commentFilterLabel = new QLabel("<i>Search comments:</i>");
+  relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>");
 
   timeStampField = new QLineEdit();
   timeStampField->setReadOnly(true);
@@ -61,6 +62,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   descriptionFilterField = new QLineEdit();
   rawFilterField = new QLineEdit();
   commentFilterField = new QLineEdit();
+  relationshipFilterField = new QLineEdit();
 
   previousIncidentButton = new QPushButton("Previous incident");
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
@@ -97,6 +99,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(commentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentFilter(const QString &)));
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
+  connect(relationshipFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
   //connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
@@ -172,6 +175,10 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   rightLayout->addWidget(relationshipsLabel);
   rightLayout->addWidget(relationshipsTreeView);
+  QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
+  filterLayout->addWidget(relationshipFilterLabel);
+  filterLayout->addWidget(relationshipFilterField);
+  rightLayout->addLayout(filterLayout);
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(newTypeButton);
   rightButtonTopLayout->addWidget(editTypeButton);
@@ -249,7 +256,7 @@ void RelationshipsWidget::retrieveData() {
       boldSelected(relationshipsTree, relationship);
     }
   }
-  relationshipsTreeView->setModel(relationshipsTree);
+  relationshipsTreeView->setModel(treeFilter);
   relationshipsTreeView->resetSelection();
   relationshipsTree->sort(0, Qt::AscendingOrder);
   relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -261,6 +268,11 @@ void RelationshipsWidget::retrieveData() {
   QTextCursor cursor = rawField->textCursor();
   cursor.movePosition(QTextCursor::Start);
   rawField->setTextCursor(cursor);
+}
+
+void RelationshipsWidget::changeFilter(const QString &text) {
+  QRegExp regExp(text);
+  treeFilter->setFilterRegExp(regExp);
 }
 
 void RelationshipsWidget::newType() {
@@ -364,7 +376,8 @@ void RelationshipsWidget::setTree() {
       children++;
     }
   }
-  relationshipsTreeView->expandAll();
+  treeFilter->setSourceModel(relationshipsTree);
+  relationshipsTreeView->setModel(treeFilter);
 }
 
 void RelationshipsWidget::previousIncident() {

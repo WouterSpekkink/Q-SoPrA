@@ -14,6 +14,7 @@
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
 #include "AttributeIndexDialog.h"
+#include "AttributeTreeFilter.h"
 
 class AttributesWidget : public QWidget {
   Q_OBJECT
@@ -41,6 +42,7 @@ private slots:
   void setCommentFilter(const QString &text);
   void previousComment();
   void nextComment();
+  void changeFilter(const QString &text);
   void retrieveData();
   void newAttribute();
   void editAttribute();
@@ -67,6 +69,7 @@ private:
   QPointer<QSqlTableModel> assignedModel;
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
+  QPointer<AttributeTreeFilter> treeFilter;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;
@@ -79,6 +82,7 @@ private:
   QPointer<QLabel> descriptionFilterLabel;
   QPointer<QLabel> rawFilterLabel;
   QPointer<QLabel> commentFilterLabel;
+  QPointer<QLabel> attributeFilterLabel;
   QPointer<QLabel> valueLabel;
 
   QPointer<QLineEdit> timeStampField;
@@ -86,6 +90,7 @@ private:
   QPointer<QLineEdit> descriptionFilterField;
   QPointer<QLineEdit> rawFilterField;
   QPointer<QLineEdit> commentFilterField;
+  QPointer<QLineEdit> attributeFilterField;
   QPointer<QLineEdit> valueField;
 
   QPointer<QTextEdit> descriptionField;

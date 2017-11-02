@@ -21,13 +21,13 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   assignedModel->select();
 
   attributesTreeView = new DeselectableTreeView(this);
-  attributesTreeView->setModel(attributesTree);
   attributesTreeView->setHeaderHidden(true);
   attributesTreeView->setDragEnabled(true);
   attributesTreeView->setAcceptDrops(true);
   attributesTreeView->setDropIndicatorShown(true);
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   attributesTreeView->setExpandsOnDoubleClick(false);
+  treeFilter = new AttributeTreeFilter(this);
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -44,6 +44,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>");
   rawFilterLabel = new QLabel("<i>Search raw texts:</i>");
   commentFilterLabel = new QLabel("<i>Search comments:</i>");
+  attributeFilterLabel = new QLabel("<b>Filter attributes:</b>");
   valueLabel = new QLabel("<b>Value:</b>");
   
   timeStampField = new QLineEdit();
@@ -58,6 +59,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   descriptionFilterField = new QLineEdit();
   rawFilterField = new QLineEdit();
   commentFilterField = new QLineEdit();
+  attributeFilterField = new QLineEdit();
   valueField = new QLineEdit();
 
   previousIncidentButton = new QPushButton("Previous incident");
@@ -104,6 +106,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
+  connect(attributeFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(getValue()));
@@ -180,6 +183,10 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   rightLayout->addWidget(attributesLabel);
   rightLayout->addWidget(attributesTreeView);
+  QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
+  filterLayout->addWidget(attributeFilterLabel);
+  filterLayout->addWidget(attributeFilterField);
+  rightLayout->addLayout(filterLayout);
   QPointer<QHBoxLayout> valueLayout = new QHBoxLayout;
   valueLayout->addWidget(valueLabel);
   valueLayout->addWidget(valueField);
@@ -563,6 +570,11 @@ void AttributesWidget::nextComment() {
       retrieveData();
     }
   }
+}
+
+void AttributesWidget::changeFilter(const QString &text) {
+  QRegExp regExp(text);
+  treeFilter->setFilterRegExp(regExp);
 }
 
 void AttributesWidget::newAttribute() {
@@ -975,7 +987,7 @@ void AttributesWidget::retrieveData() {
       boldSelected(attributesTree, attribute);
     }
   }
-  attributesTreeView->setModel(attributesTree);
+  attributesTreeView->setModel(treeFilter);
   attributesTreeView->resetSelection();
   attributesTree->sort(0, Qt::AscendingOrder);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -1010,7 +1022,8 @@ void AttributesWidget::setTree() {
     father->setEditable(false);
     buildHierarchy(father, name);
   }
-  attributesTreeView->expandAll();
+  treeFilter->setSourceModel(attributesTree);
+  attributesTreeView->setModel(treeFilter);
 }
 
 void AttributesWidget::buildHierarchy(QStandardItem *top, QString name) {
