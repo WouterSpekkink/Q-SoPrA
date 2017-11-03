@@ -55,6 +55,8 @@ private slots:
   void setTree();
   void expandTree();
   void collapseTree();
+  void previousCoded();
+  void nextCoded();
   void buildHierarchy(QStandardItem *top, QString name);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
@@ -118,7 +120,9 @@ private:
   QPointer<QPushButton> valueButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
-
+  QPointer<QPushButton> previousCodedButton;
+  QPointer<QPushButton> nextCodedButton;
+  
   QString descriptionFilter;
   QString rawFilter;
   QString commentFilter;

@@ -66,6 +66,8 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE entity_relationships "
 		  "(id integer PRIMARY KEY, "
 		  "name text, "
+		  "source text, "
+		  "target text, "
 		  "comment text, "
 		  "type text)");
       query->exec("CREATE TABLE relationship_types "

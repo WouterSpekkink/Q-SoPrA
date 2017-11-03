@@ -45,10 +45,16 @@ private slots:
   void previousComment();
   void nextComment();
   void changeFilter(const QString &text);
+  void submitRelationshipComment();
+  void getComment();
   void newType();
   void editType();
   void newRelationship();
+  void editRelationship();
   void removeUnusedRelationships();
+  void assignRelationship();
+  void unassignRelationship();
+  void highlightText();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
@@ -79,6 +85,7 @@ private:
   QPointer<QLabel> rawFilterLabel;
   QPointer<QLabel> commentFilterLabel;
   QPointer<QLabel> relationshipFilterLabel;
+  QPointer<QLabel> relationshipCommentLabel;
 
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -86,6 +93,7 @@ private:
   QPointer<QLineEdit> rawFilterField;
   QPointer<QLineEdit> commentFilterField;
   QPointer<QLineEdit> relationshipFilterField;
+  QPointer<QLineEdit> relationshipCommentField;
 
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;
@@ -103,10 +111,14 @@ private:
   QPointer<QPushButton> rawNextButton;
   QPointer<QPushButton> commentPreviousButton;
   QPointer<QPushButton> commentNextButton;
+  QPointer<QPushButton> submitRelationshipCommentButton;
   QPointer<QPushButton> newTypeButton;
   QPointer<QPushButton> editTypeButton;
-  QPointer<QPushButton> removeUnusedRelationshipsButton;
   QPointer<QPushButton> newRelationshipButton;
+  QPointer<QPushButton> editRelationshipButton;
+  QPointer<QPushButton> removeUnusedRelationshipsButton;
+  QPointer<QPushButton> assignRelationshipButton;
+  QPointer<QPushButton> unassignRelationshipButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
 

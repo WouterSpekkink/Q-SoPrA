@@ -89,6 +89,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   valueButton->setEnabled(false);
   expandTreeButton = new QPushButton("Expand");
   collapseTreeButton = new QPushButton("Collapse");
+  previousCodedButton = new QPushButton("Previous coded");
+  nextCodedButton = new QPushButton("Next coded");
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -113,11 +115,13 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(attributeFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
-  connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(getValue()));
-  connect(attributesTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
+  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
+  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
   connect(attributesTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideAttributeAction()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
+  connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
+  connect(nextCodedButton, SIGNAL(clicked()), this, SLOT(nextCoded()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 									       
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
@@ -144,7 +148,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   descriptionLayoutRight->addWidget(descriptionFilterField);
   descriptionLayoutRight->addWidget(descriptionNextButton);
   descriptionLayout->addLayout(descriptionLayoutRight);
-  descriptionLayoutRight->setContentsMargins(200,0,0,0);
+  descriptionLayoutRight->setContentsMargins(100,0,0,0);
   leftLayout->addLayout(descriptionLayout);
   leftLayout->addWidget(descriptionField);
   QPointer<QHBoxLayout> rawLayout = new QHBoxLayout;
@@ -157,7 +161,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   rawLayoutRight->addWidget(rawFilterField);
   rawLayoutRight->addWidget(rawNextButton);
   rawLayout->addLayout(rawLayoutRight);
-  rawLayoutRight->setContentsMargins(270,0,0,0);
+  rawLayoutRight->setContentsMargins(170,0,0,0);
   leftLayout->addLayout(rawLayout);
   leftLayout->addWidget(rawField);
   QPointer<QHBoxLayout> commentLayout = new QHBoxLayout;
@@ -170,7 +174,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   commentLayoutRight->addWidget(commentFilterField);
   commentLayoutRight->addWidget(commentNextButton);
   commentLayout->addLayout(commentLayoutRight);
-  commentLayoutRight->setContentsMargins(200,0,0,0);
+  commentLayoutRight->setContentsMargins(115,0,0,0);
   leftLayout->addLayout(commentLayout);
   leftLayout->addWidget(commentField);
   QPointer<QHBoxLayout> leftButtonTopLayout = new QHBoxLayout;
@@ -197,15 +201,19 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   valueLayout->addWidget(valueButton);
   rightLayout->addLayout(valueLayout);
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
-  rightButtonTopLayout->addWidget(newAttributeButton);
-  rightButtonTopLayout->addWidget(editAttributeButton);
+  rightButtonTopLayout->addWidget(assignAttributeButton);
+  rightButtonTopLayout->addWidget(unassignAttributeButton);
+  rightLayout->addLayout(rightButtonTopLayout);
+  QPointer<QHBoxLayout> rightButtonMiddleLayout = new QHBoxLayout;
+  rightButtonMiddleLayout->addWidget(previousCodedButton);
+  rightButtonMiddleLayout->addWidget(nextCodedButton);
   rightButtonTopLayout->addWidget(expandTreeButton);
   rightButtonTopLayout->addWidget(collapseTreeButton);
+  rightLayout->addLayout(rightButtonMiddleLayout);
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
-  rightButtonBottomLayout->addWidget(assignAttributeButton);
-  rightButtonBottomLayout->addWidget(unassignAttributeButton);
+  rightButtonBottomLayout->addWidget(newAttributeButton);
+  rightButtonBottomLayout->addWidget(editAttributeButton);
   rightButtonBottomLayout->addWidget(removeUnusedAttributesButton);
-  rightLayout->addLayout(rightButtonTopLayout);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
   
@@ -804,7 +812,6 @@ void AttributesWidget::assignAttribute() {
 	font.setBold(true);
 	currentAttribute->setFont(font);
 	valueButton->setEnabled(true);
-	qDebug() << "TRIGGERED";
       }
     }
   }
@@ -1012,6 +1019,76 @@ void AttributesWidget::expandTree() {
 
 void AttributesWidget::collapseTree() {
   attributesTreeView->collapseAll();
+}
+
+void AttributesWidget::previousCoded() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int currentOrder = 0; 
+    currentOrder = query->record(0).value("attributes_record").toInt();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT incident, ch_order FROM "
+		    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+		    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+		    "WHERE ch_order < :order AND attribute = :attribute)"
+		    "ORDER BY ch_order desc");
+    query2->bindValue(":order", currentOrder);
+    query2->bindValue(":attribute", attribute);
+    query2->exec();
+    int id = 0;
+    query2->first();
+    id = query2->value(0).toInt();
+    if (!(query2->isNull(0))) {
+      id = query2->value(0).toInt();
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      int newOrder = query2->value(0).toInt();
+      query2->prepare("UPDATE save_data "
+		      "SET attributes_record=:new");
+      query2->bindValue(":new", newOrder);
+      query2->exec();
+      retrieveData();
+    }
+  }
+}
+
+void AttributesWidget::nextCoded() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int currentOrder = 0; 
+    currentOrder = query->record(0).value("attributes_record").toInt();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT incident, ch_order FROM "
+		    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+		    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+		    "WHERE ch_order > :order AND attribute = :attribute)"
+		    "ORDER BY ch_order asc");
+    query2->bindValue(":order", currentOrder);
+    query2->bindValue(":attribute", attribute);
+    query2->exec();
+    int id = 0;
+    query2->first();
+    id = query2->value(0).toInt();
+    if (!(query2->isNull(0))) {
+      id = query2->value(0).toInt();
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      int newOrder = query2->value(0).toInt();
+      query2->prepare("UPDATE save_data "
+		      "SET attributes_record=:new");
+      query2->bindValue(":new", newOrder);
+      query2->exec();
+      retrieveData();
+    }
+  }
 }
  
 void AttributesWidget::setTree() {

@@ -11,6 +11,7 @@
 #include <QListView>
 #include <QSortFilterProxyModel>
 #include <QPointer>
+#include <QMessageBox>
 #include "Constants.h"
 #include <QSqlTableModel>
 #include "EntityTableModel.h"
@@ -23,10 +24,15 @@ public:
   ~RelationshipsDialog() {};
 
   int getExitStatus();
-  
+  QString getName();
+  QString getLeftEntity();
+  QString getRightEntity();
+  void submitName(QString name);
   void submitLeftEntity(QString entity);
   void submitRightEntity(QString entity);
-  void submitRelationshipType(QString type);
+  void submitType(QString type);
+  void submitDescription(QString description);
+  void submitDirectedness(QString directedness);					     
 			   
 private slots:
   void filterLeftEntity(const QString &text);

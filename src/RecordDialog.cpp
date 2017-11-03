@@ -107,6 +107,7 @@ int RecordDialog::getExitStatus() {
 }
 
 void RecordDialog::cancelAndClose() {
+  exitStatus = 1;
   this->close();
 }
 

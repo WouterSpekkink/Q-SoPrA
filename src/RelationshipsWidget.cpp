@@ -26,10 +26,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
 
   relationshipsTreeView = new DeselectableTreeView(this);
   relationshipsTreeView->setHeaderHidden(true);
-  relationshipsTreeView->setDragEnabled(true);
-  relationshipsTreeView->setAcceptDrops(true);
-  relationshipsTreeView->setDropIndicatorShown(true);
-  relationshipsTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   relationshipsTreeView->setExpandsOnDoubleClick(false);
   relationshipsTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   relationshipsTreeView->header()->setStretchLastSection(false);
@@ -53,6 +49,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>");
   rawFilterLabel = new QLabel("<i>Search raw texts:</i>");
   commentFilterLabel = new QLabel("<i>Search comments:</i>");
+  relationshipCommentLabel = new QLabel("<b>Set comment</b>");
   relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>");
 
   timeStampField = new QLineEdit();
@@ -68,6 +65,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rawFilterField = new QLineEdit();
   commentFilterField = new QLineEdit();
   relationshipFilterField = new QLineEdit();
+  relationshipCommentField = new QLineEdit();
 
   previousIncidentButton = new QPushButton("Previous incident");
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
@@ -83,10 +81,14 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rawNextButton = new QPushButton("Next");
   commentPreviousButton = new QPushButton("Previous");
   commentNextButton = new QPushButton("Next");
+  submitRelationshipCommentButton = new QPushButton("Set comment");
   newTypeButton = new QPushButton("Add relationship type");
   editTypeButton = new QPushButton("Edit relationship type");
-  removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
   newRelationshipButton = new QPushButton("Add relationship");
+  editRelationshipButton = new QPushButton("Edit relationship");
+  removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
+  assignRelationshipButton = new QPushButton("Assign relationship");
+  unassignRelationshipButton = new QPushButton("Unassign relationship");
   expandTreeButton = new QPushButton("Expand");
   collapseTreeButton = new QPushButton("Collapse");
 
@@ -107,12 +109,18 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
   connect(relationshipFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
+  connect(submitRelationshipCommentButton, SIGNAL(clicked()), this, SLOT(submitRelationshipComment()));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
-  //connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
+  connect(assignRelationshipButton, SIGNAL(clicked()), this, SLOT(assignRelationship()));
+  connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
+  connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
+  connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getComment()));
+  
   //connect(relationshipsTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideRelationshipsAction()));
   connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
+  connect(editRelationshipButton, SIGNAL(clicked()), this, SLOT(editRelationship()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
@@ -141,7 +149,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   descriptionLayoutRight->addWidget(descriptionFilterField);
   descriptionLayoutRight->addWidget(descriptionNextButton);
   descriptionLayout->addLayout(descriptionLayoutRight);
-  descriptionLayoutRight->setContentsMargins(200,0,0,0);
+  descriptionLayoutRight->setContentsMargins(100,0,0,0);
   leftLayout->addLayout(descriptionLayout);
   leftLayout->addWidget(descriptionField);
   QPointer<QHBoxLayout> rawLayout = new QHBoxLayout;
@@ -154,7 +162,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rawLayoutRight->addWidget(rawFilterField);
   rawLayoutRight->addWidget(rawNextButton);
   rawLayout->addLayout(rawLayoutRight);
-  rawLayoutRight->setContentsMargins(270,0,0,0);
+  rawLayoutRight->setContentsMargins(170,0,0,0);
   leftLayout->addLayout(rawLayout);
   leftLayout->addWidget(rawField);
   QPointer<QHBoxLayout> commentLayout = new QHBoxLayout;
@@ -167,7 +175,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   commentLayoutRight->addWidget(commentFilterField);
   commentLayoutRight->addWidget(commentNextButton);
   commentLayout->addLayout(commentLayoutRight);
-  commentLayoutRight->setContentsMargins(200,0,0,0);
+  commentLayoutRight->setContentsMargins(115,0,0,0);
   leftLayout->addLayout(commentLayout);
   leftLayout->addWidget(commentField);
   QPointer<QHBoxLayout> leftButtonTopLayout = new QHBoxLayout;
@@ -188,15 +196,25 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   filterLayout->addWidget(relationshipFilterLabel);
   filterLayout->addWidget(relationshipFilterField);
   rightLayout->addLayout(filterLayout);
+  QPointer<QHBoxLayout> relCommentLayout = new QHBoxLayout;
+  relCommentLayout->addWidget(relationshipCommentLabel);
+  relCommentLayout->addWidget(relationshipCommentField);
+  relCommentLayout->addWidget(submitRelationshipCommentButton);
+  rightLayout->addLayout(relCommentLayout);
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
-  rightButtonTopLayout->addWidget(newTypeButton);
-  rightButtonTopLayout->addWidget(editTypeButton);
-  rightButtonTopLayout->addWidget(expandTreeButton);
-  rightButtonTopLayout->addWidget(collapseTreeButton);
-  QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
-  rightButtonBottomLayout->addWidget(newRelationshipButton);
-  rightButtonBottomLayout->addWidget(removeUnusedRelationshipsButton);
+  rightButtonTopLayout->addWidget(assignRelationshipButton);
+  rightButtonTopLayout->addWidget(unassignRelationshipButton);
   rightLayout->addLayout(rightButtonTopLayout);
+  QPointer<QHBoxLayout> rightButtonMiddleLayout = new QHBoxLayout;
+  rightButtonMiddleLayout->addWidget(newRelationshipButton);
+  rightButtonMiddleLayout->addWidget(editRelationshipButton);
+  rightButtonMiddleLayout->addWidget(removeUnusedRelationshipsButton);
+  rightLayout->addLayout(rightButtonMiddleLayout);
+  QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
+  rightButtonBottomLayout->addWidget(newTypeButton);
+  rightButtonBottomLayout->addWidget(editTypeButton);
+  rightButtonBottomLayout->addWidget(expandTreeButton);
+  rightButtonBottomLayout->addWidget(collapseTreeButton);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
 
@@ -281,9 +299,102 @@ void RelationshipsWidget::retrieveData() {
   rawField->setTextCursor(cursor);
 }
 
+void RelationshipsWidget::highlightText() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QString currentName = relationshipsTreeView->currentIndex().data().toString();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    if (currentRelationship->font().bold()) {
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("relationships_record").toInt();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = 0;
+      id = query2->value(0).toInt();
+      query2->prepare("SELECT source_text FROM relationships_to_incidents WHERE relationship = :relationship AND incident = :id");
+      query2->bindValue(":relationship", currentName);
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      QTextCharFormat format;
+      format.setFontWeight(QFont::Normal);
+      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+      rawField->selectAll();
+      rawField->textCursor().mergeCharFormat(format);
+      QTextCursor cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+      QString currentText = query2->value(0).toString();
+      rawField->find(currentText);
+      format.setFontWeight(QFont::Bold);
+      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+      format.setUnderlineColor(Qt::blue);
+      rawField->textCursor().mergeCharFormat(format);
+      cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+    } else {
+      QString currentSelected = rawField->textCursor().selectedText();
+      QTextCharFormat format;
+      format.setFontWeight(QFont::Normal);
+      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+      rawField->selectAll();
+      rawField->textCursor().mergeCharFormat(format);
+      QTextCursor cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+      rawField->find(currentSelected);      
+    }
+  } else {
+    QTextCharFormat format;
+    format.setFontWeight(QFont::Normal);
+    format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+    rawField->selectAll();
+    rawField->textCursor().mergeCharFormat(format);
+    QTextCursor cursor = rawField->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    rawField->setTextCursor(cursor);
+  }
+}
+
 void RelationshipsWidget::changeFilter(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
+}
+
+void RelationshipsWidget::submitRelationshipComment() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (currentItem->parent()) {
+      QString currentName = currentItem->data(Qt::DisplayRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE entity_relationships SET comment = :comment WHERE name = :name");
+      query->bindValue(":comment", relationshipCommentField->text());
+      query->bindValue(":name", currentName);
+      query->exec();
+    }
+  }
+  relationshipCommentField->setText("");
+}
+
+void RelationshipsWidget::getComment() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (currentItem->parent()) {
+      QString currentName = currentItem->data(Qt::DisplayRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT comment FROM entity_relationships WHERE name = :name");
+      query->bindValue(":name", currentName);
+      query->exec();
+      query->first();
+      QString comment = query->value(0).toString();
+      relationshipCommentField->setText(comment);
+    }
+  }
 }
 
 void RelationshipsWidget::newType() {
@@ -358,10 +469,114 @@ void RelationshipsWidget::editType() {
   }
 }
 
+void RelationshipsWidget::assignRelationship() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (currentItem->parent()) {
+      QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("attributes_record").toInt();
+      
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      if (!(query2->isNull(0))) {
+	int id = 0;
+	id = query2->value(0).toInt();
+	//HIER GEBLEVEN
+      }
+    }
+  }
+}
+
+void RelationshipsWidget::unassignRelationship() {
+
+}
+
 void RelationshipsWidget::newRelationship() {
-  RelationshipsDialog *relationshipsDialog = new RelationshipsDialog;
-  relationshipsDialog->exec();
-  delete relationshipsDialog;
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (!currentItem->parent()) {
+      QString currentType = relationshipsTreeView->currentIndex().data().toString();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT directedness, description FROM relationship_types WHERE name = :name");
+      query->bindValue(":name", currentType);
+      query->exec();
+      query->first();
+      QString directedness = query->value(0).toString();
+      QString description = query->value(1).toString();
+      RelationshipsDialog *relationshipsDialog = new RelationshipsDialog;
+      relationshipsDialog->submitType(currentType);
+      relationshipsDialog->submitDescription(description);
+      relationshipsDialog->submitDirectedness(directedness);
+      relationshipsDialog->exec();
+      if (relationshipsDialog->getExitStatus() == 0) {
+	QString name = relationshipsDialog->getName();
+	QString leftEntity = relationshipsDialog->getLeftEntity();
+	QString rightEntity = relationshipsDialog->getRightEntity();
+	QStandardItem *newItem = new QStandardItem(name);
+	currentItem->appendRow(newItem);
+	relationshipsModel->select();
+	int newRow = relationshipsModel->rowCount();
+	relationshipsModel->insertRow(newRow);
+	relationshipsModel->setData(relationshipsModel->index(newRow, 1), name);
+	relationshipsModel->setData(relationshipsModel->index(newRow, 2), leftEntity);
+	relationshipsModel->setData(relationshipsModel->index(newRow, 3), rightEntity);
+	relationshipsModel->setData(relationshipsModel->index(newRow, 5), currentType);
+	relationshipsModel->submitAll();
+      }
+      delete relationshipsDialog;
+    }
+  }
+}
+
+void RelationshipsWidget::editRelationship() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (currentItem->parent()) {
+      QStandardItem *typeItem = currentItem->parent();
+      QString currentType = typeItem->data(Qt::DisplayRole).toString();
+      QString currentRelationship = currentItem->data(Qt::DisplayRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT directedness, description FROM relationship_types WHERE name = :name");
+      query->bindValue(":name", currentType);
+      query->exec();
+      query->first();
+      QString directedness = query->value(0).toString();
+      QString description = query->value(1).toString();
+      query->prepare("SELECT source, target FROM entity_relationships WHERE name = :name");
+      query->bindValue(":name", currentRelationship);
+      query->exec();
+      query->first();
+      QString leftEntity = query->value(0).toString();
+      QString rightEntity = query->value(1).toString();
+      RelationshipsDialog *relationshipsDialog = new RelationshipsDialog;
+      relationshipsDialog->submitType(currentType);
+      relationshipsDialog->submitDescription(description);
+      relationshipsDialog->submitDirectedness(directedness);
+      relationshipsDialog->submitLeftEntity(leftEntity);
+      relationshipsDialog->submitRightEntity(rightEntity);
+      relationshipsDialog->submitName(currentRelationship);
+      relationshipsDialog->exec();
+      if (relationshipsDialog->getExitStatus() == 0) {
+	QString name = relationshipsDialog->getName();
+	QString leftEntity = relationshipsDialog->getLeftEntity();
+	QString rightEntity = relationshipsDialog->getRightEntity();
+	query->prepare("UPDATE entity_relationships SET name = :name, source = :leftEntity, target = :rightEntity, type = :type"
+		       "WHERE name = :oldName");
+	query->bindValue(":name", name);
+	query->bindValue(":leftEntity", leftEntity);
+	query->bindValue(":rightEntity", rightEntity);
+	query->bindValue(":type", currentType);
+	query->bindValue(":oldName", currentRelationship);
+	query->exec();
+      }
+      delete relationshipsDialog;
+    }
+  }
 }
 
 void RelationshipsWidget::removeUnusedRelationships() {

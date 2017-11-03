@@ -118,6 +118,49 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   resize(600, 600);
 }
 
+void RelationshipsDialog::submitLeftEntity(QString entity) {
+  selectedSourceLabel->setText(entity);
+  for (int i = 0; i != entitiesTable->rowCount(); i++) {
+    QString name = entitiesTable->record(i).field(1).value().toString();
+    if (name == entity) {
+      leftEntitiesView->setRowHidden(i, true);
+      rightEntitiesView->setRowHidden(i, true);
+    }
+  }
+}
+
+void RelationshipsDialog::submitRightEntity(QString entity) {
+  selectedTargetLabel->setText(entity);
+  for (int i = 0; i != entitiesTable->rowCount(); i++) {
+    QString name = entitiesTable->record(i).field(1).value().toString();
+    if (name == entity) {
+      leftEntitiesView->setRowHidden(i, true);
+      rightEntitiesView->setRowHidden(i, true);
+    }
+  }
+}
+
+void RelationshipsDialog::submitType(QString type) {
+  typeLabel->setText(type);
+}
+
+void RelationshipsDialog::submitDescription(QString description) {
+  QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+  typeLabel->setToolTip(hint);
+}
+
+void RelationshipsDialog::submitDirectedness(QString directedness) {
+  if (directedness == DIRECTED) {
+    tailLabel->setText(DIRECTEDTAIL);
+  } else {
+    tailLabel->setText(UNDIRECTEDTAIL);
+  }
+}
+
+void RelationshipsDialog::submitName(QString name) {
+  oldName = name;
+}
+
 void RelationshipsDialog::assignLeftEntity() {
   if (leftEntitiesView->currentIndex().isValid()) {
     for (int i = 0; i != entitiesTable->rowCount(); i++) {
@@ -238,16 +281,60 @@ void RelationshipsDialog::cancelAndClose() {
 }
 
 void RelationshipsDialog::saveAndClose() {
-  // to do
-
-  exitStatus = 0;
-  this->close();  
+  if (selectedSourceLabel->text() == DEFAULT) {
+    QPointer<QMessageBox> errorBox = new QMessageBox;
+    errorBox->setText(tr("<b>No source selected</b>"));
+    errorBox->setInformativeText("You did not select a source for this relationship.");
+    errorBox->exec();
+    return;
+  }
+  if (selectedTargetLabel->text() == DEFAULT) {
+    QPointer<QMessageBox> errorBox = new QMessageBox;
+    errorBox->setText(tr("<b>No target selected</b>"));
+    errorBox->setInformativeText("You did not select a target for this relationship.");
+    errorBox->exec();
+    return;
+  }
+  name = selectedSourceLabel->text() + tailLabel->text() + headLabel->text() + selectedTargetLabel->text();
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name, type FROM entity_relationships WHERE name = :name AND type = :type");
+  query->bindValue(":name", name);
+  query->bindValue(":type", typeLabel->text());
+  query->exec();
+  query->first();
+  if (query->isNull(0) || name == oldName) {
+    exitStatus = 0;
+    this->close();
+  } else {
+    QPointer<QMessageBox> errorBox = new QMessageBox;
+    errorBox->setText(tr("<b>Relationship already exists</b>"));
+    errorBox->setInformativeText("An identical relationship already exists.");
+    errorBox->exec();
+    return;
+  }
 }
 
 int RelationshipsDialog::getExitStatus() {
   return exitStatus;
 }
 
+QString RelationshipsDialog::getName() {
+  return name;
+}
+
+QString RelationshipsDialog::getLeftEntity() {
+  return selectedSourceLabel->text();
+}
+
+QString RelationshipsDialog::getRightEntity() {
+  return selectedTargetLabel->text();
+}
+
 void RelationshipsDialog::reset() {
-  // to do 
+  selectedSourceLabel->setText(DEFAULT);
+  selectedTargetLabel->setText(DEFAULT);
+  for (int i = 0; i != entitiesTable->rowCount(); i++) {
+    leftEntitiesView->setRowHidden(i, false);
+    rightEntitiesView->setRowHidden(i, false);
+  }
 }

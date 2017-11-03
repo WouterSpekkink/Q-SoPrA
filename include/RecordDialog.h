@@ -8,6 +8,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTextEdit>
+#include <QMessageBox>
 #include "EventSequenceDatabase.h"
 #include "Constants.h"
 
