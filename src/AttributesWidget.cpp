@@ -797,6 +797,7 @@ void AttributesWidget::assignAttribute() {
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
 	  assignedModel->setData(assignedModel->index(max, 4), sourceText);
 	}
+	assignedModel->submitAll();
 	QTextCharFormat format;
 	format.setFontWeight(QFont::Bold);
 	format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
@@ -806,7 +807,6 @@ void AttributesWidget::assignAttribute() {
 	cursor.movePosition(QTextCursor::Start);
 	rawField->setTextCursor(cursor);
 
-	assignedModel->submitAll();
 	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
 	QFont font;
 	font.setBold(true);

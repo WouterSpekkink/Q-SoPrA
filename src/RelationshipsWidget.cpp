@@ -309,7 +309,7 @@ void RelationshipsWidget::highlightText() {
       int order = 0; 
       order = query->record(0).value("relationships_record").toInt();
       QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
       query2->bindValue(":order", order);
       query2->exec();
       query2->first();
@@ -473,10 +473,11 @@ void RelationshipsWidget::assignRelationship() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
+      QSqlQueryModel *query = new QSqlQueryModel;
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
-      order = query->record(0).value("attributes_record").toInt();
+      order = query->record(0).value("relationships_record").toInt();
       
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
@@ -486,14 +487,89 @@ void RelationshipsWidget::assignRelationship() {
       if (!(query2->isNull(0))) {
 	int id = 0;
 	id = query2->value(0).toInt();
-	//HIER GEBLEVEN
+	assignedModel->select();
+	int max = assignedModel->rowCount();
+	bool empty = false;
+	query2->prepare("SELECT relationship, incident FROM relationships_to_incidents WHERE relationship = :rel AND incident = :inc  ");
+	query2->bindValue(":rel", currentRelationship);
+	query2->bindValue(":inc", id);
+	query2->exec();
+	query2->first();
+	empty = query2->isNull(0);
+	if (empty) {
+	  assignedModel->insertRow(max);
+	  assignedModel->setData(assignedModel->index(max, 1), currentRelationship);
+	  assignedModel->setData(assignedModel->index(max, 2), id);
+	  if (rawField->textCursor().selectedText().trimmed() != "") {
+	    QString sourceText = rawField->textCursor().selectedText().trimmed();
+	    assignedModel->setData(assignedModel->index(max, 3), sourceText);
+	  }
+	  assignedModel->submitAll();
+	  QTextCharFormat format;
+	  format.setFontWeight(QFont::Bold);
+	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	  format.setUnderlineColor(Qt::blue);
+	  rawField->textCursor().mergeCharFormat(format);
+	  QTextCursor cursor = rawField->textCursor();
+	  cursor.movePosition(QTextCursor::Start);
+	  rawField->setTextCursor(cursor);
+	  QFont font;
+	  font.setBold(true);
+	  currentItem->setFont(font);
+	}
       }
     }
   }
 }
 
 void RelationshipsWidget::unassignRelationship() {
-
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (currentItem->parent()) {
+      QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
+      QSqlQueryModel *query = new QSqlQueryModel;
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("relationships_record").toInt();
+      
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = 0;
+      if (!(query2->isNull(0))) {
+	id = query2->value(0).toInt();
+	assignedModel->select();
+	bool empty = false;
+	query2->prepare("SELECT relationship, incident FROM relationships_to_incidents WHERE relationship = :rel AND incident = :inc  ");
+	query2->bindValue(":rel", currentRelationship);
+	query2->bindValue(":inc", id);
+	query2->exec();
+	query2->first();
+	empty = query2->isNull(0);
+	if (!empty) {
+	  query2->prepare("DELETE FROM relationships_to_incidents WHERE relationship = :rel AND incident = :inc");
+	  query2->bindValue(":rel", currentRelationship);
+	  query2->bindValue(":inc", id);
+	  query2->exec();
+	  assignedModel->select();
+	  QFont font;
+	  font.setBold(false);
+	  currentItem->setFont(font);
+	  QTextCharFormat format;
+	  format.setFontWeight(QFont::Normal);
+	  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+	  rawField->selectAll();
+	  rawField->textCursor().mergeCharFormat(format);
+	  rawField->setFontWeight(QFont::Normal);
+	  QTextCursor cursor = rawField->textCursor();
+	  cursor.movePosition(QTextCursor::Start);
+	  rawField->setTextCursor(cursor);
+	}
+      }
+    }
+  }
 }
 
 void RelationshipsWidget::newRelationship() {
