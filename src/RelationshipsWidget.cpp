@@ -26,7 +26,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
 
   relationshipsTreeView = new DeselectableTreeView(this);
   relationshipsTreeView->setHeaderHidden(true);
-  relationshipsTreeView->setExpandsOnDoubleClick(false);
   relationshipsTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   relationshipsTreeView->header()->setStretchLastSection(false);
   relationshipsTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);

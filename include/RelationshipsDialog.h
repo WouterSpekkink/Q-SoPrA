@@ -15,6 +15,7 @@
 #include "Constants.h"
 #include <QSqlTableModel>
 #include "EntityTableModel.h"
+#include "EntityDialog.h"
 
 class RelationshipsDialog : public QDialog {
   Q_OBJECT

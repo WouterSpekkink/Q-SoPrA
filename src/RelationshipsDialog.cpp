@@ -45,8 +45,6 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   resetButton = new QPushButton(tr("Reset"));
   saveCloseButton = new QPushButton(tr("Save relationship"));
   
-  //connect(leftEntitiesView, SIGNAL(clicked(QModelIndex &)), this, SLOT(setCurrentEntityLeft(QModelIndex &)));
-  //connect(rightEntitiesView, SIGNAL(clicked(QModelIndex &)), this, SLOT(setCurrentEntityRight(QModelIndex &)));
   //connect(sourceListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
   //connect(targetListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
   connect(leftEntityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterLeftEntity(const QString &)));
@@ -200,9 +198,18 @@ void RelationshipsDialog::filterRightEntity(const QString &text) {
 }
 
 void RelationshipsDialog::addEntity() {
-  //EntityDialog *entityDialog = new EntityDialog(this, dataInterface, EMPTY, logger);
-  //entityDialog->exec();
-  //delete entityDialog;
+  EntityDialog *entityDialog = new EntityDialog(this);
+  entityDialog->exec();
+  if (entityDialog->getExitStatus() == 0) {
+    QString name = entityDialog->getName();
+    QString description = entityDialog->getDescription();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("INSERT INTO entities SET name = :name, description = :description");
+    query->bindValue(":name", name);
+    query->bindValue(":description", description);
+    query->exec();
+  }
+  delete entityDialog;
 }
 
 void RelationshipsDialog::editEntity() {
@@ -210,65 +217,11 @@ void RelationshipsDialog::editEntity() {
 }
 
 void RelationshipsDialog::editLeftAssignedEntity() {
-  /*if (currentLeftEntitySelected != DEFAULT && currentLeftEntitySelected != EMPTY) {
-    EntityDialog *entityDialog = new EntityDialog(this, dataInterface, currentLeftEntitySelected, logger);
-    entityDialog->deleteLater();
-    disableAssign();
-    entityDialog->exec();
-    std::string oName = entityDialog->getOldName();
-    std::string nName = entityDialog->getNewName();
-    if (oName != nName) {
-      if (currentLeftEntitySelected == QString::fromStdString(oName)) {
-	currentLeftEntitySelected = QString::fromStdString(nName);
-	selectedSourceLabel->setText(currentLeftEntitySelected);
-	if (submittedLabel != EMPTY) {
-	  std::string tail = "";
-	  std::string head = "]-->";
-	  if (currentDirectedness == DIRECTED) {
-	    tail = "---[";
-	  } else if (currentDirectedness == UNDIRECTED) {
-	    tail = "<--[";
-	  }
-	  std::string label = selectedSourceLabel->text().toStdString() + tail +
-	    selectedTypeLabel->text().toStdString() + head + selectedTargetLabel->text().toStdString();
-	  permanentLabel = QString::fromStdString(label);
-	}
-      }
-    }
-    delete entityDialog;
-    updateTexts();
-    }*/
+
 }
 
 void RelationshipsDialog::editRightAssignedEntity() {
-  /*  if (currentRightEntitySelected != DEFAULT && currentRightEntitySelected != EMPTY) {
-    EntityDialog *entityDialog = new EntityDialog(this, dataInterface, currentRightEntitySelected, logger);
-    entityDialog->deleteLater();
-    disableAssign();
-    entityDialog->exec();
-    std::string oName = entityDialog->getOldName();
-    std::string nName = entityDialog->getNewName();
-    if (oName != nName) {
-      if (currentRightEntitySelected == QString::fromStdString(oName)) {
-	currentRightEntitySelected = QString::fromStdString(nName);
-	selectedTargetLabel->setText(currentRightEntitySelected);
-	if (submittedLabel != EMPTY) {
-	  std::string tail = "";
-	  std::string head = "]-->";
-	  if (currentDirectedness == DIRECTED) {
-	    tail = "---[";
-	  } else if (currentDirectedness == UNDIRECTED) {
-	    tail = "<--[";
-	  }
-	  std::string label = selectedSourceLabel->text().toStdString() + tail +
-	    selectedTypeLabel->text().toStdString() + head + selectedTargetLabel->text().toStdString();
-	  permanentLabel = QString::fromStdString(label);
-	}
-      }
-    }
-    delete entityDialog;
-    updateTexts();
-    }*/
+
 }
 
 void RelationshipsDialog::removeEntities() {

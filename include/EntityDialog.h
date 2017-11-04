@@ -3,10 +3,19 @@
 
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QVBoxLayout>
+#include <QStandardItemModel>
 #include <QPlainTextEdit>
-#include "../include/AttributesDialog.h"
-#include "../include/DataInterface.h"
-#include "../include/Logger.h"
+#include <QHeaderView>
+#include <QPointer>
+#include <QVector>
+#include <QSqlTableModel>
+#include "DeselectableTreeView.h"
+#include "AttributeTreeFilter.h"
 
 class EntityDialog : public QDialog {
   Q_OBJECT
@@ -15,10 +24,9 @@ public:
   EntityDialog(QWidget *parent = 0);
   ~EntityDialog() {};
 
-  QString getOldName();
-  Qstring getNewName();
+  QString getName();
   QString getDescription();
-  int getExitstatus();
+  int getExitStatus();
   void submitName(const QString &submitName);
   void submitDescription(const QString &submitDescription);
 		      
@@ -35,7 +43,7 @@ private slots:
   void removeUnusedAttributes();
 
   void setTree();
-  void buildHierarchy();
+  void buildHierarchy(QStandardItem *top, QString name);
   void cancelAndClose();
   void saveAndClose();
   
@@ -50,6 +58,7 @@ private:
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
   QPointer<QLabel> attributesLabel;
+  QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
 
   QPointer<QPushButton> valueButton;
@@ -67,8 +76,10 @@ private:
 
   QPointer<QPlainTextEdit> descriptionField;
 
-  Qstring name;
-  Qstring oldName;
+  QString name;
+  QString description;
+  QString oldName;
+  QVector<QString> attributes;
 
   int exitStatus;
 };

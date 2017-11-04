@@ -4,7 +4,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   name = "";
   oldName = "";
   exitStatus = 1;
-  
+    
   // I have to build these as well.
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
@@ -35,18 +35,18 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 
   // First we declare the entities of this dialog.
-  nameLabel = new QLabel(tr("Name:"));
+  nameLabel = new QLabel(tr("<b>Name:</b>"));
   nameField = new QLineEdit();
 
-  descriptionLabel = new QLabel(tr("Description:"));
+  descriptionLabel = new QLabel(tr("<b>Description:</b>"));
   descriptionField = new QPlainTextEdit();
 
-  valueLabel = new QLabel(tr("Value:"));
+  valueLabel = new QLabel(tr("<b>Value:</b>"));
   valueField = new QLineEdit();
   valueField->setEnabled(false);
     
   attributesLabel = new QLabel(tr("<h2>Attributes</h2>"));
-  attributesFilterLabel = new QLabel(tr("Filter:"));
+  attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"));
 
   attributesFilterField = new QLineEdit();
   
@@ -75,16 +75,13 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   // Then we create the layout for the dialog.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> subLayout = new QHBoxLayout;
-  QPointer<QHBoxLayout> nameLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> nameLayout = new QHBoxLayout;
   nameLayout->addWidget(nameLabel);
   nameLayout->addWidget(nameField);
   leftLayout->addLayout(nameLayout);
-  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(descriptionLabel);
-  descriptionLayout->addWidget(descriptionField);
-  leftLayout->addLayout(descriptionLayout);
+  leftLayout->addWidget(descriptionLabel);
+  leftLayout->addWidget(descriptionField);
   subLayout->addLayout(leftLayout);
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   rightLayout->addWidget(attributesLabel);
@@ -92,20 +89,20 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
   filterLayout->addWidget(attributesFilterLabel);
   filterLayout->addWidget(attributesFilterField);
-  rightLayout->addWidget(filterLayout);
+  rightLayout->addLayout(filterLayout);
   QPointer<QHBoxLayout> valueLayout = new QHBoxLayout;
   valueLayout->addWidget(valueLabel);
   valueLayout->addWidget(valueField);
   valueLayout->addWidget(valueButton);
-  rightLayout->addLayout(topAssignedLayout);
+  rightLayout->addLayout(valueLayout);
   QPointer<QHBoxLayout> assignLayout = new QHBoxLayout;
-  leftButtonLayout->addWidget(assignAttributeButton);
-  leftButtonLayout->addWidget(unassignAttributeButton);
+  assignLayout->addWidget(assignAttributeButton);
+  assignLayout->addWidget(unassignAttributeButton);
   rightLayout->addLayout(assignLayout);
   QPointer<QHBoxLayout> attributeButtonLayout = new QHBoxLayout;
   attributeButtonLayout->addWidget(addAttributeButton);
   attributeButtonLayout->addWidget(editAttributeButton);
-  attributeButtonLayout->addWidget(removeAttributesButton);
+  attributeButtonLayout->addWidget(removeUnusedAttributesButton);
   attributeButtonLayout->setAlignment(Qt::AlignVCenter);
   rightLayout->addLayout(attributeButtonLayout);
 
@@ -121,6 +118,12 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   setLayout(mainLayout);
   setWindowTitle("Add /Edit Entity");
   setFixedHeight(sizeHint().height());
+
+  // Temporary table to store attributes and values until the dialog is destroyed.
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("CREATE TABLE temp_attributes_to_entities "
+	      "(attribute text, "
+	      "value text)");
 }
     
 void EntityDialog::setName(const QString &newName) {
@@ -131,12 +134,17 @@ void EntityDialog::setValue(const QString &newValue) {
   // TODO
 }
 
-void EntityDialog::filterAttributes(const QString &text) {
+void EntityDialog::setFilter(const QString &text) {
   // TODO
 }
 
 void EntityDialog::assignAttribute() {
   // TODO
+  // I should make a vector of QString with the attributes that should be written
+  // and only write them into the sql table when the save button is actually used.
+  // QVector.push_back(currentAttribute);
+
+  // Or maybe temporarily add a new table, copy its contents to the main table, and delete it.
 }
 
 void EntityDialog::unassignAttribute() {
@@ -151,16 +159,20 @@ void EntityDialog::editAttribute() {
   // TODO
 }
 
-void EntityDialog::removeAttributes() {
+void EntityDialog::removeUnusedAttributes() {
   // TODO
 }
 
-Qstring EntityDialog::getOldName() {
-  return oldName;
+QString EntityDialog::getName() {
+  return name;
 }
 
-Qstring EntityDialog::getNewName() {
-  return name;
+QString EntityDialog::getDescription() {
+  return description;
+}
+
+int EntityDialog::getExitStatus() {
+  return exitStatus;
 }
 
 void EntityDialog::setTree() {
@@ -205,6 +217,8 @@ void EntityDialog::cancelAndClose() {
   
 void EntityDialog::saveAndClose() {
   // To DO
+  // See add attrributes comments.
+
   exitStatus = 0;
   this->close();
 }

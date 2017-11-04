@@ -26,7 +26,6 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   attributesTreeView->setAcceptDrops(true);
   attributesTreeView->setDropIndicatorShown(true);
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
-  attributesTreeView->setExpandsOnDoubleClick(false);
   attributesTreeView->header()->setStretchLastSection(false);
   attributesTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
   
