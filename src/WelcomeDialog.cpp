@@ -63,6 +63,16 @@ void WelcomeDialog::newDatabase() {
 		  "incident integer, "
 		  "value text, "
 		  "source_text)");
+      query->exec("CREATE TABLE entity_attributes "
+		  "(id integer PRIMARY KEY, "
+		  "name text, "
+		  "description text, "
+		  "father text)");
+      query->exec("CREATE TABLE attributes_to_entities "
+		  "(id integer PRIMARY KEY, "
+		  "attribute text, "
+		  "entity text, "
+		  "value text)");
       query->exec("CREATE TABLE entity_relationships "
 		  "(id integer PRIMARY KEY, "
 		  "name text, "

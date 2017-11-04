@@ -117,7 +117,6 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
-  connect(attributesTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideAttributeAction()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
@@ -686,18 +685,6 @@ void AttributesWidget::editAttribute() {
   }
   attributesTree->sort(0, Qt::AscendingOrder);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-}
-
-void AttributesWidget::decideAttributeAction() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-    QFont currentFont = currentAttribute->font();
-    if (currentFont.bold()) {
-      unassignAttribute();
-    } else {
-      assignAttribute();
-    }
-  }
 }
 
 void AttributesWidget::highlightText() {

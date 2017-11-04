@@ -81,6 +81,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   rawNextButton = new QPushButton("Next");
   commentPreviousButton = new QPushButton("Previous");
   commentNextButton = new QPushButton("Next");
+  previousCodedButton = new QPushButton("Previous coded");
+  nextCodedButton = new QPushButton("Next coded");
   submitRelationshipCommentButton = new QPushButton("Set comment");
   newTypeButton = new QPushButton("Add relationship type");
   editTypeButton = new QPushButton("Edit relationship type");
@@ -95,7 +97,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
-  // connect(jumpButton, SIGNAL(clicked()), this, SLOT(jumpIncident()));
+  connect(jumpButton, SIGNAL(clicked()), this, SLOT(jumpIncident()));
   connect(markButton, SIGNAL(clicked()), this, SLOT(toggleMark()));
   connect(previousMarkedButton, SIGNAL(clicked()), this, SLOT(previousMarked()));
   connect(nextMarkedButton, SIGNAL(clicked()), this, SLOT(nextMarked()));
@@ -108,6 +110,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(commentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentFilter(const QString &)));
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
+  connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
+  connect(nextCodedButton, SIGNAL(clicked()), this, SLOT(nextCoded()));
   connect(relationshipFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(submitRelationshipCommentButton, SIGNAL(clicked()), this, SLOT(submitRelationshipComment()));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
@@ -115,10 +119,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
   connect(assignRelationshipButton, SIGNAL(clicked()), this, SLOT(assignRelationship()));
   connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
-  connect(relationshipsTreeView, SIGNAL(selectionChanged()), this, SLOT(highlightText()));
+  connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getComment()));
-  
-  //connect(relationshipsTreeView, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(decideRelationshipsAction()));
   connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
   connect(editRelationshipButton, SIGNAL(clicked()), this, SLOT(editRelationship()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
@@ -204,7 +206,13 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(assignRelationshipButton);
   rightButtonTopLayout->addWidget(unassignRelationshipButton);
+  rightButtonTopLayout->addWidget(expandTreeButton);
+  rightButtonTopLayout->addWidget(collapseTreeButton);
   rightLayout->addLayout(rightButtonTopLayout);
+  QPointer<QHBoxLayout> rightButtonCodedLayout = new QHBoxLayout;
+  rightButtonCodedLayout->addWidget(previousCodedButton);
+  rightButtonCodedLayout->addWidget(nextCodedButton);
+  rightLayout->addLayout(rightButtonCodedLayout);
   QPointer<QHBoxLayout> rightButtonMiddleLayout = new QHBoxLayout;
   rightButtonMiddleLayout->addWidget(newRelationshipButton);
   rightButtonMiddleLayout->addWidget(editRelationshipButton);
@@ -213,8 +221,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(newTypeButton);
   rightButtonBottomLayout->addWidget(editTypeButton);
-  rightButtonBottomLayout->addWidget(expandTreeButton);
-  rightButtonBottomLayout->addWidget(collapseTreeButton);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
 
@@ -751,6 +757,28 @@ void RelationshipsWidget::nextIncident() {
   }
 }
 
+void RelationshipsWidget::jumpIncident() {
+  setComment();
+  incidentsModel->select();
+  while(incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
+  AttributeIndexDialog *indexDialog = new AttributeIndexDialog(this, incidentsModel->rowCount());
+  indexDialog->deleteLater();
+  indexDialog->exec();
+  int order = 0;
+  if (indexDialog->getExitStatus() != 1) {
+    order = indexDialog->getIndex();
+    QSqlQuery *query = new QSqlQuery;
+    if (order > 0) {
+      query->prepare("UPDATE save_data "
+		     "SET relationships_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
+    }
+  }
+}
+
 void RelationshipsWidget::toggleMark() {
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
@@ -1031,6 +1059,76 @@ void RelationshipsWidget::nextComment() {
 		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
+      retrieveData();
+    }
+  }
+}
+
+void RelationshipsWidget::previousCoded() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QString relationship = relationshipsTreeView->currentIndex().data().toString();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int currentOrder = 0; 
+    currentOrder = query->record(0).value("relationships_record").toInt();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT incident, ch_order FROM "
+		    "(SELECT incident, ch_order, relationship FROM relationships_to_incidents "
+		    "LEFT JOIN incidents ON relationships_to_incidents.incident = incidents.id "
+		    "WHERE ch_order < :order AND relationship = :relationship)"
+		    "ORDER BY ch_order desc");
+    query2->bindValue(":order", currentOrder);
+    query2->bindValue(":relationship", relationship);
+    query2->exec();
+    int id = 0;
+    query2->first();
+    id = query2->value(0).toInt();
+    if (!(query2->isNull(0))) {
+      id = query2->value(0).toInt();
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      int newOrder = query2->value(0).toInt();
+      query2->prepare("UPDATE save_data "
+		      "SET relationships_record=:new");
+      query2->bindValue(":new", newOrder);
+      query2->exec();
+      retrieveData();
+    }
+  }
+}
+
+void RelationshipsWidget::nextCoded() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QString relationship = relationshipsTreeView->currentIndex().data().toString();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int currentOrder = 0; 
+    currentOrder = query->record(0).value("relationships_record").toInt();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT incident, ch_order FROM "
+		    "(SELECT incident, ch_order, relationship FROM relationships_to_incidents "
+		    "LEFT JOIN incidents ON relationships_to_incidents.incident = incidents.id "
+		    "WHERE ch_order > :order AND relationship = :relationship)"
+		    "ORDER BY ch_order asc");
+    query2->bindValue(":order", currentOrder);
+    query2->bindValue(":relationship", relationship);
+    query2->exec();
+    int id = 0;
+    query2->first();
+    id = query2->value(0).toInt();
+    if (!(query2->isNull(0))) {
+      id = query2->value(0).toInt();
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      int newOrder = query2->value(0).toInt();
+      query2->prepare("UPDATE save_data "
+		      "SET relationships_record=:new");
+      query2->bindValue(":new", newOrder);
+      query2->exec();
       retrieveData();
     }
   }

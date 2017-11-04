@@ -17,6 +17,7 @@
 #include "RelationshipTypeDialog.h"
 #include "RelationshipTreeFilter.h"
 #include "RelationshipsDialog.h"
+#include "AttributeIndexDialog.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
@@ -32,6 +33,7 @@ private slots:
   void setComment();
   void previousIncident();
   void nextIncident();
+  void jumpIncident();
   void toggleMark();
   void previousMarked();
   void nextMarked();
@@ -44,6 +46,8 @@ private slots:
   void setCommentFilter(const QString &text);
   void previousComment();
   void nextComment();
+  void previousCoded();
+  void nextCoded();
   void changeFilter(const QString &text);
   void submitRelationshipComment();
   void getComment();
@@ -111,6 +115,8 @@ private:
   QPointer<QPushButton> rawNextButton;
   QPointer<QPushButton> commentPreviousButton;
   QPointer<QPushButton> commentNextButton;
+  QPointer<QPushButton> previousCodedButton;
+  QPointer<QPushButton> nextCodedButton;
   QPointer<QPushButton> submitRelationshipCommentButton;
   QPointer<QPushButton> newTypeButton;
   QPointer<QPushButton> editTypeButton;

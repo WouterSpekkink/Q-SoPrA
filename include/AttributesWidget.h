@@ -47,7 +47,6 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
-  void decideAttributeAction();
   void highlightText();
   void assignAttribute();
   void unassignAttribute();
