@@ -463,8 +463,14 @@ void RelationshipsWidget::editType() {
 	directedness = typeDialog->getDirectedness();
 	QStandardItem *currentType = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	currentType->setData(newName);
-	currentType->setData(newName, Qt::DisplayRole);      
-	currentType->setToolTip(description);
+	currentType->setData(newName, Qt::DisplayRole);
+	QString hint =  "<FONT SIZE = 3>" + directedness + " - " + description + "<FONT SIZE = 3>";
+	currentType->setToolTip(hint);
+	for (int i = 0; i != currentType->rowCount(); i++) {
+	  QStandardItem *currentChild = currentType->takeChild(i);
+	  currentChild->setToolTip(hint);
+	  currentType->setChild(i, currentChild);
+	}
 	query->prepare("UPDATE relationship_types SET name = :newname, "
 		       "directedness = :newdirectedness, description = :newdescription "
 		       "WHERE name = :oldname");
@@ -665,7 +671,7 @@ void RelationshipsWidget::editRelationship() {
 	QString name = relationshipsDialog->getName();
 	QString leftEntity = relationshipsDialog->getLeftEntity();
 	QString rightEntity = relationshipsDialog->getRightEntity();
-	query->prepare("UPDATE entity_relationships SET name = :name, source = :leftEntity, target = :rightEntity, type = :type"
+	query->prepare("UPDATE entity_relationships SET name = :name, source = :leftEntity, target = :rightEntity, type = :type "
 		       "WHERE name = :oldName");
 	query->bindValue(":name", name);
 	query->bindValue(":leftEntity", leftEntity);
@@ -673,6 +679,7 @@ void RelationshipsWidget::editRelationship() {
 	query->bindValue(":type", currentType);
 	query->bindValue(":oldName", currentRelationship);
 	query->exec();
+	currentItem->setData(name, Qt::DisplayRole);
       }
       delete relationshipsDialog;
       delete query;
