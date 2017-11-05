@@ -870,6 +870,7 @@ void AttributesWidget::unassignAttribute() {
 	QTextCursor cursor = rawField->textCursor();
 	cursor.movePosition(QTextCursor::Start);
 	rawField->setTextCursor(cursor);
+	valueField->setText("");
       }
     }
     delete query;

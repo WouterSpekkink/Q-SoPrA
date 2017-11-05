@@ -15,9 +15,9 @@ void DeselectableTreeViewEntities::mousePressEvent(QMouseEvent *event) {
 }
 
 void DeselectableTreeViewEntities::dropEvent(QDropEvent *event) {
+  this->setSortingEnabled(false);
   QModelIndex targetIndex = indexAt(event->pos());
-  QModelIndex childIndex = this->selectionModel()->currentIndex();
-  QString childName = this->model()->data(childIndex).toString();
+  QString childName = this->selectionModel()->currentIndex().data().toString();
   QString targetName = "";
   if (this->dropIndicatorPosition() == QAbstractItemView::OnItem) {
     targetName = this->model()->data(targetIndex).toString();
@@ -35,7 +35,9 @@ void DeselectableTreeViewEntities::dropEvent(QDropEvent *event) {
   query->bindValue(":father", targetName);
   query->bindValue(":child", childName);
   query->exec();
+  delete query;
   QTreeView::dropEvent(event);
+  this->setSortingEnabled(true);
   this->model()->sort(0, Qt::AscendingOrder);
   this->sortByColumn(0, Qt::AscendingOrder);
 }

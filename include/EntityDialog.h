@@ -38,6 +38,8 @@ private slots:
   void setValue();
   void getValue();
   void setFilter(const QString &text);
+  void expandTree();
+  void collapseTree();
   
   void assignAttribute();
   void unassignAttribute();
@@ -73,6 +75,8 @@ private:
   QPointer<QPushButton> removeUnusedAttributesButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
+  QPointer<QPushButton> expandButton;
+  QPointer<QPushButton> collapseButton;
 
   QPointer<QLineEdit> nameField;
   QPointer<QLineEdit> valueField;

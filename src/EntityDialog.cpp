@@ -59,6 +59,8 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   removeUnusedAttributesButton = new QPushButton(tr("Remove unused attributes"));
   cancelCloseButton = new QPushButton(tr("Cancel"));
   saveCloseButton = new QPushButton(tr("Save entity"));
+  expandButton = new QPushButton("+");
+  collapseButton = new QPushButton("-");
   
   // Then we wire the signals of the dialog.
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setFilter(const QString &)));
@@ -69,6 +71,8 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
+  connect(expandButton, SIGNAL(clicked()), this, SLOT(expandTree()));
+  connect(collapseButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
@@ -84,7 +88,13 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   leftLayout->addWidget(descriptionField);
   subLayout->addLayout(leftLayout);
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
-  rightLayout->addWidget(attributesLabel);
+  QPointer<QHBoxLayout> titleLayout = new QHBoxLayout;
+  titleLayout->addWidget(attributesLabel);
+  QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
+  collapseLayout->addWidget(expandButton);
+  collapseLayout->addWidget(collapseButton);
+  titleLayout->addLayout(collapseLayout);
+  rightLayout->addLayout(titleLayout);
   rightLayout->addWidget(attributesTreeView);
   QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
   filterLayout->addWidget(attributesFilterLabel);
@@ -283,6 +293,7 @@ void EntityDialog::unassignAttribute() {
 	font.setBold(false);
 	currentAttribute->setFont(font);
 	valueButton->setEnabled(false);
+	valueField->setText("");
       }
     }
     delete query;
@@ -576,4 +587,12 @@ void EntityDialog::boldSelected(QAbstractItemModel *model, QString name, QModelI
       boldSelected(model, name, index);
     }
   }
+}
+
+void EntityDialog::expandTree() {
+  attributesTreeView->expandAll();
+}
+
+void EntityDialog::collapseTree() {
+  attributesTreeView->collapseAll();
 }

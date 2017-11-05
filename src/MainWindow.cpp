@@ -241,12 +241,14 @@ void MainWindow::switchToDataView() {
 
 void MainWindow::switchToAttributeView() {
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+  aw->incidentsModel->select();
   aw->retrieveData();
   stacked->setCurrentWidget(attributesWidget);
 }
 
 void MainWindow::switchToRelationshipView() {
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->incidentsModel->select();
   rw->retrieveData();
   stacked->setCurrentWidget(relationshipsWidget);
 }
