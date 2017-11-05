@@ -5,7 +5,8 @@
 
 class EntityTableModel : public QSqlTableModel {
   Q_OBJECT
-
+  friend class RelationshipsDialog;
+  
 public:
   EntityTableModel(QWidget *parent=0);
   ~EntityTableModel() {};

@@ -90,8 +90,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
   assignRelationshipButton = new QPushButton("Assign relationship");
   unassignRelationshipButton = new QPushButton("Unassign relationship");
-  expandTreeButton = new QPushButton("Expand");
-  collapseTreeButton = new QPushButton("Collapse");
+  expandTreeButton = new QPushButton("+");
+  collapseTreeButton = new QPushButton("-");
 
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -191,7 +191,13 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   leftLayout->addLayout(leftButtonBottomLayout);
   mainLayout->addLayout(leftLayout);
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
-  rightLayout->addWidget(relationshipsLabel);
+  QPointer<QHBoxLayout> titleLayout = new QHBoxLayout;
+  titleLayout->addWidget(relationshipsLabel);
+  QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
+  collapseLayout->addWidget(expandTreeButton);
+  collapseLayout->addWidget(collapseTreeButton);
+  titleLayout->addLayout(collapseLayout);
+  rightLayout->addLayout(titleLayout);
   rightLayout->addWidget(relationshipsTreeView);
   QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
   filterLayout->addWidget(relationshipFilterLabel);
@@ -205,8 +211,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(assignRelationshipButton);
   rightButtonTopLayout->addWidget(unassignRelationshipButton);
-  rightButtonTopLayout->addWidget(expandTreeButton);
-  rightButtonTopLayout->addWidget(collapseTreeButton);
   rightLayout->addLayout(rightButtonTopLayout);
   QPointer<QHBoxLayout> rightButtonCodedLayout = new QHBoxLayout;
   rightButtonCodedLayout->addWidget(previousCodedButton);
@@ -244,6 +248,7 @@ void RelationshipsWidget::setComment() {
     query->bindValue(":order", order);
     query->exec();
     commentBool = false;
+    delete query;
   }
 }
 
@@ -302,6 +307,8 @@ void RelationshipsWidget::retrieveData() {
   QTextCursor cursor = rawField->textCursor();
   cursor.movePosition(QTextCursor::Start);
   rawField->setTextCursor(cursor);
+  delete query;
+  delete query2;
 }
 
 void RelationshipsWidget::highlightText() {
@@ -342,6 +349,7 @@ void RelationshipsWidget::highlightText() {
       cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
+      delete query2;
     } else {
       QString currentSelected = rawField->textCursor().selectedText();
       QTextCharFormat format;
@@ -354,6 +362,7 @@ void RelationshipsWidget::highlightText() {
       rawField->setTextCursor(cursor);
       rawField->find(currentSelected);      
     }
+    delete query;
   } else {
     QTextCharFormat format;
     format.setFontWeight(QFont::Normal);
@@ -381,6 +390,7 @@ void RelationshipsWidget::submitRelationshipComment() {
       query->bindValue(":comment", relationshipCommentField->text());
       query->bindValue(":name", currentName);
       query->exec();
+      delete query;
     }
   }
   relationshipCommentField->setText("");
@@ -398,6 +408,9 @@ void RelationshipsWidget::getComment() {
       query->first();
       QString comment = query->value(0).toString();
       relationshipCommentField->setText(comment);
+      delete query;
+    } else {
+      relationshipCommentField->setText("");
     }
   }
 }
@@ -468,6 +481,7 @@ void RelationshipsWidget::editType() {
 	retrieveData();
 	this->setCursor(Qt::ArrowCursor);
       }
+      delete query;
     }
     relationshipsTree->sort(0, Qt::AscendingOrder);
     relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -523,6 +537,8 @@ void RelationshipsWidget::assignRelationship() {
 	  currentItem->setFont(font);
 	}
       }
+      delete query;
+      delete query2;
     }
   }
 }
@@ -573,6 +589,8 @@ void RelationshipsWidget::unassignRelationship() {
 	  rawField->setTextCursor(cursor);
 	}
       }
+      delete query;
+      delete query2;
     }
   }
 }
@@ -610,6 +628,7 @@ void RelationshipsWidget::newRelationship() {
 	relationshipsModel->submitAll();
       }
       delete relationshipsDialog;
+      delete query;
     }
   }
 }
@@ -656,6 +675,7 @@ void RelationshipsWidget::editRelationship() {
 	query->exec();
       }
       delete relationshipsDialog;
+      delete query;
     }
   }
 }
@@ -686,6 +706,8 @@ void RelationshipsWidget::removeUnusedRelationships() {
   relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
   this->setCursor(Qt::ArrowCursor);
+  delete query;
+  delete query2;
 }
 
 void RelationshipsWidget::setTree() {
@@ -711,11 +733,12 @@ void RelationshipsWidget::setTree() {
       QString comment = query2->value(1).toString();
       QStandardItem *relationship = new QStandardItem(name);
       type->setChild(children, relationship);
-      relationship->setToolTip(comment);
+      relationship->setToolTip(hint);
       relationship->setEditable(false);
       children++;
     }
   }
+  delete query;
   treeFilter->setSourceModel(relationshipsTree);
   relationshipsTreeView->setModel(treeFilter);
 }
@@ -734,7 +757,8 @@ void RelationshipsWidget::previousIncident() {
     query->bindValue(":new", order - 1);
     query->exec();
     retrieveData();
-  }  
+  }
+  delete query;
 }
 
 void RelationshipsWidget::nextIncident() {
@@ -754,6 +778,7 @@ void RelationshipsWidget::nextIncident() {
     query->exec();
     retrieveData();
   }
+  delete query;
 }
 
 void RelationshipsWidget::jumpIncident() {
@@ -775,7 +800,9 @@ void RelationshipsWidget::jumpIncident() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
+  delete indexDialog;
 }
 
 void RelationshipsWidget::toggleMark() {
@@ -805,6 +832,7 @@ void RelationshipsWidget::toggleMark() {
     query->exec();
     markLabel->setText("");
   }
+  delete query;
 }
 
 
@@ -830,6 +858,7 @@ void RelationshipsWidget::previousMarked() {
       retrieveData();
     }
   }
+  delete query;
 }
 
 void RelationshipsWidget::nextMarked() {
@@ -857,6 +886,7 @@ void RelationshipsWidget::nextMarked() {
       retrieveData();
     }
   }
+  delete query;
 }
 
 void RelationshipsWidget::setDescriptionFilter(const QString &text) {
@@ -892,6 +922,7 @@ void RelationshipsWidget::previousDescription() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -924,6 +955,7 @@ void RelationshipsWidget::nextDescription() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -960,6 +992,7 @@ void RelationshipsWidget::previousRaw() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -992,6 +1025,7 @@ void RelationshipsWidget::nextRaw() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -1028,6 +1062,7 @@ void RelationshipsWidget::previousComment() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -1060,6 +1095,7 @@ void RelationshipsWidget::nextComment() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -1095,6 +1131,7 @@ void RelationshipsWidget::previousCoded() {
       query2->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -1130,6 +1167,7 @@ void RelationshipsWidget::nextCoded() {
       query2->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -1170,7 +1208,6 @@ void RelationshipsWidget::expandTree() {
 void RelationshipsWidget::collapseTree() {
   relationshipsTreeView->collapseAll();
 }
-
 
 void RelationshipsWidget::finalBusiness() {
   setComment();

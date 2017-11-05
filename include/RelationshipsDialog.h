@@ -36,8 +36,7 @@ public:
   void submitDirectedness(QString directedness);					     
 			   
 private slots:
-  void filterLeftEntity(const QString &text);
-  void filterRightEntity(const QString &text);
+  void filterEntity(const QString &text);
   
   void assignLeftEntity();
   void assignRightEntity();
@@ -52,10 +51,8 @@ private slots:
 
 private:
   QPointer<EntityTableModel> entitiesTable;
-  QPointer<QListView> leftEntitiesView;
-  QPointer<QListView> rightEntitiesView;
-  QPointer<QSortFilterProxyModel> leftEntitiesFilter;
-  QPointer<QSortFilterProxyModel> rightEntitiesFilter;
+  QPointer<QListView> entitiesView;
+  QPointer<QSortFilterProxyModel> entitiesFilter;
   
   QPointer<QLabel> sourceLabel;
   QPointer<QLabel> typeLabel;
@@ -79,8 +76,7 @@ private:
   QPointer<QPushButton> saveCloseButton;
   
   QPointer<QLineEdit> durationField;
-  QPointer<QLineEdit> leftEntityFilterField;
-  QPointer<QLineEdit> rightEntityFilterField;
+  QPointer<QLineEdit> entityFilterField;
 
   QString name;
   QString oldName;

@@ -86,8 +86,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   removeUnusedAttributesButton = new QPushButton("Remove unused attributes");
   valueButton = new QPushButton("Store value");
   valueButton->setEnabled(false);
-  expandTreeButton = new QPushButton("Expand");
-  collapseTreeButton = new QPushButton("Collapse");
+  expandTreeButton = new QPushButton("+");
+  collapseTreeButton = new QPushButton("-");
   previousCodedButton = new QPushButton("Previous coded");
   nextCodedButton = new QPushButton("Next coded");
   
@@ -187,7 +187,13 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   leftLayout->addLayout(leftButtonBottomLayout);
   mainLayout->addLayout(leftLayout);
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
-  rightLayout->addWidget(attributesLabel);
+  QPointer<QHBoxLayout> titleLayout = new QHBoxLayout;
+  titleLayout->addWidget(attributesLabel);
+  QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
+  collapseLayout->addWidget(expandTreeButton);
+  collapseLayout->addWidget(collapseTreeButton);
+  titleLayout->addLayout(collapseLayout);
+  rightLayout->addLayout(titleLayout);
   rightLayout->addWidget(attributesTreeView);
   QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
   filterLayout->addWidget(attributeFilterLabel);
@@ -205,8 +211,6 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   QPointer<QHBoxLayout> rightButtonMiddleLayout = new QHBoxLayout;
   rightButtonMiddleLayout->addWidget(previousCodedButton);
   rightButtonMiddleLayout->addWidget(nextCodedButton);
-  rightButtonTopLayout->addWidget(expandTreeButton);
-  rightButtonTopLayout->addWidget(collapseTreeButton);
   rightLayout->addLayout(rightButtonMiddleLayout);
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(newAttributeButton);
@@ -236,6 +240,7 @@ void AttributesWidget::setComment() {
     query->bindValue(":order", order);
     query->exec();
     commentBool = false;
+    delete query;
   }
 }
 
@@ -253,7 +258,8 @@ void AttributesWidget::previousIncident() {
     query->bindValue(":new", order - 1);
     query->exec();
     retrieveData();
-  }  
+  }
+  delete query;
 }
 
 void AttributesWidget::jumpIncident() {
@@ -276,6 +282,7 @@ void AttributesWidget::jumpIncident() {
       retrieveData();
     }
   }
+  delete indexDialog;
 }
 
 void AttributesWidget::nextIncident() {
@@ -295,6 +302,7 @@ void AttributesWidget::nextIncident() {
     query->exec();
     retrieveData();
   }
+  delete query;
 }
 
 void AttributesWidget::toggleMark() {
@@ -324,6 +332,7 @@ void AttributesWidget::toggleMark() {
     query->exec();
     markLabel->setText("");
   }
+  delete query;
 }
 
 void AttributesWidget::previousMarked() {
@@ -348,6 +357,7 @@ void AttributesWidget::previousMarked() {
       retrieveData();
     }
   }
+  delete query;
 }
 
 void AttributesWidget::nextMarked() {
@@ -375,6 +385,7 @@ void AttributesWidget::nextMarked() {
       retrieveData();
     }
   }
+  delete query;
 }
 
 
@@ -411,6 +422,7 @@ void AttributesWidget::previousDescription() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -443,6 +455,7 @@ void AttributesWidget::nextDescription() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -479,6 +492,7 @@ void AttributesWidget::previousRaw() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -511,6 +525,7 @@ void AttributesWidget::nextRaw() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -547,6 +562,7 @@ void AttributesWidget::previousComment() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -579,6 +595,7 @@ void AttributesWidget::nextComment() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
 }
 
@@ -592,7 +609,7 @@ void AttributesWidget::newAttribute() {
     QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this, esd);
+    attributeDialog = new AttributeDialog(this);
     attributeDialog->exec();
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
@@ -617,7 +634,7 @@ void AttributesWidget::newAttribute() {
   } else {
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this, esd);
+    attributeDialog = new AttributeDialog(this);
     attributeDialog->exec();
     
     if (attributeDialog->getExitStatus() == 0) {
@@ -652,7 +669,7 @@ void AttributesWidget::editAttribute() {
     query->exec();
     query->first();
     QString description = query->value(0).toString();
-    attributeDialog = new AttributeDialog(this, esd);
+    attributeDialog = new AttributeDialog(this);
     attributeDialog->submitName(name);
     attributeDialog->setDescription(description);
     attributeDialog->exec();
@@ -680,6 +697,7 @@ void AttributesWidget::editAttribute() {
       retrieveData();
       this->setCursor(Qt::ArrowCursor);
     }
+    delete query;
     delete attributeDialog;
   }
   attributesTree->sort(0, Qt::AscendingOrder);
@@ -724,6 +742,7 @@ void AttributesWidget::highlightText() {
       cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
+      delete query2;
     } else {
       QString currentSelected = rawField->textCursor().selectedText();
       QTextCharFormat format;
@@ -736,6 +755,7 @@ void AttributesWidget::highlightText() {
       rawField->setTextCursor(cursor);
       rawField->find(currentSelected);      
     }
+    delete query;
   } else {
     QTextCharFormat format;
     format.setFontWeight(QFont::Normal);
@@ -800,6 +820,8 @@ void AttributesWidget::assignAttribute() {
 	valueButton->setEnabled(true);
       }
     }
+    delete query;
+    delete query2;
   }
 }
 
@@ -850,6 +872,8 @@ void AttributesWidget::unassignAttribute() {
 	rawField->setTextCursor(cursor);
       }
     }
+    delete query;
+    delete query2;
   }
 }
 
@@ -879,6 +903,8 @@ void AttributesWidget::removeUnusedAttributes() {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
   this->setCursor(Qt::ArrowCursor);
+  delete query;  
+  delete query2;
 }
 
 void AttributesWidget::setValue() {
@@ -903,6 +929,8 @@ void AttributesWidget::setValue() {
       query2->exec();
     }
     valueField->setText("");
+    delete query;
+    delete query2;
   }
 }
 
@@ -936,6 +964,8 @@ void AttributesWidget::getValue() {
     } else {
       valueField->setText("");
     }
+    delete query;
+    delete query2;
   } else {
     valueField->setText("");
   }
@@ -997,6 +1027,8 @@ void AttributesWidget::retrieveData() {
   QTextCursor cursor = rawField->textCursor();
   cursor.movePosition(QTextCursor::Start);
   rawField->setTextCursor(cursor);
+  delete query;
+  delete query2;
 }
 
 void AttributesWidget::expandTree() {
@@ -1039,6 +1071,8 @@ void AttributesWidget::previousCoded() {
       query2->exec();
       retrieveData();
     }
+    delete query;
+    delete query2;
   }
 }
 
@@ -1074,6 +1108,8 @@ void AttributesWidget::nextCoded() {
       query2->exec();
       retrieveData();
     }
+    delete query;
+    delete query2;
   }
 }
  
@@ -1092,6 +1128,7 @@ void AttributesWidget::setTree() {
   }
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
+  delete query;
 }
 
 void AttributesWidget::buildHierarchy(QStandardItem *top, QString name) {
@@ -1110,6 +1147,7 @@ void AttributesWidget::buildHierarchy(QStandardItem *top, QString name) {
     children++;
     buildHierarchy(child, childName);
   }
+  delete query;
 }
 
 void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QModelIndex parent) {

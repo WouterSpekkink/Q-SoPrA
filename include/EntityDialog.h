@@ -9,13 +9,15 @@
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QStandardItemModel>
-#include <QPlainTextEdit>
+#include <QTextEdit>
 #include <QHeaderView>
 #include <QPointer>
 #include <QVector>
 #include <QSqlTableModel>
-#include "DeselectableTreeView.h"
+#include "DeselectableTreeViewEntities.h"
 #include "AttributeTreeFilter.h"
+#include "AttributeDialog.h"
+#include "Constants.h"
 
 class EntityDialog : public QDialog {
   Q_OBJECT
@@ -27,13 +29,14 @@ public:
   QString getName();
   QString getDescription();
   int getExitStatus();
-  void submitName(const QString &submitName);
-  void submitDescription(const QString &submitDescription);
+  void submitName(const QString &newName);
+  void submitDescription(const QString &newDescription);
+  void setNew();
 		      
 private slots:
 
-  void setName(const QString &newName);
-  void setValue(const QString &newValue);
+  void setValue();
+  void getValue();
   void setFilter(const QString &text);
   
   void assignAttribute();
@@ -41,19 +44,20 @@ private slots:
   void addAttribute();
   void editAttribute();
   void removeUnusedAttributes();
-
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void cancelAndClose();
   void saveAndClose();
   
 private:
   QPointer<QStandardItemModel> attributesTree;
-  QPointer<DeselectableTreeView> attributesTreeView;
+  QPointer<DeselectableTreeViewEntities> attributesTreeView;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> attributesModel;
   QPointer<QSqlTableModel> assignedModel;
   QPointer<AttributeTreeFilter> treeFilter;
+  QPointer<AttributeDialog> attributeDialog;
   
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
@@ -74,7 +78,7 @@ private:
   QPointer<QLineEdit> valueField;
   QPointer<QLineEdit> attributesFilterField;
 
-  QPointer<QPlainTextEdit> descriptionField;
+  QPointer<QTextEdit> descriptionField;
 
   QString name;
   QString description;
@@ -82,6 +86,8 @@ private:
   QVector<QString> attributes;
 
   int exitStatus;
+
+  bool isNew;
 };
 
 #endif

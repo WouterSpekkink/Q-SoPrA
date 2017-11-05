@@ -16,7 +16,7 @@ class AttributeDialog : public QDialog {
   Q_OBJECT
   
 public:
-  AttributeDialog(QWidget *parent = 0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
+  AttributeDialog(QWidget *parent = 0);
   ~AttributeDialog() {};
  
   void submitName(const QString &submittedName);
@@ -31,8 +31,6 @@ private slots:
   void saveAndClose();
 
 private:
-  QPointer<EventSequenceDatabase> esd;
-
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
 

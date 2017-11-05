@@ -128,6 +128,7 @@ void RelationshipTypeDialog::saveAndClose() {
     warningBox->setText("Description required.");
     warningBox->setInformativeText("A relationship type requires a description.");
     warningBox->exec();
+    delete warningBox;
     return;
   }
   if (name == "") {
@@ -137,6 +138,7 @@ void RelationshipTypeDialog::saveAndClose() {
     warningBox->setText("Name required.");
     warningBox->setInformativeText("A relationship type requires a name.");
     warningBox->exec();
+    delete warningBox;
     return;
   }
   bool empty = false;
@@ -153,8 +155,10 @@ void RelationshipTypeDialog::saveAndClose() {
     warningBox->setText("Duplicate name.");
     warningBox->setInformativeText("You cannot create relationshipt types with identical names.");
     warningBox->exec();
+    delete warningBox;
     return;
-  } 
+  }
+  delete query;
   exitStatus = 0;
   this->close();
 }

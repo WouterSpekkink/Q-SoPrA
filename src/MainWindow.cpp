@@ -98,6 +98,7 @@ void MainWindow::importFromCsv() {
       errorBox->setText(tr("<b>ERROR: Import cancelled</b>"));
       errorBox->setInformativeText("Unmatched quotes (\") were found in one of the lines of the file.");
       errorBox->exec();
+      delete errorBox;
       return;
     }
     
@@ -113,6 +114,7 @@ void MainWindow::importFromCsv() {
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Timing\" in first column.");
 	errorBox->exec();
+	delete errorBox;
 	return;
       }
       if (tokens[1] != "Description" && tokens[1] != "description") {
@@ -120,6 +122,7 @@ void MainWindow::importFromCsv() {
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Description\" in second column.");
 	errorBox->exec();
+	delete errorBox;
 	return;
       }
       if (tokens[2] != "Raw" && tokens[2] != "raw") {
@@ -127,6 +130,7 @@ void MainWindow::importFromCsv() {
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Raw\" in third column.");
 	errorBox->exec();
+	delete errorBox;
 	return;
       }
       if (tokens[3] != "Comments" && tokens[3] != "comments") {
@@ -134,6 +138,7 @@ void MainWindow::importFromCsv() {
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Comments\" in fourth column.");
 	errorBox->exec();
+	delete errorBox;
 	return;
       }
       if (tokens[4] != "Source" && tokens[4] != "source") {
@@ -141,6 +146,7 @@ void MainWindow::importFromCsv() {
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Source\" in third column.");
 	errorBox->exec();
+	delete errorBox;
 	return;
       }
       headerFound = true;

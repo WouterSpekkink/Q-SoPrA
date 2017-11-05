@@ -53,6 +53,7 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   connect(moveDownButton, SIGNAL(clicked()), this, SLOT(moveDown()));
   connect(duplicateRowButton, SIGNAL(clicked()), this, SLOT(duplicateRow()));
   connect(removeRowButton, SIGNAL(clicked()), this, SLOT(removeRow()));
+  connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
   
   // Then we create the layout.
   QPointer<QHBoxLayout> recordButtonsLayout = new QHBoxLayout;
@@ -102,7 +103,7 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
 void DataWidget::appendRecord() {
   recordDialog = new RecordDialog(this, esd, NEW);
   recordDialog->exec();
-  if (recordDialog->getExitStatus() != 1) {
+  if (recordDialog->getExitStatus() == 0) {
     int max = tableView->verticalHeader()->count();
     setData(max, recordDialog, NEW);
     delete recordDialog;
@@ -136,6 +137,7 @@ void DataWidget::editRecord() {
     } else {
       delete recordDialog;
     }
+    delete query;
   }
 }
 
@@ -152,6 +154,7 @@ void DataWidget::insertRecordBefore() {
       incidentsModel->select();
       incidentsModel->submitAll();
       setData(currentRow, recordDialog, NEW);
+      delete query;
       delete recordDialog;
      } else {
       delete recordDialog;
@@ -172,6 +175,7 @@ void DataWidget::insertRecordAfter() {
       incidentsModel->select();
       incidentsModel->submitAll();
       setData(nextRow, recordDialog, NEW);
+      delete query;
       delete recordDialog;
     } else {
       delete recordDialog;
@@ -239,6 +243,7 @@ void DataWidget::duplicateRow() {
     } else {
       delete recordDialog;
     }
+    delete query;
   }
 }
 
@@ -275,5 +280,10 @@ void DataWidget::removeRow() {
       incidentsModel->select();
       incidentsModel->submitAll();
     }
+    delete warningBox;
   }
+}
+
+void DataWidget::resetHeader(int header) {
+  tableView->verticalHeader()->resizeSection(header, 30);
 }

@@ -16,25 +16,21 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   targetLabel = new QLabel(tr("Target filter:"));
   entitiesTable = new EntityTableModel;
   entitiesTable->setTable("entities");
+  entitiesTable->setSort(1, Qt::AscendingOrder);
   entitiesTable->select();
-  leftEntitiesFilter = new QSortFilterProxyModel;
-  leftEntitiesFilter->setSourceModel(entitiesTable);
-  leftEntitiesFilter->setFilterKeyColumn(1);
-  rightEntitiesFilter = new QSortFilterProxyModel;
-  rightEntitiesFilter->setSourceModel(entitiesTable);
-  rightEntitiesFilter->setFilterKeyColumn(1);
-  leftEntitiesView = new QListView;
-  rightEntitiesView = new QListView;
-  leftEntitiesView->setModel(leftEntitiesFilter);
-  leftEntitiesView->setModelColumn(1);
-  rightEntitiesView->setModel(rightEntitiesFilter);
-  rightEntitiesView->setModelColumn(1);
-  
+  entitiesFilter = new QSortFilterProxyModel;
+  entitiesFilter->setSourceModel(entitiesTable);
+  entitiesFilter->setFilterKeyColumn(1);
+  entitiesView = new QListView;
+  entitiesView->setModel(entitiesFilter);
+  entitiesView->setModelColumn(1);
+  entitiesView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+    
   assignLeftEntityButton = new QPushButton("use selected");
   assignRightEntityButton = new QPushButton("use selected");
   
-  leftEntityFilterField = new QLineEdit();
-  rightEntityFilterField = new QLineEdit();
+  entityFilterField = new QLineEdit();
   newEntityButton = new QPushButton(tr("Define new entity"));
   editEntityButton = new QPushButton(tr("Edit highlighted entity"));
   editLeftAssignedEntityButton = new QPushButton(tr("Edit left assigned entity"));
@@ -47,8 +43,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   
   //connect(sourceListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
   //connect(targetListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
-  connect(leftEntityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterLeftEntity(const QString &)));
-  connect(rightEntityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterRightEntity(const QString &)));
+  connect(entityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterEntity(const QString &)));
   connect(assignLeftEntityButton, SIGNAL(clicked()), this, SLOT(assignLeftEntity()));
   connect(assignRightEntityButton, SIGNAL(clicked()), this, SLOT(assignRightEntity()));
   connect(newEntityButton, SIGNAL(clicked()), this, SLOT(addEntity()));
@@ -63,13 +58,10 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> labelLayout = new QHBoxLayout;
   labelLayout->addWidget(sourceLabel);
-  labelLayout->addWidget(leftEntityFilterField);
-  labelLayout->addWidget(targetLabel);
-  labelLayout->addWidget(rightEntityFilterField);
+  labelLayout->addWidget(entityFilterField);
   mainLayout->addLayout(labelLayout);
   QPointer<QHBoxLayout> listsLayout = new QHBoxLayout;
-  listsLayout->addWidget(leftEntitiesView);
-  listsLayout->addWidget(rightEntitiesView);
+  listsLayout->addWidget(entitiesView);
   mainLayout->addLayout(listsLayout);
   QPointer<QHBoxLayout> assignLayout = new QHBoxLayout;
   assignLayout->addWidget(assignLeftEntityButton);
@@ -108,7 +100,6 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   optionsLayout->addWidget(cancelCloseButton);
   optionsLayout->addWidget(resetButton);
   optionsLayout->addWidget(saveCloseButton);
-  optionsLayout->setSpacing(300);
   mainLayout->addLayout(optionsLayout);
 
   setLayout(mainLayout);
@@ -121,8 +112,7 @@ void RelationshipsDialog::submitLeftEntity(QString entity) {
   for (int i = 0; i != entitiesTable->rowCount(); i++) {
     QString name = entitiesTable->record(i).field(1).value().toString();
     if (name == entity) {
-      leftEntitiesView->setRowHidden(i, true);
-      rightEntitiesView->setRowHidden(i, true);
+      entitiesView->setRowHidden(i, true);
     }
   }
 }
@@ -132,8 +122,7 @@ void RelationshipsDialog::submitRightEntity(QString entity) {
   for (int i = 0; i != entitiesTable->rowCount(); i++) {
     QString name = entitiesTable->record(i).field(1).value().toString();
     if (name == entity) {
-      leftEntitiesView->setRowHidden(i, true);
-      rightEntitiesView->setRowHidden(i, true);
+      entitiesView->setRowHidden(i, true);
     }
   }
 }
@@ -160,72 +149,193 @@ void RelationshipsDialog::submitName(QString name) {
 }
 
 void RelationshipsDialog::assignLeftEntity() {
-  if (leftEntitiesView->currentIndex().isValid()) {
+  if (entitiesView->currentIndex().isValid()) {
     for (int i = 0; i != entitiesTable->rowCount(); i++) {
-      leftEntitiesView->setRowHidden(i, false);
-      rightEntitiesView->setRowHidden(i, false);
+      QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+      if (currentIndex.data(Qt::DisplayRole).toString() != selectedTargetLabel->text()) {
+	entitiesView->setRowHidden(i, false);
+      }
     }
-    QString selected = leftEntitiesView->currentIndex().data(Qt::DisplayRole).toString();
-    int row = leftEntitiesView->currentIndex().row();
-    leftEntitiesView->setRowHidden(row, true);
-    rightEntitiesView->setRowHidden(row, true);
+    QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
+    int row = entitiesView->currentIndex().row();
+    entitiesView->setRowHidden(row, true);
     selectedSourceLabel->setText(selected);
   }
 }
 
 void RelationshipsDialog::assignRightEntity() {
-  if (rightEntitiesView->currentIndex().isValid()) {
+  if (entitiesView->currentIndex().isValid()) {
     for (int i = 0; i != entitiesTable->rowCount(); i++) {
-      leftEntitiesView->setRowHidden(i, false);
-      rightEntitiesView->setRowHidden(i, false);
+      QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+      if (currentIndex.data(Qt::DisplayRole).toString() != selectedSourceLabel->text()) {
+	entitiesView->setRowHidden(i, false);
+      }
     }
-    QString selected = rightEntitiesView->currentIndex().data(Qt::DisplayRole).toString();
-    int row = rightEntitiesView->currentIndex().row();
-    leftEntitiesView->setRowHidden(row, true);
-    rightEntitiesView->setRowHidden(row, true);
+    QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
+    int row = entitiesView->currentIndex().row();
+    entitiesView->setRowHidden(row, true);
     selectedTargetLabel->setText(selected);
   }
 }
 
-void RelationshipsDialog::filterLeftEntity(const QString &text) {
-  QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::Wildcard);
-  leftEntitiesFilter->setFilterRegExp(regExp);
-}
 
-void RelationshipsDialog::filterRightEntity(const QString &text) {
+void RelationshipsDialog::filterEntity(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::Wildcard);
-  rightEntitiesFilter->setFilterRegExp(regExp);
+  entitiesFilter->setFilterRegExp(regExp);
 }
 
 void RelationshipsDialog::addEntity() {
   EntityDialog *entityDialog = new EntityDialog(this);
+  entityDialog->setNew();
   entityDialog->exec();
   if (entityDialog->getExitStatus() == 0) {
     QString name = entityDialog->getName();
     QString description = entityDialog->getDescription();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("INSERT INTO entities SET name = :name, description = :description");
-    query->bindValue(":name", name);
-    query->bindValue(":description", description);
-    query->exec();
+    entitiesTable->select();
+    int max = entitiesTable->rowCount();
+    entitiesTable->insertRow(max);
+    entitiesTable->setData(entitiesTable->index(max, 1), name);
+    entitiesTable->setData(entitiesTable->index(max, 2), description);
+    entitiesTable->submitAll();
   }
   delete entityDialog;
+  for (int i = 0; i != entitiesTable->rowCount(); i++) {
+    QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+    if (currentIndex.data(Qt::DisplayRole).toString() == selectedSourceLabel->text() ||
+	currentIndex.data(Qt::DisplayRole).toString() == selectedTargetLabel->text()) {
+      entitiesView->setRowHidden(i, true);
+    }
+  }
 }
 
 void RelationshipsDialog::editEntity() {
-
+  if (entitiesView->currentIndex().isValid()) {
+    QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM entities WHERE name = :name");
+    query->bindValue(":name", selected);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->submitName(selected);
+    entityDialog->submitDescription(description);
+    entityDialog->exec();
+    if (entityDialog->getExitStatus() == 0) {
+      QString name = entityDialog->getName();
+      QString description = entityDialog->getDescription();
+      query->prepare("UPDATE TABLE entities SET name = :name, description = :description WHERE name = :oldName");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":oldName", selected);
+      query->exec();
+    }
+    delete query;
+    delete entityDialog;
+    for (int i = 0; i != entitiesTable->rowCount(); i++) {
+      QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+      if (currentIndex.data(Qt::DisplayRole).toString() == selectedSourceLabel->text() ||
+	  currentIndex.data(Qt::DisplayRole).toString() == selectedTargetLabel->text()) {
+	entitiesView->setRowHidden(i, true);
+      }
+    }
+  }
 }
 
 void RelationshipsDialog::editLeftAssignedEntity() {
-
+  if (selectedSourceLabel->text() != DEFAULT) {
+    QString selected = selectedSourceLabel->text();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM entities WHERE name = :name");
+    query->bindValue(":name", selected);
+    query->exec();
+    query->first();
+    QString description =  query->value(0).toString();
+    EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->submitName(selected);
+    entityDialog->submitDescription(description);
+    entityDialog->exec();
+    if (entityDialog->getExitStatus() == 0) {
+      QString name = entityDialog->getName();
+      QString description = entityDialog->getDescription();
+      query->prepare("UPDATE TABLE entities SET name = :name, description = :description WHERE name = :oldName");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":oldName", selected);
+      query->exec();
+    }
+    delete query;
+    delete entityDialog;
+    for (int i = 0; i != entitiesTable->rowCount(); i++) {
+      QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+      if (currentIndex.data(Qt::DisplayRole).toString() == selectedSourceLabel->text() ||
+	  currentIndex.data(Qt::DisplayRole).toString() == selectedTargetLabel->text()) {
+	entitiesView->setRowHidden(i, true);
+      }
+    }
+  }
 }
 
 void RelationshipsDialog::editRightAssignedEntity() {
-
+  if (selectedTargetLabel->text() != DEFAULT) {
+    QString selected = selectedTargetLabel->text();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM entities WHERE name = :name");
+    query->bindValue(":name", selected);
+    query->exec();
+    query->first();
+    QString description =  query->value(0).toString();
+    EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->submitName(selected);
+    entityDialog->submitDescription(description);
+    entityDialog->exec();
+    if (entityDialog->getExitStatus() == 0) {
+      QString name = entityDialog->getName();
+      QString description = entityDialog->getDescription();
+      query->prepare("UPDATE TABLE entities SET name = :name, description = :description WHERE name = :oldName");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":oldName", selected);
+      query->exec();
+    }
+    delete query;
+    delete entityDialog;
+    for (int i = 0; i != entitiesTable->rowCount(); i++) {
+      QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+      if (currentIndex.data(Qt::DisplayRole).toString() == selectedSourceLabel->text() ||
+	  currentIndex.data(Qt::DisplayRole).toString() == selectedTargetLabel->text()) {
+	entitiesView->setRowHidden(i, true);
+      }
+    }
+  }
 }
 
 void RelationshipsDialog::removeEntities() {
-  // TO DO
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query->exec("SELECT name FROM entities EXCEPT SELECT source "
+	      "FROM entity_relationships EXCEPT SELECT target "
+	      "FROM entity_relationships");
+  while (query->next()) {
+    QString current = query->value(0).toString();
+    query2->prepare("DELETE FROM entities WHERE name = :current");
+    query2->bindValue(":current", current);
+    query2->exec();
+    query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+    query2->bindValue(":current", current);
+    query2->exec();
+  }
+  reset();
+  entitiesTable->select();
+  delete query;  
+  delete query2;
+  for (int i = 0; i != entitiesTable->rowCount(); i++) {
+    QModelIndex currentIndex = entitiesTable->createIndex(i, 1);
+    if (currentIndex.data(Qt::DisplayRole).toString() == selectedSourceLabel->text() ||
+	currentIndex.data(Qt::DisplayRole).toString() == selectedTargetLabel->text()) {
+      entitiesView->setRowHidden(i, true);
+    }
+  }
 }
 
 void RelationshipsDialog::cancelAndClose() {
@@ -239,6 +349,7 @@ void RelationshipsDialog::saveAndClose() {
     errorBox->setText(tr("<b>No source selected</b>"));
     errorBox->setInformativeText("You did not select a source for this relationship.");
     errorBox->exec();
+    delete errorBox;
     return;
   }
   if (selectedTargetLabel->text() == DEFAULT) {
@@ -246,6 +357,7 @@ void RelationshipsDialog::saveAndClose() {
     errorBox->setText(tr("<b>No target selected</b>"));
     errorBox->setInformativeText("You did not select a target for this relationship.");
     errorBox->exec();
+    delete errorBox;
     return;
   }
   name = selectedSourceLabel->text() + tailLabel->text() + headLabel->text() + selectedTargetLabel->text();
@@ -263,8 +375,10 @@ void RelationshipsDialog::saveAndClose() {
     errorBox->setText(tr("<b>Relationship already exists</b>"));
     errorBox->setInformativeText("An identical relationship already exists.");
     errorBox->exec();
+    delete errorBox;
     return;
   }
+  delete query;
 }
 
 int RelationshipsDialog::getExitStatus() {
@@ -287,7 +401,6 @@ void RelationshipsDialog::reset() {
   selectedSourceLabel->setText(DEFAULT);
   selectedTargetLabel->setText(DEFAULT);
   for (int i = 0; i != entitiesTable->rowCount(); i++) {
-    leftEntitiesView->setRowHidden(i, false);
-    rightEntitiesView->setRowHidden(i, false);
+    entitiesView->setRowHidden(i, false);
   }
 }

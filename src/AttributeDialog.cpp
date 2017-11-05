@@ -1,7 +1,6 @@
 #include "../include/AttributeDialog.h"
 
-AttributeDialog::AttributeDialog(QWidget *parent, EventSequenceDatabase *submittedEsd) : QDialog(parent) {
-  esd = submittedEsd;
+AttributeDialog::AttributeDialog(QWidget *parent) : QDialog(parent) {
   name = "";
   description = "";
   oldName = "";
@@ -83,6 +82,7 @@ void AttributeDialog::saveAndClose() {
     warningBox->setText("Description missing.");
     warningBox->setInformativeText("An attribute requires a description.");
     warningBox->exec();
+    delete warningBox;
     return;
   }
   if (name == "") {
@@ -92,6 +92,7 @@ void AttributeDialog::saveAndClose() {
     warningBox->setText("Name missing.");
     warningBox->setInformativeText("An attribute requires a label.");
     warningBox->exec();
+    delete warningBox;
     return;
   }
   bool empty = false;
@@ -108,8 +109,10 @@ void AttributeDialog::saveAndClose() {
     warningBox->setText("Duplicate name.");
     warningBox->setInformativeText("You cannot create attributes with identical names.");
     warningBox->exec();
+    delete warningBox;
     return;
-  } 
+  }
   exitStatus = 0;
+  delete query;
   this->close();
 }

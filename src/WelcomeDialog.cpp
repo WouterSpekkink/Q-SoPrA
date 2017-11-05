@@ -72,7 +72,8 @@ void WelcomeDialog::newDatabase() {
 		  "(id integer PRIMARY KEY, "
 		  "attribute text, "
 		  "entity text, "
-		  "value text)");
+		  "value text, "
+		  "new integer)");
       query->exec("CREATE TABLE entity_relationships "
 		  "(id integer PRIMARY KEY, "
 		  "name text, "
@@ -105,6 +106,7 @@ void WelcomeDialog::newDatabase() {
 		  "linkages_target_record, "
 		  "relationships_record) "
 		  "VALUES (1, 1, 2, 1)");
+      delete query;
     }
     exitStatus = 0;
   } else {
@@ -125,6 +127,7 @@ void WelcomeDialog::openDatabase() {
       errorBox->setText(tr("<b>ERROR</b>"));
       errorBox->setInformativeText("Creation of new database failed.");
       errorBox->exec();
+      delete errorBox;
       return;
     } else {
       exitStatus = 0;

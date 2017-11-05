@@ -22,6 +22,7 @@ public:
 
 private slots:
 
+  void resetHeader(int header);
   void setData(const int index, RecordDialog *recordDialog, const QString type);
   void appendRecord();
   void editRecord();
