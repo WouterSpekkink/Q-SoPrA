@@ -315,6 +315,7 @@ void RelationshipsWidget::retrieveData() {
 }
 
 void RelationshipsWidget::highlightText() {
+  QTextCursor currentPos =  rawField->textCursor();
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     QString currentName = relationshipsTreeView->currentIndex().data().toString();
@@ -354,6 +355,7 @@ void RelationshipsWidget::highlightText() {
 	cursor.movePosition(QTextCursor::Start);
 	rawField->setTextCursor(cursor);
       }
+      rawField->setTextCursor(currentPos);
       delete query2;
     } else {
       QString currentSelected = rawField->textCursor().selectedText();
@@ -365,7 +367,8 @@ void RelationshipsWidget::highlightText() {
       QTextCursor cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
-      rawField->find(currentSelected);      
+      rawField->find(currentSelected);
+      rawField->setTextCursor(currentPos);
     }
     delete query;
   } else {
@@ -377,6 +380,7 @@ void RelationshipsWidget::highlightText() {
     QTextCursor cursor = rawField->textCursor();
     cursor.movePosition(QTextCursor::Start);
     rawField->setTextCursor(cursor);
+    rawField->setTextCursor(currentPos);
   }
 }
 
@@ -526,6 +530,7 @@ void RelationshipsWidget::assignRelationship() {
 	query2->exec();
 	query2->first();
 	empty = query2->isNull(0);
+	QTextCursor cursorPos = rawField->textCursor();
 	if (empty) {
 	  assignedModel->insertRow(max);
 	  assignedModel->setData(assignedModel->index(max, 1), currentRelationship);
@@ -541,6 +546,7 @@ void RelationshipsWidget::assignRelationship() {
 	  query2->exec();
 	  }
 	  highlightText();
+	  rawField->setTextCursor(cursorPos);
 	  QFont font;
 	  font.setBold(true);
 	  currentItem->setFont(font);
@@ -558,6 +564,7 @@ void RelationshipsWidget::assignRelationship() {
 	    query2->exec();
 	  }
 	  highlightText();
+	  rawField->setTextCursor(cursorPos);
 	}
       }
       delete query;
@@ -1252,6 +1259,7 @@ void RelationshipsWidget::boldSelected(QAbstractItemModel *model, QString name, 
       font.setBold(false);
       font.setItalic(true);
       currentRelationship->parent()->setFont(font);
+      font.setItalic(false);
     }
     if (model->hasChildren(index)) {
       boldSelected(model, name, index);
@@ -1266,6 +1274,7 @@ void RelationshipsWidget::resetFont(QAbstractItemModel *model, QModelIndex paren
     QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(index);
     QFont font;
     font.setBold(false);
+    font.setItalic(false);
     currentRelationship->setFont(font);
     if (model->hasChildren(index)) {
       resetFont(model, index);

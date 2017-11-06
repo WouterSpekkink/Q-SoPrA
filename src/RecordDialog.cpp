@@ -2,13 +2,13 @@
 
 RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd, const QString type) : QDialog(parent) {
   esd = submittedEsd;
+  exitStatus = 1;
   if (type == NEW) {
     timeStamp = "";
     description = "";
     raw = "";
     comment = "";
     source = "";
-    exitStatus = 1;
   }
   
   titleLabel = new QLabel("<h1>Set incident details<h1>");

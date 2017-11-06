@@ -34,6 +34,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  attributesTreeView->installEventFilter(this);
 
   indexLabel = new QLabel("<b>Incident ( / )</b>");
   markLabel = new QLabel();
@@ -123,7 +124,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
   connect(nextCodedButton, SIGNAL(clicked()), this, SLOT(nextCoded()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
-									       
+                                                                               
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> indexLayout = new QHBoxLayout;
@@ -257,7 +258,7 @@ void AttributesWidget::previousIncident() {
   order = query->value(0).toInt();
   if (order != 1) {
     query->prepare("UPDATE save_data "
-		   "SET attributes_record=:new");
+                   "SET attributes_record=:new");
     query->bindValue(":new", order - 1);
     query->exec();
     retrieveData();
@@ -279,7 +280,7 @@ void AttributesWidget::jumpIncident() {
     QSqlQuery *query = new QSqlQuery;
     if (order > 0) {
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -300,7 +301,7 @@ void AttributesWidget::nextIncident() {
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) {
     query->prepare("UPDATE save_data "
-		   "SET attributes_record=:new");
+                   "SET attributes_record=:new");
     query->bindValue(":new", order + 1);
     query->exec();
     retrieveData();
@@ -354,7 +355,7 @@ void AttributesWidget::previousMarked() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -382,7 +383,7 @@ void AttributesWidget::nextMarked() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -408,9 +409,9 @@ void AttributesWidget::previousDescription() {
 
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
-		   "AND ch_order < :order "
-		   "ORDER BY ch_order desc");
+                   "WHERE description LIKE :text "
+                   "AND ch_order < :order "
+                   "ORDER BY ch_order desc");
     query->bindValue(":text", searchText);
     query->bindValue(":order", order);
     query->exec();
@@ -420,7 +421,7 @@ void AttributesWidget::previousDescription() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -441,9 +442,9 @@ void AttributesWidget::nextDescription() {
 
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
-		   "AND ch_order > :order "
-		   "ORDER BY ch_order asc");
+                   "WHERE description LIKE :text "
+                   "AND ch_order > :order "
+                   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);
     query->bindValue(":order", order);
     query->exec();
@@ -453,7 +454,7 @@ void AttributesWidget::nextDescription() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -478,9 +479,9 @@ void AttributesWidget::previousRaw() {
 
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE raw LIKE :text "
-		   "AND ch_order < :order "
-		   "ORDER BY ch_order desc");
+                   "WHERE raw LIKE :text "
+                   "AND ch_order < :order "
+                   "ORDER BY ch_order desc");
     query->bindValue(":text", searchText);
     query->bindValue(":order", order);
     query->exec();
@@ -490,7 +491,7 @@ void AttributesWidget::previousRaw() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -511,9 +512,9 @@ void AttributesWidget::nextRaw() {
 
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE raw LIKE :text "
-		   "AND ch_order > :order "
-		   "ORDER BY ch_order asc");
+                   "WHERE raw LIKE :text "
+                   "AND ch_order > :order "
+                   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);
     query->bindValue(":order", order);
     query->exec();
@@ -523,7 +524,7 @@ void AttributesWidget::nextRaw() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -548,9 +549,9 @@ void AttributesWidget::previousComment() {
 
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE comment LIKE :text "
-		   "AND ch_order < :order "
-		   "ORDER BY ch_order desc");
+                   "WHERE comment LIKE :text "
+                   "AND ch_order < :order "
+                   "ORDER BY ch_order desc");
     query->bindValue(":text", searchText);
     query->bindValue(":order", order);
     query->exec();
@@ -560,7 +561,7 @@ void AttributesWidget::previousComment() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -581,9 +582,9 @@ void AttributesWidget::nextComment() {
 
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE comment LIKE :text "
-		   "AND ch_order > :order "
-		   "ORDER BY ch_order asc");
+                   "WHERE comment LIKE :text "
+                   "AND ch_order > :order "
+                   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);
     query->bindValue(":order", order);
     query->exec();
@@ -593,7 +594,7 @@ void AttributesWidget::nextComment() {
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+                     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -619,9 +620,10 @@ void AttributesWidget::newAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
       QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);
-      attribute->setToolTip(description);
+      attribute->setToolTip(hint);
       attribute->setEditable(false);
 
       attributesModel->select();
@@ -654,7 +656,8 @@ void AttributesWidget::newAttribute() {
       attributesModel->submitAll();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
-      attribute->setToolTip(description);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      attribute->setToolTip(hint);
       attribute->setEditable(false);
     }
     delete attributeDialog;
@@ -681,8 +684,9 @@ void AttributesWidget::editAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
-      currentAttribute->setData(newName, Qt::DisplayRole);      
-      currentAttribute->setToolTip(description);
+      currentAttribute->setData(newName, Qt::DisplayRole);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      currentAttribute->setToolTip(hint);
       query->prepare("UPDATE incident_attributes SET name = :newname, description = :newdescription WHERE name = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":newdescription", description);
@@ -708,6 +712,7 @@ void AttributesWidget::editAttribute() {
 }
 
 void AttributesWidget::highlightText() {
+  QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) {
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
     QString currentName = attributesTreeView->currentIndex().data().toString();
@@ -736,17 +741,18 @@ void AttributesWidget::highlightText() {
       query2->bindValue(":id", id);
       query2->exec();
       while (query2->next()) {
-	QString currentText = query2->value(0).toString();
-	while (rawField->find(currentText, QTextDocument::FindWholeWords)) {
-	  format.setFontWeight(QFont::Bold);
-	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	  format.setUnderlineColor(Qt::blue);
-	  rawField->textCursor().mergeCharFormat(format);
-	}
-	cursor = rawField->textCursor();
-	cursor.movePosition(QTextCursor::Start);
-	rawField->setTextCursor(cursor);
+        QString currentText = query2->value(0).toString();
+        while (rawField->find(currentText, QTextDocument::FindWholeWords)) {
+          format.setFontWeight(QFont::Bold);
+          format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+          format.setUnderlineColor(Qt::blue);
+          rawField->textCursor().mergeCharFormat(format);
+        }
+        cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
       }
+      rawField->setTextCursor(currentPos);
       delete query2;
     } else {
       QString currentSelected = rawField->textCursor().selectedText();
@@ -758,7 +764,8 @@ void AttributesWidget::highlightText() {
       QTextCursor cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
-      rawField->find(currentSelected);      
+      rawField->find(currentSelected);
+      rawField->setTextCursor(currentPos);
     }
     delete query;
   } else {
@@ -770,6 +777,7 @@ void AttributesWidget::highlightText() {
     QTextCursor cursor = rawField->textCursor();
     cursor.movePosition(QTextCursor::Start);
     rawField->setTextCursor(cursor);
+    rawField->setTextCursor(currentPos);
   }
 }
 
@@ -800,46 +808,49 @@ void AttributesWidget::assignAttribute() {
       query2->exec();
       query2->first();
       empty = query2->isNull(0);
+      QTextCursor cursPos = rawField->textCursor();
       if (empty) {
-	assignedModel->insertRow(max);
-	assignedModel->setData(assignedModel->index(max, 1), attribute);
-	assignedModel->setData(assignedModel->index(max, 2), id);
-	assignedModel->submitAll();
-	if (rawField->textCursor().selectedText().trimmed() != "") {
+        assignedModel->insertRow(max);
+        assignedModel->setData(assignedModel->index(max, 1), attribute);
+        assignedModel->setData(assignedModel->index(max, 2), id);
+        assignedModel->submitAll();
+        if (rawField->textCursor().selectedText().trimmed() != "") {
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
-	  query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-			  "VALUES (:att, :inc, :text)");
-	  query2->bindValue(":att", attribute);
-	  query2->bindValue(":inc", id);
-      	  query2->bindValue(":text", sourceText);
-	  query2->exec();
-	}
-	resetFont(attributesTree);
-	query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
-	while (query2->next()) {
-	  QString attribute = query2->value(0).toString();
-	  int incident = query2->value(1).toInt();
-	  if (incident == id) {
-	    boldSelected(attributesTree, attribute);
-	  }
-	}
-	highlightText();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	QFont font;
-	font.setBold(true);
-	currentAttribute->setFont(font);
-	valueButton->setEnabled(true);
+          query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+                          "VALUES (:att, :inc, :text)");
+          query2->bindValue(":att", attribute);
+          query2->bindValue(":inc", id);
+          query2->bindValue(":text", sourceText);
+          query2->exec();
+        }
+        resetFont(attributesTree);
+        query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+        while (query2->next()) {
+          QString attribute = query2->value(0).toString();
+          int incident = query2->value(1).toInt();
+          if (incident == id) {
+            boldSelected(attributesTree, attribute);
+          }
+        }
+        highlightText();
+	rawField->setTextCursor(cursPos);
+        QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+        QFont font;
+        font.setBold(true);
+        currentAttribute->setFont(font);
+        valueButton->setEnabled(true);
       } else {
-	if (rawField->textCursor().selectedText().trimmed() != "") {
-	  QString sourceText = rawField->textCursor().selectedText().trimmed();
-	  query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-			  "VALUES (:att, :inc, :text)");
-	  query2->bindValue(":att", attribute);
-	  query2->bindValue(":inc", id);
-      	  query2->bindValue(":text", sourceText);
-	  query2->exec();
-	}
-	highlightText();
+        if (rawField->textCursor().selectedText().trimmed() != "") {
+          QString sourceText = rawField->textCursor().selectedText().trimmed();
+          query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+                          "VALUES (:att, :inc, :text)");
+          query2->bindValue(":att", attribute);
+          query2->bindValue(":inc", id);
+          query2->bindValue(":text", sourceText);
+          query2->exec();
+        }
+        highlightText();
+	rawField->setTextCursor(cursPos);
       }
     }
     delete query;
@@ -873,35 +884,35 @@ void AttributesWidget::unassignAttribute() {
       query2->first();
       empty = query2->isNull(0);
       if (!empty) {
-	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc");
-	query2->bindValue(":att", attribute);
-	query2->bindValue(":inc", id);
-	query2->exec();
-	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
-	query2->bindValue(":att", attribute);
-	query2->bindValue(":inc", id);
-	query2->exec();
-	assignedModel->select();
-	resetFont(attributesTree);
-	query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
-	while (query2->next()) {
-	  QString attribute = query2->value(0).toString();
-	  int incident = query2->value(1).toInt();
-	  if (incident == id) {
-	    boldSelected(attributesTree, attribute);
-	  }
-	}
-	valueButton->setEnabled(false);
-	QTextCharFormat format;
-	format.setFontWeight(QFont::Normal);
-	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	rawField->selectAll();
-	rawField->textCursor().mergeCharFormat(format);
-	rawField->setFontWeight(QFont::Normal);
-	QTextCursor cursor = rawField->textCursor();
-	cursor.movePosition(QTextCursor::Start);
-	rawField->setTextCursor(cursor);
-	valueField->setText("");
+        query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc");
+        query2->bindValue(":att", attribute);
+        query2->bindValue(":inc", id);
+        query2->exec();
+        query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
+        query2->bindValue(":att", attribute);
+        query2->bindValue(":inc", id);
+        query2->exec();
+        assignedModel->select();
+        resetFont(attributesTree);
+        query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+        while (query2->next()) {
+          QString attribute = query2->value(0).toString();
+          int incident = query2->value(1).toInt();
+          if (incident == id) {
+            boldSelected(attributesTree, attribute);
+          }
+        }
+        valueButton->setEnabled(false);
+        QTextCharFormat format;
+        format.setFontWeight(QFont::Normal);
+        format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+        rawField->selectAll();
+        rawField->textCursor().mergeCharFormat(format);
+        rawField->setFontWeight(QFont::Normal);
+        QTextCursor cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+        valueField->setText("");
       }
     }
     delete query;
@@ -929,12 +940,12 @@ void AttributesWidget::resetTexts() {
       query2->first();
       int id = 0;
       if (!(query2->isNull(0))) {
-	id = query2->value(0).toInt();
-	QString attribute = attributesTreeView->currentIndex().data().toString();
-	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
-	query2->bindValue(":att", attribute);
-	query2->bindValue(":inc", id);
-	query2->exec();
+        id = query2->value(0).toInt();
+        QString attribute = attributesTreeView->currentIndex().data().toString();
+        query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
+        query2->bindValue(":att", attribute);
+        query2->bindValue(":inc", id);
+        query2->exec();
       }
       highlightText();
       delete query;
@@ -950,8 +961,8 @@ void AttributesWidget::removeUnusedAttributes() {
   bool unfinished = true;
   while (unfinished) {
     query->exec("SELECT name FROM incident_attributes EXCEPT SELECT attribute "
-		"FROM attributes_to_incidents EXCEPT SELECT father "
-		"FROM incident_attributes");
+                "FROM attributes_to_incidents EXCEPT SELECT father "
+                "FROM incident_attributes");
     while (query->next()) {
       QString current = query->value(0).toString();
       query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
@@ -1115,10 +1126,10 @@ void AttributesWidget::previousCoded() {
     currentOrder = query->record(0).value("attributes_record").toInt();
     QSqlQuery *query2 = new QSqlQuery;
     query2->prepare("SELECT incident, ch_order FROM "
-		    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
-		    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-		    "WHERE ch_order < :order AND attribute = :attribute)"
-		    "ORDER BY ch_order desc");
+                    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+                    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+                    "WHERE ch_order < :order AND attribute = :attribute)"
+                    "ORDER BY ch_order desc");
     query2->bindValue(":order", currentOrder);
     query2->bindValue(":attribute", attribute);
     query2->exec();
@@ -1133,7 +1144,7 @@ void AttributesWidget::previousCoded() {
       query2->first();
       int newOrder = query2->value(0).toInt();
       query2->prepare("UPDATE save_data "
-		      "SET attributes_record=:new");
+                      "SET attributes_record=:new");
       query2->bindValue(":new", newOrder);
       query2->exec();
       retrieveData();
@@ -1152,10 +1163,10 @@ void AttributesWidget::nextCoded() {
     currentOrder = query->record(0).value("attributes_record").toInt();
     QSqlQuery *query2 = new QSqlQuery;
     query2->prepare("SELECT incident, ch_order FROM "
-		    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
-		    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-		    "WHERE ch_order > :order AND attribute = :attribute)"
-		    "ORDER BY ch_order asc");
+                    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+                    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+                    "WHERE ch_order > :order AND attribute = :attribute)"
+                    "ORDER BY ch_order asc");
     query2->bindValue(":order", currentOrder);
     query2->bindValue(":attribute", attribute);
     query2->exec();
@@ -1170,7 +1181,7 @@ void AttributesWidget::nextCoded() {
       query2->first();
       int newOrder = query2->value(0).toInt();
       query2->prepare("UPDATE save_data "
-		      "SET attributes_record=:new");
+                      "SET attributes_record=:new");
       query2->bindValue(":new", newOrder);
       query2->exec();
       retrieveData();
@@ -1189,7 +1200,8 @@ void AttributesWidget::setTree() {
     QString description = query->value(1).toString();
     QStandardItem *father = new QStandardItem(name);    
     attributesTree->appendRow(father);
-    father->setToolTip(description);
+    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    father->setToolTip(hint);
     father->setEditable(false);
     buildHierarchy(father, name);
   }
@@ -1209,7 +1221,8 @@ void AttributesWidget::buildHierarchy(QStandardItem *top, QString name) {
     QString description = query->value(1).toString();
     QStandardItem *child = new QStandardItem(childName);
     top->setChild(children, child);
-    child->setToolTip(description);
+    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    child->setToolTip(hint);
     child->setEditable(false);
     children++;
     buildHierarchy(child, childName);
@@ -1228,11 +1241,11 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
       currentAttribute->setFont(font);
       if (currentAttribute->parent()) {
 	font.setBold(false);
-	font.setItalic(true);
+        font.setItalic(true);
 	while (currentAttribute->parent()) {
-	  currentAttribute = currentAttribute->parent();
-	  currentAttribute->setFont(font);      
-	}
+          currentAttribute = currentAttribute->parent();
+          currentAttribute->setFont(font);      
+        }
       }
     }
     if (model->hasChildren(index)) {
@@ -1248,6 +1261,7 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
     QFont font;
     font.setBold(false);
+    font.setItalic(false);
     currentAttribute->setFont(font);
     if (model->hasChildren(index)) {
       resetFont(model, index);
@@ -1255,7 +1269,38 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
   }
 }
 
+void AttributesWidget::fixTree() {
+  resetFont(attributesTree);
+  QSqlQueryModel *query = new QSqlQueryModel;
+  query->setQuery("SELECT * FROM save_data");
+  int order = 0; 
+  order = query->record(0).value("attributes_record").toInt();
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+  query2->bindValue(":order", order);
+  query2->exec();
+  query2->first();
+  int id = 0;
+  id = query2->value(0).toInt();
+  query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+  while (query2->next()) {
+    QString attribute = query2->value(0).toString();
+    int incident = query2->value(1).toInt();
+    if (incident == id) {
+      boldSelected(attributesTree, attribute);
+    }
+  }
+  delete query;
+  delete query2;
+}
+
 void AttributesWidget::finalBusiness() {
   setComment();
 }
 
+bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
+  if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
+    fixTree();
+  }
+  return false;
+}

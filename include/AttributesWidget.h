@@ -64,7 +64,9 @@ private slots:
   void finalBusiness();
   void setValue();
   void getValue();
-  
+  void fixTree();
+  bool eventFilter(QObject *object, QEvent *event);
+
 private:
   QPointer<EventSequenceDatabase> esd;
   QPointer<AttributeDialog> attributeDialog;

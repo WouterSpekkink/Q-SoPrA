@@ -82,29 +82,47 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 }
 
 void DataWidget::setData(const int index, RecordDialog *recordDialog, const QString type) {
+  int order = index + 1;
   QString timeStamp = recordDialog->getTimeStamp();
   QString description = recordDialog->getDescription();
   QString raw = recordDialog->getRaw();
   QString comment = recordDialog->getComment();
   QString source = recordDialog->getSource();
+  QSqlQuery *query = new QSqlQuery;
   if (type == NEW) {
-    incidentsModel->insertRow(index);
-  } 
-  incidentsModel->setData(incidentsModel->index(index, 1), index + 1);
-  incidentsModel->setData(incidentsModel->index(index, 2), timeStamp);
-  incidentsModel->setData(incidentsModel->index(index, 3), description);
-  incidentsModel->setData(incidentsModel->index(index, 4), raw);
-  incidentsModel->setData(incidentsModel->index(index, 5), comment);
-  incidentsModel->setData(incidentsModel->index(index, 6), source);
-  incidentsModel->setData(incidentsModel->index(index, 7), 0);
-  incidentsModel->submitAll();
+    query->prepare("INSERT INTO incidents (ch_order, timestamp, description, raw, comment, source) "
+		   "VALUES (:order, :timestamp, :description, :raw, :comment, :source)");
+    query->bindValue(":order", order);
+    query->bindValue(":timestamp", timeStamp);
+    query->bindValue(":description", description);
+    query->bindValue(":raw", raw);
+    query->bindValue(":comment", comment);
+    query->bindValue(":source", source);
+    query->exec();
+    incidentsModel->select();
+    incidentsModel->sort(1, Qt::AscendingOrder);
+  } else {
+    query->prepare("UPDATE incidents SET timestamp = :timestamp, description = :description, raw = :raw, comment = :comment, source = :source WHERE ch_order = :order");
+    query->bindValue(":timestamp", timeStamp);
+    query->bindValue(":description", description);
+    query->bindValue(":raw", raw);
+    query->bindValue(":comment", comment);
+    query->bindValue(":source", source);
+    query->bindValue(":order", order);
+    query->exec();
+    incidentsModel->select();
+    incidentsModel->sort(1, Qt::AscendingOrder);
+  }
 }
 
 void DataWidget::appendRecord() {
   recordDialog = new RecordDialog(this, esd, NEW);
   recordDialog->exec();
   if (recordDialog->getExitStatus() == 0) {
-    int max = tableView->verticalHeader()->count();
+    if (incidentsModel->canFetchMore()) {
+      incidentsModel->fetchMore();
+    }
+    int max = incidentsModel->rowCount();
     setData(max, recordDialog, NEW);
     delete recordDialog;
   } else {
@@ -114,14 +132,17 @@ void DataWidget::appendRecord() {
 
 void DataWidget::editRecord() {
   if (tableView->currentIndex().isValid()) {
-    int currentRow = tableView->selectionModel()->currentIndex().row();
-    QSqlQueryModel *query = new QSqlQueryModel;
-    query->setQuery("SELECT * FROM incidents");
-    QString timeStamp = query->record(currentRow).value("timestamp").toString();
-    QString source = query->record(currentRow).value("source").toString();
-    QString description = query->record(currentRow).value("description").toString();
-    QString raw = query->record(currentRow).value("raw").toString();
-    QString comment = query->record(currentRow).value("comment").toString();
+    int currentOrder = tableView->currentIndex().row() + 1;
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT timestamp, source, description, raw, comment FROM incidents WHERE ch_order = :order");
+    query->bindValue(":order", currentOrder);
+    query->exec();
+    query->first();
+    QString timeStamp = query->value(0).toString();
+    QString source = query->value(1).toString();
+    QString description = query->value(2).toString();
+    QString raw = query->value(3).toString();
+    QString comment = query->value(4).toString();
     
     recordDialog = new RecordDialog(this, esd, OLD);
     recordDialog->setTimeStamp(timeStamp);
@@ -132,7 +153,7 @@ void DataWidget::editRecord() {
     recordDialog->initialize();
     recordDialog->exec();
     if (recordDialog->getExitStatus() != 1) {
-      setData(currentRow, recordDialog, OLD);
+      setData(currentOrder - 1, recordDialog, OLD);
       delete recordDialog;
     } else {
       delete recordDialog;
@@ -185,14 +206,22 @@ void DataWidget::insertRecordAfter() {
 
 void DataWidget::moveUp() {
   if (tableView->currentIndex().isValid()) {
-    int currentRow = tableView->selectionModel()->currentIndex().row();
-    if (currentRow + 1 != 1) {
-      incidentsModel->setData(incidentsModel->index(currentRow - 1, 1), currentRow + 1);
-      incidentsModel->submitAll();
-      incidentsModel->setData(incidentsModel->index(currentRow, 1), currentRow);
-      incidentsModel->submitAll();
+    QSqlQuery *query = new QSqlQuery;
+    int currentOrder = tableView->currentIndex().row() + 1;
+    if (currentOrder != 1) {
+      query->prepare("UPDATE incidents SET ch_order = 0 WHERE ch_order = :oldOrder");
+      query->bindValue(":oldOrder", currentOrder);
+      query->exec();
+      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = :oldOrder");
+      query->bindValue(":newOrder", currentOrder);
+      query->bindValue(":oldOrder", currentOrder - 1);
+      query->exec();
+      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
+      query->bindValue(":newOrder", currentOrder - 1);
+      query->exec();
+      incidentsModel->select();
       incidentsModel->sort(1, Qt::AscendingOrder);
-      QModelIndex newIndex = tableView->model()->index(currentRow - 1, 0);
+      QModelIndex newIndex = tableView->model()->index(currentOrder - 2, 0);
       tableView->setCurrentIndex(newIndex);
     }
   }
@@ -200,7 +229,7 @@ void DataWidget::moveUp() {
 
 void DataWidget::moveDown() {
   if (tableView->currentIndex().isValid()) {
-    int currentRow = tableView->selectionModel()->currentIndex().row();
+    int currentRow = tableView->currentIndex().row();
     if (currentRow + 1 != tableView->verticalHeader()->count()) {
       incidentsModel->setData(incidentsModel->index(currentRow + 1, 1), currentRow + 1);
       incidentsModel->submitAll();
@@ -215,14 +244,17 @@ void DataWidget::moveDown() {
 
 void DataWidget::duplicateRow() {
   if (tableView->currentIndex().isValid()) {
-    int currentRow = tableView->selectionModel()->currentIndex().row();
-    QSqlQueryModel *query = new QSqlQueryModel;
-    query->setQuery("SELECT * FROM incidents");
-    QString timeStamp = query->record(currentRow).value("timestamp").toString();
-    QString source = query->record(currentRow).value("source").toString();
-    QString description = query->record(currentRow).value("description").toString();
-    QString raw = query->record(currentRow).value("raw").toString();
-    QString comment = query->record(currentRow).value("comment").toString();
+    int currentOrder = tableView->selectionModel()->currentIndex().row() + 1;
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT timestamp, source, description, raw, comment FROM incidents WHERE ch_order = :order");
+    query->bindValue(":order", currentOrder);
+    query->exec();
+    query->first();
+    QString timeStamp = query->value(0).toString();
+    QString source = query->value(1).toString();
+    QString description = query->value(2).toString();
+    QString raw = query->value(3).toString();
+    QString comment = query->value(4).toString();
     recordDialog = new RecordDialog(this, esd, OLD);
     recordDialog->setTimeStamp(timeStamp);
     recordDialog->setSource(source);
@@ -234,11 +266,10 @@ void DataWidget::duplicateRow() {
     if (recordDialog->getExitStatus() != 1) {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
-      query->bindValue(":oldOrder", currentRow + 1);
+      query->bindValue(":oldOrder", currentOrder);
       query->exec();
       incidentsModel->select();
-      incidentsModel->submitAll();
-      setData(currentRow + 1, recordDialog, NEW);
+      setData(currentOrder, recordDialog, NEW);
       delete recordDialog;
     } else {
       delete recordDialog;
@@ -264,10 +295,9 @@ void DataWidget::removeRow() {
       query->first();
       int id = 0;
       id = query->value(0).toInt();
-      qDebug() << id;
-      incidentsModel->removeRow(currentRow);
-      incidentsModel->submitAll();
-      incidentsModel->select();
+      query->prepare("DELETE FROM incidents WHERE id = :inc");
+      query->bindValue(":inc", id);
+      query->exec();
       query->prepare("DELETE FROM attributes_to_incidents WHERE incident = :inc");
       query->bindValue(":inc", id);
       query->exec();
@@ -278,7 +308,6 @@ void DataWidget::removeRow() {
       query->bindValue(":oldOrder", currentRow);
       query->exec();
       incidentsModel->select();
-      incidentsModel->submitAll();
     }
     delete warningBox;
   }
