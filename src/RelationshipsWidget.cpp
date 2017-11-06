@@ -541,6 +541,30 @@ void RelationshipsWidget::assignRelationship() {
 	  QFont font;
 	  font.setBold(true);
 	  currentItem->setFont(font);
+	  font.setBold(false);
+	  font.setItalic(true);
+	  currentItem->parent()->setFont(font);
+	} else {
+	  if (rawField->textCursor().selectedText().trimmed() != "") {
+	    QString sourceText = rawField->textCursor().selectedText().trimmed();
+	    query2->prepare("UPDATE relationships_to_incidents SET source_text = :text WHERE relationship = :rel AND incident = :inc");
+	    query2->bindValue(":text", sourceText);
+	    query2->bindValue(":rel", currentRelationship);
+	    query2->bindValue(":inc", id);
+	    query2->exec();
+	  }
+	  assignedModel->submitAll();
+	  QTextCharFormat format;
+	  format.setFontWeight(QFont::Bold);
+	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	  format.setUnderlineColor(Qt::blue);
+	  rawField->textCursor().mergeCharFormat(format);
+	  QTextCursor cursor = rawField->textCursor();
+	  cursor.movePosition(QTextCursor::Start);
+	  rawField->setTextCursor(cursor);
+	  QFont font;
+	  font.setBold(true);
+	  currentItem->setFont(font);
 	}
       }
       delete query;
@@ -581,9 +605,15 @@ void RelationshipsWidget::unassignRelationship() {
 	  query2->bindValue(":inc", id);
 	  query2->exec();
 	  assignedModel->select();
-	  QFont font;
-	  font.setBold(false);
-	  currentItem->setFont(font);
+	  resetFont(relationshipsTree);
+	  query2->exec("SELECT relationship, incident FROM relationships_to_incidents");
+	  while (query2->next()) {
+	    QString relationship = query2->value(0).toString();
+	    int incident = query2->value(1).toInt();
+	    if (incident == id) {
+	      boldSelected(relationshipsTree, relationship);
+	    }
+	  }
 	  QTextCharFormat format;
 	  format.setFontWeight(QFont::Normal);
 	  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -1187,6 +1217,9 @@ void RelationshipsWidget::boldSelected(QAbstractItemModel *model, QString name, 
     if (name == currentName) {
       font.setBold(true);
       currentRelationship->setFont(font);
+      font.setBold(false);
+      font.setItalic(true);
+      currentRelationship->parent()->setFont(font);
     }
     if (model->hasChildren(index)) {
       boldSelected(model, name, index);

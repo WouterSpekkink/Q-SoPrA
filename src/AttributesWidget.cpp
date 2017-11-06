@@ -812,12 +812,37 @@ void AttributesWidget::assignAttribute() {
 	QTextCursor cursor = rawField->textCursor();
 	cursor.movePosition(QTextCursor::Start);
 	rawField->setTextCursor(cursor);
-
+	resetFont(attributesTree);
+	query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+	while (query2->next()) {
+	  QString attribute = query2->value(0).toString();
+	  int incident = query2->value(1).toInt();
+	  if (incident == id) {
+	    boldSelected(attributesTree, attribute);
+	  }
+	}
 	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
 	QFont font;
 	font.setBold(true);
 	currentAttribute->setFont(font);
 	valueButton->setEnabled(true);
+      } else {
+	if (rawField->textCursor().selectedText().trimmed() != "") {
+	  QString sourceText = rawField->textCursor().selectedText().trimmed();
+	  query2->prepare("UPDATE attributes_to_incidents SET source_text = :text WHERE attribute = :att AND incident = :inc");
+	  query2->bindValue(":text", sourceText);
+	  query2->bindValue(":att", attribute);
+	  query2->bindValue(":inc", id);
+	  query2->exec();
+	}
+	QTextCharFormat format;
+	format.setFontWeight(QFont::Bold);
+	format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	format.setUnderlineColor(Qt::blue);
+	rawField->textCursor().mergeCharFormat(format);
+	QTextCursor cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
       }
     }
     delete query;
@@ -856,11 +881,19 @@ void AttributesWidget::unassignAttribute() {
 	query2->bindValue(":inc", id);
 	query2->exec();
 	assignedModel->select();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	QFont font;
-	font.setBold(false);
-	currentAttribute->setFont(font);
-	valueButton->setEnabled(false);
+	resetFont(attributesTree);
+	query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+	while (query2->next()) {
+	  QString attribute = query2->value(0).toString();
+	  int incident = query2->value(1).toInt();
+	  if (incident == id) {
+	    boldSelected(attributesTree, attribute);
+	  }
+	}
+	//QFont font;
+	//font.setBold(false);
+	//currentAttribute->setFont(font);
+	//valueButton->setEnabled(false);
 	QTextCharFormat format;
 	format.setFontWeight(QFont::Normal);
 	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -1160,6 +1193,14 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
     if (name == currentName) {
       font.setBold(true);
       currentAttribute->setFont(font);
+      if (currentAttribute->parent()) {
+	font.setBold(false);
+	font.setItalic(true);
+	while (currentAttribute->parent()) {
+	  currentAttribute = currentAttribute->parent();
+	  currentAttribute->setFont(font);      
+	}
+      }
     }
     if (model->hasChildren(index)) {
       boldSelected(model, name, index);
