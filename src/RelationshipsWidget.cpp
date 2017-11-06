@@ -344,7 +344,7 @@ void RelationshipsWidget::highlightText() {
       query2->exec();
       while(query2->next()) {
 	QString currentText = query2->value(0).toString();
-	while (rawField->find(currentText)) {
+	while (rawField->find(currentText, QTextDocument::FindWholeWords)) {
 	  format.setFontWeight(QFont::Bold);
 	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
 	  format.setUnderlineColor(Qt::blue);
