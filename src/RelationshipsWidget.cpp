@@ -92,6 +92,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   unassignRelationshipButton = new QPushButton("Unassign relationship");
   expandTreeButton = new QPushButton("+");
   collapseTreeButton = new QPushButton("-");
+  resetTextsButton = new QPushButton("Reset sources");
 
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -118,6 +119,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
   connect(assignRelationshipButton, SIGNAL(clicked()), this, SLOT(assignRelationship()));
   connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
+  connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getComment()));
   connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
@@ -211,6 +213,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(assignRelationshipButton);
   rightButtonTopLayout->addWidget(unassignRelationshipButton);
+  rightButtonTopLayout->addWidget(resetTextsButton);
   rightLayout->addLayout(rightButtonTopLayout);
   QPointer<QHBoxLayout> rightButtonCodedLayout = new QHBoxLayout;
   rightButtonCodedLayout->addWidget(previousCodedButton);
@@ -327,11 +330,6 @@ void RelationshipsWidget::highlightText() {
       query2->first();
       int id = 0;
       id = query2->value(0).toInt();
-      query2->prepare("SELECT source_text FROM relationships_to_incidents WHERE relationship = :relationship AND incident = :id");
-      query2->bindValue(":relationship", currentName);
-      query2->bindValue(":id", id);
-      query2->exec();
-      query2->first();
       QTextCharFormat format;
       format.setFontWeight(QFont::Normal);
       format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -340,15 +338,22 @@ void RelationshipsWidget::highlightText() {
       QTextCursor cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
-      QString currentText = query2->value(0).toString();
-      rawField->find(currentText);
-      format.setFontWeight(QFont::Bold);
-      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-      format.setUnderlineColor(Qt::blue);
-      rawField->textCursor().mergeCharFormat(format);
-      cursor = rawField->textCursor();
-      cursor.movePosition(QTextCursor::Start);
-      rawField->setTextCursor(cursor);
+      query2->prepare("SELECT source_text FROM relationships_to_incidents_sources WHERE relationship = :relationship AND incident = :id");
+      query2->bindValue(":relationship", currentName);
+      query2->bindValue(":id", id);
+      query2->exec();
+      while(query2->next()) {
+	QString currentText = query2->value(0).toString();
+	while (rawField->find(currentText)) {
+	  format.setFontWeight(QFont::Bold);
+	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	  format.setUnderlineColor(Qt::blue);
+	  rawField->textCursor().mergeCharFormat(format);
+	}
+	cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
+      }
       delete query2;
     } else {
       QString currentSelected = rawField->textCursor().selectedText();
@@ -525,19 +530,17 @@ void RelationshipsWidget::assignRelationship() {
 	  assignedModel->insertRow(max);
 	  assignedModel->setData(assignedModel->index(max, 1), currentRelationship);
 	  assignedModel->setData(assignedModel->index(max, 2), id);
-	  if (rawField->textCursor().selectedText().trimmed() != "") {
-	    QString sourceText = rawField->textCursor().selectedText().trimmed();
-	    assignedModel->setData(assignedModel->index(max, 3), sourceText);
-	  }
 	  assignedModel->submitAll();
-	  QTextCharFormat format;
-	  format.setFontWeight(QFont::Bold);
-	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	  format.setUnderlineColor(Qt::blue);
-	  rawField->textCursor().mergeCharFormat(format);
-	  QTextCursor cursor = rawField->textCursor();
-	  cursor.movePosition(QTextCursor::Start);
-	  rawField->setTextCursor(cursor);
+	  if (rawField->textCursor().selectedText().trimmed() != "") {
+	  QString sourceText = rawField->textCursor().selectedText().trimmed();
+	  query2->prepare("INSERT INTO relationships_to_incidents_sources (relationship, incident, source_text)"
+			  "VALUES (:rel, :inc, :text)");
+	  query2->bindValue(":rel", currentRelationship);
+	  query2->bindValue(":inc", id);
+      	  query2->bindValue(":text", sourceText);
+	  query2->exec();
+	  }
+	  highlightText();
 	  QFont font;
 	  font.setBold(true);
 	  currentItem->setFont(font);
@@ -547,24 +550,14 @@ void RelationshipsWidget::assignRelationship() {
 	} else {
 	  if (rawField->textCursor().selectedText().trimmed() != "") {
 	    QString sourceText = rawField->textCursor().selectedText().trimmed();
-	    query2->prepare("UPDATE relationships_to_incidents SET source_text = :text WHERE relationship = :rel AND incident = :inc");
-	    query2->bindValue(":text", sourceText);
+	    query2->prepare("INSERT INTO relationships_to_incidents_sources (relationship, incident, source_text)"
+			    "VALUES (:rel, :inc, :text)");
 	    query2->bindValue(":rel", currentRelationship);
 	    query2->bindValue(":inc", id);
+	    query2->bindValue(":text", sourceText);
 	    query2->exec();
 	  }
-	  assignedModel->submitAll();
-	  QTextCharFormat format;
-	  format.setFontWeight(QFont::Bold);
-	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	  format.setUnderlineColor(Qt::blue);
-	  rawField->textCursor().mergeCharFormat(format);
-	  QTextCursor cursor = rawField->textCursor();
-	  cursor.movePosition(QTextCursor::Start);
-	  rawField->setTextCursor(cursor);
-	  QFont font;
-	  font.setBold(true);
-	  currentItem->setFont(font);
+	  highlightText();
 	}
       }
       delete query;
@@ -604,6 +597,10 @@ void RelationshipsWidget::unassignRelationship() {
 	  query2->bindValue(":rel", currentRelationship);
 	  query2->bindValue(":inc", id);
 	  query2->exec();
+	  query2->prepare("DELETE FROM relationships_to_incidents_sources WHERE relationship = :rel AND incident = :inc");
+	  query2->bindValue(":rel", currentRelationship);
+	  query2->bindValue(":inc", id);
+	  query2->exec();
 	  assignedModel->select();
 	  resetFont(relationshipsTree);
 	  query2->exec("SELECT relationship, incident FROM relationships_to_incidents");
@@ -628,6 +625,41 @@ void RelationshipsWidget::unassignRelationship() {
       delete query;
       delete query2;
     }
+  }
+}
+
+void RelationshipsWidget::resetTexts() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QPointer<QMessageBox> warningBox = new QMessageBox;
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes) {
+      QSqlQueryModel *query = new QSqlQueryModel;
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("relationships_record").toInt();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = 0;
+      if (!(query2->isNull(0))) {
+	id = query2->value(0).toInt();
+	QString relationship = relationshipsTreeView->currentIndex().data().toString();
+	query2->prepare("DELETE FROM relationships_to_incidents_sources WHERE relationship = :rel AND incident = :inc");
+	query2->bindValue(":rel", relationship);
+	query2->bindValue(":inc", id);
+	query2->exec();
+      }
+      highlightText();
+      delete query;
+      delete query2;
+    }
+    delete warningBox;
   }
 }
 

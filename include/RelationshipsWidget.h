@@ -11,6 +11,7 @@
 #include <QTreeView>
 #include <QDropEvent>
 #include <QHeaderView>
+#include <QMessageBox>
 #include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
@@ -58,6 +59,7 @@ private slots:
   void removeUnusedRelationships();
   void assignRelationship();
   void unassignRelationship();
+  void resetTexts();
   void highlightText();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
@@ -127,6 +129,7 @@ private:
   QPointer<QPushButton> unassignRelationshipButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
+  QPointer<QPushButton> resetTextsButton;
 
   QString descriptionFilter;
   QString rawFilter;

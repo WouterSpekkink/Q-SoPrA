@@ -90,6 +90,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   collapseTreeButton = new QPushButton("-");
   previousCodedButton = new QPushButton("Previous coded");
   nextCodedButton = new QPushButton("Next coded");
+  resetTextsButton = new QPushButton("Reset sources");
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -111,6 +112,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
+  connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(attributeFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
@@ -207,6 +209,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(assignAttributeButton);
   rightButtonTopLayout->addWidget(unassignAttributeButton);
+  rightButtonTopLayout->addWidget(resetTextsButton);
   rightLayout->addLayout(rightButtonTopLayout);
   QPointer<QHBoxLayout> rightButtonMiddleLayout = new QHBoxLayout;
   rightButtonMiddleLayout->addWidget(previousCodedButton);
@@ -720,11 +723,6 @@ void AttributesWidget::highlightText() {
       query2->first();
       int id = 0;
       id = query2->value(0).toInt();
-      query2->prepare("SELECT source_text FROM attributes_to_incidents WHERE attribute = :attribute AND incident = :id");
-      query2->bindValue(":attribute", currentName);
-      query2->bindValue(":id", id);
-      query2->exec();
-      query2->first();
       QTextCharFormat format;
       format.setFontWeight(QFont::Normal);
       format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -733,15 +731,22 @@ void AttributesWidget::highlightText() {
       QTextCursor cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
-      QString currentText = query2->value(0).toString();
-      rawField->find(currentText);
-      format.setFontWeight(QFont::Bold);
-      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-      format.setUnderlineColor(Qt::blue);
-      rawField->textCursor().mergeCharFormat(format);
-      cursor = rawField->textCursor();
-      cursor.movePosition(QTextCursor::Start);
-      rawField->setTextCursor(cursor);
+      query2->prepare("SELECT source_text FROM attributes_to_incidents_sources WHERE attribute = :attribute AND incident = :id");
+      query2->bindValue(":attribute", currentName);
+      query2->bindValue(":id", id);
+      query2->exec();
+      while (query2->next()) {
+	QString currentText = query2->value(0).toString();
+	while (rawField->find(currentText)) {
+	  format.setFontWeight(QFont::Bold);
+	  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	  format.setUnderlineColor(Qt::blue);
+	  rawField->textCursor().mergeCharFormat(format);
+	}
+	cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
+      }
       delete query2;
     } else {
       QString currentSelected = rawField->textCursor().selectedText();
@@ -789,7 +794,7 @@ void AttributesWidget::assignAttribute() {
       int max = assignedModel->rowCount();
       
       bool empty = false;
-      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc  ");
+      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc");
       query2->bindValue(":att", attribute);
       query2->bindValue(":inc", id);
       query2->exec();
@@ -799,19 +804,16 @@ void AttributesWidget::assignAttribute() {
 	assignedModel->insertRow(max);
 	assignedModel->setData(assignedModel->index(max, 1), attribute);
 	assignedModel->setData(assignedModel->index(max, 2), id);
+	assignedModel->submitAll();
 	if (rawField->textCursor().selectedText().trimmed() != "") {
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
-	  assignedModel->setData(assignedModel->index(max, 4), sourceText);
+	  query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+			  "VALUES (:att, :inc, :text)");
+	  query2->bindValue(":att", attribute);
+	  query2->bindValue(":inc", id);
+      	  query2->bindValue(":text", sourceText);
+	  query2->exec();
 	}
-	assignedModel->submitAll();
-	QTextCharFormat format;
-	format.setFontWeight(QFont::Bold);
-	format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	format.setUnderlineColor(Qt::blue);
-	rawField->textCursor().mergeCharFormat(format);
-	QTextCursor cursor = rawField->textCursor();
-	cursor.movePosition(QTextCursor::Start);
-	rawField->setTextCursor(cursor);
 	resetFont(attributesTree);
 	query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
 	while (query2->next()) {
@@ -821,6 +823,7 @@ void AttributesWidget::assignAttribute() {
 	    boldSelected(attributesTree, attribute);
 	  }
 	}
+	highlightText();
 	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
 	QFont font;
 	font.setBold(true);
@@ -829,20 +832,14 @@ void AttributesWidget::assignAttribute() {
       } else {
 	if (rawField->textCursor().selectedText().trimmed() != "") {
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
-	  query2->prepare("UPDATE attributes_to_incidents SET source_text = :text WHERE attribute = :att AND incident = :inc");
-	  query2->bindValue(":text", sourceText);
+	  query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+			  "VALUES (:att, :inc, :text)");
 	  query2->bindValue(":att", attribute);
 	  query2->bindValue(":inc", id);
+      	  query2->bindValue(":text", sourceText);
 	  query2->exec();
 	}
-	QTextCharFormat format;
-	format.setFontWeight(QFont::Bold);
-	format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	format.setUnderlineColor(Qt::blue);
-	rawField->textCursor().mergeCharFormat(format);
-	QTextCursor cursor = rawField->textCursor();
-	cursor.movePosition(QTextCursor::Start);
-	rawField->setTextCursor(cursor);
+	highlightText();
       }
     }
     delete query;
@@ -880,6 +877,10 @@ void AttributesWidget::unassignAttribute() {
 	query2->bindValue(":att", attribute);
 	query2->bindValue(":inc", id);
 	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
+	query2->bindValue(":att", attribute);
+	query2->bindValue(":inc", id);
+	query2->exec();
 	assignedModel->select();
 	resetFont(attributesTree);
 	query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
@@ -890,10 +891,7 @@ void AttributesWidget::unassignAttribute() {
 	    boldSelected(attributesTree, attribute);
 	  }
 	}
-	//QFont font;
-	//font.setBold(false);
-	//currentAttribute->setFont(font);
-	//valueButton->setEnabled(false);
+	valueButton->setEnabled(false);
 	QTextCharFormat format;
 	format.setFontWeight(QFont::Normal);
 	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -908,6 +906,41 @@ void AttributesWidget::unassignAttribute() {
     }
     delete query;
     delete query2;
+  }
+}
+
+void AttributesWidget::resetTexts() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QPointer<QMessageBox> warningBox = new QMessageBox;
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes) {
+      QSqlQueryModel *query = new QSqlQueryModel;
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("attributes_record").toInt();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = 0;
+      if (!(query2->isNull(0))) {
+	id = query2->value(0).toInt();
+	QString attribute = attributesTreeView->currentIndex().data().toString();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
+	query2->bindValue(":att", attribute);
+	query2->bindValue(":inc", id);
+	query2->exec();
+      }
+      highlightText();
+      delete query;
+      delete query2;
+    }
+    delete warningBox;
   }
 }
 
