@@ -60,6 +60,8 @@ private slots:
   void assignRelationship();
   void unassignRelationship();
   void resetTexts();
+  void setButtons();
+  void sourceText(const QString &relationship, const int &incident);
   void highlightText();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());

@@ -113,6 +113,7 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
     incidentsModel->select();
     incidentsModel->sort(1, Qt::AscendingOrder);
   }
+  delete query;
 }
 
 void DataWidget::appendRecord() {
@@ -224,20 +225,30 @@ void DataWidget::moveUp() {
       QModelIndex newIndex = tableView->model()->index(currentOrder - 2, 0);
       tableView->setCurrentIndex(newIndex);
     }
+    delete query;
   }
 }
 
 void DataWidget::moveDown() {
   if (tableView->currentIndex().isValid()) {
-    int currentRow = tableView->currentIndex().row();
-    if (currentRow + 1 != tableView->verticalHeader()->count()) {
-      incidentsModel->setData(incidentsModel->index(currentRow + 1, 1), currentRow + 1);
-      incidentsModel->submitAll();
-      incidentsModel->setData(incidentsModel->index(currentRow, 1), currentRow + 2);
-      incidentsModel->submitAll();
+    int currentOrder = tableView->currentIndex().row() + 1;
+    if (currentOrder != tableView->verticalHeader()->count()) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE incidents SET ch_order = 0 WHERE ch_order = :oldOrder");
+      query->bindValue(":oldOrder", currentOrder);
+      query->exec();
+      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = :oldOrder");
+      query->bindValue(":newOrder", currentOrder);
+      query->bindValue(":oldOrder", currentOrder + 1);
+      query->exec();
+      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
+      query->bindValue(":newOrder", currentOrder + 1);
+      query->exec();
+      incidentsModel->select();
       incidentsModel->sort(1, Qt::AscendingOrder);
-      QModelIndex newIndex = tableView->model()->index(currentRow + 1, 0);
+      QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
       tableView->setCurrentIndex(newIndex);
+      delete query;
     }
   }
 }
@@ -301,13 +312,20 @@ void DataWidget::removeRow() {
       query->prepare("DELETE FROM attributes_to_incidents WHERE incident = :inc");
       query->bindValue(":inc", id);
       query->exec();
+      query->prepare("DELETE FROM attributes_to_incidents_sources WHERE id = :inc");
+      query->bindValue(":inc", id);
+      query->exec();
       query->prepare("DELETE FROM relationships_to_incidents WHERE incident = :inc");
+      query->bindValue(":inc", id);
+      query->exec();
+      query->prepare("DELETE FROM relationships_to_incidents_sources WHERE id = :inc");
       query->bindValue(":inc", id);
       query->exec();
       query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentRow);
       query->exec();
       incidentsModel->select();
+      delete query;
     }
     delete warningBox;
   }

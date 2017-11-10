@@ -250,6 +250,7 @@ void EntityDialog::assignAttribute() {
 void EntityDialog::unassignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     QSqlQuery *query = new QSqlQuery;
+    QSqlQuery *query2 = new QSqlQuery;
     QString attribute = attributesTreeView->currentIndex().data().toString();
     assignedModel->select();
     bool empty = false;
@@ -291,7 +292,7 @@ void EntityDialog::unassignAttribute() {
 	query2->exec("SELECT attribute, entity FROM attributes_to_entities");
 	while (query2->next()) {
 	  QString attribute = query2->value(0).toString();
-	  QString entity = query2->value(1).toInt();
+	  QString entity = query2->value(1).toString();
 	  if (entity == oldName) {
 	    boldSelected(attributesTree, attribute);
 	  }
@@ -301,6 +302,7 @@ void EntityDialog::unassignAttribute() {
       }
     }
     delete query;
+    delete query2;
   }
 }
 
@@ -627,33 +629,32 @@ void EntityDialog::collapseTree() {
   attributesTreeView->collapseAll();
 }
 
-void AttributesWidget::fixTree() {
+void EntityDialog::fixTree() {
   resetFont(attributesTree);
-  QSqlQuery *query2 = new QSqlQuery;
+  QSqlQuery *query = new QSqlQuery;
   if (isNew) {
-    query2->exec("SELECT attribute, new FROM attributes_to_entities");
-    while (query2->next()) {
-      QString attribute = query2->value(0).toString();
-      int mark = query2->value(1).toInt();
+    query->exec("SELECT attribute, new FROM attributes_to_entities");
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      int mark = query->value(1).toInt();
       if (mark == 1) {
 	boldSelected(attributesTree, attribute);
       }
     }
   } else {
-    query2->exec("SELECT attribute, entity FROM attributes_to_entities");
-    while (query2->next()) {
-      QString attribute = query2->value(0).toString();
-      QString entity = query2->value(1).toInt();
+    query->exec("SELECT attribute, entity FROM attributes_to_entities");
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      QString entity = query->value(1).toString();
       if (entity == oldName) {
 	boldSelected(attributesTree, attribute);
       }
     }
   }
   delete query;
-  delete query2;
 }
 
-bool Entity::eventFilter(QObject *object, QEvent *event) {
+bool EntityDialog::eventFilter(QObject *object, QEvent *event) {
   if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
   }

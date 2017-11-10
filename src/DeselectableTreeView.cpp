@@ -10,8 +10,8 @@ void DeselectableTreeView::mousePressEvent(QMouseEvent *event) {
     clearSelection();
     const QModelIndex index;
     selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+    emit noneSelected();
   } 
-  emit selectionChanged();
 }
 
 void DeselectableTreeView::dropEvent(QDropEvent *event) {

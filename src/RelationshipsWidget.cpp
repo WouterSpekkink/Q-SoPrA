@@ -72,7 +72,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   nextIncidentButton = new QPushButton("Next incident");
   nextIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
   jumpButton = new QPushButton("Jump to");
-  markButton = new QPushButton("Mark incident");
+  markButton = new QPushButton("Toggle mark");
   previousMarkedButton = new QPushButton("Previous marked");
   nextMarkedButton = new QPushButton("Next marked");
   descriptionPreviousButton = new QPushButton("Previous");
@@ -82,19 +82,27 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   commentPreviousButton = new QPushButton("Previous");
   commentNextButton = new QPushButton("Next");
   previousCodedButton = new QPushButton("Previous coded");
+  previousCodedButton->setEnabled(false);
   nextCodedButton = new QPushButton("Next coded");
+  nextCodedButton->setEnabled(false);
   submitRelationshipCommentButton = new QPushButton("Set comment");
   newTypeButton = new QPushButton("Add relationship type");
   editTypeButton = new QPushButton("Edit relationship type");
+  editTypeButton->setEnabled(false);
   newRelationshipButton = new QPushButton("Add relationship");
+  newRelationshipButton->setEnabled(false);
   editRelationshipButton = new QPushButton("Edit relationship");
+  editRelationshipButton->setEnabled(false);
   removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
   assignRelationshipButton = new QPushButton("Assign relationship");
+  assignRelationshipButton->setEnabled(false);
   unassignRelationshipButton = new QPushButton("Unassign relationship");
+  unassignRelationshipButton->setEnabled(false);
   expandTreeButton = new QPushButton("+");
   collapseTreeButton = new QPushButton("-");
   resetTextsButton = new QPushButton("Reset sources");
-
+  resetTextsButton->setEnabled(false);
+  
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -123,6 +131,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getComment()));
+  connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(setButtons()));
+  connect(relationshipsTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
   connect(editRelationshipButton, SIGNAL(clicked()), this, SLOT(editRelationship()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
@@ -317,6 +327,39 @@ void RelationshipsWidget::retrieveData() {
   rawField->setTextCursor(cursor);
   delete query;
   delete query2;
+}
+
+void RelationshipsWidget::sourceText(const QString &relationship, const int &incident) {
+  if (rawField->textCursor().selectedText().trimmed() != "") {
+    QSqlQuery *query = new QSqlQuery;
+    int end = 0;
+    int begin = 0;
+    QTextCursor selectCursor = rawField->textCursor();
+    if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
+      begin = rawField->textCursor().position();
+      end = rawField->textCursor().anchor();
+    } else {
+      begin = rawField->textCursor().anchor();
+      end = rawField->textCursor().position();
+    }
+    begin++;
+    end--;
+    
+    selectCursor.setPosition(begin);
+    selectCursor.movePosition(QTextCursor::StartOfWord);
+    selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+    selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    rawField->setTextCursor(selectCursor);
+    QString sourceText = rawField->textCursor().selectedText().trimmed();
+    
+    query->prepare("INSERT INTO relationships_to_incidents_sources (relationship, incident, source_text)"
+		    "VALUES (:rel, :inc, :text)");
+    query->bindValue(":rel", relationship);
+    query->bindValue(":inc", incident);
+    query->bindValue(":text", sourceText);
+    query->exec();
+    delete query;
+  }
 }
 
 void RelationshipsWidget::highlightText() {
@@ -541,33 +584,12 @@ void RelationshipsWidget::assignRelationship() {
 	  assignedModel->setData(assignedModel->index(max, 1), currentRelationship);
 	  assignedModel->setData(assignedModel->index(max, 2), id);
 	  assignedModel->submitAll();
-	  if (rawField->textCursor().selectedText().trimmed() != "") {
-	  QString sourceText = rawField->textCursor().selectedText().trimmed();
-	  query2->prepare("INSERT INTO relationships_to_incidents_sources (relationship, incident, source_text)"
-			  "VALUES (:rel, :inc, :text)");
-	  query2->bindValue(":rel", currentRelationship);
-	  query2->bindValue(":inc", id);
-      	  query2->bindValue(":text", sourceText);
-	  query2->exec();
-	  }
-	  highlightText();
+	  sourceText(currentRelationship, id);
 	  rawField->setTextCursor(cursorPos);
-	  QFont font;
-	  font.setBold(true);
-	  currentItem->setFont(font);
-	  font.setBold(false);
-	  font.setItalic(true);
-	  currentItem->parent()->setFont(font);
+	  boldSelected(relationshipsTree, currentRelationship);
+	  highlightText();
 	} else {
-	  if (rawField->textCursor().selectedText().trimmed() != "") {
-	    QString sourceText = rawField->textCursor().selectedText().trimmed();
-	    query2->prepare("INSERT INTO relationships_to_incidents_sources (relationship, incident, source_text)"
-			    "VALUES (:rel, :inc, :text)");
-	    query2->bindValue(":rel", currentRelationship);
-	    query2->bindValue(":inc", id);
-	    query2->bindValue(":text", sourceText);
-	    query2->exec();
-	  }
+	  sourceText(currentRelationship, id);
 	  highlightText();
 	  rawField->setTextCursor(cursorPos);
 	}
@@ -623,15 +645,8 @@ void RelationshipsWidget::unassignRelationship() {
 	      boldSelected(relationshipsTree, relationship);
 	    }
 	  }
-	  QTextCharFormat format;
-	  format.setFontWeight(QFont::Normal);
-	  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	  rawField->selectAll();
-	  rawField->textCursor().mergeCharFormat(format);
-	  rawField->setFontWeight(QFont::Normal);
-	  QTextCursor cursor = rawField->textCursor();
-	  cursor.movePosition(QTextCursor::Start);
-	  rawField->setTextCursor(cursor);
+	  highlightText();
+	  unassignRelationshipButton->setEnabled(false);
 	}
       }
       delete query;
@@ -1249,6 +1264,68 @@ void RelationshipsWidget::nextCoded() {
       retrieveData();
     }
     delete query;
+  }
+}
+
+void RelationshipsWidget::setButtons() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    if (currentItem->parent()) {
+      QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
+      QSqlQueryModel *query = new QSqlQueryModel;
+      query->setQuery("SELECT * FROM save_data");
+      int order = 0; 
+      order = query->record(0).value("relationships_record").toInt();
+    
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = 0;
+      if (!(query2->isNull(0))) {
+	id = query2->value(0).toInt();
+	assignedModel->select();
+	bool empty = false;
+	query2->prepare("SELECT relationship, incident FROM relationships_to_incidents WHERE relationship = :rel AND incident = :inc  ");
+	query2->bindValue(":rel", currentRelationship);
+	query2->bindValue(":inc", id);
+	query2->exec();
+	query2->first();
+	empty = query2->isNull(0);
+	if (!empty) {
+	  unassignRelationshipButton->setEnabled(true);
+	  resetTextsButton->setEnabled(true);
+	} else {
+	  unassignRelationshipButton->setEnabled(false);
+	  resetTextsButton->setEnabled(false);
+	}
+	assignRelationshipButton->setEnabled(true);
+	previousCodedButton->setEnabled(true);
+	nextCodedButton->setEnabled(true);
+	newRelationshipButton->setEnabled(false);
+	editRelationshipButton->setEnabled(true);
+	editTypeButton->setEnabled(false);
+      }
+    } else {
+      newRelationshipButton->setEnabled(true);
+      editRelationshipButton->setEnabled(false);
+      assignRelationshipButton->setEnabled(false);
+      unassignRelationshipButton->setEnabled(false);
+      editTypeButton->setEnabled(true);
+      resetTextsButton->setEnabled(false);
+      previousCodedButton->setEnabled(false);
+      nextCodedButton->setEnabled(false);
+    }
+  } else {
+    newRelationshipButton->setEnabled(false);
+    editRelationshipButton->setEnabled(false);
+    assignRelationshipButton->setEnabled(false);
+    unassignRelationshipButton->setEnabled(false);
+    editTypeButton->setEnabled(false);
+    resetTextsButton->setEnabled(false);
+    previousCodedButton->setEnabled(false);
+    nextCodedButton->setEnabled(false);
   }
 }
 

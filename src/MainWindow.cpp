@@ -32,9 +32,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   // Functions to create the menu bar.
   createActions();
   createMenus();
-  this->setMenuBar(menuBar);
-
-  this->setMenuBar(menuBar);
 
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Event Dataset");  
@@ -77,6 +74,8 @@ void MainWindow::createMenus() {
   viewMenu->addAction(dataViewAct);
   viewMenu->addAction(attributeViewAct);
   viewMenu->addAction(relationshipViewAct);
+
+  this->setMenuBar(menuBar);
 }
 
 void MainWindow::importFromCsv() {

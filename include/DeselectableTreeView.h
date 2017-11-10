@@ -17,7 +17,7 @@ public:
   void resetSelection();
 
 signals:
-  void selectionChanged();
+  void noneSelected();
   
 private:
   void mousePressEvent(QMouseEvent *event);

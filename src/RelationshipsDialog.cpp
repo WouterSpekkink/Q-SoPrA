@@ -21,6 +21,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entitiesFilter = new QSortFilterProxyModel;
   entitiesFilter->setSourceModel(entitiesTable);
   entitiesFilter->setFilterKeyColumn(1);
+  entitiesFilter->setDynamicSortFilter(true);
   entitiesView = new QListView;
   entitiesView->setModel(entitiesFilter);
   entitiesView->setModelColumn(1);
@@ -206,6 +207,7 @@ void RelationshipsDialog::addEntity() {
       entitiesView->setRowHidden(i, true);
     }
   }
+  entitiesFilter->sort(1, Qt::AscendingOrder);
 }
 
 void RelationshipsDialog::editEntity() {
@@ -239,6 +241,7 @@ void RelationshipsDialog::editEntity() {
 	entitiesView->setRowHidden(i, true);
       }
     }
+    entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
 
@@ -273,6 +276,7 @@ void RelationshipsDialog::editLeftAssignedEntity() {
 	entitiesView->setRowHidden(i, true);
       }
     }
+    entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
 
@@ -307,6 +311,7 @@ void RelationshipsDialog::editRightAssignedEntity() {
 	entitiesView->setRowHidden(i, true);
       }
     }
+    entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
 
@@ -336,6 +341,7 @@ void RelationshipsDialog::removeEntities() {
       entitiesView->setRowHidden(i, true);
     }
   }
+  entitiesFilter->sort(1, Qt::AscendingOrder);
 }
 
 void RelationshipsDialog::cancelAndClose() {

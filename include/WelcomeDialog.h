@@ -11,7 +11,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include <QFileInfo>
-#include <QtSql>
+#include <QSql>
 #include "EventSequenceDatabase.h"
 
 class WelcomeDialog : public QDialog {

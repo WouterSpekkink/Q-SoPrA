@@ -72,7 +72,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   nextIncidentButton = new QPushButton("Next incident");
   nextIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
   jumpButton = new QPushButton("Jump to");
-  markButton = new QPushButton("Mark incident");
+  markButton = new QPushButton("Toggle mark");
   previousMarkedButton = new QPushButton("Previous marked");
   nextMarkedButton = new QPushButton("Next marked");
   descriptionPreviousButton = new QPushButton("Previous");
@@ -83,16 +83,22 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   commentNextButton = new QPushButton("Next");
   newAttributeButton = new QPushButton("New attribute");
   editAttributeButton = new QPushButton("Edit attribute");
+  editAttributeButton->setEnabled(false);
   assignAttributeButton = new QPushButton("Assign attribute");
+  assignAttributeButton->setEnabled(false);
   unassignAttributeButton = new QPushButton("Unassign attribute");
+  unassignAttributeButton->setEnabled(false);
   removeUnusedAttributesButton = new QPushButton("Remove unused attributes");
   valueButton = new QPushButton("Store value");
   valueButton->setEnabled(false);
   expandTreeButton = new QPushButton("+");
   collapseTreeButton = new QPushButton("-");
   previousCodedButton = new QPushButton("Previous coded");
+  previousCodedButton->setEnabled(false);
   nextCodedButton = new QPushButton("Next coded");
+  nextCodedButton->setEnabled(false);
   resetTextsButton = new QPushButton("Reset sources");
+  resetTextsButton->setEnabled(false);
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -120,6 +126,8 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
+  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
@@ -712,6 +720,39 @@ void AttributesWidget::editAttribute() {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
+void AttributesWidget::sourceText(const QString &attribute, const int &incident) {
+  if (rawField->textCursor().selectedText().trimmed() != "") {
+    QSqlQuery *query = new QSqlQuery;
+    int end = 0;
+    int begin = 0;
+    QTextCursor selectCursor = rawField->textCursor();
+    if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
+      begin = rawField->textCursor().position();
+      end = rawField->textCursor().anchor();
+    } else {
+      begin = rawField->textCursor().anchor();
+      end = rawField->textCursor().position();
+    }
+    begin++;
+    end--;
+    
+    selectCursor.setPosition(begin);
+    selectCursor.movePosition(QTextCursor::StartOfWord);
+    selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+    selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    rawField->setTextCursor(selectCursor);
+    QString sourceText = rawField->textCursor().selectedText().trimmed();
+    
+    query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+		    "VALUES (:att, :inc, :text)");
+    query->bindValue(":att", attribute);
+    query->bindValue(":inc", incident);
+    query->bindValue(":text", sourceText);
+    query->exec();
+    delete query;
+  }
+}
+
 void AttributesWidget::highlightText() {
   QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) {
@@ -815,16 +856,8 @@ void AttributesWidget::assignAttribute() {
         assignedModel->setData(assignedModel->index(max, 1), attribute);
         assignedModel->setData(assignedModel->index(max, 2), id);
         assignedModel->submitAll();
-        if (rawField->textCursor().selectedText().trimmed() != "") {
-	  QString sourceText = rawField->textCursor().selectedText().trimmed();
-          query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-                          "VALUES (:att, :inc, :text)");
-          query2->bindValue(":att", attribute);
-          query2->bindValue(":inc", id);
-          query2->bindValue(":text", sourceText);
-          query2->exec();
-        }
-        resetFont(attributesTree);
+	sourceText(attribute, id);
+	resetFont(attributesTree);
         query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
         while (query2->next()) {
           QString attribute = query2->value(0).toString();
@@ -837,15 +870,7 @@ void AttributesWidget::assignAttribute() {
 	rawField->setTextCursor(cursPos);
 	valueButton->setEnabled(true);
       } else {
-        if (rawField->textCursor().selectedText().trimmed() != "") {
-          QString sourceText = rawField->textCursor().selectedText().trimmed();
-          query2->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-                          "VALUES (:att, :inc, :text)");
-          query2->bindValue(":att", attribute);
-          query2->bindValue(":inc", id);
-          query2->bindValue(":text", sourceText);
-          query2->exec();
-        }
+        sourceText(attribute, id);
         highlightText();
 	rawField->setTextCursor(cursPos);
       }
@@ -1190,7 +1215,53 @@ void AttributesWidget::nextCoded() {
     delete query2;
   }
 }
- 
+
+void AttributesWidget::setButtons() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQueryModel *query = new QSqlQueryModel;
+    query->setQuery("SELECT * FROM save_data");
+    int order = 0; 
+    order = query->record(0).value("attributes_record").toInt();
+    
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+    query2->bindValue(":order", order);
+    query2->exec();
+    query2->first();
+    int id = 0;
+    if (!(query2->isNull(0))) {
+      id = query2->value(0).toInt();
+      assignedModel->select();
+      bool empty = false;
+      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc  ");
+      query2->bindValue(":att", currentAttribute);
+      query2->bindValue(":inc", id);
+      query2->exec();
+      query2->first();
+      empty = query2->isNull(0);
+      if (!empty) {
+	unassignAttributeButton->setEnabled(true);
+	resetTextsButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+	resetTextsButton->setEnabled(false);
+      }
+      assignAttributeButton->setEnabled(true);
+      previousCodedButton->setEnabled(true);
+      nextCodedButton->setEnabled(true);
+      editAttributeButton->setEnabled(true);
+    }
+  } else {
+   assignAttributeButton->setEnabled(false);
+   previousCodedButton->setEnabled(false);
+   nextCodedButton->setEnabled(false);
+   editAttributeButton->setEnabled(false);
+   unassignAttributeButton->setEnabled(false);
+   resetTextsButton->setEnabled(false);
+  }
+}
+
 void AttributesWidget::setTree() {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;

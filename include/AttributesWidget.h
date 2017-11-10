@@ -48,6 +48,7 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
+  void sourceText(const QString &attribute, const int &incident);
   void highlightText();
   void assignAttribute();
   void unassignAttribute();
@@ -58,6 +59,7 @@ private slots:
   void collapseTree();
   void previousCoded();
   void nextCoded();
+  void setButtons();
   void buildHierarchy(QStandardItem *top, QString name);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
