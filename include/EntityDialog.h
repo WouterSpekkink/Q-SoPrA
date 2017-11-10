@@ -48,9 +48,12 @@ private slots:
   void removeUnusedAttributes();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void cancelAndClose();
   void saveAndClose();
+  void fixTree();
+  bool eventFilter(QObject *object, QEvent *event);
   
 private:
   QPointer<QStandardItemModel> attributesTree;

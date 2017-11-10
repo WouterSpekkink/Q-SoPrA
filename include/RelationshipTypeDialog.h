@@ -14,7 +14,7 @@
 #include <QEvent>
 #include <QKeyEvent>
 #include <QMessageBox>
-#include <QSql>
+#include <QtSql>
 #include <QSqlQuery>
 #include "Constants.h"
 

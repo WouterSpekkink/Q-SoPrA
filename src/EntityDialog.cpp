@@ -1,3 +1,4 @@
+
 #include "../include/EntityDialog.h"
 
 EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
@@ -220,10 +221,7 @@ void EntityDialog::assignAttribute() {
 	assignedModel->setData(assignedModel->index(max, 1), attribute);
 	assignedModel->setData(assignedModel->index(max, 4), 1);
 	assignedModel->submitAll();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	QFont font;
-	font.setBold(true);
-	currentAttribute->setFont(font);
+        boldSelected(attributesTree, attribute);
 	valueButton->setEnabled(true);
       }
     } else {
@@ -239,12 +237,9 @@ void EntityDialog::assignAttribute() {
       if (empty) {
 	assignedModel->insertRow(max);
 	assignedModel->setData(assignedModel->index(max, 1), attribute);
-	assignedModel->setData(assignedModel->index(max, 2), name);
+	assignedModel->setData(assignedModel->index(max, 2), oldName);
 	assignedModel->submitAll();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	QFont font;
-	font.setBold(true);
-	currentAttribute->setFont(font);
+	boldSelected(attributesTree, attribute);
 	valueButton->setEnabled(true);
       }
     }
@@ -268,12 +263,17 @@ void EntityDialog::unassignAttribute() {
 	query->prepare("DELETE FROM attributes_to_entities WHERE attribute = :att AND new = 1");
 	query->bindValue(":att", attribute);
 	query->exec();
-	assignedModel->select();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	QFont font;
-	font.setBold(false);
-	currentAttribute->setFont(font);
+	resetFont(attributesTree);
+	query2->exec("SELECT attribute, new FROM attributes_to_entities");
+	while (query2->next()) {
+	  QString attribute = query2->value(0).toString();
+	  int mark = query2->value(1).toInt();
+	  if (mark == 1) {
+	    boldSelected(attributesTree, attribute);
+	  }
+	}
 	valueButton->setEnabled(false);
+	valueField->setText("");
       }
     } else {
       query->prepare("SELECT attribute, entity FROM attributes_to_entities WHERE attribute = :att AND entity = :oldName");
@@ -287,11 +287,15 @@ void EntityDialog::unassignAttribute() {
 	query->bindValue(":att", attribute);
 	query->bindValue(":oldName", oldName);
 	query->exec();
-	assignedModel->select();
-	QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	QFont font;
-	font.setBold(false);
-	currentAttribute->setFont(font);
+	resetFont(attributesTree);
+	query2->exec("SELECT attribute, entity FROM attributes_to_entities");
+	while (query2->next()) {
+	  QString attribute = query2->value(0).toString();
+	  QString entity = query2->value(1).toInt();
+	  if (entity == oldName) {
+	    boldSelected(attributesTree, attribute);
+	  }
+	}
 	valueButton->setEnabled(false);
 	valueField->setText("");
       }
@@ -446,7 +450,10 @@ void EntityDialog::setNew() {
 
 void EntityDialog::submitName(const QString &newName) {
   nameField->setText(newName);
+  name = newName;
   oldName = newName;
+  delete attributesTree;
+  setTree();
 }
 
 void EntityDialog::submitDescription(const QString &newDescription) {
@@ -573,6 +580,21 @@ void EntityDialog::saveAndClose() {
   this->close();
 }
 
+void EntityDialog::resetFont(QAbstractItemModel *model, QModelIndex parent) {
+  for(int i = 0; i != model->rowCount(parent); i++) {
+    QModelIndex index = model->index(i, 0, parent);
+    QString currentName = model->data(index).toString();
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+    QFont font;
+    font.setBold(false);
+    font.setItalic(false);
+    currentAttribute->setFont(font);
+    if (model->hasChildren(index)) {
+      resetFont(model, index);
+    }
+  }
+}
+
 void EntityDialog::boldSelected(QAbstractItemModel *model, QString name, QModelIndex parent) {
   for(int i = 0; i != model->rowCount(parent); i++) {
     QModelIndex index = model->index(i, 0, parent);
@@ -582,6 +604,14 @@ void EntityDialog::boldSelected(QAbstractItemModel *model, QString name, QModelI
     if (name == currentName) {
       font.setBold(true);
       currentAttribute->setFont(font);
+      if (currentAttribute->parent()) {
+	font.setBold(false);
+        font.setItalic(true);
+	while (currentAttribute->parent()) {
+          currentAttribute = currentAttribute->parent();
+          currentAttribute->setFont(font);      
+        }
+      }
     }
     if (model->hasChildren(index)) {
       boldSelected(model, name, index);
@@ -596,3 +626,37 @@ void EntityDialog::expandTree() {
 void EntityDialog::collapseTree() {
   attributesTreeView->collapseAll();
 }
+
+void AttributesWidget::fixTree() {
+  resetFont(attributesTree);
+  QSqlQuery *query2 = new QSqlQuery;
+  if (isNew) {
+    query2->exec("SELECT attribute, new FROM attributes_to_entities");
+    while (query2->next()) {
+      QString attribute = query2->value(0).toString();
+      int mark = query2->value(1).toInt();
+      if (mark == 1) {
+	boldSelected(attributesTree, attribute);
+      }
+    }
+  } else {
+    query2->exec("SELECT attribute, entity FROM attributes_to_entities");
+    while (query2->next()) {
+      QString attribute = query2->value(0).toString();
+      QString entity = query2->value(1).toInt();
+      if (entity == oldName) {
+	boldSelected(attributesTree, attribute);
+      }
+    }
+  }
+  delete query;
+  delete query2;
+}
+
+bool Entity::eventFilter(QObject *object, QEvent *event) {
+  if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
+    fixTree();
+  }
+  return false;
+}
+

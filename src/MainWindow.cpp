@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   createActions();
   createMenus();
 
+  this->setMenuBar(menuBar);
+
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Event Dataset");  
   stacked->show();
@@ -241,6 +243,7 @@ void MainWindow::switchToDataView() {
 
 void MainWindow::switchToAttributeView() {
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+  aw->incidentsModel->sort(1, Qt::AscendingOrder);
   aw->incidentsModel->select();
   aw->retrieveData();
   stacked->setCurrentWidget(attributesWidget);
@@ -248,6 +251,7 @@ void MainWindow::switchToAttributeView() {
 
 void MainWindow::switchToRelationshipView() {
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->incidentsModel->sort(1, Qt::AscendingOrder);
   rw->incidentsModel->select();
   rw->retrieveData();
   stacked->setCurrentWidget(relationshipsWidget);

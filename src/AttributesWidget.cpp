@@ -10,6 +10,7 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
 
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
+  incidentsModel->setSort(1, Qt::AscendingOrder);
   incidentsModel->select();
 
   attributesModel = new QSqlTableModel(this);
@@ -834,11 +835,7 @@ void AttributesWidget::assignAttribute() {
         }
         highlightText();
 	rawField->setTextCursor(cursPos);
-        QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-        QFont font;
-        font.setBold(true);
-        currentAttribute->setFont(font);
-        valueButton->setEnabled(true);
+	valueButton->setEnabled(true);
       } else {
         if (rawField->textCursor().selectedText().trimmed() != "") {
           QString sourceText = rawField->textCursor().selectedText().trimmed();
@@ -1061,15 +1058,19 @@ void AttributesWidget::retrieveData() {
 
   QString indexText = "<b>Incident (" + QString::number(order) + " / " + QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
-  
-  query->setQuery("SELECT * FROM incidents");
-  int id = query->record(order - 1).value("id").toInt();
-  QString timeStamp = query->record(order - 1).value("timestamp").toString();
-  QString source = query->record(order - 1).value("source").toString();
-  QString description = query->record(order - 1).value("description").toString();
-  QString raw = query->record(order - 1).value("raw").toString();
-  QString comment = query->record(order - 1).value("comment").toString();
-  int mark = query->record(order - 1).value("mark").toInt();
+
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark FROM incidents WHERE ch_order = :order");
+  query2->bindValue(":order", order);
+  query2->exec();
+  query2->first();
+  int id = query2->value(0).toInt();
+  QString timeStamp = query2->value(1).toString();
+  QString source = query2->value(2).toString();
+  QString description = query2->value(3).toString();
+  QString raw = query2->value(4).toString();
+  QString comment = query2->value(5).toString();
+  int mark = query2->value(6).toInt();
   timeStampField->setText(timeStamp);
   sourceField->setText(source);
   descriptionField->setText(description);
@@ -1084,7 +1085,6 @@ void AttributesWidget::retrieveData() {
   }
 
   resetFont(attributesTree);
-  QSqlQuery *query2 = new QSqlQuery;
   query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
   while (query2->next()) {
     QString attribute = query2->value(0).toString();
