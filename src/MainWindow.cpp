@@ -32,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   // Functions to create the menu bar.
   createActions();
   createMenus();
+  this->setMenuBar(menuBar);
 
   this->setMenuBar(menuBar);
 
