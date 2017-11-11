@@ -1,7 +1,6 @@
 #include "../include/AttributesWidget.h"
 
-AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
-  esd = submittedEsd;
+AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
 
   descriptionFilter = "";
   rawFilter = "";
@@ -37,67 +36,67 @@ AttributesWidget::AttributesWidget(QWidget *parent, EventSequenceDatabase *submi
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   attributesTreeView->installEventFilter(this);
 
-  indexLabel = new QLabel("<b>Incident ( / )</b>");
-  markLabel = new QLabel();
+  indexLabel = new QLabel("<b>Incident ( / )</b>", this);
+  markLabel = new QLabel("", this);
   markLabel->setStyleSheet("QLabel {color: red}");
-  timeStampLabel = new QLabel("<b>Timing:</b>");
-  sourceLabel = new QLabel("<b>Source:</b>");
-  descriptionLabel = new QLabel("<b>Description:</b>");
-  rawLabel = new QLabel("<b>Raw:</b>");
-  commentLabel = new QLabel("<b>Comments:</b>");
-  attributesLabel = new QLabel("<h2>Attributes</h2>");
-  descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>");
-  rawFilterLabel = new QLabel("<i>Search raw texts:</i>");
-  commentFilterLabel = new QLabel("<i>Search comments:</i>");
-  attributeFilterLabel = new QLabel("<b>Filter attributes:</b>");
-  valueLabel = new QLabel("<b>Value:</b>");
+  timeStampLabel = new QLabel("<b>Timing:</b>", this);
+  sourceLabel = new QLabel("<b>Source:</b>", this);
+  descriptionLabel = new QLabel("<b>Description:</b>", this);
+  rawLabel = new QLabel("<b>Raw:</b>", this);
+  commentLabel = new QLabel("<b>Comments:</b>", this);
+  attributesLabel = new QLabel("<h2>Attributes</h2>", this);
+  descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>", this);
+  rawFilterLabel = new QLabel("<i>Search raw texts:</i>", this);
+  commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
+  attributeFilterLabel = new QLabel("<b>Filter attributes:</b>", this);
+  valueLabel = new QLabel("<b>Value:</b>", this);
   
-  timeStampField = new QLineEdit();
+  timeStampField = new QLineEdit(this);
   timeStampField->setReadOnly(true);
-  sourceField = new QLineEdit();
+  sourceField = new QLineEdit(this);
   sourceField->setReadOnly(true);
-  descriptionField = new QTextEdit();
+  descriptionField = new QTextEdit(this);
   descriptionField->setReadOnly(true);
-  rawField = new QTextEdit();
+  rawField = new QTextEdit(this);
   rawField->setReadOnly(true);
-  commentField = new QTextEdit();
-  descriptionFilterField = new QLineEdit();
-  rawFilterField = new QLineEdit();
-  commentFilterField = new QLineEdit();
-  attributeFilterField = new QLineEdit();
-  valueField = new QLineEdit();
+  commentField = new QTextEdit(this);
+  descriptionFilterField = new QLineEdit(this);
+  rawFilterField = new QLineEdit(this);
+  commentFilterField = new QLineEdit(this);
+  attributeFilterField = new QLineEdit(this);
+  valueField = new QLineEdit(this);
 
-  previousIncidentButton = new QPushButton("Previous incident");
+  previousIncidentButton = new QPushButton("Previous incident", this);
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
-  nextIncidentButton = new QPushButton("Next incident");
+  nextIncidentButton = new QPushButton("Next incident", this);
   nextIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
-  jumpButton = new QPushButton("Jump to");
-  markButton = new QPushButton("Toggle mark");
-  previousMarkedButton = new QPushButton("Previous marked");
-  nextMarkedButton = new QPushButton("Next marked");
-  descriptionPreviousButton = new QPushButton("Previous");
-  descriptionNextButton = new QPushButton("Next");
-  rawPreviousButton = new QPushButton("Previous");
-  rawNextButton = new QPushButton("Next");
-  commentPreviousButton = new QPushButton("Previous");
-  commentNextButton = new QPushButton("Next");
-  newAttributeButton = new QPushButton("New attribute");
-  editAttributeButton = new QPushButton("Edit attribute");
+  jumpButton = new QPushButton("Jump to", this);
+  markButton = new QPushButton("Toggle mark", this);
+  previousMarkedButton = new QPushButton("Previous marked", this);
+  nextMarkedButton = new QPushButton("Next marked", this);
+  descriptionPreviousButton = new QPushButton("Previous", this);
+  descriptionNextButton = new QPushButton("Next", this);
+  rawPreviousButton = new QPushButton("Previous", this);
+  rawNextButton = new QPushButton("Next", this);
+  commentPreviousButton = new QPushButton("Previous", this);
+  commentNextButton = new QPushButton("Next", this);
+  newAttributeButton = new QPushButton("New attribute", this);
+  editAttributeButton = new QPushButton("Edit attribute", this);
   editAttributeButton->setEnabled(false);
-  assignAttributeButton = new QPushButton("Assign attribute");
+  assignAttributeButton = new QPushButton("Assign attribute", this);
   assignAttributeButton->setEnabled(false);
-  unassignAttributeButton = new QPushButton("Unassign attribute");
+  unassignAttributeButton = new QPushButton("Unassign attribute", this);
   unassignAttributeButton->setEnabled(false);
-  removeUnusedAttributesButton = new QPushButton("Remove unused attributes");
-  valueButton = new QPushButton("Store value");
+  removeUnusedAttributesButton = new QPushButton("Remove unused attributes", this);
+  valueButton = new QPushButton("Store value", this);
   valueButton->setEnabled(false);
-  expandTreeButton = new QPushButton("+");
-  collapseTreeButton = new QPushButton("-");
-  previousCodedButton = new QPushButton("Previous coded");
+  expandTreeButton = new QPushButton("+", this);
+  collapseTreeButton = new QPushButton("-", this);
+  previousCodedButton = new QPushButton("Previous coded", this);
   previousCodedButton->setEnabled(false);
-  nextCodedButton = new QPushButton("Next coded");
+  nextCodedButton = new QPushButton("Next coded", this);
   nextCodedButton->setEnabled(false);
-  resetTextsButton = new QPushButton("Reset sources");
+  resetTextsButton = new QPushButton("Reset sources", this);
   resetTextsButton->setEnabled(false);
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
@@ -758,7 +757,7 @@ void AttributesWidget::highlightText() {
   if (attributesTreeView->currentIndex().isValid()) {
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
     QString currentName = attributesTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     if (currentAttribute->font().bold()) {
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
@@ -825,7 +824,7 @@ void AttributesWidget::highlightText() {
 
 void AttributesWidget::assignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
     order = query->record(0).value("attributes_record").toInt();
@@ -882,7 +881,7 @@ void AttributesWidget::assignAttribute() {
 
 void AttributesWidget::unassignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
     order = query->record(0).value("attributes_record").toInt();
@@ -944,14 +943,14 @@ void AttributesWidget::unassignAttribute() {
 
 void AttributesWidget::resetTexts() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QPointer<QMessageBox> warningBox = new QMessageBox;
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Yes);
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
     warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
     if (warningBox->exec() == QMessageBox::Yes) {
-      QSqlQueryModel *query = new QSqlQueryModel;
+      QSqlQueryModel *query = new QSqlQueryModel(this);
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("attributes_record").toInt();
@@ -1009,7 +1008,7 @@ void AttributesWidget::removeUnusedAttributes() {
 
 void AttributesWidget::setValue() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
     order = query->record(0).value("attributes_record").toInt();
@@ -1036,7 +1035,7 @@ void AttributesWidget::setValue() {
 
 void AttributesWidget::getValue() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
     order = query->record(0).value("attributes_record").toInt();
@@ -1072,7 +1071,7 @@ void AttributesWidget::getValue() {
 }
 
 void AttributesWidget::retrieveData() {
-  QSqlQueryModel *query = new QSqlQueryModel;
+  QSqlQueryModel *query = new QSqlQueryModel(this);
   query->setQuery("SELECT * FROM save_data");
   int order = 0;
   order = query->record(0).value("attributes_record").toInt();
@@ -1145,7 +1144,7 @@ void AttributesWidget::collapseTree() {
 void AttributesWidget::previousCoded() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString attribute = attributesTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int currentOrder = 0; 
     currentOrder = query->record(0).value("attributes_record").toInt();
@@ -1182,7 +1181,7 @@ void AttributesWidget::previousCoded() {
 void AttributesWidget::nextCoded() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString attribute = attributesTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int currentOrder = 0; 
     currentOrder = query->record(0).value("attributes_record").toInt();
@@ -1219,7 +1218,7 @@ void AttributesWidget::nextCoded() {
 void AttributesWidget::setButtons() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString currentAttribute = attributesTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
     order = query->record(0).value("attributes_record").toInt();
@@ -1342,7 +1341,7 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
 
 void AttributesWidget::fixTree() {
   resetFont(attributesTree);
-  QSqlQueryModel *query = new QSqlQueryModel;
+  QSqlQueryModel *query = new QSqlQueryModel(this);
   query->setQuery("SELECT * FROM save_data");
   int order = 0; 
   order = query->record(0).value("attributes_record").toInt();

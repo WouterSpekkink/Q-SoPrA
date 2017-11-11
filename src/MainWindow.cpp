@@ -9,16 +9,19 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   this->resize(desktop->screenGeometry(this).size());
 
   // Creating the stack and te  widgets it can display.
-  stacked = new QStackedWidget;
+  stacked = new QStackedWidget(this);
   dataWidget = new DataWidget(this, esd);
-  attributesWidget = new AttributesWidget(this, esd);
-  relationshipsWidget = new RelationshipsWidget(this, esd);
+  attributesWidget = new AttributesWidget(this);
+  relationshipsWidget = new RelationshipsWidget(this);
+  journalWidget = new JournalWidget(this);
+  
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);
   stacked->addWidget(relationshipsWidget);
-
+  stacked->addWidget(journalWidget);
+  
   // Some things related to positioning.
-  QPointer<QWidget> centralWidget = new QWidget; 
+  QPointer<QWidget> centralWidget = new QWidget(this); 
   stacked->setCurrentWidget(dataWidget);
   setCentralWidget(centralWidget);
   stacked->move(0,0);
@@ -61,6 +64,10 @@ void MainWindow::createActions() {
   relationshipViewAct = new QAction(tr("&Relationship view"), this);
   relationshipViewAct->setStatusTip("Switch to relationship view");
   connect(relationshipViewAct, SIGNAL(triggered()), this, SLOT(switchToRelationshipView()));
+
+  journalViewAct = new QAction(tr("&Journal view"), this);
+  journalViewAct->setStatusTip("Switch to journal view");
+  connect(journalViewAct, SIGNAL(triggered()), this, SLOT(switchToJournalView()));
 }
 
 void MainWindow::createMenus() {
@@ -74,6 +81,7 @@ void MainWindow::createMenus() {
   viewMenu->addAction(dataViewAct);
   viewMenu->addAction(attributeViewAct);
   viewMenu->addAction(relationshipViewAct);
+  viewMenu->addAction(journalViewAct);
 
   this->setMenuBar(menuBar);
 }
@@ -96,7 +104,7 @@ void MainWindow::importFromCsv() {
       }
     }
     if (quoteFound == true) {
-      QPointer<QMessageBox> errorBox = new QMessageBox;
+      QPointer<QMessageBox> errorBox = new QMessageBox(this);
       errorBox->setText(tr("<b>ERROR: Import cancelled</b>"));
       errorBox->setInformativeText("Unmatched quotes (\") were found in one of the lines of the file.");
       errorBox->exec();
@@ -112,7 +120,7 @@ void MainWindow::importFromCsv() {
     
     if (headerFound == false) {
       if (tokens[0] != "Timing" && tokens[0] != "timing") {
-	QPointer<QMessageBox> errorBox = new QMessageBox;
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Timing\" in first column.");
 	errorBox->exec();
@@ -120,7 +128,7 @@ void MainWindow::importFromCsv() {
 	return;
       }
       if (tokens[1] != "Description" && tokens[1] != "description") {
-	QPointer<QMessageBox> errorBox = new QMessageBox;
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Description\" in second column.");
 	errorBox->exec();
@@ -128,7 +136,7 @@ void MainWindow::importFromCsv() {
 	return;
       }
       if (tokens[2] != "Raw" && tokens[2] != "raw") {
-	QPointer<QMessageBox> errorBox = new QMessageBox;
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Raw\" in third column.");
 	errorBox->exec();
@@ -136,7 +144,7 @@ void MainWindow::importFromCsv() {
 	return;
       }
       if (tokens[3] != "Comments" && tokens[3] != "comments") {
-	QPointer<QMessageBox> errorBox = new QMessageBox;
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Comments\" in fourth column.");
 	errorBox->exec();
@@ -144,7 +152,7 @@ void MainWindow::importFromCsv() {
 	return;
       }
       if (tokens[4] != "Source" && tokens[4] != "source") {
-	QPointer<QMessageBox> errorBox = new QMessageBox;
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
 	errorBox->setInformativeText("Expected \"Source\" in third column.");
 	errorBox->exec();
@@ -255,4 +263,14 @@ void MainWindow::switchToRelationshipView() {
   rw->incidentsModel->select();
   rw->retrieveData();
   stacked->setCurrentWidget(relationshipsWidget);
+}
+
+void MainWindow::switchToJournalView() {
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(3));
+  const QModelIndex index;
+  jw->tableView->clearSelection();
+  jw->tableView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+  jw->tableView->setCurrentIndex(index);
+  jw->logField->setText("");
+  stacked->setCurrentWidget(journalWidget);
 }

@@ -36,6 +36,8 @@ private slots:
 private:
   QPointer<EventSequenceDatabase> esd;
   QPointer<RecordDialog> recordDialog;
+  QPointer<EventTableModel> incidentsModel;
+  QPointer<QTableView> tableView;
   
   QPointer<QPushButton> appendRecordButton;
   QPointer<QPushButton> editRecordButton;
@@ -45,10 +47,6 @@ private:
   QPointer<QPushButton> moveDownButton;
   QPointer<QPushButton> duplicateRowButton;
   QPointer<QPushButton> removeRowButton;
-  
-  EventTableModel *incidentsModel;
-  
-  QTableView *tableView;
 };
 
 

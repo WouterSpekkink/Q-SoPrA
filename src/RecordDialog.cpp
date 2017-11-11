@@ -11,21 +11,21 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
     source = "";
   }
   
-  titleLabel = new QLabel("<h1>Set incident details<h1>");
-  timeStampLabel = new QLabel("Timing:");
-  descriptionLabel = new QLabel("Description:");
-  rawLabel = new QLabel("Raw text:");
-  commentLabel = new QLabel("Comments:");
-  sourceLabel = new QLabel("Source:");
+  titleLabel = new QLabel("<h1>Set incident details<h1>", this);
+  timeStampLabel = new QLabel("Timing:", this);
+  descriptionLabel = new QLabel("Description:", this);
+  rawLabel = new QLabel("Raw text:", this);
+  commentLabel = new QLabel("Comments:", this);
+  sourceLabel = new QLabel("Source:", this);
   
-  timeStampField = new QLineEdit();
-  descriptionField = new QTextEdit();
-  rawField = new QTextEdit();
-  commentField = new QTextEdit();
-  sourceField = new QLineEdit();
+  timeStampField = new QLineEdit(this);
+  descriptionField = new QTextEdit(this);
+  rawField = new QTextEdit(this);
+  commentField = new QTextEdit(this);
+  sourceField = new QLineEdit(this);
 
-  saveRecordButton = new QPushButton("Save incident");
-  cancelButton = new QPushButton("Cancel");
+  saveRecordButton = new QPushButton("Save incident", this);
+  cancelButton = new QPushButton("Cancel", this);
 
   // We connect all the signals.
   connect(timeStampField, SIGNAL(textChanged(const QString &)), this, SLOT(setTimeStamp(const QString &)));
@@ -136,19 +136,19 @@ void RecordDialog::saveAndClose() {
   raw = rawField->toPlainText();
   comment = commentField->toPlainText();
   if (description == "") {
-    QPointer<QMessageBox> errorBox = new QMessageBox;
+    QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>ERROR</b>"));
     errorBox->setInformativeText("A description for the incident is required.");
     errorBox->exec();
     return;
   } else if (timeStamp == "") {
-      QPointer<QMessageBox> errorBox = new QMessageBox;
+      QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>ERROR</b>"));
     errorBox->setInformativeText("A time stamp for the incident is required.");
     errorBox->exec();
     return;
   } else if (source == "") {
-    QPointer<QMessageBox> errorBox = new QMessageBox;
+    QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>ERROR</b>"));
     errorBox->setInformativeText("A source for the incident is required.");
     errorBox->exec();

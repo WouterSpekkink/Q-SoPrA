@@ -12,7 +12,6 @@
 #include <QDropEvent>
 #include <QHeaderView>
 #include <QMessageBox>
-#include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
 #include "RelationshipTypeDialog.h"
@@ -25,7 +24,7 @@ class RelationshipsWidget : public QWidget {
   friend class MainWindow;
 
 public:
-  RelationshipsWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
+  RelationshipsWidget(QWidget *parent=0);
   ~RelationshipsWidget() {};
 
 private slots:
@@ -71,7 +70,6 @@ private slots:
   void finalBusiness();
 
 private:
-  QPointer<EventSequenceDatabase> esd;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> typeModel;
   QPointer<QSqlTableModel> relationshipsModel;

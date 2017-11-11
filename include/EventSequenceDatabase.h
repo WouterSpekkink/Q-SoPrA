@@ -4,6 +4,7 @@
 #include <QtSql>
 #include <QObject>
 #include <QMessageBox>
+#include <QPointer>
 
 class EventSequenceDatabase : public QObject {
   friend class WelcomeDialog;
@@ -13,18 +14,15 @@ class EventSequenceDatabase : public QObject {
 
 public:
   EventSequenceDatabase();
-  ~EventSequenceDatabase() {};
+  ~EventSequenceDatabase() {
+    delete db;
+  };
 
   void openDB(const QString &name);
   
 private:
-  QSqlDatabase* db;
+  QSqlDatabase *db;
   
 };
-
-
-
-
-
 
 #endif

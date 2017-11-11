@@ -14,6 +14,7 @@
 #include "DataWidget.h"
 #include "AttributesWidget.h"
 #include "RelationshipsWidget.h"
+#include "JournalWidget.h"
 #include "ProgressBar.h"
 
 class MainWindow : public QMainWindow {
@@ -31,11 +32,17 @@ private slots:
   void switchToDataView();
   void switchToAttributeView();
   void switchToRelationshipView();
+  void switchToJournalView();
   
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
   
 private:
+  QPointer<QStackedWidget> stacked;
+  QPointer<QWidget> dataWidget;
+  QPointer<QWidget> attributesWidget;
+  QPointer<QWidget> relationshipsWidget;
+  QPointer<QWidget> journalWidget;
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
@@ -47,13 +54,9 @@ private:
   QPointer<QAction> dataViewAct;
   QPointer<QAction> attributeViewAct;
   QPointer<QAction> relationshipViewAct;
+  QPointer<QAction> journalViewAct;
 
   QPointer<EventSequenceDatabase> esd;
-
-  QStackedWidget *stacked;
-  QWidget *dataWidget;
-  QWidget *attributesWidget;
-  QWidget *relationshipsWidget;
 };
 
 #endif

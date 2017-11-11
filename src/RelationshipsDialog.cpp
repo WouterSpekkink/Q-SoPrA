@@ -2,45 +2,45 @@
 
 RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   // First we declare the entities of this dialog.
-  tailLabel = new QLabel(DIRECTEDTAIL);
-  headLabel = new QLabel(DIRECTEDHEAD);
-  selectedSourceLabel = new QLabel(DEFAULT);
-  selectedTargetLabel = new QLabel(DEFAULT);
+  tailLabel = new QLabel(DIRECTEDTAIL, this);
+  headLabel = new QLabel(DIRECTEDHEAD, this);
+  selectedSourceLabel = new QLabel(DEFAULT, this);
+  selectedTargetLabel = new QLabel(DEFAULT, this);
   name = "";
   oldName = "";
   type = "";
   exitStatus = 1;
   
-  sourceLabel = new QLabel(tr("Source filter:"));
-  typeLabel = new QLabel("PLACEHOLDER");
-  targetLabel = new QLabel(tr("Target filter:"));
-  entitiesTable = new EntityTableModel;
+  sourceLabel = new QLabel(tr("Source filter:"), this);
+  typeLabel = new QLabel("", this);
+  targetLabel = new QLabel(tr("Target filter:"), this);
+  entitiesTable = new EntityTableModel(this);
   entitiesTable->setTable("entities");
   entitiesTable->setSort(1, Qt::AscendingOrder);
   entitiesTable->select();
-  entitiesFilter = new QSortFilterProxyModel;
+  entitiesFilter = new QSortFilterProxyModel(this);
   entitiesFilter->setSourceModel(entitiesTable);
   entitiesFilter->setFilterKeyColumn(1);
   entitiesFilter->setDynamicSortFilter(true);
-  entitiesView = new QListView;
+  entitiesView = new QListView(this);
   entitiesView->setModel(entitiesFilter);
   entitiesView->setModelColumn(1);
   entitiesView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
     
-  assignLeftEntityButton = new QPushButton("use selected");
-  assignRightEntityButton = new QPushButton("use selected");
+  assignLeftEntityButton = new QPushButton("use selected", this);
+  assignRightEntityButton = new QPushButton("use selected", this);
   
   entityFilterField = new QLineEdit();
-  newEntityButton = new QPushButton(tr("Define new entity"));
-  editEntityButton = new QPushButton(tr("Edit highlighted entity"));
-  editLeftAssignedEntityButton = new QPushButton(tr("Edit left assigned entity"));
-  editRightAssignedEntityButton = new QPushButton(tr("Edit right assigned entity"));
-  removeEntitiesButton = new QPushButton(tr("Remove unused entities"));
+  newEntityButton = new QPushButton(tr("Define new entity"), this);
+  editEntityButton = new QPushButton(tr("Edit highlighted entity"), this);
+  editLeftAssignedEntityButton = new QPushButton(tr("Edit left assigned entity"), this);
+  editRightAssignedEntityButton = new QPushButton(tr("Edit right assigned entity"), this);
+  removeEntitiesButton = new QPushButton(tr("Remove unused entities"), this);
 
-  cancelCloseButton = new QPushButton(tr("Cancel"));
-  resetButton = new QPushButton(tr("Reset"));
-  saveCloseButton = new QPushButton(tr("Save relationship"));
+  cancelCloseButton = new QPushButton(tr("Cancel"), this);
+  resetButton = new QPushButton(tr("Reset"), this);
+  saveCloseButton = new QPushButton(tr("Save relationship"), this);
   
   //connect(sourceListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
   //connect(targetListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
@@ -81,7 +81,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   selectedTargetLabel->setAlignment(Qt::AlignHCenter);
   mainLayout->addLayout(arrowLayout);
 
-  QPointer<QFrame> topLine = new QFrame();
+  QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
 
@@ -93,7 +93,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   buttonsLayout->addWidget(removeEntitiesButton);
   mainLayout->addLayout(buttonsLayout);
   
-  QPointer<QFrame> bottomLine = new QFrame();
+  QPointer<QFrame> bottomLine = new QFrame;
   bottomLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(bottomLine);
 
@@ -351,7 +351,7 @@ void RelationshipsDialog::cancelAndClose() {
 
 void RelationshipsDialog::saveAndClose() {
   if (selectedSourceLabel->text() == DEFAULT) {
-    QPointer<QMessageBox> errorBox = new QMessageBox;
+    QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>No source selected</b>"));
     errorBox->setInformativeText("You did not select a source for this relationship.");
     errorBox->exec();
@@ -359,7 +359,7 @@ void RelationshipsDialog::saveAndClose() {
     return;
   }
   if (selectedTargetLabel->text() == DEFAULT) {
-    QPointer<QMessageBox> errorBox = new QMessageBox;
+    QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>No target selected</b>"));
     errorBox->setInformativeText("You did not select a target for this relationship.");
     errorBox->exec();
@@ -377,7 +377,7 @@ void RelationshipsDialog::saveAndClose() {
     exitStatus = 0;
     this->close();
   } else {
-    QPointer<QMessageBox> errorBox = new QMessageBox;
+    QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>Relationship already exists</b>"));
     errorBox->setInformativeText("An identical relationship already exists.");
     errorBox->exec();

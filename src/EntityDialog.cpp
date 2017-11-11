@@ -37,31 +37,31 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 
   // First we declare the entities of this dialog.
-  nameLabel = new QLabel(tr("<b>Name:</b>"));
-  nameField = new QLineEdit();
+  nameLabel = new QLabel(tr("<b>Name:</b>"), this);
+  nameField = new QLineEdit(this);
 
-  descriptionLabel = new QLabel(tr("<b>Description:</b>"));
-  descriptionField = new QTextEdit();
+  descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
+  descriptionField = new QTextEdit(this);
 
-  valueLabel = new QLabel(tr("<b>Value:</b>"));
-  valueField = new QLineEdit();
+  valueLabel = new QLabel(tr("<b>Value:</b>"), this);
+  valueField = new QLineEdit(this);
     
-  attributesLabel = new QLabel(tr("<h2>Attributes</h2>"));
-  attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"));
+  attributesLabel = new QLabel(tr("<h2>Attributes</h2>"), this);
+  attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
 
-  attributesFilterField = new QLineEdit();
+  attributesFilterField = new QLineEdit(this);
   
-  valueButton = new QPushButton("Store value");
+  valueButton = new QPushButton("Store value", this);
   valueButton->setEnabled(false);
-  assignAttributeButton = new QPushButton("Assign attribute");
-  unassignAttributeButton = new QPushButton("Unassign attribute");
-  addAttributeButton = new QPushButton(tr("New attribute"));
-  editAttributeButton = new QPushButton(tr("Edit attribute"));
-  removeUnusedAttributesButton = new QPushButton(tr("Remove unused attributes"));
-  cancelCloseButton = new QPushButton(tr("Cancel"));
-  saveCloseButton = new QPushButton(tr("Save entity"));
-  expandButton = new QPushButton("+");
-  collapseButton = new QPushButton("-");
+  assignAttributeButton = new QPushButton("Assign attribute", this);
+  unassignAttributeButton = new QPushButton("Unassign attribute", this);
+  addAttributeButton = new QPushButton(tr("New attribute"), this);
+  editAttributeButton = new QPushButton(tr("Edit attribute"), this);
+  removeUnusedAttributesButton = new QPushButton(tr("Remove unused attributes"), this);
+  cancelCloseButton = new QPushButton(tr("Cancel"), this);
+  saveCloseButton = new QPushButton(tr("Save entity"), this);
+  expandButton = new QPushButton("+", this);
+  collapseButton = new QPushButton("-", this);
   
   // Then we wire the signals of the dialog.
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setFilter(const QString &)));
@@ -521,7 +521,7 @@ void EntityDialog::saveAndClose() {
   description = description.trimmed();
   name = name.trimmed();
   if (description == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Description missing.");
@@ -531,7 +531,7 @@ void EntityDialog::saveAndClose() {
     return;
   }
   if (name == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Name missing.");
@@ -541,7 +541,7 @@ void EntityDialog::saveAndClose() {
     return;
   }
   if (name == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Invalid name.");
@@ -558,7 +558,7 @@ void EntityDialog::saveAndClose() {
   query->first();
   empty = query->isNull(0);
   if (!empty && name != oldName) {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Duplicate name.");

@@ -12,7 +12,6 @@
 #include <QDropEvent>
 #include <QHeaderView>
 #include <QMessageBox>
-#include "EventSequenceDatabase.h"
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
 #include "AttributeIndexDialog.h"
@@ -23,7 +22,7 @@ class AttributesWidget : public QWidget {
   friend class MainWindow;
 
 public:
-  AttributesWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
+  AttributesWidget(QWidget *parent=0);
   ~AttributesWidget() {};
 
 private slots:
@@ -70,7 +69,6 @@ private slots:
   bool eventFilter(QObject *object, QEvent *event);
 
 private:
-  QPointer<EventSequenceDatabase> esd;
   QPointer<AttributeDialog> attributeDialog;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> attributesModel;

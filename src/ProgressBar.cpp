@@ -4,7 +4,7 @@
 ProgressBar::ProgressBar(QWidget *parent, int min, int max)
     : QDialog(parent), minimum(min), maximum(max)
 {
-    progress = new QProgressBar;
+  progress = new QProgressBar(this);
     progress->setMinimum(minimum);
     progress->setMaximum(maximum);
     QHBoxLayout *barLayout = new QHBoxLayout;

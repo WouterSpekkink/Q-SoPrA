@@ -1,7 +1,6 @@
 #include "../include/RelationshipsWidget.h"
 
-RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
-  esd = submittedEsd;
+RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
 
   descriptionFilter = "";
   rawFilter = "";
@@ -37,70 +36,70 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent, EventSequenceDatabase 
   relationshipsTreeView->setSortingEnabled(true);
   relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
 
-  indexLabel = new QLabel("<b>Incident ( / )</b>");
-  markLabel = new QLabel();
+  indexLabel = new QLabel("<b>Incident ( / )</b>", this);
+  markLabel = new QLabel("", this);
   markLabel->setStyleSheet("QLabel {color: red}");
-  timeStampLabel = new QLabel("<b>Timing:</b>");
-  sourceLabel = new QLabel("<b>Source:</b>");
-  descriptionLabel = new QLabel("<b>Description:</b>");
-  rawLabel = new QLabel("<b>Raw:</b>");
-  commentLabel = new QLabel("<b>Comments:</b>");
-  relationshipsLabel = new QLabel("<h2>Relationships</h2>");
-  descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>");
-  rawFilterLabel = new QLabel("<i>Search raw texts:</i>");
-  commentFilterLabel = new QLabel("<i>Search comments:</i>");
-  relationshipCommentLabel = new QLabel("<b>Set comment</b>");
-  relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>");
+  timeStampLabel = new QLabel("<b>Timing:</b>", this);
+  sourceLabel = new QLabel("<b>Source:</b>", this);
+  descriptionLabel = new QLabel("<b>Description:</b>", this);
+  rawLabel = new QLabel("<b>Raw:</b>", this);
+  commentLabel = new QLabel("<b>Comments:</b>", this);
+  relationshipsLabel = new QLabel("<h2>Relationships</h2>", this);
+  descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>", this);
+  rawFilterLabel = new QLabel("<i>Search raw texts:</i>", this);
+  commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
+  relationshipCommentLabel = new QLabel("<b>Set comment</b>", this);
+  relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>", this);
 
-  timeStampField = new QLineEdit();
+  timeStampField = new QLineEdit(this);
   timeStampField->setReadOnly(true);
-  sourceField = new QLineEdit();
+  sourceField = new QLineEdit(this);
   sourceField->setReadOnly(true);
-  descriptionField = new QTextEdit();
+  descriptionField = new QTextEdit(this);
   descriptionField->setReadOnly(true);
-  rawField = new QTextEdit();
+  rawField = new QTextEdit(this);
   rawField->setReadOnly(true);
-  commentField = new QTextEdit();
-  descriptionFilterField = new QLineEdit();
-  rawFilterField = new QLineEdit();
-  commentFilterField = new QLineEdit();
-  relationshipFilterField = new QLineEdit();
-  relationshipCommentField = new QLineEdit();
+  commentField = new QTextEdit(this);
+  descriptionFilterField = new QLineEdit(this);
+  rawFilterField = new QLineEdit(this);
+  commentFilterField = new QLineEdit(this);
+  relationshipFilterField = new QLineEdit(this);
+  relationshipCommentField = new QLineEdit(this);
 
-  previousIncidentButton = new QPushButton("Previous incident");
+  previousIncidentButton = new QPushButton("Previous incident", this);
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
-  nextIncidentButton = new QPushButton("Next incident");
+  nextIncidentButton = new QPushButton("Next incident", this);
   nextIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
-  jumpButton = new QPushButton("Jump to");
-  markButton = new QPushButton("Toggle mark");
-  previousMarkedButton = new QPushButton("Previous marked");
-  nextMarkedButton = new QPushButton("Next marked");
-  descriptionPreviousButton = new QPushButton("Previous");
-  descriptionNextButton = new QPushButton("Next");
-  rawPreviousButton = new QPushButton("Previous");
-  rawNextButton = new QPushButton("Next");
-  commentPreviousButton = new QPushButton("Previous");
-  commentNextButton = new QPushButton("Next");
-  previousCodedButton = new QPushButton("Previous coded");
+  jumpButton = new QPushButton("Jump to", this);
+  markButton = new QPushButton("Toggle mark", this);
+  previousMarkedButton = new QPushButton("Previous marked", this);
+  nextMarkedButton = new QPushButton("Next marked", this);
+  descriptionPreviousButton = new QPushButton("Previous", this);
+  descriptionNextButton = new QPushButton("Next", this);
+  rawPreviousButton = new QPushButton("Previous", this);
+  rawNextButton = new QPushButton("Next", this);
+  commentPreviousButton = new QPushButton("Previous", this);
+  commentNextButton = new QPushButton("Next", this);
+  previousCodedButton = new QPushButton("Previous coded", this);
   previousCodedButton->setEnabled(false);
-  nextCodedButton = new QPushButton("Next coded");
+  nextCodedButton = new QPushButton("Next coded", this);
   nextCodedButton->setEnabled(false);
-  submitRelationshipCommentButton = new QPushButton("Set comment");
-  newTypeButton = new QPushButton("Add relationship type");
-  editTypeButton = new QPushButton("Edit relationship type");
+  submitRelationshipCommentButton = new QPushButton("Set comment", this);
+  newTypeButton = new QPushButton("Add relationship type", this);
+  editTypeButton = new QPushButton("Edit relationship type", this);
   editTypeButton->setEnabled(false);
-  newRelationshipButton = new QPushButton("Add relationship");
+  newRelationshipButton = new QPushButton("Add relationship", this);
   newRelationshipButton->setEnabled(false);
-  editRelationshipButton = new QPushButton("Edit relationship");
+  editRelationshipButton = new QPushButton("Edit relationship", this);
   editRelationshipButton->setEnabled(false);
-  removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships");
-  assignRelationshipButton = new QPushButton("Assign relationship");
+  removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships", this);
+  assignRelationshipButton = new QPushButton("Assign relationship", this);
   assignRelationshipButton->setEnabled(false);
-  unassignRelationshipButton = new QPushButton("Unassign relationship");
+  unassignRelationshipButton = new QPushButton("Unassign relationship", this);
   unassignRelationshipButton->setEnabled(false);
-  expandTreeButton = new QPushButton("+");
-  collapseTreeButton = new QPushButton("-");
-  resetTextsButton = new QPushButton("Reset sources");
+  expandTreeButton = new QPushButton("+", this);
+  collapseTreeButton = new QPushButton("-", this);
+  resetTextsButton = new QPushButton("Reset sources", this);
   resetTextsButton->setEnabled(false);
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
@@ -267,7 +266,7 @@ void RelationshipsWidget::setComment() {
 }
 
 void RelationshipsWidget::retrieveData() {
-  QSqlQueryModel *query = new QSqlQueryModel;
+  QSqlQueryModel *query = new QSqlQueryModel(this);
   query->setQuery("SELECT * FROM save_data");
   int order = 0;
   order = query->record(0).value("relationships_record").toInt();
@@ -367,7 +366,7 @@ void RelationshipsWidget::highlightText() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     QString currentName = relationshipsTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     if (currentRelationship->font().bold()) {
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
@@ -555,7 +554,7 @@ void RelationshipsWidget::assignRelationship() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
-      QSqlQueryModel *query = new QSqlQueryModel;
+      QSqlQueryModel *query = new QSqlQueryModel(this);
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
@@ -605,7 +604,7 @@ void RelationshipsWidget::unassignRelationship() {
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
-      QSqlQueryModel *query = new QSqlQueryModel;
+      QSqlQueryModel *query = new QSqlQueryModel(this);
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("relationships_record").toInt();
@@ -657,14 +656,14 @@ void RelationshipsWidget::unassignRelationship() {
 
 void RelationshipsWidget::resetTexts() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QPointer<QMessageBox> warningBox = new QMessageBox;
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Yes);
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
     warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
     if (warningBox->exec() == QMessageBox::Yes) {
-      QSqlQueryModel *query = new QSqlQueryModel;
+      QSqlQueryModel *query = new QSqlQueryModel(this);
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("relationships_record").toInt();
@@ -702,7 +701,7 @@ void RelationshipsWidget::newRelationship() {
       query->first();
       QString directedness = query->value(0).toString();
       QString description = query->value(1).toString();
-      RelationshipsDialog *relationshipsDialog = new RelationshipsDialog;
+      RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
       relationshipsDialog->submitDirectedness(directedness);
@@ -748,7 +747,7 @@ void RelationshipsWidget::editRelationship() {
       query->first();
       QString leftEntity = query->value(0).toString();
       QString rightEntity = query->value(1).toString();
-      RelationshipsDialog *relationshipsDialog = new RelationshipsDialog;
+      RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
       relationshipsDialog->submitDirectedness(directedness);
@@ -1198,7 +1197,7 @@ void RelationshipsWidget::nextComment() {
 void RelationshipsWidget::previousCoded() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int currentOrder = 0; 
     currentOrder = query->record(0).value("relationships_record").toInt();
@@ -1234,7 +1233,7 @@ void RelationshipsWidget::previousCoded() {
 void RelationshipsWidget::nextCoded() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel;
+    QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int currentOrder = 0; 
     currentOrder = query->record(0).value("relationships_record").toInt();
@@ -1272,7 +1271,7 @@ void RelationshipsWidget::setButtons() {
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
-      QSqlQueryModel *query = new QSqlQueryModel;
+      QSqlQueryModel *query = new QSqlQueryModel(this);
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("relationships_record").toInt();

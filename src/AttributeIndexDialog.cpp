@@ -4,13 +4,13 @@
 AttributeIndexDialog::AttributeIndexDialog(QWidget *parent, int max) : QDialog(parent) {
   // First we construct our dialog's entities.
   exitStatus = 1;
-  indexLabel = new QLabel(tr("Incident index:"));
-  indexField = new QLineEdit();
+  indexLabel = new QLabel(tr("Incident index:"), this);
+  indexField = new QLineEdit(this);
   index = 1;
   indexField->setValidator(new QIntValidator(1, max, this)); 
-  goButton = new QPushButton(tr("Go"));
+  goButton = new QPushButton(tr("Go"), this);
   goButton->setEnabled(false); // We only activate this button if there is something in the fields.
-  cancelButton = new QPushButton(tr("Cancel"));
+  cancelButton = new QPushButton(tr("Cancel"), this);
 
   // We connect the signals to the appropriate slots.
   connect(goButton, SIGNAL(clicked()), this, SLOT(go()));

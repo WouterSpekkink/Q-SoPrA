@@ -7,20 +7,20 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   description = "";
   exitStatus = 1;
     
-  nameLabel = new QLabel(tr("Label:"));
+  nameLabel = new QLabel(tr("Label:"), this);
   nameField = new QLineEdit();
 
-  descriptionLabel = new QLabel(tr("Description:"));
+  descriptionLabel = new QLabel(tr("Description:"), this);
   descriptionField = new QTextEdit();
-  directednessLabel = new QLabel(tr("Directedness:"));
-  directedButton = new QPushButton(tr("Directed"));
+  directednessLabel = new QLabel(tr("Directedness:"), this);
+  directedButton = new QPushButton(tr("Directed"), this);
   directedButton->setCheckable(true);
-  undirectedButton = new QPushButton(tr("Undirected"));
+  undirectedButton = new QPushButton(tr("Undirected"), this);
   undirectedButton->setCheckable(true);
   directedButton->setChecked(true);
   undirectedButton->setChecked(false);
-  cancelCloseButton = new QPushButton(tr("Cancel"));
-  saveCloseButton = new QPushButton(tr("Save relationship type"));
+  cancelCloseButton = new QPushButton(tr("Cancel"), this);
+  saveCloseButton = new QPushButton(tr("Save relationship type"), this);
 
   // Then we wire the signals.
   connect(nameField, SIGNAL(textChanged(const QString &)), this, SLOT(setName(const QString &)));
@@ -45,7 +45,7 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   directednessLayout->addWidget(undirectedButton);
   mainLayout->addLayout(directednessLayout);
 
-  QPointer<QFrame> middleLine = new QFrame();
+  QPointer<QFrame> middleLine = new QFrame;
   middleLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(middleLine);
 
@@ -122,7 +122,7 @@ void RelationshipTypeDialog::saveAndClose() {
   description = descriptionField->toPlainText().trimmed();
   name = name.trimmed();
   if (description == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Description required.");
@@ -132,7 +132,7 @@ void RelationshipTypeDialog::saveAndClose() {
     return;
   }
   if (name == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Name required.");
@@ -149,7 +149,7 @@ void RelationshipTypeDialog::saveAndClose() {
   query->first();
   empty = query->isNull(0);
   if (!empty && name != subName) {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Duplicate name.");

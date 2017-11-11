@@ -5,8 +5,8 @@ EventSequenceDatabase::EventSequenceDatabase()
 }
 
 void EventSequenceDatabase::openDB(const QString &name) {
- db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"));
- db->setDatabaseName(name);
+  db = new QSqlDatabase(QSqlDatabase::addDatabase("QSQLITE"));
+  db->setDatabaseName(name);
 }
 
 

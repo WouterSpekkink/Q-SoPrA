@@ -4,10 +4,10 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEs
   esd = submittedEsd;
   exitStatus = 0;
   
-  titleLabel = new QLabel("<h1>Start menu</h1>");
-  newDatabaseButton = new QPushButton("Create new database");
-  openDatabaseButton = new QPushButton("Open existing database");
-  exitButton = new QPushButton("Exit program");
+  titleLabel = new QLabel("<h1>Start menu</h1>", this);
+  newDatabaseButton = new QPushButton("Create new database", this);
+  openDatabaseButton = new QPushButton("Open existing database", this);
+  exitButton = new QPushButton("Exit program", this);
 
   connect(newDatabaseButton, SIGNAL(clicked()), this, SLOT(newDatabase()));
   connect(openDatabaseButton, SIGNAL(clicked()), this, SLOT(openDatabase()));
@@ -36,7 +36,7 @@ void WelcomeDialog::newDatabase() {
     esd->openDB(dbName);
     bool ok = esd->db->open();
     if (!ok) {
-      QPointer<QMessageBox> errorBox = new QMessageBox;
+      QPointer<QMessageBox> errorBox = new QMessageBox(this);
       errorBox->setText(tr("<b>ERROR</b>"));
       errorBox->setInformativeText("Creation of new database failed.");
       errorBox->exec();
@@ -103,6 +103,10 @@ void WelcomeDialog::newDatabase() {
 		  "(id integer, "
 		  "name text, "
 		  "description text)");
+      query->exec("CREATE TABLE journal "
+		  "(id integer PRIMARY KEY, "
+		  "time text, "
+		  "entry text)");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
 		  "linkages_source_record integer, "
@@ -131,7 +135,7 @@ void WelcomeDialog::openDatabase() {
     esd->openDB(dbName);
     bool ok = esd->db->open();
     if (!ok) {
-      QPointer<QMessageBox> errorBox = new QMessageBox;
+      QPointer<QMessageBox> errorBox = new QMessageBox(this);
       errorBox->setText(tr("<b>ERROR</b>"));
       errorBox->setInformativeText("Creation of new database failed.");
       errorBox->exec();

@@ -6,15 +6,15 @@ AttributeDialog::AttributeDialog(QWidget *parent) : QDialog(parent) {
   oldName = "";
   exitStatus = 1;
   
-  nameLabel = new QLabel("Name:");
-  descriptionLabel = new QLabel("Description:");
+  nameLabel = new QLabel("Name:", this);
+  descriptionLabel = new QLabel("Description:", this);
 
-  cancelCloseButton = new QPushButton("Cancel");
-  saveCloseButton = new QPushButton("Save");
+  cancelCloseButton = new QPushButton("Cancel", this);
+  saveCloseButton = new QPushButton("Save", this);
 
-  nameField = new QLineEdit();
+  nameField = new QLineEdit(this);
 
-  descriptionField = new QTextEdit();
+  descriptionField = new QTextEdit(this);
 
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
@@ -76,7 +76,7 @@ void AttributeDialog::saveAndClose() {
   name = name.trimmed();
   description = description.trimmed();
   if (description == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Description missing.");
@@ -86,7 +86,7 @@ void AttributeDialog::saveAndClose() {
     return;
   }
   if (name == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Name missing.");
@@ -103,7 +103,7 @@ void AttributeDialog::saveAndClose() {
   query->first();
   empty = query->isNull(0);
   if (!empty && name != oldName) {
-   QPointer <QMessageBox> warningBox = new QMessageBox;
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Duplicate name.");

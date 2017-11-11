@@ -4,7 +4,7 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   esd = submittedEsd;
 
   // This widget uses a table model.
-  incidentsModel = new EventTableModel;
+  incidentsModel = new EventTableModel(this);
   tableView = new QTableView(this);
 
   // And the model shows data from the incidents table.
@@ -35,14 +35,14 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setTextElideMode(Qt::ElideMiddle);
 
   // Then we create our other controls.
-  appendRecordButton = new QPushButton("Append incident");
-  editRecordButton = new QPushButton("Edit incident");
-  insertRecordBeforeButton = new QPushButton("Insert before");
-  insertRecordAfterButton = new QPushButton("Insert after");
-  moveUpButton = new QPushButton("Move up");
-  moveDownButton = new QPushButton("Move down");
-  duplicateRowButton = new QPushButton("Duplicate incident");
-  removeRowButton = new QPushButton("Remove incident");
+  appendRecordButton = new QPushButton("Append incident", this);
+  editRecordButton = new QPushButton("Edit incident", this);
+  insertRecordBeforeButton = new QPushButton("Insert before", this);
+  insertRecordAfterButton = new QPushButton("Insert after", this);
+  moveUpButton = new QPushButton("Move up", this);
+  moveDownButton = new QPushButton("Move down", this);
+  duplicateRowButton = new QPushButton("Duplicate incident", this);
+  removeRowButton = new QPushButton("Remove incident", this);
   
   // We set the connections
   connect(appendRecordButton, SIGNAL(clicked()), this, SLOT(appendRecord()));
@@ -291,7 +291,7 @@ void DataWidget::duplicateRow() {
 
 void DataWidget::removeRow() {
   if (tableView->currentIndex().isValid()) {
-    QPointer<QMessageBox> warningBox = new QMessageBox;
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Yes);
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
