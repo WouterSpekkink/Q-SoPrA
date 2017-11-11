@@ -65,6 +65,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   commentFilterField = new QLineEdit(this);
   relationshipFilterField = new QLineEdit(this);
   relationshipCommentField = new QLineEdit(this);
+  relationshipCommentField->setEnabled(false);
 
   previousIncidentButton = new QPushButton("Previous incident", this);
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
@@ -85,6 +86,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   nextCodedButton = new QPushButton("Next coded", this);
   nextCodedButton->setEnabled(false);
   submitRelationshipCommentButton = new QPushButton("Set comment", this);
+  submitRelationshipCommentButton->setEnabled(false);
   newTypeButton = new QPushButton("Add relationship type", this);
   editTypeButton = new QPushButton("Edit relationship type", this);
   editTypeButton->setEnabled(false);
@@ -121,7 +123,9 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
   connect(nextCodedButton, SIGNAL(clicked()), this, SLOT(nextCoded()));
   connect(relationshipFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
+  connect(relationshipCommentField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentButton()));
   connect(submitRelationshipCommentButton, SIGNAL(clicked()), this, SLOT(submitRelationshipComment()));
+  
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
@@ -436,6 +440,10 @@ void RelationshipsWidget::changeFilter(const QString &text) {
   treeFilter->setFilterRegExp(regExp);
 }
 
+void RelationshipsWidget::setCommentButton() {
+  submitRelationshipCommentButton->setEnabled(true);
+}
+
 void RelationshipsWidget::submitRelationshipComment() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
@@ -449,13 +457,14 @@ void RelationshipsWidget::submitRelationshipComment() {
       delete query;
     }
   }
-  relationshipCommentField->setText("");
+  submitRelationshipCommentButton->setEnabled(false);
 }
 
 void RelationshipsWidget::getComment() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
+      relationshipCommentField->setEnabled(true);
       QString currentName = currentItem->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT comment FROM entity_relationships WHERE name = :name");
@@ -464,10 +473,17 @@ void RelationshipsWidget::getComment() {
       query->first();
       QString comment = query->value(0).toString();
       relationshipCommentField->setText(comment);
+      submitRelationshipCommentButton->setEnabled(false);\
       delete query;
     } else {
+      relationshipCommentField->setEnabled(false);
       relationshipCommentField->setText("");
+      submitRelationshipCommentButton->setEnabled(false);
     }
+  } else {
+    relationshipCommentField->setEnabled(false);
+    relationshipCommentField->setText("");
+    submitRelationshipCommentButton->setEnabled(false);
   }
 }
 

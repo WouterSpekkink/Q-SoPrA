@@ -63,6 +63,7 @@ private slots:
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();
+  void setValueButton();
   void setValue();
   void getValue();
   void fixTree();

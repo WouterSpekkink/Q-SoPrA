@@ -49,6 +49,7 @@ private slots:
   void previousCoded();
   void nextCoded();
   void changeFilter(const QString &text);
+  void setCommentButton();
   void submitRelationshipComment();
   void getComment();
   void newType();

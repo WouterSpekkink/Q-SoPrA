@@ -35,6 +35,7 @@ public:
 		      
 private slots:
 
+  void setValueButton();
   void setValue();
   void getValue();
   void setFilter(const QString &text);

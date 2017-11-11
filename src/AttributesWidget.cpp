@@ -65,7 +65,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   commentFilterField = new QLineEdit(this);
   attributeFilterField = new QLineEdit(this);
   valueField = new QLineEdit(this);
-
+  valueField->setEnabled(false);
+  
   previousIncidentButton = new QPushButton("Previous incident", this);
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
   nextIncidentButton = new QPushButton("Next incident", this);
@@ -122,6 +123,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(attributeFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
   connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
@@ -867,7 +869,7 @@ void AttributesWidget::assignAttribute() {
         }
         highlightText();
 	rawField->setTextCursor(cursPos);
-	valueButton->setEnabled(true);
+	valueField->setEnabled(true);
       } else {
         sourceText(attribute, id);
         highlightText();
@@ -923,7 +925,9 @@ void AttributesWidget::unassignAttribute() {
             boldSelected(attributesTree, attribute);
           }
         }
-        valueButton->setEnabled(false);
+	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
         QTextCharFormat format;
         format.setFontWeight(QFont::Normal);
         format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -933,7 +937,6 @@ void AttributesWidget::unassignAttribute() {
         QTextCursor cursor = rawField->textCursor();
         cursor.movePosition(QTextCursor::Start);
         rawField->setTextCursor(cursor);
-        valueField->setText("");
       }
     }
     delete query;
@@ -1006,6 +1009,10 @@ void AttributesWidget::removeUnusedAttributes() {
   delete query2;
 }
 
+void AttributesWidget::setValueButton() {
+  valueButton->setEnabled(true);
+}
+
 void AttributesWidget::setValue() {
   if (attributesTreeView->currentIndex().isValid()) {
     QSqlQueryModel *query = new QSqlQueryModel(this);
@@ -1027,9 +1034,9 @@ void AttributesWidget::setValue() {
       query2->bindValue(":id", id);
       query2->exec();
     }
-    valueField->setText("");
     delete query;
     delete query2;
+    valueButton->setEnabled(false);
   }
 }
 
@@ -1053,9 +1060,9 @@ void AttributesWidget::getValue() {
     query2->exec();
     query2->first();
     if (!(query2->isNull(0))) {
-      valueButton->setEnabled(true);
+      valueField->setEnabled(true);
     } else {
-      valueButton->setEnabled(false);
+      valueField->setEnabled(false);
     }
     if (!(query2->isNull(1))) {
       QString value = query2->value(1).toString();
@@ -1063,10 +1070,12 @@ void AttributesWidget::getValue() {
     } else {
       valueField->setText("");
     }
+    valueButton->setEnabled(false);
     delete query;
     delete query2;
   } else {
     valueField->setText("");
+    valueButton->setEnabled(false);
   }
 }
 

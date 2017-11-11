@@ -45,6 +45,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
 
   valueLabel = new QLabel(tr("<b>Value:</b>"), this);
   valueField = new QLineEdit(this);
+  valueField->setEnabled(false);
     
   attributesLabel = new QLabel(tr("<h2>Attributes</h2>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -65,6 +66,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   
   // Then we wire the signals of the dialog.
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setFilter(const QString &)));
+  connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
@@ -130,7 +132,11 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   setWindowTitle("Add /Edit Entity");
   setFixedHeight(sizeHint().height());
 }
-    
+
+void EntityDialog::setValueButton() {
+  valueButton->setEnabled(true);
+}
+
 void EntityDialog::setValue() {
   if (attributesTreeView->currentIndex().isValid()) {
     QSqlQuery *query = new QSqlQuery;
@@ -141,15 +147,14 @@ void EntityDialog::setValue() {
       query->bindValue(":attribute", attribute);
       query->bindValue(":new", 1);
       query->exec();
-      valueField->setText("");
     } else {
       query->prepare("UPDATE attributes_to_entities SET value = :val WHERE attribute = :attribute AND entity = :oldName");
       query->bindValue(":val", valueField->text());
       query->bindValue(":attribute", attribute);
       query->bindValue(":oldName", oldName);
       query->exec();
-      valueField->setText("");
     }
+    valueButton->setEnabled(false);
     delete query;
   }
 }
@@ -164,9 +169,9 @@ void EntityDialog::getValue() {
       query->exec();
       query->first();
       if (!(query->isNull(0))) {
-	valueButton->setEnabled(true);
+	valueField->setEnabled(true);
       } else {
-	valueButton->setEnabled(false);
+	valueField->setEnabled(false);
 	valueField->setText("");
       }
       if (!(query->isNull(1))) {
@@ -175,16 +180,17 @@ void EntityDialog::getValue() {
       } else {
 	valueField->setText("");
       }
+      valueButton->setEnabled(false);
     } else {
-      query->prepare("SELECT attribute, value FROM attributes_to_entities WHERE attribute =:att AND name = :oldName");
+      query->prepare("SELECT attribute, value FROM attributes_to_entities WHERE attribute =:att AND entity = :oldName");
       query->bindValue(":att", attribute);
       query->bindValue(":oldName", oldName);
       query->exec();
       query->first();
       if (!(query->isNull(0))) {
-	valueButton->setEnabled(true);
+	valueField->setEnabled(true);
       } else {
-	valueButton->setEnabled(false);
+	valueField->setEnabled(false);
 	valueField->setText("");
       }
       if (!(query->isNull(1))) {
@@ -194,7 +200,11 @@ void EntityDialog::getValue() {
 	valueField->setText("");
       }
     }
+    valueButton->setEnabled(false);
     delete query;
+  } else {
+    valueField->setText("");
+    valueButton->setEnabled(false);
   }
 }
 
@@ -222,7 +232,7 @@ void EntityDialog::assignAttribute() {
 	assignedModel->setData(assignedModel->index(max, 4), 1);
 	assignedModel->submitAll();
         boldSelected(attributesTree, attribute);
-	valueButton->setEnabled(true);
+	valueField->setEnabled(true);
       }
     } else {
       assignedModel->select();
@@ -240,7 +250,7 @@ void EntityDialog::assignAttribute() {
 	assignedModel->setData(assignedModel->index(max, 2), oldName);
 	assignedModel->submitAll();
 	boldSelected(attributesTree, attribute);
-	valueButton->setEnabled(true);
+	valueField->setEnabled(true);
       }
     }
     delete query;
@@ -273,8 +283,9 @@ void EntityDialog::unassignAttribute() {
 	    boldSelected(attributesTree, attribute);
 	  }
 	}
-	valueButton->setEnabled(false);
 	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
       }
     } else {
       query->prepare("SELECT attribute, entity FROM attributes_to_entities WHERE attribute = :att AND entity = :oldName");
@@ -297,8 +308,9 @@ void EntityDialog::unassignAttribute() {
 	    boldSelected(attributesTree, attribute);
 	  }
 	}
-	valueButton->setEnabled(false);
 	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
       }
     }
     delete query;
