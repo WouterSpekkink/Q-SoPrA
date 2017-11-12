@@ -155,11 +155,14 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   descriptionLayout->addLayout(descriptionLayoutLeft);
   QPointer<QHBoxLayout> descriptionLayoutRight = new QHBoxLayout;
   descriptionLayoutRight->addWidget(descriptionFilterLabel);
+  descriptionFilterLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter); 
   descriptionLayoutRight->addWidget(descriptionPreviousButton);
+  descriptionPreviousButton->setMaximumWidth(descriptionPreviousButton->sizeHint().width());
   descriptionLayoutRight->addWidget(descriptionFilterField);
+  descriptionFilterField->setFixedWidth(250);
   descriptionLayoutRight->addWidget(descriptionNextButton);
+  descriptionNextButton->setMaximumWidth(descriptionNextButton->sizeHint().width());
   descriptionLayout->addLayout(descriptionLayoutRight);
-  descriptionLayoutRight->setContentsMargins(100,0,0,0);
   leftLayout->addLayout(descriptionLayout);
   leftLayout->addWidget(descriptionField);
   QPointer<QHBoxLayout> rawLayout = new QHBoxLayout;
@@ -168,11 +171,14 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   rawLayout->addLayout(rawLayoutLeft);
   QPointer<QHBoxLayout> rawLayoutRight = new QHBoxLayout;
   rawLayoutRight->addWidget(rawFilterLabel);
+  rawFilterLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter); 
   rawLayoutRight->addWidget(rawPreviousButton);
+  rawPreviousButton->setMaximumWidth(rawPreviousButton->sizeHint().width());
   rawLayoutRight->addWidget(rawFilterField);
+  rawFilterField->setFixedWidth(250);
   rawLayoutRight->addWidget(rawNextButton);
+  rawNextButton->setMaximumWidth(rawNextButton->sizeHint().width());
   rawLayout->addLayout(rawLayoutRight);
-  rawLayoutRight->setContentsMargins(170,0,0,0);
   leftLayout->addLayout(rawLayout);
   leftLayout->addWidget(rawField);
   QPointer<QHBoxLayout> commentLayout = new QHBoxLayout;
@@ -181,11 +187,14 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   commentLayout->addLayout(commentLayoutLeft);
   QPointer<QHBoxLayout> commentLayoutRight = new QHBoxLayout;
   commentLayoutRight->addWidget(commentFilterLabel);
+  commentFilterLabel->setAlignment(Qt::AlignRight | Qt::AlignVCenter); 
   commentLayoutRight->addWidget(commentPreviousButton);
+  commentPreviousButton->setMaximumWidth(commentPreviousButton->sizeHint().width());
   commentLayoutRight->addWidget(commentFilterField);
+  commentFilterField->setFixedWidth(250);
   commentLayoutRight->addWidget(commentNextButton);
+  commentNextButton->setMaximumWidth(commentNextButton->sizeHint().width());
   commentLayout->addLayout(commentLayoutRight);
-  commentLayoutRight->setContentsMargins(115,0,0,0);
   leftLayout->addLayout(commentLayout);
   leftLayout->addWidget(commentField);
   QPointer<QHBoxLayout> leftButtonTopLayout = new QHBoxLayout;
@@ -260,7 +269,6 @@ void AttributesWidget::setComment() {
 
 void AttributesWidget::previousIncident() {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
   int order = 0;

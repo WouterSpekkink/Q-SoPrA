@@ -13,13 +13,15 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   dataWidget = new DataWidget(this, esd);
   attributesWidget = new AttributesWidget(this);
   relationshipsWidget = new RelationshipsWidget(this);
+  linkagesWidget = new LinkagesWidget(this);
   journalWidget = new JournalWidget(this);
   
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);
   stacked->addWidget(relationshipsWidget);
+  stacked->addWidget(linkagesWidget);
   stacked->addWidget(journalWidget);
-  
+
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
   stacked->setCurrentWidget(dataWidget);
@@ -65,6 +67,10 @@ void MainWindow::createActions() {
   relationshipViewAct->setStatusTip("Switch to relationship view");
   connect(relationshipViewAct, SIGNAL(triggered()), this, SLOT(switchToRelationshipView()));
 
+  linkageViewAct = new QAction(tr("&Linkage view"), this);
+  linkageViewAct->setStatusTip("Switch to linkage view");
+  connect(linkageViewAct, SIGNAL(triggered()), this, SLOT(switchToLinkageView()));
+  
   journalViewAct = new QAction(tr("&Journal view"), this);
   journalViewAct->setStatusTip("Switch to journal view");
   connect(journalViewAct, SIGNAL(triggered()), this, SLOT(switchToJournalView()));
@@ -81,6 +87,7 @@ void MainWindow::createMenus() {
   viewMenu->addAction(dataViewAct);
   viewMenu->addAction(attributeViewAct);
   viewMenu->addAction(relationshipViewAct);
+  viewMenu->addAction(linkageViewAct);
   viewMenu->addAction(journalViewAct);
 
   this->setMenuBar(menuBar);
@@ -244,12 +251,20 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line
 void MainWindow::switchToDataView() {
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
   DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
   dw->incidentsModel->select();
   stacked->setCurrentWidget(dataWidget);
 }
 
 void MainWindow::switchToAttributeView() {
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->incidentsModel->sort(1, Qt::AscendingOrder);
   aw->incidentsModel->select();
@@ -258,6 +273,10 @@ void MainWindow::switchToAttributeView() {
 }
 
 void MainWindow::switchToRelationshipView() {
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
   rw->incidentsModel->sort(1, Qt::AscendingOrder);
   rw->incidentsModel->select();
@@ -265,8 +284,19 @@ void MainWindow::switchToRelationshipView() {
   stacked->setCurrentWidget(relationshipsWidget);
 }
 
+void MainWindow::switchToLinkageView() {
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  //LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  
+  stacked->setCurrentWidget(linkagesWidget);
+}
+
+
 void MainWindow::switchToJournalView() {
-  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(3));
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
   const QModelIndex index;
   jw->tableView->clearSelection();
   jw->tableView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
@@ -274,3 +304,4 @@ void MainWindow::switchToJournalView() {
   jw->logField->setText("");
   stacked->setCurrentWidget(journalWidget);
 }
+

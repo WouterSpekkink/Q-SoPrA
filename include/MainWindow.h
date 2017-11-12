@@ -14,6 +14,7 @@
 #include "DataWidget.h"
 #include "AttributesWidget.h"
 #include "RelationshipsWidget.h"
+#include "LinkagesWidget.h"
 #include "JournalWidget.h"
 #include "ProgressBar.h"
 
@@ -32,16 +33,18 @@ private slots:
   void switchToDataView();
   void switchToAttributeView();
   void switchToRelationshipView();
+  void switchToLinkageView();
   void switchToJournalView();
   
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
-  
+
 private:
   QPointer<QStackedWidget> stacked;
   QPointer<QWidget> dataWidget;
   QPointer<QWidget> attributesWidget;
   QPointer<QWidget> relationshipsWidget;
+  QPointer<QWidget> linkagesWidget;
   QPointer<QWidget> journalWidget;
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
@@ -54,6 +57,7 @@ private:
   QPointer<QAction> dataViewAct;
   QPointer<QAction> attributeViewAct;
   QPointer<QAction> relationshipViewAct;
+  QPointer<QAction> linkageViewAct;
   QPointer<QAction> journalViewAct;
 
   QPointer<EventSequenceDatabase> esd;

@@ -153,7 +153,7 @@ void RelationshipTypeDialog::saveAndClose() {
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Duplicate name.");
-    warningBox->setInformativeText("You cannot create relationshipt types with identical names.");
+    warningBox->setInformativeText("You cannot create relationship types with identical names.");
     warningBox->exec();
     delete warningBox;
     return;

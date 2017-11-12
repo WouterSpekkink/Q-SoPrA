@@ -21,6 +21,7 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   tableView->setWordWrap(true);
   
   logField = new QTextEdit(this);
+  logField->setEnabled(false);
   
   addEntryButton = new QPushButton("New entry", this);
   saveChangesButton = new QPushButton("Save changes", this);
@@ -32,8 +33,7 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   connect(saveChangesButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
   connect(removeEntryButton, SIGNAL(clicked()), this, SLOT(removeEntry()));
   connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(setData()));
-  connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
-    
+  connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));    
   
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
@@ -77,10 +77,12 @@ void JournalWidget::setData() {
     logField->blockSignals(true);
     logField->setText(currentText);
     logField->blockSignals(false);
+    logField->setEnabled(true);
     saveChangesButton->setEnabled(false);
     removeEntryButton->setEnabled(true);
   } else {
     removeEntryButton->setEnabled(false);
+    logField->setEnabled(false);
   }
 }
 
@@ -114,6 +116,10 @@ void JournalWidget::removeEntry() {
       journalModel->removeRow(currentRow);
       journalModel->submitAll();
       journalModel->select();
+      logField->blockSignals(true);
+      logField->setText("");
+      logField->blockSignals(false);
+      logField->setEnabled(false);
     }
   }
 }

@@ -107,17 +107,27 @@ void WelcomeDialog::newDatabase() {
 		  "(id integer PRIMARY KEY, "
 		  "time text, "
 		  "entry text)");
+      query->exec("CREATE TABLE linkage_types "
+		  "(id integer PRIMARY KEY, "
+		  "name TEXT, "
+		  "description TEXT, "
+		  "question TEXT, "
+		  "direction TEXT, "
+		  "tail integer, "
+		  "head integer)");
+      query->exec("CREATE TABLE linkages "
+		  "(id integer PRIMARY KEY, "
+		  "tail integer, "
+		  "head integer, "
+		  "type text, "
+		  "comment text)");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
-		  "linkages_source_record integer, "
-		  "linkages_target_record integer, "
 		  "relationships_record integer)");
       query->exec("INSERT INTO save_data "
 		  "(attributes_record, "
-		  "linkages_source_record, "
-		  "linkages_target_record, "
 		  "relationships_record) "
-		  "VALUES (1, 1, 2, 1)");
+		  "VALUES (1, 1)");
       delete query;
     }
     exitStatus = 0;

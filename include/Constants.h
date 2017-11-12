@@ -11,5 +11,9 @@ extern QString UNDIRECTEDTAIL;
 extern QString DIRECTEDTAIL;
 extern QString DIRECTEDHEAD;
 extern QString DIRECTED;
+extern QString PAST;
+extern QString FUTURE;
+extern QString MANUAL;
+extern QString ASSISTED;
 
 #endif

@@ -1,0 +1,146 @@
+#ifndef LINKAGESWIDGET_H
+#define LINKAGESWIDGET_H
+
+#include <QtWidgets/QTextEdit>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QComboBox>
+#include <QSqlTableModel>
+#include <QMessageBox>
+#include <QPointer>
+#include <QtSql>
+#include <vector>
+#include <thread>
+#include <chrono>
+#include "Constants.h"
+#include "LinkageTypeDialog.h"
+
+class LinkagesWidget : public QWidget {
+  Q_OBJECT
+  friend class MainWindow;
+
+public:
+  LinkagesWidget(QWidget *parent=0);
+  ~LinkagesWidget() {};
+
+private slots:
+  void addLinkageType();
+  void editLinkageType();
+  void removeLinkageType();
+  void setLinkageType();
+  void checkManualButton();
+  void checkAssistedButton();
+  void retrieveLinkages();
+  void retrieveData();
+  void previousTail();
+  void nextTail();
+  void previousHead();
+  void nextHead();
+  void setCommentBool();
+  void setComments();
+  void pause(int time);
+  void setLink();
+  void unsetLink();
+  void findPastPaths(std::vector<int> *pIgnore, int currentIncident);
+  void findFuturePaths(std::vector<int> *pIgnore, int currentIncident);
+  
+private:
+  QPointer<QSqlTableModel> typesModel;
+  QPointer<QSqlTableModel> linkagesModel;
+  QPointer<QSqlTableModel> incidentsModel;
+  
+  QPointer<QLabel> settingsLabel;
+  QPointer<QLabel> selectTypeLabel;
+  QPointer<QLabel> tailIndexLabel;
+  QPointer<QLabel> tailMarkedLabel;
+  QPointer<QLabel> tailTimeStampLabel;
+  QPointer<QLabel> tailSourceLabel;
+  QPointer<QLabel> tailDescriptionLabel;
+  QPointer<QLabel> tailRawLabel;
+  QPointer<QLabel> tailCommentLabel;
+  QPointer<QLabel> tailDescriptionFilterLabel;
+  QPointer<QLabel> tailRawFilterLabel;
+  QPointer<QLabel> tailCommentFilterLabel;
+  QPointer<QLabel> headIndexLabel;
+  QPointer<QLabel> headMarkedLabel;
+  QPointer<QLabel> headTimeStampLabel;
+  QPointer<QLabel> headSourceLabel;
+  QPointer<QLabel> headDescriptionLabel;
+  QPointer<QLabel> headRawLabel;
+  QPointer<QLabel> headCommentLabel;
+  QPointer<QLabel> headDescriptionFilterLabel;
+  QPointer<QLabel> headRawFilterLabel;
+  QPointer<QLabel> headCommentFilterLabel;
+  QPointer<QLabel> linkageTypeLabel;
+  QPointer<QLabel> linkageTypeFeedbackLabel;
+  QPointer<QLabel> linkageQuestionLabel;
+  QPointer<QLabel> linkageQuestionFeedbackLabel;
+  QPointer<QLabel> linkageFeedbackLabel;
+  QPointer<QLabel> linkageCommentLabel;
+  
+  QPointer<QLineEdit> tailTimeStampField;
+  QPointer<QLineEdit> tailSourceField;
+  QPointer<QLineEdit> tailDescriptionFilterField;
+  QPointer<QLineEdit> tailRawFilterField;
+  QPointer<QLineEdit> tailCommentFilterField;
+  QPointer<QLineEdit> headTimeStampField;
+  QPointer<QLineEdit> headSourceField;
+  QPointer<QLineEdit> headDescriptionFilterField;
+  QPointer<QLineEdit> headRawFilterField;
+  QPointer<QLineEdit> headCommentFilterField;
+
+  QPointer<QTextEdit> tailDescriptionField;
+  QPointer<QTextEdit> tailRawField;
+  QPointer<QTextEdit> tailCommentField;
+  QPointer<QTextEdit> headDescriptionField;
+  QPointer<QTextEdit> headRawField;
+  QPointer<QTextEdit> headCommentField;
+  QPointer<QTextEdit> linkageCommentField;
+
+  QPointer<QComboBox> typeComboBox;
+
+  QPointer<QPushButton> createTypeButton;
+  QPointer<QPushButton> editTypeButton;
+  QPointer<QPushButton> removeTypeButton;
+  QPointer<QPushButton> selectTypeButton;
+  QPointer<QPushButton> manualCodingButton;
+  QPointer<QPushButton> assistedCodingButton;
+  QPointer<QPushButton> previousTailButton;
+  QPointer<QPushButton> nextTailButton;
+  QPointer<QPushButton> markTailButton;
+  QPointer<QPushButton> previousMarkedTailButton;
+  QPointer<QPushButton> nextMarkedTailButton;
+  QPointer<QPushButton> tailDescriptionPreviousButton;
+  QPointer<QPushButton> tailDescriptionNextButton;
+  QPointer<QPushButton> tailRawPreviousButton;
+  QPointer<QPushButton> tailRawNextButton;
+  QPointer<QPushButton> tailCommentPreviousButton;
+  QPointer<QPushButton> tailCommentNextButton;  
+  QPointer<QPushButton> previousHeadButton;
+  QPointer<QPushButton> nextHeadButton;
+  QPointer<QPushButton> markHeadButton;
+  QPointer<QPushButton> previousMarkedHeadButton;
+  QPointer<QPushButton> nextMarkedHeadButton;
+  QPointer<QPushButton> headDescriptionPreviousButton;
+  QPointer<QPushButton> headDescriptionNextButton;
+  QPointer<QPushButton> headRawPreviousButton;
+  QPointer<QPushButton> headRawNextButton;
+  QPointer<QPushButton> headCommentPreviousButton;
+  QPointer<QPushButton> headCommentNextButton;
+  QPointer<QPushButton> jumpButton;
+  QPointer<QPushButton> setLinkButton;
+  QPointer<QPushButton> unsetLinkButton;
+
+  QString codingType;
+  QString selectedType;
+  QString selectedDirection;
+
+  bool commentBool;
+};
+
+
+
+#endif
