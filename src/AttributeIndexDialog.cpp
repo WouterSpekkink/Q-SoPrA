@@ -1,5 +1,4 @@
 #include "../include/AttributeIndexDialog.h"
-#include <QIntValidator>
 
 AttributeIndexDialog::AttributeIndexDialog(QWidget *parent, int max) : QDialog(parent) {
   // First we construct our dialog's entities.

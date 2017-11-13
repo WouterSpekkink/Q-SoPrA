@@ -104,12 +104,14 @@ void RelationshipTypeDialog::setName(const QString &newName) {
 }
 
 void RelationshipTypeDialog::checkDirectedButton() {
+  directedButton->setChecked(true);
   undirectedButton->setChecked(false);
   directedness = DIRECTED;
 }
 
 void RelationshipTypeDialog::checkUndirectedButton() {
   directedButton->setChecked(false);
+  undirectedButton->setChecked(true);
   directedness = UNDIRECTED;
 }
 

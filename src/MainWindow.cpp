@@ -255,6 +255,7 @@ void MainWindow::switchToDataView() {
   rw->setComment();
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
+  lw->setLinkageComment();
   DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
   dw->incidentsModel->select();
   stacked->setCurrentWidget(dataWidget);
@@ -263,6 +264,7 @@ void MainWindow::switchToDataView() {
 void MainWindow::switchToAttributeView() {
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
+  lw->setLinkageComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
   rw->setComment();
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
@@ -275,6 +277,7 @@ void MainWindow::switchToAttributeView() {
 void MainWindow::switchToRelationshipView() {
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
+  lw->setLinkageComment();
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -289,8 +292,9 @@ void MainWindow::switchToLinkageView() {
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
   rw->setComment();
-  //LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->incidentsModel->sort(1, Qt::AscendingOrder);
+  lw->incidentsModel->select();
   stacked->setCurrentWidget(linkagesWidget);
 }
 

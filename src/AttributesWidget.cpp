@@ -290,10 +290,9 @@ void AttributesWidget::jumpIncident() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   AttributeIndexDialog *indexDialog = new AttributeIndexDialog(this, incidentsModel->rowCount());
-  indexDialog->deleteLater();
   indexDialog->exec();
   int order = 0;
-  if (indexDialog->getExitStatus() != 1) {
+  if (indexDialog->getExitStatus() == 0) {
     order = indexDialog->getIndex();
     QSqlQuery *query = new QSqlQuery;
     if (order > 0) {
@@ -303,6 +302,7 @@ void AttributesWidget::jumpIncident() {
       query->exec();
       retrieveData();
     }
+    delete query;
   }
   delete indexDialog;
 }
@@ -359,7 +359,6 @@ void AttributesWidget::toggleMark() {
 
 void AttributesWidget::previousMarked() {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
   int order = 0;
@@ -390,7 +389,8 @@ void AttributesWidget::nextMarked() {
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
+  query->prepare("SELECT ch_order FROM incidents "
+		 "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
   query->bindValue(":order", order);
   query->exec();
   query->first();

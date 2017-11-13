@@ -17,6 +17,8 @@
 #include <chrono>
 #include "Constants.h"
 #include "LinkageTypeDialog.h"
+#include "CoderDialog.h"
+#include "LinkagesIndexDialog.h"
 
 class LinkagesWidget : public QWidget {
   Q_OBJECT
@@ -27,20 +29,53 @@ public:
   ~LinkagesWidget() {};
 
 private slots:
+  void addCoder();
+  void editCoder();
+  void removeCoder();
   void addLinkageType();
   void editLinkageType();
   void removeLinkageType();
+  void setTypeButton();
+  void setButtons(bool status);
   void setLinkageType();
   void checkManualButton();
   void checkAssistedButton();
+  void retrieveCoders();
   void retrieveLinkages();
   void retrieveData();
+  void setTailDescriptionFilter(const QString &text);
+  void setTailRawFilter(const QString &text);
+  void setTailCommentFilter(const QString &text);
+  void setHeadDescriptionFilter(const QString &text);
+  void setHeadRawFilter(const QString &text);
+  void setHeadCommentFilter(const QString &text);
+  void previousTailDescription();
+  void nextTailDescription();
+  void previousTailRaw();
+  void nextTailRaw();
+  void previousTailComment();
+  void nextTailComment();
+  void previousHeadDescription();
+  void nextHeadDescription();
+  void previousHeadRaw();
+  void nextHeadRaw();
+  void previousHeadComment();
+  void nextHeadComment();
   void previousTail();
   void nextTail();
+  void markTail();
+  void previousMarkedTail();
+  void nextMarkedTail();
+  void jumpTo();
   void previousHead();
   void nextHead();
+  void markHead();
+  void previousMarkedHead();
+  void nextMarkedHead();
   void setCommentBool();
   void setComments();
+  void setLinkageCommentBool();
+  void setLinkageComment();
   void pause(int time);
   void setLink();
   void unsetLink();
@@ -53,6 +88,7 @@ private:
   QPointer<QSqlTableModel> incidentsModel;
   
   QPointer<QLabel> settingsLabel;
+  QPointer<QLabel> selectCoderLabel;
   QPointer<QLabel> selectTypeLabel;
   QPointer<QLabel> tailIndexLabel;
   QPointer<QLabel> tailMarkedLabel;
@@ -74,6 +110,8 @@ private:
   QPointer<QLabel> headDescriptionFilterLabel;
   QPointer<QLabel> headRawFilterLabel;
   QPointer<QLabel> headCommentFilterLabel;
+  QPointer<QLabel> coderLabel;
+  QPointer<QLabel> coderFeedbackLabel;
   QPointer<QLabel> linkageTypeLabel;
   QPointer<QLabel> linkageTypeFeedbackLabel;
   QPointer<QLabel> linkageQuestionLabel;
@@ -100,8 +138,12 @@ private:
   QPointer<QTextEdit> headCommentField;
   QPointer<QTextEdit> linkageCommentField;
 
+  QPointer<QComboBox> coderComboBox;
   QPointer<QComboBox> typeComboBox;
 
+  QPointer<QPushButton> createCoderButton;
+  QPointer<QPushButton> editCoderButton;
+  QPointer<QPushButton> removeCoderButton;
   QPointer<QPushButton> createTypeButton;
   QPointer<QPushButton> editTypeButton;
   QPointer<QPushButton> removeTypeButton;
@@ -137,8 +179,16 @@ private:
   QString codingType;
   QString selectedType;
   QString selectedDirection;
-
+  QString selectedCoder;
+  QString tailDescriptionFilter;
+  QString tailRawFilter;
+  QString tailCommentFilter;
+  QString headDescriptionFilter;
+  QString headRawFilter;
+  QString headCommentFilter;
+  
   bool commentBool;
+  bool linkageCommentBool;
 };
 
 

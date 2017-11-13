@@ -8,6 +8,7 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
+#include <QIntValidator>
 #include <QPointer>
 #include <string>
 

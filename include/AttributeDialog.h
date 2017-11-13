@@ -10,7 +10,8 @@
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QMessageBox>
 #include <QtWidgets/QTextEdit>
-#include "EventSequenceDatabase.h"
+#include <QPointer>
+#include <QtSql>
 
 class AttributeDialog : public QDialog {
   Q_OBJECT

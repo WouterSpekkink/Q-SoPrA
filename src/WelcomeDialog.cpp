@@ -110,17 +110,31 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE linkage_types "
 		  "(id integer PRIMARY KEY, "
 		  "name TEXT, "
-		  "description TEXT, "
-		  "question TEXT, "
-		  "direction TEXT, "
-		  "tail integer, "
-		  "head integer)");
+		  "description text, "
+		  "question text, "
+		  "direction text)");
       query->exec("CREATE TABLE linkages "
 		  "(id integer PRIMARY KEY, "
 		  "tail integer, "
 		  "head integer, "
 		  "type text, "
-		  "comment text)");
+		  "coder text)");
+      query->exec("CREATE TABLE coders "
+		  "(id integer PRIMARY KEY, "
+		  "name text)");
+      query->exec("CREATE TABLE coders_to_linkage_types "
+		  "(id integer PRIMARY KEY, "
+		  "coder text, "
+		  "type text, "
+		  "tail integer, "
+		  "head integer)");
+      query->exec("CREATE TABLE linkage_comments "
+		  "(id integer PRIMARY KEY, "
+		  "tail integer, "
+		  "head integer, "
+		  "comment text, "
+		  "coder text, "
+		  "type text)");
       query->exec("CREATE TABLE save_data "
 		  "(attributes_record integer, "
 		  "relationships_record integer)");
