@@ -56,7 +56,6 @@ private:
   
   QPointer<QLabel> sourceLabel;
   QPointer<QLabel> typeLabel;
-  QPointer<QLabel> targetLabel;
   QPointer<QLabel> tailLabel;
   QPointer<QLabel> headLabel;
   QPointer<QLabel> selectedSourceLabel;

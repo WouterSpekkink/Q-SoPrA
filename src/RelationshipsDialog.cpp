@@ -13,7 +13,6 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   
   sourceLabel = new QLabel(tr("Source filter:"), this);
   typeLabel = new QLabel("", this);
-  targetLabel = new QLabel(tr("Target filter:"), this);
   entitiesTable = new EntityTableModel(this);
   entitiesTable->setTable("entities");
   entitiesTable->setSort(1, Qt::AscendingOrder);
