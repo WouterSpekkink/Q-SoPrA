@@ -780,6 +780,7 @@ void RelationshipsWidget::newRelationship() {
 	delete relationshipsTree;
 	setTree();
 	relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+	retrieveData();
       }
       delete relationshipsDialog;
       delete query;
@@ -864,6 +865,7 @@ void RelationshipsWidget::editRelationship() {
 	delete relationshipsTree;
 	setTree();
 	relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+	retrieveData();
       }
       delete relationshipsDialog;
       delete query;

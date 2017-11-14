@@ -261,13 +261,13 @@ void RelationshipsDialog::updateAfterEdit(const QString name, const QString desc
 		    "WHERE relationship = :old");
     query2->bindValue(":new", newRelationship);
     query2->bindValue(":old", oldRelationship);
-    query->exec();
+    query2->exec();
     query2->prepare("UPDATE relationships_to_incidents_sources "
 		    "SET relationship = :new "
 		    "WHERE relationship = :old");
     query2->bindValue(":new", newRelationship);
     query2->bindValue(":old", oldRelationship);
-    query->exec();
+    query2->exec();
 
     delete query2;
   }
@@ -313,7 +313,7 @@ void RelationshipsDialog::updateAfterEdit(const QString name, const QString desc
 		    "WHERE relationship = :old");
     query2->bindValue(":new", newRelationship);
     query2->bindValue(":old", oldRelationship);
-    query->exec();
+    query2->exec();
     delete query2;
   }
   delete query;
