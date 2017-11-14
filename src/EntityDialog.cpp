@@ -29,7 +29,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   attributesTreeView->setExpandsOnDoubleClick(false);
   attributesTreeView->header()->setStretchLastSection(false);
   attributesTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
+  
   treeFilter = new AttributeTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
   setTree(); 
@@ -42,6 +42,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
 
   descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
   descriptionField = new QTextEdit(this);
+  descriptionField->installEventFilter(this);
 
   valueLabel = new QLabel(tr("<b>Value:</b>"), this);
   valueField = new QLineEdit(this);
@@ -95,7 +96,9 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   titleLayout->addWidget(attributesLabel);
   QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
   collapseLayout->addWidget(expandButton);
+  expandButton->setMaximumWidth(expandButton->sizeHint().width());
   collapseLayout->addWidget(collapseButton);
+  collapseButton->setMaximumWidth(collapseButton->sizeHint().width());
   titleLayout->addLayout(collapseLayout);
   rightLayout->addLayout(titleLayout);
   rightLayout->addWidget(attributesTreeView);
@@ -669,7 +672,20 @@ void EntityDialog::fixTree() {
 bool EntityDialog::eventFilter(QObject *object, QEvent *event) {
   if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
+  } else if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
   }
   return false;
 }
+
 

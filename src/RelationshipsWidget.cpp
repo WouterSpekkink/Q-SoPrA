@@ -29,6 +29,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   relationshipsTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   relationshipsTreeView->header()->setStretchLastSection(false);
   relationshipsTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  relationshipsTreeView->installEventFilter(this);
 
   treeFilter = new RelationshipTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -60,6 +61,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   rawField = new QTextEdit(this);
   rawField->setReadOnly(true);
   commentField = new QTextEdit(this);
+  commentField->installEventFilter(this);
   descriptionFilterField = new QLineEdit(this);
   rawFilterField = new QLineEdit(this);
   commentFilterField = new QLineEdit(this);
@@ -220,7 +222,9 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   titleLayout->addWidget(relationshipsLabel);
   QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
   collapseLayout->addWidget(expandTreeButton);
+  expandTreeButton->setMaximumWidth(expandTreeButton->sizeHint().width());
   collapseLayout->addWidget(collapseTreeButton);
+  collapseTreeButton->setMaximumWidth(collapseTreeButton->sizeHint().width());
   titleLayout->addLayout(collapseLayout);
   rightLayout->addLayout(titleLayout);
   rightLayout->addWidget(relationshipsTreeView);
@@ -1400,4 +1404,46 @@ void RelationshipsWidget::finalBusiness() {
   setComment();
 }
 
+/*
+  The event filter originally captures only mousewheel events,
+  but I am keeping the function generalised in order to keep 
+  flexibility for possible future events that I want to filter out.
+ */
 
+bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event) {
+  if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    QTreeView *treeView = qobject_cast<QTreeView*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    } else if (treeView) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  QFont font = treeView->font();
+	  int currentSize = font.pointSize();
+	  if (currentSize <= 50) {
+	    int newSize = currentSize + 1;
+	    font.setPointSize(newSize);
+	    treeView->setFont(font);
+	  }
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  QFont font = treeView->font();
+	  int currentSize = font.pointSize();
+	  if (currentSize >= 10) {
+	    int newSize = currentSize - 1;
+	    font.setPointSize(newSize);
+	    treeView->setFont(font);
+	  }
+	}
+      }
+    }
+  }
+  return false;
+}

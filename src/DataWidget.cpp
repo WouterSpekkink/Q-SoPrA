@@ -5,7 +5,7 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   // This widget uses a table model.
   incidentsModel = new EventTableModel(this);
-  tableView = new QTableView(this);
+  tableView = new ZoomableTableView(this);
 
   // And the model shows data from the incidents table.
   incidentsModel->setTable("incidents");

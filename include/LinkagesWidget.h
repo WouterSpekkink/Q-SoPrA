@@ -12,6 +12,7 @@
 #include <QMessageBox>
 #include <QPointer>
 #include <QtSql>
+#include <QWheelEvent>
 #include <vector>
 #include <thread>
 #include <chrono>
@@ -81,6 +82,7 @@ private slots:
   void unsetLink();
   void findPastPaths(std::vector<int> *pIgnore, int currentIncident);
   void findFuturePaths(std::vector<int> *pIgnore, int currentIncident);
+  bool eventFilter(QObject *object, QEvent *event); 
   
 private:
   QPointer<QSqlTableModel> typesModel;

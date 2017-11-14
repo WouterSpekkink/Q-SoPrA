@@ -12,6 +12,7 @@
 #include <QDropEvent>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QWheelEvent>
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
 #include "RelationshipTypeDialog.h"
@@ -69,6 +70,7 @@ private slots:
   void expandTree();
   void collapseTree();
   void finalBusiness();
+  bool eventFilter(QObject *object, QEvent *event); 
 
 private:
   QPointer<QSqlTableModel> incidentsModel;

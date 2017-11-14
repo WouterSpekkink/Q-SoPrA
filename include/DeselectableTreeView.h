@@ -18,6 +18,9 @@ public:
 
 signals:
   void noneSelected();
+
+protected:
+  void wheelEvent(QWheelEvent *event);
   
 private:
   void mousePressEvent(QMouseEvent *event);

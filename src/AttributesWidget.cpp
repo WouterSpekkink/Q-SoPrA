@@ -60,6 +60,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   rawField = new QTextEdit(this);
   rawField->setReadOnly(true);
   commentField = new QTextEdit(this);
+  commentField->installEventFilter(this);
   descriptionFilterField = new QLineEdit(this);
   rawFilterField = new QLineEdit(this);
   commentFilterField = new QLineEdit(this);
@@ -213,7 +214,9 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   titleLayout->addWidget(attributesLabel);
   QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
   collapseLayout->addWidget(expandTreeButton);
+  expandTreeButton->setMaximumWidth(expandTreeButton->sizeHint().width());
   collapseLayout->addWidget(collapseTreeButton);
+  collapseTreeButton->setMaximumWidth(collapseTreeButton->sizeHint().width());
   titleLayout->addLayout(collapseLayout);
   rightLayout->addLayout(titleLayout);
   rightLayout->addWidget(attributesTreeView);
@@ -1388,6 +1391,18 @@ void AttributesWidget::finalBusiness() {
 bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
   if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
+  } else if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
   }
   return false;
 }

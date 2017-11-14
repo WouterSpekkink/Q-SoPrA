@@ -116,3 +116,4 @@ void AttributeDialog::saveAndClose() {
   delete query;
   this->close();
 }
+

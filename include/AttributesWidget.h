@@ -68,7 +68,7 @@ private slots:
   void getValue();
   void fixTree();
   bool eventFilter(QObject *object, QEvent *event);
-
+  
 private:
   QPointer<AttributeDialog> attributeDialog;
   QPointer<QSqlTableModel> incidentsModel;

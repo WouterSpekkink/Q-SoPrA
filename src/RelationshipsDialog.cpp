@@ -21,11 +21,10 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entitiesFilter->setSourceModel(entitiesTable);
   entitiesFilter->setFilterKeyColumn(1);
   entitiesFilter->setDynamicSortFilter(true);
-  entitiesView = new QListView(this);
+  entitiesView = new ZoomableListView(this);
   entitiesView->setModel(entitiesFilter);
   entitiesView->setModelColumn(1);
   entitiesView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
     
   assignLeftEntityButton = new QPushButton("use selected", this);
   assignRightEntityButton = new QPushButton("use selected", this);
@@ -409,3 +408,4 @@ void RelationshipsDialog::reset() {
     entitiesView->setRowHidden(i, false);
   }
 }
+

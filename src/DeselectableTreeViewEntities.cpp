@@ -14,6 +14,32 @@ void DeselectableTreeViewEntities::mousePressEvent(QMouseEvent *event) {
   emit selectionChanged();
 }
 
+void DeselectableTreeViewEntities::wheelEvent(QWheelEvent *event) {
+  if (event->modifiers() & Qt::ControlModifier) {
+    if (event->angleDelta().y() > 0) {
+      QFont font = this->font();
+      int currentSize = font.pointSize();
+      if (currentSize <= 50) {
+	int newSize = currentSize + 1;
+	font.setPointSize(newSize);
+	this->setFont(font);
+      }
+      return;
+    } else if (event->angleDelta().y() < 0) {
+      QFont font = this->font();
+      int currentSize = font.pointSize();
+      if (currentSize >= 10) {
+	int newSize = currentSize - 1;
+	font.setPointSize(newSize);
+	this->setFont(font);
+      }
+      return;
+    }
+  } else {
+    QTreeView::wheelEvent(event);
+  }
+}
+
 void DeselectableTreeViewEntities::dropEvent(QDropEvent *event) {
   this->setSortingEnabled(false);
   QModelIndex targetIndex = indexAt(event->pos());

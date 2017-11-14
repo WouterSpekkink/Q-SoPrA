@@ -88,12 +88,15 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailRawField = new QTextEdit(this);
   tailRawField->setReadOnly(true);
   tailCommentField = new QTextEdit(this);
+  tailCommentField->installEventFilter(this);
   headDescriptionField = new QTextEdit(this);
   headDescriptionField->setReadOnly(true);
   headRawField = new QTextEdit(this);
   headRawField->setReadOnly(true);
   headCommentField = new QTextEdit(this);
+  headCommentField->installEventFilter(this);
   linkageCommentField = new QTextEdit(this);
+  linkageCommentField->installEventFilter(this);
 
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -146,8 +149,10 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headCommentNextButton = new QPushButton(tr("Next"), this);  
   jumpButton = new QPushButton(tr("Jump to"), this);
   setLinkButton = new QPushButton(tr("Linked"), this);
+  setLinkButton->setEnabled(false);
   unsetLinkButton =new QPushButton(tr("Not linked"), this);
-
+  unsetLinkButton->setEnabled(false);
+  
   setButtons(false);
 
   connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
@@ -2240,6 +2245,7 @@ void LinkagesWidget::setLink() {
   if (codingType == MANUAL) {
     setLinkButton->setEnabled(false);
     unsetLinkButton->setEnabled(true);
+    unsetLinkButton->setFocus();
   }
   incidentsModel->select();
   while (incidentsModel->canFetchMore()) {
@@ -2432,6 +2438,7 @@ void LinkagesWidget::unsetLink() {
   if (codingType == MANUAL) {
     setLinkButton->setEnabled(true);
     unsetLinkButton->setEnabled(false);
+    setLinkButton->setFocus();
   }
   incidentsModel->select();
   while (incidentsModel->canFetchMore()) {
@@ -2719,12 +2726,27 @@ void LinkagesWidget::setButtons(bool status) {
   headCommentPreviousButton->setEnabled(status);
   headCommentNextButton->setEnabled(status);
   jumpButton->setEnabled(status);
-  setLinkButton->setEnabled(status);
-  unsetLinkButton->setEnabled(status);
   tailDescriptionFilterField->setEnabled(status);
   tailRawFilterField->setEnabled(status);
   tailCommentFilterField->setEnabled(status);
   headDescriptionFilterField->setEnabled(status);
   headRawFilterField->setEnabled(status);
   headCommentFilterField->setEnabled(status);
+}
+
+bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) {
+  if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
+  }
+  return false;
 }

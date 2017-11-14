@@ -10,6 +10,7 @@
 #include "EventSequenceDatabase.h"
 #include "RecordDialog.h"
 #include "EventTableModel.h"
+#include "ZoomableTableView.h"
 #include "Constants.h"
 
 class DataWidget : public QWidget {
@@ -37,7 +38,7 @@ private:
   QPointer<EventSequenceDatabase> esd;
   QPointer<RecordDialog> recordDialog;
   QPointer<EventTableModel> incidentsModel;
-  QPointer<QTableView> tableView;
+  QPointer<ZoomableTableView> tableView;
   
   QPointer<QPushButton> appendRecordButton;
   QPointer<QPushButton> editRecordButton;

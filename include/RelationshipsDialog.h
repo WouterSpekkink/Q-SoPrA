@@ -16,6 +16,7 @@
 #include <QSqlTableModel>
 #include "EntityTableModel.h"
 #include "EntityDialog.h"
+#include "ZoomableListView.h"
 
 class RelationshipsDialog : public QDialog {
   Q_OBJECT
@@ -37,7 +38,6 @@ public:
 			   
 private slots:
   void filterEntity(const QString &text);
-  
   void assignLeftEntity();
   void assignRightEntity();
   void addEntity();
@@ -48,10 +48,10 @@ private slots:
   void reset();
   void cancelAndClose();
   void saveAndClose();
-
+  
 private:
   QPointer<EntityTableModel> entitiesTable;
-  QPointer<QListView> entitiesView;
+  QPointer<ZoomableListView> entitiesView;
   QPointer<QSortFilterProxyModel> entitiesFilter;
   
   QPointer<QLabel> sourceLabel;

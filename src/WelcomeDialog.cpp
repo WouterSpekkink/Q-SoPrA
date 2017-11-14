@@ -57,7 +57,7 @@ void WelcomeDialog::newDatabase() {
 		  "name varchar text, "
 		  "description text, "
 		  "father text)");
-      query->exec("CREATE TABLE attributes_to_incidents "
+      query->exec("CREATE TABLE_to_incidents "
 		  "(id integer PRIMARY KEY, "
 		  "attribute text, "
 		  "incident integer, "
@@ -161,11 +161,120 @@ void WelcomeDialog::openDatabase() {
     if (!ok) {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
       errorBox->setText(tr("<b>ERROR</b>"));
-      errorBox->setInformativeText("Creation of new database failed.");
+      errorBox->setInformativeText("Could not open the database.");
       errorBox->exec();
       delete errorBox;
       return;
     } else {
+      /* 
+	 Let's make sure that we create all tables that are not yet present.
+	 For example, this could be the case after updates of the program. 
+      */
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("CREATE TABLE IF NOT EXISTS incidents "
+		  "(id integer PRIMARY KEY, "
+		  "ch_order integer, "
+		  "timestamp text, "
+		  "description text, "
+		  "raw text, "
+		  "comment text, "
+		  "source text, "
+		  "mark integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS incident_attributes "
+		  "(id integer PRIMARY KEY, "
+		  "name varchar text, "
+		  "description text, "
+		  "father text)");
+      query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents "
+		  "(id integer PRIMARY KEY, "
+		  "attribute text, "
+		  "incident integer, "
+		  "value text)");
+      query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents_sources "
+		  "(id integer PRIMARY KEY, "
+		  "attribute text, "
+		  "incident integer, "
+		  "source_text)");
+      query->exec("CREATE TABLE IF NOT EXISTS entity_attributes "
+		  "(id integer PRIMARY KEY, "
+		  "name text, "
+		  "description text, "
+		  "father text)");
+      query->exec("CREATE TABLE IF NOT EXISTS attributes_to_entities "
+		  "(id integer PRIMARY KEY, "
+		  "attribute text, "
+		  "entity text, "
+		  "value text, "
+		  "new integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS entity_relationships "
+		  "(id integer PRIMARY KEY, "
+		  "name text, "
+		  "source text, "
+		  "target text, "
+		  "comment text, "
+		  "type text)");
+      query->exec("CREATE TABLE IF NOT EXISTS relationship_types "
+		  "(id integer PRIMARY KEY, "
+		  "name text, "
+		  "directedness, "
+		  "description)");
+      query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents "
+		  "(id integer PRIMARY KEY, "
+		  "relationship text, "
+		  "incident integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents_sources "
+		  "(id integer PRIMARY KEY, "
+		  "relationship text, "
+		  "incident integer, "
+		  "source_text text)");
+      query->exec("CREATE TABLE IF NOT EXISTS entities "
+		  "(id integer, "
+		  "name text, "
+		  "description text)");
+      query->exec("CREATE TABLE IF NOT EXISTS journal "
+		  "(id integer PRIMARY KEY, "
+		  "time text, "
+		  "entry text)");
+      query->exec("CREATE TABLE IF NOT EXISTS linkage_types "
+		  "(id integer PRIMARY KEY, "
+		  "name TEXT, "
+		  "description text, "
+		  "question text, "
+		  "direction text)");
+      query->exec("CREATE TABLE IF NOT EXISTS linkages "
+		  "(id integer PRIMARY KEY, "
+		  "tail integer, "
+		  "head integer, "
+		  "type text, "
+		  "coder text)");
+      query->exec("CREATE TABLE IF NOT EXISTS coders "
+		  "(id integer PRIMARY KEY, "
+		  "name text)");
+      query->exec("CREATE TABLE IF NOT EXISTS coders_to_linkage_types "
+		  "(id integer PRIMARY KEY, "
+		  "coder text, "
+		  "type text, "
+		  "tail integer, "
+		  "head integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS linkage_comments "
+		  "(id integer PRIMARY KEY, "
+		  "tail integer, "
+		  "head integer, "
+		  "comment text, "
+		  "coder text, "
+		  "type text)");
+      query->exec("CREATE TABLE IF NOT EXISTS save_data "
+		  "(attributes_record integer, "
+		  "relationships_record integer)");
+      query->exec("SELECT * FROM save_data");
+      query->first();
+      if (query->isNull(0)) {
+	query->exec("INSERT INTO save_data "
+		    "(attributes_record, "
+		    "relationships_record) "
+		    "VALUES (1, 1)");
+      }
+      delete query;
       exitStatus = 0;
       this->close();
     }
