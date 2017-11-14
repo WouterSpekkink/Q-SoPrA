@@ -648,6 +648,8 @@ void LinkagesWidget::setTypeButton() {
 }
 
 void LinkagesWidget::setLinkageType() {
+  setComments();
+  setLinkageComment();
   if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) {
     selectedType = typeComboBox->currentText();
     selectedCoder = coderComboBox->currentText();
