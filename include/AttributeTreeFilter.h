@@ -13,8 +13,6 @@ public:
 
 protected:
   bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
-
-  //bool hasText(QStandardItem *item) const;
   
 };
 

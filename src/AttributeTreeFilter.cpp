@@ -1,8 +1,6 @@
 #include "../include/AttributeTreeFilter.h"
 
-AttributeTreeFilter::AttributeTreeFilter(QObject *parent) : QSortFilterProxyModel(parent) {
-
-}
+AttributeTreeFilter::AttributeTreeFilter(QObject *parent) : QSortFilterProxyModel(parent) {}
 
 bool AttributeTreeFilter::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const {
   QModelIndex sourceIndex = sourceModel()->index(sourceRow, this->filterKeyColumn(), sourceParent);

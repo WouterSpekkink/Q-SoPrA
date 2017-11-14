@@ -12,20 +12,29 @@
 #include <QSortFilterProxyModel>
 #include <QPointer>
 #include <QMessageBox>
-#include "Constants.h"
 #include <QSqlTableModel>
+#include "EntitiesFilter.h"
+#include "Constants.h"
 #include "EntityTableModel.h"
 #include "EntityDialog.h"
 #include "ZoomableListView.h"
 
+/*
+  I need to forward declare the class here because this header is also included in the
+  EntitiesFilter header.
+*/
+class EntitiesFilter;
+
 class RelationshipsDialog : public QDialog {
   Q_OBJECT
+  friend class EntitiesFilter;
 
 public:
   RelationshipsDialog(QWidget *parent = 0);
   ~RelationshipsDialog() {};
 
   int getExitStatus();
+  int getEntityEdited();
   QString getName();
   QString getLeftEntity();
   QString getRightEntity();
@@ -42,6 +51,7 @@ private slots:
   void assignRightEntity();
   void addEntity();
   void editEntity();
+  void updateAfterEdit(const QString name, const QString description, const QString oldName);
   void editLeftAssignedEntity();
   void editRightAssignedEntity();
   void removeEntities();
@@ -52,8 +62,8 @@ private slots:
 private:
   QPointer<EntityTableModel> entitiesTable;
   QPointer<ZoomableListView> entitiesView;
-  QPointer<QSortFilterProxyModel> entitiesFilter;
-  
+  QPointer<EntitiesFilter> entitiesFilter;
+    
   QPointer<QLabel> sourceLabel;
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> tailLabel;
@@ -81,6 +91,7 @@ private:
   QString oldName;
   QString type;
   int exitStatus;
+  int entityEdited;
 };
 
 #endif

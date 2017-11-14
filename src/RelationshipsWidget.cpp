@@ -776,6 +776,11 @@ void RelationshipsWidget::newRelationship() {
 	relationshipsModel->setData(relationshipsModel->index(newRow, 5), currentType);
 	relationshipsModel->submitAll();
       }
+      if (relationshipsDialog->getEntityEdited() == 1) {
+	delete relationshipsTree;
+	setTree();
+	relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+      }
       delete relationshipsDialog;
       delete query;
     }
@@ -854,6 +859,11 @@ void RelationshipsWidget::editRelationship() {
 	  delete query2;
 	}
 	currentItem->setData(name, Qt::DisplayRole);
+      }
+      if (relationshipsDialog->getEntityEdited() == 1) {
+	delete relationshipsTree;
+	setTree();
+	relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
       }
       delete relationshipsDialog;
       delete query;
