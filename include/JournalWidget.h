@@ -14,6 +14,7 @@
 #include <QItemSelection>
 #include <QMessageBox>
 #include "EventTableModel.h"
+#include "ZoomableTableView.h"
 
 class JournalWidget : public QWidget {
   friend class MainWindow;
@@ -30,11 +31,12 @@ private slots:
   void removeEntry();
   void setButton();
   void resetHeader(int header);
+  bool eventFilter(QObject *object, QEvent *event);
   
 private:
 
   QPointer<EventTableModel> journalModel;
-  QPointer<QTableView> tableView;
+  QPointer<ZoomableTableView> tableView;
 
   QPointer<QLabel> journalLabel;
   QPointer<QLabel> logLabel;

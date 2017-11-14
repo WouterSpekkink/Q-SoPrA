@@ -9,7 +9,7 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   journalModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Log date"));
   journalModel->select();
 
-  tableView = new QTableView(this);
+  tableView = new ZoomableTableView(this);
   tableView->setModel(journalModel);
   tableView->setColumnHidden(0, true);
   tableView->setColumnWidth(1, 200);
@@ -22,6 +22,7 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   
   logField = new QTextEdit(this);
   logField->setEnabled(false);
+  logField->installEventFilter(this);
   
   addEntryButton = new QPushButton("New entry", this);
   saveChangesButton = new QPushButton("Save changes", this);
@@ -126,4 +127,21 @@ void JournalWidget::removeEntry() {
 
 void JournalWidget::resetHeader(int header) {
   tableView->verticalHeader()->resizeSection(header, 30);
+}
+
+bool JournalWidget::eventFilter(QObject *object, QEvent *event) {
+  if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
+  }
+  return false;
 }
