@@ -62,10 +62,10 @@ private slots:
   void unassignRelationship();
   void resetTexts();
   void setButtons();
-  void sourceText(const QString &relationship, const int &incident);
+  void sourceText(const QString &relationship, const QString &type, const int &incident);
   void highlightText();
   void setTree();
-  void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
+  void boldSelected(QAbstractItemModel *model, QString name = "", QString type = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void expandTree();
   void collapseTree();

@@ -93,10 +93,12 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE relationships_to_incidents "
 		  "(id integer PRIMARY KEY, "
 		  "relationship text, "
+		  "type text, "
 		  "incident integer)");
       query->exec("CREATE TABLE relationships_to_incidents_sources "
 		  "(id integer PRIMARY KEY, "
 		  "relationship text, "
+		  "type text, "
 		  "incident integer, "
 		  "source_text text)");
       query->exec("CREATE TABLE entities "
@@ -221,10 +223,12 @@ void WelcomeDialog::openDatabase() {
       query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents "
 		  "(id integer PRIMARY KEY, "
 		  "relationship text, "
+		  "type text, "
 		  "incident integer)");
       query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents_sources "
 		  "(id integer PRIMARY KEY, "
 		  "relationship text, "
+		  "type text, "
 		  "incident integer, "
 		  "source_text text)");
       query->exec("CREATE TABLE IF NOT EXISTS entities "

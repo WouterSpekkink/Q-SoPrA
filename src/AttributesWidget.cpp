@@ -721,6 +721,10 @@ void AttributesWidget::editAttribute() {
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
+      query->prepare("UPDATE attributes_to_incidents_sources SET attribute = :newname WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
       this->setCursor(Qt::WaitCursor);
       retrieveData();
       this->setCursor(Qt::ArrowCursor);
