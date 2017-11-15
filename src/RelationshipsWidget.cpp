@@ -103,7 +103,9 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   unassignRelationshipButton->setEnabled(false);
   expandTreeButton = new QPushButton("+", this);
   collapseTreeButton = new QPushButton("-", this);
-  resetTextsButton = new QPushButton("Reset sources", this);
+  removeTextButton = new QPushButton("Remove text", this);
+  removeTextButton->setEnabled(false);
+  resetTextsButton = new QPushButton("Reset texts", this);
   resetTextsButton->setEnabled(false);
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
@@ -133,6 +135,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
   connect(assignRelationshipButton, SIGNAL(clicked()), this, SLOT(assignRelationship()));
   connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
+  connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
   connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getComment()));
@@ -240,6 +243,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QHBoxLayout> rightButtonTopLayout = new QHBoxLayout;
   rightButtonTopLayout->addWidget(assignRelationshipButton);
   rightButtonTopLayout->addWidget(unassignRelationshipButton);
+  rightButtonTopLayout->addWidget(removeTextButton);
   rightButtonTopLayout->addWidget(resetTextsButton);
   rightLayout->addLayout(rightButtonTopLayout);
   QPointer<QHBoxLayout> rightButtonCodedLayout = new QHBoxLayout;
@@ -705,6 +709,52 @@ void RelationshipsWidget::unassignRelationship() {
   }
 }
 
+void RelationshipsWidget::removeText() {
+  if (relationshipsTreeView->currentIndex().isValid()) {
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT relationships_record FROM save_data");
+    query->first();
+    int order = 0; 
+    order = query->value(0).toInt();
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    int id = 0;
+    id = query->value(0).toInt();
+    QString attribute = relationshipsTreeView->currentIndex().data().toString();
+    if (rawField->textCursor().selectedText().trimmed() != "") {
+      QSqlQuery *query = new QSqlQuery;
+      int end = 0;
+      int begin = 0;
+      QTextCursor selectCursor = rawField->textCursor();
+      if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
+	begin = rawField->textCursor().position();
+	end = rawField->textCursor().anchor();
+      } else {
+	begin = rawField->textCursor().anchor();
+	end = rawField->textCursor().position();
+      }
+      begin++;
+      end--;
+      selectCursor.setPosition(begin);
+      selectCursor.movePosition(QTextCursor::StartOfWord);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+      rawField->setTextCursor(selectCursor);
+      QString sourceText = rawField->textCursor().selectedText().trimmed();
+      query->prepare("DELETE FROM relationships_to_incidents_sources "
+		     "WHERE attribute = :att AND incident = :inc AND source_text = :text");
+      query->bindValue(":att", attribute);
+      query->bindValue(":inc", id);
+      query->bindValue(":text", sourceText);
+      query->exec();
+    }
+    highlightText();
+    delete query;
+  }
+}
+
 void RelationshipsWidget::resetTexts() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QPointer<QMessageBox> warningBox = new QMessageBox(this);
@@ -714,32 +764,31 @@ void RelationshipsWidget::resetTexts() {
     warningBox->setText("<h2>Are you sure?</h2>");
     warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
     if (warningBox->exec() == QMessageBox::Yes) {
-      QSqlQueryModel *query = new QSqlQueryModel(this);
-      query->setQuery("SELECT * FROM save_data");
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT relationships_record FROM save_data");
+      query->first();
       int order = 0; 
-      order = query->record(0).value("relationships_record").toInt();
-      QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
-      query2->bindValue(":order", order);
-      query2->exec();
-      query2->first();
+      order = query->value(0).toInt();
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query->bindValue(":order", order);
+      query->exec();
+      query->first();
       int id = 0;
-      if (!(query2->isNull(0))) {
-	id = query2->value(0).toInt();
+      if (!(query->isNull(0))) {
+	id = query->value(0).toInt();
 	QString relationship = relationshipsTreeView->currentIndex().data().toString();
 	QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	QStandardItem *typeItem = currentItem->parent();
 	QString currentType = typeItem->data(Qt::DisplayRole).toString();
-	query2->prepare("DELETE FROM relationships_to_incidents_sources "
+	query->prepare("DELETE FROM relationships_to_incidents_sources "
 			"WHERE relationship = :rel AND type = :type AND incident = :inc");
-	query2->bindValue(":rel", relationship);
-	query2->bindValue(":type", currentType);
-	query2->bindValue(":inc", id);
-	query2->exec();
+	query->bindValue(":rel", relationship);
+	query->bindValue(":type", currentType);
+	query->bindValue(":inc", id);
+	query->exec();
       }
       highlightText();
       delete query;
-      delete query2;
     }
     delete warningBox;
   }
@@ -1384,34 +1433,47 @@ void RelationshipsWidget::setButtons() {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       QStandardItem *typeItem = currentItem->parent();
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
-      QSqlQueryModel *query = new QSqlQueryModel(this);
-      query->setQuery("SELECT * FROM save_data");
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT relationship_record FROM save_data");
+      query->first();
       int order = 0; 
-      order = query->record(0).value("relationships_record").toInt();
-    
-      QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
-      query2->bindValue(":order", order);
-      query2->exec();
-      query2->first();
+      order = query->value(0).toInt();
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query->bindValue(":order", order);
+      query->exec();
+      query->first();
       int id = 0;
-      if (!(query2->isNull(0))) {
-	id = query2->value(0).toInt();
+      if (!(query->isNull(0))) {
+	id = query->value(0).toInt();
 	assignedModel->select();
 	bool empty = false;
-	query2->prepare("SELECT relationship, incident FROM relationships_to_incidents "
-			"WHERE relationship = :rel AND type = :type AND incident = :inc  ");
-	query2->bindValue(":rel", currentRelationship);
-	query2->bindValue(":type", currentType);
-	query2->bindValue(":inc", id);
-	query2->exec();
-	query2->first();
-	empty = query2->isNull(0);
+	query->prepare("SELECT relationship, incident "
+		       "FROM relationships_to_incidents "
+		       "WHERE relationship = :rel AND type = :type AND incident = :inc  ");
+	query->bindValue(":rel", currentRelationship);
+	query->bindValue(":type", currentType);
+	query->bindValue(":inc", id);
+	query->exec();
+	query->first();
+	empty = query->isNull(0);
 	if (!empty) {
 	  unassignRelationshipButton->setEnabled(true);
-	  resetTextsButton->setEnabled(true);
 	} else {
 	  unassignRelationshipButton->setEnabled(false);
+	}
+	query->prepare("SELECT relationship, incident FROM "
+		       "relationships_to_incidents_sources "
+		       "WHERE relationship = :rel AND incident = :inc");
+	query->bindValue(":rel", currentRelationship);
+	query->bindValue(":inc", id);
+	query->exec();
+	query->first();
+	empty = query->isNull(0);
+	if (!empty) {
+	  removeTextButton->setEnabled(true);
+	  resetTextsButton->setEnabled(true);
+	} else {
+	  removeTextButton->setEnabled(false);
 	  resetTextsButton->setEnabled(false);
 	}
 	assignRelationshipButton->setEnabled(true);
@@ -1421,12 +1483,14 @@ void RelationshipsWidget::setButtons() {
 	editRelationshipButton->setEnabled(true);
 	editTypeButton->setEnabled(false);
       }
+      delete query;
     } else {
       newRelationshipButton->setEnabled(true);
       editRelationshipButton->setEnabled(false);
       assignRelationshipButton->setEnabled(false);
       unassignRelationshipButton->setEnabled(false);
       editTypeButton->setEnabled(true);
+      removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
       previousCodedButton->setEnabled(false);
       nextCodedButton->setEnabled(false);
@@ -1437,6 +1501,7 @@ void RelationshipsWidget::setButtons() {
     assignRelationshipButton->setEnabled(false);
     unassignRelationshipButton->setEnabled(false);
     editTypeButton->setEnabled(false);
+    removeTextButton->setEnabled(false);
     resetTextsButton->setEnabled(false);
     previousCodedButton->setEnabled(false);
     nextCodedButton->setEnabled(false);

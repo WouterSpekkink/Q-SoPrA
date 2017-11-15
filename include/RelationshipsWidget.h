@@ -60,6 +60,7 @@ private slots:
   void removeUnusedRelationships();
   void assignRelationship();
   void unassignRelationship();
+  void removeText();
   void resetTexts();
   void setButtons();
   void sourceText(const QString &relationship, const QString &type, const int &incident);
@@ -132,6 +133,7 @@ private:
   QPointer<QPushButton> unassignRelationshipButton;
   QPointer<QPushButton> expandTreeButton;
   QPointer<QPushButton> collapseTreeButton;
+  QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
 
   QString descriptionFilter;

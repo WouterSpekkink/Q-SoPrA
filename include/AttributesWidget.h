@@ -51,6 +51,7 @@ private slots:
   void highlightText();
   void assignAttribute();
   void unassignAttribute();
+  void removeText();
   void resetTexts();
   void removeUnusedAttributes();
   void setTree();
@@ -126,6 +127,7 @@ private:
   QPointer<QPushButton> collapseTreeButton;
   QPointer<QPushButton> previousCodedButton;
   QPointer<QPushButton> nextCodedButton;
+  QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
   
   QString descriptionFilter;
