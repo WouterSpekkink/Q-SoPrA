@@ -633,6 +633,7 @@ void RelationshipsWidget::assignRelationship() {
 	  highlightText();
 	  rawField->setTextCursor(cursorPos);
 	}
+	unassignRelationshipButton->setEnabled(true);
       }
       delete query;
       delete query2;

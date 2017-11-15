@@ -890,6 +890,7 @@ void AttributesWidget::assignAttribute() {
         highlightText();
 	rawField->setTextCursor(cursPos);
       }
+      unassignAttributeButton->setEnabled(true);
     }
     delete query;
     delete query2;
