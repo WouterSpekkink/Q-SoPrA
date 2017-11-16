@@ -637,7 +637,7 @@ void RelationshipsWidget::assignRelationship() {
 	  highlightText();
 	  rawField->setTextCursor(cursorPos);
 	}
-	unassignRelationshipButton->setEnabled(true);
+	setButtons();
       }
       delete query;
       delete query2;
@@ -751,6 +751,7 @@ void RelationshipsWidget::removeText() {
       query->exec();
     }
     highlightText();
+    setButtons();
     delete query;
   }
 }
@@ -790,6 +791,7 @@ void RelationshipsWidget::resetTexts() {
       highlightText();
       delete query;
     }
+    setButtons();
     delete warningBox;
   }
 }

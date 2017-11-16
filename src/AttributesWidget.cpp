@@ -894,7 +894,7 @@ void AttributesWidget::assignAttribute() {
         highlightText();
 	rawField->setTextCursor(cursPos);
       }
-      unassignAttributeButton->setEnabled(true);
+      setButtons();
     }
     delete query;
     delete query2;
@@ -1005,6 +1005,7 @@ void AttributesWidget::removeText() {
       query->bindValue(":text", sourceText);
       query->exec();
     }
+    setButtons();
     highlightText();
     delete query;
   }
@@ -1041,6 +1042,7 @@ void AttributesWidget::resetTexts() {
       highlightText();
       delete query;
     }
+    setButtons();
     delete warningBox;
   }
 }
