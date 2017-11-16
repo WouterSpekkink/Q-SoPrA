@@ -15,12 +15,14 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   relationshipsWidget = new RelationshipsWidget(this);
   linkagesWidget = new LinkagesWidget(this);
   journalWidget = new JournalWidget(this);
+  eventGraphWidget = new EventGraphWidget(this);
   
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);
   stacked->addWidget(relationshipsWidget);
   stacked->addWidget(linkagesWidget);
   stacked->addWidget(journalWidget);
+  stacked->addWidget(eventGraphWidget);
 
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
@@ -74,6 +76,10 @@ void MainWindow::createActions() {
   journalViewAct = new QAction(tr("&Journal view"), this);
   journalViewAct->setStatusTip("Switch to journal view");
   connect(journalViewAct, SIGNAL(triggered()), this, SLOT(switchToJournalView()));
+
+  eventGraphViewAct = new QAction(tr("&Event graph view"), this);
+  eventGraphViewAct->setStatusTip("Switch to event graph view");
+  connect(eventGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToEventGraphView()));
 }
 
 void MainWindow::createMenus() {
@@ -89,6 +95,7 @@ void MainWindow::createMenus() {
   viewMenu->addAction(relationshipViewAct);
   viewMenu->addAction(linkageViewAct);
   viewMenu->addAction(journalViewAct);
+  viewMenu->addAction(eventGraphViewAct);
 
   this->setMenuBar(menuBar);
 }
@@ -300,6 +307,13 @@ void MainWindow::switchToLinkageView() {
 
 
 void MainWindow::switchToJournalView() {
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  lw->setLinkageComment();
   JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
   const QModelIndex index;
   jw->tableView->clearSelection();
@@ -308,4 +322,17 @@ void MainWindow::switchToJournalView() {
   jw->logField->setText("");
   stacked->setCurrentWidget(journalWidget);
 }
+
+void MainWindow::switchToEventGraphView() {
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  //  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  const QModelIndex index;
+  stacked->setCurrentWidget(eventGraphWidget);
+}
+
 

@@ -6,6 +6,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QVector>
 #include <QPointer>
+#include <QtSql>
 #include "GraphicsView.h"
 #include "EventItem.h"
 #include "Arrow.h"
@@ -18,19 +19,20 @@ public:
   EventGraphWidget(QWidget *parent = 0);
   ~EventGraphWidget() {};
 
-  void temp();			
+  void temp();
 
 private slots:
   void getEvents();
   void plotEvents();
   void getEdges();
   void plotEdges();
+  void cleanUp();	     
 
 private:
   QPointer<QGraphicsScene> scene;
   QPointer<GraphicsView> view;
-  QVector<QPointer<EventItem*>> eventVector;
-  QVector<QPointer<Arrow*>> edgeVector;
+  QVector<EventItem*> eventVector;
+  QVector<Arrow*> edgeVector;
    
 };
 

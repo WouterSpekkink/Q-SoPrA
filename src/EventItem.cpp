@@ -6,16 +6,17 @@
   in real applications.
 */
 
-EventItem::EventItem(int subWidth) : color(255, 255, 255) {
+EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId) : color(255, 255, 255) {
   width = subWidth;
 
-  setToolTip("This could be an event");
+  setToolTip(toolTip);
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   //  setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  originalPos = QPointF(0, 0);
+  originalPos = originalPosition;
+  id = subId;
 }
 
 /*
@@ -80,4 +81,11 @@ int EventItem::getCorrection() {
   return width - 29;
 }
 
+QPointF EventItem::getOriginalPos() {
+  return originalPos;
+}
+
+int EventItem::getId() {
+  return id;
+}
 

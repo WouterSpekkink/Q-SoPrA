@@ -6,13 +6,15 @@
 
 const qreal Pi = 3.14;
 
-Arrow::Arrow(EventItem *startItem, EventItem *endItem, QGraphicsItem *parent)
+Arrow::Arrow(EventItem *startItem, EventItem *endItem, QString subType, QString subCoder, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
   end = endItem;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   color = Qt::black;
   setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  type = subType;
+  coder = subCoder;
 }
 
 QRectF Arrow::boundingRect() const {
