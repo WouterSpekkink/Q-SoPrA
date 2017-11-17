@@ -12,7 +12,19 @@ GraphicsView::GraphicsView(QGraphicsScene *scene) : QGraphicsView(scene) {
 void GraphicsView::resizeEvent(QResizeEvent *) {};
 
 void GraphicsView::mousePressEvent(QMouseEvent *event) {
-  if (event->button() == Qt::RightButton) {
+  if (event->modifiers() & Qt::ControlModifier) {
+    QPointer<QGraphicsTextItem> text = new QGraphicsTextItem;
+    text->setPos(this->mapToScene(event->pos()));
+    text->setFlags(QGraphicsItem::ItemIsMovable);
+    QPointer<GraphTextDialog> textDialog = new GraphTextDialog();
+    textDialog->exec();
+    if (textDialog->getExitStatus() == 0) {
+      QString newText = textDialog->getText();
+      text->setPlainText(newText);
+      scene()->addItem(text);
+    }
+    delete textDialog;
+  } else if (event->button() == Qt::RightButton) {
     pan = true;
     setCursor(Qt::ClosedHandCursor);
     lastMousePos = event->pos();
@@ -75,8 +87,6 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
     } else {
       this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
     }
-  } else if (event->modifiers() & Qt::ShiftModifier) {
-    horizontalScrollBar()->setValue(horizontalScrollBar()->value() - event->delta());
   } else {
     QGraphicsView::wheelEvent(event);
   }

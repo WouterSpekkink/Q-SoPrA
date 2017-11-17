@@ -1,15 +1,9 @@
 #include "../include/EventGraphWidget.h"
 
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
-  scene = new QGraphicsScene(this);
+  scene = new Scene(this);
   view = new GraphicsView(scene);
   
-  //  temp();
-  getEvents();
-  plotEvents();
-  getEdges();
-  plotEdges();
-
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -22,6 +16,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
   setWindowTitle("Graphics Test");
 
+  connect(scene, SIGNAL(widthIncreased(EventItem*)), this, SLOT(increaseWidth(EventItem*)));
+  connect(scene, SIGNAL(widthDecreased(EventItem*)), this, SLOT(decreaseWidth(EventItem*)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
@@ -43,7 +39,8 @@ void EventGraphWidget::getEvents() {
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
-    QPointF position = QPointF((order * 70), 0);
+    int vertical = qrand() % 240 - 120;
+    QPointF position = QPointF((order * 70), vertical);
     EventItem *currentItem = new EventItem(30, toolTip, position, id); 
     eventVector.push_back(currentItem);
     delete query2;
@@ -81,6 +78,10 @@ void EventGraphWidget::getEdges() {
 	tempTarget = currentItem;
       }
       if (tempSource != NULL && tempTarget != NULL) {
+	int sourceHeight = tempSource->getOriginalPos().y();
+	int newTargetHeight = sourceHeight + qrand() % 240 - 120;
+	int targetOrder = tempTarget->getOriginalPos().x();
+	tempTarget->setPos(targetOrder, newTargetHeight);
 	Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
 	edgeVector.push_back(currentEdge);
 	break;
@@ -98,79 +99,39 @@ void EventGraphWidget::plotEdges() {
   }
 }
 
-
-void EventGraphWidget::temp() {
-  /*
-  EventItem *itemOne = new EventItem(100, "test", );
-  int horPos = 1 * 35;
-  itemOne->setPos(horPos, 200);
-  itemOne->setOriginalPos(horPos, 100);
-  scene->addItem(itemOne);
-
-  EventItem *itemTwo = new EventItem(300);
-  horPos = 5 * 35;
-  itemTwo->setPos(horPos, 200);
-  itemTwo->setOriginalPos(horPos, 100);
-  scene->addItem(itemTwo);
-
-  EventItem *itemThree = new EventItem(30);
-  horPos = 30 * 35;
-  itemThree->setPos(horPos, 200);
-  itemThree->setOriginalPos(horPos, 100);
-  scene->addItem(itemThree);
-
-  EventItem *itemFour = new EventItem(100);
-  horPos = 1 * 35;
-  itemFour->setPos(horPos, 400);
-  itemFour->setOriginalPos(horPos, 0);
-  scene->addItem(itemFour);
-
-  EventItem *itemFive = new EventItem(300);
-  horPos = 5 * 35;
-  itemFive->setPos(horPos, 400);
-  itemFive->setOriginalPos(horPos, 0);
-  scene->addItem(itemFive);
-
-  EventItem *itemSix = new EventItem(30);
-  horPos = 30 * 35;
-  itemSix->setPos(horPos, 400);
-  itemSix->setOriginalPos(horPos, 0);
-  scene->addItem(itemSix);
-
-  EventItem *itemSeven = new EventItem(30);
-  horPos = 5 * 35;
-  itemSeven->setPos(horPos, 100);
-  itemSeven->setOriginalPos(horPos, 0);
-  scene->addItem(itemSeven);
-
-  Arrow *line = new Arrow(itemTwo, itemOne);
-  Arrow *line2 = new Arrow(itemThree, itemTwo);
-
-  Arrow *line3 = new Arrow(itemFour, itemFive);
-  Arrow *line4 = new Arrow(itemFive, itemSix);
-
-  Arrow *line5 = new Arrow(itemSeven, itemOne);
-  
-  scene->addItem(line);
-  scene->addItem(line2);
-
-  scene->addItem(line3);
-  scene->addItem(line4);
-
-  scene->addItem(line5);
-  
-  itemOne->setZValue(1);
-  itemTwo->setZValue(1);
-  itemThree->setZValue(1);
-  itemFour->setZValue(1);
-  itemFive->setZValue(1);
-  itemSix->setZValue(1);
-  itemSeven->setZValue(1);*/
-}
-
 void EventGraphWidget::cleanUp() {
   qDeleteAll(eventVector);
   qDeleteAll(edgeVector);
   eventVector.clear();
   edgeVector.clear();
 }
+
+
+void EventGraphWidget::increaseWidth(EventItem *item) {
+  QPointF original = item->getOriginalPos();
+  int order = original.x();
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *currentItem = it.next();
+    if (currentItem->pos().x() > order) {
+      QPointF newPos = QPointF(currentItem->pos().x() + 1, currentItem->pos().y());
+      currentItem->resetOriginalPos(newPos);
+      currentItem->setPos(newPos);
+    }
+  }
+}
+
+void EventGraphWidget::decreaseWidth(EventItem *item) {
+  QPointF original = item->getOriginalPos();
+  int order = original.x();
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *currentItem = it.next();
+    if (currentItem->pos().x() > order) {
+      QPointF newPos = QPointF(currentItem->pos().x() - 1, currentItem->pos().y());
+      currentItem->resetOriginalPos(newPos);
+      currentItem->setPos(newPos);
+    }
+  }
+}
+

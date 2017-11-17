@@ -2,6 +2,7 @@
 #define EVENTITEM_H
 
 #include <QGraphicsItem>
+#include <QWheelEvent>
 
 /*
   So graphics items are things that can be draw. They are classes, and 
@@ -19,19 +20,21 @@ public:
   void setOriginalPos(qreal x, qreal y);
   int getCorrection();
   QPointF getOriginalPos();
+  void resetOriginalPos(QPointF &newPos);
   int getId();
+  int width;
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-
+  //  void wheelEvent(QGraphicsSceneWheelEvent *event) override;
+  
 private:
   QColor color;
-  int width;
   QPointF originalPos;
-  int id; 
- 
+  int id;
+  
 };
 
 #endif

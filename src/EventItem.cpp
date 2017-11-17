@@ -12,7 +12,7 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   setToolTip(toolTip);
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
-  //  setFlag(QGraphicsItem::ItemIsSelectable);
+  setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   originalPos = originalPosition;
@@ -40,10 +40,12 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
 // Only to set the cursor to a different graphic.
 void EventItem::mousePressEvent(QGraphicsSceneMouseEvent *) {
-    setCursor(Qt::ClosedHandCursor);
+  setCursor(Qt::ClosedHandCursor);
 }
 
 void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+  
+  
   if (event->modifiers() & Qt::AltModifier) {
     QPointF newPos = event->scenePos();
     this->setPos(newPos);
@@ -63,6 +65,8 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
     QPointF newPos = event->scenePos();
     this->setPos(newPos);
     setCursor(Qt::OpenHandCursor);
+  } else if (event->modifiers() & Qt::ShiftModifier) {
+    setCursor(Qt::OpenHandCursor);
   } else {
     qreal oldX = originalPos.x();
     QPointF newPos = event->scenePos();
@@ -72,6 +76,19 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   update();
   QGraphicsItem::mouseReleaseEvent(event);
 }
+
+/*void EventItem::wheelEvent(QGraphicsSceneWheelEvent* event) {
+  if (event->modifiers() & Qt::ShiftModifier) {
+    if (event->delta() > 0 && this->width <= 300) {
+      this->width++;
+    } else if (event->delta() < 0 && this->width >= 30) {
+      this->width--;
+    } 
+  }
+  
+  update();
+  }*/
+
 
 void EventItem::setOriginalPos(qreal x, qreal y) {
   originalPos = QPointF(x, y);
@@ -89,3 +106,6 @@ int EventItem::getId() {
   return id;
 }
 
+void EventItem::resetOriginalPos(QPointF &newPos) {
+  originalPos = newPos;
+}

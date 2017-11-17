@@ -10,16 +10,16 @@
 #include "GraphicsView.h"
 #include "EventItem.h"
 #include "Arrow.h"
+#include "Scene.h"
 #include <math.h>
 
 class EventGraphWidget : public QWidget {
   Q_OBJECT
-
+  friend class MainWindow;
+  
 public:
   EventGraphWidget(QWidget *parent = 0);
   ~EventGraphWidget() {};
-
-  void temp();
 
 private slots:
   void getEvents();
@@ -27,9 +27,11 @@ private slots:
   void getEdges();
   void plotEdges();
   void cleanUp();	     
-
+  void increaseWidth(EventItem *item);
+  void decreaseWidth(EventItem *item);
+  
 private:
-  QPointer<QGraphicsScene> scene;
+  QPointer<Scene> scene;
   QPointer<GraphicsView> view;
   QVector<EventItem*> eventVector;
   QVector<Arrow*> edgeVector;

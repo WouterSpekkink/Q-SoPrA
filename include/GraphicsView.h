@@ -5,6 +5,9 @@
 #include <QMouseEvent>
 #include <QWheelEvent>
 #include <QScrollBar>
+#include <QGraphicsTextItem>
+#include <QPointer>
+#include "GraphTextDialog.h"
 
 class GraphicsView : public QGraphicsView {
   
