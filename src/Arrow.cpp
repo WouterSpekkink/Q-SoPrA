@@ -6,7 +6,8 @@
 
 const qreal Pi = 3.14;
 
-Arrow::Arrow(EventItem *startItem, EventItem *endItem, QString subType, QString subCoder, QGraphicsItem *parent)
+Arrow::Arrow(EventItem *startItem, EventItem *endItem, QString subType, QString subCoder,
+	     QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
   end = endItem;

@@ -9,8 +9,7 @@ class Arrow : public QGraphicsLineItem {
 public:
 
   Arrow(EventItem *startItem, EventItem *endItem,
-	QString subType, QString subCoder,
-	QGraphicsItem *parent = 0);
+	QString subType, QString subCoder, QGraphicsItem *parent = 0);
   ~Arrow() {};
 
   QRectF boundingRect() const override;

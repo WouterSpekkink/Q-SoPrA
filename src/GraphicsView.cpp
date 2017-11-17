@@ -105,6 +105,13 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
     wheelEvent.setAccepted(false);
     qApp->sendEvent(this->scene(), &wheelEvent);
     event->setAccepted(wheelEvent.isAccepted());
+    if (!(event->isAccepted())) {
+      if (event->delta() > 0) {
+	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + event->delta());
+      } else {
+	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + event->delta());
+      }
+    }
   } else {
     QGraphicsView::wheelEvent(event);
   }

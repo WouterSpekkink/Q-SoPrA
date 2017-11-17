@@ -19,10 +19,14 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
       } 
     }
     item->update();
+    wheelEvent->accept();
+  } else {
+    wheelEvent->ignore();
   }
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+  this->clearSelection();
   if (event->modifiers() & Qt::ShiftModifier) {
     EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
     Arrow *no = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));

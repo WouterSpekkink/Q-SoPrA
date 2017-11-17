@@ -669,6 +669,7 @@ moc_RelationshipTypeDialog.cpp: include/Constants.h \
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationshipTypeDialog.h -o moc_RelationshipTypeDialog.cpp
 
 moc_Scene.cpp: include/EventItem.h \
+		include/Arrow.h \
 		include/Scene.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/Scene.h -o moc_Scene.cpp
 
@@ -915,7 +916,8 @@ RelationshipTypeDialog.o: src/RelationshipTypeDialog.cpp include/RelationshipTyp
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipTypeDialog.o src/RelationshipTypeDialog.cpp
 
 Scene.o: src/Scene.cpp include/Scene.h \
-		include/EventItem.h
+		include/EventItem.h \
+		include/Arrow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Scene.o src/Scene.cpp
 
 WelcomeDialog.o: src/WelcomeDialog.cpp include/WelcomeDialog.h \

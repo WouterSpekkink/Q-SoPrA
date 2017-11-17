@@ -2202,7 +2202,7 @@ void LinkagesWidget::setLinkageComment() {
     if (!(query->isNull(0))) {
       if (comment != "") {
 	query->prepare("UPDATE linkage_comments "
-		       "SET comment = :comment, coder = :coder"
+		       "SET comment = :comment, coder = :coder "
 		       "WHERE tail = :tail AND head = :head AND type = :type");
 	query->bindValue(":comment", comment);
 	query->bindValue(":coder", selectedCoder);

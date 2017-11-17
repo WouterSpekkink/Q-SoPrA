@@ -331,11 +331,7 @@ void MainWindow::switchToEventGraphView() {
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->cleanUp();
-  egw->getEvents();
-  egw->plotEvents();
-  egw->getEdges();
-  egw->plotEdges();
+  egw->getLinkageDetails();
   const QModelIndex index;
   stacked->setCurrentWidget(eventGraphWidget);
 }
