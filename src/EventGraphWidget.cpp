@@ -3,6 +3,8 @@
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   scene = new Scene(this);
   view = new GraphicsView(scene);
+  view->setDragMode(QGraphicsView::RubberBandDrag);
+  view->setRubberBandSelectionMode(Qt::ContainsItemShape);
   
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
@@ -18,6 +20,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 
   connect(scene, SIGNAL(widthIncreased(EventItem*)), this, SLOT(increaseWidth(EventItem*)));
   connect(scene, SIGNAL(widthDecreased(EventItem*)), this, SLOT(decreaseWidth(EventItem*)));
+  connect(scene, SIGNAL(posIncreased(EventItem*)), this, SLOT(increasePos(EventItem*)));
+  connect(scene, SIGNAL(posDecreased(EventItem*)), this, SLOT(decreasePos(EventItem*)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
@@ -108,7 +112,7 @@ void EventGraphWidget::cleanUp() {
 
 
 void EventGraphWidget::increaseWidth(EventItem *item) {
-  QPointF original = item->getOriginalPos();
+  QPointF original = item->scenePos();
   int order = original.x();
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
@@ -122,7 +126,7 @@ void EventGraphWidget::increaseWidth(EventItem *item) {
 }
 
 void EventGraphWidget::decreaseWidth(EventItem *item) {
-  QPointF original = item->getOriginalPos();
+  QPointF original = item->scenePos();
   int order = original.x();
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
@@ -130,6 +134,34 @@ void EventGraphWidget::decreaseWidth(EventItem *item) {
     if (currentItem->pos().x() > order) {
       QPointF newPos = QPointF(currentItem->pos().x() - 1, currentItem->pos().y());
       currentItem->resetOriginalPos(newPos);
+      currentItem->setPos(newPos);
+    }
+  }
+}
+
+void EventGraphWidget::increasePos(EventItem *item) {
+  QPointF original = item->scenePos();
+  int order = original.x();
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *currentItem = it.next();
+    if (currentItem->pos().x() > order) {
+      QPointF newPos = QPointF(currentItem->pos().x() + 1, currentItem->pos().y());
+      //currentItem->resetOriginalPos(newPos);
+      currentItem->setPos(newPos);
+    }
+  }
+}
+
+void EventGraphWidget::decreasePos(EventItem *item) {
+  QPointF original = item->scenePos();
+  int order = original.x();
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *currentItem = it.next();
+    if (currentItem->pos().x() > order) {
+      QPointF newPos = QPointF(currentItem->pos().x() - 1, currentItem->pos().y());
+      //currentItem->resetOriginalPos(newPos);
       currentItem->setPos(newPos);
     }
   }

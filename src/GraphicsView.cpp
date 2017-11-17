@@ -13,17 +13,22 @@ void GraphicsView::resizeEvent(QResizeEvent *) {};
 
 void GraphicsView::mousePressEvent(QMouseEvent *event) {
   if (event->modifiers() & Qt::ControlModifier) {
-    QPointer<QGraphicsTextItem> text = new QGraphicsTextItem;
-    text->setPos(this->mapToScene(event->pos()));
-    text->setFlags(QGraphicsItem::ItemIsMovable);
-    QPointer<GraphTextDialog> textDialog = new GraphTextDialog();
-    textDialog->exec();
-    if (textDialog->getExitStatus() == 0) {
-      QString newText = textDialog->getText();
-      text->setPlainText(newText);
-      scene()->addItem(text);
+    if (event->button() == Qt::LeftButton) {
+      QPointer<QGraphicsTextItem> text = new QGraphicsTextItem;
+      text->setPos(this->mapToScene(event->pos()));
+      text->setFlags(QGraphicsItem::ItemIsMovable);
+      QPointer<GraphTextDialog> textDialog = new GraphTextDialog();
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString newText = textDialog->getText();
+	text->setPlainText(newText);
+	scene()->addItem(text);
+      }
+      delete textDialog;
     }
-    delete textDialog;
+  } else if (event->modifiers() & Qt::ShiftModifier) {
+    this->setDragMode(QGraphicsView::NoDrag);
+    QGraphicsView::mousePressEvent(event);
   } else if (event->button() == Qt::RightButton) {
     pan = true;
     setCursor(Qt::ClosedHandCursor);
@@ -35,11 +40,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
 }
 
 void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
+  pan = false;
+  this->setDragMode(QGraphicsView::RubberBandDrag);
   if (event->button() == Qt::RightButton) {
-    pan = false;
     setCursor(Qt::ArrowCursor);
     lastMousePos = event->pos();
-
     return;
   } else {
     QGraphicsView::mouseReleaseEvent(event);
@@ -87,7 +92,21 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
     } else {
       this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
     }
+  } else if (event->modifiers() & Qt::ShiftModifier) {
+    event->ignore();
+    QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
+    wheelEvent.setWidget(viewport());
+    wheelEvent.setScenePos(mapToScene(event->pos()));
+    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setButtons(event->buttons());
+    wheelEvent.setModifiers(event->modifiers());
+    wheelEvent.setDelta(event->delta());
+    wheelEvent.setOrientation(event->orientation());
+    wheelEvent.setAccepted(false);
+    qApp->sendEvent(this->scene(), &wheelEvent);
+    event->setAccepted(wheelEvent.isAccepted());
   } else {
     QGraphicsView::wheelEvent(event);
   }
 }
+   

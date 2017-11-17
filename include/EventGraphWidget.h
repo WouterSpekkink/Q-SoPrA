@@ -29,6 +29,8 @@ private slots:
   void cleanUp();	     
   void increaseWidth(EventItem *item);
   void decreaseWidth(EventItem *item);
+  void increasePos(EventItem *item);
+  void decreasePos(EventItem *item);
   
 private:
   QPointer<Scene> scene;

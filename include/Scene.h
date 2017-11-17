@@ -16,6 +16,8 @@ public:
 signals:
   void widthIncreased(EventItem *);
   void widthDecreased(EventItem *);
+  void posIncreased(EventItem *);
+  void posDecreased(EventItem *);
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;
@@ -24,6 +26,7 @@ protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
   bool resizeOn;
   QPointF lastMousePos;
+  EventItem *selectedEvent;
   
 };
 

@@ -23,18 +23,20 @@ public:
   void resetOriginalPos(QPointF &newPos);
   int getId();
   int width;
+  bool isDislodged();
+  void setDislodged(bool state);
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-  //  void wheelEvent(QGraphicsSceneWheelEvent *event) override;
   
 private:
   QColor color;
   QPointF originalPos;
   int id;
-  
+  bool dislodged;
+ 
 };
 
 #endif
