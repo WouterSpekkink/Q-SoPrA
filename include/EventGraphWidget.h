@@ -7,12 +7,18 @@
 #include <QVector>
 #include <QPointer>
 #include <QtSql>
+#include <QMessageBox>
+#include <QSvgGenerator>
+#include <QFileDialog>
 #include "GraphicsView.h"
 #include "EventItem.h"
 #include "Arrow.h"
 #include "Scene.h"
 #include <math.h>
 #include "Constants.h"
+#include "SimpleTextDialog.h"
+#include "ProgressBar.h"
+#include "SavedPlotsDialog.h"
 
 class EventGraphWidget : public QWidget {
   Q_OBJECT
@@ -23,6 +29,11 @@ public:
   ~EventGraphWidget() {};
 
 private slots:
+  void toggleDetails();
+  void toggleGraphicsControls();
+  void retrieveData();
+  void previousDataItem();
+  void nextDataItem();
   void getEvents();
   void plotEvents();
   void getEdges(QString coder, QString type);
@@ -41,33 +52,71 @@ private slots:
   void compare();
   void getCompareEdges(QString coder, QString type);
   void plotCompareEdges();
-  
+  void saveCurrentPlot();
+  void seePlots();
+  void setChangeLabel();
+  void processLowerRange(int value);
+  void processUpperRange(int value);
+  void setRangeControls();
+  void exportSvg();
+
 private:
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;
+  QPointer<QWidget> infoWidget;
+  QPointer<QWidget> graphicsWidget;
   QVector<EventItem*> eventVector;
+  QVector<EventItem*> currentData;
   QVector<Arrow*> edgeVector;
   QVector<Arrow*> compareVector;
 
   QPointer<QLabel> coderLabel;
   QPointer<QLabel> typeLabel;
+  QPointer<QLabel> plotLabel;
+  QPointer<QLabel> changeLabel;
   QPointer<QLabel> compareLabel;
-
+  QPointer<QLabel> timeStampLabel;
+  QPointer<QLabel> sourceLabel;
+  QPointer<QLabel> descriptionLabel;
+  QPointer<QLabel> rawLabel;
+  QPointer<QLabel> commentLabel;
+  QPointer<QLabel> upperRangeLabel;
+  QPointer<QLabel> lowerRangeLabel;
+  
   QPointer<QPushButton> plotButton;
+  QPointer<QPushButton> savePlotButton;
+  QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> compareButton;
   QPointer<QPushButton> increaseDistanceButton;
   QPointer<QPushButton> decreaseDistanceButton;
+  QPointer<QPushButton> toggleDetailsButton;
+  QPointer<QPushButton> toggleGraphicsControlsButton;
+  QPointer<QPushButton> previousEventButton;
+  QPointer<QPushButton> nextEventButton;
+  QPointer<QPushButton> exportSvgButton;
+  
+  QPointer<QLineEdit> timeStampField;
+  QPointer<QLineEdit> sourceField;
+
+  QPointer<QTextEdit> descriptionField;
+  QPointer<QTextEdit> rawField;
+  QPointer<QTextEdit> commentField;
 
   QPointer<QComboBox> coderComboBox;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> compareComboBox;
+
+  QPointer<QDial> lowerRangeDial;
+  QPointer<QDial> upperRangeDial;
+  QPointer<QSpinBox> lowerRangeSpinBox;
+  QPointer<QSpinBox> upperRangeSpinBox;
   
   QString selectedCoder;
   QString selectedCompare;
   QString selectedType;
   
   int distance;
-  
+  int vectorPos;
 };
 
 #endif

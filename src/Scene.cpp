@@ -3,21 +3,32 @@
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOn = false;
-};
+}
+
+QRectF Scene::itemsBoundingRect() const {
+  QRectF boundingRect;
+  const auto items_ = items();
+  for (QGraphicsItem *item : items_)
+    if (item->isVisible()) {
+      boundingRect |= item->sceneBoundingRect();
+    }
+  return boundingRect;
+}
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
   EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(wheelEvent->scenePos(), QTransform()));
   Arrow *no = qgraphicsitem_cast<Arrow*>(itemAt(wheelEvent->scenePos(), QTransform()));
   if (item && !(no)) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      if (wheelEvent->delta() > 0 && item->width < 1000) {
-	item->width++;
+      if (wheelEvent->delta() > 0 && item->getWidth() < 1000) {
+	item->setWidth(item->getWidth() + 1);
 	emit widthIncreased(item);
-      } else if (wheelEvent->delta() < 0 && item->width > 30) {
-	item->width--;
+      } else if (wheelEvent->delta() < 0 && item->getWidth() > 30) {
+	item->setWidth(item->getWidth() - 1);
 	emit widthDecreased(item);
       } 
     }
+    emit relevantChange();
     item->update();
     wheelEvent->accept();
   } else {
@@ -59,6 +70,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   if (resizeOn) {
+    emit relevantChange();
     if (event->scenePos().x() - lastMousePos.x() > 0) {
       int currentX = selectedEvent->scenePos().x();
       int currentY = selectedEvent->scenePos().y();

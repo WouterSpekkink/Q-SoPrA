@@ -8,7 +8,7 @@
 #include <QGraphicsTextItem>
 #include <QPointer>
 #include <QGraphicsSceneMouseEvent>
-#include "GraphTextDialog.h"
+#include "SimpleTextDialog.h"
 
 class GraphicsView : public QGraphicsView {
   

@@ -17,12 +17,14 @@ public:
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-  void setOriginalPos(qreal x, qreal y);
+  void setColor(const QColor &subColor) {color = subColor;}
+  void setSelectionColor(const QColor &subColor) {selectionColor = subColor;}
   int getCorrection();
   QPointF getOriginalPos();
-  void resetOriginalPos(QPointF &newPos);
+  void setOriginalPos(QPointF &newPos);
   int getId();
-  int width;
+  void setWidth(int newWidth);
+  int getWidth();
   bool isDislodged();
   void setDislodged(bool state);
   
@@ -33,8 +35,10 @@ protected:
   
 private:
   QColor color;
+  QColor selectionColor;
   QPointF originalPos;
   int id;
+  int width;
   bool dislodged;
  
 };

@@ -1,5 +1,5 @@
-#ifndef CODERDIALOG_H
-#define CODERDIALOG_H
+#ifndef SIMPLETEXTDIALOG_H
+#define SIMPLETEXTDIALOG_H
 
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
@@ -10,33 +10,33 @@
 #include <QPointer>
 #include <QtSql>
 
-class CoderDialog : public QDialog {
+class SimpleTextDialog : public QDialog {
   Q_OBJECT
 
 public:
-  CoderDialog(QWidget *parent=0);
-  ~CoderDialog() {};
+  SimpleTextDialog(QWidget *parent = 0);
+  ~SimpleTextDialog() {};
 
-  QString getName();
-  void submitName(const QString &submittedName);		   
-  int getExitStatus();					       
-					       
+  QString getText();
+  void submitText(const QString &submittedText);
+  void setLabel(const QString &submittedLabel);
+  int getExitStatus();
+
 private slots:
   void cancelAndClose();
   void saveAndClose();
-  
-private:
-  QPointer<QLabel> nameLabel;
 
-  QPointer<QLineEdit> nameField;
+private:
+  QPointer<QLabel> textLabel;
+  
+  QPointer<QLineEdit> textField;
 
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
-  
-  QString name;
-  QString subName;
+
+  QString text;
+  QString subText;
   int exitStatus;
-  
 };
 
 #endif

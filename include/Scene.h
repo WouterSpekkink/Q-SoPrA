@@ -12,12 +12,14 @@ class Scene : public QGraphicsScene {
 
 public:
   Scene(QObject *parent = 0);
+  QRectF itemsBoundingRect() const;
 
 signals:
   void widthIncreased(EventItem *);
   void widthDecreased(EventItem *);
   void posIncreased(EventItem *);
   void posDecreased(EventItem *);
+  void relevantChange();
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;

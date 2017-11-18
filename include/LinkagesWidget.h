@@ -18,7 +18,7 @@
 #include <chrono>
 #include "Constants.h"
 #include "LinkageTypeDialog.h"
-#include "CoderDialog.h"
+#include "SimpleTextDialog.h"
 #include "LinkagesIndexDialog.h"
 
 class LinkagesWidget : public QWidget {

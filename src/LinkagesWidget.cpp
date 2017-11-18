@@ -439,10 +439,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void LinkagesWidget::addCoder() {
-  CoderDialog *coderDialog = new CoderDialog(this);
+  SimpleTextDialog *coderDialog = new SimpleTextDialog(this);
+  coderDialog->setLabel("Coder:");
+  coderDialog->setWindowTitle("Add new coder");
   coderDialog->exec();
   if (coderDialog->getExitStatus() == 0) {
-    QString name = coderDialog->getName();
+    QString name = coderDialog->getText();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("INSERT INTO coders (name) "
 		   "VALUES (:name)");
@@ -456,12 +458,14 @@ void LinkagesWidget::addCoder() {
 
 void LinkagesWidget::editCoder() {
   if (coderComboBox->currentText() != DEFAULT) {
-    CoderDialog *coderDialog = new CoderDialog(this);
+    SimpleTextDialog *coderDialog = new SimpleTextDialog(this);
+    coderDialog->setLabel("Coder:");
+    coderDialog->setWindowTitle("Edit coder:");
     QString oldName = coderComboBox->currentText();
-    coderDialog->submitName(oldName);
+    coderDialog->submitText(oldName);
     coderDialog->exec();
     if (coderDialog->getExitStatus() == 0) {
-      QString name = coderDialog->getName();
+      QString name = coderDialog->getText();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("UPDATE coders "
 		     "SET name = :name "

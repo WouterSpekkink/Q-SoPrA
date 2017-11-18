@@ -1,5 +1,6 @@
 #include <QtWidgets>
 #include "../include/EventItem.h"
+#include "../include/Scene.h"
 
 /*
   In this case we assign a random colour. I will want to change that
@@ -11,6 +12,7 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   setToolTip(toolTip);
   originalPos = originalPosition;
 
+  selectionColor = QColor(Qt::black);
   id = subId;
   dislodged = false;
   
@@ -27,7 +29,7 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
 */
 
 QRectF EventItem::boundingRect() const {
-  return QRectF(-17.5, -17.5, width + 5, 35);
+  return QRectF(-19.5, -19.5, width + 8, 38);
 }
 
 void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
@@ -38,9 +40,12 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   painter->setBrush(QBrush(color));
   painter->drawEllipse(-15, -15, width, 30);
   if (isSelected()) {
-    painter->setPen(QPen(Qt::black, 1, Qt::DashLine));
+    painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
     painter->setBrush(QBrush(Qt::transparent));
-    painter->drawEllipse(-17, -17, width + 4, 34);
+    painter->drawEllipse(-19, -19, width + 8, 38);
+  } else {
+    selectionColor = QColor(Qt::black);
+    update();
   }
 }
 
@@ -76,6 +81,8 @@ void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
       dislodged = true;
     }
   }
+  Scene *myScene = qobject_cast<Scene*>(scene());
+  myScene->relevantChange();
 }
 
 void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
@@ -108,10 +115,6 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   QGraphicsItem::mouseReleaseEvent(event);
 }
 
-void EventItem::setOriginalPos(qreal x, qreal y) {
-  originalPos = QPointF(x, y);
-}
-
 int EventItem::getCorrection() {
   return width - 29;
 }
@@ -124,7 +127,7 @@ int EventItem::getId() {
   return id;
 }
 
-void EventItem::resetOriginalPos(QPointF &newPos) {
+void EventItem::setOriginalPos(QPointF &newPos) {
   originalPos = newPos;
 }
 
@@ -134,4 +137,12 @@ bool EventItem::isDislodged() {
 
 void EventItem::setDislodged(bool state) {
   dislodged = state;
+}
+
+void EventItem::setWidth(int newWidth) {
+  width = newWidth;
+}
+
+int EventItem::getWidth() {
+  return width;
 }

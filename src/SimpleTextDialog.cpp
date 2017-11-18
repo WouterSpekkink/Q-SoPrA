@@ -1,6 +1,6 @@
-#include "../include/GraphTextDialog.h"
+#include "../include/SimpleTextDialog.h"
 
-GraphTextDialog::GraphTextDialog(QWidget *parent) : QDialog(parent) {
+SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent) {
   text = "";
   subText = "";
   exitStatus = 1;
@@ -29,26 +29,30 @@ GraphTextDialog::GraphTextDialog(QWidget *parent) : QDialog(parent) {
 }
 
 
-QString GraphTextDialog::getText() {
+QString SimpleTextDialog::getText() {
   return text;
 }
 
-void GraphTextDialog::submitText(const QString &submittedText) {
+void SimpleTextDialog::submitText(const QString &submittedText) {
   text = submittedText;
   subText = submittedText;
   textField->setText(submittedText);
 }
 
-int GraphTextDialog::getExitStatus() {
+void SimpleTextDialog::setLabel(const QString &submittedLabel) {
+  textLabel->setText(submittedLabel);
+}
+
+int SimpleTextDialog::getExitStatus() {
   return exitStatus;
 }
 
-void GraphTextDialog::cancelAndClose() {
+void SimpleTextDialog::cancelAndClose() {
   exitStatus = 1;
   this->close();
 }
 
-void GraphTextDialog::saveAndClose() {
+void SimpleTextDialog::saveAndClose() {
   text = textField->text().trimmed();
   if (text == "") {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
@@ -63,3 +67,4 @@ void GraphTextDialog::saveAndClose() {
   exitStatus = 0;
   this->close();
 }
+

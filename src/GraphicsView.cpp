@@ -1,4 +1,5 @@
 #include "../include/GraphicsView.h"
+#include "../include/Scene.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -17,7 +18,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       QPointer<QGraphicsTextItem> text = new QGraphicsTextItem;
       text->setPos(this->mapToScene(event->pos()));
       text->setFlags(QGraphicsItem::ItemIsMovable);
-      QPointer<GraphTextDialog> textDialog = new GraphTextDialog();
+      QPointer<SimpleTextDialog> textDialog = new SimpleTextDialog();
+      textDialog->setLabel("Text:");
+      textDialog->setWindowTitle("Insert text");
       textDialog->exec();
       if (textDialog->getExitStatus() == 0) {
 	QString newText = textDialog->getText();
@@ -63,17 +66,18 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event) {
     centerOn(mapToScene(newCenter));
     lastMousePos = event->pos();
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
-    QRectF currentRect = this->scene()->itemsBoundingRect();
+    Scene *scene = qobject_cast<Scene*>(this->scene());
+    QRectF currentRect = scene->itemsBoundingRect();
     currentRect.setX(currentRect.x() - 50);
     currentRect.setY(currentRect.y() - 50);
     currentRect.setWidth(currentRect.width() + 100);
     currentRect.setHeight(currentRect.height() + 100);
-
     this->scene()->setSceneRect(currentRect);
     update();
     return;
   } else {
-    QRectF currentRect = this->scene()->itemsBoundingRect();
+    Scene *scene = qobject_cast<Scene*>(this->scene());
+    QRectF currentRect = scene->itemsBoundingRect();
     currentRect.setX(currentRect.x() - 50);
     currentRect.setY(currentRect.y() - 50);
     currentRect.setWidth(currentRect.width() + 100);
@@ -107,9 +111,9 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
     event->setAccepted(wheelEvent.isAccepted());
     if (!(event->isAccepted())) {
       if (event->delta() > 0) {
-	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + event->delta());
+	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - event->delta());
       } else {
-	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() + event->delta());
+	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - event->delta());
       }
     }
   } else {

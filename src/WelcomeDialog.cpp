@@ -144,6 +144,26 @@ void WelcomeDialog::newDatabase() {
 		  "(attributes_record, "
 		  "relationships_record) "
 		  "VALUES (1, 1)");
+      query->exec("CREATE TABLE saved_plots "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "linkage text, "
+		  "coder text)");
+      query->exec("CREATE TABLE saved_plots_event_items " // We'll get information from incidents
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "width integer, "
+		  "curxpos integer, " // Current x position (scenePos)
+		  "curypos integer, " // Current y position (scenePos)
+		  "orixpos integer, " // Original x position
+		  "oriypos integer, " // Original y position
+		  "dislodged integer)"); // dislodged boolean (if relevant)
+      query->exec("CREATE TABLE saved_plots_edges "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "tail integer, "
+		  "head integer)");
       delete query;
     }
     exitStatus = 0;
@@ -278,6 +298,26 @@ void WelcomeDialog::openDatabase() {
 		    "relationships_record) "
 		    "VALUES (1, 1)");
       }
+      query->exec("CREATE TABLE IF NOT EXISTS saved_plots "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "linkage text, "
+		  "coder text)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_plots_event_items " 
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer ,"
+		  "width integer, "
+		  "curxpos integer, "
+		  "curypos integer, "
+		  "orixpos integer, "
+		  "oriypos integer, "
+		  "dislodged integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_plots_edges "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "tail integer, "
+		  "head integer)");
       delete query;
       exitStatus = 0;
       this->close();
