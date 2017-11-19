@@ -73,6 +73,8 @@ public:
   EventItem *endItem() const { return end; }
 
   void updatePosition();
+
+  int type();
   
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
@@ -82,7 +84,7 @@ private:
   EventItem *end;
   QColor color;
   QPolygonF arrowHead;
-  QString type;
+  QString typeInd;
   QString coder;
 };
 

@@ -70,7 +70,7 @@ Arrow::Arrow(EventItem *startItem, EventItem *endItem, QString subType, QString 
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   color = Qt::black;
   setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  type = subType;
+  typeInd = subType;
   coder = subCoder;
 }
 
@@ -112,7 +112,7 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
     QPointF correction = QPointF(end->getCorrection(), 0);
     newLine = QLineF(start->pos(), end->pos() + correction);
   }
-  newLine.setLength(newLine.length() - 18);
+  newLine.setLength(newLine.length() - 28);
   setLine(newLine);
   
   double angle = ::acos(line().dx() / line().length());
@@ -138,4 +138,8 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
     myLine.translate(0,-8.0);
     painter->drawLine(myLine);
   }
+}
+
+int Arrow::type() {
+  return 2;
 }

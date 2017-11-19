@@ -13,23 +13,7 @@ GraphicsView::GraphicsView(QGraphicsScene *scene) : QGraphicsView(scene) {
 void GraphicsView::resizeEvent(QResizeEvent *) {};
 
 void GraphicsView::mousePressEvent(QMouseEvent *event) {
-  if (event->modifiers() & Qt::ControlModifier) {
-    if (event->button() == Qt::LeftButton) {
-      QPointer<QGraphicsTextItem> text = new QGraphicsTextItem;
-      text->setPos(this->mapToScene(event->pos()));
-      text->setFlags(QGraphicsItem::ItemIsMovable);
-      QPointer<SimpleTextDialog> textDialog = new SimpleTextDialog();
-      textDialog->setLabel("Text:");
-      textDialog->setWindowTitle("Insert text");
-      textDialog->exec();
-      if (textDialog->getExitStatus() == 0) {
-	QString newText = textDialog->getText();
-	text->setPlainText(newText);
-	scene()->addItem(text);
-      }
-      delete textDialog;
-    }
-  } else if (event->modifiers() & Qt::ShiftModifier) {
+  if (event->modifiers() & Qt::ShiftModifier) {
     this->setDragMode(QGraphicsView::NoDrag);
     QGraphicsView::mousePressEvent(event);
   } else if (event->button() == Qt::RightButton) {

@@ -18,7 +18,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 
   distance = 0;
   vectorPos = 0;
-    
+
+  labelsVisible = true;
+  
   scene = new Scene(this);
   view = new GraphicsView(scene);
   view->setDragMode(QGraphicsView::RubberBandDrag);
@@ -41,7 +43,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   coderLabel = new QLabel(tr("Choose coder:"), this);
   typeLabel = new QLabel(tr("Choose linkage:"), this);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
-  changeLabel = new QLabel(tr(""), this);
+  changeLabel = new QLabel(tr("*"), this);
   compareLabel = new QLabel(tr("Compare with:"), this);
   timeStampLabel = new QLabel("<b>Timing:</b>", infoWidget);
   sourceLabel = new QLabel("<b>Source:</b>", infoWidget);
@@ -88,6 +90,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   previousEventButton->setEnabled(false);   
   nextEventButton = new QPushButton(tr(">>"), infoWidget);
   nextEventButton->setEnabled(false);
+  plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
+  eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
+  labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
+  backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -108,6 +114,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotGraph()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
+  connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
+  connect(eventColorButton, SIGNAL(clicked()), this, SLOT(setEventColor()));
+  connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
+  connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
   connect(scene, SIGNAL(widthIncreased(EventItem*)), this, SLOT(increaseWidth(EventItem*)));
@@ -182,6 +192,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addLayout(middleLayout);
 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(eventColorButton);
+  graphicsControlsLayout->addWidget(labelColorButton);
+  graphicsControlsLayout->addWidget(backgroundColorButton);
+  graphicsControlsLayout->addWidget(plotLabelsButton);
   graphicsControlsLayout->addWidget(upperRangeLabel);
   upperRangeLabel->setAlignment(Qt::AlignHCenter);
   QPointer<QHBoxLayout> upperRangeLayout = new QHBoxLayout;
@@ -195,8 +209,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
   graphicsControlsLayout->addWidget(exportSvgButton);
-  graphicsWidget->setMaximumWidth(150);
-  graphicsWidget->setMinimumWidth(150);
+  graphicsWidget->setMaximumWidth(175);
+  graphicsWidget->setMinimumWidth(175);
   graphicsWidget->setLayout(graphicsControlsLayout);
   graphicsControlsLayout->setAlignment(Qt::AlignBottom);
   screenLayout->addWidget(graphicsWidget);
@@ -246,12 +260,16 @@ void EventGraphWidget::retrieveData() {
   if (scene->selectedItems().size() > 0) {
     QListIterator<QGraphicsItem*> it(scene->selectedItems());
     while (it.hasNext()) {
-      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
-      currentEvent->setSelectionColor(Qt::black);
-      currentEvent->update();
-      Arrow *currentArrow = qgraphicsitem_cast<Arrow*>(currentEvent);
-      if (currentEvent && !(currentArrow)) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (event && !(arrow) && !(text)) {
+	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	currentEvent->setSelectionColor(Qt::black);
+	currentEvent->update();
 	currentData.push_back(currentEvent);
+      } else {
+	it.next();
       }
     }
     if (currentData.size() > 0) {
@@ -425,7 +443,7 @@ void EventGraphWidget::getEvents() {
     QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
     int vertical = qrand() % 240 - 120;
     QPointF position = QPointF((order * distance), vertical);
-    EventItem *currentItem = new EventItem(30, toolTip, position, id);
+    EventItem *currentItem = new EventItem(40, toolTip, position, id);
     currentItem->setPos(currentItem->getOriginalPos());
     eventVector.push_back(currentItem);
     delete query2;
@@ -438,7 +456,6 @@ void EventGraphWidget::plotEvents() {
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
     EventItem *currentItem = it.next();
-    //currentItem->setPos(currentItem->getOriginalPos());
     currentItem->setZValue(1);
     scene->addItem(currentItem);
   }
@@ -506,14 +523,52 @@ void EventGraphWidget::plotEdges() {
   }
 }
 
+void EventGraphWidget::getLabels() {
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *currentItem = it.next();
+    int id = currentItem->getId();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT ch_order, description FROM incidents "
+		   "WHERE id = :id");
+    query->bindValue(":id", id);
+    query->exec();
+    query->first();
+    QString order = query->value(0).toString();
+    QPointF currentPos = currentItem->scenePos();
+    QPointer<NodeLabel> text = new NodeLabel(currentItem);
+    currentItem->setLabel(text);
+    text->setPlainText(order);
+    text->setTextWidth(text->boundingRect().width());
+    currentPos.setX(currentPos.x() - (text->textWidth() / 2));
+    currentPos.setY(currentPos.y() -12);
+    text->setPos(currentPos);    
+    text->setZValue(2);
+    nodeLabelVector.push_back(text);
+    delete query;
+  }
+}
+
+void EventGraphWidget::addLabels() {
+  QVectorIterator<NodeLabel*> it2(nodeLabelVector);
+  while (it2.hasNext()) {
+    NodeLabel *currentItem = it2.next();
+    scene->addItem(currentItem);
+  }
+}
+
 void EventGraphWidget::cleanUp() {
   scene->clearSelection();
   qDeleteAll(currentData);
   currentData.clear();
   qDeleteAll(eventVector);
-  qDeleteAll(edgeVector);
   eventVector.clear();
+  qDeleteAll(edgeVector);
   edgeVector.clear();
+  qDeleteAll(nodeLabelVector);
+  nodeLabelVector.clear();
+  qDeleteAll(textVector);
+  textVector.clear();
   qDeleteAll(compareVector);
   compareVector.clear();
   selectedType = "";
@@ -524,11 +579,15 @@ void EventGraphWidget::cleanUp() {
 void EventGraphWidget::increaseWidth(EventItem *item) {
   QPointF original = item->scenePos();
   int order = original.x();
+  NodeLabel *itemLabel = item->getLabel();
+  itemLabel->setNewPos(original, 0.5);
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
     EventItem *currentItem = it.next();
     if (currentItem->pos().x() > order) {
       QPointF newPos = QPointF(currentItem->pos().x() + 1, currentItem->pos().y());
+      NodeLabel *currentLabel = currentItem->getLabel();
+      currentLabel->setNewPos(newPos);
       currentItem->setOriginalPos(newPos);
       currentItem->setPos(newPos);
     }
@@ -538,11 +597,15 @@ void EventGraphWidget::increaseWidth(EventItem *item) {
 void EventGraphWidget::decreaseWidth(EventItem *item) {
   QPointF original = item->scenePos();
   int order = original.x();
+  NodeLabel *itemLabel = item->getLabel();
+  itemLabel->setNewPos(original, -0.5);
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
     EventItem *currentItem = it.next();
     if (currentItem->pos().x() > order) {
       QPointF newPos = QPointF(currentItem->pos().x() - 1, currentItem->pos().y());
+      NodeLabel *currentLabel = currentItem->getLabel();
+      currentLabel->setNewPos(newPos);
       currentItem->setOriginalPos(newPos);
       currentItem->setPos(newPos);
     }
@@ -552,11 +615,15 @@ void EventGraphWidget::decreaseWidth(EventItem *item) {
 void EventGraphWidget::increasePos(EventItem *item) {
   QPointF original = item->scenePos();
   int order = original.x();
+  NodeLabel *itemLabel = item->getLabel();
+  itemLabel->setNewPos(original);
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
     EventItem *currentItem = it.next();
     if (currentItem->pos().x() > order) {
       QPointF newPos = QPointF(currentItem->pos().x() + 1, currentItem->pos().y());
+      NodeLabel *currentLabel = currentItem->getLabel();
+      currentLabel->setNewPos(newPos);
       currentItem->setPos(newPos);
     }
   }
@@ -565,12 +632,15 @@ void EventGraphWidget::increasePos(EventItem *item) {
 void EventGraphWidget::decreasePos(EventItem *item) {
   QPointF original = item->scenePos();
   int order = original.x();
+  NodeLabel *itemLabel = item->getLabel();
+  itemLabel->setNewPos(original);
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
     EventItem *currentItem = it.next();
     if (currentItem->pos().x() > order) {
       QPointF newPos = QPointF(currentItem->pos().x() - 1, currentItem->pos().y());
-
+      NodeLabel *currentLabel = currentItem->getLabel();
+      currentLabel->setNewPos(newPos);
       currentItem->setPos(newPos);
     }
   }
@@ -583,6 +653,8 @@ void EventGraphWidget::increaseDistance() {
     while (it.hasNext()) {
       EventItem *currentItem = it.next();
       QPointF newPos = QPointF(currentItem->pos().x() + unit, currentItem->pos().y());
+      NodeLabel *currentLabel = currentItem->getLabel();
+      currentLabel->setNewPos(newPos);
       currentItem->setOriginalPos(newPos);
       currentItem->setPos(newPos);
       unit++;
@@ -598,6 +670,8 @@ void EventGraphWidget::decreaseDistance() {
     while (it.hasNext()) {
       EventItem *currentItem = it.next();
       QPointF newPos = QPointF(currentItem->pos().x() - unit, currentItem->pos().y());
+      NodeLabel *currentLabel = currentItem->getLabel();
+      currentLabel->setNewPos(newPos);
       currentItem->setOriginalPos(newPos);
       currentItem->setPos(newPos);
       unit++;
@@ -657,9 +731,12 @@ void EventGraphWidget::plotGraph() {
   plotEvents(); // Should allow for range to be set here.
   getEdges(selectedCoder, selectedType);
   plotEdges();
+  getLabels();
+  addLabels();
   compareComboBox->setCurrentIndex(0);
   savePlotButton->setEnabled(true);
   setRangeControls();
+  plotLabel->setText("Unsaved plot");
 }
 
 void EventGraphWidget::setCompareButton() {
@@ -772,7 +849,7 @@ void EventGraphWidget::saveCurrentPlot() {
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Plot exists?</h2>");
+      warningBox->setText("<h2>Plot exists</h2>");
       warningBox->setInformativeText("A plot with this name already exists? Do you want to overwrite this plot?");
       if (warningBox->exec() == QMessageBox::Yes) {
 	delete warningBox;
@@ -799,6 +876,12 @@ void EventGraphWidget::saveCurrentPlot() {
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
+      // saved_plots_event_labels
+      query->prepare("DELETE FROM saved_plots_event_labels "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+
     } else {
       // Insert new data into saved_plots and then write data.
       query->prepare("INSERT INTO saved_plots (plot, linkage, coder) "
@@ -818,18 +901,26 @@ void EventGraphWidget::saveCurrentPlot() {
     QVectorIterator<EventItem*> it(eventVector);
     while (it.hasNext()) {
       EventItem *currentItem = it.next();
-      int currentX = currentItem->pos().x();
-      int currentY = currentItem->pos().y();
-      int originalX = currentItem->getOriginalPos().x();
-      int originalY = currentItem->getOriginalPos().y();
+      qreal currentX = currentItem->pos().x();
+      qreal currentY = currentItem->pos().y();
+      qreal originalX = currentItem->getOriginalPos().x();
+      qreal originalY = currentItem->getOriginalPos().y();
       int incident = currentItem->getId();
       int width = currentItem->getWidth();
       int dislodged = 0;
+      QColor color = currentItem->getColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
       if (currentItem->isDislodged()) {
 	dislodged = 1;
       }
-      query->prepare("INSERT INTO saved_plots_event_items (plot, incident, width, curxpos, curypos, orixpos, oriypos, dislodged) "
-		     "VALUES (:plot, :incident, :width, :curxpos, :curypos, :orixpos, :oriypos, :dislodged)");
+      query->prepare("INSERT INTO saved_plots_event_items "
+		     "(plot, incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
+		     "green, blue, alpha) "
+		     "VALUES (:plot, :incident, :width, :curxpos, :curypos, :orixpos, "
+		     ":oriypos, :dislodged, :red, :green, :blue, :alpha)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", incident);
       query->bindValue(":width", width);
@@ -838,11 +929,59 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":orixpos", originalX);
       query->bindValue(":oriypos", originalY);
       query->bindValue(":dislodged", dislodged);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
       qApp->processEvents();
     }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, nodeLabelVector.size());
+    saveProgress->setWindowTitle("Saving node labels");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    QVectorIterator<NodeLabel*> it2(nodeLabelVector);
+    while (it2.hasNext()) {
+      NodeLabel *currentLabel = it2.next();
+      int id = currentLabel->getNode()->getId();
+      QString text = currentLabel->toPlainText();
+      qreal currentX = currentLabel->scenePos().x();
+      qreal currentY = currentLabel->scenePos().y();
+      qreal xOffset = currentLabel->getOffset().x();
+      qreal yOffset = currentLabel->getOffset().y();
+      int red = currentLabel->defaultTextColor().red();
+      int green = currentLabel->defaultTextColor().green();
+      int blue = currentLabel->defaultTextColor().blue();
+      int alpha = currentLabel->defaultTextColor().alpha();
+      query->prepare("INSERT INTO saved_plots_event_labels "
+		     "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
+		     "red, green, blue, alpha) "
+		     "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
+		     ":xoffset, :yoffset, :red, :green, :blue, :alpha)");
+      query->bindValue(":plot", name);
+      query->bindValue(":incident", id);
+      query->bindValue(":label", text);
+      query->bindValue(":curxpos", currentX);
+      query->bindValue(":curypos", currentY);
+      query->bindValue(":xoffset", xOffset);
+      query->bindValue(":yoffset", yOffset);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+
+    
     saveProgress->close();
     delete saveProgress;
     saveProgress = new ProgressBar(0, 1, edgeVector.size());
@@ -852,9 +991,9 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
 
-    QVectorIterator<Arrow*> it2(edgeVector);
-    while (it2.hasNext()) {
-      Arrow *currentEdge = it2.next();
+    QVectorIterator<Arrow*> it3(edgeVector);
+    while (it3.hasNext()) {
+      Arrow *currentEdge = it3.next();
       EventItem *currentTail = currentEdge->startItem();
       EventItem *currentHead = currentEdge->endItem();
       int tail = currentTail->getId();
@@ -901,7 +1040,8 @@ void EventGraphWidget::seePlots() {
     coderComboBox->setCurrentIndex(index);
     index = typeComboBox->findText(type);
     typeComboBox->setCurrentIndex(index);
-    query->prepare("SELECT incident, width, curxpos, curypos, orixpos, oriypos, dislodged "
+    query->prepare("SELECT incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
+		   "green, blue, alpha "
 		   "FROM saved_plots_event_items "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -909,12 +1049,15 @@ void EventGraphWidget::seePlots() {
     while (query->next()) {
       int id = query->value(0).toInt();
       int width = query->value(1).toInt();
-      int currentX = query->value(2).toInt();
-      int currentY = query->value(3).toInt();
-      int originalX = query->value(4).toInt();
-      int originalY = query->value(5).toInt();
+      qreal currentX = query->value(2).toReal();
+      qreal currentY = query->value(3).toReal();
+      qreal originalX = query->value(4).toReal();
+      qreal originalY = query->value(5).toReal();
       int dislodged = query->value(6).toInt();
-
+      int red = query->value(7).toInt();
+      int green = query->value(8).toInt();
+      int blue = query->value(9).toInt();
+      int alpha = query->value(10).toInt();
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT description FROM incidents WHERE id = :id");
       query2->bindValue(":id", id);
@@ -926,12 +1069,47 @@ void EventGraphWidget::seePlots() {
       QPointF originalPos = QPointF(originalX, originalY);
       EventItem *currentItem = new EventItem(width, toolTip, originalPos, id);
       currentItem->setPos(currentPos);
+      currentItem->setColor(QColor(red, green, blue, alpha));
       if (dislodged == 1) {
 	currentItem->setDislodged(true);
       }
       eventVector.push_back(currentItem);
     }
-    query->prepare("SELECT tail, head "
+    query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
+		   "red, green, blue, alpha "
+		   "FROM saved_plots_event_labels WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      int id = query->value(0).toInt();
+      QString text = query->value(1).toString();
+      qreal currentX = query->value(2).toReal();
+      qreal currentY = query->value(3).toReal();
+      qreal xOffset = query->value(4).toReal();
+      qreal yOffset = query->value(5).toReal();
+      int red = query->value(6).toInt();
+      int green = query->value(7).toInt();
+      int blue = query->value(8).toInt();
+      int alpha = query->value(9).toInt();
+      QVectorIterator<EventItem*> it(eventVector);
+      while (it.hasNext()) {
+	EventItem *currentItem = it.next();
+	int nodeId = currentItem->getId();
+	if (nodeId == id) {
+	  NodeLabel *currentLabel = new NodeLabel(currentItem);
+	  currentLabel->setPlainText(text);
+	  currentLabel->setTextWidth(currentLabel->boundingRect().width());
+	  currentLabel->setPos(QPointF(currentX, currentY));
+	  currentLabel->setOffset(QPointF(xOffset, yOffset));
+	  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
+	  currentLabel->setZValue(2);
+	  currentItem->setLabel(currentLabel);
+	  nodeLabelVector.push_back(currentLabel);
+	  break;
+	}
+      }
+    }
+   query->prepare("SELECT tail, head "
 		   "FROM saved_plots_edges "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -981,6 +1159,7 @@ void EventGraphWidget::seePlots() {
     changeLabel->setText("");
     plotEvents();
     plotEdges();
+    addLabels();
     setRangeControls();
     delete query;
   } else if (savedPlotsDialog->getExitStatus() == 2) {
@@ -1001,8 +1180,13 @@ void EventGraphWidget::seePlots() {
     query->prepare("DELETE FROM saved_plots_edges "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
+    // saved_plots_event_labels
+    query->prepare("DELETE FROM saved_plots_event_labels "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
     query->exec();
     delete query;
+    seePlots();
   }
 }
 
@@ -1010,6 +1194,57 @@ void EventGraphWidget::setChangeLabel() {
   if (changeLabel->text() == "" && eventVector.size() > 0) {
     changeLabel->setText("*");
   }
+}
+
+void EventGraphWidget::setEventColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  if (colorDialog->exec()) {
+    QColor color = colorDialog->selectedColor();
+    QVectorIterator<EventItem*> it(eventVector);
+    while (it.hasNext()) {
+      EventItem *currentEvent = it.next();
+      currentEvent->setColor(color);
+    }
+  }
+  delete colorDialog;
+}
+
+void EventGraphWidget::setLabelColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  if (colorDialog->exec()) {
+    QColor color = colorDialog->selectedColor();
+    QVectorIterator<NodeLabel*> it(nodeLabelVector);
+    while (it.hasNext()) {
+      NodeLabel *currentItem = it.next();
+      currentItem->setDefaultTextColor(color);
+    }
+  }
+  delete colorDialog;
+}
+
+void EventGraphWidget::setBackgroundColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  if (colorDialog->exec()) {
+    QColor color = colorDialog->selectedColor();
+    view->setBackgroundBrush(color);
+  }
+  delete colorDialog;
+}
+
+void EventGraphWidget::plotLabels() {
+  QVectorIterator<NodeLabel*> it(nodeLabelVector);
+  while (it.hasNext()) {
+    NodeLabel *currentItem = it.next();
+    EventItem *currentEvent = currentItem->getNode();
+    if (currentEvent->isVisible()) {
+      if (labelsVisible) {
+	currentItem->hide();
+      } else {
+	currentItem->show();
+      }
+    }
+  }
+  labelsVisible = !(labelsVisible);
 }
 
 void EventGraphWidget::processLowerRange(int value) {
@@ -1024,7 +1259,7 @@ void EventGraphWidget::processLowerRange(int value) {
   while (it.hasNext()) {
     counter++;
     EventItem* currentItem = it.next();
-    if (counter > value && counter < upperRangeDial->value()) {
+    if (counter >= value && counter <= upperRangeDial->value()) {
       currentItem->show();
     }  else {
       currentItem->hide();
@@ -1041,6 +1276,17 @@ void EventGraphWidget::processLowerRange(int value) {
       currentEdge->show();
     }
   }
+  QVectorIterator<NodeLabel*> it3(nodeLabelVector);
+  while (it3.hasNext()) {
+    NodeLabel *currentText = it3.next();
+    EventItem *currentParent = currentText->getNode();
+    if (!(currentParent->isVisible())) {
+      currentText->hide();
+    } else {
+      currentText->show();
+    }
+  }
+  
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -1061,7 +1307,7 @@ void EventGraphWidget::processUpperRange(int value) {
   while (it.hasNext()) {
     EventItem* currentItem = it.next();
     counter++;
-    if (counter < value && counter > lowerRangeDial->value()) {
+    if (counter <= value && counter >= lowerRangeDial->value()) {
       currentItem->show();
     }  else {
       currentItem->hide();
@@ -1078,6 +1324,17 @@ void EventGraphWidget::processUpperRange(int value) {
       currentEdge->show();
     }
   }
+  QVectorIterator<NodeLabel*> it3(nodeLabelVector);
+  while (it3.hasNext()) {
+    NodeLabel *currentText = it3.next();
+    EventItem *currentParent = currentText->getNode();
+    if (!(currentParent->isVisible())) {
+      currentText->hide();
+    } else {
+      currentText->show();
+    }
+  }
+  
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -1091,10 +1348,10 @@ void EventGraphWidget::setRangeControls() {
   upperRangeDial->setEnabled(true);
   lowerRangeSpinBox->setEnabled(true);
   upperRangeSpinBox->setEnabled(true);
-  lowerRangeDial->setRange(0, eventVector.size() - 1);
-  upperRangeDial->setRange(1, eventVector.size());
-  lowerRangeSpinBox->setRange(0, eventVector.size() - 1);
-  upperRangeSpinBox->setRange(1, eventVector.size());
+  lowerRangeDial->setRange(1, eventVector.size() - 1);
+  upperRangeDial->setRange(2, eventVector.size());
+  lowerRangeSpinBox->setRange(1, eventVector.size() - 1);
+  upperRangeSpinBox->setRange(2, eventVector.size());
   upperRangeDial->setValue(eventVector.size());
   upperRangeSpinBox->setValue(eventVector.size());
 }

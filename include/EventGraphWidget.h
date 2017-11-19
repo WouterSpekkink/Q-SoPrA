@@ -10,11 +10,14 @@
 #include <QMessageBox>
 #include <QSvgGenerator>
 #include <QFileDialog>
+#include <math.h>
+#include <QGraphicsTextItem>
+#include <QColorDialog>
+#include "NodeLabel.h"
 #include "GraphicsView.h"
 #include "EventItem.h"
 #include "Arrow.h"
 #include "Scene.h"
-#include <math.h>
 #include "Constants.h"
 #include "SimpleTextDialog.h"
 #include "ProgressBar.h"
@@ -38,6 +41,8 @@ private slots:
   void plotEvents();
   void getEdges(QString coder, QString type);
   void plotEdges();
+  void getLabels();
+  void addLabels();
   void cleanUp();	     
   void increaseWidth(EventItem *item);
   void decreaseWidth(EventItem *item);
@@ -55,10 +60,14 @@ private slots:
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
+  void plotLabels();
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
   void exportSvg();
+  void setEventColor();
+  void setLabelColor();
+  void setBackgroundColor();
 
 private:
   QPointer<Scene> scene;
@@ -69,7 +78,9 @@ private:
   QVector<EventItem*> currentData;
   QVector<Arrow*> edgeVector;
   QVector<Arrow*> compareVector;
-
+  QVector<NodeLabel*> nodeLabelVector;
+  QVector<QGraphicsTextItem*> textVector;
+  
   QPointer<QLabel> coderLabel;
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> plotLabel;
@@ -94,6 +105,10 @@ private:
   QPointer<QPushButton> previousEventButton;
   QPointer<QPushButton> nextEventButton;
   QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> plotLabelsButton;
+  QPointer<QPushButton> eventColorButton;
+  QPointer<QPushButton> labelColorButton;
+  QPointer<QPushButton> backgroundColorButton;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -117,6 +132,8 @@ private:
   
   int distance;
   int vectorPos;
+
+  bool labelsVisible;
 };
 
 #endif

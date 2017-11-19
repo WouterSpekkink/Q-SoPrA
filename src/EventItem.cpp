@@ -1,6 +1,7 @@
 #include <QtWidgets>
 #include "../include/EventItem.h"
 #include "../include/Scene.h"
+#include "../include/NodeLabel.h"
 
 /*
   In this case we assign a random colour. I will want to change that
@@ -15,6 +16,7 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   selectionColor = QColor(Qt::black);
   id = subId;
   dislodged = false;
+  label = NULL;
   
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -29,8 +31,9 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
 */
 
 QRectF EventItem::boundingRect() const {
-  return QRectF(-19.5, -19.5, width + 8, 38);
+  return QRectF(-26, -26, width + 12, 52);
 }
+
 
 void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
   Q_UNUSED(option);
@@ -38,11 +41,12 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   painter->setPen(Qt::NoPen);
   painter->setPen(QPen(Qt::black, 1));
   painter->setBrush(QBrush(color));
-  painter->drawEllipse(-15, -15, width, 30);
+  painter->drawEllipse(-20, -20, width, 40);
   if (isSelected()) {
     painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
     painter->setBrush(QBrush(Qt::transparent));
-    painter->drawEllipse(-19, -19, width + 8, 38);
+    painter->drawEllipse(-24, -24, width + 8, 48);
+    update();
   } else {
     selectionColor = QColor(Qt::black);
     update();
@@ -62,6 +66,9 @@ void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     setCursor(Qt::SizeAllCursor);
     QPointF newPos = event->scenePos();
     this->setPos(newPos);
+    if (label != NULL) {
+      label->setNewPos(newPos);
+    }
     if (newPos.x() != originalPos.x()) {
       dislodged = true;
     } else {
@@ -75,6 +82,9 @@ void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QPointF newPos = event->scenePos();
     newPos.setX(currentX);
     this->setPos(newPos);
+    if (label != NULL) {
+      label->setNewPos(newPos);
+    }
     if (newPos.x() == oldX) {
       dislodged = false;
     } else {
@@ -89,6 +99,9 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   if (event->modifiers() & Qt::AltModifier) {
     QPointF newPos = event->scenePos();
     this->setPos(newPos);
+    if (label != NULL) {
+      label->setNewPos(newPos);
+    }
     if (newPos.x() != originalPos.x()) {
       dislodged = true;
     } else {
@@ -104,6 +117,9 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
     QPointF newPos = event->scenePos();
     newPos.setX(currentX);
     this->setPos(newPos);
+    if (label != NULL) {
+      label->setNewPos(newPos);
+    }
     if (newPos.x() == oldX) {
       dislodged = false;
     } else {
@@ -116,7 +132,7 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
 }
 
 int EventItem::getCorrection() {
-  return width - 29;
+  return width - 39;
 }
 
 QPointF EventItem::getOriginalPos() {
@@ -145,4 +161,20 @@ void EventItem::setWidth(int newWidth) {
 
 int EventItem::getWidth() {
   return width;
+}
+
+void EventItem::setLabel(NodeLabel *submittedLabel) {
+  label = submittedLabel;
+}
+
+NodeLabel* EventItem::getLabel() {
+  return label;
+}
+
+int EventItem::type() {
+  return 1;
+}
+
+QColor EventItem::getColor() {
+  return color;
 }

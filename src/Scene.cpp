@@ -1,4 +1,5 @@
 #include "../include/Scene.h"
+#include "../include/NodeLabel.h"
 #include <QtCore>
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
@@ -18,18 +19,21 @@ QRectF Scene::itemsBoundingRect() const {
 void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
   EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(wheelEvent->scenePos(), QTransform()));
   Arrow *no = qgraphicsitem_cast<Arrow*>(itemAt(wheelEvent->scenePos(), QTransform()));
+  NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(wheelEvent->scenePos(), QTransform()));
+  if (text && !(no)) {
+    item = text->getNode();
+  }
   if (item && !(no)) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (wheelEvent->delta() > 0 && item->getWidth() < 1000) {
 	item->setWidth(item->getWidth() + 1);
 	emit widthIncreased(item);
-      } else if (wheelEvent->delta() < 0 && item->getWidth() > 30) {
+      } else if (wheelEvent->delta() < 0 && item->getWidth() > 40) {
 	item->setWidth(item->getWidth() - 1);
 	emit widthDecreased(item);
       } 
     }
     emit relevantChange();
-    item->update();
     wheelEvent->accept();
   } else {
     wheelEvent->ignore();
@@ -37,10 +41,27 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-  this->clearSelection();
+  if (event->modifiers() & Qt::ControlModifier) {
+    EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
+    Arrow *no = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
+    NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
+    if (text && !(no)) {
+      item = text->getNode();
+    }
+    if (item && !(no)) {
+      item->setSelected(true);
+    }
+  } else {
+    this->clearSelection();
+  }
+  
   if (event->modifiers() & Qt::ShiftModifier) {
     EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
     Arrow *no = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
+    NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
+    if (text && !(no)) {
+      item = text->getNode();
+    }
     if (item && !(no)) {
       if (event->modifiers() & Qt::AltModifier) {
 	item->setPos(item->getOriginalPos().x(), item->scenePos().y());

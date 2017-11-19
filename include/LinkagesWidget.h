@@ -20,6 +20,9 @@
 #include "LinkageTypeDialog.h"
 #include "SimpleTextDialog.h"
 #include "LinkagesIndexDialog.h"
+#ifdef _WIN32
+#include <windows.h>
+#endif
 
 class LinkagesWidget : public QWidget {
   Q_OBJECT

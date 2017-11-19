@@ -71,6 +71,7 @@ SOURCES       = main.cpp \
 		src/LinkagesWidget.cpp \
 		src/LinkageTypeDialog.cpp \
 		src/MainWindow.cpp \
+		src/NodeLabel.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
 		src/RelationshipsDialog.cpp \
@@ -135,6 +136,7 @@ OBJECTS       = main.o \
 		LinkagesWidget.o \
 		LinkageTypeDialog.o \
 		MainWindow.o \
+		NodeLabel.o \
 		ProgressBar.o \
 		RecordDialog.o \
 		RelationshipsDialog.o \
@@ -257,6 +259,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/MainWindow.h \
+		include/NodeLabel.h \
 		include/ProgressBar.h \
 		include/RecordDialog.h \
 		include/RelationshipsDialog.h \
@@ -291,6 +294,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/LinkagesWidget.cpp \
 		src/LinkageTypeDialog.cpp \
 		src/MainWindow.cpp \
+		src/NodeLabel.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
 		src/RelationshipsDialog.cpp \
@@ -476,8 +480,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/JournalWidget.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/JournalWidget.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/JournalWidget.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/NodeLabel.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/JournalWidget.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/NodeLabel.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -555,9 +559,10 @@ moc_EntityDialog.cpp: include/DeselectableTreeViewEntities.h \
 moc_EntityTableModel.cpp: include/EntityTableModel.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EntityTableModel.h -o moc_EntityTableModel.cpp
 
-moc_EventGraphWidget.cpp: include/GraphicsView.h \
-		include/SimpleTextDialog.h \
+moc_EventGraphWidget.cpp: include/NodeLabel.h \
 		include/EventItem.h \
+		include/GraphicsView.h \
+		include/SimpleTextDialog.h \
 		include/Arrow.h \
 		include/Scene.h \
 		include/Constants.h \
@@ -619,8 +624,9 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/JournalWidget.h \
 		include/ProgressBar.h \
 		include/EventGraphWidget.h \
-		include/GraphicsView.h \
+		include/NodeLabel.h \
 		include/EventItem.h \
+		include/GraphicsView.h \
 		include/Arrow.h \
 		include/Scene.h \
 		include/SavedPlotsDialog.h \
@@ -735,8 +741,9 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/JournalWidget.h \
 		include/ProgressBar.h \
 		include/EventGraphWidget.h \
-		include/GraphicsView.h \
+		include/NodeLabel.h \
 		include/EventItem.h \
+		include/GraphicsView.h \
 		include/Arrow.h \
 		include/Scene.h \
 		include/SavedPlotsDialog.h
@@ -802,9 +809,10 @@ EntityTableModel.o: src/EntityTableModel.cpp include/EntityTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EntityTableModel.o src/EntityTableModel.cpp
 
 EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
+		include/NodeLabel.h \
+		include/EventItem.h \
 		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
-		include/EventItem.h \
 		include/Arrow.h \
 		include/Scene.h \
 		include/Constants.h \
@@ -814,7 +822,8 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 
 EventItem.o: src/EventItem.cpp include/EventItem.h \
 		include/Scene.h \
-		include/Arrow.h
+		include/Arrow.h \
+		include/NodeLabel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventItem.o src/EventItem.cpp
 
 EventSequenceDatabase.o: src/EventSequenceDatabase.cpp include/EventSequenceDatabase.h
@@ -878,12 +887,17 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/JournalWidget.h \
 		include/ProgressBar.h \
 		include/EventGraphWidget.h \
-		include/GraphicsView.h \
+		include/NodeLabel.h \
 		include/EventItem.h \
+		include/GraphicsView.h \
 		include/Arrow.h \
 		include/Scene.h \
 		include/SavedPlotsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
+
+NodeLabel.o: src/NodeLabel.cpp include/NodeLabel.h \
+		include/EventItem.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NodeLabel.o src/NodeLabel.cpp
 
 ProgressBar.o: src/ProgressBar.cpp include/ProgressBar.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ProgressBar.o src/ProgressBar.cpp
@@ -933,7 +947,8 @@ SavedPlotsDialog.o: src/SavedPlotsDialog.cpp include/SavedPlotsDialog.h \
 
 Scene.o: src/Scene.cpp include/Scene.h \
 		include/EventItem.h \
-		include/Arrow.h
+		include/Arrow.h \
+		include/NodeLabel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Scene.o src/Scene.cpp
 
 SimpleTextDialog.o: src/SimpleTextDialog.cpp include/SimpleTextDialog.h

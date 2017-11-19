@@ -154,16 +154,33 @@ void WelcomeDialog::newDatabase() {
 		  "plot text, "
 		  "incident integer, "
 		  "width integer, "
-		  "curxpos integer, " // Current x position (scenePos)
-		  "curypos integer, " // Current y position (scenePos)
-		  "orixpos integer, " // Original x position
-		  "oriypos integer, " // Original y position
-		  "dislodged integer)"); // dislodged boolean (if relevant)
+		  "curxpos real, " // Current x position (scenePos)
+		  "curypos real, " // Current y position (scenePos)
+		  "orixpos real, " // Original x position
+		  "oriypos real, " // Original y position
+		  "dislodged integer, "
+		  "red integer,"
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer)");   // dislodged boolean (if relevant)
       query->exec("CREATE TABLE saved_plots_edges "
 		  "(id integer PRIMARY KEY, "
 		  "plot text, "
 		  "tail integer, "
 		  "head integer)");
+      query->exec("CREATE TABLE saved_plots_event_labels "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "label text, "
+		  "curxpos integer, "
+		  "curypos integer, "
+		  "xoffset real, "
+		  "yoffset real, "
+		  "red integer, "
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer)");
       delete query;
     }
     exitStatus = 0;
@@ -308,16 +325,33 @@ void WelcomeDialog::openDatabase() {
 		  "plot text, "
 		  "incident integer ,"
 		  "width integer, "
-		  "curxpos integer, "
-		  "curypos integer, "
-		  "orixpos integer, "
-		  "oriypos integer, "
-		  "dislodged integer)");
+		  "curxpos real, "
+		  "curypos real, "
+		  "orixpos real, "
+		  "oriypos real, "
+		  "dislodged integer, "
+		  "red integer,"
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_plots_edges "
 		  "(id integer PRIMARY KEY, "
 		  "plot text, "
 		  "tail integer, "
 		  "head integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_plots_event_labels "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "label text, "
+		  "curxpos real, "
+		  "curypos real, "
+		  "xoffset real, "
+		  "yoffset real, "
+		  "red integer, "
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer)");
       delete query;
       exitStatus = 0;
       this->close();

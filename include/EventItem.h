@@ -10,6 +10,8 @@
 */
 
 
+class NodeLabel;
+
 class EventItem : public QGraphicsItem {
 
 public:
@@ -27,6 +29,10 @@ public:
   int getWidth();
   bool isDislodged();
   void setDislodged(bool state);
+  void setLabel(NodeLabel *submittedLabel);
+  NodeLabel* getLabel();
+  QColor getColor();
+  int type();
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -34,6 +40,7 @@ protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
   
 private:
+  NodeLabel *label;
   QColor color;
   QColor selectionColor;
   QPointF originalPos;
