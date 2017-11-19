@@ -824,7 +824,10 @@ EventTableModel.o: src/EventTableModel.cpp include/EventTableModel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventTableModel.o src/EventTableModel.cpp
 
 GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
-		include/SimpleTextDialog.h
+		include/SimpleTextDialog.h \
+		include/Scene.h \
+		include/EventItem.h \
+		include/Arrow.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GraphicsView.o src/GraphicsView.cpp
 
 JournalWidget.o: src/JournalWidget.cpp include/JournalWidget.h \

@@ -85,7 +85,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
   toggleGraphicsControlsButton->setCheckable(true);
   previousEventButton = new QPushButton(tr("<<"), infoWidget);
+  previousEventButton->setEnabled(false);   
   nextEventButton = new QPushButton(tr(">>"), infoWidget);
+  nextEventButton->setEnabled(false);
   
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -277,6 +279,9 @@ void EventGraphWidget::retrieveData() {
       commentField->setText(comment);
       sourceField->setText(source);
       delete query;
+      previousEventButton->setEnabled(true);
+      nextEventButton->setEnabled(true);
+
     }
   } else {
     timeStampField->clear();
@@ -284,6 +289,8 @@ void EventGraphWidget::retrieveData() {
     rawField->clear();
     commentField->clear();
     sourceField->clear();
+    previousEventButton->setEnabled(false);
+    nextEventButton->setEnabled(false);
   }
 }
 
