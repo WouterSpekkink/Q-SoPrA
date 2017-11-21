@@ -1399,15 +1399,42 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
     QString currentName = model->data(index).toString();
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
     QFont font;
+    font.setBold(true);
+    QFont font2;
+    font2.setItalic(true);
+    QFont font3;
+    font3.setBold(true);
+    font3.setItalic(true);
     if (name == currentName) {
-      font.setBold(true);
-      currentAttribute->setFont(font);
+      if (currentAttribute->font().italic()) {
+	currentAttribute->setFont(font3);
+      } else {
+	currentAttribute->setFont(font);
+      }
       if (currentAttribute->parent()) {
-	font.setBold(false);
-        font.setItalic(true);
 	while (currentAttribute->parent()) {
           currentAttribute = currentAttribute->parent();
-          currentAttribute->setFont(font);      
+	  QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->exec("SELECT attributes_record FROM save_data");
+	  query->first();
+	  int order = query->value(0).toInt();
+	  query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+	  query->bindValue(":order", order);
+	  query->exec();
+	  query->first();
+	  int incident = query->value(0).toInt();
+	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			 "WHERE attribute = :attribute AND incident = :incident");
+	  query->bindValue(":attribute", parentName);
+	  query->bindValue(":incident", incident);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0)) {
+	    currentAttribute->setFont(font2);      
+	  } else {
+	    currentAttribute->setFont(font3);
+	  }
         }
       }
     }

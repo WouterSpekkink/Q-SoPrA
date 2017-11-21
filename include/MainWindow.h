@@ -18,6 +18,7 @@
 #include "JournalWidget.h"
 #include "ProgressBar.h"
 #include "EventGraphWidget.h"
+#include "NetworkGraphWidget.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -37,6 +38,7 @@ private slots:
   void switchToLinkageView();
   void switchToJournalView();
   void switchToEventGraphView();
+  void switchToNetworkGraphView();
   
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
@@ -49,6 +51,8 @@ private:
   QPointer<QWidget> linkagesWidget;
   QPointer<QWidget> journalWidget;
   QPointer<QWidget> eventGraphWidget;
+  QPointer<QWidget> networkGraphWidget;
+  
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
@@ -63,6 +67,7 @@ private:
   QPointer<QAction> linkageViewAct;
   QPointer<QAction> journalViewAct;
   QPointer<QAction> eventGraphViewAct;
+  QPointer<QAction> networkGraphViewAct;
 
   QPointer<EventSequenceDatabase> esd;
 };

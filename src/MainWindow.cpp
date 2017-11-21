@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   linkagesWidget = new LinkagesWidget(this);
   journalWidget = new JournalWidget(this);
   eventGraphWidget = new EventGraphWidget(this);
+  networkGraphWidget = new NetworkGraphWidget(this);
   
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);
@@ -23,6 +24,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(linkagesWidget);
   stacked->addWidget(journalWidget);
   stacked->addWidget(eventGraphWidget);
+  stacked->addWidget(networkGraphWidget);
 
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
@@ -80,6 +82,10 @@ void MainWindow::createActions() {
   eventGraphViewAct = new QAction(tr("&Event graph view"), this);
   eventGraphViewAct->setStatusTip("Switch to event graph view");
   connect(eventGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToEventGraphView()));
+
+  networkGraphViewAct = new QAction(tr("&Network graph view"), this);
+  networkGraphViewAct->setStatusTip("Switch to network graph view");
+  connect(networkGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToNetworkGraphView()));
 }
 
 void MainWindow::createMenus() {
@@ -96,6 +102,7 @@ void MainWindow::createMenus() {
   viewMenu->addAction(linkageViewAct);
   viewMenu->addAction(journalViewAct);
   viewMenu->addAction(eventGraphViewAct);
+  viewMenu->addAction(networkGraphViewAct);
 
   this->setMenuBar(menuBar);
 }
@@ -334,6 +341,21 @@ void MainWindow::switchToEventGraphView() {
   egw->getLinkageDetails();
   const QModelIndex index;
   stacked->setCurrentWidget(eventGraphWidget);
+}
+
+void MainWindow::switchToNetworkGraphView() {
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  const QModelIndex index;
+
+  
+  stacked->setCurrentWidget(networkGraphWidget);
 }
 
 
