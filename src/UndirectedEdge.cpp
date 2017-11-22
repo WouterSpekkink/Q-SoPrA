@@ -1,4 +1,4 @@
-#include "../include/DirectedEdge.h"
+#include "../include/UndirectedEdge.h"
 #include <math.h>
 #include <QPen>
 #include <QPainter>
@@ -6,7 +6,7 @@
 
 const qreal Pi = 3.14;
 
-DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent)
+UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
   end = endItem;
@@ -16,7 +16,7 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int sub
 }
 
 
-QRectF DirectedEdge::boundingRect() const {
+QRectF UndirectedEdge::boundingRect() const {
   qreal extra = (pen().width() + height + 20) / 2.0;
   
   return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
@@ -25,13 +25,13 @@ QRectF DirectedEdge::boundingRect() const {
     .adjusted(-extra, -extra, extra, extra);
 }
 
-QPainterPath DirectedEdge::shape() const {
+QPainterPath UndirectedEdge::shape() const {
   QPainterPath path = QGraphicsLineItem::shape();
   path.addPolygon(arrowHead);
   return path;
 }
 
-void DirectedEdge::calc() {
+void UndirectedEdge::calc() {
   prepareGeometryChange();
   // Let us first calculate the distance between our two points.
   qreal xDiff = end->pos().x() - start->pos().x();
@@ -64,20 +64,31 @@ void DirectedEdge::calc() {
 
   oLine = QLineF(midPoint, tempEnd);
   oLine.setLength(oLine.length() - 18);
+  sLine = QLineF(midPoint, tempStart);
+  sLine.setLength(sLine.length() - 18);
+
   
   double angle = ::acos(oLine.dx() / oLine.length());
   if (oLine.dy() >= 0)
     angle = (Pi * 2) - angle;
+  double angle2 = ::acos(sLine.dx() / sLine.length());
+  if (sLine.dy() >= 0)
+    angle2 = (Pi * 2) - angle2;
 
+  
   qreal arrowSize = 10;
   
   arrowP1 = oLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-    cos(angle + Pi / 3) * arrowSize);
+				 cos(angle + Pi / 3) * arrowSize);
   arrowP2 = oLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-  cos(angle + Pi - Pi / 3) * arrowSize);
+				 cos(angle + Pi - Pi / 3) * arrowSize);
+  arrowP1 = sLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
+				 cos(angle + Pi / 3) * arrowSize);
+  arrowP2 = sLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
+				 cos(angle + Pi - Pi / 3) * arrowSize);  
 }
 
-void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   QPen myPen = pen();
   myPen.setColor(color);
   painter->setPen(myPen);
@@ -86,12 +97,16 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   
   arrowHead.clear();
   arrowHead << oLine.p2() << arrowP1 << arrowP2;
-
+  
+  arrowHead2.clear();
+  arrowHead2 << sLine.p2() << arrowP3 << arrowP4;
+  
   QPainterPath myPath;
   myPath.moveTo(tempStart);
   myPath.quadTo(midPoint, oLine.p2());
   painter->translate(start->pos() - tempStart);
   painter->rotate(theta);
   painter->drawPolygon(arrowHead);
+  painter->drawPolygon(arrowHead2);
   painter->strokePath(myPath, QPen(color));
 }

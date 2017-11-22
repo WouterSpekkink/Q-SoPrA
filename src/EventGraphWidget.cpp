@@ -110,7 +110,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
-  connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCompareButton()));  
+  connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)),
+	  this, SLOT(setCompareButton()));  
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotGraph()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
@@ -126,6 +127,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posDecreased(EventItem*)), this, SLOT(decreasePos(EventItem*)));
   connect(scene, SIGNAL(selectionChanged()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
+	  this, SLOT(processEventItemContextMenu(const QString &)));
   connect(previousEventButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
   connect(nextEventButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
@@ -370,9 +373,6 @@ void EventGraphWidget::previousDataItem() {
 }
 
 void EventGraphWidget::nextDataItem() {
-  //  QVectorIterator<EventItem*> it2(currentData);
-  // Need to do this differently. Scrolling buttons.
-  //  while (it2.hasNext()) {
   if (vectorPos != currentData.size() - 1) {
     EventItem *currentEvent = currentData.at(vectorPos);
     currentEvent->setSelectionColor(Qt::black);
@@ -1374,5 +1374,68 @@ void EventGraphWidget::exportSvg() {
     painter.begin(&gen);
     scene->render(&painter);
     painter.end();
+  }
+}
+
+void EventGraphWidget::processEventItemContextMenu(const QString &action) {
+  if (action == COLLIGATEACTION) {
+    colligateEvents();
+  } else if (action == RECOLOREVENTSACTION) {
+    recolorEvents();
+  } else if (action == RECOLORLABELSACTION) {
+    recolorLabels();
+  }
+}
+
+void EventGraphWidget::colligateEvents() {
+  // I should actually figure out if colligating one event makes sense too.
+
+  if (scene->selectedItems().size() > 0) {
+    
+  }
+}
+
+void EventGraphWidget::recolorEvents() {
+  if (scene->selectedItems().size() > 0) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      delete colorDialog;
+      QListIterator<QGraphicsItem*> it(scene->selectedItems());
+      while (it.hasNext()) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+	Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+	NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+	if (event && !(arrow) && !(text)) {
+	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	  currentEvent->setColor(color);
+	} else {
+	  it.next();
+	}
+      }
+    }
+  }
+}
+
+void EventGraphWidget::recolorLabels() {
+  if (scene->selectedItems().size() > 0) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      delete colorDialog;
+      QListIterator<QGraphicsItem*> it(scene->selectedItems());
+      while (it.hasNext()) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+	Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+	NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+	if (event && !(arrow) && !(text)) {
+	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	  NodeLabel *currentLabel = currentEvent->getLabel();
+	  currentLabel->setDefaultTextColor(color);
+	} else {
+	  it.next();
+	}
+      }
+    }
   }
 }

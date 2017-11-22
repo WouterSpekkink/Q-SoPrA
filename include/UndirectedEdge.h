@@ -1,15 +1,15 @@
-#ifndef DIRECTEDEDGE_H
-#define DIRECTEDEDGE_H
+#ifndef UNDIRECTEDEDGE_H
+#define UNDIRECTEDEDGE_H
 
 #include <QGraphicsLineItem>
 #include "NetworkNode.h"
 
-class DirectedEdge : public QGraphicsLineItem {
+class UndirectedEdge : public QGraphicsLineItem {
 
 public:
 
-  DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent = 0);
-  ~DirectedEdge() {};
+  UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent = 0);
+  ~UndirectedEdge() {};
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
@@ -26,6 +26,7 @@ private:
   NetworkNode *end;
   QColor color;
   QPolygonF arrowHead;
+  QPolygonF arrowHead2;
   int height;
   QLineF oLine;
   QPointF arrowP1;

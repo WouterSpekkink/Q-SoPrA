@@ -15,5 +15,9 @@ extern QString PAST;
 extern QString FUTURE;
 extern QString MANUAL;
 extern QString ASSISTED;
+extern QString COLLIGATEACTION;
+extern QString RECOLOREVENTSACTION;
+extern QString RECOLORLABELSACTION;
 
 #endif
+

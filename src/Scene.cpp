@@ -130,3 +130,27 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsScene::mouseMoveEvent(event);
   }
 }
+
+void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
+  EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
+  Arrow *no = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
+  NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
+ if (text && !(no)) {
+    item = text->getNode();
+  }
+  if (item && !(no)) {
+    QMenu menu;
+    menu.addAction(COLLIGATEACTION);
+    menu.addAction(RECOLOREVENTSACTION);
+    menu.addAction(RECOLORLABELSACTION);
+
+    if (QAction *action = menu.exec(event->screenPos())) {
+      emit EventItemContextMenuAction(action->text());
+    }
+    
+    // And then we'll capture some action, and send a signal to the main widget.
+    
+
+  }
+}
+

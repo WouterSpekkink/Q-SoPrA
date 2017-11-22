@@ -10,7 +10,8 @@
 NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : color(255, 255, 255) {
   name = submittedName;
   description = submittedDescription;
-  setToolTip("This could be an event");
+  QString toolTip = "<FONT SIZE = 3>" + name + " - " + description + "</FONT>";
+  setToolTip(toolTip);
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);

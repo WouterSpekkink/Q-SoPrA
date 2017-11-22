@@ -14,3 +14,6 @@ QString PAST = "Present to past";
 QString FUTURE = "Past to present";
 QString MANUAL = "Manual coding";
 QString ASSISTED = "Assisted coding";
+QString COLLIGATEACTION = "Colligate selected";
+QString RECOLOREVENTSACTION = "Recolor selected events";
+QString RECOLORLABELSACTION = "Recolor selected labels";

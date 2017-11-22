@@ -68,6 +68,10 @@ private slots:
   void setEventColor();
   void setLabelColor();
   void setBackgroundColor();
+  void processEventItemContextMenu(const QString &action);
+  void colligateEvents();
+  void recolorEvents();
+  void recolorLabels();
 
 private:
   QPointer<Scene> scene;

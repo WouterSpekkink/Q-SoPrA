@@ -1,5 +1,6 @@
 #include "../include/GraphicsView.h"
 #include "../include/Scene.h"
+#include "../include/NodeLabel.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -17,10 +18,20 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     this->setDragMode(QGraphicsView::NoDrag);
     QGraphicsView::mousePressEvent(event);
   } else if (event->button() == Qt::RightButton) {
-    pan = true;
-    setCursor(Qt::ClosedHandCursor);
-    lastMousePos = event->pos();
-    return;
+    EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
+    NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+    if (text) {
+      item = text->getNode();
+    }
+    if (!item) {
+      pan = true;
+      setCursor(Qt::ClosedHandCursor);
+      lastMousePos = event->pos();
+      return;
+    } else if (item) {
+      item->setSelected(true);
+      return;
+    }
   } else {
     QGraphicsView::mousePressEvent(event);
   }
