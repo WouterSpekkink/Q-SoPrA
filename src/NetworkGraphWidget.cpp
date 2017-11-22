@@ -72,9 +72,9 @@ void NetworkGraphWidget::getDirectedEdges() {
 	  QVectorIterator<DirectedEdge*> it2(directedVector);
 	  while (it2.hasNext()) {
 	    DirectedEdge* tempEdge = it2.next();
-	  if (tempEdge->startItem() == tempSource && tempEdge->endItem() == tempTarget) {
-	    height = height + 80;
-	  }
+	    if (tempEdge->startItem() == tempSource && tempEdge->endItem() == tempTarget) {
+	      height = height + 80;
+	    }
 	  }
 	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, height);
 	  directedVector.push_back(currentEdge);
@@ -124,7 +124,6 @@ void NetworkGraphWidget::simpleLayout() {
       qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
       qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
       QPointF targetPoint = QPoint(mX3, mY3);
-
       currentSource->setPos(sourcePoint);
       currentTarget->setPos(targetPoint);
     }
