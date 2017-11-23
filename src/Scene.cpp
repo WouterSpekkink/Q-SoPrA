@@ -135,7 +135,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
   Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
   NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
- if (text && !(arrow)) {
+  if (text && !(arrow)) {
     item = text->getNode();
   }
   if (item && !(arrow)) {
@@ -143,25 +143,25 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(COLLIGATEACTION);
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
-
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
     }
-    
     // And then we'll capture some action, and send a signal to the main widget.
     
-
   } else if (arrow) {
+    clearSelection();
+    arrow->setSelected(true);
     QMenu menu;
     if (arrow->getColor() == QColor(Qt::darkMagenta)) {
       menu.addAction(REMOVELINKAGEACTION);
+      menu.addAction(KEEPLINKAGEACTION);
     } else if (arrow->getColor() == QColor(Qt::darkRed)) {
       menu.addAction(ACCEPTLINKAGEACTION);
       menu.addAction(REJECTLINKAGEACTION);
     }
 
     if (QAction *action = menu.exec(event->screenPos())) {
-      //      emit EventItemContextMenuAction(action->text());
+      emit ArrowContextMenuAction(action->text());
     }
    
   }

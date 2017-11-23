@@ -32,7 +32,8 @@ public:
   void setLabel(NodeLabel *submittedLabel);
   NodeLabel* getLabel();
   QColor getColor();
-  int type();
+  enum {Type = UserType + 1};
+  int type() const {return Type;}
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

@@ -12,8 +12,9 @@ public:
 
   EventItem* getNode();
   void setNewPos(QPointF nodePos, qreal xOffsetIncrement = 0, qreal yOffsetIncrement = 0);
-  
-  int type();
+
+  enum {Type = UserType + 3};
+  int type() const {return Type;}
 
   QPointF getOffset();
   void setOffset(QPointF offset);

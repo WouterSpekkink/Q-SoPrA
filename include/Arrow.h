@@ -61,7 +61,7 @@
 class Arrow : public QGraphicsLineItem {
 
 public:
-
+ 
   Arrow(EventItem *startItem, EventItem *endItem,
 	QString subType, QString subCoder, QGraphicsItem *parent = 0);
   ~Arrow() {};
@@ -75,7 +75,8 @@ public:
 
   void updatePosition();
 
-  int type();
+  enum {Type = UserType + 2};
+  int type() const {return Type;}
   
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;

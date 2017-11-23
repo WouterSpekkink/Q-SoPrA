@@ -171,10 +171,6 @@ NodeLabel* EventItem::getLabel() {
   return label;
 }
 
-int EventItem::type() {
-  return 1;
-}
-
 QColor EventItem::getColor() {
   return color;
 }

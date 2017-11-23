@@ -21,10 +21,6 @@ void NodeLabel::setNewPos(QPointF nodePos, qreal xOffsetincrement, qreal yOffset
   this->setPos(newPos);
 }
 
-int NodeLabel::type() {
-  return 3;
-}
-
 QPointF NodeLabel::getOffset() {
   return QPointF(xOffset, yOffset);
 }

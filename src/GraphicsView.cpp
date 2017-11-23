@@ -24,7 +24,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (text) {
       item = text->getNode();
     }
-    if (!item) {
+    if (!item && !arrow) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();

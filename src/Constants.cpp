@@ -18,5 +18,6 @@ QString COLLIGATEACTION = "Colligate selected";
 QString RECOLOREVENTSACTION = "Recolor selected events";
 QString RECOLORLABELSACTION = "Recolor selected labels";
 QString REMOVELINKAGEACTION = "Remove linkage";
+QString KEEPLINKAGEACTION = "Keep linkage";
 QString ACCEPTLINKAGEACTION = "Accept linkage";
 QString REJECTLINKAGEACTION = "Reject linkage";

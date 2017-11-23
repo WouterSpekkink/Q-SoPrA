@@ -140,6 +140,3 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   }
 }
 
-int Arrow::type() {
-  return 2;
-}

@@ -23,6 +23,7 @@ signals:
   void posDecreased(EventItem *);
   void relevantChange();
   void EventItemContextMenuAction(const QString&);
+  void ArrowContextMenuAction(const QString&);
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;

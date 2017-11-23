@@ -13,6 +13,7 @@
 #include <math.h>
 #include <QGraphicsTextItem>
 #include <QColorDialog>
+#include <vector>
 #include "NodeLabel.h"
 #include "GraphicsView.h"
 #include "EventItem.h"
@@ -72,6 +73,12 @@ private slots:
   void colligateEvents();
   void recolorEvents();
   void recolorLabels();
+  void processArrowContextMenu(const QString &action);
+  void removeLinkage();
+  void keepLinkage();
+  void acceptLinkage();
+  void findPastPaths(std::vector<int> *mark, int currentIncident);
+  void rejectLinkage();
 
 private:
   QPointer<Scene> scene;

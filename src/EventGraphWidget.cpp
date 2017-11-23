@@ -129,6 +129,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
 	  this, SLOT(processEventItemContextMenu(const QString &)));
+  connect(scene, SIGNAL(ArrowContextMenuAction(const QString &)),
+	  this, SLOT(processArrowContextMenu(const QString &)));
   connect(previousEventButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
   connect(nextEventButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
@@ -265,12 +267,16 @@ void EventGraphWidget::retrieveData() {
     while (it.hasNext()) {
       EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
       Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
-      if (event && !(arrow) && !(text)) {
+      if (event) {
 	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
 	currentEvent->setSelectionColor(Qt::black);
 	currentEvent->update();
 	currentData.push_back(currentEvent);
+      } else if (arrow && currentData.size() > 0) {
+	scene->blockSignals(true);
+      	arrow->setSelected(false);
+	scene->blockSignals(false);
+	it.next();
       } else {
 	it.next();
       }
@@ -830,8 +836,10 @@ void EventGraphWidget::plotCompareEdges() {
   QVectorIterator<Arrow*> it2(edgeVector);
   while (it2.hasNext()) {
     Arrow *currentEdge = it2.next();
-    if (currentEdge->getColor() != QColor(Qt::darkGreen)) {
+    if (currentEdge->getColor() == QColor(Qt::black)) {
       currentEdge->setColor(Qt::darkMagenta);
+    } else {
+      currentEdge->setColor(Qt::black);
     }
   }
 }
@@ -1341,6 +1349,17 @@ void EventGraphWidget::processUpperRange(int value) {
       currentText->show();
     }
   }
+  QVectorIterator<Arrow*> it4(compareVector);
+  while (it4.hasNext()) {
+    Arrow *currentEdge = it4.next();
+    EventItem *source = currentEdge->startItem();
+    EventItem *target = currentEdge->endItem();
+    if (!(source->isVisible()) || !(target->isVisible())) {
+      currentEdge->hide();
+    } else {
+      currentEdge->show();
+    }
+  }
   
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
@@ -1442,6 +1461,169 @@ void EventGraphWidget::recolorLabels() {
 	} else {
 	  it.next();
 	}
+      }
+    }
+  }
+}
+
+void EventGraphWidget::processArrowContextMenu(const QString &action) {
+  if (action == REMOVELINKAGEACTION) {
+    removeLinkage();
+  } else if (action == KEEPLINKAGEACTION) {
+    keepLinkage();
+  } else if (action == ACCEPTLINKAGEACTION) {
+    acceptLinkage();
+  } else if (action == REJECTLINKAGEACTION) {
+    rejectLinkage();
+  }
+}
+
+
+void EventGraphWidget::removeLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	int tail = currentEdge->startItem()->getId();
+	int head = currentEdge->endItem()->getId();
+	scene->removeItem(currentEdge);
+	edgeVector.removeOne(currentEdge);
+	QSqlQuery *query =  new QSqlQuery;
+	query->prepare("DELETE FROM linkages "
+		       "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
+	query->bindValue(":tail", tail);
+	query->bindValue(":head", head);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	delete query;
+      } else {
+	it.next();
+      }
+    }
+  }
+}
+
+void EventGraphWidget::keepLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	currentEdge->setColor(Qt::black);
+      } else {
+	it.next();
+      }
+    }
+  }
+}
+
+void EventGraphWidget::acceptLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	int tail = currentEdge->startItem()->getId();
+	int head = currentEdge->endItem()->getId();
+	currentEdge->setColor(Qt::black);
+	edgeVector.push_back(currentEdge);
+	compareVector.removeOne(currentEdge);
+	QSqlQuery *query =  new QSqlQuery;
+	query->prepare("INSERT INTO linkages (tail, head, coder, type) "
+		       "VALUES (:tail, :head, :coder, :type)");
+	query->bindValue(":tail", tail);
+	query->bindValue(":head", head);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	delete query;
+	// FIND REDUNDANT LINKAGES THAT HAVE BEEN CREATED AND COLOR THEM.
+	if (currentEdge->startItem()->getOriginalPos().x() >
+	    currentEdge->endItem()->getOriginalPos().x()) {
+	  // Linkages point to the past
+	  std::vector<int> mark;
+	  findPastPaths(&mark, tail);
+	  std::vector<int>::iterator vit;
+	  for (vit = mark.begin(); vit !=  mark.end(); vit++) {
+	    QVectorIterator<Arrow*> it2(edgeVector);
+	    while (it2.hasNext()) {
+	      Arrow *currentEdge = it2.next();
+	      int curTail = currentEdge->startItem()->getId();
+	      int curHead = currentEdge->endItem()->getId();
+	      if (curTail == head && curHead == *vit) {
+		QVectorIterator<Arrow*> it3(edgeVector);
+		while (it3.hasNext()) {
+		  Arrow *redundantEdge = it3.next();
+		  int reTail = redundantEdge->startItem()->getId();
+		  int reHead = redundantEdge->endItem()->getId();
+		  if (reTail == tail && reHead ==  curHead) {
+		    redundantEdge->setColor(Qt::darkGreen);
+		  }
+		}
+	      }
+	    }
+	  }
+	} else {
+	// Linkages point to the future
+
+	// TODO
+	}
+     
+      } else {
+	it.next();
+      }
+    }
+  }
+}
+
+void EventGraphWidget::findPastPaths(std::vector<int> *pMark, int currentIncident) {
+  int currentTail = currentIncident;
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT head FROM linkages "
+		 "WHERE tail = :tail AND type = :type AND coder = :coder");
+  query->bindValue(":tail", currentTail);
+  query->bindValue(":type", selectedType);
+  query->bindValue(":coder", selectedCoder);
+  query->exec();
+  std::vector<int> results;
+  while (query->next()) {
+    int currentHead = 0;
+    currentHead = query->value(0).toInt();
+    results.push_back(currentHead);
+  }
+  delete query;
+  std::sort(results.begin(), results.end());
+  std::vector<int>::iterator it;
+  for (it = results.begin(); it != results.end(); it++) {
+    pMark->push_back(*it);
+    findPastPaths(pMark, *it);
+  }
+}
+
+void EventGraphWidget::rejectLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	scene->removeItem(currentEdge);
+	compareVector.removeOne(currentEdge);
+      } else {
+	it.next();
       }
     }
   }
