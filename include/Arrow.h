@@ -69,6 +69,7 @@ public:
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
   void setColor(const QColor &subColor) { color = subColor; }
+  QColor getColor() {return color;}
   EventItem *startItem() const { return start; }
   EventItem *endItem() const { return end; }
 

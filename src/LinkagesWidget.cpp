@@ -2302,7 +2302,7 @@ void LinkagesWidget::setLink() {
   if (codingType == ASSISTED && selectedDirection == PAST) {
     std::vector<int> ignore;
     if (headIndex != 1) {
-      findPastPaths(&ignore, headIndex);
+      findPastPaths(&ignore, tailIndex);
       std::vector<int>::iterator it;
       for (int i = headIndex - 1; i != 0; i--) {
 	bool found = false;

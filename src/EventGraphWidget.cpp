@@ -827,6 +827,13 @@ void EventGraphWidget::plotCompareEdges() {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
   }
+  QVectorIterator<Arrow*> it2(edgeVector);
+  while (it2.hasNext()) {
+    Arrow *currentEdge = it2.next();
+    if (currentEdge->getColor() != QColor(Qt::darkGreen)) {
+      currentEdge->setColor(Qt::darkMagenta);
+    }
+  }
 }
 
 void EventGraphWidget::saveCurrentPlot() {

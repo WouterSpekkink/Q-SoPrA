@@ -20,6 +20,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
   } else if (event->button() == Qt::RightButton) {
     EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
     NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
     if (text) {
       item = text->getNode();
     }
@@ -30,6 +31,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       return;
     } else if (item) {
       item->setSelected(true);
+      return;
+    } else if (arrow) {
+      arrow->setSelected(true);
       return;
     }
   } else {
