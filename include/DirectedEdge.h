@@ -8,15 +8,23 @@ class DirectedEdge : public QGraphicsLineItem {
 
 public:
 
-  DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent = 0);
+  DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
+	       QString submittedName, QGraphicsItem *parent = 0);
   ~DirectedEdge() {};
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
-  void setColor(const QColor &subColor) { color = subColor; }
-  NetworkNode *startItem() const { return start; }
-  NetworkNode *endItem() const { return end; }
+  void setColor(const QColor &subColor);
+  NetworkNode *startItem() const;
+  NetworkNode *endItem() const;
   void calc();
+  QString getType();
+  void setHeight(int submittedHeight);
+  int getHeight();
+  QString getName();
+
+  enum {Type = UserType + 4};
+  int type() const;
   
 protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
@@ -33,6 +41,8 @@ private:
   QPointF tempStart;
   QPointF midPoint;
   qreal theta;
+  QString relType;
+  QString name;
 };
 
 #endif

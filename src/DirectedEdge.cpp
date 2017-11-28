@@ -6,15 +6,17 @@
 
 const qreal Pi = 3.14;
 
-DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent)
+DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
+			   QString submittedName, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
   end = endItem;
   color = Qt::black;
   setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  height = submittedHeight;
+  height = 20;
+  relType = submittedType;
+  name = submittedName;
 }
-
 
 QRectF DirectedEdge::boundingRect() const {
   qreal extra = (pen().width() + height + 20) / 2.0;
@@ -94,4 +96,36 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   painter->rotate(theta);
   painter->drawPolygon(arrowHead);
   painter->strokePath(myPath, QPen(color));
+}
+
+NetworkNode* DirectedEdge::startItem() const {
+  return start;
+}
+
+NetworkNode* DirectedEdge::endItem() const {
+  return end;
+}
+
+void DirectedEdge::setColor(const QColor &subColor) {
+  color = subColor;
+}
+
+QString DirectedEdge::getType() {
+  return relType;
+}
+
+void DirectedEdge::setHeight(int submittedHeight) {
+  height = submittedHeight;
+}
+
+int DirectedEdge::getHeight() {
+  return height;
+}
+
+int DirectedEdge::type() const {
+  return Type;
+}
+
+QString DirectedEdge::getName() {
+  return name;
 }

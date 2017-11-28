@@ -77,9 +77,12 @@ private slots:
   void removeLinkage();
   void keepLinkage();
   void acceptLinkage();
-  void findPastPaths(std::vector<int> *mark, int currentIncident);
   void rejectLinkage();
-
+  void ignoreLinkage();
+  void removeNormalLinkage();
+  void findPastPaths(QVector<int> *mark, int currentIncident);
+  void findFuturePaths(QVector<int> *mark, int currentIncident);
+  
 private:
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;

@@ -22,7 +22,8 @@ extern QString REMOVELINKAGEACTION;
 extern QString KEEPLINKAGEACTION;
 extern QString ACCEPTLINKAGEACTION;
 extern QString REJECTLINKAGEACTION;
-
+extern QString IGNORE;
+extern QString REMOVENORMALLINKAGE;
 
 #endif
 

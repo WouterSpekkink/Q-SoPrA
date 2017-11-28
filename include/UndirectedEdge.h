@@ -8,18 +8,27 @@ class UndirectedEdge : public QGraphicsLineItem {
 
 public:
 
-  UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent = 0);
+  UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
+		 QString submittedName, QGraphicsItem *parent = 0);
   ~UndirectedEdge() {};
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
-  void setColor(const QColor &subColor) { color = subColor; }
-  NetworkNode *startItem() const { return start; }
-  NetworkNode *endItem() const { return end; }
+  void setColor(const QColor &subColor);
+  NetworkNode *startItem() const; 
+  NetworkNode *endItem() const;
   void calc();
+  QString getType();
+  void setHeight(int submittedHeight);
+  int getHeight();
+  QString getName();
+
+  enum {Type = UserType + 5};
+  int type() const;
+
   
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 private:
   NetworkNode *start;
@@ -29,11 +38,16 @@ private:
   QPolygonF arrowHead2;
   int height;
   QLineF oLine;
+  QLineF sLine;
   QPointF arrowP1;
   QPointF arrowP2;
+  QPointF arrowP3;
+  QPointF arrowP4;
   QPointF tempStart;
   QPointF midPoint;
   qreal theta;
+  QString relType;
+  QString name;
 };
 
 #endif

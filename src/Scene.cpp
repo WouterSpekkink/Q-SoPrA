@@ -65,6 +65,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (item && !(no)) {
       if (event->modifiers() & Qt::AltModifier) {
 	item->setPos(item->getOriginalPos().x(), item->scenePos().y());
+	item->getLabel()->setNewPos(item->scenePos());
       } else {
 	resizeOn = true;
 	lastMousePos = event->scenePos();
@@ -158,12 +159,16 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     } else if (arrow->getColor() == QColor(Qt::darkRed)) {
       menu.addAction(ACCEPTLINKAGEACTION);
       menu.addAction(REJECTLINKAGEACTION);
+    } else if (arrow->getColor() == QColor(Qt::darkGreen)) {
+      menu.addAction(REMOVELINKAGEACTION);
+      menu.addAction(KEEPLINKAGEACTION);
+      menu.addAction(IGNORE);      
+    } else if (arrow->getColor() == QColor(Qt::black)) {
+      menu.addAction(REMOVENORMALLINKAGE);
     }
-
     if (QAction *action = menu.exec(event->screenPos())) {
       emit ArrowContextMenuAction(action->text());
     }
-   
   }
 }
 

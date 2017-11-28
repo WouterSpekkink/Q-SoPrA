@@ -6,15 +6,17 @@
 
 const qreal Pi = 3.14;
 
-UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, int submittedHeight, QGraphicsItem *parent)
+UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
+			       QString submittedName, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
   end = endItem;
   color = Qt::black;
   setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  height = submittedHeight;
+  height = 20;
+  relType = submittedType;
+  name = submittedName;
 }
-
 
 QRectF UndirectedEdge::boundingRect() const {
   qreal extra = (pen().width() + height + 20) / 2.0;
@@ -82,10 +84,10 @@ void UndirectedEdge::calc() {
 				 cos(angle + Pi / 3) * arrowSize);
   arrowP2 = oLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 				 cos(angle + Pi - Pi / 3) * arrowSize);
-  arrowP1 = sLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-				 cos(angle + Pi / 3) * arrowSize);
-  arrowP2 = sLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-				 cos(angle + Pi - Pi / 3) * arrowSize);  
+  arrowP3 = sLine.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
+				 cos(angle2 + Pi / 3) * arrowSize);
+  arrowP4 = sLine.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
+				 cos(angle2 + Pi - Pi / 3) * arrowSize);  
 }
 
 void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -107,6 +109,38 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   painter->translate(start->pos() - tempStart);
   painter->rotate(theta);
   painter->drawPolygon(arrowHead);
-  painter->drawPolygon(arrowHead2);
   painter->strokePath(myPath, QPen(color));
+  painter->drawPolygon(arrowHead2);
+}
+
+NetworkNode* UndirectedEdge::startItem() const {
+  return start;
+}
+
+NetworkNode* UndirectedEdge::endItem() const {
+  return end;
+}
+
+void UndirectedEdge::setColor(const QColor &subColor) {
+  color = subColor;
+}
+
+QString UndirectedEdge::getType() {
+  return relType;
+}
+
+void UndirectedEdge::setHeight(int submittedHeight) {
+  height = submittedHeight;
+}
+
+int UndirectedEdge::getHeight() {
+  return height;
+}
+
+int UndirectedEdge::type() const {
+  return Type;
+}
+
+QString UndirectedEdge::getName() {
+  return name;
 }

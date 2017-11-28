@@ -819,14 +819,13 @@ void RelationshipsWidget::newRelationship() {
 	QString rightEntity = relationshipsDialog->getRightEntity();
 	QStandardItem *newItem = new QStandardItem(name);
 	currentItem->appendRow(newItem);
-	relationshipsModel->select();
-	int newRow = relationshipsModel->rowCount();
-	relationshipsModel->insertRow(newRow);
-	relationshipsModel->setData(relationshipsModel->index(newRow, 1), name);
-	relationshipsModel->setData(relationshipsModel->index(newRow, 2), leftEntity);
-	relationshipsModel->setData(relationshipsModel->index(newRow, 3), rightEntity);
-	relationshipsModel->setData(relationshipsModel->index(newRow, 5), currentType);
-	relationshipsModel->submitAll();
+	query->prepare("INSERT INTO entity_relationships (name, source, target, type)"
+		       "VALUES (:name, :source, :target, :type)");
+	query->bindValue(":name", name);
+	query->bindValue(":source", leftEntity);
+	query->bindValue(":target", rightEntity);
+	query->bindValue(":type", currentType);
+	query->exec();
       }
       if (relationshipsDialog->getEntityEdited() == 1) {
 	delete relationshipsTree;

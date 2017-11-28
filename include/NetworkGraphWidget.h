@@ -17,6 +17,7 @@
 #include "GraphicsView.h"
 #include "NetworkNode.h"
 #include "DirectedEdge.h"
+#include "UndirectedEdge.h"
 #include "Scene.h"
 #include "Constants.h"
 #include "SimpleTextDialog.h"
@@ -32,18 +33,56 @@ public:
   ~NetworkGraphWidget() {};
 
 private slots:
+  void toggleGraphicsControls();
+  
   void getEntities();
   void plotEntities();
   void getDirectedEdges();
-  void plotDirectedEdges();
+  void plotDirectedEdges(QString type, QColor color);
+  void getUndirectedEdges();
+  void plotUndirectedEdges(QString type, QColor color);
+  void getTypes();
+
+  void processLowerRange(int value);
+  void processUpperRange(int value);
+  void setRangeControls();
 
   void simpleLayout();
+  void setPlotButton();
+  void plotNewGraph();
+  void addRelationshipType();
+  void cleanUp();
   
 private:
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;
   QVector<NetworkNode*> nodeVector;
   QVector<DirectedEdge*> directedVector;
+  QVector<UndirectedEdge*> undirectedVector;
+  QPointer<QWidget> graphicsWidget;
+
+  QPointer<QLabel> typeLabel;
+  QPointer<QLabel> upperRangeLabel;
+  QPointer<QLabel> lowerRangeLabel;
+  
+  QPointer<QComboBox> typeComboBox;
+
+  QPointer<QPushButton> plotButton;
+  QPointer<QPushButton> addButton;
+  QPointer<QPushButton> toggleGraphicsControlsButton;
+
+  QPointer<QDial> lowerRangeDial;
+  QPointer<QDial> upperRangeDial;
+  QPointer<QSpinBox> lowerRangeSpinBox;
+  QPointer<QSpinBox> upperRangeSpinBox;
+  
+  QVector<QString> presentTypes; 
+
+  QString selectedType;
+
+  int minOrder;
+  int maxOrder;
+
 };
 
 

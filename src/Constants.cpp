@@ -21,3 +21,5 @@ QString REMOVELINKAGEACTION = "Remove linkage";
 QString KEEPLINKAGEACTION = "Keep linkage";
 QString ACCEPTLINKAGEACTION = "Accept linkage";
 QString REJECTLINKAGEACTION = "Reject linkage";
+QString IGNORE = "Ignore";
+QString REMOVENORMALLINKAGE = "Remove";
