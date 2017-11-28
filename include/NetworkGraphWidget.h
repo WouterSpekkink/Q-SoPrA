@@ -23,6 +23,7 @@
 #include "SimpleTextDialog.h"
 #include "ProgressBar.h"
 #include "SavedPlotsDialog.h"
+#include "NetworkNodeLabel.h"
 
 class NetworkGraphWidget : public QWidget {
   Q_OBJECT
@@ -43,6 +44,13 @@ private slots:
   void plotUndirectedEdges(QString type, QColor color);
   void getTypes();
 
+  void setNodeColor();
+  void setLabelColor();
+  void setBackgroundColor();
+  void toggleLabels();
+  void increaseLabelSize();
+  void decreaseLabelSize();
+
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
@@ -59,6 +67,7 @@ private:
   QVector<NetworkNode*> nodeVector;
   QVector<DirectedEdge*> directedVector;
   QVector<UndirectedEdge*> undirectedVector;
+  QVector<NetworkNodeLabel*> labelVector;
   QPointer<QWidget> graphicsWidget;
 
   QPointer<QLabel> typeLabel;
@@ -69,7 +78,13 @@ private:
 
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addButton;
+  QPointer<QPushButton> toggleLabelsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
+  QPointer<QPushButton> nodeColorButton;
+  QPointer<QPushButton> labelColorButton;
+  QPointer<QPushButton> backgroundColorButton;
+  QPointer<QPushButton> increaseFontSizeButton;
+  QPointer<QPushButton> decreaseFontSizeButton;
 
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
@@ -82,6 +97,8 @@ private:
 
   int minOrder;
   int maxOrder;
+
+  bool labelsShown;
 
 };
 

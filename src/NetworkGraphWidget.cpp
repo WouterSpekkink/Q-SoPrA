@@ -2,6 +2,7 @@
 
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedType = "";
+  labelsShown = false;
 
   minOrder = 0;
   maxOrder = 0;
@@ -23,9 +24,15 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   plotButton->setEnabled(false);
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
   toggleGraphicsControlsButton->setCheckable(true);
-
   addButton = new QPushButton(tr("Add relationship type"), this);
   addButton->setEnabled(false);
+  toggleLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
+  toggleLabelsButton->setCheckable(true);
+  increaseFontSizeButton = new QPushButton(tr("+"));
+  decreaseFontSizeButton = new QPushButton(tr("-"));
+  nodeColorButton = new QPushButton(tr("Set node color"), graphicsWidget);
+  labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
+  backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
 
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -42,6 +49,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(addRelationshipType()));
+  connect(nodeColorButton, SIGNAL(clicked()), this, SLOT(setNodeColor()));
+  connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
+  connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
+  connect(toggleLabelsButton, SIGNAL(clicked()), this, SLOT(toggleLabels()));
+  connect(increaseFontSizeButton, SIGNAL(clicked()), this, SLOT(increaseLabelSize()));
+  connect(decreaseFontSizeButton, SIGNAL(clicked()), this, SLOT(decreaseLabelSize()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -66,10 +79,14 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addLayout(middleLayout);
 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
-  //  graphicsControlsLayout->addWidget(eventColorButton);
-  //graphicsControlsLayout->addWidget(labelColorButton);
-  //graphicsControlsLayout->addWidget(backgroundColorButton);
-  //graphicsControlsLayout->addWidget(plotLabelsButton);
+  graphicsControlsLayout->addWidget(nodeColorButton);
+  graphicsControlsLayout->addWidget(labelColorButton);
+  graphicsControlsLayout->addWidget(backgroundColorButton);
+  graphicsControlsLayout->addWidget(toggleLabelsButton);
+  QPointer<QHBoxLayout> fontSizeLayout = new QHBoxLayout;
+  fontSizeLayout->addWidget(increaseFontSizeButton);
+  fontSizeLayout->addWidget(decreaseFontSizeButton);
+  graphicsControlsLayout->addLayout(fontSizeLayout);
   graphicsControlsLayout->addWidget(upperRangeLabel);
   upperRangeLabel->setAlignment(Qt::AlignHCenter);
   QPointer<QHBoxLayout> upperRangeLayout = new QHBoxLayout;
@@ -133,9 +150,15 @@ void NetworkGraphWidget::getEntities() {
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT name, description FROM entities");
   while (query->next()) {
-    QString name = query->value(0).toString();
+    QString name = query->value(0).toString();    
     QString description = query->value(1).toString();
     NetworkNode *currentNode = new NetworkNode(name, description);
+    NetworkNodeLabel *label = new NetworkNodeLabel(currentNode);
+    label->setPlainText(name);
+    labelVector.push_back(label);
+    currentNode->setLabel(label);
+    label->setZValue(2);
+    label->hide();
     currentNode->setZValue(1);
     currentNode->hide();
     nodeVector.push_back(currentNode);
@@ -149,6 +172,7 @@ void NetworkGraphWidget::plotEntities() {
     NetworkNode *currentNode = it.next();
     currentNode->setColor(Qt::red);
     scene->addItem(currentNode);
+    scene->addItem(currentNode->getLabel());
   }
 }
 
@@ -303,7 +327,6 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
 	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
 	  int newHeight = current->getHeight() + 60;
 	  currentEdge->setHeight(newHeight);
-	  scene->addItem(currentEdge);
 	} else if (undirected) {
 	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
 	  int newHeight = current->getHeight() + 60;
@@ -334,7 +357,6 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
 	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
 	  int newHeight = current->getHeight() + 60;
 	  currentEdge->setHeight(newHeight);
-	  scene->addItem(currentEdge);
 	} else if (undirected) {
 	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
 	  int newHeight = current->getHeight() + 60;
@@ -400,12 +422,49 @@ void NetworkGraphWidget::simpleLayout() {
 	qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
 	QPointF targetPoint = QPoint(mX3, mY3);
 	currentSource->setPos(sourcePoint);
+	currentSource->getLabel()->setNewPos(currentSource->scenePos());
 	currentTarget->setPos(targetPoint);
+	currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
       } else {
 	it.next();
       }
     }
   }
+}
+
+void NetworkGraphWidget::setNodeColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  if (colorDialog->exec()) {
+    QColor color = colorDialog->selectedColor();
+    QVectorIterator<NetworkNode*> it(nodeVector);
+    while (it.hasNext()) {
+      NetworkNode *currentNode = it.next();
+      currentNode->setColor(color);
+    }
+  }
+  delete colorDialog;
+}
+
+void NetworkGraphWidget::setLabelColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  if (colorDialog->exec()) {
+    QColor color = colorDialog->selectedColor();
+    QVectorIterator<NetworkNodeLabel*> it(labelVector);
+    while (it.hasNext()) {
+      NetworkNodeLabel *currentLabel = it.next();
+      currentLabel->setDefaultTextColor(color);
+    }
+  }
+  delete colorDialog;
+}
+
+void NetworkGraphWidget::setBackgroundColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  if (colorDialog->exec()) {
+    QColor color = colorDialog->selectedColor();
+    view->setBackgroundBrush(color);
+  }
+  delete colorDialog;
 }
 
 void NetworkGraphWidget::setPlotButton() {
@@ -471,6 +530,39 @@ void NetworkGraphWidget::addRelationshipType() {
   //  savePlotButton->setEnabled(true);
   //setRangeControls();
   //plotLabel->setText("Unsaved plot");
+}
+
+void NetworkGraphWidget::toggleLabels() {
+  labelsShown = !labelsShown;
+  QVectorIterator<NetworkNodeLabel*> it(labelVector);
+  while (it.hasNext()) {
+    NetworkNodeLabel *currentLabel = it.next();
+    if (labelsShown) {
+      if (currentLabel->getNode()->isVisible()) {
+	currentLabel->show();
+      } else {
+	currentLabel->hide();
+      }
+    } else {
+      currentLabel->hide();
+    }
+  }
+}
+
+void NetworkGraphWidget::increaseLabelSize() {
+  QVectorIterator<NetworkNodeLabel*> it(labelVector);
+  while (it.hasNext()) {
+    NetworkNodeLabel *currentLabel = it.next();
+    currentLabel->increaseFontSize();
+  }
+}
+
+void NetworkGraphWidget::decreaseLabelSize() {
+  QVectorIterator<NetworkNodeLabel*> it(labelVector);
+  while (it.hasNext()) {
+    NetworkNodeLabel *currentLabel = it.next();
+    currentLabel->decreaseFontSize();
+  }
 }
 
 void NetworkGraphWidget::setRangeControls() {
@@ -572,6 +664,15 @@ void NetworkGraphWidget::processLowerRange(int value) {
       currentUndirected->hide();
     }
   }
+  QVectorIterator<NetworkNodeLabel*> it4(labelVector);
+  while (it4.hasNext()) {
+    NetworkNodeLabel *label = it4.next();
+    if (label->getNode()->isVisible() && labelsShown) {
+      label->show();
+    } else {
+      label->hide();
+    }
+  }  
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -662,6 +763,15 @@ void NetworkGraphWidget::processUpperRange(int value) {
       currentUndirected->endItem()->show();
     } else {
       currentUndirected->hide();
+    }
+  }
+  QVectorIterator<NetworkNodeLabel*> it4(labelVector);
+  while (it4.hasNext()) {
+    NetworkNodeLabel *label = it4.next();
+    if (label->getNode()->isVisible() && labelsShown) {
+      label->show();
+    } else {
+      label->hide();
     }
   }
   QRectF currentRect = this->scene->itemsBoundingRect();

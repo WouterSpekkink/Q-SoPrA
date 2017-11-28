@@ -74,6 +74,7 @@ SOURCES       = main.cpp \
 		src/MainWindow.cpp \
 		src/NetworkGraphWidget.cpp \
 		src/NetworkNode.cpp \
+		src/NetworkNodeLabel.cpp \
 		src/NodeLabel.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
@@ -144,6 +145,7 @@ OBJECTS       = main.o \
 		MainWindow.o \
 		NetworkGraphWidget.o \
 		NetworkNode.o \
+		NetworkNodeLabel.o \
 		NodeLabel.o \
 		ProgressBar.o \
 		RecordDialog.o \
@@ -272,6 +274,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/MainWindow.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/NodeLabel.h \
 		include/ProgressBar.h \
 		include/RecordDialog.h \
@@ -311,6 +314,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/MainWindow.cpp \
 		src/NetworkGraphWidget.cpp \
 		src/NetworkNode.cpp \
+		src/NetworkNodeLabel.cpp \
 		src/NodeLabel.cpp \
 		src/ProgressBar.cpp \
 		src/RecordDialog.cpp \
@@ -498,8 +502,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/JournalWidget.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/NetworkGraphWidget.h include/NetworkNode.h include/NodeLabel.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/JournalWidget.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NodeLabel.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/JournalWidget.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/JournalWidget.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -650,6 +654,7 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
 		include/MainWindow.h
@@ -660,6 +665,7 @@ moc_NetworkGraphWidget.cpp: include/NodeLabel.h \
 		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
 		include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
 		include/Scene.h \
@@ -787,6 +793,7 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
@@ -831,7 +838,8 @@ DeselectableTreeViewEntities.o: src/DeselectableTreeViewEntities.cpp include/Des
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DeselectableTreeViewEntities.o src/DeselectableTreeViewEntities.cpp
 
 DirectedEdge.o: src/DirectedEdge.cpp include/DirectedEdge.h \
-		include/NetworkNode.h
+		include/NetworkNode.h \
+		include/NetworkNodeLabel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DirectedEdge.o src/DirectedEdge.cpp
 
 EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
@@ -945,6 +953,7 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
@@ -955,6 +964,7 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
 		include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
 		include/Scene.h \
@@ -965,9 +975,14 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkGraphWidget.o src/NetworkGraphWidget.cpp
 
 NetworkNode.o: src/NetworkNode.cpp include/NetworkNode.h \
+		include/NetworkNodeLabel.h \
 		include/Arrow.h \
 		include/EventItem.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkNode.o src/NetworkNode.cpp
+
+NetworkNodeLabel.o: src/NetworkNodeLabel.cpp include/NetworkNodeLabel.h \
+		include/NetworkNode.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkNodeLabel.o src/NetworkNodeLabel.cpp
 
 NodeLabel.o: src/NodeLabel.cpp include/NodeLabel.h \
 		include/EventItem.h
@@ -1030,7 +1045,8 @@ SimpleTextDialog.o: src/SimpleTextDialog.cpp include/SimpleTextDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SimpleTextDialog.o src/SimpleTextDialog.cpp
 
 UndirectedEdge.o: src/UndirectedEdge.cpp include/UndirectedEdge.h \
-		include/NetworkNode.h
+		include/NetworkNode.h \
+		include/NetworkNodeLabel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o UndirectedEdge.o src/UndirectedEdge.cpp
 
 WelcomeDialog.o: src/WelcomeDialog.cpp include/WelcomeDialog.h \

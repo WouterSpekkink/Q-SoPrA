@@ -1,11 +1,13 @@
 #include <QtWidgets>
 #include "../include/NetworkNode.h"
 #include "../include/Arrow.h"
+#include "../include/NetworkNodeLabel.h"
 
 /*
   In this case we assign a random colour. I will want to change that
   in real applications.
 */
+
 
 NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : color(255, 255, 255) {
   name = submittedName;
@@ -67,6 +69,9 @@ void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   } else {
     this->setPos(newPos);
   }
+  if (label != NULL) {
+    label->setNewPos(this->scenePos());
+  }
   update();
   setCursor(Qt::OpenHandCursor);
 }
@@ -95,6 +100,9 @@ void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   } else {
     this->setPos(newPos);
   }
+  if (label != NULL) {
+    label->setNewPos(this->scenePos());
+  }
   setCursor(Qt::OpenHandCursor);
   update();
   QGraphicsItem::mouseReleaseEvent(event);
@@ -114,4 +122,16 @@ void NetworkNode::setColor(QColor newColor) {
 
 QString NetworkNode::getName() {
   return name;
+}
+
+int NetworkNode::type() const {
+  return Type;
+}
+
+void NetworkNode::setLabel(NetworkNodeLabel *newLabel) {
+  label = newLabel;
+}
+
+NetworkNodeLabel* NetworkNode::getLabel() {
+  return label;
 }
