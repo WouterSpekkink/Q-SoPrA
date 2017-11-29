@@ -23,3 +23,5 @@ QString ACCEPTLINKAGEACTION = "Accept linkage";
 QString REJECTLINKAGEACTION = "Reject linkage";
 QString IGNORE = "Ignore";
 QString REMOVENORMALLINKAGE = "Remove";
+QString ENTITY = "Entity";
+QString INCIDENT = "Incident";

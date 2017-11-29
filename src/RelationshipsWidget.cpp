@@ -1435,7 +1435,7 @@ void RelationshipsWidget::setButtons() {
       QStandardItem *typeItem = currentItem->parent();
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
-      query->exec("SELECT relationship_record FROM save_data");
+      query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = 0; 
       order = query->value(0).toInt();

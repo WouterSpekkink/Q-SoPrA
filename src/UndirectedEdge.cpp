@@ -16,6 +16,7 @@ UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QSt
   height = 20;
   relType = submittedType;
   name = submittedName;
+  filtered = true;
 }
 
 QRectF UndirectedEdge::boundingRect() const {
@@ -104,7 +105,7 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   arrowHead2 << sLine.p2() << arrowP3 << arrowP4;
   
   QPainterPath myPath;
-  myPath.moveTo(tempStart);
+  myPath.moveTo(sLine.p2());
   myPath.quadTo(midPoint, oLine.p2());
   painter->translate(start->pos() - tempStart);
   painter->rotate(theta);
@@ -143,4 +144,12 @@ int UndirectedEdge::type() const {
 
 QString UndirectedEdge::getName() {
   return name;
+}
+
+bool UndirectedEdge::isFiltered() {
+  return filtered;
+}
+
+void UndirectedEdge::setFiltered(bool state) {
+  filtered = state;
 }

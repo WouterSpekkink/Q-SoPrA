@@ -23,6 +23,7 @@
 #include "SimpleTextDialog.h"
 #include "ProgressBar.h"
 #include "SavedPlotsDialog.h"
+#include "AttributeColorDialog.h"
 
 class EventGraphWidget : public QWidget {
   Q_OBJECT
@@ -66,6 +67,8 @@ private slots:
   void processUpperRange(int value);
   void setRangeControls();
   void exportSvg();
+  void colorByAttribute();
+  void findChildren(QString father, QVector<QString> *children);
   void setEventColor();
   void setLabelColor();
   void setBackgroundColor();
@@ -120,6 +123,7 @@ private:
   QPointer<QPushButton> nextEventButton;
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> plotLabelsButton;
+  QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> eventColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;

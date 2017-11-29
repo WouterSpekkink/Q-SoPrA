@@ -203,7 +203,8 @@ void RelationshipsDialog::editEntity() {
   }
 }
 
-void RelationshipsDialog::updateAfterEdit(const QString name, const QString description, const QString former) {
+void RelationshipsDialog::updateAfterEdit(const QString name, const QString description,
+					  const QString former) {
   entityEdited = 1;
   QSqlQuery *query = new QSqlQuery;
   // Update the entity itself.
@@ -227,98 +228,97 @@ void RelationshipsDialog::updateAfterEdit(const QString name, const QString desc
     Next up are the relationships in which the entity already participates.
     First, let us update all the relationships where the current entity is a source.
   */
-  query->prepare("SELECT name, target, type "
-		 "FROM entity_relationships WHERE source = :current");
-  query->bindValue(":current", former);
-  query->exec();
-  while (query->next()) {
-    QString oldRelationship = query->value(0).toString();
-    QString target = query->value(1).toString();
-    QString type = query->value(2).toString();
-    QSqlQuery *query2 = new QSqlQuery();
-    query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
-    query2->bindValue(":type", type);
-    query2->exec();
-    query2->first();
-    QString directedness = query2->value(0).toString();
-    QString arrow = "";
-    if (directedness == UNDIRECTED) {
-      arrow = "<-->";
-    } else if (directedness == DIRECTED) {
-      arrow = "--->";
-    }
-    QString newRelationship = name + arrow + target;
-    query2->prepare("UPDATE entity_relationships "
-		    "SET source = :source, name = :name "
-		    "WHERE source = :oldSource AND name = :oldRelationship");
-    query2->bindValue(":source", name);
-    query2->bindValue(":name", newRelationship);
-    query2->bindValue(":oldSource", former);
-    query2->bindValue(":oldRelationship", oldRelationship);
-    query2->exec();
-    query2->prepare("UPDATE relationships_to_incidents "
-		    "SET relationship = :new "
-		    "WHERE relationship = :old");
-    query2->bindValue(":new", newRelationship);
-    query2->bindValue(":old", oldRelationship);
-    query2->exec();
-    query2->prepare("UPDATE relationships_to_incidents_sources "
-		    "SET relationship = :new "
-		    "WHERE relationship = :old");
-    query2->bindValue(":new", newRelationship);
-    query2->bindValue(":old", oldRelationship);
-    query2->exec();
-
-    delete query2;
-  }
-  // And then the relationships where the entity is a target.
-  query->prepare("SELECT name, source, type "
-		 "FROM entity_relationships WHERE target = :current");
-  query->bindValue(":current", former);
-  query->exec();
-  while (query->next()) {
-    QString oldRelationship = query->value(0).toString();
-    QString source = query->value(1).toString();
-    QString type = query->value(2).toString();
-    QSqlQuery *query2 = new QSqlQuery();
-    query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
-    query2->bindValue(":type", type);
-    query2->exec();
-    query2->first();
-    QString directedness = query2->value(0).toString();
-    QString arrow = "";
-    if (directedness == UNDIRECTED) {
-      arrow = "<-->";
-    } else if (directedness == DIRECTED) {
-      arrow = "--->";
-    }
-    QString newRelationship = source + arrow + name;
-    query2->prepare("UPDATE entity_relationships "
-		    "SET target = :target, name = :name "
-		    "WHERE target = :oldTarget AND name = :oldRelationship");
-    query2->bindValue(":target", name);
-    query2->bindValue(":name", newRelationship);
-    query2->bindValue(":oldTarget", former);
-    query2->bindValue(":oldRelationship", oldRelationship);
-    
-    query2->exec();
-    query2->prepare("UPDATE relationships_to_incidents "
-		    "SET relationship = :new "
-		    "WHERE relationship = :old");
-    query2->bindValue(":new", newRelationship);
-    query2->bindValue(":old", oldRelationship);
+  if (name != former) {
+    query->prepare("SELECT name, target, type "
+		   "FROM entity_relationships WHERE source = :current");
+    query->bindValue(":current", former);
     query->exec();
-    query2->prepare("UPDATE relationships_to_incidents_sources "
-		    "SET relationship = :new "
-		    "WHERE relationship = :old");
-    query2->bindValue(":new", newRelationship);
-    query2->bindValue(":old", oldRelationship);
-    query2->exec();
-    delete query2;
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString target = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = name + arrow + target;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET source = :source, name = :name "
+		      "WHERE source = :oldSource AND name = :oldRelationship");
+      query2->bindValue(":source", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldSource", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    // And then the relationships where the entity is a target.
+    query->prepare("SELECT name, source, type "
+		   "FROM entity_relationships WHERE target = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = source + arrow + name;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET target = :target, name = :name "
+		      "WHERE target = :oldTarget AND name = :oldRelationship");
+      query2->bindValue(":target", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldTarget", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    delete query;
   }
-  delete query;
-}
-  
+}  
 void RelationshipsDialog::editLeftAssignedEntity() {
   if (selectedSourceLabel->text() != DEFAULT) {
     QString selected = selectedSourceLabel->text();

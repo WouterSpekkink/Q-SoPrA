@@ -91,6 +91,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   nextEventButton = new QPushButton(tr(">>"), infoWidget);
   nextEventButton->setEnabled(false);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
+  colorByAttributeButton = new QPushButton(tr("Color by attribute"), graphicsWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -116,6 +117,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
+  connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
   connect(eventColorButton, SIGNAL(clicked()), this, SLOT(setEventColor()));
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
@@ -197,6 +199,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addLayout(middleLayout);
 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(colorByAttributeButton);
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
@@ -551,6 +554,7 @@ void EventGraphWidget::getLabels() {
     currentPos.setY(currentPos.y() -12);
     text->setPos(currentPos);    
     text->setZValue(2);
+    text->setDefaultTextColor(Qt::black);
     nodeLabelVector.push_back(text);
     delete query;
   }
@@ -1210,6 +1214,55 @@ void EventGraphWidget::setChangeLabel() {
   if (changeLabel->text() == "" && eventVector.size() > 0) {
     changeLabel->setText("*");
   }
+}
+
+void EventGraphWidget::colorByAttribute() {
+  QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
+  attributeColorDialog->exec();
+  if (attributeColorDialog->getExitStatus() == 0) {
+    QColor color = attributeColorDialog->getColor();
+    QColor textColor = attributeColorDialog->getTextColor();
+    QString attribute = attributeColorDialog->getAttribute();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(attribute);
+    findChildren(attribute, &attributeVector);
+    QVectorIterator<QString> it(attributeVector);
+    while (it.hasNext()) {
+      QString currentAttribute = it.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	int currentIncident = query->value(0).toInt();
+	QVectorIterator<EventItem*> it2(eventVector);
+	while (it2.hasNext()) {
+	  EventItem* currentEvent = it2.next();
+	  if (currentEvent->getId() == currentIncident) {
+	    currentEvent->setColor(color);
+	    currentEvent->getLabel()->setDefaultTextColor(textColor);
+	  }
+	}
+      }
+      delete query;
+    }
+  }
+  delete attributeColorDialog;
+}
+
+
+void EventGraphWidget::findChildren(QString father, QVector<QString> *children) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  query->bindValue(":father", father);
+  query->exec();
+  while (query->next()) {
+    QString currentChild = query->value(0).toString();
+    children->push_back(currentChild);
+    findChildren(currentChild, children);
+  }
+  delete query;
 }
 
 void EventGraphWidget::setEventColor() {

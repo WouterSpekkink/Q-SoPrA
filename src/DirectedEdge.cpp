@@ -16,6 +16,7 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
   height = 20;
   relType = submittedType;
   name = submittedName;
+  filtered = true;
 }
 
 QRectF DirectedEdge::boundingRect() const {
@@ -128,4 +129,12 @@ int DirectedEdge::type() const {
 
 QString DirectedEdge::getName() {
   return name;
+}
+
+bool DirectedEdge::isFiltered() {
+  return filtered;
+}
+
+void DirectedEdge::setFiltered(bool state) {
+  filtered = state;
 }

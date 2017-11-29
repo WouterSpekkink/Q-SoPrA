@@ -22,7 +22,9 @@ public:
   void setHeight(int submittedHeight);
   int getHeight();
   QString getName();
-
+  bool isFiltered();
+  void setFiltered(bool state);
+  
   enum {Type = UserType + 5};
   int type() const;
 
@@ -48,6 +50,7 @@ private:
   qreal theta;
   QString relType;
   QString name;
+  bool filtered;
 };
 
 #endif

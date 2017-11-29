@@ -50,6 +50,7 @@ OBJECTS_DIR   = ./
 
 SOURCES       = main.cpp \
 		src/Arrow.cpp \
+		src/AttributeColorDialog.cpp \
 		src/AttributeDialog.cpp \
 		src/AttributeIndexDialog.cpp \
 		src/AttributesWidget.cpp \
@@ -88,7 +89,8 @@ SOURCES       = main.cpp \
 		src/UndirectedEdge.cpp \
 		src/WelcomeDialog.cpp \
 		src/ZoomableListView.cpp \
-		src/ZoomableTableView.cpp moc_AttributeDialog.cpp \
+		src/ZoomableTableView.cpp moc_AttributeColorDialog.cpp \
+		moc_AttributeDialog.cpp \
 		moc_AttributeIndexDialog.cpp \
 		moc_AttributesWidget.cpp \
 		moc_AttributeTreeFilter.cpp \
@@ -121,6 +123,7 @@ SOURCES       = main.cpp \
 		moc_ZoomableTableView.cpp
 OBJECTS       = main.o \
 		Arrow.o \
+		AttributeColorDialog.o \
 		AttributeDialog.o \
 		AttributeIndexDialog.o \
 		AttributesWidget.o \
@@ -160,6 +163,7 @@ OBJECTS       = main.o \
 		WelcomeDialog.o \
 		ZoomableListView.o \
 		ZoomableTableView.o \
+		moc_AttributeColorDialog.o \
 		moc_AttributeDialog.o \
 		moc_AttributeIndexDialog.o \
 		moc_AttributesWidget.o \
@@ -250,6 +254,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/yacc.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/lex.prf \
 		ED_Linux.pro include/Arrow.h \
+		include/AttributeColorDialog.h \
 		include/AttributeDialog.h \
 		include/AttributeIndexDialog.h \
 		include/AttributesWidget.h \
@@ -290,6 +295,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/ZoomableListView.h \
 		include/ZoomableTableView.h main.cpp \
 		src/Arrow.cpp \
+		src/AttributeColorDialog.cpp \
 		src/AttributeDialog.cpp \
 		src/AttributeIndexDialog.cpp \
 		src/AttributesWidget.cpp \
@@ -502,8 +508,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/JournalWidget.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/JournalWidget.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/Constants.h include/DataWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/JournalWidget.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/ProgressBar.h include/RecordDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/JournalWidget.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/ProgressBar.cpp src/RecordDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -526,9 +532,13 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_JournalWidget.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_NetworkGraphWidget.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_JournalWidget.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_NetworkGraphWidget.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_JournalWidget.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_NetworkGraphWidget.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_JournalWidget.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_NetworkGraphWidget.cpp moc_ProgressBar.cpp moc_RecordDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+moc_AttributeColorDialog.cpp: include/Constants.h \
+		include/AttributeColorDialog.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeColorDialog.h -o moc_AttributeColorDialog.cpp
+
 moc_AttributeDialog.cpp: include/AttributeDialog.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeDialog.h -o moc_AttributeDialog.cpp
 
@@ -654,9 +664,10 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
-		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
+		include/NetworkNodeLabel.h \
+		include/AttributeColorDialog.h \
 		include/MainWindow.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
 
@@ -665,7 +676,6 @@ moc_NetworkGraphWidget.cpp: include/NodeLabel.h \
 		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
 		include/NetworkNode.h \
-		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
 		include/Scene.h \
@@ -673,6 +683,8 @@ moc_NetworkGraphWidget.cpp: include/NodeLabel.h \
 		include/Constants.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
+		include/NetworkNodeLabel.h \
+		include/AttributeColorDialog.h \
 		include/NetworkGraphWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/home/wouterdeveloper/Work-Related/ED/ED_Linux -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/NetworkGraphWidget.h -o moc_NetworkGraphWidget.cpp
 
@@ -793,9 +805,10 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
-		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
-		include/UndirectedEdge.h
+		include/UndirectedEdge.h \
+		include/NetworkNodeLabel.h \
+		include/AttributeColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 Arrow.o: src/Arrow.cpp include/Arrow.h \
@@ -803,6 +816,10 @@ Arrow.o: src/Arrow.cpp include/Arrow.h \
 		include/Scene.h \
 		include/Constants.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Arrow.o src/Arrow.cpp
+
+AttributeColorDialog.o: src/AttributeColorDialog.cpp include/AttributeColorDialog.h \
+		include/Constants.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributeColorDialog.o src/AttributeColorDialog.cpp
 
 AttributeDialog.o: src/AttributeDialog.cpp include/AttributeDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributeDialog.o src/AttributeDialog.cpp
@@ -838,8 +855,7 @@ DeselectableTreeViewEntities.o: src/DeselectableTreeViewEntities.cpp include/Des
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DeselectableTreeViewEntities.o src/DeselectableTreeViewEntities.cpp
 
 DirectedEdge.o: src/DirectedEdge.cpp include/DirectedEdge.h \
-		include/NetworkNode.h \
-		include/NetworkNodeLabel.h
+		include/NetworkNode.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DirectedEdge.o src/DirectedEdge.cpp
 
 EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
@@ -953,9 +969,10 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkGraphWidget.h \
 		include/NetworkNode.h \
-		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
-		include/UndirectedEdge.h
+		include/UndirectedEdge.h \
+		include/NetworkNodeLabel.h \
+		include/AttributeColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
 NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
@@ -964,20 +981,21 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
 		include/NetworkNode.h \
-		include/NetworkNodeLabel.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
 		include/Scene.h \
 		include/Arrow.h \
 		include/Constants.h \
 		include/ProgressBar.h \
-		include/SavedPlotsDialog.h
+		include/SavedPlotsDialog.h \
+		include/NetworkNodeLabel.h \
+		include/AttributeColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkGraphWidget.o src/NetworkGraphWidget.cpp
 
 NetworkNode.o: src/NetworkNode.cpp include/NetworkNode.h \
-		include/NetworkNodeLabel.h \
 		include/Arrow.h \
-		include/EventItem.h
+		include/EventItem.h \
+		include/NetworkNodeLabel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkNode.o src/NetworkNode.cpp
 
 NetworkNodeLabel.o: src/NetworkNodeLabel.cpp include/NetworkNodeLabel.h \
@@ -1045,8 +1063,7 @@ SimpleTextDialog.o: src/SimpleTextDialog.cpp include/SimpleTextDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SimpleTextDialog.o src/SimpleTextDialog.cpp
 
 UndirectedEdge.o: src/UndirectedEdge.cpp include/UndirectedEdge.h \
-		include/NetworkNode.h \
-		include/NetworkNodeLabel.h
+		include/NetworkNode.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o UndirectedEdge.o src/UndirectedEdge.cpp
 
 WelcomeDialog.o: src/WelcomeDialog.cpp include/WelcomeDialog.h \
@@ -1058,6 +1075,9 @@ ZoomableListView.o: src/ZoomableListView.cpp include/ZoomableListView.h
 
 ZoomableTableView.o: src/ZoomableTableView.cpp include/ZoomableTableView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o ZoomableTableView.o src/ZoomableTableView.cpp
+
+moc_AttributeColorDialog.o: moc_AttributeColorDialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AttributeColorDialog.o moc_AttributeColorDialog.cpp
 
 moc_AttributeDialog.o: moc_AttributeDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AttributeDialog.o moc_AttributeDialog.cpp

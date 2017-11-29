@@ -24,6 +24,7 @@
 #include "ProgressBar.h"
 #include "SavedPlotsDialog.h"
 #include "NetworkNodeLabel.h"
+#include "AttributeColorDialog.h"
 
 class NetworkGraphWidget : public QWidget {
   Q_OBJECT
@@ -35,6 +36,11 @@ public:
 
 private slots:
   void toggleGraphicsControls();
+  void toggleLegend();
+
+  void setFilterButtons(QListWidgetItem *item);
+  void activateFilter();
+  void deactivateFilter();
   
   void getEntities();
   void plotEntities();
@@ -44,6 +50,7 @@ private slots:
   void plotUndirectedEdges(QString type, QColor color);
   void getTypes();
 
+  void colorByAttribute();
   void setNodeColor();
   void setLabelColor();
   void setBackgroundColor();
@@ -51,9 +58,13 @@ private slots:
   void increaseLabelSize();
   void decreaseLabelSize();
 
+  void findChildren(QString father, QVector<QString> *children);
+
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
+
+  void exportSvg();
 
   void simpleLayout();
   void setPlotButton();
@@ -69,23 +80,34 @@ private:
   QVector<UndirectedEdge*> undirectedVector;
   QVector<NetworkNodeLabel*> labelVector;
   QPointer<QWidget> graphicsWidget;
+  QPointer<QWidget> legendWidget;
 
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
+  QPointer<QLabel> nodeLegendLabel;
+  QPointer<QLabel> edgeLegendLabel;
   
   QPointer<QComboBox> typeComboBox;
+
+  QPointer<QListWidget> nodeListWidget;
+  QPointer<QListWidget> edgeListWidget;
 
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addButton;
   QPointer<QPushButton> toggleLabelsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
+  QPointer<QPushButton> toggleLegendButton;
+  QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> nodeColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> increaseFontSizeButton;
   QPointer<QPushButton> decreaseFontSizeButton;
-
+  QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> setFilteredButton;
+  QPointer<QPushButton> unsetFilteredButton;
+  
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
