@@ -43,7 +43,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   createMenus();
 
   // Final stuff before showing the default widget (dataWidget).
-  setWindowTitle("Event Dataset");  
+  setWindowTitle("SoPrA");  
   stacked->show();
 }
 
@@ -272,6 +272,9 @@ void MainWindow::switchToDataView() {
   lw->setLinkageComment();
   DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
   dw->incidentsModel->select();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  egw->setComment();
   stacked->setCurrentWidget(dataWidget);
 }
 
@@ -285,6 +288,9 @@ void MainWindow::switchToAttributeView() {
   aw->incidentsModel->sort(1, Qt::AscendingOrder);
   aw->incidentsModel->select();
   aw->retrieveData();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  egw->setComment();
   stacked->setCurrentWidget(attributesWidget);
 }
 
@@ -298,6 +304,9 @@ void MainWindow::switchToRelationshipView() {
   rw->incidentsModel->sort(1, Qt::AscendingOrder);
   rw->incidentsModel->select();
   rw->retrieveData();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  egw->setComment();
   stacked->setCurrentWidget(relationshipsWidget);
 }
 
@@ -309,6 +318,9 @@ void MainWindow::switchToLinkageView() {
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->incidentsModel->sort(1, Qt::AscendingOrder);
   lw->incidentsModel->select();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  egw->setComment();
   stacked->setCurrentWidget(linkagesWidget);
 }
 
@@ -327,6 +339,9 @@ void MainWindow::switchToJournalView() {
   jw->tableView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
   jw->tableView->setCurrentIndex(index);
   jw->logField->setText("");
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  egw->setComment();
   stacked->setCurrentWidget(journalWidget);
 }
 
@@ -352,9 +367,8 @@ void MainWindow::switchToNetworkGraphView() {
   lw->setComments();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
-  const QModelIndex index;
-
-  
+  egw->setComment();
+  const QModelIndex index;  
   stacked->setCurrentWidget(networkGraphWidget);
 }
 

@@ -110,13 +110,16 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   connect(markButton, SIGNAL(clicked()), this, SLOT(toggleMark()));
   connect(previousMarkedButton, SIGNAL(clicked()), this, SLOT(previousMarked()));
   connect(nextMarkedButton, SIGNAL(clicked()), this, SLOT(nextMarked()));
-  connect(descriptionFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setDescriptionFilter(const QString &)));
+  connect(descriptionFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setDescriptionFilter(const QString &)));
   connect(descriptionPreviousButton, SIGNAL(clicked()), this, SLOT(previousDescription()));
   connect(descriptionNextButton, SIGNAL(clicked()), this, SLOT(nextDescription()));
-  connect(rawFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setRawFilter(const QString &)));
+  connect(rawFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setRawFilter(const QString &)));
   connect(rawPreviousButton, SIGNAL(clicked()), this, SLOT(previousRaw()));
   connect(rawNextButton, SIGNAL(clicked()), this, SLOT(nextRaw()));
-  connect(commentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentFilter(const QString &)));
+  connect(commentFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setCommentFilter(const QString &)));
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
   connect(newAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
@@ -125,13 +128,20 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
-  connect(attributeFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
+  connect(attributeFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(changeFilter(const QString &)));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
-  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
-  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
-  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(setButtons()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(getValue()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(highlightText()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
   connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));

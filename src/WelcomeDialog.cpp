@@ -18,7 +18,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEs
   welcomeLayout->addWidget(newDatabaseButton);
   welcomeLayout->addWidget(openDatabaseButton);
   welcomeLayout->addWidget(exitButton);
-  setWindowTitle("Event Dataset");
+  setWindowTitle("SoPrA (Social Process Analysis)");
   setLayout(welcomeLayout);  
 }
 

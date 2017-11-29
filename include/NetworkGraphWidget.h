@@ -41,6 +41,8 @@ private slots:
   void setFilterButtons(QListWidgetItem *item);
   void activateFilter();
   void deactivateFilter();
+  void hideType();
+  void showType();
   
   void getEntities();
   void plotEntities();
@@ -107,6 +109,8 @@ private:
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> setFilteredButton;
   QPointer<QPushButton> unsetFilteredButton;
+  QPointer<QPushButton> hideTypeButton;
+  QPointer<QPushButton> showTypeButton;
   
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;

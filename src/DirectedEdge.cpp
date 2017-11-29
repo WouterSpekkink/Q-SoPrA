@@ -17,6 +17,7 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
   relType = submittedType;
   name = submittedName;
   filtered = true;
+  massHidden = false;
 }
 
 QRectF DirectedEdge::boundingRect() const {
@@ -137,4 +138,12 @@ bool DirectedEdge::isFiltered() {
 
 void DirectedEdge::setFiltered(bool state) {
   filtered = state;
+}
+
+bool DirectedEdge::isMassHidden() {
+  return massHidden;
+}
+
+void DirectedEdge::setMassHidden(bool state) {
+  massHidden = state;
 }

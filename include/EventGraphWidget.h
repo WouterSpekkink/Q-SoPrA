@@ -34,6 +34,8 @@ public:
   ~EventGraphWidget() {};
 
 private slots:
+  void setCommentBool();
+  void setComment();
   void toggleDetails();
   void toggleGraphicsControls();
   void retrieveData();
@@ -150,8 +152,10 @@ private:
   
   int distance;
   int vectorPos;
+  int selectedIncident;
 
   bool labelsVisible;
+  bool commentBool;
 };
 
 #endif

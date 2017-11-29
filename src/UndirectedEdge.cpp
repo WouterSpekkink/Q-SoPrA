@@ -17,6 +17,7 @@ UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QSt
   relType = submittedType;
   name = submittedName;
   filtered = true;
+  massHidden = false;
 }
 
 QRectF UndirectedEdge::boundingRect() const {
@@ -152,4 +153,12 @@ bool UndirectedEdge::isFiltered() {
 
 void UndirectedEdge::setFiltered(bool state) {
   filtered = state;
+}
+
+bool UndirectedEdge::isMassHidden() {
+  return massHidden;
+}
+
+void UndirectedEdge::setMassHidden(bool state) {
+  massHidden = state;
 }

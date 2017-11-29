@@ -24,6 +24,8 @@ public:
   QString getName();
   bool isFiltered();
   void setFiltered(bool state);
+  bool isMassHidden();
+  void setMassHidden(bool state);
   
   enum {Type = UserType + 5};
   int type() const;
@@ -51,6 +53,7 @@ private:
   QString relType;
   QString name;
   bool filtered;
+  bool massHidden;
 };
 
 #endif

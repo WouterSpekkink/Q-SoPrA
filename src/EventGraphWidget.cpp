@@ -15,7 +15,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedCoder = "";
   selectedCompare = "";
   selectedType = "";
-
+  selectedIncident = 0;
+  commentBool = false;
+  
   distance = 0;
   vectorPos = 0;
 
@@ -141,6 +143,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
+  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -245,7 +248,31 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   graphicsWidget->hide();
 }
 
+void EventGraphWidget::setCommentBool() {
+  commentBool = true;
+}
+
+void EventGraphWidget::setComment() {
+  if (commentBool && selectedIncident != 0) {
+    QString comment = commentField->toPlainText();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+    query->bindValue(":incident", selectedIncident);
+    query->exec();
+    query->first();
+    int order = 0;
+    order = query->value(0).toInt();
+    query->prepare("UPDATE incidents SET comment = :comment WHERE ch_order = :order");
+    query->bindValue(":comment", comment);
+    query->bindValue(":order", order);
+    query->exec();
+    commentBool = false;
+    delete query;
+  }
+}
+
 void EventGraphWidget::toggleDetails() {
+  setComment();
   if (infoWidget->isHidden()) {
     infoWidget->show();
   } else {
@@ -262,6 +289,7 @@ void EventGraphWidget::toggleGraphicsControls() {
 }
 
 void EventGraphWidget::retrieveData() {
+  setComment();
   if (currentData.size() > 0) {
     currentData.clear();
   }
@@ -292,6 +320,7 @@ void EventGraphWidget::retrieveData() {
       currentEvent->setSelectionColor(Qt::red);
       currentEvent->update();
       int id = currentEvent->getId();
+      selectedIncident = id;
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
 		     "WHERE id = :id");
@@ -311,13 +340,14 @@ void EventGraphWidget::retrieveData() {
       delete query;
       previousEventButton->setEnabled(true);
       nextEventButton->setEnabled(true);
-
     }
   } else {
     timeStampField->clear();
     descriptionField->clear();
     rawField->clear();
+    commentField->blockSignals(true);
     commentField->clear();
+    commentField->blockSignals(false);
     sourceField->clear();
     previousEventButton->setEnabled(false);
     nextEventButton->setEnabled(false);
@@ -325,6 +355,7 @@ void EventGraphWidget::retrieveData() {
 }
 
 void EventGraphWidget::previousDataItem() {
+  setComment();
   if (vectorPos > 0) {
     EventItem *currentEvent = currentData.at(vectorPos);
     currentEvent->setSelectionColor(Qt::black);
@@ -334,6 +365,7 @@ void EventGraphWidget::previousDataItem() {
     currentEvent->setSelectionColor(Qt::red);
     currentEvent->update();
     int id = currentEvent->getId();
+    selectedIncident = id;
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
 		   "WHERE id = :id");
@@ -361,6 +393,7 @@ void EventGraphWidget::previousDataItem() {
     currentEvent->update();
     scene->update();
     int id = currentEvent->getId();
+    selectedIncident = id;
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
 		   "WHERE id = :id");
@@ -382,6 +415,7 @@ void EventGraphWidget::previousDataItem() {
 }
 
 void EventGraphWidget::nextDataItem() {
+  setComment();
   if (vectorPos != currentData.size() - 1) {
     EventItem *currentEvent = currentData.at(vectorPos);
     currentEvent->setSelectionColor(Qt::black);
@@ -391,6 +425,7 @@ void EventGraphWidget::nextDataItem() {
     currentEvent->setSelectionColor(Qt::red);
     currentEvent->update();
     int id = currentEvent->getId();
+    selectedIncident = id;
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
 		   "WHERE id = :id");
@@ -417,6 +452,7 @@ void EventGraphWidget::nextDataItem() {
     currentEvent->setSelectionColor(Qt::red);
     currentEvent->update();
     int id = currentEvent->getId();
+    selectedIncident = id;
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
 		   "WHERE id = :id");
@@ -585,6 +621,7 @@ void EventGraphWidget::cleanUp() {
   selectedType = "";
   selectedCoder = "";
   selectedCompare = "";
+  selectedIncident = 0;
 }
 
 void EventGraphWidget::increaseWidth(EventItem *item) {

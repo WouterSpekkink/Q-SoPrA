@@ -55,7 +55,7 @@ void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsItem *item = scene()->items()[i];
     NetworkNode *currentItem = qgraphicsitem_cast<NetworkNode*>(item);
     Arrow *no = qgraphicsitem_cast<Arrow*>(item);
-    if (currentItem && !(no) && item != this) {
+    if (currentItem && !(no) && item != this && item->isVisible()) {
       int dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
       if (dist <= 40) {
 	trespass = true;

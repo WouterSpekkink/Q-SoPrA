@@ -4,7 +4,7 @@
 #include "./include/EventSequenceDatabase.h"
 
 int main(int argc, char *argv[]) {
-  QApplication ED(argc, argv);
+  QApplication SoPrA(argc, argv);
   EventSequenceDatabase *esd = new EventSequenceDatabase;
   
   WelcomeDialog *welcome = new WelcomeDialog(0, esd);
@@ -15,5 +15,5 @@ int main(int argc, char *argv[]) {
   } else if (welcome->getExitStatus() == 1) {
     return 0;
   }
-  return ED.exec();
+  return SoPrA.exec();
 }

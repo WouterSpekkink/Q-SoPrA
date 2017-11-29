@@ -45,6 +45,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   unsetFilteredButton = new QPushButton(tr("Filter off"), legendWidget);
   unsetFilteredButton->setCheckable(true);
   unsetFilteredButton->setChecked(false);
+  hideTypeButton = new QPushButton(tr("Hide"), legendWidget);
+  hideTypeButton->setCheckable(true);
+  hideTypeButton->setChecked(false);
+  showTypeButton = new QPushButton(tr("Show"), legendWidget);
+  showTypeButton->setCheckable(true);
+  showTypeButton->setChecked(true);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -80,6 +86,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(setFilterButtons(QListWidgetItem *)));
   connect(setFilteredButton, SIGNAL(clicked()), this, SLOT(activateFilter()));
   connect(unsetFilteredButton, SIGNAL(clicked()), this, SLOT(deactivateFilter()));
+  connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
+  connect(showTypeButton, SIGNAL(clicked()), this, SLOT(showType()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -107,6 +115,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(edgeListWidget);
   legendLayout->addWidget(setFilteredButton);
   legendLayout->addWidget(unsetFilteredButton);
+  QPointer<QFrame> sepLine = new QFrame();
+  sepLine->setFrameShape(QFrame::HLine);
+  legendLayout->addWidget(sepLine);
+  legendLayout->addWidget(hideTypeButton);
+  legendLayout->addWidget(showTypeButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
@@ -551,15 +564,30 @@ void NetworkGraphWidget::colorByAttribute() {
   delete attributeColorDialog;
 }
 
+void NetworkGraphWidget::findChildren(QString father, QVector<QString> *children) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name FROM entity_attributes WHERE father = :father");
+  query->bindValue(":father", father);
+  query->exec();
+  while (query->next()) {
+    QString currentChild = query->value(0).toString();
+    children->push_back(currentChild);
+    findChildren(currentChild, children);
+  }
+  delete query;
+}
+
 void NetworkGraphWidget::setFilterButtons(QListWidgetItem *item) {
   QString text = item->data(Qt::DisplayRole).toString();
   QVectorIterator<DirectedEdge*> it(directedVector);
   bool filtered = false;
+  bool hidden = false;
   while (it.hasNext()) {
     DirectedEdge *current = it.next();
     QString type = current->getType();
     if (text == type) {
       filtered = current->isFiltered();
+      hidden = current->isMassHidden();
       break;
     }
   }
@@ -569,6 +597,13 @@ void NetworkGraphWidget::setFilterButtons(QListWidgetItem *item) {
   } else {
     setFilteredButton->setChecked(false);
     unsetFilteredButton->setChecked(true);
+  }
+  if (hidden) {
+    hideTypeButton->setChecked(true);
+    showTypeButton->setChecked(false);
+  } else {
+    hideTypeButton->setChecked(false);
+    showTypeButton->setChecked(true);
   }
   QVectorIterator<UndirectedEdge*> it2(undirectedVector);
   while (it2.hasNext()) {
@@ -576,6 +611,7 @@ void NetworkGraphWidget::setFilterButtons(QListWidgetItem *item) {
     QString type = current->getType();
     if (text == type) {
       filtered = current->isFiltered();
+      hidden = current->isMassHidden();
       break;
     }
   }
@@ -585,6 +621,13 @@ void NetworkGraphWidget::setFilterButtons(QListWidgetItem *item) {
   } else {
     setFilteredButton->setChecked(false);
     unsetFilteredButton->setChecked(true);
+  }
+  if (hidden) {
+    hideTypeButton->setChecked(true);
+    showTypeButton->setChecked(false);
+  } else {
+    hideTypeButton->setChecked(false);
+    showTypeButton->setChecked(true);
   }
 }
 
@@ -608,7 +651,7 @@ void NetworkGraphWidget::activateFilter() {
       current->setFiltered(true);
     }
   }
-    QVectorIterator<NetworkNode*> it3(nodeVector);
+  QVectorIterator<NetworkNode*> it3(nodeVector);
   while (it3.hasNext()) {
     NetworkNode* currentNode = it3.next();
     currentNode->hide();
@@ -620,7 +663,9 @@ void NetworkGraphWidget::activateFilter() {
     QString relationship = currentDirected->getName();
     QString type = currentDirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentDirected->isFiltered()) {
+      if (currentDirected->isMassHidden()) {
+      show = false;
+      } else if (currentDirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -660,7 +705,9 @@ void NetworkGraphWidget::activateFilter() {
     QString relationship = currentUndirected->getName();
     QString type = currentUndirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentUndirected->isFiltered()) {
+      if (currentUndirected->isMassHidden()) {
+	show = false;
+      } else if (currentUndirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -712,8 +759,7 @@ void NetworkGraphWidget::activateFilter() {
 
 void NetworkGraphWidget::deactivateFilter() {
   setFilteredButton->setChecked(false);
-  unsetFilteredButton->setChecked(true);
-  
+  unsetFilteredButton->setChecked(true);  
   QString text = edgeListWidget->currentItem()->data(Qt::DisplayRole).toString();
   QVectorIterator<DirectedEdge*> it(directedVector);
   while (it.hasNext()) {
@@ -743,7 +789,9 @@ void NetworkGraphWidget::deactivateFilter() {
     QString relationship = currentDirected->getName();
     QString type = currentDirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentDirected->isFiltered()) {
+      if (currentDirected->isMassHidden()) {
+	show = false;
+      } else if (currentDirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -783,7 +831,9 @@ void NetworkGraphWidget::deactivateFilter() {
     QString relationship = currentUndirected->getName();
     QString type = currentUndirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentUndirected->isFiltered()) {
+      if (currentUndirected->isMassHidden()) {
+	show = false;
+      } else if (currentUndirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -832,19 +882,260 @@ void NetworkGraphWidget::deactivateFilter() {
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
 }
-  
-void NetworkGraphWidget::findChildren(QString father, QVector<QString> *children) {
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name FROM entity_attributes WHERE father = :father");
-  query->bindValue(":father", father);
-  query->exec();
-  while (query->next()) {
-    QString currentChild = query->value(0).toString();
-    children->push_back(currentChild);
-    findChildren(currentChild, children);
+
+
+void NetworkGraphWidget::hideType() {
+  hideTypeButton->setChecked(true);
+  showTypeButton->setChecked(false);
+  QString text = edgeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QVectorIterator<DirectedEdge*> it(directedVector);
+  while (it.hasNext()) {
+    DirectedEdge *current = it.next();
+    QString type = current->getType();
+    if (text == type) {
+      current->setMassHidden(true);
+    }
   }
-  delete query;
+    QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  while (it2.hasNext()) {
+    UndirectedEdge *current = it2.next();
+    QString type = current->getType();
+    if (text == type) {
+      current->setMassHidden(true);
+    }
+  }
+  QVectorIterator<NetworkNode*> it3(nodeVector);
+  while (it3.hasNext()) {
+    NetworkNode* currentNode = it3.next();
+    currentNode->hide();
+  }
+  QVectorIterator<DirectedEdge*> it4(directedVector);
+  while (it4.hasNext()) {
+    bool show = false;
+    DirectedEdge *currentDirected = it4.next();
+    QString relationship = currentDirected->getName();
+    QString type = currentDirected->getType();
+    if (presentTypes.contains(type)) {
+      if (currentDirected->isMassHidden()) {
+	show = false;
+      } else if (currentDirected->isFiltered()) {
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM relationships_to_incidents "
+		       "WHERE relationship = :relationship AND type = :type");
+	query->bindValue(":relationship", relationship);
+	query->bindValue(":type", type);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
+	    show = true;
+	  }
+	  delete query2;
+	}
+	delete query;
+      } else {
+	show = true;
+      }
+    }
+    if (show) {
+      currentDirected->show();
+      currentDirected->startItem()->show();
+      currentDirected->endItem()->show();
+    } else {
+      currentDirected->hide();
+    }
+  }
+  QVectorIterator<UndirectedEdge*> it5(undirectedVector);
+  while (it5.hasNext()) {
+    bool show = false;
+    UndirectedEdge *currentUndirected = it5.next();
+    QString relationship = currentUndirected->getName();
+    QString type = currentUndirected->getType();
+    if (presentTypes.contains(type)) {
+      if (currentUndirected->isMassHidden()) {
+	show = false;
+      } else if (currentUndirected->isFiltered()) {
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM relationships_to_incidents "
+		       "WHERE relationship = :relationship AND type = :type");
+	query->bindValue(":relationship", relationship);
+	query->bindValue(":type", type);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
+	    show = true;
+	  }
+	  delete query2;
+	}
+	delete query;
+      } else {
+	show = true;
+      }
+    }
+    if (show) {
+      currentUndirected->show();
+      currentUndirected->startItem()->show();
+      currentUndirected->endItem()->show();
+    } else {
+      currentUndirected->hide();
+    }
+  }
+  QVectorIterator<NetworkNodeLabel*> it6(labelVector);
+  while (it4.hasNext()) {
+    NetworkNodeLabel *label = it6.next();
+    if (label->getNode()->isVisible() && labelsShown) {
+      label->show();
+    } else {
+      label->hide();
+    }
+  }
+  QRectF currentRect = this->scene->itemsBoundingRect();
+  currentRect.setX(currentRect.x() - 50);
+  currentRect.setY(currentRect.y() - 50);
+  currentRect.setWidth(currentRect.width() + 100);
+  currentRect.setHeight(currentRect.height() + 100);
+  scene->setSceneRect(currentRect);
 }
+
+void NetworkGraphWidget::showType() {
+  hideTypeButton->setChecked(false);
+  showTypeButton->setChecked(true);
+  QString text = edgeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QVectorIterator<DirectedEdge*> it(directedVector);
+  while (it.hasNext()) {
+    DirectedEdge *current = it.next();
+    QString type = current->getType();
+    if (text == type) {
+      current->setMassHidden(false);
+    }
+  }
+    QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  while (it2.hasNext()) {
+    UndirectedEdge *current = it2.next();
+    QString type = current->getType();
+    if (text == type) {
+      current->setMassHidden(false);
+    }
+  }
+  QVectorIterator<NetworkNode*> it3(nodeVector);
+  while (it3.hasNext()) {
+    NetworkNode* currentNode = it3.next();
+    currentNode->hide();
+  }
+  QVectorIterator<DirectedEdge*> it4(directedVector);
+  while (it4.hasNext()) {
+    bool show = false;
+    DirectedEdge *currentDirected = it4.next();
+    QString relationship = currentDirected->getName();
+    QString type = currentDirected->getType();
+    if (presentTypes.contains(type)) {
+      if (currentDirected->isMassHidden()) {
+	show = false;
+      } else if (currentDirected->isFiltered()) {
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM relationships_to_incidents "
+		       "WHERE relationship = :relationship AND type = :type");
+	query->bindValue(":relationship", relationship);
+	query->bindValue(":type", type);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
+	    show = true;
+	  }
+	  delete query2;
+	}
+	delete query;
+      } else {
+	show = true;
+      }
+    }
+    if (show) {
+      currentDirected->show();
+      currentDirected->startItem()->show();
+      currentDirected->endItem()->show();
+    } else {
+      currentDirected->hide();
+    }
+  }
+  QVectorIterator<UndirectedEdge*> it5(undirectedVector);
+  while (it5.hasNext()) {
+    bool show = false;
+    UndirectedEdge *currentUndirected = it5.next();
+    QString relationship = currentUndirected->getName();
+    QString type = currentUndirected->getType();
+    if (presentTypes.contains(type)) {
+      if (currentUndirected->isMassHidden()) {
+	show = false;
+      } else if (currentUndirected->isFiltered()) {
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM relationships_to_incidents "
+		       "WHERE relationship = :relationship AND type = :type");
+	query->bindValue(":relationship", relationship);
+	query->bindValue(":type", type);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
+	    show = true;
+	  }
+	  delete query2;
+	}
+	delete query;
+      } else {
+	show = true;
+      }
+    }
+    if (show) {
+      currentUndirected->show();
+      currentUndirected->startItem()->show();
+      currentUndirected->endItem()->show();
+    } else {
+      currentUndirected->hide();
+    }
+  }
+  QVectorIterator<NetworkNodeLabel*> it6(labelVector);
+  while (it4.hasNext()) {
+    NetworkNodeLabel *label = it6.next();
+    if (label->getNode()->isVisible() && labelsShown) {
+      label->show();
+    } else {
+      label->hide();
+    }
+  }
+  QRectF currentRect = this->scene->itemsBoundingRect();
+  currentRect.setX(currentRect.x() - 50);
+  currentRect.setY(currentRect.y() - 50);
+  currentRect.setWidth(currentRect.width() + 100);
+  currentRect.setHeight(currentRect.height() + 100);
+  scene->setSceneRect(currentRect);
+}
+
 
 void NetworkGraphWidget::setNodeColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -1070,7 +1361,9 @@ void NetworkGraphWidget::processLowerRange(int value) {
     QString relationship = currentDirected->getName();
     QString type = currentDirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentDirected->isFiltered()) {
+      if (currentDirected->isMassHidden()) {
+	show = false;
+      } else if (currentDirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -1110,7 +1403,9 @@ void NetworkGraphWidget::processLowerRange(int value) {
     QString relationship = currentUndirected->getName();
     QString type = currentUndirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentUndirected->isFiltered()) {
+      if (currentUndirected->isMassHidden()) {
+	show = false;
+      } else if (currentUndirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -1179,7 +1474,9 @@ void NetworkGraphWidget::processUpperRange(int value) {
     QString relationship = currentDirected->getName();
     QString type = currentDirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentDirected->isFiltered()) {
+      if (currentDirected->isMassHidden()) {
+	show = false;
+      } else if (currentDirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
@@ -1219,7 +1516,9 @@ void NetworkGraphWidget::processUpperRange(int value) {
     QString relationship = currentUndirected->getName();
     QString type = currentUndirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentUndirected->isFiltered()) {
+      if (currentUndirected->isMassHidden()) {
+	show = false;
+      } else if (currentUndirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT incident FROM relationships_to_incidents "
 		       "WHERE relationship = :relationship AND type = :type");
