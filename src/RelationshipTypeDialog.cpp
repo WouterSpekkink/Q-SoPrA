@@ -52,7 +52,7 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   QPointer<QHBoxLayout> optionLayout = new QHBoxLayout;
   optionLayout->addWidget(cancelCloseButton);
   optionLayout->addWidget(saveCloseButton);
-  optionLayout->setSpacing(100);
+
   mainLayout->addLayout(optionLayout);
 
   setLayout(mainLayout);

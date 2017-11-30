@@ -31,7 +31,9 @@ AttributeDialog::AttributeDialog(QWidget *parent) : QDialog(parent) {
   mainLayout->addLayout(descriptionLayout);
   QPointer<QHBoxLayout> buttonLayout = new QHBoxLayout;
   buttonLayout->addWidget(cancelCloseButton);
+  cancelCloseButton->setMaximumWidth(cancelCloseButton->sizeHint().width());
   buttonLayout->addWidget(saveCloseButton);
+  saveCloseButton->setMaximumWidth(saveCloseButton->sizeHint().width());
   mainLayout->addLayout(buttonLayout);
 
   setWindowTitle("Add/Edit attribute");

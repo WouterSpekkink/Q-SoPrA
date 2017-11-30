@@ -23,6 +23,8 @@ public:
   void setOriginalPos(qreal x, qreal y);
   int getCorrection();
   QString getName();
+  void setMode(const QString &submittedMode);
+  QString getMode();
 
   void setLabel(NetworkNodeLabel *newLabel);
   NetworkNodeLabel* getLabel();
@@ -45,6 +47,7 @@ private:
   
   QString name;
   QString description;
+  QString mode;
 };
 
 #endif

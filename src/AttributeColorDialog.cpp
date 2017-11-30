@@ -45,7 +45,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   mainLayout->addLayout(optionsLayout);
   setLayout(mainLayout);
 
-  setWindowTitle("Color by attribute");
+  setWindowTitle("Create mode");
 
   getAttributes();
 }

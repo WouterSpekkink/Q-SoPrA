@@ -13,6 +13,7 @@
 #include <math.h>
 #include <QGraphicsTextItem>
 #include <QColorDialog>
+#include <QHeaderView>
 #include "NodeLabel.h"
 #include "GraphicsView.h"
 #include "NetworkNode.h"
@@ -25,6 +26,8 @@
 #include "SavedPlotsDialog.h"
 #include "NetworkNodeLabel.h"
 #include "AttributeColorDialog.h"
+#include "MultimodeDialog.h"
+#include "DeselectableListWidget.h"
 
 class NetworkGraphWidget : public QWidget {
   Q_OBJECT
@@ -38,11 +41,14 @@ private slots:
   void toggleGraphicsControls();
   void toggleLegend();
 
-  void setFilterButtons(QListWidgetItem *item);
+  void multimodeTransformation();
+  void setFilterButtons(QTableWidgetItem *item);
+  void disableFilterButtons();
   void activateFilter();
   void deactivateFilter();
   void hideType();
   void showType();
+  void setVisibility();
   
   void getEntities();
   void plotEntities();
@@ -92,8 +98,8 @@ private:
   
   QPointer<QComboBox> typeComboBox;
 
-  QPointer<QListWidget> nodeListWidget;
-  QPointer<QListWidget> edgeListWidget;
+  QPointer<DeselectableListWidget> nodeListWidget;
+  QPointer<DeselectableListWidget> edgeListWidget;
 
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addButton;
@@ -111,6 +117,7 @@ private:
   QPointer<QPushButton> unsetFilteredButton;
   QPointer<QPushButton> hideTypeButton;
   QPointer<QPushButton> showTypeButton;
+  QPointer<QPushButton> multimodeButton;
   
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;

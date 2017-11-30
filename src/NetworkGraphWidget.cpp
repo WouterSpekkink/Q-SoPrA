@@ -17,7 +17,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   typeLabel = new QLabel(tr("Select type"), this);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
-  nodeLegendLabel = new QLabel(tr("<b>Node legend:</b>"), legendWidget);
+  nodeLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   edgeLegendLabel = new QLabel(tr("<b>Edge legend:</b>"), legendWidget);
   
   typeComboBox = new QComboBox(this);
@@ -33,7 +33,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   toggleLabelsButton->setCheckable(true);
   increaseFontSizeButton = new QPushButton(tr("+"));
   decreaseFontSizeButton = new QPushButton(tr("-"));
-  colorByAttributeButton = new QPushButton(tr("Color by attribute"), graphicsWidget);
+  colorByAttributeButton = new QPushButton(tr("Create mode"), graphicsWidget);
   nodeColorButton = new QPushButton(tr("Set node color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -42,15 +42,18 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   setFilteredButton = new QPushButton(tr("Filter on"), legendWidget);
   setFilteredButton->setCheckable(true);
   setFilteredButton->setChecked(true);
+  setFilteredButton->setEnabled(false);
   unsetFilteredButton = new QPushButton(tr("Filter off"), legendWidget);
   unsetFilteredButton->setCheckable(true);
   unsetFilteredButton->setChecked(false);
+  unsetFilteredButton->setEnabled(false);
   hideTypeButton = new QPushButton(tr("Hide"), legendWidget);
   hideTypeButton->setCheckable(true);
   hideTypeButton->setChecked(false);
   showTypeButton = new QPushButton(tr("Show"), legendWidget);
   showTypeButton->setCheckable(true);
   showTypeButton->setChecked(true);
+  multimodeButton = new QPushButton(tr("Multimode trans."), legendWidget);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -63,8 +66,24 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
   upperRangeSpinBox->setEnabled(false);
 
-  nodeListWidget = new QListWidget(legendWidget);
-  edgeListWidget = new QListWidget(legendWidget);
+  nodeListWidget = new DeselectableListWidget(legendWidget);
+  edgeListWidget = new DeselectableListWidget(legendWidget);
+
+  nodeListWidget->setColumnCount(2);
+  nodeListWidget->horizontalHeader()->hide();
+  nodeListWidget->verticalHeader()->hide();
+  nodeListWidget->setColumnWidth(1, 20);
+  nodeListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  nodeListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  nodeListWidget->setStyleSheet("QTableView {gridline-color: black}");
+  
+  edgeListWidget->setColumnCount(2);
+  edgeListWidget->horizontalHeader()->hide();
+  edgeListWidget->verticalHeader()->hide();
+  edgeListWidget->setColumnWidth(1, 20);
+  edgeListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  edgeListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  edgeListWidget->setStyleSheet("QTableView {gridline-color: black}");
   
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
@@ -82,8 +101,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
-  connect(edgeListWidget, SIGNAL(itemClicked(QListWidgetItem *)),
-	  this, SLOT(setFilterButtons(QListWidgetItem *)));
+  connect(multimodeButton, SIGNAL(clicked()), this, SLOT(multimodeTransformation()));
+  connect(edgeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
+	  this, SLOT(setFilterButtons(QTableWidgetItem *)));
+  connect(edgeListWidget, SIGNAL(noneSelected()),
+	  this, SLOT(disableFilterButtons()));
   connect(setFilteredButton, SIGNAL(clicked()), this, SLOT(activateFilter()));
   connect(unsetFilteredButton, SIGNAL(clicked()), this, SLOT(deactivateFilter()));
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
@@ -111,6 +133,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
   legendLayout->addWidget(nodeLegendLabel);
   legendLayout->addWidget(nodeListWidget);
+  legendLayout->addWidget(multimodeButton);
   legendLayout->addWidget(edgeLegendLabel);
   legendLayout->addWidget(edgeListWidget);
   legendLayout->addWidget(setFilteredButton);
@@ -359,7 +382,12 @@ void NetworkGraphWidget::getUndirectedEdges() {
 	  tempTarget = currentNode;
 	}
 	if (tempSource != NULL && tempTarget != NULL) {
-	  UndirectedEdge *currentEdge = new UndirectedEdge(tempSource, tempTarget, type, name);
+	  UndirectedEdge *currentEdge;
+	  if (tempSource->getName() < tempTarget->getName()) {
+	    currentEdge = new UndirectedEdge(tempSource, tempTarget, type, name);
+	  } else {
+	    currentEdge = new UndirectedEdge(tempTarget, tempSource, type, name);
+	  }
 	  currentEdge->hide();
 	  undirectedVector.push_back(currentEdge);
 	  break;
@@ -382,12 +410,18 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
 	UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it2.peekNext());
 	if (directed) {
 	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
-	  int newHeight = current->getHeight() + 60;
-	  currentEdge->setHeight(newHeight);
+	  if (current->startItem() == currentEdge->startItem() &&
+	      current->endItem() == currentEdge->endItem()) {
+	    int newHeight = current->getHeight() + 60;
+	    currentEdge->setHeight(newHeight);
+	  }
 	} else if (undirected) {
 	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
-	  int newHeight = current->getHeight() + 60;
-	  currentEdge->setHeight(newHeight);
+	  if (current->startItem() == currentEdge->startItem() &&
+	      current->endItem() == currentEdge->endItem()) {
+	    int newHeight = current->getHeight() + 60;
+	    currentEdge->setHeight(newHeight);
+	  }
 	} else {
 	  it2.next();
 	}
@@ -419,12 +453,18 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
 	UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it2.peekNext());
 	if (directed) {
 	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
-	  int newHeight = current->getHeight() + 60;
-	  currentEdge->setHeight(newHeight);
+	  if (current->startItem() == currentEdge->startItem() &&
+	      current->endItem() == currentEdge->endItem()) {
+	    int newHeight = current->getHeight() + 60;
+	    currentEdge->setHeight(newHeight);
+	  }
 	} else if (undirected) {
 	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
-	  int newHeight = current->getHeight() + 60;
-	  currentEdge->setHeight(newHeight);
+	  if (current->startItem() == currentEdge->startItem() &&
+	      current->endItem() == currentEdge->endItem()) {
+	    int newHeight = current->getHeight() + 60;
+	    currentEdge->setHeight(newHeight);
+	  }
 	} else {
 	  it2.next();
 	}
@@ -518,25 +558,6 @@ void NetworkGraphWidget::colorByAttribute() {
     query->exec();
     query->first();
     QString description = query->value(0).toString();
-    bool found = false;
-    for (int i = 0; i < nodeListWidget->count(); i++) {
-      if (nodeListWidget->item(i)->data(Qt::DisplayRole) == attribute) {
-	found = true;
-	QListWidgetItem *item = nodeListWidget->item(i);
-	item->setForeground(color);
-       	QString toolTip = "<FONT SIZE = 3>" + description + "</FONT SIZE>";
-	item->setToolTip(toolTip);
-	break;
-      }
-    }
-    if (!found) {
-      QListWidgetItem *item = new QListWidgetItem;
-      item->setForeground(color);
-      item->setText(attribute);
-      QString toolTip = "<FONT SIZE = 3>" + description + "</FONT SIZE>";
-      item->setToolTip(toolTip);
-      nodeListWidget->addItem(item);
-    }
     QVector<QString> attributeVector;
     attributeVector.push_back(attribute);
     findChildren(attribute, &attributeVector);
@@ -554,10 +575,37 @@ void NetworkGraphWidget::colorByAttribute() {
 	  NetworkNode* currentNode = it2.next();
 	  if (currentNode->getName() == currentName) {
 	    currentNode->setColor(color);
+	    currentNode->setMode(attribute);
 	    currentNode->getLabel()->setDefaultTextColor(textColor);
 	  }
 	}
       }
+    }
+    bool found = false;
+    for (int i = 0; i < nodeListWidget->rowCount(); i++) {
+      if (nodeListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) {
+	found = true;
+	QTableWidgetItem *item = nodeListWidget->item(i,0);
+	QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+	item->setToolTip(toolTip);
+	nodeListWidget->item(i, 1)->setBackground(color);
+	break;
+      }
+    }
+    if (!found) {
+      QTableWidgetItem *item = new QTableWidgetItem(attribute);
+      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+      QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+      item->setToolTip(toolTip);
+      item->setData(Qt::DisplayRole, attribute);
+      nodeListWidget->setRowCount(nodeListWidget->rowCount() + 1);
+      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
+      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
+      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
+      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
+	setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
+		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
     }
     delete query;
   }
@@ -577,8 +625,274 @@ void NetworkGraphWidget::findChildren(QString father, QVector<QString> *children
   delete query;
 }
 
-void NetworkGraphWidget::setFilterButtons(QListWidgetItem *item) {
+void NetworkGraphWidget::multimodeTransformation() {
+  QVector<QString> modeVector;
+  for (int i = 0; i != nodeListWidget->rowCount(); i++) {
+    QString currentMode = nodeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    bool found = false;
+    QVectorIterator<NetworkNode*> mit(nodeVector);
+    while (mit.hasNext()) {
+      NetworkNode* currentNode = mit.next();
+      if (currentNode->isVisible() && currentNode->getMode() == currentMode) {
+	found = true;
+      }
+    }
+    if (found) {
+      modeVector.push_back(currentMode);
+    }
+  }
+  QPointer<MultimodeDialog> multimodeDialog = new MultimodeDialog(this, &directedVector,
+								  &undirectedVector);
+  multimodeDialog->setModes(modeVector);
+  multimodeDialog->exec();
+  if (multimodeDialog->getExitStatus() == 0) {
+    QString modeOne = multimodeDialog->getModeOne();
+    QString modeTwo = multimodeDialog->getModeTwo();
+    QString relationship = multimodeDialog->getRelationship();
+    QString name = multimodeDialog->getName();
+    for (int i = 0; i != edgeListWidget->rowCount(); i++) {
+      QString currentRel = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+      if (currentRel ==  name) {
+	QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	warningBox->addButton(QMessageBox::Ok);
+	warningBox->setIcon(QMessageBox::Warning);
+	warningBox->setText("Name already exists.");
+	warningBox->setInformativeText("You already have a relationship type with that name.");
+	warningBox->exec();
+	delete warningBox;
+	return;
+      }
+    }
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    QColor color = QColor(Qt::black);
+    if (colorDialog->exec()) {
+      color = colorDialog->selectedColor();
+    } else {
+      delete colorDialog;
+      return;
+    }
+    delete colorDialog;    
+    QString description = multimodeDialog->getDescription();
+
+    QVectorIterator<DirectedEdge*> it(directedVector);
+    while (it.hasNext()) {
+      DirectedEdge *first = it.next();
+      if (first->getType() == relationship) {
+	if (first->startItem()->getMode() == modeOne &&
+	    first->endItem()->getMode() == modeTwo) {
+	  QVectorIterator<DirectedEdge*> it2(directedVector);
+	  while (it2.hasNext()) {
+	    DirectedEdge *second = it2.next();
+	    if (second->getType() == relationship) {
+	      if (second->endItem() == first->endItem() &&
+		  second->startItem() != first->startItem() &&
+		  second->startItem()->getMode() == modeOne &&
+		  second->endItem()->getMode() == modeTwo &&
+		  first->startItem()->isVisible() &&
+		  first->endItem()->isVisible() &&
+		  second->startItem()->isVisible() &&
+		  second->endItem()->isVisible()) {
+		UndirectedEdge *newEdge;
+		if (first->startItem()->getName() < second->startItem()->getName()) {
+		   newEdge = new UndirectedEdge(first->startItem(),
+						second->startItem(),
+						name, "MM");
+		} else {
+		  newEdge = new UndirectedEdge(second->startItem(),
+					       first->startItem(),
+					       name, "MM");
+		}
+		bool found = false;
+		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		while (it3.hasNext()) {
+		  UndirectedEdge* alter = it3.next();
+		  if (alter->getType() == name) {
+		    if ((alter->startItem() == newEdge->startItem() &&
+			 alter->endItem() == newEdge->endItem()) ||
+			(alter->startItem() == newEdge->endItem() &&
+			 alter->endItem() == newEdge->startItem())) {
+		      found = true;
+		    }
+		  }
+		}
+		if (!found) {
+		  undirectedVector.push_back(newEdge);
+		}
+	      }
+	    }
+	  }
+	} else if (first->startItem()->getMode() == modeTwo &&
+		    first->endItem()->getMode() == modeOne) {
+	  QVectorIterator<DirectedEdge*> it2(directedVector);
+	  while (it2.hasNext()) {
+	    DirectedEdge *second = it2.next();
+	    if (second->getType() == relationship) {
+	      if (second->startItem() == first->startItem() &&
+		  second->endItem() != first->endItem() &&
+		  second->endItem()->getMode() == modeOne &&
+		  second->startItem()->getMode() == modeTwo &&
+		  first->startItem()->isVisible() &&
+		  first->endItem()->isVisible() &&
+		  second->startItem()->isVisible() &&
+		  second->endItem()->isVisible()) {
+		UndirectedEdge *newEdge;
+		if (first->endItem()->getName() < second->endItem()->getName()) {
+		  newEdge = new UndirectedEdge(first->endItem(),
+					       second->endItem(),
+					       name, "MM");
+		} else {
+		  newEdge = new UndirectedEdge(second->endItem(),
+					       first->endItem(),
+					       name, "MM");
+		}
+		bool found = false;
+		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		while (it3.hasNext()) {
+		  UndirectedEdge* alter = it3.next();
+		  if (alter->getType() == name) {
+		    if ((alter->startItem() == newEdge->startItem() &&
+			 alter->endItem() == newEdge->endItem()) ||
+			(alter->startItem() == newEdge->endItem() &&
+			 alter->endItem() == newEdge->startItem())) {
+		      found = true;
+		    }
+		  }
+		}
+		if (!found) {
+		  undirectedVector.push_back(newEdge);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+    while (it3.hasNext()) {
+      UndirectedEdge *first = it3.next();
+      if (first->getType() == relationship) {
+	if (first->startItem()->getMode() == modeOne &&
+	    first->endItem()->getMode() == modeTwo) {
+	  QVectorIterator<UndirectedEdge*> it4(undirectedVector);
+	  while (it4.hasNext()) {
+	    UndirectedEdge *second = it4.next();
+	    if (second->getType() == relationship) {
+	      if (second->endItem() == first->endItem() &&
+		  second->startItem() != first->startItem() &&
+		  second->startItem()->getMode() == modeOne &&
+		  second->endItem()->getMode() == modeTwo &&
+		  first->startItem()->isVisible() &&
+		  first->endItem()->isVisible() &&
+		  second->startItem()->isVisible() &&
+		  second->endItem()->isVisible()) {
+		UndirectedEdge *newEdge;
+		if (first->startItem()->getName() < second->startItem()->getName()) {
+		  newEdge = new UndirectedEdge(first->startItem(),
+					       second->startItem(),
+					       name, "MM");
+		} else {
+		  newEdge = new UndirectedEdge(second->startItem(),
+					       first->startItem(),
+					       name, "MM");
+		}
+		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		bool found = false;
+		while (it3.hasNext()) {
+		  UndirectedEdge *alter = it3.next();
+		  if (alter->getType() == name) {
+		    if ((alter->startItem() == newEdge->startItem() &&
+			 alter->endItem() == newEdge->endItem()) ||
+			(alter->startItem() == newEdge->endItem() &&
+			 alter->endItem() == newEdge->startItem())) {
+		      found = true;
+		    }
+		  }
+		}
+		if (!found) {
+		  undirectedVector.push_back(newEdge);
+		}
+	      }
+	    }
+	  }
+	} else if (first->startItem()->getMode() == modeTwo &&
+		   first->endItem()->getMode() == modeOne) {
+	  QVectorIterator<UndirectedEdge*> it4(undirectedVector);
+	  while (it4.hasNext()) {
+	    UndirectedEdge *second = it4.next();
+	    if (second->getType() == relationship) {
+	      if (second->endItem() == first->endItem() &&
+		  second->startItem() != first->startItem() &&
+		  second->endItem()->getMode() == modeOne &&
+		  second->startItem()->getMode() == modeTwo &&
+		first->startItem()->isVisible() &&
+		  first->endItem()->isVisible() &&
+		  second->startItem()->isVisible() &&
+		  second->endItem()->isVisible()) {
+		UndirectedEdge *newEdge;
+		if (first->endItem()->getName() < second->endItem()->getName()) {
+		  newEdge = new UndirectedEdge(first->endItem(),
+					       second->endItem(),
+					       name, "MM");
+		} else {
+		  newEdge = new UndirectedEdge(second->endItem(),
+					       first->endItem(),
+					       name, "MM");
+		}
+		bool found = false;
+		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		while (it3.hasNext()) {
+		  UndirectedEdge* alter = it3.next();
+		  if (alter->getType() == name) {
+		    if ((alter->startItem() == newEdge->startItem() &&
+			 alter->endItem() == newEdge->endItem()) ||
+			(alter->startItem() == newEdge->endItem() &&
+			 alter->endItem() == newEdge->startItem())) {
+		      found = true;
+		    }
+		  }
+		}
+		if (!found) {
+		  undirectedVector.push_back(newEdge);
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    presentTypes.push_back(name);
+    plotDirectedEdges(name, color);
+    plotUndirectedEdges(name, color);
+    QTableWidgetItem *item = new QTableWidgetItem(selectedType);
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    QString toolTip = "<FONT SIZE = 3>" + name + " (Undirected) - " + description + "</FONT>";
+    item->setToolTip(toolTip);
+    item->setData(Qt::DisplayRole, name);
+    edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
+    edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 0, item);
+    edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+    edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->setBackground(color);
+    edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
+      setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags()
+	       ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  }
+}
+
+void NetworkGraphWidget::setFilterButtons(QTableWidgetItem *item) {
   QString text = item->data(Qt::DisplayRole).toString();
+  if (text != "") {
+    setFilteredButton->setEnabled(true);
+    unsetFilteredButton->setEnabled(true);
+    hideTypeButton->setEnabled(true);
+    showTypeButton->setEnabled(true);
+  } else {
+    setFilteredButton->setEnabled(false);
+    unsetFilteredButton->setEnabled(false);
+    hideTypeButton->setEnabled(false);
+    showTypeButton->setEnabled(false);
+    return;
+  }
+  QBrush brush = item->foreground();
   QVectorIterator<DirectedEdge*> it(directedVector);
   bool filtered = false;
   bool hidden = false;
@@ -629,6 +943,13 @@ void NetworkGraphWidget::setFilterButtons(QListWidgetItem *item) {
     hideTypeButton->setChecked(false);
     showTypeButton->setChecked(true);
   }
+}
+
+void NetworkGraphWidget::disableFilterButtons() {
+  setFilteredButton->setEnabled(false);
+  unsetFilteredButton->setEnabled(false);
+  hideTypeButton->setEnabled(false);
+  showTypeButton->setEnabled(false);
 }
 
 void NetworkGraphWidget::activateFilter() {
@@ -777,117 +1098,14 @@ void NetworkGraphWidget::deactivateFilter() {
       current->setFiltered(false);
     }
   }
-  QVectorIterator<NetworkNode*> it3(nodeVector);
-  while (it3.hasNext()) {
-    NetworkNode* currentNode = it3.next();
-    currentNode->hide();
-  }
-  QVectorIterator<DirectedEdge*> it4(directedVector);
-  while (it4.hasNext()) {
-    bool show = false;
-    DirectedEdge *currentDirected = it4.next();
-    QString relationship = currentDirected->getName();
-    QString type = currentDirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentDirected->isMassHidden()) {
-	show = false;
-      } else if (currentDirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentDirected->show();
-      currentDirected->startItem()->show();
-      currentDirected->endItem()->show();
-    } else {
-      currentDirected->hide();
-    }
-  }
-  QVectorIterator<UndirectedEdge*> it5(undirectedVector);
-  while (it5.hasNext()) {
-    bool show = false;
-    UndirectedEdge *currentUndirected = it5.next();
-    QString relationship = currentUndirected->getName();
-    QString type = currentUndirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentUndirected->isMassHidden()) {
-	show = false;
-      } else if (currentUndirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentUndirected->show();
-      currentUndirected->startItem()->show();
-      currentUndirected->endItem()->show();
-    } else {
-      currentUndirected->hide();
-    }
-  }
-  QVectorIterator<NetworkNodeLabel*> it6(labelVector);
-  while (it4.hasNext()) {
-    NetworkNodeLabel *label = it6.next();
-    if (label->getNode()->isVisible() && labelsShown) {
-      label->show();
-    } else {
-      label->hide();
-    }
-  }
-  QRectF currentRect = this->scene->itemsBoundingRect();
-  currentRect.setX(currentRect.x() - 50);
-  currentRect.setY(currentRect.y() - 50);
-  currentRect.setWidth(currentRect.width() + 100);
-  currentRect.setHeight(currentRect.height() + 100);
-  scene->setSceneRect(currentRect);
+  setVisibility();
 }
-
 
 void NetworkGraphWidget::hideType() {
   hideTypeButton->setChecked(true);
   showTypeButton->setChecked(false);
   QString text = edgeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  edgeListWidget->currentItem()->setBackground(Qt::gray);
   QVectorIterator<DirectedEdge*> it(directedVector);
   while (it.hasNext()) {
     DirectedEdge *current = it.next();
@@ -896,7 +1114,7 @@ void NetworkGraphWidget::hideType() {
       current->setMassHidden(true);
     }
   }
-    QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
   while (it2.hasNext()) {
     UndirectedEdge *current = it2.next();
     QString type = current->getType();
@@ -904,116 +1122,14 @@ void NetworkGraphWidget::hideType() {
       current->setMassHidden(true);
     }
   }
-  QVectorIterator<NetworkNode*> it3(nodeVector);
-  while (it3.hasNext()) {
-    NetworkNode* currentNode = it3.next();
-    currentNode->hide();
-  }
-  QVectorIterator<DirectedEdge*> it4(directedVector);
-  while (it4.hasNext()) {
-    bool show = false;
-    DirectedEdge *currentDirected = it4.next();
-    QString relationship = currentDirected->getName();
-    QString type = currentDirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentDirected->isMassHidden()) {
-	show = false;
-      } else if (currentDirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentDirected->show();
-      currentDirected->startItem()->show();
-      currentDirected->endItem()->show();
-    } else {
-      currentDirected->hide();
-    }
-  }
-  QVectorIterator<UndirectedEdge*> it5(undirectedVector);
-  while (it5.hasNext()) {
-    bool show = false;
-    UndirectedEdge *currentUndirected = it5.next();
-    QString relationship = currentUndirected->getName();
-    QString type = currentUndirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentUndirected->isMassHidden()) {
-	show = false;
-      } else if (currentUndirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentUndirected->show();
-      currentUndirected->startItem()->show();
-      currentUndirected->endItem()->show();
-    } else {
-      currentUndirected->hide();
-    }
-  }
-  QVectorIterator<NetworkNodeLabel*> it6(labelVector);
-  while (it4.hasNext()) {
-    NetworkNodeLabel *label = it6.next();
-    if (label->getNode()->isVisible() && labelsShown) {
-      label->show();
-    } else {
-      label->hide();
-    }
-  }
-  QRectF currentRect = this->scene->itemsBoundingRect();
-  currentRect.setX(currentRect.x() - 50);
-  currentRect.setY(currentRect.y() - 50);
-  currentRect.setWidth(currentRect.width() + 100);
-  currentRect.setHeight(currentRect.height() + 100);
-  scene->setSceneRect(currentRect);
+  setVisibility();
 }
 
 void NetworkGraphWidget::showType() {
   hideTypeButton->setChecked(false);
   showTypeButton->setChecked(true);
   QString text = edgeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  edgeListWidget->currentItem()->setBackground(Qt::transparent);
   QVectorIterator<DirectedEdge*> it(directedVector);
   while (it.hasNext()) {
     DirectedEdge *current = it.next();
@@ -1022,7 +1138,7 @@ void NetworkGraphWidget::showType() {
       current->setMassHidden(false);
     }
   }
-    QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
   while (it2.hasNext()) {
     UndirectedEdge *current = it2.next();
     QString type = current->getType();
@@ -1030,112 +1146,8 @@ void NetworkGraphWidget::showType() {
       current->setMassHidden(false);
     }
   }
-  QVectorIterator<NetworkNode*> it3(nodeVector);
-  while (it3.hasNext()) {
-    NetworkNode* currentNode = it3.next();
-    currentNode->hide();
-  }
-  QVectorIterator<DirectedEdge*> it4(directedVector);
-  while (it4.hasNext()) {
-    bool show = false;
-    DirectedEdge *currentDirected = it4.next();
-    QString relationship = currentDirected->getName();
-    QString type = currentDirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentDirected->isMassHidden()) {
-	show = false;
-      } else if (currentDirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentDirected->show();
-      currentDirected->startItem()->show();
-      currentDirected->endItem()->show();
-    } else {
-      currentDirected->hide();
-    }
-  }
-  QVectorIterator<UndirectedEdge*> it5(undirectedVector);
-  while (it5.hasNext()) {
-    bool show = false;
-    UndirectedEdge *currentUndirected = it5.next();
-    QString relationship = currentUndirected->getName();
-    QString type = currentUndirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentUndirected->isMassHidden()) {
-	show = false;
-      } else if (currentUndirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentUndirected->show();
-      currentUndirected->startItem()->show();
-      currentUndirected->endItem()->show();
-    } else {
-      currentUndirected->hide();
-    }
-  }
-  QVectorIterator<NetworkNodeLabel*> it6(labelVector);
-  while (it4.hasNext()) {
-    NetworkNodeLabel *label = it6.next();
-    if (label->getNode()->isVisible() && labelsShown) {
-      label->show();
-    } else {
-      label->hide();
-    }
-  }
-  QRectF currentRect = this->scene->itemsBoundingRect();
-  currentRect.setX(currentRect.x() - 50);
-  currentRect.setY(currentRect.y() - 50);
-  currentRect.setWidth(currentRect.width() + 100);
-  currentRect.setHeight(currentRect.height() + 100);
-  scene->setSceneRect(currentRect);
+  setVisibility();
 }
-
 
 void NetworkGraphWidget::setNodeColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -1207,6 +1219,8 @@ void NetworkGraphWidget::plotNewGraph() {
   colorDialog->setCurrentColor(color);
   if (colorDialog->exec()) {
     color = colorDialog->selectedColor();
+  } else {
+    return;
   }
   delete colorDialog;
   plotDirectedEdges(selectedType, color);
@@ -1223,12 +1237,19 @@ void NetworkGraphWidget::plotNewGraph() {
   query->first();
   QString directedness = query->value(0).toString();
   QString description = query->value(1).toString();
-  QString toolTip = "<FONT SIZE = 3>" + directedness + " - " + description + "</FONT SIZE>";
-  QListWidgetItem *item = new QListWidgetItem;
-  item->setForeground(color);
-  item->setText(selectedType);
+  QString toolTip = "<FONT SIZE = 3>" + selectedType + " (" + directedness + ") - " +
+    description + "</FONT SIZE>";
+  QTableWidgetItem *item = new QTableWidgetItem(selectedType);
+  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
   item->setToolTip(toolTip);
-  edgeListWidget->addItem(item);
+  item->setData(Qt::DisplayRole, selectedType);
+  edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
+  edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 0, item);
+  edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+  edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->setBackground(color);
+  edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
+    setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags() ^ Qt::ItemIsEditable ^
+	     Qt::ItemIsSelectable);
   delete query;
   //  savePlotButton->setEnabled(true);
   //setRangeControls();
@@ -1263,12 +1284,19 @@ void NetworkGraphWidget::addRelationshipType() {
   query->first();
   QString directedness = query->value(0).toString();
   QString description = query->value(1).toString();
-  QString toolTip = "<FONT SIZE = 3>" + directedness + " - " + description + "</FONT SIZE>";
-  QListWidgetItem *item = new QListWidgetItem;
-  item->setForeground(color);
-  item->setText(selectedType);
+  QString toolTip = "<FONT SIZE = 3>" + selectedType + " (" + directedness + ") - " + description
+    + "</FONT SIZE>";
+  QTableWidgetItem *item = new QTableWidgetItem(selectedType);
+  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
   item->setToolTip(toolTip);
-  edgeListWidget->addItem(item);
+  item->setData(Qt::DisplayRole, selectedType);
+  edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
+  edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 0, item);
+  edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+  edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->setBackground(color);
+  edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
+    setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags() ^ Qt::ItemIsEditable ^
+	     Qt::ItemIsSelectable);
   delete query;
   addButton->setEnabled(false);
 }
@@ -1349,110 +1377,7 @@ void NetworkGraphWidget::processLowerRange(int value) {
     upperRangeDial->setValue(value + 1);
     upperRangeSpinBox->setValue(value + 1);
   }
-  QVectorIterator<NetworkNode*> it(nodeVector);
-  while (it.hasNext()) {
-    NetworkNode* currentNode = it.next();
-    currentNode->hide();
-  }
-  QVectorIterator<DirectedEdge*> it2(directedVector);
-  while (it2.hasNext()) {
-    bool show = false;
-    DirectedEdge *currentDirected = it2.next();
-    QString relationship = currentDirected->getName();
-    QString type = currentDirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentDirected->isMassHidden()) {
-	show = false;
-      } else if (currentDirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    } 
-    if (show) {
-      currentDirected->show();
-      currentDirected->startItem()->show();
-      currentDirected->endItem()->show();
-    } else {
-      currentDirected->hide();
-    }
-  }
-  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
-  while (it3.hasNext()) {
-    bool show = false;
-    UndirectedEdge *currentUndirected = it3.next();
-    QString relationship = currentUndirected->getName();
-    QString type = currentUndirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentUndirected->isMassHidden()) {
-	show = false;
-      } else if (currentUndirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentUndirected->show();
-      currentUndirected->startItem()->show();
-      currentUndirected->endItem()->show();
-    } else {
-      currentUndirected->hide();
-    }
-  }
-  QVectorIterator<NetworkNodeLabel*> it4(labelVector);
-  while (it4.hasNext()) {
-    NetworkNodeLabel *label = it4.next();
-    if (label->getNode()->isVisible() && labelsShown) {
-      label->show();
-    } else {
-      label->hide();
-    }
-  }  
-  QRectF currentRect = this->scene->itemsBoundingRect();
-  currentRect.setX(currentRect.x() - 50);
-  currentRect.setY(currentRect.y() - 50);
-  currentRect.setWidth(currentRect.width() + 100);
-  currentRect.setHeight(currentRect.height() + 100);
-  scene->setSceneRect(currentRect);
+  setVisibility();
 }
 
 void NetworkGraphWidget::processUpperRange(int value) {
@@ -1462,7 +1387,11 @@ void NetworkGraphWidget::processUpperRange(int value) {
     lowerRangeDial->setValue(value - 1);
     lowerRangeSpinBox->setValue(value - 1);
   }
-  QVectorIterator<NetworkNode*> it(nodeVector);
+  setVisibility();
+}
+
+void NetworkGraphWidget::setVisibility() {
+ QVectorIterator<NetworkNode*> it(nodeVector);
   while (it.hasNext()) {
     NetworkNode* currentNode = it.next();
     currentNode->hide();
@@ -1474,7 +1403,9 @@ void NetworkGraphWidget::processUpperRange(int value) {
     QString relationship = currentDirected->getName();
     QString type = currentDirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentDirected->isMassHidden()) {
+      if (currentDirected->getName() == "MM" && !(currentDirected->isMassHidden())) {
+	show = true;
+      } else if (currentDirected->isMassHidden()) {
 	show = false;
       } else if (currentDirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
@@ -1516,7 +1447,9 @@ void NetworkGraphWidget::processUpperRange(int value) {
     QString relationship = currentUndirected->getName();
     QString type = currentUndirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentUndirected->isMassHidden()) {
+      if (currentUndirected->getName() == "MM" && !(currentUndirected->isMassHidden())) {
+	show = true;
+      } else if (currentUndirected->isMassHidden()) {
 	show = false;
       } else if (currentUndirected->isFiltered()) {
 	QSqlQuery *query = new QSqlQuery;
@@ -1578,11 +1511,9 @@ void NetworkGraphWidget::cleanUp() {
   nodeVector.clear();
   qDeleteAll(labelVector);
   labelVector.clear();
-  nodeListWidget->clear();
-  edgeListWidget->clear();
-  selectedType = "";
+  nodeListWidget->setRowCount(0);
+  edgeListWidget->setRowCount(0);
   presentTypes.clear();
   minOrder = 0;
   maxOrder = 0;
 }
-

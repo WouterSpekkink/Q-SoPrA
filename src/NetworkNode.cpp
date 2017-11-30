@@ -19,6 +19,7 @@ NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : 
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   originalPos = QPointF(0, 0);
   previousPos = originalPos;
+  mode = "";
 }
 
 /*
@@ -135,3 +136,12 @@ void NetworkNode::setLabel(NetworkNodeLabel *newLabel) {
 NetworkNodeLabel* NetworkNode::getLabel() {
   return label;
 }
+
+void NetworkNode::setMode(const QString &submittedMode) {
+  mode = submittedMode;
+}
+
+QString NetworkNode::getMode() {
+  return mode;
+}
+

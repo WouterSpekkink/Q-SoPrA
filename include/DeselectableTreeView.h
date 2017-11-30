@@ -3,7 +3,6 @@
 
 #include <QTreeView>
 #include <QMouseEvent>
-#include <QDebug>
 #include <QSqlQuery>
 #include <QStandardItem>
 
