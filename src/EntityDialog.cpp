@@ -29,6 +29,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   attributesTreeView->setExpandsOnDoubleClick(false);
   attributesTreeView->header()->setStretchLastSection(false);
   attributesTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  attributesTreeView->installEventFilter(this);
   
   treeFilter = new AttributeTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -74,7 +75,9 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
-  connect(attributesTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getValue()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(getValue()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
@@ -167,7 +170,9 @@ void EntityDialog::getValue() {
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     if (isNew) {
-      query->prepare("SELECT attribute, value FROM attributes_to_entities WHERE attribute =:att AND new = 1");
+      query->prepare("SELECT attribute, value FROM "
+		     "attributes_to_entities "
+		     "WHERE attribute =:att AND new = 1");
       query->bindValue(":att", attribute);
       query->exec();
       query->first();
@@ -326,7 +331,7 @@ void EntityDialog::addAttribute() {
     QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this);
+    attributeDialog = new AttributeDialog(this, ENTITY);
     attributeDialog->exec();
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
@@ -351,7 +356,7 @@ void EntityDialog::addAttribute() {
   } else {
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this);
+    attributeDialog = new AttributeDialog(this, ENTITY);
     attributeDialog->exec();
     
     if (attributeDialog->getExitStatus() == 0) {
@@ -386,7 +391,7 @@ void EntityDialog::editAttribute() {
     query->exec();
     query->first();
     QString description = query->value(0).toString();
-    attributeDialog = new AttributeDialog(this);
+    attributeDialog = new AttributeDialog(this, ENTITY);
     attributeDialog->submitName(name);
     attributeDialog->setDescription(description);
     attributeDialog->exec();
@@ -439,6 +444,7 @@ void EntityDialog::removeUnusedAttributes() {
   }
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
+  delete attributesTree;
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -492,13 +498,13 @@ void EntityDialog::setTree() {
     buildHierarchy(father, name);
   }
   if (isNew == false) {
-    query->exec("SELECT attribute, entity FROM attributes_to_entities");
+    query->prepare("SELECT attribute FROM attributes_to_entities "
+		"WHERE entity = :name");
+    query->bindValue(":name", oldName);
+    query->exec();
     while (query->next()) {
       QString attribute = query->value(0).toString();
-      QString entity = query->value(1).toString();
-      if (entity == oldName) {
-	boldSelected(attributesTree, attribute);
-      }
+      boldSelected(attributesTree, attribute);
     }
   }
   treeFilter->setSourceModel(attributesTree);
@@ -618,15 +624,34 @@ void EntityDialog::boldSelected(QAbstractItemModel *model, QString name, QModelI
     QString currentName = model->data(index).toString();
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
     QFont font;
+    font.setBold(true);
+    QFont font2;
+    font2.setItalic(true);
+    QFont font3;
+    font3.setBold(true);
+    font3.setItalic(true);
     if (name == currentName) {
-      font.setBold(true);
-      currentAttribute->setFont(font);
+      if (currentAttribute->font().italic()) {
+	currentAttribute->setFont(font3);
+      } else {
+	currentAttribute->setFont(font);
+      }
       if (currentAttribute->parent()) {
-	font.setBold(false);
-        font.setItalic(true);
 	while (currentAttribute->parent()) {
           currentAttribute = currentAttribute->parent();
-          currentAttribute->setFont(font);      
+	  QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT attribute, entity FROM attributes_to_entities "
+			 "WHERE attribute = :attribute AND entity = :entity");
+	  query->bindValue(":attribute", parentName);
+	  query->bindValue(":entity", oldName);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0)) {
+	    currentAttribute->setFont(font2);      
+	  } else {
+	    currentAttribute->setFont(font3);
+	  }
         }
       }
     }

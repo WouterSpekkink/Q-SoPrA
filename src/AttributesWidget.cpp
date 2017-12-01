@@ -648,7 +648,7 @@ void AttributesWidget::newAttribute() {
     QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this);
+    attributeDialog = new AttributeDialog(this, INCIDENT);
     attributeDialog->exec();
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
@@ -674,7 +674,7 @@ void AttributesWidget::newAttribute() {
   } else {
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this);
+    attributeDialog = new AttributeDialog(this, INCIDENT);
     attributeDialog->exec();
     
     if (attributeDialog->getExitStatus() == 0) {
@@ -710,7 +710,7 @@ void AttributesWidget::editAttribute() {
     query->exec();
     query->first();
     QString description = query->value(0).toString();
-    attributeDialog = new AttributeDialog(this);
+    attributeDialog = new AttributeDialog(this, INCIDENT);
     attributeDialog->submitName(name);
     attributeDialog->setDescription(description);
     attributeDialog->exec();

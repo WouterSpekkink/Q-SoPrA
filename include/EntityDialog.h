@@ -71,7 +71,7 @@ private:
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
 
-  QPointer<QPushButton> valueButton;
+  QPointer<QPushButton> valueButton; 
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> addAttributeButton;

@@ -278,14 +278,22 @@ void MultimodeDialog::saveAndClose() {
     delete warningBox;
     return;
   }
-  bool empty = false;
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name FROM relationship_types WHERE name = :name");
-  query->bindValue(":name", name);
-  query->exec();
-  query->first();
-  empty = query->isNull(0);
-  if (!empty) {
+  bool found = false;
+  QVectorIterator<DirectedEdge*> it(*pDirected);
+  while (it.hasNext()) {
+    DirectedEdge* directed = it.next();
+    if (directed->getType() == name) {
+      found = true;
+    }
+  }
+  QVectorIterator<UndirectedEdge*> it2(*pUndirected);
+  while (it2.hasNext()) {
+    UndirectedEdge* undirected = it2.next();
+    if (undirected->getType() == name) {
+      found = true;
+    }
+  }
+  if (found) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
@@ -295,7 +303,6 @@ void MultimodeDialog::saveAndClose() {
     delete warningBox;
     return;
   }
-  delete query;
   exitStatus = 0;
   this->close();
 }

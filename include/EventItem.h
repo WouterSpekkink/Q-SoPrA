@@ -19,8 +19,8 @@ public:
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-  void setColor(const QColor &subColor) {color = subColor;}
-  void setSelectionColor(const QColor &subColor) {selectionColor = subColor;}
+  void setColor(const QColor &subColor); 
+  void setSelectionColor(const QColor &subColor);
   int getCorrection();
   QPointF getOriginalPos();
   void setOriginalPos(QPointF &newPos);
@@ -33,7 +33,7 @@ public:
   NodeLabel* getLabel();
   QColor getColor();
   enum {Type = UserType + 1};
-  int type() const {return Type;}
+  int type() const;
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

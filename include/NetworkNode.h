@@ -20,9 +20,12 @@ public:
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
   void setColor(QColor newColor);
+  QColor getColor();
+  void setSelectionColor(const QColor &subColor);
   void setOriginalPos(qreal x, qreal y);
   int getCorrection();
   QString getName();
+  QString getDescription();
   void setMode(const QString &submittedMode);
   QString getMode();
 
@@ -41,6 +44,7 @@ private:
   NetworkNodeLabel *label;
   
   QColor color;
+  QColor selectionColor;
   QPointF originalPos;
   int width;
   QPointF previousPos;

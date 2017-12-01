@@ -20,6 +20,11 @@ NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : 
   originalPos = QPointF(0, 0);
   previousPos = originalPos;
   mode = "";
+  selectionColor = QColor(Qt::black);
+
+  setFlag(QGraphicsItem::ItemIsSelectable);
+  setFlag(QGraphicsItem::ItemIsMovable);
+  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 /*
@@ -38,10 +43,24 @@ void NetworkNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
   painter->setPen(QPen(Qt::black, 1));
   painter->setBrush(QBrush(color));
   painter->drawEllipse(-15, -15, 30, 30);
+
+  if (isSelected()) {
+    painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
+    painter->setBrush(QBrush(Qt::transparent));
+    painter->drawEllipse(-18, -18, 36, 36);
+    update();
+  } else {
+    selectionColor = QColor(Qt::black);
+    update();
+  }
+
 }
 
 // Only to set the cursor to a different graphic.
 void NetworkNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+  if (event->button() == Qt::LeftButton) {
+    setSelected(true);
+  }
   previousPos = event->scenePos();
   setCursor(Qt::ClosedHandCursor);
 }
@@ -57,7 +76,7 @@ void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     NetworkNode *currentItem = qgraphicsitem_cast<NetworkNode*>(item);
     Arrow *no = qgraphicsitem_cast<Arrow*>(item);
     if (currentItem && !(no) && item != this && item->isVisible()) {
-      int dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
+      qreal dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
       if (dist <= 40) {
 	trespass = true;
       } else {
@@ -74,7 +93,7 @@ void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     label->setNewPos(this->scenePos());
   }
   update();
-  setCursor(Qt::OpenHandCursor);
+  setCursor(Qt::ClosedHandCursor);
 }
 
 void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
@@ -88,7 +107,7 @@ void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
     NetworkNode *currentItem = qgraphicsitem_cast<NetworkNode*>(item);
     Arrow *no = qgraphicsitem_cast<Arrow*>(item);
     if (currentItem && !(no) && item != this) {
-      int dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
+      qreal dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
       if (dist <= 40) {
 	trespass = true;
       } else {
@@ -125,6 +144,10 @@ QString NetworkNode::getName() {
   return name;
 }
 
+QString NetworkNode::getDescription() {
+  return description;
+}
+
 int NetworkNode::type() const {
   return Type;
 }
@@ -145,3 +168,10 @@ QString NetworkNode::getMode() {
   return mode;
 }
 
+QColor NetworkNode::getColor() {
+  return color;
+}
+
+void NetworkNode::setSelectionColor(const QColor &subColor) {
+  selectionColor = subColor;
+}

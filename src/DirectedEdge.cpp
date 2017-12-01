@@ -18,6 +18,7 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
   name = submittedName;
   filtered = true;
   massHidden = false;
+  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 QRectF DirectedEdge::boundingRect() const {
@@ -116,6 +117,10 @@ QString DirectedEdge::getType() {
   return relType;
 }
 
+void DirectedEdge::setType(const QString submittedType) {
+  relType = submittedType;
+}
+
 void DirectedEdge::setHeight(int submittedHeight) {
   height = submittedHeight;
 }
@@ -130,6 +135,10 @@ int DirectedEdge::type() const {
 
 QString DirectedEdge::getName() {
   return name;
+}
+
+void DirectedEdge::setName(const QString submittedName) {
+  name = submittedName;
 }
 
 bool DirectedEdge::isFiltered() {

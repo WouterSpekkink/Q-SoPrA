@@ -2,8 +2,8 @@
 
 // Some sorting bools for qSort.
 bool eventLessThan(const EventItem *itemOne, const EventItem *itemTwo) {
-  int orderOne = itemOne->scenePos().x();
-  int orderTwo = itemTwo->scenePos().x();
+  qreal orderOne = itemOne->scenePos().x();
+  qreal orderTwo = itemTwo->scenePos().x();
   if (orderOne < orderTwo) {
     return true;
   } else {

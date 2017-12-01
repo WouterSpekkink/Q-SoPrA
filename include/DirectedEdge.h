@@ -19,14 +19,16 @@ public:
   NetworkNode *endItem() const;
   void calc();
   QString getType();
+  void setType(const QString submittedType);
   void setHeight(int submittedHeight);
   int getHeight();
   QString getName();
+  void setName(const QString submittedName);
   bool isFiltered();
   void setFiltered(bool state);
   bool isMassHidden();
   void setMassHidden(bool state);
-  
+
   enum {Type = UserType + 4};
   int type() const;
   

@@ -18,6 +18,7 @@ UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QSt
   name = submittedName;
   filtered = true;
   massHidden = false;
+  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 QRectF UndirectedEdge::boundingRect() const {
@@ -131,6 +132,10 @@ QString UndirectedEdge::getType() {
   return relType;
 }
 
+void UndirectedEdge::setType(const QString submittedType) {
+  relType = submittedType;
+}
+
 void UndirectedEdge::setHeight(int submittedHeight) {
   height = submittedHeight;
 }
@@ -145,6 +150,10 @@ int UndirectedEdge::type() const {
 
 QString UndirectedEdge::getName() {
   return name;
+}
+
+void UndirectedEdge::setName(const QString submittedName) {
+  name = submittedName;
 }
 
 bool UndirectedEdge::isFiltered() {

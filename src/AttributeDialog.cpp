@@ -1,10 +1,11 @@
 #include "../include/AttributeDialog.h"
 
-AttributeDialog::AttributeDialog(QWidget *parent) : QDialog(parent) {
+AttributeDialog::AttributeDialog(QWidget *parent, QString submittedType) : QDialog(parent) {
   name = "";
   description = "";
   oldName = "";
   exitStatus = 1;
+  type = submittedType;
   
   nameLabel = new QLabel("Name:", this);
   descriptionLabel = new QLabel("Description:", this);
@@ -99,10 +100,17 @@ void AttributeDialog::saveAndClose() {
   }
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
-  query->bindValue(":name", name);
-  query->exec();
-  query->first();
+  if (type == INCIDENT) {
+    query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+  } else if (type == ENTITY) {
+    query->prepare("SELECT name FROM entity_attributes WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+  }
   empty = query->isNull(0);
   if (!empty && name != oldName) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);

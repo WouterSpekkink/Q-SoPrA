@@ -1,32 +1,100 @@
 #include "../include/NetworkGraphWidget.h"
 
+// Some sorting bools for qSort.
+bool nodeLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
+  qreal oneX = itemOne->scenePos().x();
+  qreal twoX = itemTwo->scenePos().x();
+  if (oneX < twoX) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedType = "";
+  selectedEntityName = "";
   labelsShown = false;
 
   minOrder = 0;
   maxOrder = 0;
+  vectorPos = 0;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
   view->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
+  QRectF currentRect = this->scene->itemsBoundingRect();
+  currentRect.setX(currentRect.x() - 50);
+  currentRect.setY(currentRect.y() - 50);
+  currentRect.setWidth(currentRect.width() + 100);
+  currentRect.setHeight(currentRect.height() + 100);
+  scene->setSceneRect(currentRect);
+  view->setDragMode(QGraphicsView::RubberBandDrag);
+  view->setRubberBandSelectionMode(Qt::ContainsItemShape);
+  view->setRenderHint(QPainter::Antialiasing);
+  view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
+  infoWidget = new QWidget(this);
   graphicsWidget = new QWidget(this);
   legendWidget = new QWidget(this);
+
+  attributesTreeView = new DeselectableTreeView(infoWidget);
+  attributesTreeView->setHeaderHidden(true);
+  attributesTreeView->setDragEnabled(true);
+  attributesTreeView->setAcceptDrops(true);
+  attributesTreeView->setDropIndicatorShown(true);
+  attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
+  attributesTreeView->header()->setStretchLastSection(false);
+  attributesTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  treeFilter = new AttributeTreeFilter(this);
+  treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  setTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  attributesTreeView->installEventFilter(this);
   
   typeLabel = new QLabel(tr("Select type"), this);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   nodeLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   edgeLegendLabel = new QLabel(tr("<b>Edge legend:</b>"), legendWidget);
+  nameLabel = new QLabel(tr("<b>Name:</b<"), infoWidget);
+  descriptionLabel = new QLabel(tr("<b>Description:</b>"), infoWidget);
+  attributesLabel = new QLabel(tr("<b>Attributes:</b>"), infoWidget);
+  attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), infoWidget);
+  valueLabel = new QLabel(tr("<b>Value:</b>"), infoWidget);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
+
+  nameField = new QLineEdit(infoWidget);
+  nameField->setReadOnly(true);
+  attributesFilterField = new QLineEdit(infoWidget);
+  valueField = new QLineEdit(infoWidget);
+  valueField->setEnabled(false);
   
+  descriptionField = new QTextEdit(infoWidget);
+  descriptionField->setReadOnly(true);
+
   plotButton = new QPushButton(tr("Plot new"), this);
   plotButton->setEnabled(false);
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
   toggleGraphicsControlsButton->setCheckable(true);
+  toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
+  toggleDetailsButton->setCheckable(true);
+  previousNodeButton = new QPushButton(tr("<<"), infoWidget);
+  previousNodeButton->setEnabled(false);   
+  nextNodeButton = new QPushButton(tr(">>"), infoWidget);
+  nextNodeButton->setEnabled(false);
+  valueButton = new QPushButton(tr("Store value"), infoWidget);
+  valueButton->setEnabled(false);
+  assignAttributeButton = new QPushButton(tr("Assign attribute"), infoWidget);
+  unassignAttributeButton = new QPushButton(tr("Unassign attribute"), infoWidget);
+  addAttributeButton = new QPushButton(tr("New attribute"), infoWidget);
+  editAttributeButton = new QPushButton(tr("Edit attribute"), infoWidget);
+  removeUnusedAttributesButton = new QPushButton(tr("Remove unused"), infoWidget);
+  toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
+  toggleLegendButton->setCheckable(true);
   addButton = new QPushButton(tr("Add relationship type"), this);
   addButton->setEnabled(false);
   toggleLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
@@ -37,7 +105,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   nodeColorButton = new QPushButton(tr("Set node color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
-  toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   exportSvgButton = new QPushButton(tr("Export"), graphicsWidget);
   setFilteredButton = new QPushButton(tr("Filter on"), legendWidget);
   setFilteredButton->setCheckable(true);
@@ -54,6 +121,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   showTypeButton->setCheckable(true);
   showTypeButton->setChecked(true);
   multimodeButton = new QPushButton(tr("Multimode trans."), legendWidget);
+  mergeButton = new QPushButton(tr("Merge"), legendWidget);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -76,6 +144,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   nodeListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
   nodeListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   nodeListWidget->setStyleSheet("QTableView {gridline-color: black}");
+  nodeListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   
   edgeListWidget->setColumnCount(2);
   edgeListWidget->horizontalHeader()->hide();
@@ -84,7 +153,24 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   edgeListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
   edgeListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   edgeListWidget->setStyleSheet("QTableView {gridline-color: black}");
+  edgeListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   
+  connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setFilter(const QString &)));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(getValue()));
+  connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
+  connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
+  connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
+  connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
+  connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
+  connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
+  connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
+  connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(scene, SIGNAL(selectionChanged()), this, SLOT(retrieveData()));
+  connect(previousNodeButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
+  connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
@@ -102,6 +188,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(multimodeButton, SIGNAL(clicked()), this, SLOT(multimodeTransformation()));
+  connect(mergeButton, SIGNAL(clicked()), this, SLOT(mergeRelationships()));
   connect(edgeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setFilterButtons(QTableWidgetItem *)));
   connect(edgeListWidget, SIGNAL(noneSelected()),
@@ -125,6 +212,45 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 
   QPointer<QHBoxLayout> screenLayout = new QHBoxLayout;
 
+  QPointer<QVBoxLayout> detailsLayout = new QVBoxLayout;
+  QPointer<QHBoxLayout> navigationLayout = new QHBoxLayout;
+  navigationLayout->addWidget(previousNodeButton);
+  navigationLayout->addWidget(nextNodeButton);
+  detailsLayout->addLayout(navigationLayout);
+  QPointer<QHBoxLayout> topFieldsLayout = new QHBoxLayout;
+  topFieldsLayout->addWidget(nameLabel);
+  topFieldsLayout->addWidget(nameField);
+  detailsLayout->addLayout(topFieldsLayout);
+  detailsLayout->addWidget(descriptionLabel);
+  detailsLayout->addWidget(descriptionField);
+  detailsLayout->addWidget(attributesLabel);
+  detailsLayout->addWidget(attributesTreeView);
+  QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
+  filterLayout->addWidget(attributesFilterLabel);
+  filterLayout->addWidget(attributesFilterField);
+  detailsLayout->addLayout(filterLayout);
+  QPointer<QHBoxLayout> valueLayout = new QHBoxLayout;
+  valueLayout->addWidget(valueLabel);
+  valueLayout->addWidget(valueField);
+  valueLayout->addWidget(valueButton);
+  detailsLayout->addLayout(valueLayout);
+  QPointer<QHBoxLayout> attributesTopLayout = new QHBoxLayout;
+  attributesTopLayout->addWidget(assignAttributeButton);
+  attributesTopLayout->addWidget(unassignAttributeButton);
+  detailsLayout->addLayout(attributesTopLayout);
+  QPointer<QHBoxLayout> attributesBottomLayout = new QHBoxLayout;
+  attributesBottomLayout->addWidget(addAttributeButton);
+  attributesBottomLayout->addWidget(editAttributeButton);
+  attributesBottomLayout->addWidget(removeUnusedAttributesButton);
+  detailsLayout->addLayout(attributesBottomLayout);
+  infoWidget->setLayout(detailsLayout);
+  screenLayout->addWidget(infoWidget);
+  QScreen *screen = QGuiApplication::primaryScreen();
+  QRect  screenGeometry = screen->geometry();
+  int screenWidth = screenGeometry.width();
+  infoWidget->setMaximumWidth(screenWidth / 4);
+  infoWidget->setMinimumWidth(screenWidth / 4);
+
   QPointer<QVBoxLayout> middleLayout = new QVBoxLayout;
   middleLayout->addWidget(view);
   view->sizePolicy().setHorizontalPolicy(QSizePolicy::Maximum);
@@ -143,6 +269,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(sepLine);
   legendLayout->addWidget(hideTypeButton);
   legendLayout->addWidget(showTypeButton);
+  QPointer<QFrame> sepLine2 = new QFrame();
+  sepLine2->setFrameShape(QFrame::HLine);
+  legendLayout->addWidget(sepLine2);
+  legendLayout->addWidget(mergeButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
@@ -180,7 +310,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   mainLayout->addLayout(screenLayout);
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
-  //  drawOptionsLeftLayout->addWidget(toggleDetailsButton);
+  drawOptionsLeftLayout->addWidget(toggleDetailsButton);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -195,8 +325,17 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 
   getTypes();
 
+  infoWidget->hide();
   graphicsWidget->hide();
   legendWidget->hide();
+}
+
+void NetworkGraphWidget::toggleDetails() {
+  if (infoWidget->isHidden()) {
+    infoWidget->show();
+  } else {
+    infoWidget->hide();
+  }
 }
 
 void NetworkGraphWidget::toggleGraphicsControls() {
@@ -213,6 +352,528 @@ void NetworkGraphWidget::toggleLegend() {
   } else {
     legendWidget->hide();
   }
+}
+
+void NetworkGraphWidget::retrieveData() {
+  if (currentData.size() > 0) {
+    currentData.clear();
+  }
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(it.peekNext());
+      DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it.peekNext());
+      UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it.peekNext());
+      if (node && !(directed) && !(undirected)) {
+	NetworkNode *currentNode = qgraphicsitem_cast<NetworkNode*>(it.next());
+	currentNode->setSelectionColor(Qt::black);
+	currentNode->update();
+	currentData.push_back(currentNode);
+      } else {
+	it.next();
+      }
+    }
+    if (currentData.size() > 0) {
+      qSort(currentData.begin(), currentData.end(), nodeLessThan);
+    
+      vectorPos = 0;
+      NetworkNode *currentNode = currentData.at(vectorPos);
+      currentNode->setSelectionColor(Qt::red);
+      currentNode->update();
+      QString name = currentNode->getName();
+      selectedEntityName = name;
+      QString description = currentNode->getDescription();
+      nameField->setText(name);
+      descriptionField->setText(description);
+      resetFont(attributesTree);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT attribute FROM attributes_to_entities "
+		     "WHERE entity = :name");
+      query->bindValue(":name", name);
+      query->exec();
+      while (query->next()) {
+	QString attribute = query->value(0).toString();
+	boldSelected(attributesTree, attribute);
+      }
+      delete query;      
+      previousNodeButton->setEnabled(true);
+      nextNodeButton->setEnabled(true);
+    }
+  } else {
+    nameField->clear();
+    selectedEntityName = "";
+    descriptionField->clear();
+    previousNodeButton->setEnabled(false);
+    nextNodeButton->setEnabled(false);
+    resetFont(attributesTree);
+  }
+}
+
+void NetworkGraphWidget::setTree() {
+  attributesTree = new QStandardItemModel(this);
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
+  while (query->next()) {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *father = new QStandardItem(name);    
+    attributesTree->appendRow(father);
+    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    father->setToolTip(hint);
+    father->setEditable(false);
+    buildHierarchy(father, name);
+  }
+  treeFilter->setSourceModel(attributesTree);
+  attributesTreeView->setModel(treeFilter);
+  delete query;
+}
+
+void NetworkGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
+  query->bindValue(":father", name);
+  query->exec();
+  int children = 0;
+  while (query->next()) {
+    QString childName = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *child = new QStandardItem(childName);
+    top->setChild(children, child);
+    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    child->setToolTip(hint);
+    child->setEditable(false);
+    children++;
+    buildHierarchy(child, childName);
+  }
+  delete query;
+}
+
+void NetworkGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) {
+  for(int i = 0; i != model->rowCount(parent); i++) {
+    QModelIndex index = model->index(i, 0, parent);
+    QString currentName = model->data(index).toString();
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+    QFont font;
+    font.setBold(false);
+    font.setItalic(false);
+    currentAttribute->setFont(font);
+    if (model->hasChildren(index)) {
+      resetFont(model, index);
+    }
+  }
+}
+
+void NetworkGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
+				      QString entity, QModelIndex parent) {
+  for(int i = 0; i != model->rowCount(parent); i++) {
+    QModelIndex index = model->index(i, 0, parent);
+    QString currentName = model->data(index).toString();
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+    QFont font;
+    font.setBold(true);
+    QFont font2;
+    font2.setItalic(true);
+    QFont font3;
+    font3.setBold(true);
+    font3.setItalic(true);
+    if (name == currentName) {
+      if (currentAttribute->font().italic()) {
+	currentAttribute->setFont(font3);
+      } else {
+	currentAttribute->setFont(font);
+      }
+      if (currentAttribute->parent()) {
+	while (currentAttribute->parent()) {
+          currentAttribute = currentAttribute->parent();
+	  QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT attribute, entity FROM attributes_to_entities "
+			 "WHERE attribute = :attribute AND entity = :entity");
+	  query->bindValue(":attribute", parentName);
+	  query->bindValue(":entity", entity);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0)) {
+	    currentAttribute->setFont(font2);      
+	  } else {
+	    currentAttribute->setFont(font3);
+	  }
+        }
+      }
+    }
+    if (model->hasChildren(index)) {
+      boldSelected(model, name, entity, index);
+    }
+  }
+}
+
+void NetworkGraphWidget::fixTree(QString entity) {
+  resetFont(attributesTree);
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT attribute FROM attributes_to_entities "
+		 "WHERE entity = :entity");
+  query->bindValue(":entity", entity);
+  query->exec();
+  while (query->next()) {
+    QString attribute = query->value(0).toString();
+    boldSelected(attributesTree, attribute, entity);
+  }
+  delete query;
+}
+
+void NetworkGraphWidget::setFilter(const QString &text) {
+  QRegExp regExp(text, Qt::CaseInsensitive);
+  treeFilter->setFilterRegExp(regExp);
+}
+
+void NetworkGraphWidget::previousDataItem() {
+  if (vectorPos > 0) {
+    NetworkNode *currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::black);
+    currentNode->update();
+    vectorPos--;
+    currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::red);
+    currentNode->update();
+    QString name = currentNode->getName();
+    QString description = currentNode->getDescription();
+    nameField->setText(name);
+    selectedEntityName = name;
+    descriptionField->setText(description);
+    resetFont(attributesTree);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute FROM attributes_to_entities "
+		   "WHERE entity = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      boldSelected(attributesTree, attribute, name);
+    }
+    delete query;      
+  } else {
+    NetworkNode *currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::black);
+    currentNode->update();
+    vectorPos = currentData.size() - 1;
+    currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::red);
+    currentNode->update();
+    scene->update();
+    QString name = currentNode->getName();
+    QString description = currentNode->getDescription();
+    nameField->setText(name);
+    selectedEntityName = name;
+    descriptionField->setText(description);
+    resetFont(attributesTree);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute FROM attributes_to_entities "
+		   "WHERE entity = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      boldSelected(attributesTree, attribute, name);
+    }
+    delete query;      
+  }
+}
+
+void NetworkGraphWidget::nextDataItem() {
+  if (vectorPos != currentData.size() - 1) {
+    NetworkNode *currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::black);
+    currentNode->update();
+    vectorPos++;
+    currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::red);
+    currentNode->update();
+    QString name = currentNode->getName();
+    QString description = currentNode->getDescription();
+    nameField->setText(name);
+    selectedEntityName = name;
+    descriptionField->setText(description);
+    resetFont(attributesTree);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute FROM attributes_to_entities "
+		   "WHERE entity = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      boldSelected(attributesTree, attribute, name);
+    }
+    delete query;      
+  } else {
+    NetworkNode *currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::black);
+    currentNode->update();
+    vectorPos = 0;
+    currentNode = currentData.at(vectorPos);
+    currentNode->setSelectionColor(Qt::red);
+    currentNode->update();
+    QString name = currentNode->getName();
+    QString description = currentNode->getDescription();
+    nameField->setText(name);
+    selectedEntityName = name;
+    descriptionField->setText(description);
+    resetFont(attributesTree);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute FROM attributes_to_entities "
+		   "WHERE entity = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      boldSelected(attributesTree, attribute, name);
+    }
+    delete query;      
+  }
+}
+
+void NetworkGraphWidget::setValueButton() {
+  valueButton->setEnabled(true);
+}
+
+void NetworkGraphWidget::setValue() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QSqlQuery *query = new QSqlQuery;
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    query->prepare("UPDATE attributes_to_entities "
+		   "SET value = :val "
+		   "WHERE attribute = :attribute AND entity = :entity");
+    query->bindValue(":val", valueField->text());
+    query->bindValue(":attribute", attribute);
+    query->bindValue(":entity", selectedEntityName);
+    query->exec();
+    valueButton->setEnabled(false);
+    delete query;
+  }
+}
+
+void NetworkGraphWidget::getValue() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute, value "
+		   "FROM attributes_to_entities "
+		   "WHERE attribute =:att AND entity = :entity");
+    query->bindValue(":att", attribute);
+    query->bindValue(":entity", selectedEntityName);
+    query->exec();
+    query->first();
+    if (!(query->isNull(0))) {
+      valueField->setEnabled(true);
+    } else {
+      valueField->setEnabled(false);
+      valueField->setText("");
+    }
+    if (!(query->isNull(1))) {
+      QString value = query->value(1).toString();
+      valueField->setText(value);
+    } else {
+      valueField->setText("");
+    }
+    valueButton->setEnabled(false);
+    delete query;
+  } else {
+    valueField->setText("");
+    valueButton->setEnabled(false);
+  }
+}
+
+void NetworkGraphWidget::assignAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    bool empty = false;
+    query->prepare("SELECT attribute FROM "
+		   "attributes_to_entities WHERE "
+		   "attribute = :att AND entity = :entity");
+    query->bindValue(":att", attribute);
+    query->bindValue(":entity", selectedEntityName);
+    query->exec();
+    query->first();
+    empty = query->isNull(0);
+    if (empty) {
+      query->prepare("INSERT INTO attributes_to_entities (attribute, entity) "
+		     "VALUES (:attribute, :entity)");
+      query->bindValue(":attribute", attribute);
+      query->bindValue(":entity", selectedEntityName);
+      query->exec();
+      boldSelected(attributesTree, attribute, selectedEntityName);
+      valueField->setEnabled(true);
+    }
+    delete query;
+  }
+}
+
+void NetworkGraphWidget::unassignAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QSqlQuery *query = new QSqlQuery;
+    QSqlQuery *query2 = new QSqlQuery;
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    bool empty = false;
+    query->prepare("SELECT attribute, entity "
+		   "FROM attributes_to_entities "
+		   "WHERE attribute = :att AND entity = :entity");
+    query->bindValue(":att", attribute);
+    query->bindValue(":entity", selectedEntityName);
+    query->exec();
+    query->first();
+    empty = query->isNull(0);
+    if (!empty) {
+      query->prepare("DELETE FROM attributes_to_entities "
+		     "WHERE attribute = :att AND entity = :entity");
+      query->bindValue(":att", attribute);
+      query->bindValue(":entity", selectedEntityName);
+      query->exec();
+      resetFont(attributesTree);
+      query2->prepare("SELECT attribute, entity FROM attributes_to_entities "
+		      "WHERE entity = :entity");
+      query2->bindValue(":entity", selectedEntityName);
+      query2->exec();
+      while (query2->next()) {
+	QString attribute = query2->value(0).toString();
+	boldSelected(attributesTree, attribute, selectedEntityName);
+      }
+      valueField->setText("");
+      valueField->setEnabled(false);
+      valueButton->setEnabled(false);
+    }
+    delete query;
+    delete query2;
+  }
+}
+
+void NetworkGraphWidget::addAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
+    QString name = "";
+    QString description = "";
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, ENTITY);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QSqlQuery *query = new QSqlQuery;
+      name = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attribute->setToolTip(description);
+      QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+      father->appendRow(attribute);
+      attribute->setToolTip(description);
+      attribute->setEditable(false);      
+      query->prepare("INSERT INTO entity_attributes (name, description, father) "
+		     "VALUES (:name, :description, :father");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", currentParent);
+      query->exec();
+      delete query;
+    }
+    delete attributeDialog;
+  } else {
+    QSqlQuery *query = new QSqlQuery;
+    QString name = "";
+    QString description = "";
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, ENTITY);
+    attributeDialog->exec();
+    
+    if (attributeDialog->getExitStatus() == 0) {
+      name = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      query->prepare("INSERT INTO entity_attributes (name, description, father) "
+		     "VALUES (:name, :description, 'NONE'");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->exec();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attributesTree->appendRow(attribute);
+      attribute->setToolTip(description);
+      attribute->setEditable(false);
+    }
+    delete attributeDialog;
+    delete query;
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void NetworkGraphWidget::editAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString name = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM entity_attributes WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, ENTITY);
+    attributeDialog->submitName(name);
+    attributeDialog->setDescription(description);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QString newName = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      currentAttribute->setData(newName);
+      currentAttribute->setData(newName, Qt::DisplayRole);      
+      currentAttribute->setToolTip(description);
+      query->prepare("UPDATE entity_attributes "
+		     "SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":newdescription", description);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE entity_attributes "
+		     "SET father = :newname "
+		     "WHERE father = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE attributes_to_entities "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+    }
+    delete attributeDialog;
+    delete query;
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void NetworkGraphWidget::removeUnusedAttributes() {
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  bool unfinished = true;
+  while (unfinished) {
+    query->exec("SELECT name FROM entity_attributes EXCEPT SELECT attribute "
+		"FROM attributes_to_entities EXCEPT SELECT father "
+		"FROM entity_attributes");
+    while (query->next()) {
+      QString current = query->value(0).toString();
+      query2->prepare("DELETE FROM entity_attributes WHERE name = :current");
+      query2->bindValue(":current", current);
+      query2->exec();
+    }
+    query->first();
+    if (query->isNull(0)) {
+      unfinished = false;
+    }
+  }
+  this->setCursor(Qt::WaitCursor);
+  attributesTreeView->setSortingEnabled(false);
+  delete attributesTree;
+  setTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  this->setCursor(Qt::ArrowCursor);
+  delete query;  
+  delete query2;
 }
 
 void NetworkGraphWidget::getTypes() {
@@ -493,8 +1154,7 @@ void NetworkGraphWidget::simpleLayout() {
     qreal y = (qrand() % 5000) - 2500;
     currentNode->setPos(x, y);
   }
-
-  for(int i = 0; i != 2; i++) {
+  for(int i = 0; i != 5; i++) {
     QListIterator<QGraphicsItem*> it(scene->items());
     while (it.hasNext()) {
       DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it.peekNext());
@@ -503,40 +1163,126 @@ void NetworkGraphWidget::simpleLayout() {
 	DirectedEdge *currentEdge = qgraphicsitem_cast<DirectedEdge*>(it.next());
 	NetworkNode *currentSource = currentEdge->startItem();
 	NetworkNode *currentTarget = currentEdge->endItem();
-	QPointF sourcePos = currentSource->scenePos();
-	QPointF targetPos = currentTarget->scenePos();
-	qreal mX = (sourcePos.x() + targetPos.x()) / 2;
-	qreal mY = (sourcePos.y() + targetPos.y()) / 2;
-	QPointF midPoint = QPointF(mX, mY);
-	qreal mX2 = (sourcePos.x() + midPoint.x()) / 2;
-	qreal mY2 = (sourcePos.y() + midPoint.y()) / 2;
-	QPointF sourcePoint = QPoint(mX2, mY2);
-	qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
-	qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
-	QPointF targetPoint = QPoint(mX3, mY3);
-	currentSource->setPos(sourcePoint);
-	currentSource->getLabel()->setNewPos(currentSource->scenePos());
-	currentTarget->setPos(targetPoint);
-	currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
+	qreal dist = qSqrt(qPow(currentSource->pos().x() -
+				currentTarget->pos().x(), 2) +
+			   qPow(currentSource->pos().y() -
+				currentTarget->pos().y(), 2));
+	if (dist > 50) {
+	  QPointF sourcePos = currentSource->scenePos();
+	  QPointF targetPos = currentTarget->scenePos();
+	  qreal mX = (sourcePos.x() + targetPos.x()) / 2;
+	  qreal mY = (sourcePos.y() + targetPos.y()) / 2;
+	  QPointF midPoint = QPointF(mX, mY);
+	  qreal mX2 = (sourcePos.x() + midPoint.x()) / 2;
+	  qreal mY2 = (sourcePos.y() + midPoint.y()) / 2;
+	  QPointF sourcePoint = QPoint(mX2, mY2);
+	  qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
+	  qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
+	  QPointF targetPoint = QPoint(mX3, mY3);
+	  currentSource->setPos(sourcePoint);
+	  currentSource->getLabel()->setNewPos(currentSource->scenePos());
+	  currentTarget->setPos(targetPoint);
+	  currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
+	}
+	QVectorIterator<NetworkNode*> it(nodeVector);
+	while (it.hasNext()) {
+	  NetworkNode *first = it.next();
+	  QVectorIterator<NetworkNode*> it2(nodeVector);
+	  while (it2.hasNext()) {
+	    NetworkNode *second = it2.next();
+	    dist = qSqrt(qPow(first->pos().x() -
+			      second->pos().x(), 2) +
+			 qPow(first->pos().y() -
+			      second->pos().y(), 2));
+	    qreal xDist = first->pos().x() - second->pos().x();
+	    qreal yDist = first->pos().y() - second->pos().y();
+	    if (dist < 80) {
+	      if (xDist > yDist && first->pos().y() > second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() + 5);
+	        second->setPos(second->pos().x(), second->pos().y() - 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());
+	      } else if (xDist > yDist && first->pos().y() < second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() - 5);
+	        second->setPos(second->pos().x(), second->pos().y() + 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());
+	      } else if (xDist < yDist && first->pos().y() > second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() + 5);
+	        second->setPos(second->pos().x(), second->pos().y() - 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());		
+	      } else if (xDist < yDist && first->pos().y() < second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() - 5);
+	        second->setPos(second->pos().x(), second->pos().y() + 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());		
+	      }
+	    }
+	  }
+	}
       } else if (undirected) {
 	UndirectedEdge *currentEdge = qgraphicsitem_cast<UndirectedEdge*>(it.next());
 	NetworkNode *currentSource = currentEdge->startItem();
 	NetworkNode *currentTarget = currentEdge->endItem();
-	QPointF sourcePos = currentSource->scenePos();
-	QPointF targetPos = currentTarget->scenePos();
-	qreal mX = (sourcePos.x() + targetPos.x()) / 2;
-	qreal mY = (sourcePos.y() + targetPos.y()) / 2;
-	QPointF midPoint = QPointF(mX, mY);
-	qreal mX2 = (sourcePos.x() + midPoint.x()) / 2;
-	qreal mY2 = (sourcePos.y() + midPoint.y()) / 2;
-	QPointF sourcePoint = QPoint(mX2, mY2);
-	qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
-	qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
-	QPointF targetPoint = QPoint(mX3, mY3);
-	currentSource->setPos(sourcePoint);
-	currentSource->getLabel()->setNewPos(currentSource->scenePos());
-	currentTarget->setPos(targetPoint);
-	currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
+	qreal dist = qSqrt(qPow(currentSource->pos().x() -
+				currentTarget->pos().x(), 2) +
+			   qPow(currentSource->pos().y() -
+				currentTarget->pos().y(), 2));
+	if (dist > 50) {
+	  QPointF sourcePos = currentSource->scenePos();
+	  QPointF targetPos = currentTarget->scenePos();
+	  qreal mX = (sourcePos.x() + targetPos.x()) / 2;
+	  qreal mY = (sourcePos.y() + targetPos.y()) / 2;
+	  QPointF midPoint = QPointF(mX, mY);
+	  qreal mX2 = (sourcePos.x() + midPoint.x()) / 2;
+	  qreal mY2 = (sourcePos.y() + midPoint.y()) / 2;
+	  QPointF sourcePoint = QPoint(mX2, mY2);
+	  qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
+	  qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
+	  QPointF targetPoint = QPoint(mX3, mY3);
+	  currentSource->setPos(sourcePoint);
+	  currentSource->getLabel()->setNewPos(currentSource->scenePos());
+	  currentTarget->setPos(targetPoint);
+	  currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
+	}
+	QVectorIterator<NetworkNode*> it(nodeVector);
+	while (it.hasNext()) {
+	  NetworkNode *first = it.next();
+	  QVectorIterator<NetworkNode*> it2(nodeVector);
+	  while (it2.hasNext()) {
+	    NetworkNode *second = it2.next();
+	    dist = qSqrt(qPow(first->pos().x() -
+			      second->pos().x(), 2) +
+			 qPow(first->pos().y() -
+			      second->pos().y(), 2));
+	    qreal xDist = first->pos().x() - second->pos().x();
+	    qreal yDist = first->pos().y() - second->pos().y();
+	    if (dist < 80) {
+	      if (xDist > yDist && first->pos().y() > second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() + 5);
+	        second->setPos(second->pos().x(), second->pos().y() - 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());		
+	      } else if (xDist > yDist && first->pos().y() < second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() - 5);
+	        second->setPos(second->pos().x(), second->pos().y() + 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());		
+	      } else if (xDist < yDist && first->pos().y() > second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() + 5);
+	        second->setPos(second->pos().x(), second->pos().y() - 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());		
+	      } else if (xDist < yDist && first->pos().y() < second->pos().y()) {
+		first->setPos(first->pos().x(), first->pos().y() - 5);
+	        second->setPos(second->pos().x(), second->pos().y() + 5);
+		first->getLabel()->setNewPos(first->scenePos());
+		second->getLabel()->setNewPos(second->scenePos());		
+	      }
+	    }
+	  }
+	}
       } else {
 	it.next();
       }
@@ -866,6 +1612,148 @@ void NetworkGraphWidget::multimodeTransformation() {
     QTableWidgetItem *item = new QTableWidgetItem(selectedType);
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);
     QString toolTip = "<FONT SIZE = 3>" + name + " (Undirected) - " + description + "</FONT>";
+    item->setToolTip(toolTip);
+    item->setData(Qt::DisplayRole, name);
+    edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
+    edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 0, item);
+    edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+    edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->setBackground(color);
+    edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
+      setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags()
+	       ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  }
+}
+
+void NetworkGraphWidget::mergeRelationships() {
+  QVector<QString> relVector;
+  for (int i = 0; i != edgeListWidget->rowCount(); i++) {
+    QString currentType = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    bool found = false;
+    QVectorIterator<DirectedEdge*> rit(directedVector);
+    while (rit.hasNext()) {
+      DirectedEdge* directed = rit.next();
+      if (directed->isVisible() && directed->getType() == currentType) {
+	found = true;
+      }
+    }
+    QVectorIterator<UndirectedEdge*> rit2(undirectedVector);
+    while (rit2.hasNext()) {
+      UndirectedEdge* undirected = rit2.next();
+      if (undirected->isVisible() && undirected->getType() == currentType) {
+	found = true;
+      }
+    }
+    if (found) {
+      relVector.push_back(currentType);
+    }
+  }
+  QPointer<MergeRelationshipsDialog> mergeRelationshipsDialog = new MergeRelationshipsDialog(this);
+  mergeRelationshipsDialog->setRelationships(relVector);
+  mergeRelationshipsDialog->exec();
+  if (mergeRelationshipsDialog->getExitStatus() == 0) {
+    QString relOne = mergeRelationshipsDialog->getRelOne();
+    QString relTwo = mergeRelationshipsDialog->getRelTwo();
+    QString name = mergeRelationshipsDialog->getName();
+    QString description = mergeRelationshipsDialog->getDescription();
+    QString directedness = mergeRelationshipsDialog->getDirectedness();
+    for (int i = 0; i != edgeListWidget->rowCount(); i++) {
+      QString currentRel = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+      if (currentRel ==  name) {
+	QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	warningBox->addButton(QMessageBox::Ok);
+	warningBox->setIcon(QMessageBox::Warning);
+	warningBox->setText("Name already exists.");
+	warningBox->setInformativeText("You already have a relationship type with that name.");
+	warningBox->exec();
+	delete warningBox;
+	return;
+      }
+    }
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    QColor color = QColor(Qt::black);
+    if (colorDialog->exec()) {
+      color = colorDialog->selectedColor();
+    } else {
+      delete colorDialog;
+      return;
+    }
+    delete colorDialog;
+    if (directedness == DIRECTED) {
+      QVectorIterator<DirectedEdge*> it(directedVector);
+      while (it.hasNext()) {
+	DirectedEdge* directed = it.next();
+	if (directed->getType() == relOne || directed->getType() == relTwo) {
+	  directed->setType(name);
+	  directed->setColor(color);
+	  directed->setName("MM");
+	}
+      }
+      QVectorIterator<DirectedEdge*> it2(directedVector);
+      while (it2.hasNext()) {
+	DirectedEdge *first = it2.next();
+	bool found = false;
+	QVectorIterator<DirectedEdge*> it3(directedVector);
+	while (it3.hasNext()) {
+	  DirectedEdge *second = it3.next();
+	  if (first != second) {
+	    if (first->startItem() == second->startItem() &&
+		first->endItem() == second->endItem() &&
+		first->getType() == second->getType()) {
+	      found = true;
+	    }
+	  }
+	}
+	if (found) {
+	  directedVector.removeOne(first);
+	}
+      }
+    } else if (directedness == UNDIRECTED) {
+      QVectorIterator<UndirectedEdge*> it(undirectedVector);
+      while (it.hasNext()) {
+	UndirectedEdge *undirected = it.next();
+	if (undirected->getType() == relOne || undirected->getType() == relTwo) {
+	  undirected->setType(name);
+	  undirected->setColor(color);
+	  undirected->setName("MM");
+	}
+      }
+      QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+      while (it2.hasNext()) {
+	UndirectedEdge *first = it2.next();
+	bool found = false;
+	QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+	while (it3.hasNext()) {
+	  UndirectedEdge *second = it3.next();
+	  if (first != second) {
+	    if (first->startItem() == second->startItem() &&
+		first->endItem() == second->endItem() &&
+		first->getType() == second->getType()) {
+	      found = true;
+	    }
+	  }
+	}
+	if (found) {
+	  scene->removeItem(first);
+	  undirectedVector.removeOne(first);
+	}
+      }
+    }
+    for (int i = 0; i != edgeListWidget->rowCount();) {
+      if (edgeListWidget->item(i,0)->data(Qt::DisplayRole).toString() == relOne) {
+	edgeListWidget->removeRow(i);
+      }
+      if (edgeListWidget->item(i,0)->data(Qt::DisplayRole).toString() == relTwo) {
+	edgeListWidget->removeRow(i);
+      }
+      if (i != edgeListWidget->rowCount()) {
+	i++;
+      }
+    }
+    presentTypes.push_back(name);
+    QTableWidgetItem *item = new QTableWidgetItem(name);
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    QString toolTip = "<FONT SIZE = 3>" + name + " (" + directedness + ") - " +
+    description + "</FONT SIZE>";
     item->setToolTip(toolTip);
     item->setData(Qt::DisplayRole, name);
     edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
@@ -1516,4 +2404,27 @@ void NetworkGraphWidget::cleanUp() {
   presentTypes.clear();
   minOrder = 0;
   maxOrder = 0;
+  selectedEntityName = "";
+  nameField->clear();
+  descriptionField->clear();
+  resetFont(attributesTree);
+}
+
+bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) {
+  if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
+    fixTree(selectedEntityName);
+  } else if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
+  }
+  return false;
 }

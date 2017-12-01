@@ -57,7 +57,6 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 void EventItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
   if (event->button() == Qt::LeftButton) {
     setSelected(true);
-    //    setCursor(Qt::ClosedHandCursor);
   }
 }
 
@@ -171,6 +170,18 @@ NodeLabel* EventItem::getLabel() {
   return label;
 }
 
+void EventItem::setColor(const QColor &subColor) {
+  color = subColor;
+}
+
 QColor EventItem::getColor() {
   return color;
+}
+
+void EventItem::setSelectionColor(const QColor &subColor) {
+  selectionColor = subColor;
+}
+
+int EventItem::type() const {
+  return Type;
 }

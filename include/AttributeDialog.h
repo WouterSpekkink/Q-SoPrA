@@ -12,12 +12,13 @@
 #include <QtWidgets/QTextEdit>
 #include <QPointer>
 #include <QtSql>
+#include "Constants.h"
 
 class AttributeDialog : public QDialog {
   Q_OBJECT
   
 public:
-  AttributeDialog(QWidget *parent = 0);
+  AttributeDialog(QWidget *parent = 0, QString submittedType = DEFAULT);
   ~AttributeDialog() {};
  
   void submitName(const QString &submittedName);
@@ -45,6 +46,7 @@ private:
   QString name;
   QString oldName;
   QString description;
+  QString type;
 
   int exitStatus;
 };
