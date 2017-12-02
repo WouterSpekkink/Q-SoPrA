@@ -11,17 +11,25 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   modeTwo = DEFAULT;
   relationshipOne = DEFAULT;
   relationshipTwo = DEFAULT;
+  directedness = DIRECTED;
   exitStatus = 1;
-
+  
   modeOneLabel = new QLabel(tr("Mode one:"), this);
-  modeOneLabel->setToolTip("<FONT SIZE = 3>The new relationship will be created between nodes of this mode.</FONT>");
+  modeOneLabel->setToolTip("<FONT SIZE = 3>The new relationship "
+			   "will be created between nodes of this mode.</FONT>");
   modeTwoLabel = new QLabel(tr("Mode two:"), this);
-  modeTwoLabel->setToolTip("<FONT SIZE = 3>Nodes of this mode will be used to determine which nodes of mode one should be related.</FONT>");
+  modeTwoLabel->setToolTip("<FONT SIZE = 3>Nodes of this mode will "
+			   "be used to determine which nodes of mode "
+			   "one should be related.</FONT>");
   relationshipOneLabel = new QLabel(tr("Relationship ego:"), this);
+  relationshipOneLabel->setToolTip("<FONT SIZE = 3>What relationship does the ego (mode one) "
+				   "have to nodes of mode two?</FONT>");
   relationshipTwoLabel = new QLabel(tr("Relationship alter:"), this);
-
+  relationshipTwoLabel->setToolTip("<FONT SIZE = 3>What relationship does the alter (mode one) "
+				   "have to nodes of mode two?</FONT>");
   nameLabel = new QLabel(tr("New relationship:"), this);
   descriptionLabel = new QLabel(tr("Description:"), this);
+  directednessLabel = new QLabel(tr("Directedness:"), this);
   
   nameField = new QLineEdit();
 
@@ -29,15 +37,30 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
 
   modeOneComboBox = new QComboBox(this);
   modeOneComboBox->addItem(DEFAULT);
+  modeOneComboBox->setToolTip("<FONT SIZE = 3>The new relationship "
+			      "will be created between nodes of this mode.</FONT>");
   modeTwoComboBox = new QComboBox(this);
   modeTwoComboBox->addItem(DEFAULT);
+  modeTwoComboBox->setToolTip("<FONT SIZE = 3>Nodes of this mode will "
+			      "be used to determine which nodes of mode "
+			      "one should be related.</FONT>");
   relationshipOneComboBox = new QComboBox(this);
   relationshipOneComboBox->addItem(DEFAULT);
   relationshipOneComboBox->setEnabled(false);
+  relationshipOneComboBox->setToolTip("<FONT SIZE = 3>What relationship does the ego (mode one) "
+				      "have to nodes of mode two?</FONT>");
   relationshipTwoComboBox = new QComboBox(this);
   relationshipTwoComboBox->addItem(DEFAULT);
   relationshipTwoComboBox->setEnabled(false);
-  
+  relationshipTwoComboBox->setToolTip("<FONT SIZE = 3>What relationship does the alter (mode one) "
+				      "have to nodes of mode two?</FONT>");
+  directedButton = new QPushButton(tr("Directed"), this);
+  directedButton->setCheckable(true);
+  directedButton->setChecked(true);
+  directedButton->setEnabled(false);
+  undirectedButton = new QPushButton(tr("Undirected"), this);
+  undirectedButton->setCheckable(true);
+  undirectedButton->setEnabled(false);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save relationship type"), this);
 
@@ -49,6 +72,8 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
 	  this, SLOT(setRelationshipOne(const QString &)));
   connect(relationshipTwoComboBox, SIGNAL(currentTextChanged(const QString &)),
 	  this, SLOT(setRelationshipTwo(const QString &)));
+  connect(directedButton, SIGNAL(clicked()), this, SLOT(checkDirectedButton()));
+  connect(undirectedButton, SIGNAL(clicked()), this, SLOT(checkUndirectedButton()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
@@ -61,12 +86,14 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   modeTwoLayout->addWidget(modeTwoLabel);
   modeTwoLayout->addWidget(modeTwoComboBox);
   mainLayout->addLayout(modeTwoLayout);
-  QPointer<QHBoxLayout> relationshipLayout = new QHBoxLayout;
-  relationshipLayout->addWidget(relationshipOneLabel);
-  relationshipLayout->addWidget(relationshipOneComboBox);
-  relationshipLayout->addWidget(relationshipTwoLabel);
-  relationshipLayout->addWidget(relationshipTwoComboBox);
-  mainLayout->addLayout(relationshipLayout);
+  QPointer<QHBoxLayout> relationshipOneLayout = new QHBoxLayout;
+  relationshipOneLayout->addWidget(relationshipOneLabel);
+  relationshipOneLayout->addWidget(relationshipOneComboBox);
+  mainLayout->addLayout(relationshipOneLayout);
+  QPointer<QHBoxLayout> relationshipTwoLayout = new QHBoxLayout;
+  relationshipTwoLayout->addWidget(relationshipTwoLabel);
+  relationshipTwoLayout->addWidget(relationshipTwoComboBox);
+  mainLayout->addLayout(relationshipTwoLayout);
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
@@ -75,11 +102,14 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   nameLayout->addWidget(nameLabel);
   nameLayout->addWidget(nameField);
   mainLayout->addLayout(nameLayout);
-  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(descriptionLabel);
-  descriptionLayout->addWidget(descriptionField);
-  mainLayout->addLayout(descriptionLayout);
-
+  mainLayout->addWidget(descriptionLabel);
+  mainLayout->addWidget(descriptionField);
+  QPointer<QHBoxLayout> directednessLayout = new QHBoxLayout;
+  directednessLayout->addWidget(directednessLabel);
+  directednessLayout->addWidget(directedButton);
+  directednessLayout->addWidget(undirectedButton);
+  mainLayout->addLayout(directednessLayout);
+  
   QPointer<QFrame> middleLine = new QFrame;
   middleLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(middleLine);
@@ -213,12 +243,48 @@ void MultimodeDialog::setModeTwo(const QString &name) {
   }
 }
 
+QString MultimodeDialog::getDirectedness() {
+  return directedness;
+}
+
+void MultimodeDialog::checkDirectedButton() {
+  directedButton->setChecked(true);
+  undirectedButton->setChecked(false);
+  directedness = DIRECTED;
+}
+
+void MultimodeDialog::checkUndirectedButton() {
+  directedButton->setChecked(false);
+  undirectedButton->setChecked(true);
+  directedness = UNDIRECTED;
+}
+
 void MultimodeDialog::setRelationshipOne(const QString &name) {
   relationshipOne = name;
+  if (relationshipOne == relationshipTwo) {
+    directedness = UNDIRECTED;
+    directedButton->setChecked(false);
+    undirectedButton->setChecked(true);
+    directedButton->setEnabled(false);
+    undirectedButton->setEnabled(false);
+  } else {
+    directedButton->setEnabled(true);
+    undirectedButton->setEnabled(true);
+  }
 }
 
 void MultimodeDialog::setRelationshipTwo(const QString &name) {
   relationshipTwo = name;
+  if (relationshipOne == relationshipTwo) {
+    directedness = UNDIRECTED;
+    directedButton->setChecked(false);
+    undirectedButton->setChecked(true);
+    directedButton->setEnabled(false);
+    undirectedButton->setEnabled(false);
+  } else {
+    directedButton->setEnabled(true);
+    undirectedButton->setEnabled(true);
+  }
 }
 
 QString MultimodeDialog::getModeOne() {

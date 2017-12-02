@@ -30,6 +30,7 @@ public:
   QString getRelationshipTwo();
   QString getName();
   QString getDescription();
+  QString getDirectedness();
   int getExitStatus();
 		     
 private slots:
@@ -37,6 +38,9 @@ private slots:
   void setModeTwo(const QString &name);
   void setRelationshipOne(const QString &name);
   void setRelationshipTwo(const QString &name);
+
+  void checkDirectedButton();
+  void checkUndirectedButton();
   
   void cancelAndClose();
   void saveAndClose();
@@ -51,12 +55,15 @@ private:
   QPointer<QLabel> relationshipTwoLabel;
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
+  QPointer<QLabel> directednessLabel;
   
   QPointer<QComboBox> modeOneComboBox;
   QPointer<QComboBox> modeTwoComboBox;
   QPointer<QComboBox> relationshipOneComboBox;
   QPointer<QComboBox> relationshipTwoComboBox;
-  
+
+  QPointer<QPushButton> directedButton;
+  QPointer<QPushButton> undirectedButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
 
@@ -72,6 +79,7 @@ private:
   QString modeTwo;
   QString relationshipOne;
   QString relationshipTwo;
+  QString directedness;
   
   int exitStatus;
 };

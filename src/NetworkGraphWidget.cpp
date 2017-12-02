@@ -1210,14 +1210,14 @@ void NetworkGraphWidget::simpleLayout() {
 	        second->setPos(second->pos().x(), second->pos().y() + 5);
 		first->getLabel()->setNewPos(first->scenePos());
 		second->getLabel()->setNewPos(second->scenePos());
-	      } else if (xDist < yDist && first->pos().y() > second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() + 5);
-	        second->setPos(second->pos().x(), second->pos().y() - 5);
+	      } else if (xDist < yDist && first->pos().x() > second->pos().x()) {
+		first->setPos(first->pos().x() + 5, first->pos().y());
+	        second->setPos(second->pos().x() - 5, second->pos().y());
 		first->getLabel()->setNewPos(first->scenePos());
 		second->getLabel()->setNewPos(second->scenePos());		
-	      } else if (xDist < yDist && first->pos().y() < second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() - 5);
-	        second->setPos(second->pos().x(), second->pos().y() + 5);
+	      } else if (xDist < yDist && first->pos().x() < second->pos().x()) {
+		first->setPos(first->pos().x() - 5, first->pos().y());
+	        second->setPos(second->pos().x() + 5, second->pos().y());
 		first->getLabel()->setNewPos(first->scenePos());
 		second->getLabel()->setNewPos(second->scenePos());		
 	      }
@@ -1400,6 +1400,7 @@ void NetworkGraphWidget::multimodeTransformation() {
     QString relationshipOne = multimodeDialog->getRelationshipOne(); 
     QString relationshipTwo = multimodeDialog->getRelationshipTwo(); 
     QString name = multimodeDialog->getName();
+    QString directedness = multimodeDialog->getDirectedness();
     for (int i = 0; i != edgeListWidget->rowCount(); i++) {
       QString currentRel = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
       if (currentRel ==  name) {
@@ -1442,31 +1443,50 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  first->endItem()->isVisible() &&
 		  second->startItem()->isVisible() &&
 		  second->endItem()->isVisible()) {
-		UndirectedEdge *newEdge;
-		if (first->startItem()->getName() < second->startItem()->getName()) {
-		   newEdge = new UndirectedEdge(first->startItem(),
-						second->startItem(),
-						name, CREATED);
-		} else {
-		  newEdge = new UndirectedEdge(second->startItem(),
-					       first->startItem(),
-					       name, CREATED);
-		}
-		bool found = false;
-		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
-		while (it3.hasNext()) {
-		  UndirectedEdge* alter = it3.next();
-		  if (alter->getType() == name) {
-		    if ((alter->startItem() == newEdge->startItem() &&
-			 alter->endItem() == newEdge->endItem()) ||
-			(alter->startItem() == newEdge->endItem() &&
-			 alter->endItem() == newEdge->startItem())) {
-		      found = true;
+		if (directedness == DIRECTED) {
+		  DirectedEdge *newEdge = new DirectedEdge(first->startItem(), second->startItem(),
+						       name, CREATED);
+		  bool found = false;
+		  QVectorIterator<DirectedEdge*> it3(directedVector);
+		  while (it3.hasNext()) {
+		    DirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if (alter->startItem() == newEdge->startItem() &&
+			  alter->endItem() == newEdge->endItem()) { 
+			found = true;
+		      }
 		    }
 		  }
-		}
-		if (!found) {
-		  undirectedVector.push_back(newEdge);
+		  if (!found) {
+		    directedVector.push_back(newEdge);
+		  }
+		} else if (directedness == UNDIRECTED) {
+		  UndirectedEdge *newEdge;
+		  if (first->startItem()->getName() < second->startItem()->getName()) {
+		    newEdge = new UndirectedEdge(first->startItem(),
+						 second->startItem(),
+						 name, CREATED);
+		  } else {
+		    newEdge = new UndirectedEdge(second->startItem(),
+						 first->startItem(),
+						 name, CREATED);
+		  }
+		  bool found = false;
+		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		  while (it3.hasNext()) {
+		    UndirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if ((alter->startItem() == newEdge->startItem() &&
+			   alter->endItem() == newEdge->endItem()) ||
+			  (alter->startItem() == newEdge->endItem() &&
+			   alter->endItem() == newEdge->startItem())) {
+			found = true;
+		      }
+		    }
+		  }
+		  if (!found) {
+		    undirectedVector.push_back(newEdge);
+		  }
 		}
 	      }
 	    }
@@ -1485,31 +1505,50 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  first->endItem()->isVisible() &&
 		  second->startItem()->isVisible() &&
 		  second->endItem()->isVisible()) {
-		UndirectedEdge *newEdge;
-		if (first->endItem()->getName() < second->endItem()->getName()) {
-		  newEdge = new UndirectedEdge(first->endItem(),
-					       second->endItem(),
-					       name, CREATED);
-		} else {
-		  newEdge = new UndirectedEdge(second->endItem(),
-					       first->endItem(),
-					       name, CREATED);
-		}
-		bool found = false;
-		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
-		while (it3.hasNext()) {
-		  UndirectedEdge* alter = it3.next();
-		  if (alter->getType() == name) {
-		    if ((alter->startItem() == newEdge->startItem() &&
-			 alter->endItem() == newEdge->endItem()) ||
-			(alter->startItem() == newEdge->endItem() &&
-			 alter->endItem() == newEdge->startItem())) {
-		      found = true;
+		if (directedness == DIRECTED) {
+		  DirectedEdge *newEdge = new DirectedEdge(first->endItem(), second->endItem(),
+						   name, CREATED);
+		  bool found = false;
+		  QVectorIterator<DirectedEdge*> it3(directedVector);
+		  while (it3.hasNext()) {
+		    DirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if (alter->startItem() == newEdge->startItem() &&
+			  alter->endItem() == newEdge->endItem()) { 
+			found = true;
+		      }
 		    }
 		  }
-		}
-		if (!found) {
-		  undirectedVector.push_back(newEdge);
+		  if (!found) {
+		    directedVector.push_back(newEdge);
+		  }
+		} else if (directedness == UNDIRECTED) {
+		  UndirectedEdge *newEdge;
+		  if (first->endItem()->getName() < second->endItem()->getName()) {
+		    newEdge = new UndirectedEdge(first->endItem(),
+						 second->endItem(),
+						 name, CREATED);
+		  } else {
+		    newEdge = new UndirectedEdge(second->endItem(),
+						 first->endItem(),
+						 name, CREATED);
+		  }
+		  bool found = false;
+		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		  while (it3.hasNext()) {
+		    UndirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if ((alter->startItem() == newEdge->startItem() &&
+			   alter->endItem() == newEdge->endItem()) ||
+			  (alter->startItem() == newEdge->endItem() &&
+			   alter->endItem() == newEdge->startItem())) {
+			found = true;
+		      }
+		    }
+		  }
+		  if (!found) {
+		    undirectedVector.push_back(newEdge);
+		  }
 		}
 	      }
 	    }
@@ -1535,31 +1574,50 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  first->endItem()->isVisible() &&
 		  second->startItem()->isVisible() &&
 		  second->endItem()->isVisible()) {
-		UndirectedEdge *newEdge;
-		if (first->startItem()->getName() < second->startItem()->getName()) {
-		  newEdge = new UndirectedEdge(first->startItem(),
-					       second->startItem(),
-					       name, CREATED);
-		} else {
-		  newEdge = new UndirectedEdge(second->startItem(),
-					       first->startItem(),
-					       name, CREATED);
-		}
-		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
-		bool found = false;
-		while (it3.hasNext()) {
-		  UndirectedEdge *alter = it3.next();
-		  if (alter->getType() == name) {
-		    if ((alter->startItem() == newEdge->startItem() &&
-			 alter->endItem() == newEdge->endItem()) ||
-			(alter->startItem() == newEdge->endItem() &&
-			 alter->endItem() == newEdge->startItem())) {
-		      found = true;
+		if (directedness == DIRECTED) {
+		  DirectedEdge *newEdge = new DirectedEdge(first->startItem(), second->startItem(),
+						   name, CREATED);
+		  bool found = false;
+		  QVectorIterator<DirectedEdge*> it3(directedVector);
+		  while (it3.hasNext()) {
+		    DirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if (alter->startItem() == newEdge->startItem() &&
+			  alter->endItem() == newEdge->endItem()) { 
+			found = true;
+		      }
 		    }
 		  }
-		}
-		if (!found) {
-		  undirectedVector.push_back(newEdge);
+		  if (!found) {
+		    directedVector.push_back(newEdge);
+		  }
+		} else if (directedness == UNDIRECTED) {
+		  UndirectedEdge *newEdge;
+		  if (first->startItem()->getName() < second->startItem()->getName()) {
+		    newEdge = new UndirectedEdge(first->startItem(),
+						 second->startItem(),
+						 name, CREATED);
+		  } else {
+		    newEdge = new UndirectedEdge(second->startItem(),
+						 first->startItem(),
+						 name, CREATED);
+		  }
+		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		  bool found = false;
+		  while (it3.hasNext()) {
+		    UndirectedEdge *alter = it3.next();
+		    if (alter->getType() == name) {
+		      if ((alter->startItem() == newEdge->startItem() &&
+			   alter->endItem() == newEdge->endItem()) ||
+			  (alter->startItem() == newEdge->endItem() &&
+			   alter->endItem() == newEdge->startItem())) {
+			found = true;
+		      }
+		    }
+		  }
+		  if (!found) {
+		    undirectedVector.push_back(newEdge);
+		  }
 		}
 	      }
 	    }
@@ -1578,31 +1636,50 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  first->endItem()->isVisible() &&
 		  second->startItem()->isVisible() &&
 		  second->endItem()->isVisible()) {
-		UndirectedEdge *newEdge;
-		if (first->endItem()->getName() < second->endItem()->getName()) {
-		  newEdge = new UndirectedEdge(first->endItem(),
-					       second->endItem(),
-					       name, CREATED);
-		} else {
-		  newEdge = new UndirectedEdge(second->endItem(),
-					       first->endItem(),
-					       name, CREATED);
-		}
-		bool found = false;
-		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
-		while (it3.hasNext()) {
-		  UndirectedEdge* alter = it3.next();
-		  if (alter->getType() == name) {
-		    if ((alter->startItem() == newEdge->startItem() &&
-			 alter->endItem() == newEdge->endItem()) ||
-			(alter->startItem() == newEdge->endItem() &&
-			 alter->endItem() == newEdge->startItem())) {
-		      found = true;
+		if (directedness == DIRECTED) {
+		  DirectedEdge *newEdge = new DirectedEdge(first->endItem(), second->endItem(),
+						   name, CREATED);
+		  bool found = false;
+		  QVectorIterator<DirectedEdge*> it3(directedVector);
+		  while (it3.hasNext()) {
+		    DirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if (alter->startItem() == newEdge->startItem() &&
+			  alter->endItem() == newEdge->endItem()) { 
+			found = true;
+		      }
 		    }
 		  }
-		}
-		if (!found) {
-		  undirectedVector.push_back(newEdge);
+		  if (!found) {
+		    directedVector.push_back(newEdge);
+		  }
+		} else if (directedness == UNDIRECTED) {
+		  UndirectedEdge *newEdge;
+		  if (first->endItem()->getName() < second->endItem()->getName()) {
+		    newEdge = new UndirectedEdge(first->endItem(),
+						 second->endItem(),
+						 name, CREATED);
+		  } else {
+		    newEdge = new UndirectedEdge(second->endItem(),
+						 first->endItem(),
+						 name, CREATED);
+		  }
+		  bool found = false;
+		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+		  while (it3.hasNext()) {
+		    UndirectedEdge* alter = it3.next();
+		    if (alter->getType() == name) {
+		      if ((alter->startItem() == newEdge->startItem() &&
+			   alter->endItem() == newEdge->endItem()) ||
+			  (alter->startItem() == newEdge->endItem() &&
+			   alter->endItem() == newEdge->startItem())) {
+			found = true;
+		      }
+		    }
+		  }
+		  if (!found) {
+		    undirectedVector.push_back(newEdge);
+		  }
 		}
 	      }
 	    }
@@ -1866,110 +1943,7 @@ void NetworkGraphWidget::activateFilter() {
       current->setFiltered(true);
     }
   }
-  QVectorIterator<NetworkNode*> it3(nodeVector);
-  while (it3.hasNext()) {
-    NetworkNode* currentNode = it3.next();
-    currentNode->hide();
-  }
-  QVectorIterator<DirectedEdge*> it4(directedVector);
-  while (it4.hasNext()) {
-    bool show = false;
-    DirectedEdge *currentDirected = it4.next();
-    QString relationship = currentDirected->getName();
-    QString type = currentDirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentDirected->isMassHidden()) {
-      show = false;
-      } else if (currentDirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentDirected->show();
-      currentDirected->startItem()->show();
-      currentDirected->endItem()->show();
-    } else {
-      currentDirected->hide();
-    }
-  }
-  QVectorIterator<UndirectedEdge*> it5(undirectedVector);
-  while (it5.hasNext()) {
-    bool show = false;
-    UndirectedEdge *currentUndirected = it5.next();
-    QString relationship = currentUndirected->getName();
-    QString type = currentUndirected->getType();
-    if (presentTypes.contains(type)) {
-      if (currentUndirected->isMassHidden()) {
-	show = false;
-      } else if (currentUndirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
-	query->bindValue(":relationship", relationship);
-	query->bindValue(":type", type);
-	query->exec();
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query2->bindValue(":incident", incident);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
-	    show = true;
-	  }
-	  delete query2;
-	}
-	delete query;
-      } else {
-	show = true;
-      }
-    }
-    if (show) {
-      currentUndirected->show();
-      currentUndirected->startItem()->show();
-      currentUndirected->endItem()->show();
-    } else {
-      currentUndirected->hide();
-    }
-  }
-  QVectorIterator<NetworkNodeLabel*> it6(labelVector);
-  while (it4.hasNext()) {
-    NetworkNodeLabel *label = it6.next();
-    if (label->getNode()->isVisible() && labelsShown) {
-      label->show();
-    } else {
-      label->hide();
-    }
-  }
-  QRectF currentRect = this->scene->itemsBoundingRect();
-  currentRect.setX(currentRect.x() - 50);
-  currentRect.setY(currentRect.y() - 50);
-  currentRect.setWidth(currentRect.width() + 100);
-  currentRect.setHeight(currentRect.height() + 100);
-  scene->setSceneRect(currentRect);
+  setVisibility();
 }
 
 void NetworkGraphWidget::deactivateFilter() {
