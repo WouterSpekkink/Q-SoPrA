@@ -9,15 +9,17 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   description = "";
   modeOne = DEFAULT;
   modeTwo = DEFAULT;
-  relationship = DEFAULT;
+  relationshipOne = DEFAULT;
+  relationshipTwo = DEFAULT;
   exitStatus = 1;
 
   modeOneLabel = new QLabel(tr("Mode one:"), this);
   modeOneLabel->setToolTip("<FONT SIZE = 3>The new relationship will be created between nodes of this mode.</FONT>");
   modeTwoLabel = new QLabel(tr("Mode two:"), this);
   modeTwoLabel->setToolTip("<FONT SIZE = 3>Nodes of this mode will be used to determine which nodes of mode one should be related.</FONT>");
-  relationshipLabel = new QLabel(tr("Relationship:"), this);
-  relationshipLabel->setToolTip("<FONT SIZE = 3>The relationship between the two modes that will be used in the transformation.</FONT>");
+  relationshipOneLabel = new QLabel(tr("Relationship ego:"), this);
+  relationshipTwoLabel = new QLabel(tr("Relationship alter:"), this);
+
   nameLabel = new QLabel(tr("New relationship:"), this);
   descriptionLabel = new QLabel(tr("Description:"), this);
   
@@ -29,9 +31,12 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   modeOneComboBox->addItem(DEFAULT);
   modeTwoComboBox = new QComboBox(this);
   modeTwoComboBox->addItem(DEFAULT);
-  relationshipComboBox = new QComboBox(this);
-  relationshipComboBox->addItem(DEFAULT);
-  relationshipComboBox->setEnabled(false);
+  relationshipOneComboBox = new QComboBox(this);
+  relationshipOneComboBox->addItem(DEFAULT);
+  relationshipOneComboBox->setEnabled(false);
+  relationshipTwoComboBox = new QComboBox(this);
+  relationshipTwoComboBox->addItem(DEFAULT);
+  relationshipTwoComboBox->setEnabled(false);
   
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save relationship type"), this);
@@ -40,8 +45,10 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
 	  this, SLOT(setModeOne(const QString &)));
   connect(modeTwoComboBox, SIGNAL(currentTextChanged(const QString &)),
 	  this, SLOT(setModeTwo(const QString &)));
-  connect(relationshipComboBox, SIGNAL(currentTextChanged(const QString &)),
-	  this, SLOT(setRelationship(const QString &)));
+  connect(relationshipOneComboBox, SIGNAL(currentTextChanged(const QString &)),
+	  this, SLOT(setRelationshipOne(const QString &)));
+  connect(relationshipTwoComboBox, SIGNAL(currentTextChanged(const QString &)),
+	  this, SLOT(setRelationshipTwo(const QString &)));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
@@ -55,8 +62,10 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   modeTwoLayout->addWidget(modeTwoComboBox);
   mainLayout->addLayout(modeTwoLayout);
   QPointer<QHBoxLayout> relationshipLayout = new QHBoxLayout;
-  relationshipLayout->addWidget(relationshipLabel);
-  relationshipLayout->addWidget(relationshipComboBox);
+  relationshipLayout->addWidget(relationshipOneLabel);
+  relationshipLayout->addWidget(relationshipOneComboBox);
+  relationshipLayout->addWidget(relationshipTwoLabel);
+  relationshipLayout->addWidget(relationshipTwoComboBox);
   mainLayout->addLayout(relationshipLayout);
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
@@ -100,8 +109,10 @@ void MultimodeDialog::setModes(QVector<QString> submittedModes) {
 void MultimodeDialog::setModeOne(const QString &name) {
   modeOne = name;
   if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) {
-    relationshipComboBox->clear();
-    relationshipComboBox->addItem(DEFAULT);
+    relationshipOneComboBox->clear();
+    relationshipOneComboBox->addItem(DEFAULT);
+    relationshipTwoComboBox->clear();
+    relationshipTwoComboBox->addItem(DEFAULT);
     QList<QString> include;
     QVectorIterator<DirectedEdge*> it(*pDirected);
     while (it.hasNext()) {
@@ -134,21 +145,28 @@ void MultimodeDialog::setModeOne(const QString &name) {
     QSet<QString> includeSet = QSet<QString>::fromList(include);
     QSet<QString>::iterator it3;
     for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) {
-      relationshipComboBox->addItem(*it3);
+      relationshipOneComboBox->addItem(*it3);
+      relationshipTwoComboBox->addItem(*it3);
     }
-    relationshipComboBox->setEnabled(true);
+    relationshipOneComboBox->setEnabled(true);
+    relationshipTwoComboBox->setEnabled(true);
   } else {
-    relationshipComboBox->clear();
-    relationshipComboBox->addItem(DEFAULT);
-    relationshipComboBox->setEnabled(false);
+    relationshipOneComboBox->clear();
+    relationshipOneComboBox->addItem(DEFAULT);
+    relationshipOneComboBox->setEnabled(false);
+    relationshipTwoComboBox->clear();
+    relationshipTwoComboBox->addItem(DEFAULT);
+    relationshipTwoComboBox->setEnabled(false);
   }
 }
 
 void MultimodeDialog::setModeTwo(const QString &name) {
   modeTwo = name;
   if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) {
-    relationshipComboBox->clear();
-    relationshipComboBox->addItem(DEFAULT);
+    relationshipOneComboBox->clear();
+    relationshipOneComboBox->addItem(DEFAULT);
+    relationshipTwoComboBox->clear();
+    relationshipTwoComboBox->addItem(DEFAULT);
     QList<QString> include;
     QVectorIterator<DirectedEdge*> it(*pDirected);
     while (it.hasNext()) {
@@ -180,18 +198,27 @@ void MultimodeDialog::setModeTwo(const QString &name) {
     QSet<QString> includeSet = QSet<QString>::fromList(include);
     QSet<QString>::iterator it3;
     for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) {
-      relationshipComboBox->addItem(*it3);
+      relationshipOneComboBox->addItem(*it3);
+      relationshipTwoComboBox->addItem(*it3);
     }
-    relationshipComboBox->setEnabled(true);
+    relationshipOneComboBox->setEnabled(true);
+    relationshipTwoComboBox->setEnabled(true);
   } else {
-    relationshipComboBox->clear();
-    relationshipComboBox->addItem(DEFAULT);
-    relationshipComboBox->setEnabled(false);
+    relationshipOneComboBox->clear();
+    relationshipOneComboBox->addItem(DEFAULT);
+    relationshipOneComboBox->setEnabled(false);
+    relationshipTwoComboBox->clear();
+    relationshipTwoComboBox->addItem(DEFAULT);
+    relationshipTwoComboBox->setEnabled(false);
   }
 }
 
-void MultimodeDialog::setRelationship(const QString &name) {
-  relationship = name;
+void MultimodeDialog::setRelationshipOne(const QString &name) {
+  relationshipOne = name;
+}
+
+void MultimodeDialog::setRelationshipTwo(const QString &name) {
+  relationshipTwo = name;
 }
 
 QString MultimodeDialog::getModeOne() {
@@ -202,8 +229,12 @@ QString MultimodeDialog::getModeTwo() {
   return modeTwo;
 }
 
-QString MultimodeDialog::getRelationship() {
-  return relationship;
+QString MultimodeDialog::getRelationshipOne() {
+  return relationshipOne;
+}
+
+QString MultimodeDialog::getRelationshipTwo() {
+  return relationshipTwo;
 }
 
 QString MultimodeDialog::getName() {
@@ -247,12 +278,12 @@ void MultimodeDialog::saveAndClose() {
     delete warningBox;
     return;
   }
-  if (relationship == DEFAULT) {
+  if (relationshipOne == DEFAULT || relationshipTwo == DEFAULT) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No relationship selected.");
-    warningBox->setInformativeText("A relationship must be selected for the transformation to be possible.");
+    warningBox->setText("No valid relationships selected.");
+    warningBox->setInformativeText("You must select valid relationships for the transformation to be possible.");
     warningBox->exec();
     delete warningBox;
     return;

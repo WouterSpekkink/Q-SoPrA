@@ -26,6 +26,7 @@ extern QString IGNORE;
 extern QString REMOVENORMALLINKAGE;
 extern QString ENTITY;
 extern QString INCIDENT;
+extern QString CREATED;
 
 #endif
 

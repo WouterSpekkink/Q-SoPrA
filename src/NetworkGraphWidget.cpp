@@ -122,6 +122,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   showTypeButton->setChecked(true);
   multimodeButton = new QPushButton(tr("Multimode trans."), legendWidget);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
+  simpleLayoutButton = new QPushButton(tr("Simple layout"), graphicsWidget);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -173,6 +174,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
+  connect(simpleLayoutButton, SIGNAL(clicked()), this, SLOT(simpleLayout()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(addRelationshipType()));
@@ -279,6 +281,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addWidget(legendWidget);				   
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(simpleLayoutButton);
   graphicsControlsLayout->addWidget(colorByAttributeButton);
   graphicsControlsLayout->addWidget(nodeColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
@@ -1394,7 +1397,8 @@ void NetworkGraphWidget::multimodeTransformation() {
   if (multimodeDialog->getExitStatus() == 0) {
     QString modeOne = multimodeDialog->getModeOne();
     QString modeTwo = multimodeDialog->getModeTwo();
-    QString relationship = multimodeDialog->getRelationship();
+    QString relationshipOne = multimodeDialog->getRelationshipOne(); 
+    QString relationshipTwo = multimodeDialog->getRelationshipTwo(); 
     QString name = multimodeDialog->getName();
     for (int i = 0; i != edgeListWidget->rowCount(); i++) {
       QString currentRel = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
@@ -1423,13 +1427,13 @@ void NetworkGraphWidget::multimodeTransformation() {
     QVectorIterator<DirectedEdge*> it(directedVector);
     while (it.hasNext()) {
       DirectedEdge *first = it.next();
-      if (first->getType() == relationship) {
+      if (first->getType() == relationshipOne) {
 	if (first->startItem()->getMode() == modeOne &&
 	    first->endItem()->getMode() == modeTwo) {
 	  QVectorIterator<DirectedEdge*> it2(directedVector);
 	  while (it2.hasNext()) {
 	    DirectedEdge *second = it2.next();
-	    if (second->getType() == relationship) {
+	    if (second->getType() == relationshipTwo) {
 	      if (second->endItem() == first->endItem() &&
 		  second->startItem() != first->startItem() &&
 		  second->startItem()->getMode() == modeOne &&
@@ -1442,11 +1446,11 @@ void NetworkGraphWidget::multimodeTransformation() {
 		if (first->startItem()->getName() < second->startItem()->getName()) {
 		   newEdge = new UndirectedEdge(first->startItem(),
 						second->startItem(),
-						name, "MM");
+						name, CREATED);
 		} else {
 		  newEdge = new UndirectedEdge(second->startItem(),
 					       first->startItem(),
-					       name, "MM");
+					       name, CREATED);
 		}
 		bool found = false;
 		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
@@ -1472,7 +1476,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 	  QVectorIterator<DirectedEdge*> it2(directedVector);
 	  while (it2.hasNext()) {
 	    DirectedEdge *second = it2.next();
-	    if (second->getType() == relationship) {
+	    if (second->getType() == relationshipTwo) {
 	      if (second->startItem() == first->startItem() &&
 		  second->endItem() != first->endItem() &&
 		  second->endItem()->getMode() == modeOne &&
@@ -1485,11 +1489,11 @@ void NetworkGraphWidget::multimodeTransformation() {
 		if (first->endItem()->getName() < second->endItem()->getName()) {
 		  newEdge = new UndirectedEdge(first->endItem(),
 					       second->endItem(),
-					       name, "MM");
+					       name, CREATED);
 		} else {
 		  newEdge = new UndirectedEdge(second->endItem(),
 					       first->endItem(),
-					       name, "MM");
+					       name, CREATED);
 		}
 		bool found = false;
 		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
@@ -1516,13 +1520,13 @@ void NetworkGraphWidget::multimodeTransformation() {
     QVectorIterator<UndirectedEdge*> it3(undirectedVector);
     while (it3.hasNext()) {
       UndirectedEdge *first = it3.next();
-      if (first->getType() == relationship) {
+      if (first->getType() == relationshipOne) {
 	if (first->startItem()->getMode() == modeOne &&
 	    first->endItem()->getMode() == modeTwo) {
 	  QVectorIterator<UndirectedEdge*> it4(undirectedVector);
 	  while (it4.hasNext()) {
 	    UndirectedEdge *second = it4.next();
-	    if (second->getType() == relationship) {
+	    if (second->getType() == relationshipTwo) { 
 	      if (second->endItem() == first->endItem() &&
 		  second->startItem() != first->startItem() &&
 		  second->startItem()->getMode() == modeOne &&
@@ -1535,11 +1539,11 @@ void NetworkGraphWidget::multimodeTransformation() {
 		if (first->startItem()->getName() < second->startItem()->getName()) {
 		  newEdge = new UndirectedEdge(first->startItem(),
 					       second->startItem(),
-					       name, "MM");
+					       name, CREATED);
 		} else {
 		  newEdge = new UndirectedEdge(second->startItem(),
 					       first->startItem(),
-					       name, "MM");
+					       name, CREATED);
 		}
 		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
 		bool found = false;
@@ -1565,7 +1569,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 	  QVectorIterator<UndirectedEdge*> it4(undirectedVector);
 	  while (it4.hasNext()) {
 	    UndirectedEdge *second = it4.next();
-	    if (second->getType() == relationship) {
+	    if (second->getType() == relationshipTwo) {
 	      if (second->endItem() == first->endItem() &&
 		  second->startItem() != first->startItem() &&
 		  second->endItem()->getMode() == modeOne &&
@@ -1578,11 +1582,11 @@ void NetworkGraphWidget::multimodeTransformation() {
 		if (first->endItem()->getName() < second->endItem()->getName()) {
 		  newEdge = new UndirectedEdge(first->endItem(),
 					       second->endItem(),
-					       name, "MM");
+					       name, CREATED);
 		} else {
 		  newEdge = new UndirectedEdge(second->endItem(),
 					       first->endItem(),
-					       name, "MM");
+					       name, CREATED);
 		}
 		bool found = false;
 		QVectorIterator<UndirectedEdge*> it3(undirectedVector);
@@ -1626,14 +1630,17 @@ void NetworkGraphWidget::multimodeTransformation() {
 
 void NetworkGraphWidget::mergeRelationships() {
   QVector<QString> relVector;
+  QVector<QString> directednessVector;
   for (int i = 0; i != edgeListWidget->rowCount(); i++) {
     QString currentType = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
     bool found = false;
     QVectorIterator<DirectedEdge*> rit(directedVector);
+    QString directedness = "";
     while (rit.hasNext()) {
       DirectedEdge* directed = rit.next();
       if (directed->isVisible() && directed->getType() == currentType) {
 	found = true;
+	directedness = DIRECTED;
       }
     }
     QVectorIterator<UndirectedEdge*> rit2(undirectedVector);
@@ -1641,34 +1648,23 @@ void NetworkGraphWidget::mergeRelationships() {
       UndirectedEdge* undirected = rit2.next();
       if (undirected->isVisible() && undirected->getType() == currentType) {
 	found = true;
+	directedness = UNDIRECTED;
       }
     }
     if (found) {
       relVector.push_back(currentType);
+      directednessVector.push_back(directedness);
     }
   }
-  QPointer<MergeRelationshipsDialog> mergeRelationshipsDialog = new MergeRelationshipsDialog(this);
-  mergeRelationshipsDialog->setRelationships(relVector);
+  QPointer<MergeRelationshipsDialog> mergeRelationshipsDialog =
+    new MergeRelationshipsDialog(this, &directedVector, &undirectedVector,
+				 relVector, directednessVector);
   mergeRelationshipsDialog->exec();
   if (mergeRelationshipsDialog->getExitStatus() == 0) {
-    QString relOne = mergeRelationshipsDialog->getRelOne();
-    QString relTwo = mergeRelationshipsDialog->getRelTwo();
+    QVector<QString> types = mergeRelationshipsDialog->getTypes();
     QString name = mergeRelationshipsDialog->getName();
     QString description = mergeRelationshipsDialog->getDescription();
     QString directedness = mergeRelationshipsDialog->getDirectedness();
-    for (int i = 0; i != edgeListWidget->rowCount(); i++) {
-      QString currentRel = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
-      if (currentRel ==  name) {
-	QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	warningBox->addButton(QMessageBox::Ok);
-	warningBox->setIcon(QMessageBox::Warning);
-	warningBox->setText("Name already exists.");
-	warningBox->setInformativeText("You already have a relationship type with that name.");
-	warningBox->exec();
-	delete warningBox;
-	return;
-      }
-    }
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     QColor color = QColor(Qt::black);
     if (colorDialog->exec()) {
@@ -1682,10 +1678,13 @@ void NetworkGraphWidget::mergeRelationships() {
       QVectorIterator<DirectedEdge*> it(directedVector);
       while (it.hasNext()) {
 	DirectedEdge* directed = it.next();
-	if (directed->getType() == relOne || directed->getType() == relTwo) {
-	  directed->setType(name);
-	  directed->setColor(color);
-	  directed->setName("MM");
+	if (types.contains(directed->getType())) {
+	  DirectedEdge *newDirected = new DirectedEdge(directed->startItem(), directed->endItem(),
+						       name, CREATED);
+	  newDirected->setColor(color);
+	  directedVector.push_back(newDirected);
+	  scene->removeItem(directed);
+	  scene->addItem(newDirected);
 	}
       }
       QVectorIterator<DirectedEdge*> it2(directedVector);
@@ -1698,7 +1697,8 @@ void NetworkGraphWidget::mergeRelationships() {
 	  if (first != second) {
 	    if (first->startItem() == second->startItem() &&
 		first->endItem() == second->endItem() &&
-		first->getType() == second->getType()) {
+		first->getType() == CREATED &&
+		second->getType() == CREATED) {
 	      found = true;
 	    }
 	  }
@@ -1711,10 +1711,14 @@ void NetworkGraphWidget::mergeRelationships() {
       QVectorIterator<UndirectedEdge*> it(undirectedVector);
       while (it.hasNext()) {
 	UndirectedEdge *undirected = it.next();
-	if (undirected->getType() == relOne || undirected->getType() == relTwo) {
-	  undirected->setType(name);
-	  undirected->setColor(color);
-	  undirected->setName("MM");
+	if (types.contains(undirected->getType())) {
+	  UndirectedEdge *newUndirected = new UndirectedEdge(undirected->startItem(),
+							     undirected->endItem(),
+							     name, CREATED);
+	  newUndirected->setColor(color);
+	  undirectedVector.push_back(newUndirected);
+	  scene->removeItem(undirected);
+	  scene->addItem(newUndirected);
 	}
       }
       QVectorIterator<UndirectedEdge*> it2(undirectedVector);
@@ -1727,7 +1731,8 @@ void NetworkGraphWidget::mergeRelationships() {
 	  if (first != second) {
 	    if (first->startItem() == second->startItem() &&
 		first->endItem() == second->endItem() &&
-		first->getType() == second->getType()) {
+		first->getType() == CREATED &&
+		second->getType() == CREATED) {
 	      found = true;
 	    }
 	  }
@@ -1738,16 +1743,9 @@ void NetworkGraphWidget::mergeRelationships() {
 	}
       }
     }
-    for (int i = 0; i != edgeListWidget->rowCount();) {
-      if (edgeListWidget->item(i,0)->data(Qt::DisplayRole).toString() == relOne) {
-	edgeListWidget->removeRow(i);
-      }
-      if (edgeListWidget->item(i,0)->data(Qt::DisplayRole).toString() == relTwo) {
-	edgeListWidget->removeRow(i);
-      }
-      if (i != edgeListWidget->rowCount()) {
-	i++;
-      }
+    QVectorIterator<QString> rit(types);
+    while (rit.hasNext()) {
+      presentTypes.removeOne(rit.next());
     }
     presentTypes.push_back(name);
     QTableWidgetItem *item = new QTableWidgetItem(name);
@@ -1763,6 +1761,14 @@ void NetworkGraphWidget::mergeRelationships() {
     edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
       setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags()
 	       ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+    for (int i = 0; i != edgeListWidget->rowCount();) {
+      while (types.contains(edgeListWidget->item(i,0)->data(Qt::DisplayRole).toString())) {
+	edgeListWidget->removeRow(i);
+      }
+      if (i != edgeListWidget->rowCount()) {
+	i++;
+      }
+    }
   }
 }
 
@@ -2291,7 +2297,7 @@ void NetworkGraphWidget::setVisibility() {
     QString relationship = currentDirected->getName();
     QString type = currentDirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentDirected->getName() == "MM" && !(currentDirected->isMassHidden())) {
+      if (relationship == CREATED && !(currentDirected->isMassHidden())) {
 	show = true;
       } else if (currentDirected->isMassHidden()) {
 	show = false;
@@ -2335,7 +2341,7 @@ void NetworkGraphWidget::setVisibility() {
     QString relationship = currentUndirected->getName();
     QString type = currentUndirected->getType();
     if (presentTypes.contains(type)) {
-      if (currentUndirected->getName() == "MM" && !(currentUndirected->isMassHidden())) {
+      if (relationship == CREATED && !(currentUndirected->isMassHidden())) {
 	show = true;
       } else if (currentUndirected->isMassHidden()) {
 	show = false;
@@ -2390,7 +2396,6 @@ void NetworkGraphWidget::setVisibility() {
 }
 
 void NetworkGraphWidget::cleanUp() {
-  scene->clearSelection();
   qDeleteAll(directedVector);
   directedVector.clear();
   qDeleteAll(undirectedVector);
@@ -2399,6 +2404,8 @@ void NetworkGraphWidget::cleanUp() {
   nodeVector.clear();
   qDeleteAll(labelVector);
   labelVector.clear();
+  scene->clearSelection();
+  scene->clear();
   nodeListWidget->setRowCount(0);
   edgeListWidget->setRowCount(0);
   presentTypes.clear();

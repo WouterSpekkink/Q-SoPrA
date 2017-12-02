@@ -2,51 +2,46 @@
 
 MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
 						   QVector<DirectedEdge*> *directed,
-						   QVector<UndirectedEdge*> *undirected)
+						   QVector<UndirectedEdge*> *undirected,
+						   QVector<QString> submittedRelationships,
+						   QVector<QString> submittedDirections)
   : QDialog(parent) {
   
   pDirected = directed;
   pUndirected = undirected;
+  directions = submittedDirections;
   name = "";
   description = "";
   directedness = "";
-  relOne = DEFAULT;
-  relTwo = DEFAULT;
   exitStatus = 1;  
 
-  relOneLabel = new QLabel(tr("Relationship one:"), this);
-  relTwoLabel = new QLabel(tr("Relationship two:"), this);
-  nameLabel = new QLabel(tr("Merged relationship:"), this);
-  descriptionLabel = new QLabel(tr("Description:"), this);
+  relationshipsLabel = new QLabel(tr("Relationships:"), this);
+  nameLabel = new QLabel(tr("Merged relationship name:"), this);
+  descriptionLabel = new QLabel(tr("Merged relationship description:"), this);
   
   nameField = new QLineEdit();
 
   descriptionField = new QTextEdit();
 
-  relOneComboBox = new QComboBox(this);
-  relOneComboBox->addItem(DEFAULT);
-  relTwoComboBox = new QComboBox(this);
-  relTwoComboBox->addItem(DEFAULT);
+  QVectorIterator<QString> it(submittedRelationships);
+  while (it.hasNext()) {
+    QString currentRel = it.next();
+    QPointer<QCheckBox> checkBox = new QCheckBox(currentRel, this);
+    relationships.push_back(checkBox);
+  }
   
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save new relationship"), this);
-
-  connect(relOneComboBox, SIGNAL(currentTextChanged(const QString &)),
-	  this, SLOT(setRelOne(const QString &)));
-  connect(relTwoComboBox, SIGNAL(currentTextChanged(const QString &)),
-	  this, SLOT(setRelTwo(const QString &)));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
-  QPointer<QHBoxLayout> relOneLayout = new QHBoxLayout;
-  relOneLayout->addWidget(relOneLabel);
-  relOneLayout->addWidget(relOneComboBox);
-  mainLayout->addLayout(relOneLayout);
-  QPointer<QHBoxLayout> relTwoLayout = new QHBoxLayout;
-  relTwoLayout->addWidget(relTwoLabel);
-  relTwoLayout->addWidget(relTwoComboBox);
-  mainLayout->addLayout(relTwoLayout);
+  mainLayout->addWidget(relationshipsLabel);
+  QVectorIterator<QPointer<QCheckBox>> it2(relationships);
+  while (it2.hasNext()) {
+    mainLayout->addWidget(it2.next()); 
+  }
+  
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
@@ -55,10 +50,8 @@ MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
   nameLayout->addWidget(nameLabel);
   nameLayout->addWidget(nameField);
   mainLayout->addLayout(nameLayout);
-  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(descriptionLabel);
-  descriptionLayout->addWidget(descriptionField);
-  mainLayout->addLayout(descriptionLayout);
+  mainLayout->addWidget(descriptionLabel);
+  mainLayout->addWidget(descriptionField);
 
   QPointer<QFrame> middleLine = new QFrame;
   middleLine->setFrameShape(QFrame::HLine);
@@ -76,29 +69,8 @@ MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
   setFixedHeight(sizeHint().height());
 }
 
-void MergeRelationshipsDialog::setRelationships(QVector<QString> submittedRelationships) {
-  QVectorIterator<QString> it(submittedRelationships);
-  while (it.hasNext()) {
-    QString currentRel = it.next();
-    relOneComboBox->addItem(currentRel);
-    relTwoComboBox->addItem(currentRel);
-  }
-}
-
-void MergeRelationshipsDialog::setRelOne(const QString &name) {
-  relOne = name;
-}
-
-void MergeRelationshipsDialog::setRelTwo(const QString &name) {
-  relTwo = name;
-}
-
-QString MergeRelationshipsDialog::getRelOne() {
-  return relOne;
-}
-
-QString MergeRelationshipsDialog::getRelTwo() {
-  return relTwo;
+QVector<QString> MergeRelationshipsDialog::getTypes() {
+  return types;
 }
 
 QString MergeRelationshipsDialog::getName() {
@@ -126,61 +98,49 @@ void MergeRelationshipsDialog::cancelAndClose() {
 void MergeRelationshipsDialog::saveAndClose() {
   description =  descriptionField->toPlainText().trimmed();
   name = nameField->text().trimmed();
-  if (relOne == DEFAULT || relTwo == DEFAULT) {
+  QVectorIterator<QPointer<QCheckBox>> it(relationships);
+  int checked = 0;
+  while (it.hasNext()) {
+    QPointer<QCheckBox> current = it.next();
+    if (current->isChecked()) {
+      checked++;
+    }
+  }
+  if (checked < 2) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No valid relationships selected.");
-    warningBox->setInformativeText("One or both of the selected relationships are invalid.");
+    warningBox->setText("Less than 2 relationships checked.");
+    warningBox->setInformativeText("You have to check at least 2 relationships.");
     warningBox->exec();
     delete warningBox;
     return;
   }
-  if (relOne == relTwo) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Relationships should be different.");
-    warningBox->setInformativeText("You cannot select the same relationship twice.");
-    warningBox->exec();
-    delete warningBox;
-    return;
+  bool directedFound = false;
+  bool undirectedFound = false;
+  for (int i = 0; i != relationships.size(); i++) {
+    QPointer<QCheckBox> current = relationships[i];
+    if (current->isChecked()) {
+      if (directions[i] == DIRECTED) {
+	directedFound = true;
+      } else if (directions[i] == UNDIRECTED) {
+	undirectedFound = true;
+      }
+    }
   }
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT directedness FROM relationship_types "
-		 "WHERE name = :relOne");
-  query->bindValue(":relOne", relOne);
-  query->exec();
-  query->first();
-  /*
-    If a relationship type is not in the list of types, 
-    then it was created through multimode transformation, which means it 
-    is always undirected if not found in the list.
-  */
-  QString directionOne = UNDIRECTED; 
-  if (!(query->isNull(0))) {  
-    directionOne = query->value(0).toString();
-  }    
-  query->prepare("SELECT directedness FROM relationship_types "
-		 "WHERE name = :relTwo");
-  query->bindValue(":relTwo", relTwo);
-  query->exec();
-  query->first();
-  QString directionTwo = UNDIRECTED;
-  if (!(query->isNull(0))) {  
-    directionTwo = query->value(0).toString();
-  }
-  if (directionOne != directionTwo) {
+  if (directedFound && undirectedFound) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Directedness is different.");
-    warningBox->setInformativeText("You cannot merge relationships with different a directedness.");
+    warningBox->setInformativeText("You cannot merge relationships with a different directedness.");
     warningBox->exec();
     delete warningBox;
     return;
-  } else {
-    directedness = directionOne;
+  } else if (directedFound) {
+    directedness = DIRECTED;
+  } else if (undirectedFound) {
+    directedness = UNDIRECTED;
   }
   if (description == "") {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
@@ -203,16 +163,16 @@ void MergeRelationshipsDialog::saveAndClose() {
     return;
   }
   bool found = false;
-  QVectorIterator<DirectedEdge*> it(*pDirected);
-  while (it.hasNext()) {
-    DirectedEdge* directed = it.next();
+  QVectorIterator<DirectedEdge*> it2(*pDirected);
+  while (it2.hasNext()) {
+    DirectedEdge* directed = it2.next();
     if (directed->getType() == name) {
       found = true;
     }
   }
-  QVectorIterator<UndirectedEdge*> it2(*pUndirected);
-  while (it2.hasNext()) {
-    UndirectedEdge* undirected = it2.next();
+  QVectorIterator<UndirectedEdge*> it3(*pUndirected);
+  while (it3.hasNext()) {
+    UndirectedEdge* undirected = it3.next();
     if (undirected->getType() == name) {
       found = true;
     }
@@ -227,7 +187,13 @@ void MergeRelationshipsDialog::saveAndClose() {
     delete warningBox;
     return;
   }
-  delete query;
+  QVectorIterator<QPointer<QCheckBox>> it4(relationships);
+  while (it4.hasNext()) {
+    QPointer<QCheckBox> current = it4.next();
+    if (current->isChecked()) {
+      types.push_back(current->text());
+    }
+  }
   exitStatus = 0;
   this->close();
 }

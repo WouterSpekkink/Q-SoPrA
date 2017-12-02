@@ -26,7 +26,8 @@ public:
   void setModes(QVector<QString> submittedModes);
   QString getModeOne();
   QString getModeTwo();
-  QString getRelationship();
+  QString getRelationshipOne();
+  QString getRelationshipTwo();
   QString getName();
   QString getDescription();
   int getExitStatus();
@@ -34,7 +35,8 @@ public:
 private slots:
   void setModeOne(const QString &name);
   void setModeTwo(const QString &name);
-  void setRelationship(const QString &name);
+  void setRelationshipOne(const QString &name);
+  void setRelationshipTwo(const QString &name);
   
   void cancelAndClose();
   void saveAndClose();
@@ -45,13 +47,15 @@ private:
 
   QPointer<QLabel> modeOneLabel; // Don't forget to set tool tips.
   QPointer<QLabel> modeTwoLabel;
-  QPointer<QLabel> relationshipLabel;
+  QPointer<QLabel> relationshipOneLabel;
+  QPointer<QLabel> relationshipTwoLabel;
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
   
   QPointer<QComboBox> modeOneComboBox;
   QPointer<QComboBox> modeTwoComboBox;
-  QPointer<QComboBox> relationshipComboBox;
+  QPointer<QComboBox> relationshipOneComboBox;
+  QPointer<QComboBox> relationshipTwoComboBox;
   
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
@@ -66,7 +70,8 @@ private:
   QString description;
   QString modeOne;
   QString modeTwo;
-  QString relationship;
+  QString relationshipOne;
+  QString relationshipTwo;
   
   int exitStatus;
 };

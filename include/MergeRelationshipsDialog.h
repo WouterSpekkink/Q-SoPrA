@@ -6,7 +6,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QComboBox>
+#include <QtWidgets/QCheckBox>
 #include <QPointer>
 #include <QColorDialog>
 #include <QtSql>
@@ -20,21 +20,19 @@ class MergeRelationshipsDialog : public QDialog {
 public:
   MergeRelationshipsDialog(QWidget *parent = 0,
 			   QVector<DirectedEdge*> *directed = new QVector<DirectedEdge*>,
-			   QVector<UndirectedEdge*> *undirected = new QVector<UndirectedEdge*>);
+			   QVector<UndirectedEdge*> *undirected = new QVector<UndirectedEdge*>,
+			   QVector<QString> submittedRelationships = QVector<QString>(),
+			   QVector<QString> submittedDirections = QVector<QString>());
   ~MergeRelationshipsDialog() {};
 
   void setRelationships(QVector<QString> submittedRelationships);
-  QString getRelOne();
-  QString getRelTwo();
+  QVector<QString> getTypes();
   QString getName();
   QString getDescription();
   QString getDirectedness();
   int getExitStatus();
   
 private slots:
-  void setRelOne(const QString &name);
-  void setRelTwo(const QString &name);
-
   void cancelAndClose();
   void saveAndClose();
 
@@ -42,13 +40,11 @@ private:
   QVector<DirectedEdge*> *pDirected;
   QVector<UndirectedEdge*> *pUndirected;
   
-  QPointer<QLabel> relOneLabel;
-  QPointer<QLabel> relTwoLabel;
+  QPointer<QLabel> relationshipsLabel;
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
 
-  QPointer<QComboBox> relOneComboBox;
-  QPointer<QComboBox> relTwoComboBox;
+  QVector<QPointer<QCheckBox>> relationships;
 
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
@@ -57,10 +53,10 @@ private:
 
   QPointer<QTextEdit> descriptionField;
 
+  QVector<QString> types;
+  QVector<QString> directions;
   QString name;
   QString description;
-  QString relOne;
-  QString relTwo;
   QString directedness;
   
   int exitStatus;

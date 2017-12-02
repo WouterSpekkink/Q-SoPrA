@@ -174,6 +174,7 @@ private:
   QPointer<QPushButton> showTypeButton;
   QPointer<QPushButton> multimodeButton;
   QPointer<QPushButton> mergeButton;
+  QPointer<QPushButton> simpleLayoutButton;
   
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
