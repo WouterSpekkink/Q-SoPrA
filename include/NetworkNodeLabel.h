@@ -24,7 +24,9 @@ public:
   void setOffset(QPointF offset);
   void increaseFontSize();
   void decreaseFontSize();
-
+  int getFontSize();
+  void setFontSize(int size);
+  
 protected:
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;

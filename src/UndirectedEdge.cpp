@@ -19,6 +19,7 @@ UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QSt
   filtered = true;
   massHidden = false;
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+  comment = "";
 }
 
 QRectF UndirectedEdge::boundingRect() const {
@@ -170,4 +171,18 @@ bool UndirectedEdge::isMassHidden() {
 
 void UndirectedEdge::setMassHidden(bool state) {
   massHidden = state;
+}
+
+void UndirectedEdge::setComment(const QString submittedComment) {
+  comment = submittedComment;
+  QString toolTip = "<FONT SIZE = 3>" + comment + "</FONT>";
+  this->setToolTip(toolTip);
+}
+
+QString UndirectedEdge::getComment() {
+  return comment;
+}
+
+QColor UndirectedEdge::getColor() {
+  return color;
 }

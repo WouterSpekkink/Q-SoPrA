@@ -327,16 +327,24 @@ void EventGraphWidget::retrieveData() {
       query->bindValue(":id", id);
       query->exec();
       query->first();
-      QString timeStamp = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QString raw = query->value(2).toString();
-      QString comment = query->value(3).toString();
-      QString source = query->value(4).toString();
-      timeStampField->setText(timeStamp);
-      descriptionField->setText(description);
-      rawField->setText(raw);
-      commentField->setText(comment);
-      sourceField->setText(source);
+      if (query->isNull(0)) {
+	timeStampField->setText("Incident was deleted");
+	descriptionField->setText("Incident was deleted");
+	rawField->setText("Incident was deleted");
+	commentField->setText("Incident was deleted");
+	sourceField->setText("Incident was deleted");
+      } else {
+	QString timeStamp = query->value(0).toString();
+	QString description = query->value(1).toString();
+	QString raw = query->value(2).toString();
+	QString comment = query->value(3).toString();
+	QString source = query->value(4).toString();
+	timeStampField->setText(timeStamp);
+	descriptionField->setText(description);
+	rawField->setText(raw);
+	commentField->setText(comment);
+	sourceField->setText(source);
+      }
       delete query;
       previousEventButton->setEnabled(true);
       nextEventButton->setEnabled(true);
@@ -372,16 +380,24 @@ void EventGraphWidget::previousDataItem() {
     query->bindValue(":id", id);
     query->exec();
     query->first();
-    QString timeStamp = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QString raw = query->value(2).toString();
-    QString comment = query->value(3).toString();
-    QString source = query->value(4).toString();
-    timeStampField->setText(timeStamp);
-    descriptionField->setText(description);
-    rawField->setText(raw);
-    commentField->setText(comment);
-    sourceField->setText(source);
+    if (query->isNull(0)) {
+      timeStampField->setText("Incident was deleted");
+      descriptionField->setText("Incident was deleted");
+      rawField->setText("Incident was deleted");
+      commentField->setText("Incident was deleted");
+      sourceField->setText("Incident was deleted");
+    } else {
+      QString timeStamp = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString raw = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString source = query->value(4).toString();
+      timeStampField->setText(timeStamp);
+      descriptionField->setText(description);
+      rawField->setText(raw);
+      commentField->setText(comment);
+      sourceField->setText(source);
+    }
     delete query;
   } else {
     EventItem *currentEvent = currentData.at(vectorPos);
@@ -400,16 +416,24 @@ void EventGraphWidget::previousDataItem() {
     query->bindValue(":id", id);
     query->exec();
     query->first();
-    QString timeStamp = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QString raw = query->value(2).toString();
-    QString comment = query->value(3).toString();
-    QString source = query->value(4).toString();
-    timeStampField->setText(timeStamp);
-    descriptionField->setText(description);
-    rawField->setText(raw);
-    commentField->setText(comment);
-    sourceField->setText(source);
+    if (query->isNull(0)) {
+      timeStampField->setText("Incident was deleted");
+      descriptionField->setText("Incident was deleted");
+      rawField->setText("Incident was deleted");
+      commentField->setText("Incident was deleted");
+      sourceField->setText("Incident was deleted");
+    } else {
+      QString timeStamp = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString raw = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString source = query->value(4).toString();
+      timeStampField->setText(timeStamp);
+      descriptionField->setText(description);
+      rawField->setText(raw);
+      commentField->setText(comment);
+      sourceField->setText(source);
+    }
     delete query;
   }
 }
@@ -432,16 +456,24 @@ void EventGraphWidget::nextDataItem() {
     query->bindValue(":id", id);
     query->exec();
     query->first();
-    QString timeStamp = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QString raw = query->value(2).toString();
-    QString comment = query->value(3).toString();
-    QString source = query->value(4).toString();
-    timeStampField->setText(timeStamp);
-    descriptionField->setText(description);
-    rawField->setText(raw);
-    commentField->setText(comment);
-    sourceField->setText(source);
+    if (query->isNull(0)) {
+      timeStampField->setText("Incident was deleted");
+      descriptionField->setText("Incident was deleted");
+      rawField->setText("Incident was deleted");
+      commentField->setText("Incident was deleted");
+      sourceField->setText("Incident was deleted");
+    } else {
+      QString timeStamp = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString raw = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString source = query->value(4).toString();
+      timeStampField->setText(timeStamp);
+      descriptionField->setText(description);
+      rawField->setText(raw);
+      commentField->setText(comment);
+      sourceField->setText(source);
+    }
     delete query;
   } else {
     EventItem *currentEvent = currentData.at(vectorPos);
@@ -459,17 +491,25 @@ void EventGraphWidget::nextDataItem() {
     query->bindValue(":id", id);
     query->exec();
     query->first();
-    QString timeStamp = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QString raw = query->value(2).toString();
-    QString comment = query->value(3).toString();
-    QString source = query->value(4).toString();
-    timeStampField->setText(timeStamp);
-    descriptionField->setText(description);
-    rawField->setText(raw);
-    commentField->setText(comment);
-    sourceField->setText(source);
-    delete query;
+    if (query->isNull(0)) {
+      timeStampField->setText("Incident was deleted");
+      descriptionField->setText("Incident was deleted");
+      rawField->setText("Incident was deleted");
+      commentField->setText("Incident was deleted");
+      sourceField->setText("Incident was deleted");
+    } else {
+      QString timeStamp = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString raw = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString source = query->value(4).toString();
+      timeStampField->setText(timeStamp);
+      descriptionField->setText(description);
+      rawField->setText(raw);
+      commentField->setText(comment);
+      sourceField->setText(source);
+      delete query;
+    }
   }
 }
 
@@ -495,7 +535,6 @@ void EventGraphWidget::getEvents() {
   }
   delete query;
 }
-
 
 void EventGraphWidget::plotEvents() {
   QVectorIterator<EventItem*> it(eventVector);
@@ -537,7 +576,6 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
     QVectorIterator<EventItem*> it(eventVector);
     EventItem *tempSource = NULL;
     EventItem *tempTarget = NULL;
-    // Now all edges are included twice!
     while (it.hasNext()) {
       EventItem *currentItem = it.next();
       if (currentItem->getId() == tail) {
@@ -889,12 +927,13 @@ void EventGraphWidget::plotCompareEdges() {
 void EventGraphWidget::saveCurrentPlot() {
   QPointer<SimpleTextDialog> saveDialog = new SimpleTextDialog(this);
   saveDialog->setWindowTitle("Save current plot");
+  saveDialog->submitText(plotLabel->text());
   saveDialog->setLabel("Plot name:");
   saveDialog->exec();
   if (saveDialog->getExitStatus() == 0) {
     QString name = saveDialog->getText();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT plot FROM saved_plots WHERE plot = :name");
+    query->prepare("SELECT plot FROM saved_eg_plots WHERE plot = :name");
     query->bindValue(":name", name);
     query->exec();
     query->first();
@@ -907,7 +946,8 @@ void EventGraphWidget::saveCurrentPlot() {
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Plot exists</h2>");
-      warningBox->setInformativeText("A plot with this name already exists? Do you want to overwrite this plot?");
+      warningBox->setInformativeText("A plot with this name already exists "
+				     "Do you want to overwrite this plot?");
       if (warningBox->exec() == QMessageBox::Yes) {
 	delete warningBox;
       } else {
@@ -917,31 +957,30 @@ void EventGraphWidget::saveCurrentPlot() {
     }
     if (!empty) {
       // Reset plot name and details, and clear out all data before writing.
-      query->prepare("UPDATE saved_plots SET linkage = :linkage, coder = :coder "
+      query->prepare("UPDATE saved_eg_plots SET linkage = :linkage, coder = :coder "
 		     "WHERE plot = :name");
       query->bindValue(":linkage", selectedType);
       query->bindValue(":coder", selectedCoder);
       query->bindValue(":name", name);
       query->exec();
-      // saved_plots_event_items
-      query->prepare("DELETE FROM saved_plots_event_items "
+      // saved_eg_plots_event_items
+      query->prepare("DELETE FROM saved_eg_plots_event_items "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
-      // saved_plots_edges
-      query->prepare("DELETE FROM saved_plots_edges "
+      // saved_eg_plots_edges
+      query->prepare("DELETE FROM saved_eg_plots_edges "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
-      // saved_plots_event_labels
-      query->prepare("DELETE FROM saved_plots_event_labels "
+      // saved_eg_plots_event_labels
+      query->prepare("DELETE FROM saved_eg_plots_event_labels "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
-
     } else {
-      // Insert new data into saved_plots and then write data.
-      query->prepare("INSERT INTO saved_plots (plot, linkage, coder) "
+      // Insert new data into saved_eg_plots and then write data.
+      query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
 		     "VALUES (:name, :linkage, :coder)");
       query->bindValue(":name", name);
       query->bindValue(":linkage", selectedType);
@@ -973,7 +1012,7 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentItem->isDislodged()) {
 	dislodged = 1;
       }
-      query->prepare("INSERT INTO saved_plots_event_items "
+      query->prepare("INSERT INTO saved_eg_plots_event_items "
 		     "(plot, incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
 		     "green, blue, alpha) "
 		     "VALUES (:plot, :incident, :width, :curxpos, :curypos, :orixpos, "
@@ -1016,7 +1055,7 @@ void EventGraphWidget::saveCurrentPlot() {
       int green = currentLabel->defaultTextColor().green();
       int blue = currentLabel->defaultTextColor().blue();
       int alpha = currentLabel->defaultTextColor().alpha();
-      query->prepare("INSERT INTO saved_plots_event_labels "
+      query->prepare("INSERT INTO saved_eg_plots_event_labels "
 		     "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha) "
 		     "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
@@ -1055,7 +1094,7 @@ void EventGraphWidget::saveCurrentPlot() {
       EventItem *currentHead = currentEdge->endItem();
       int tail = currentTail->getId();
       int head = currentHead->getId();
-      query->prepare("INSERT INTO saved_plots_edges "
+      query->prepare("INSERT INTO saved_eg_plots_edges "
 		     "(plot, tail, head) "
 		     "VALUES (:plot, :tail, :head)");
       query->bindValue(":plot", name);
@@ -1076,7 +1115,7 @@ void EventGraphWidget::saveCurrentPlot() {
 }
 
 void EventGraphWidget::seePlots() {
-  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this);
+  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, EVENTGRAPH);
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) {
     savePlotButton->setEnabled(true);
@@ -1084,7 +1123,7 @@ void EventGraphWidget::seePlots() {
     scene->clear();
     QString plot = savedPlotsDialog->getSelectedPlot();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT linkage, coder FROM saved_plots "
+    query->prepare("SELECT linkage, coder FROM saved_eg_plots "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
@@ -1099,7 +1138,7 @@ void EventGraphWidget::seePlots() {
     typeComboBox->setCurrentIndex(index);
     query->prepare("SELECT incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
 		   "green, blue, alpha "
-		   "FROM saved_plots_event_items "
+		   "FROM saved_eg_plots_event_items "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
     query->exec();
@@ -1134,7 +1173,7 @@ void EventGraphWidget::seePlots() {
     }
     query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
 		   "red, green, blue, alpha "
-		   "FROM saved_plots_event_labels WHERE plot = :plot");
+		   "FROM saved_eg_plots_event_labels WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
     while (query->next()) {
@@ -1167,7 +1206,7 @@ void EventGraphWidget::seePlots() {
       }
     }
    query->prepare("SELECT tail, head "
-		   "FROM saved_plots_edges "
+		   "FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
     query->exec();
@@ -1187,8 +1226,8 @@ void EventGraphWidget::seePlots() {
       QString toolTip = "";
       if (!(query2->isNull(0))) {
 	comment = query2->value(0).toString();
-      commentCoder = query2->value(1).toString();
-      toolTip = "<FONT SIZE = 3>" + commentCoder + " - " + comment + "</FONT>";
+	commentCoder = query2->value(1).toString();
+	toolTip = "<FONT SIZE = 3>" + commentCoder + " - " + comment + "</FONT>";
       } else {
 	toolTip = "No comments";
       }
@@ -1223,22 +1262,22 @@ void EventGraphWidget::seePlots() {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
     QString plot = savedPlotsDialog->getSelectedPlot();
     QSqlQuery *query = new QSqlQuery;
-    // saved_plots
-    query->prepare("DELETE FROM saved_plots "
+    // saved_eg_plots
+    query->prepare("DELETE FROM saved_eg_plots "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
-    // saved_plots_event_items
-    query->prepare("DELETE FROM saved_plots_event_items "
+    // saved_eg_plots_event_items
+    query->prepare("DELETE FROM saved_eg_plots_event_items "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
-    // saved_plots_edges
-    query->prepare("DELETE FROM saved_plots_edges "
+    // saved_eg_plots_edges
+    query->prepare("DELETE FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
-    // saved_plots_event_labels
-    query->prepare("DELETE FROM saved_plots_event_labels "
+    // saved_eg_plots_event_labels
+    query->prepare("DELETE FROM saved_eg_plots_event_labels "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();

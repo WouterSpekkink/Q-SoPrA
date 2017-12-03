@@ -1,8 +1,9 @@
 #include "../include/SavedPlotsDialog.h"
 
-SavedPlotsDialog::SavedPlotsDialog(QWidget *parent) : QDialog(parent) {
+SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDialog(parent) {
   selectedPlot = DEFAULT;
   exitStatus = 1;
+  type = submittedType;
 
   titleLabel = new QLabel(tr("Select plot:"), this);
 
@@ -10,7 +11,11 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent) : QDialog(parent) {
   plotsComboBox->addItem(DEFAULT);
 
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT plot FROM saved_plots");
+  if (type == EVENTGRAPH) {
+    query->exec("SELECT plot FROM saved_eg_plots");
+  } else if (type == NETWORKGRAPH) {
+    query->exec("SELECT plot FROM saved_ng_plots");
+  }
   while (query->next()) {
     QString currentName = query->value(0).toString();
     plotsComboBox->addItem(currentName);

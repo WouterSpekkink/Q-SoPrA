@@ -16,7 +16,7 @@ class SavedPlotsDialog : public QDialog {
   Q_OBJECT
 
 public:
-  SavedPlotsDialog(QWidget *parent = 0);
+  SavedPlotsDialog(QWidget *parent = 0, QString submittedType = QString());
   ~SavedPlotsDialog() {};
 
   int getExitStatus();
@@ -37,6 +37,7 @@ private:
   QPointer<QPushButton> removePlotButton;
 
   QString selectedPlot;
+  QString type;
   int exitStatus;
 };
 

@@ -3,8 +3,8 @@
 #include <QtCore>
 
 NetworkNodeLabel::NetworkNodeLabel(NetworkNode *submittedNode) {
-  setFlag(QGraphicsItem::ItemIsSelectable);
-  //  setFlag(QGraphicsItem::ItemIsMovable);
+  //setFlag(QGraphicsItem::ItemIsSelectable);
+  setFlag(QGraphicsItem::ItemIsMovable);
   node = submittedNode;
   xOffset = 20;
   yOffset = -15;
@@ -95,4 +95,15 @@ void NetworkNodeLabel::decreaseFontSize() {
   QFont newFont = this->font();
   newFont.setPointSizeF(fontSize);
   this->setFont(newFont);
+}
+
+void NetworkNodeLabel::setFontSize(int size) {
+  fontSize = size;
+  QFont newFont = this->font();
+  newFont.setPointSizeF(fontSize);
+  this->setFont(newFont);
+}
+
+int NetworkNodeLabel::getFontSize() {
+  return fontSize;
 }

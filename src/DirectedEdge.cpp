@@ -19,6 +19,7 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
   filtered = true;
   massHidden = false;
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+  comment = "";
 }
 
 QRectF DirectedEdge::boundingRect() const {
@@ -155,4 +156,18 @@ bool DirectedEdge::isMassHidden() {
 
 void DirectedEdge::setMassHidden(bool state) {
   massHidden = state;
+}
+
+void DirectedEdge::setComment(const QString submittedComment) {
+  comment = submittedComment;
+  QString toolTip = "<FONT SIZE = 3>" + comment + "</FONT>";
+  this->setToolTip(toolTip);
+}
+
+QString DirectedEdge::getComment() {
+  return comment;
+}
+
+QColor DirectedEdge::getColor() {
+  return color;
 }

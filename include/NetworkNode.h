@@ -22,7 +22,6 @@ public:
   void setColor(QColor newColor);
   QColor getColor();
   void setSelectionColor(const QColor &subColor);
-  void setOriginalPos(qreal x, qreal y);
   int getCorrection();
   QString getName();
   QString getDescription();
@@ -45,8 +44,6 @@ private:
   
   QColor color;
   QColor selectionColor;
-  QPointF originalPos;
-  int width;
   QPointF previousPos;
   
   QString name;

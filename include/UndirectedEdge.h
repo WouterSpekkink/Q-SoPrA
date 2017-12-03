@@ -15,6 +15,7 @@ public:
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
   void setColor(const QColor &subColor);
+  QColor getColor();
   NetworkNode *startItem() const; 
   NetworkNode *endItem() const;
   void calc();
@@ -28,6 +29,8 @@ public:
   void setFiltered(bool state);
   bool isMassHidden();
   void setMassHidden(bool state);
+  void setComment(const QString submittedComment);
+  QString getComment();
   
   enum {Type = UserType + 5};
   int type() const;
@@ -54,6 +57,7 @@ private:
   qreal theta;
   QString relType;
   QString name;
+  QString comment;
   bool filtered;
   bool massHidden;
 };

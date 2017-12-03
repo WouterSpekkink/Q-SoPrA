@@ -17,8 +17,7 @@ NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : 
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  originalPos = QPointF(0, 0);
-  previousPos = originalPos;
+  previousPos = QPointF(0, 0);
   mode = "";
   selectionColor = QColor(Qt::black);
 
@@ -128,12 +127,8 @@ void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   QGraphicsItem::mouseReleaseEvent(event);
 }
 
-void NetworkNode::setOriginalPos(qreal x, qreal y) {
-  originalPos = QPointF(x, y);
-}
-
 int NetworkNode::getCorrection() {
-  return width - 29;
+  return 30 - 29;
 }
 
 void NetworkNode::setColor(QColor newColor) {

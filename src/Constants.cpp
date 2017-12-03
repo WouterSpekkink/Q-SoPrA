@@ -26,3 +26,5 @@ QString REMOVENORMALLINKAGE = "Remove";
 QString ENTITY = "Entity";
 QString INCIDENT = "Incident";
 QString CREATED = "Created";
+QString EVENTGRAPH = "Event graph";
+QString NETWORKGRAPH = "Network graph";

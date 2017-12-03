@@ -63,6 +63,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   attributesLabel = new QLabel(tr("<b>Attributes:</b>"), infoWidget);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), infoWidget);
   valueLabel = new QLabel(tr("<b>Value:</b>"), infoWidget);
+  plotLabel = new QLabel(tr("Unsaved plot"), this);
+  changeLabel = new QLabel(tr("*"), this);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
@@ -123,6 +125,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   multimodeButton = new QPushButton(tr("Multimode trans."), legendWidget);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
   simpleLayoutButton = new QPushButton(tr("Simple layout"), graphicsWidget);
+  savePlotButton = new QPushButton(tr("Save plot"), this);
+  savePlotButton->setEnabled(false);
+  seePlotsButton = new QPushButton(tr("Saved plots"), this);
+  plotButton->setEnabled(false);
+  removeButton = new QPushButton(tr("Remove"), legendWidget);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -200,6 +207,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
   connect(showTypeButton, SIGNAL(clicked()), this, SLOT(showType()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
+  connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
+  connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
+  // I should still adapt this for network nodes and so on.
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
@@ -208,6 +219,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   plotOptionsLayout->addWidget(typeComboBox);
   plotOptionsLayout->addWidget(plotButton);
   plotOptionsLayout->addWidget(addButton);
+  plotOptionsLayout->addWidget(savePlotButton);
+  plotOptionsLayout->addWidget(seePlotsButton);
+  plotOptionsLayout->addWidget(plotLabel);
+  plotOptionsLayout->addWidget(changeLabel);
+
   topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(topLayout);
@@ -275,6 +291,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   sepLine2->setFrameShape(QFrame::HLine);
   legendLayout->addWidget(sepLine2);
   legendLayout->addWidget(mergeButton);
+  legendLayout->addWidget(removeButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
@@ -966,7 +983,7 @@ void NetworkGraphWidget::getDirectedEdges() {
       QString name  = query2->value(0).toString();
       QString source = query2->value(1).toString();
       QString target = query2->value(2).toString();
-      
+      QString comment = query2->value(3).toString();
       QVectorIterator<NetworkNode*> it(nodeVector);
       NetworkNode *tempSource = NULL;
       NetworkNode *tempTarget = NULL;
@@ -979,6 +996,7 @@ void NetworkGraphWidget::getDirectedEdges() {
 	}
 	if (tempSource != NULL && tempTarget != NULL) {
 	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, type, name);
+	  currentEdge->setComment(comment);
 	  currentEdge->hide();
 	  directedVector.push_back(currentEdge);
 	  break;
@@ -1350,7 +1368,6 @@ void NetworkGraphWidget::colorByAttribute() {
       nodeListWidget->setRowCount(nodeListWidget->rowCount() + 1);
       nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
       nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
       nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
       nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
 	setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
@@ -2095,8 +2112,7 @@ void NetworkGraphWidget::plotNewGraph() {
   plotUndirectedEdges(selectedType, color);
   simpleLayout();
   presentTypes.push_back(selectedType);
-  setRangeControls();
-
+  
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
 		 "WHERE name = :name");
@@ -2119,9 +2135,9 @@ void NetworkGraphWidget::plotNewGraph() {
     setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags() ^ Qt::ItemIsEditable ^
 	     Qt::ItemIsSelectable);
   delete query;
-  //  savePlotButton->setEnabled(true);
-  //setRangeControls();
-  //plotLabel->setText("Unsaved plot");
+  savePlotButton->setEnabled(true);
+  setRangeControls();
+  plotLabel->setText("Unsaved plot");
 }
 
 
@@ -2141,9 +2157,6 @@ void NetworkGraphWidget::addRelationshipType() {
   simpleLayout();
   presentTypes.push_back(selectedType);
   setRangeControls();
-  //  savePlotButton->setEnabled(true);
-  //setRangeControls();
-  //plotLabel->setText("Unsaved plot");
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
 		 "WHERE name = :name");
@@ -2167,6 +2180,7 @@ void NetworkGraphWidget::addRelationshipType() {
 	     Qt::ItemIsSelectable);
   delete query;
   addButton->setEnabled(false);
+  setChangeLabel();
 }
 
 void NetworkGraphWidget::toggleLabels() {
@@ -2235,6 +2249,676 @@ void NetworkGraphWidget::exportSvg() {
     painter.begin(&gen);
     scene->render(&painter);
     painter.end();
+  }
+}
+
+void NetworkGraphWidget::saveCurrentPlot() {
+  QPointer<SimpleTextDialog> saveDialog = new SimpleTextDialog(this);
+  saveDialog->setWindowTitle("Save current plot");
+  saveDialog->submitText(plotLabel->text());
+  saveDialog->setLabel("Plot name:");
+  saveDialog->exec();
+  if (saveDialog->getExitStatus() == 0) {
+    QString name = saveDialog->getText();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT plot FROM saved_ng_plots WHERE plot = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+    bool empty = false;
+    if (query->isNull(0)) {
+      empty = true;
+    } else {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Plot exists</h2>");
+      warningBox->setInformativeText("A plot with this name already exists "
+				     "Do you want to overwrite this plot?");
+      if (warningBox->exec() == QMessageBox::Yes) {
+	delete warningBox;
+      } else {
+	delete warningBox;
+	return;
+      }
+    }
+    if (!empty) {
+      // saved_ng_plots_event_items
+      query->prepare("DELETE FROM saved_ng_plots_network_nodes "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_ng_plots_directed
+      query->prepare("DELETE FROM saved_ng_plots_directed "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_ng_plots_undirected
+      query->prepare("DELETE FROM saved_ng_plots_undirected "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_ng_plots_node_labels
+      query->prepare("DELETE FROM saved_ng_plots_node_labels "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_ng_plots_nodelegend
+      query->prepare("DELETE FROM saved_ng_plots_nodelegend "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_ng_plots_edgelegend
+      query->prepare("DELETE FROM saved_ng_plots_edgelegend "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+    } else {
+      // Insert new data into saved_eg_plots and then write data.
+      query->prepare("INSERT INTO saved_ng_plots (plot) "
+		     "VALUES (:name)");
+      query->bindValue(":name", name);
+      query->exec();
+    }
+    QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, nodeVector.size());
+    saveProgress->setWindowTitle("Saving nodes");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    int counter = 1;
+    saveProgress->show();
+    QVectorIterator<NetworkNode*> it(nodeVector);
+    while (it.hasNext()) {
+      NetworkNode *current = it.next();
+      QString entity = current->getName();
+      QString description = current->getDescription();
+      QString mode = current->getMode();
+      qreal x = current->scenePos().x();
+      qreal y = current->scenePos().y();
+      int red = current->getColor().red();
+      int green = current->getColor().green();
+      int blue = current->getColor().blue();
+      int alpha = current->getColor().alpha();
+      int hidden = 1;
+      if (current->isVisible()) {
+	hidden = 0;
+      }
+      query->prepare("INSERT INTO saved_ng_plots_network_nodes "
+		     "(plot, entity, description, mode, curxpos, curypos, "
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
+		     ":red, :green, :blue, :alpha, :hidden)");
+      query->bindValue(":plot", name);
+      query->bindValue(":entity", entity);
+      query->bindValue(":description", description);
+      query->bindValue(":mode", mode);
+      query->bindValue(":curxpos", x);
+      query->bindValue(":curypos", y);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, labelVector.size());
+    saveProgress->setWindowTitle("Saving node labels");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    QVectorIterator<NetworkNodeLabel*> it2(labelVector);
+    while (it2.hasNext()) {
+      NetworkNodeLabel *current = it2.next();
+      QString entity = current->getNode()->getName();
+      qreal x = current->scenePos().x();
+      qreal y = current->scenePos().y();
+      qreal xOffset = current->getOffset().x();
+      qreal yOffset = current->getOffset().y();
+      int fontSize = current->getFontSize();
+      int red = current->defaultTextColor().red();
+      int green = current->defaultTextColor().green();
+      int blue =  current->defaultTextColor().blue();
+      int alpha = current->defaultTextColor().alpha();
+      int hidden = 1;
+      if (current->isVisible()) {
+	hidden = 0;
+      }
+      query->prepare("INSERT INTO saved_ng_plots_node_labels "
+		     "(plot, entity, curxpos, curypos, xoffset, yoffset, fontsize, "
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :entity, :curxpos, :curypos, :xoffset, :yoffset, :fontsize, "
+		     ":red, :green, :blue, :alpha, :hidden)");
+      query->bindValue(":plot", name);
+      query->bindValue(":entity", entity);
+      query->bindValue(":curxpos", x);
+      query->bindValue(":curypos", y);
+      query->bindValue(":xoffset", xOffset);
+      query->bindValue(":yoffset", yOffset);
+      query->bindValue(":fontsize", fontSize);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, nodeListWidget->rowCount());
+    saveProgress->setWindowTitle("Saving node legend");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
+      QTableWidgetItem *item = nodeListWidget->item(i, 0);
+      QString title = item->data(Qt::DisplayRole).toString();
+      QString tip = item->data(Qt::ToolTipRole).toString();
+      QColor color = nodeListWidget->item(i, 1)->background().color();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, name, tip, "
+		     "red, green, blue, alpha) "
+		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
+      query->bindValue(":plot", name);
+      query->bindValue(":name", title);
+      query->bindValue(":tip", tip);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, edgeListWidget->rowCount());
+    saveProgress->setWindowTitle("Saving edge legend");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    for (int i = 0; i != edgeListWidget->rowCount(); i++) {
+      QTableWidgetItem *item = edgeListWidget->item(i, 0);
+      QString title = item->data(Qt::DisplayRole).toString();
+      QString tip = item->data(Qt::ToolTipRole).toString();
+      QColor color = edgeListWidget->item(i, 1)->background().color();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      int hidden = 0;
+      if (edgeListWidget->itemAt(i, 0)->background() == QColor(Qt::gray)) {
+	hidden = 1;
+      }
+      query->prepare("INSERT INTO saved_ng_plots_edgelegend (plot, name, tip, "
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
+      query->bindValue(":plot", name);
+      query->bindValue(":name", title);
+      query->bindValue(":tip", tip);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, directedVector.size());
+    saveProgress->setWindowTitle("Saving directed edges");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    QVectorIterator<DirectedEdge*> it3(directedVector);
+    while (it3.hasNext()) {
+      DirectedEdge *current = it3.next();
+      QString tail = current->startItem()->getName();
+      QString head = current->endItem()->getName();
+      QString relationship = current->getName();
+      QString comment = current->getComment();
+      QString type = current->getType();
+      int height = current->getHeight();
+      int filtered = 0;
+      if (current->isFiltered()) {
+	filtered = 1;
+      }
+      int massHidden = 0;
+      if (current->isMassHidden()) {
+	massHidden = 1;
+      }
+      int red = current->getColor().red();
+      int green = current->getColor().green();
+      int blue = current->getColor().blue();
+      int alpha = current->getColor().alpha();
+      int hidden = 1;
+      if (current->isVisible()) {
+	hidden = 0;
+      }
+      query->prepare("INSERT INTO saved_ng_plots_directed "
+		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
+		     ":masshidden, :red, :green, :blue, :alpha, :hidden)");
+      query->bindValue(":plot", name);
+      query->bindValue(":tail", tail);
+      query->bindValue(":head", head);
+      query->bindValue(":name", relationship);
+      query->bindValue(":comment", comment);
+      query->bindValue(":type", type);
+      query->bindValue(":height", height);
+      query->bindValue(":filtered", filtered);
+      query->bindValue(":masshidden", massHidden);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, undirectedVector.size());
+    saveProgress->setWindowTitle("Saving undirected edges");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    QVectorIterator<UndirectedEdge*> it4(undirectedVector);
+    while (it4.hasNext()) {
+      UndirectedEdge *current = it4.next();
+      QString tail = current->startItem()->getName();
+      QString head = current->endItem()->getName();
+      QString relationship = current->getName();
+      QString comment = current->getComment();
+      QString type = current->getType();
+      int height = current->getHeight();
+      int filtered = 0;
+      if (current->isFiltered()) {
+	filtered = 1;
+      }
+      int massHidden = 0;
+      if (current->isMassHidden()) {
+	massHidden = 1;
+      }
+      int red = current->getColor().red();
+      int green = current->getColor().green();
+      int blue = current->getColor().blue();
+      int alpha = current->getColor().alpha();
+      int hidden = 1;
+      if (current->isVisible()) {
+	hidden = 0;
+      }
+      query->prepare("INSERT INTO saved_ng_plots_undirected "
+		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
+		     ":masshidden, :red, :green, :blue, :alpha, :hidden)");
+      query->bindValue(":plot", name);
+      query->bindValue(":tail", tail);
+      query->bindValue(":head", head);
+      query->bindValue(":name", relationship);
+      query->bindValue(":type", type);
+      query->bindValue(":height", height);
+      query->bindValue(":filtered", filtered);
+      query->bindValue(":masshidden", massHidden);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    plotLabel->setText(name);
+    changeLabel->setText("");
+    delete saveProgress;
+    delete query;
+  }
+  delete saveDialog;
+}		      
+		      
+void NetworkGraphWidget::seePlots() {
+  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, NETWORKGRAPH);
+  savedPlotsDialog->exec();
+  if (savedPlotsDialog->getExitStatus() == 0) {
+    savePlotButton->setEnabled(true);
+    cleanUp();
+    scene->clear();
+    QString plot = savedPlotsDialog->getSelectedPlot();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT entity, description, mode, curxpos, curypos, "
+		   "red, green, blue, alpha, hidden "
+		   "FROM saved_ng_plots_network_nodes "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString entity = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString mode = query->value(2).toString();
+      qreal currentX = query->value(3).toReal();
+      qreal currentY = query->value(4).toReal();
+      int red = query->value(5).toInt();
+      int green = query->value(6).toInt();
+      int blue = query->value(7).toInt();
+      int alpha = query->value(8).toInt();
+      int hidden = query->value(9).toInt();
+      QPointF currentPos = QPointF(currentX, currentY);
+      NetworkNode *node = new NetworkNode(entity, description);
+      node->setColor(QColor(red, green, blue, alpha));
+      node->setMode(mode);
+      scene->addItem(node);
+      node->setPos(currentPos);
+      node->setZValue(1);
+      if (hidden == 1) {
+	node->hide();
+      } else {
+	node->show();
+      }
+      nodeVector.push_back(node);
+    }
+    query->prepare("SELECT entity, curxpos, curypos, xoffset, yoffset, fontsize "
+		   "red, green, blue, alpha, hidden "
+		   "FROM saved_ng_plots_node_labels WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString entity = query->value(0).toString();
+      qreal currentX = query->value(1).toReal();
+      qreal currentY = query->value(2).toReal();
+      qreal xOffset = query->value(3).toReal();
+      qreal yOffset = query->value(4).toReal();
+      int fontSize = query->value(5).toInt();
+      int red = query->value(6).toInt();
+      int green = query->value(7).toInt();
+      int blue = query->value(8).toInt();
+      int alpha = query->value(9).toInt();
+      int hidden = query->value(10).toInt();
+      QVectorIterator<NetworkNode*> it(nodeVector);
+      while (it.hasNext()) {
+	NetworkNode *node = it.next();
+	QString nodeName = node->getName();
+	if (nodeName == entity) {
+	  NetworkNodeLabel *currentLabel = new NetworkNodeLabel(node);
+	  currentLabel->setPlainText(entity);
+	  currentLabel->setPos(QPointF(currentX, currentY));
+	  currentLabel->setFontSize(fontSize);
+	  currentLabel->setOffset(QPointF(xOffset, yOffset));
+	  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
+	  scene->addItem(currentLabel);
+	  currentLabel->setZValue(2);
+	  if (hidden == 1) {
+	    currentLabel->hide();
+	  } else {
+	    currentLabel->show();
+	  }
+	  node->setLabel(currentLabel);
+	  labelVector.push_back(currentLabel);
+	  break;
+	}
+      }
+    }
+    query->prepare("SELECT name, tip, red, green, blue, alpha "
+		   "FROM saved_ng_plots_nodelegend "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString name = query->value(0).toString();
+      QString tip = query->value(1).toString();
+      int red = query->value(2).toInt();
+      int green = query->value(3).toInt();
+      int blue = query->value(4).toInt();
+      int alpha = query->value(5).toInt();
+      QColor color = QColor(red, green, blue, alpha);
+      QTableWidgetItem *item = new QTableWidgetItem(name);
+      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+      item->setToolTip(tip);
+      item->setData(Qt::DisplayRole, name);
+      nodeListWidget->setRowCount(nodeListWidget->rowCount() + 1);
+      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
+      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
+      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
+	setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
+		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+    }
+    query->prepare("SELECT name, tip, red, green, blue, alpha, hidden "
+		   "FROM saved_ng_plots_edgelegend "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString name = query->value(0).toString();
+      QString tip = query->value(1).toString();
+      int red = query->value(2).toInt();
+      int green = query->value(3).toInt();
+      int blue = query->value(4).toInt();
+      int alpha = query->value(5).toInt();
+      QColor color = QColor(red, green, blue, alpha);
+      int hidden = query->value(6).toInt();
+      presentTypes.push_back(name);
+      QTableWidgetItem *item = new QTableWidgetItem(name);
+      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+      item->setToolTip(tip);
+      item->setData(Qt::DisplayRole, name);
+      edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
+      edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 0, item);
+      edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+      edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->setBackground(color);
+      edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
+	setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags() ^
+		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+      if (hidden == 1) {
+	edgeListWidget->item(edgeListWidget->rowCount() - 1, 2)->setBackground(Qt::gray);
+      }
+    }
+    query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
+		   "red, green, blue, alpha, hidden "
+		   "FROM saved_ng_plots_directed "
+		   "WHERE plot = :plot ");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString tail = query->value(0).toString();
+      QString head = query->value(1).toString();
+      QString name = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString type = query->value(4).toString();
+      int height = query->value(5).toInt();
+      int filtered = query->value(6).toInt();
+      int massHidden = query->value(7).toInt();
+      int red = query->value(8).toInt();
+      int green = query->value(9).toInt();
+      int blue = query->value(10).toInt();
+      int alpha = query->value(11).toInt();
+      int hidden = query->value(12).toInt();
+      QVectorIterator<NetworkNode*> it(nodeVector);
+      NetworkNode *tempSource = NULL;
+      NetworkNode *tempTarget = NULL;
+      while (it.hasNext()) {
+	NetworkNode *currentItem = it.next();
+	if (currentItem->getName() == tail) {
+	  tempSource = currentItem;
+	} else if (currentItem->getName() == head) {
+	  tempTarget = currentItem;
+	}
+	if (tempSource != NULL && tempTarget != NULL) {
+	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget,
+							type, name);
+	  currentEdge->setComment(comment);
+	  currentEdge->setHeight(height);
+	  if (filtered == 1) {
+	    currentEdge->setFiltered(true);
+	  }
+	  if (massHidden == 1) {
+	    currentEdge->setMassHidden(true);
+	  }
+	  currentEdge->setColor(QColor(red, green, blue, alpha));
+	  if (hidden == 1) {
+	    currentEdge->hide();
+	  } else {
+	    scene->addItem(currentEdge);
+	  }
+	  directedVector.push_back(currentEdge);
+	  break;
+	}
+      }
+    }
+    plotLabel->setText(plot);
+    changeLabel->setText("");
+    setRangeControls();
+    query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
+		   "red, green, blue, alpha, hidden "
+		   "FROM saved_ng_plots_undirected "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString tail = query->value(0).toString();
+      QString head = query->value(1).toString();
+      QString name = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString type = query->value(4).toString();
+      int height = query->value(5).toInt();
+      int filtered = query->value(6).toInt();
+      int massHidden = query->value(7).toInt();
+      int red = query->value(8).toInt();
+      int green = query->value(9).toInt();
+      int blue = query->value(10).toInt();
+      int alpha = query->value(11).toInt();
+      int hidden = query->value(12).toInt();
+      QVectorIterator<NetworkNode*> it(nodeVector);
+      NetworkNode *tempSource = NULL;
+      NetworkNode *tempTarget = NULL;
+      while (it.hasNext()) {
+	NetworkNode *currentItem = it.next();
+	if (currentItem->getName() == tail) {
+	  tempSource = currentItem;
+	} else if (currentItem->getName() == head) {
+	  tempTarget = currentItem;
+	}
+	if (tempSource != NULL && tempTarget != NULL) {
+	  UndirectedEdge *currentEdge = new UndirectedEdge(tempSource, tempTarget,
+							    type, name);
+	  currentEdge->setComment(comment);
+	  currentEdge->setHeight(height);
+	  if (filtered == 0) {
+	    currentEdge->setFiltered(false);
+	  }
+	  if (massHidden == 1) {
+	    currentEdge->setMassHidden(true);
+	  }
+	  currentEdge->setColor(QColor(red, green, blue, alpha));
+	  if (hidden == 1) {
+	    currentEdge->hide();
+	  } else {
+	    scene->addItem(currentEdge);
+	  }
+	  undirectedVector.push_back(currentEdge);
+	  break;
+	}
+      }
+    }
+    query->exec("SELECT DISTINCT incident "
+		"FROM relationships_to_incidents");
+    query->exec();
+    while (query->next()) {
+      int incident = query->value(0).toInt();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+      query2->bindValue(":incident", incident);
+      query2->exec();
+      query2->first();
+      int order = query2->value(0).toInt();
+      if (minOrder == 0) {
+	minOrder = order;
+      } else if (incident < minOrder) {
+	minOrder = order;
+      }
+      if (maxOrder == 0) {
+	maxOrder = order;
+      } else if (incident > maxOrder) {
+	maxOrder = order;
+      }
+      delete query2;
+    }
+    setRangeControls();
+    setVisibility();
+    plotLabel->setText(plot);
+    changeLabel->setText("");
+    delete query;
+  } else if (savedPlotsDialog->getExitStatus() == 2) {
+    // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
+    QString plot = savedPlotsDialog->getSelectedPlot();
+    QSqlQuery *query = new QSqlQuery;
+    // saved_ng_plots
+    query->prepare("DELETE FROM saved_ng_plots "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_ng_plots_network_nodes
+    query->prepare("DELETE FROM saved_ng_plots_network_nodes "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_ng_plots_node_labels
+    query->prepare("DELETE FROM saved_ng_plots_node_labels "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    // saved_ng_plots_nodelegend
+    query->prepare("DELETE FROM saved_ng_plots_nodelegend "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_ng_plots_edgelegend
+    query->prepare("DELETE FROM saved_ng_plots_edgelegend "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_ng_plots_directed
+    query->prepare("DELETE FROM saved_eg_plots_directed "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_ng_plots_undirected
+    query->prepare("DELETE FROM saved_eg_plots_undirected "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    delete query;
+    seePlots();
+  }
+}
+
+void NetworkGraphWidget::setChangeLabel() {
+  if (changeLabel->text() == "" && nodeVector.size() > 0) {
+    changeLabel->setText("*");
   }
 }
 

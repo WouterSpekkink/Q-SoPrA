@@ -101,7 +101,10 @@ private slots:
   void setRangeControls();
 
   void exportSvg();
-
+  void saveCurrentPlot();
+  void seePlots();
+  void setChangeLabel();
+  
   void simpleLayout();
   void setPlotButton();
   void plotNewGraph();
@@ -135,6 +138,8 @@ private:
   QPointer<QLabel> attributesLabel;
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
+  QPointer<QLabel> plotLabel;
+  QPointer<QLabel> changeLabel;
   
   QPointer<QComboBox> typeComboBox;
 
@@ -174,7 +179,10 @@ private:
   QPointer<QPushButton> showTypeButton;
   QPointer<QPushButton> multimodeButton;
   QPointer<QPushButton> mergeButton;
+  QPointer<QPushButton> removeButton;
   QPointer<QPushButton> simpleLayoutButton;
+  QPointer<QPushButton> savePlotButton;
+  QPointer<QPushButton> seePlotsButton;
   
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
