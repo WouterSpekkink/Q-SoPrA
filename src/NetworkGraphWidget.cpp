@@ -123,6 +123,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   showTypeButton->setCheckable(true);
   showTypeButton->setChecked(true);
   multimodeButton = new QPushButton(tr("Multimode trans."), legendWidget);
+  removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
+  removeModeButton->setEnabled(false);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
   simpleLayoutButton = new QPushButton(tr("Spring layout"), graphicsWidget);
   expandLayoutButton = new QPushButton(tr("Expand"), graphicsWidget);
@@ -131,7 +133,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
   plotButton->setEnabled(false);
-  removeButton = new QPushButton(tr("Remove"), legendWidget);
+  removeTypeButton = new QPushButton(tr("Remove"), legendWidget);
+  removeTypeButton->setEnabled(false);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -187,6 +190,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(addRelationshipType()));
+  connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeRelationshipType()));
   connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
   connect(nodeColorButton, SIGNAL(clicked()), this, SLOT(setNodeColor()));
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
@@ -199,11 +203,16 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(multimodeButton, SIGNAL(clicked()), this, SLOT(multimodeTransformation()));
+  connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(mergeButton, SIGNAL(clicked()), this, SLOT(mergeRelationships()));
   connect(edgeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setFilterButtons(QTableWidgetItem *)));
   connect(edgeListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableFilterButtons()));
+  connect(nodeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
+	  this, SLOT(setModeButton(QTableWidgetItem *)));
+  connect(nodeListWidget, SIGNAL(noneSelected()),
+	  this, SLOT(disableModeButton()));
   connect(setFilteredButton, SIGNAL(clicked()), this, SLOT(activateFilter()));
   connect(unsetFilteredButton, SIGNAL(clicked()), this, SLOT(deactivateFilter()));
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
@@ -281,6 +290,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(nodeLegendLabel);
   legendLayout->addWidget(nodeListWidget);
   legendLayout->addWidget(multimodeButton);
+  legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(edgeLegendLabel);
   legendLayout->addWidget(edgeListWidget);
   legendLayout->addWidget(setFilteredButton);
@@ -294,7 +304,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   sepLine2->setFrameShape(QFrame::HLine);
   legendLayout->addWidget(sepLine2);
   legendLayout->addWidget(mergeButton);
-  legendLayout->addWidget(removeButton);
+  legendLayout->addWidget(removeTypeButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
@@ -926,7 +936,7 @@ void NetworkGraphWidget::getEntities() {
     QString description = query->value(1).toString();
     NetworkNode *currentNode = new NetworkNode(name, description);
     NetworkNodeLabel *label = new NetworkNodeLabel(currentNode);
-    currentNode->setColor(Qt::red);
+    currentNode->setColor(Qt::black);
     label->setPlainText(name);
     label->setDefaultTextColor(Qt::black);
     labelVector.push_back(label);
@@ -1773,6 +1783,40 @@ void NetworkGraphWidget::multimodeTransformation() {
   }
 }
 
+void NetworkGraphWidget::removeMode() {
+  setChangeLabel();
+  QString text = nodeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while (it.hasNext()) {
+    NetworkNode *current = it.next();
+    if (current->getMode() == text) {
+      current->setColor(Qt::black);
+      current->setMode("");
+    }
+  }
+  for (int i = 0; i != nodeListWidget->rowCount();) {
+    if (nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) {
+      nodeListWidget->removeRow(i);
+    }
+    if (i != nodeListWidget->rowCount()) {
+      i++;
+    }
+  }
+}
+
+void NetworkGraphWidget::setModeButton(QTableWidgetItem *item) {
+  QString text = item->data(Qt::DisplayRole).toString();
+  if (text != "") {
+    removeModeButton->setEnabled(true);
+  } else {
+    removeModeButton->setEnabled(false);
+  }
+}
+
+void NetworkGraphWidget::disableModeButton() {
+  removeModeButton->setEnabled(false);
+}
+
 void NetworkGraphWidget::mergeRelationships() {
   QVector<QString> relVector;
   QVector<QString> directednessVector;
@@ -1924,11 +1968,13 @@ void NetworkGraphWidget::setFilterButtons(QTableWidgetItem *item) {
     unsetFilteredButton->setEnabled(true);
     hideTypeButton->setEnabled(true);
     showTypeButton->setEnabled(true);
+    removeTypeButton->setEnabled(true);
   } else {
     setFilteredButton->setEnabled(false);
     unsetFilteredButton->setEnabled(false);
     hideTypeButton->setEnabled(false);
     showTypeButton->setEnabled(false);
+    removeTypeButton->setEnabled(false);
     return;
   }
   QBrush brush = item->foreground();
@@ -1989,6 +2035,7 @@ void NetworkGraphWidget::disableFilterButtons() {
   unsetFilteredButton->setEnabled(false);
   hideTypeButton->setEnabled(false);
   showTypeButton->setEnabled(false);
+  removeTypeButton->setEnabled(false);
 }
 
 void NetworkGraphWidget::activateFilter() {
@@ -2237,6 +2284,37 @@ void NetworkGraphWidget::addRelationshipType() {
   delete query;
   addButton->setEnabled(false);
   setChangeLabel();
+}
+
+void NetworkGraphWidget::removeRelationshipType() {
+  setChangeLabel();
+  QString text = edgeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QVectorIterator<DirectedEdge*> it(directedVector);
+  while (it.hasNext()) {
+    DirectedEdge *directed = it.next();
+    if (directed->getType() == text) {
+      directed->hide();
+      scene->removeItem(directed);
+    }
+  }
+  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  while (it2.hasNext()) {
+    UndirectedEdge *undirected = it2.next();
+    if (undirected->getType() == text) {
+      undirected->hide();
+      scene->removeItem(undirected);
+    }
+  }
+  for (int i = 0; i != edgeListWidget->rowCount();) {
+    if (edgeListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) {
+      edgeListWidget->removeRow(i);
+    }
+    if (i != edgeListWidget->rowCount()) {
+      i++;
+    }
+  }
+  presentTypes.removeOne(text);
+  setVisibility();
 }
 
 void NetworkGraphWidget::toggleLabels() {

@@ -69,6 +69,10 @@ private slots:
   void removeUnusedAttributes();
   
   void multimodeTransformation();
+  void removeMode();
+  void setModeButton(QTableWidgetItem *item);
+  void disableModeButton();
+  
   void mergeRelationships();
   void setFilterButtons(QTableWidgetItem *item);
   void disableFilterButtons();
@@ -112,6 +116,7 @@ private slots:
   void setPlotButton();
   void plotNewGraph();
   void addRelationshipType();
+  void removeRelationshipType();
   void cleanUp();
   bool eventFilter(QObject *object, QEvent *event);
   
@@ -181,8 +186,9 @@ private:
   QPointer<QPushButton> hideTypeButton;
   QPointer<QPushButton> showTypeButton;
   QPointer<QPushButton> multimodeButton;
+  QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> mergeButton;
-  QPointer<QPushButton> removeButton;
+  QPointer<QPushButton> removeTypeButton;
   QPointer<QPushButton> simpleLayoutButton;
   QPointer<QPushButton> expandLayoutButton;
   QPointer<QPushButton> contractLayoutButton;
