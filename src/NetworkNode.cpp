@@ -1,6 +1,6 @@
 #include <QtWidgets>
 #include "../include/NetworkNode.h"
-#include "../include/Arrow.h"
+#include "../include/Scene.h"
 #include "../include/NetworkNodeLabel.h"
 
 /*
@@ -91,6 +91,8 @@ void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   if (label != NULL) {
     label->setNewPos(this->scenePos());
   }
+  Scene *myScene = qobject_cast<Scene*>(scene());
+  myScene->relevantChange();
   update();
   setCursor(Qt::ClosedHandCursor);
 }

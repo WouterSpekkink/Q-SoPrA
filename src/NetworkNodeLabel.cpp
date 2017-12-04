@@ -1,6 +1,7 @@
 #include "../include/NetworkNodeLabel.h"
 #include <QGraphicsScene>
 #include <QtCore>
+#include "../include/Scene.h"
 
 NetworkNodeLabel::NetworkNodeLabel(NetworkNode *submittedNode) {
   //setFlag(QGraphicsItem::ItemIsSelectable);
@@ -60,6 +61,8 @@ void NetworkNodeLabel::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   this->setPos(newPos);
   
   update();
+  Scene *myScene = qobject_cast<Scene*>(scene());
+  myScene->relevantChange();
 }
 
 void NetworkNodeLabel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

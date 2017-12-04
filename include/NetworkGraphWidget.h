@@ -106,6 +106,9 @@ private slots:
   void setChangeLabel();
   
   void simpleLayout();
+  void expandLayout();
+  void contractLayout();
+  
   void setPlotButton();
   void plotNewGraph();
   void addRelationshipType();
@@ -181,6 +184,8 @@ private:
   QPointer<QPushButton> mergeButton;
   QPointer<QPushButton> removeButton;
   QPointer<QPushButton> simpleLayoutButton;
+  QPointer<QPushButton> expandLayoutButton;
+  QPointer<QPushButton> contractLayoutButton;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   

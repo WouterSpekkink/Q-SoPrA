@@ -124,7 +124,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   showTypeButton->setChecked(true);
   multimodeButton = new QPushButton(tr("Multimode trans."), legendWidget);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
-  simpleLayoutButton = new QPushButton(tr("Simple layout"), graphicsWidget);
+  simpleLayoutButton = new QPushButton(tr("Spring layout"), graphicsWidget);
+  expandLayoutButton = new QPushButton(tr("Expand"), graphicsWidget);
+  contractLayoutButton = new QPushButton(tr("Contract"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
@@ -209,9 +211,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
-  // I should still adapt this for network nodes and so on.
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
-  
+  connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
+  connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
+    
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotOptionsLayout = new QHBoxLayout;
@@ -299,6 +302,13 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(simpleLayoutButton);
+  QPointer<QHBoxLayout> expansionLayout = new QHBoxLayout;
+  expansionLayout->addWidget(expandLayoutButton);
+  expansionLayout->addWidget(contractLayoutButton);
+  graphicsControlsLayout->addLayout(expansionLayout);
+  QPointer<QFrame> sepLine3 = new QFrame();
+  sepLine3->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine3);
   graphicsControlsLayout->addWidget(colorByAttributeButton);
   graphicsControlsLayout->addWidget(nodeColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
@@ -1175,7 +1185,7 @@ void NetworkGraphWidget::simpleLayout() {
     qreal y = (qrand() % 5000) - 2500;
     currentNode->setPos(x, y);
   }
-  for(int i = 0; i != 5; i++) {
+  for(int i = 0; i != 7; i++) {
     QListIterator<QGraphicsItem*> it(scene->items());
     while (it.hasNext()) {
       DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it.peekNext());
@@ -1189,7 +1199,7 @@ void NetworkGraphWidget::simpleLayout() {
 			   qPow(currentSource->pos().y() -
 				currentTarget->pos().y(), 2));
 	if (dist > 50) {
-	  QPointF sourcePos = currentSource->scenePos();
+ 	  QPointF sourcePos = currentSource->scenePos();
 	  QPointF targetPos = currentTarget->scenePos();
 	  qreal mX = (sourcePos.x() + targetPos.x()) / 2;
 	  qreal mY = (sourcePos.y() + targetPos.y()) / 2;
@@ -1215,30 +1225,20 @@ void NetworkGraphWidget::simpleLayout() {
 			      second->pos().x(), 2) +
 			 qPow(first->pos().y() -
 			      second->pos().y(), 2));
-	    qreal xDist = first->pos().x() - second->pos().x();
-	    qreal yDist = first->pos().y() - second->pos().y();
 	    if (dist < 80) {
-	      if (xDist > yDist && first->pos().y() > second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() + 5);
-	        second->setPos(second->pos().x(), second->pos().y() - 5);
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());
-	      } else if (xDist > yDist && first->pos().y() < second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() - 5);
-	        second->setPos(second->pos().x(), second->pos().y() + 5);
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());
-	      } else if (xDist < yDist && first->pos().x() > second->pos().x()) {
-		first->setPos(first->pos().x() + 5, first->pos().y());
-	        second->setPos(second->pos().x() - 5, second->pos().y());
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());		
-	      } else if (xDist < yDist && first->pos().x() < second->pos().x()) {
-		first->setPos(first->pos().x() - 5, first->pos().y());
-	        second->setPos(second->pos().x() + 5, second->pos().y());
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());		
-	      }
+	      QPointF firstPoint = first->scenePos();
+	      QPointF secondPoint = second->scenePos();
+	      qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
+	      qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
+	      QPointF midPoint = QPointF(mX, mY);
+	      qreal firstXDiff = firstPoint.x() - midPoint.x();
+	      qreal firstYDiff = firstPoint.y() - midPoint.y();
+	      first->setPos(first->scenePos().x() + firstXDiff,
+			    first->scenePos().y() + firstYDiff);
+	      qreal secondXDiff = secondPoint.x() - midPoint.x();
+	      qreal secondYDiff = secondPoint.y() - midPoint.y();
+	      second->setPos(second->scenePos().x() + secondXDiff,
+			     second->scenePos().y() + secondYDiff);
 	    }
 	  }
 	}
@@ -1311,10 +1311,61 @@ void NetworkGraphWidget::simpleLayout() {
   }
 }
 
+/*
+  The idea behind this function below was inspired on the code for expanding
+  layouts in Gephi.
+*/
+void NetworkGraphWidget::expandLayout() {
+  QPointF virtualCenter = QPointF(0,0);
+  int total = 0;
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while (it.hasNext()) {
+    NetworkNode *current = it.next();
+    virtualCenter += current->scenePos();
+    total++;
+  }
+  virtualCenter /= total;
+  QVectorIterator<NetworkNode*> it2(nodeVector);
+  while (it2.hasNext()) {
+    NetworkNode *current = it2.next();
+    QPointF currentPoint = current->scenePos();
+    qreal diffX = (currentPoint.x() - virtualCenter.x()) * 1.1;
+    qreal diffY = (currentPoint.y() - virtualCenter.y()) * 1.1;
+    current->setPos(virtualCenter.x() + diffX, virtualCenter.y() + diffY);
+    current->getLabel()->setNewPos(current->scenePos());
+  }
+}
+
+/*
+  The idea behind this function below was inspired on the code for contracting
+  layouts in Gephi.
+*/
+void NetworkGraphWidget::contractLayout() {
+  QPointF virtualCenter = QPointF(0,0);
+  int total = 0;
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while (it.hasNext()) {
+    NetworkNode *current = it.next();
+    virtualCenter += current->scenePos();
+    total++;
+  }
+  virtualCenter /= total;
+  QVectorIterator<NetworkNode*> it2(nodeVector);
+  while (it2.hasNext()) {
+    NetworkNode *current = it2.next();
+    QPointF currentPoint = current->scenePos();
+    qreal diffX = (currentPoint.x() - virtualCenter.x()) * 0.9;
+    qreal diffY = (currentPoint.y() - virtualCenter.y()) * 0.9;
+    current->setPos(virtualCenter.x() + diffX, virtualCenter.y() + diffY);
+    current->getLabel()->setNewPos(current->scenePos());
+  }
+}
+
 void NetworkGraphWidget::colorByAttribute() {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, ENTITY);
   attributeColorDialog->exec();
   if (attributeColorDialog->getExitStatus() == 0) {
+    setChangeLabel();
     QColor color = attributeColorDialog->getColor();
     QColor textColor = attributeColorDialog->getTextColor();
     QString attribute = attributeColorDialog->getAttribute();
@@ -2037,11 +2088,15 @@ void NetworkGraphWidget::showType() {
 void NetworkGraphWidget::setNodeColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   if (colorDialog->exec()) {
+    setChangeLabel();
     QColor color = colorDialog->selectedColor();
     QVectorIterator<NetworkNode*> it(nodeVector);
     while (it.hasNext()) {
       NetworkNode *currentNode = it.next();
       currentNode->setColor(color);
+    }
+    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
+      nodeListWidget->item(i, 1)->setBackground(color);
     }
   }
   delete colorDialog;
@@ -2050,6 +2105,7 @@ void NetworkGraphWidget::setNodeColor() {
 void NetworkGraphWidget::setLabelColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   if (colorDialog->exec()) {
+    setChangeLabel();
     QColor color = colorDialog->selectedColor();
     QVectorIterator<NetworkNodeLabel*> it(labelVector);
     while (it.hasNext()) {
@@ -2461,7 +2517,7 @@ void NetworkGraphWidget::saveCurrentPlot() {
       int blue = color.blue();
       int alpha = color.alpha();
       int hidden = 0;
-      if (edgeListWidget->itemAt(i, 0)->background() == QColor(Qt::gray)) {
+      if (edgeListWidget->item(i, 0)->background() == QColor(Qt::gray)) {
 	hidden = 1;
       }
       query->prepare("INSERT INTO saved_ng_plots_edgelegend (plot, name, tip, "
@@ -2642,7 +2698,7 @@ void NetworkGraphWidget::seePlots() {
       }
       nodeVector.push_back(node);
     }
-    query->prepare("SELECT entity, curxpos, curypos, xoffset, yoffset, fontsize "
+    query->prepare("SELECT entity, curxpos, curypos, xoffset, yoffset, fontsize, "
 		   "red, green, blue, alpha, hidden "
 		   "FROM saved_ng_plots_node_labels WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -2735,7 +2791,7 @@ void NetworkGraphWidget::seePlots() {
 	setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags() ^
 		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
       if (hidden == 1) {
-	edgeListWidget->item(edgeListWidget->rowCount() - 1, 2)->setBackground(Qt::gray);
+	edgeListWidget->item(edgeListWidget->rowCount() - 1, 0)->setBackground(Qt::gray);
       }
     }
     query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
