@@ -271,6 +271,9 @@ void MainWindow::switchToDataView() {
   lw->setComments();
   lw->setLinkageComment();
   DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
+  if (dw->incidentsModel->canFetchMore()) {
+    dw->incidentsModel->fetchMore();
+  }
   dw->incidentsModel->select();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();

@@ -11,6 +11,9 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsModel->setTable("incidents");
   incidentsModel->setSort(1, Qt::AscendingOrder);
   incidentsModel->select();
+  if (incidentsModel->canFetchMore()) {
+    incidentsModel->fetchMore();
+  }
   tableView->setModel(incidentsModel);
   
   // We prepare some display related options.
@@ -99,6 +102,9 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
     query->bindValue(":comment", comment);
     query->bindValue(":source", source);
     query->exec();
+    if (incidentsModel->canFetchMore()) {
+      incidentsModel->fetchMore();
+    }
     incidentsModel->select();
     incidentsModel->sort(1, Qt::AscendingOrder);
   } else {
@@ -110,6 +116,9 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
     query->bindValue(":source", source);
     query->bindValue(":order", order);
     query->exec();
+    if (incidentsModel->canFetchMore()) {
+      incidentsModel->fetchMore();
+    }
     incidentsModel->select();
     incidentsModel->sort(1, Qt::AscendingOrder);
   }
@@ -173,6 +182,9 @@ void DataWidget::insertRecordBefore() {
       query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentRow);
       query->exec();
+      if (incidentsModel->canFetchMore()) {
+	incidentsModel->fetchMore();
+      }
       incidentsModel->select();
       incidentsModel->submitAll();
       setData(currentRow, recordDialog, NEW);
@@ -194,6 +206,9 @@ void DataWidget::insertRecordAfter() {
       query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", nextRow);
       query->exec();
+      if (incidentsModel->canFetchMore()) {
+	incidentsModel->fetchMore();
+      }
       incidentsModel->select();
       incidentsModel->submitAll();
       setData(nextRow, recordDialog, NEW);
@@ -220,6 +235,9 @@ void DataWidget::moveUp() {
       query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
       query->bindValue(":newOrder", currentOrder - 1);
       query->exec();
+      if (incidentsModel->canFetchMore()) {
+	incidentsModel->fetchMore();
+      }
       incidentsModel->select();
       incidentsModel->sort(1, Qt::AscendingOrder);
       QModelIndex newIndex = tableView->model()->index(currentOrder - 2, 0);
@@ -244,6 +262,9 @@ void DataWidget::moveDown() {
       query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
       query->bindValue(":newOrder", currentOrder + 1);
       query->exec();
+      if (incidentsModel->canFetchMore()) {
+	incidentsModel->fetchMore();
+      }
       incidentsModel->select();
       incidentsModel->sort(1, Qt::AscendingOrder);
       QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
@@ -279,6 +300,9 @@ void DataWidget::duplicateRow() {
       query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentOrder);
       query->exec();
+      if (incidentsModel->canFetchMore()) {
+	incidentsModel->fetchMore();
+      }
       incidentsModel->select();
       setData(currentOrder, recordDialog, NEW);
       delete recordDialog;
@@ -324,6 +348,9 @@ void DataWidget::removeRow() {
       query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentRow);
       query->exec();
+      if (incidentsModel->canFetchMore()) {
+	incidentsModel->fetchMore();
+      }
       incidentsModel->select();
       delete query;
     }
