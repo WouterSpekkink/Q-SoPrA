@@ -60,9 +60,10 @@
 #include <QPainter>
 #include "../include/Scene.h"
 
+
 const qreal Pi = 3.14;
 
-Arrow::Arrow(EventItem *startItem, EventItem *endItem, QString subType, QString subCoder,
+Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, QString subCoder,
 	     QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
@@ -104,13 +105,28 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   painter->setBrush(color);
 
   QLineF newLine = QLineF();
+
+  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(start);
+  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(end);
+  MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(start);
+  MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(end);
   
   if (start->pos().x() < end->pos().x()) {
-    QPointF correction = QPointF(start->getCorrection(), 0);
-    newLine = QLineF(start->pos() + correction, end->pos());
+    if (startEvent) {
+      QPointF correction = QPointF(startEvent->getCorrection(), 0);
+      newLine = QLineF(start->pos() + correction, end->pos());
+    } else if (startMacro) {
+      QPointF correction = QPointF(startMacro->getCorrection(), 0);
+      newLine = QLineF(start->pos() + correction, end->pos());
+    }
   } else {
-    QPointF correction = QPointF(end->getCorrection(), 0);
-    newLine = QLineF(start->pos(), end->pos() + correction);
+    if (endEvent) {
+      QPointF correction = QPointF(endEvent->getCorrection(), 0);
+      newLine = QLineF(start->pos(), end->pos() + correction);
+    } else if (endMacro) {
+      QPointF correction = QPointF(endMacro->getCorrection(), 0);
+      newLine = QLineF(start->pos(), end->pos() + correction);
+    }
   }
   newLine.setLength(newLine.length() - 28);
   setLine(newLine);

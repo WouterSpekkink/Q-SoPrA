@@ -21,6 +21,11 @@ signals:
   void widthDecreased(EventItem *);
   void posIncreased(EventItem *);
   void posDecreased(EventItem *);
+  void widthIncreased(MacroEvent *);
+  void widthDecreased(MacroEvent *);
+  void posIncreased(MacroEvent *);
+  void posDecreased(MacroEvent *);
+
   void relevantChange();
   void EventItemContextMenuAction(const QString&);
   void ArrowContextMenuAction(const QString&);
@@ -32,10 +37,11 @@ protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
   
-  bool resizeOn;
+  bool resizeOnEvent;
+  bool resizeOnMacro;
   QPointF lastMousePos;
   EventItem *selectedEvent;
-  
+  MacroEvent *selectedMacro;
 };
 
 #endif 

@@ -1,5 +1,5 @@
-#ifndef EVENTITEM_H
-#define EVENTITEM_H
+#ifndef MACROEVENT_H
+#define MACROEVENT_H
 
 #include <QGraphicsItem>
 #include <QWheelEvent>
@@ -10,13 +10,14 @@
 */
 
 
-class NodeLabel;
-class MacroEvent;
+class MacroLabel;
+class EventItem;
 
-class EventItem : public QGraphicsItem {
+class MacroEvent : public QGraphicsItem {
 
 public:
-  EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId);
+  MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
+	     QVector<EventItem*> submittedIncidents);
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -30,13 +31,20 @@ public:
   int getWidth();
   bool isDislodged();
   void setDislodged(bool state);
-  void setLabel(NodeLabel *submittedLabel);
-  NodeLabel* getLabel();
+  void setLabel(MacroLabel *submittedLabel);
+  MacroLabel* getLabel();
+  void setIncidents(QVector<EventItem*> submittedIncidents);
+  QVector<EventItem*> getIncidents();
   QColor getColor();
-  enum {Type = UserType + 1};
-  int type() const;
-  void setMacroEvent(MacroEvent* submittedEvent);
+  void setDescription(const QString text);
+  QString getDescription();
+  void setComment(const QString text);
+  QString getComment();
+  void setMacroEvent(MacroEvent *submittedEvent);
   MacroEvent* getMacroEvent();
+
+  enum {Type = UserType + 8};
+  int type() const;
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -44,15 +52,17 @@ protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
   
 private:
+  MacroLabel *label;
   MacroEvent *macroEvent;
-  NodeLabel *label;
+  QVector<EventItem*> incidents;
   QColor color;
   QColor selectionColor;
   QPointF originalPos;
   int id;
   int width;
   bool dislodged;
- 
+  QString description;
+  QString comment;
 };
 
 #endif

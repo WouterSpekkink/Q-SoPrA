@@ -1,23 +1,29 @@
 #include <QtWidgets>
-#include "../include/EventItem.h"
+#include "../include/MacroEvent.h"
 #include "../include/Scene.h"
-#include "../include/NodeLabel.h"
+#include "../include/MacroLabel.h"
 
 /*
   In this case we assign a random colour. I will want to change that
   in real applications.
 */
 
-EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId) : color(255, 255, 255) {
+MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
+		     QVector<EventItem*> submittedIncidents)
+  : color(255, 255, 255) {
   width = subWidth;
-  setToolTip(toolTip);
+  description = submittedDescription;
+  QString tip = "<FONT SIZE = 3>" + description + "</FONT>";
+  setToolTip(tip);
   originalPos = originalPosition;
 
   selectionColor = QColor(Qt::black);
   id = subId;
   dislodged = false;
   label = NULL;
+  incidents = submittedIncidents;
   macroEvent = NULL;
+  
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsSelectable);
@@ -25,17 +31,12 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   //  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
-/*
-  I assume that this is for collision or
-  selection purposes?
-*/
-
-QRectF EventItem::boundingRect() const {
+QRectF MacroEvent::boundingRect() const {
   return QRectF(-26, -26, width + 12, 52);
 }
 
 
-void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void MacroEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
   Q_UNUSED(option);
   Q_UNUSED(widget);
   painter->setPen(Qt::NoPen);
@@ -54,13 +55,13 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 // Only to set the cursor to a different graphic.
-void EventItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+void MacroEvent::mousePressEvent(QGraphicsSceneMouseEvent *event) {
   if (event->button() == Qt::LeftButton) {
     setSelected(true);
   }
 }
 
-void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void MacroEvent::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   if (event->modifiers() & Qt::AltModifier) {
     setCursor(Qt::SizeAllCursor);
     QPointF newPos = event->scenePos();
@@ -94,7 +95,7 @@ void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   myScene->relevantChange();
 }
 
-void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
+void MacroEvent::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   if (event->modifiers() & Qt::AltModifier) {
     QPointF newPos = event->scenePos();
     this->setPos(newPos);
@@ -130,67 +131,92 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
   QGraphicsItem::mouseReleaseEvent(event);
 }
 
-int EventItem::getCorrection() {
+int MacroEvent::getCorrection() {
   return width - 39;
 }
 
-QPointF EventItem::getOriginalPos() {
+QPointF MacroEvent::getOriginalPos() {
   return originalPos;
 }
 
-int EventItem::getId() {
+int MacroEvent::getId() {
   return id;
 }
 
-void EventItem::setOriginalPos(QPointF &newPos) {
+void MacroEvent::setOriginalPos(QPointF &newPos) {
   originalPos = newPos;
 }
 
-bool EventItem::isDislodged() {
+bool MacroEvent::isDislodged() {
   return dislodged;
 }
 
-void EventItem::setDislodged(bool state) {
+void MacroEvent::setDislodged(bool state) {
   dislodged = state;
 }
 
-void EventItem::setWidth(int newWidth) {
+void MacroEvent::setWidth(int newWidth) {
   width = newWidth;
 }
 
-int EventItem::getWidth() {
+int MacroEvent::getWidth() {
   return width;
 }
 
-void EventItem::setLabel(NodeLabel *submittedLabel) {
+void MacroEvent::setLabel(MacroLabel *submittedLabel) {
   label = submittedLabel;
 }
 
-NodeLabel* EventItem::getLabel() {
+MacroLabel* MacroEvent::getLabel() {
   return label;
 }
 
-void EventItem::setColor(const QColor &subColor) {
+void MacroEvent::setColor(const QColor &subColor) {
   color = subColor;
 }
 
-QColor EventItem::getColor() {
+QColor MacroEvent::getColor() {
   return color;
 }
 
-void EventItem::setSelectionColor(const QColor &subColor) {
+void MacroEvent::setSelectionColor(const QColor &subColor) {
   selectionColor = subColor;
 }
 
-int EventItem::type() const {
+int MacroEvent::type() const {
   return Type;
 }
 
-void EventItem::setMacroEvent(MacroEvent* submittedEvent) {
+void MacroEvent::setIncidents(QVector<EventItem*> submittedIncidents) {
+  incidents = submittedIncidents;
+}
+
+QVector<EventItem*> MacroEvent::getIncidents() {
+  return incidents;
+}
+
+void MacroEvent::setDescription(const QString text) {
+  description = text;
+  QString tip = "<FONT SIZE = 3>" + description + "</FONT>";
+  setToolTip(tip);
+}
+
+QString MacroEvent::getDescription() {
+  return description;
+}
+
+void MacroEvent::setComment(const QString text) {
+  comment = text;
+}
+
+QString MacroEvent::getComment() {
+  return comment;
+}
+
+void MacroEvent::setMacroEvent(MacroEvent* submittedEvent) {
   macroEvent = submittedEvent;
 }
 
-MacroEvent* EventItem::getMacroEvent() {
+MacroEvent* MacroEvent::getMacroEvent() {
   return macroEvent;
 }
-

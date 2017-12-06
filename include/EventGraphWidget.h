@@ -24,6 +24,9 @@
 #include "ProgressBar.h"
 #include "SavedPlotsDialog.h"
 #include "AttributeColorDialog.h"
+#include "MacroEvent.h"
+#include "MacroLabel.h"
+#include "LargeTextDialog.h"
 
 class EventGraphWidget : public QWidget {
   Q_OBJECT
@@ -39,6 +42,7 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void retrieveData();
+  void seeIncidents();
   void previousDataItem();
   void nextDataItem();
   void getEvents();
@@ -52,6 +56,10 @@ private slots:
   void decreaseWidth(EventItem *item);
   void increasePos(EventItem *item);
   void decreasePos(EventItem *item);
+  void increaseWidth(MacroEvent *item);
+  void decreaseWidth(MacroEvent *item);
+  void increasePos(MacroEvent *item);
+  void decreasePos(MacroEvent *item);
   void increaseDistance();
   void decreaseDistance();
   void setPlotButton();
@@ -67,6 +75,7 @@ private slots:
   void plotLabels();
   void processLowerRange(int value);
   void processUpperRange(int value);
+  void setVisibility();
   void setRangeControls();
   void exportSvg();
   void colorByAttribute();
@@ -76,6 +85,8 @@ private slots:
   void setBackgroundColor();
   void processEventItemContextMenu(const QString &action);
   void colligateEvents();
+  bool checkConstraints(QVector<EventItem*> incidents);
+  void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();
   void processArrowContextMenu(const QString &action);
@@ -94,10 +105,12 @@ private:
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> graphicsWidget;
   QVector<EventItem*> eventVector;
-  QVector<EventItem*> currentData;
+  QVector<MacroEvent*> macroVector;
+  QVector<QGraphicsItem*> currentData;
   QVector<Arrow*> edgeVector;
   QVector<Arrow*> compareVector;
   QVector<NodeLabel*> nodeLabelVector;
+  QVector<MacroLabel*> macroLabelVector;
   QVector<QGraphicsTextItem*> textVector;
   
   QPointer<QLabel> coderLabel;
@@ -112,6 +125,7 @@ private:
   QPointer<QLabel> commentLabel;
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
+  QPointer<QLabel> indexLabel;
   
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> savePlotButton;
@@ -129,6 +143,7 @@ private:
   QPointer<QPushButton> eventColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;
+  QPointer<QPushButton> seeIncidentsButton;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -149,6 +164,7 @@ private:
   QString selectedCoder;
   QString selectedCompare;
   QString selectedType;
+  MacroEvent *selectedMacro;
   
   int distance;
   int vectorPos;

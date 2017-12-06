@@ -57,12 +57,13 @@
 
 #include <QGraphicsLineItem>
 #include "EventItem.h"
+#include "MacroEvent.h"
 
 class Arrow : public QGraphicsLineItem {
 
 public:
  
-  Arrow(EventItem *startItem, EventItem *endItem,
+  Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem,
 	QString subType, QString subCoder, QGraphicsItem *parent = 0);
   ~Arrow() {};
 
@@ -70,8 +71,8 @@ public:
   QPainterPath shape() const override;
   void setColor(const QColor &subColor) { color = subColor; }
   QColor getColor() {return color;}
-  EventItem *startItem() const { return start; }
-  EventItem *endItem() const { return end; }
+  QGraphicsItem *startItem() const { return start; }
+  QGraphicsItem *endItem() const { return end; }
 
   void updatePosition();
 
@@ -82,8 +83,8 @@ protected:
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 private:
-  EventItem *start;
-  EventItem *end;
+  QGraphicsItem *start;
+  QGraphicsItem *end;
   QColor color;
   QPolygonF arrowHead;
   QString typeInd;
