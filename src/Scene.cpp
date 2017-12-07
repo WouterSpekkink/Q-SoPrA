@@ -115,6 +115,23 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
     return;
   } else {
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
+    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
+    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    if (nodeLabel) {
+      incident = nodeLabel->getNode();
+    }
+    if (macroLabel) {
+      macro = macroLabel->getMacroEvent();
+    }
+    if (incident) {
+      this->clearSelection();
+      incident->setSelected(true);
+    } else if (macro) {
+      this->clearSelection();
+      macro->setSelected(true);
+    }
     selectedEvent = NULL;
     selectedMacro = NULL;
     QGraphicsScene::mousePressEvent(event);
@@ -125,6 +142,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   resizeOnEvent = false;
   resizeOnMacro = false;
   lastMousePos = event->scenePos();
+
   if (selectedEvent) {
     selectedEvent->setCursor(Qt::OpenHandCursor);
     selectedEvent = NULL;
