@@ -1649,14 +1649,16 @@ void LinkagesWidget::previousTail() {
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM coders_to_linkage_types "
+  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
 		 "WHERE coder = :coder AND type = :type");
   query->bindValue(":coder", selectedCoder);
   query->bindValue(":type", selectedType);
   query->exec();
   query->first();
   int tailIndex = 0;
+  int headIndex = 0;
   tailIndex = query->value(0).toInt();
+  headIndex = query->value(1).toInt();
   if (selectedDirection == PAST) {
     if (tailIndex != 2) {
       tailIndex--;
@@ -1673,15 +1675,26 @@ void LinkagesWidget::previousTail() {
   } else if (selectedDirection == FUTURE) {
     if (tailIndex != 1) {
       tailIndex--;
-      query->prepare("UPDATE coders_to_linkage_types "
-		     "SET tail = :tail, head = :head "
-		     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":tail", tailIndex);
-      query->bindValue(":head", tailIndex + 1);
-      query->bindValue(":coder", selectedCoder);
-      query->bindValue(":type", selectedType);
-      query->exec();
-      retrieveData();
+      if (codingType == ASSISTED && tailIndex < headIndex) {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", tailIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      } else {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail, head = :head "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", tailIndex);
+	query->bindValue(":head", tailIndex + 1);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      }
     }
   }
   delete query;
@@ -1694,14 +1707,16 @@ void LinkagesWidget::nextTail() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   QSqlQuery  *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM coders_to_linkage_types "
+  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
 		 "WHERE coder = :coder AND type = :type");
   query->bindValue(":coder", selectedCoder);
   query->bindValue(":type", selectedType);
   query->exec();
   query->first();
   int tailIndex = 0;
+  int headIndex = 0;
   tailIndex = query->value(0).toInt();
+  headIndex = query->value(1).toInt();
   if (selectedDirection == PAST) {
     if (tailIndex != incidentsModel->rowCount()) {
       tailIndex++;
@@ -1718,15 +1733,26 @@ void LinkagesWidget::nextTail() {
   } else if (selectedDirection == FUTURE) {
     if (tailIndex != incidentsModel->rowCount() - 1) {
       tailIndex++;
-      query->prepare("UPDATE coders_to_linkage_types "
-		     "SET tail = :tail, head = :head "
-		     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":tail", tailIndex);
-      query->bindValue(":head", tailIndex + 1);
-      query->bindValue(":coder", selectedCoder);
-      query->bindValue(":type", selectedType);
-      query->exec();
-      retrieveData();
+      if (codingType == ASSISTED && tailIndex < headIndex) {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", tailIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      } else {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail, head = :head "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", tailIndex);
+	query->bindValue(":head", tailIndex + 1);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      }
     }
   }
   delete query;  
@@ -1770,14 +1796,16 @@ void LinkagesWidget::previousMarkedTail() {
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM coders_to_linkage_types "
+  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
 	      "WHERE coder = :coder AND type = :type");
   query->bindValue(":coder", selectedCoder);
   query->bindValue(":type", selectedType);
   query->exec();
   int tail = 0;
+  int head = 0;
   query->first();
   tail = query->value(0).toInt();
+  head = query->value(1).toInt();
   query->prepare("SELECT ch_order FROM incidents "
 		 "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
   query->bindValue(":order", tail);
@@ -1802,15 +1830,26 @@ void LinkagesWidget::previousMarkedTail() {
     if (!query->isNull(0)) {
       tail = query->value(0).toInt();
       if (tail >= 1) {
-	query->prepare("UPDATE coders_to_linkage_types "
-		       "SET tail = :tail, head = :head "
-		       "WHERE coder = :coder AND type = :type");
-	query->bindValue(":tail", tail);
-	query->bindValue(":head", tail + 1);	
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);	
-	query->exec();
-	retrieveData();
+	if (codingType == ASSISTED && tail < head) {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);	
+	  query->exec();
+	  retrieveData();
+	} else {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail, head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", tail + 1);	
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);	
+	  query->exec();
+	  retrieveData();
+	}
       }
     }
   }
@@ -1821,14 +1860,16 @@ void LinkagesWidget::nextMarkedTail() {
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM coders_to_linkage_types "
+  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
 	      "WHERE coder = :coder AND type = :type");
   query->bindValue(":coder", selectedCoder);
   query->bindValue(":type", selectedType);
   query->exec();
   int tail = 0;
+  int head = 0;
   query->first();
   tail = query->value(0).toInt();
+  head = query->value(1).toInt();
   query->prepare("SELECT ch_order FROM incidents "
 		 "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
   query->bindValue(":order", tail);
@@ -1857,15 +1898,26 @@ void LinkagesWidget::nextMarkedTail() {
     if (!query->isNull(0)) {
       tail = query->value(0).toInt();
       if (tail <= incidentsModel->rowCount() - 1) {
-	query->prepare("UPDATE coders_to_linkage_types "
-		       "SET tail = :tail, head = :head "
-		       "WHERE coder = :coder AND type = :type");
-	query->bindValue(":tail", tail);
-	query->bindValue(":head", tail + 1);	
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);	
-	query->exec();
-	retrieveData();
+	if (codingType == ASSISTED && tail < head) {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);	
+	  query->exec();
+	  retrieveData();
+	} else {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail, head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", tail + 1);	
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);	
+	  query->exec();
+	  retrieveData();
+	}
       }
     }
   }
@@ -1935,14 +1987,39 @@ void LinkagesWidget::previousHead() {
   } else if (selectedDirection == FUTURE) {
     if (headIndex != tailIndex + 1) {
       headIndex--;
-      query->prepare("UPDATE coders_to_linkage_types "
-		     "SET head = :head "
-		     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":head", headIndex);
-      query->bindValue(":coder", selectedCoder);
-      query->bindValue(":type", selectedType);
-      query->exec();
-      retrieveData();
+      if (codingType == ASSISTED) {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail, head = :head "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", headIndex - 1);
+	query->bindValue(":head", headIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      } else {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET head = :head "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":head", headIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      }
+    } else {
+      if (tailIndex != 1 && codingType == ASSISTED) {
+	headIndex--;
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail, head = :head "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", headIndex - 1);
+	query->bindValue(":head", headIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      }
     }
   }
   delete query;
@@ -1978,14 +2055,26 @@ void LinkagesWidget::nextHead() {
   } else if (selectedDirection == FUTURE) {
     if (headIndex != incidentsModel->rowCount()) {
       headIndex++;
-      query->prepare("UPDATE coders_to_linkage_types "
-		     "SET head = :head "
+      if (codingType == ASSISTED) {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET tail = :tail, head = :head "
+		       "WHERE coder = :coder AND type = :type");
+	query->bindValue(":tail", headIndex - 1);
+	query->bindValue(":head", headIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      } else {
+	query->prepare("UPDATE coders_to_linkage_types "
+		       "SET head = :head "
 		     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":head", headIndex);
-      query->bindValue(":coder", selectedCoder);
-      query->bindValue(":type", selectedType);
-      query->exec();
-      retrieveData();
+	query->bindValue(":head", headIndex);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->exec();
+	retrieveData();
+      }
     }
   }
   delete query;
@@ -2066,14 +2155,26 @@ void LinkagesWidget::previousMarkedHead() {
     if (!query->isNull(0)) {
       head = query->value(0).toInt();
       if (head >= tail + 1) {
-	query->prepare("UPDATE coders_to_linkage_types "
-		       "SET head = :head "
-		       "WHERE coder = :coder AND type = :type");
-	query->bindValue(":head", head);	
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);	
-	query->exec();
-	retrieveData();
+	if (codingType == ASSISTED) {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail, head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", head - 1);
+	  query->bindValue(":head", head);
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);
+	  query->exec();
+	  retrieveData();
+	} else {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":head", head);	
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);	
+	  query->exec();
+	  retrieveData();
+	}
       }
     }
   }
@@ -2124,14 +2225,26 @@ void LinkagesWidget::nextMarkedHead() {
     if (!query->isNull(0)) {
       head = query->value(0).toInt();
       if (head <= incidentsModel->rowCount()) {
-	query->prepare("UPDATE coders_to_linkage_types "
-		       "SET head = :head "
-		       "WHERE coder = :coder AND type = :type");
-	query->bindValue(":head", head);	
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);	
-	query->exec();
-	retrieveData();
+	if (codingType == ASSISTED) {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail, head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", head - 1);
+	  query->bindValue(":head", head);
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);
+	  query->exec();
+	  retrieveData();
+	} else {
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":head", head);	
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);	
+	  query->exec();
+	  retrieveData();
+	}
       }
     }
   }
