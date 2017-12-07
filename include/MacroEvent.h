@@ -42,7 +42,8 @@ public:
   QString getComment();
   void setMacroEvent(MacroEvent *submittedEvent);
   MacroEvent* getMacroEvent();
-
+  void setOrder(int submittedOrder);
+  int getOrder();
   enum {Type = UserType + 8};
   int type() const;
   
@@ -60,6 +61,7 @@ private:
   QPointF originalPos;
   int id;
   int width;
+  int order;
   bool dislodged;
   QString description;
   QString comment;

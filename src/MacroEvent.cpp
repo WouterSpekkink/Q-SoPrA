@@ -16,7 +16,7 @@ MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF origi
   QString tip = "<FONT SIZE = 3>" + description + "</FONT>";
   setToolTip(tip);
   originalPos = originalPosition;
-
+  order = 0;
   selectionColor = QColor(Qt::black);
   id = subId;
   dislodged = false;
@@ -219,4 +219,12 @@ void MacroEvent::setMacroEvent(MacroEvent* submittedEvent) {
 
 MacroEvent* MacroEvent::getMacroEvent() {
   return macroEvent;
+}
+
+void MacroEvent::setOrder(int submittedOrder) {
+  order = submittedOrder;
+}
+
+int MacroEvent::getOrder() {
+  return order;
 }

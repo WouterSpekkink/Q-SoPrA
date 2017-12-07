@@ -2138,8 +2138,7 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
 }
 
 void EventGraphWidget::colligateEvents() {
-  // I should actually figure out if colligating one event makes sense too.
-  if (currentData.size() > 0) {
+  if (currentData.size() > 1) {
     QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
     textDialog->setWindowTitle("Event description");
     textDialog->setLabel("Event description:");
@@ -2147,12 +2146,6 @@ void EventGraphWidget::colligateEvents() {
     if (textDialog->getExitStatus() == 0) {
       QString description = textDialog->getText();
       delete textDialog;
-      int id = 0;
-      QVectorIterator<MacroEvent*> mit(macroVector);
-      while (mit.hasNext()) {
-	id++;
-	mit.next();
-      }
       QVector<EventItem*> tempIncidents;
       QVectorIterator<QGraphicsItem*> it(currentData);
       while (it.hasNext()) {
@@ -2208,11 +2201,31 @@ void EventGraphWidget::colligateEvents() {
 	qreal xPos = lowestX;
 	qreal yPos = lowestY + ((highestY - lowestY) / 2);
 	QPointF originalPos = QPointF(xPos, yPos);
-      
-	MacroEvent* current = new MacroEvent(width, description, originalPos, id,
+   	MacroEvent* current = new MacroEvent(width, description, originalPos, macroVector.size(),
 					     tempIncidents);
+	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
 	current->setZValue(2);
+	int order = 1;
+	QVectorIterator<MacroEvent*> mit(macroVector);
+	if (macroVector.size() == 0) {
+	  current->setOrder(order);
+	} else {
+	  while (mit.hasNext()) {
+	    MacroEvent *temp = mit.next();
+	    if (temp->scenePos().x() <= current->scenePos().x()) {
+	      order = temp->getOrder() + 1;
+	    } else {
+	      temp->setOrder(temp->getOrder() + 1);
+	      QString label = "M-" + QString::number(temp->getOrder());
+	      temp->getLabel()->setPlainText(label);
+	      temp->getLabel()->setPlainText(label);
+	      temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
+
+	    }
+	  }
+	  current->setOrder(order);
+	}
 	QVectorIterator<EventItem*> it3(tempIncidents);
 	while (it3.hasNext()) {
 	  EventItem* item = it3.next();
@@ -2223,7 +2236,7 @@ void EventGraphWidget::colligateEvents() {
 	scene->addItem(current);
 	MacroLabel *macroLabel = new MacroLabel(current);
 	current->setLabel(macroLabel);
-	QString label = "M-" + QString::number(id);
+	QString label = "M-" + QString::number(order);
 	macroLabel->setPlainText(label);
 	macroLabel->setTextWidth(macroLabel->boundingRect().width());
 	qreal xOffset = (current->getWidth() / 2) - 20;
@@ -2239,6 +2252,15 @@ void EventGraphWidget::colligateEvents() {
     } else {
       return;
     }
+  } else {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>At least two incidents required</b>");
+    warningBox->setInformativeText("You should select at least two incidents to "
+				   "be able to perform this action.");
+    warningBox->exec();
+    delete warningBox;
   }
 }
 
@@ -2286,8 +2308,8 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
 	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
 	    warningBox->addButton(QMessageBox::Ok);
 	    warningBox->setIcon(QMessageBox::Warning);
-	    warningBox->setText("Constraints not met.");
-	    warningBox->setInformativeText("Colligatting these events breaks the constraints "
+	    warningBox->setText("<b>Constraints not met.</b>");
+	    warningBox->setInformativeText("Colligating these incidents breaks the constraints "
 					   "that were set for colligation.");
 	    warningBox->exec();
 	    delete warningBox;

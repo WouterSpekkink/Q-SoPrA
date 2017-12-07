@@ -1,6 +1,7 @@
 #include "../include/GraphicsView.h"
 #include "../include/Scene.h"
 #include "../include/NodeLabel.h"
+#include "../include/MacroLabel.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -18,20 +19,28 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     this->setDragMode(QGraphicsView::NoDrag);
     QGraphicsView::mousePressEvent(event);
   } else if (event->button() == Qt::RightButton) {
-    EventItem *item = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
-    NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
+    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
     Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
-    if (text) {
-      item = text->getNode();
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
+    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+
+    if (nodeLabel) {
+      incident = nodeLabel->getNode();
     }
-    if (!item && !arrow) {
+    if (macroLabel) {
+      macro = macroLabel->getMacroEvent();
+    }
+    if (!incident && !macro && !arrow) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
       return;
-    } else if (item) {
-      item->setSelected(true);
+    } else if (incident) {
+      incident->setSelected(true);
       return;
+    } else if (macro) {
+      macro->setSelected(true);
     } else if (arrow) {
       arrow->setSelected(true);
       return;
