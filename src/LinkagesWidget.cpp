@@ -2381,7 +2381,9 @@ void LinkagesWidget::setLink() {
   } else if (codingType == ASSISTED && selectedDirection == FUTURE) {
     std::vector<int> ignore;
     if (tailIndex != 1) {
+      qDebug() << "THIS";
       findFuturePaths(&ignore, tailIndex);
+      qDebug() << "AND THIS";
       std::vector<int>::iterator it;
       for (int i = tailIndex - 1; i != 0; i--) {
 	bool found = false;
@@ -2427,7 +2429,7 @@ void LinkagesWidget::setLink() {
       tailIndex = headIndex - 1;
       query->prepare("UPDATE coders_to_linkage_types "
 		     "SET tail = :tail, head = :head "
-		     "WHERE coder = :coder type = :type");
+		     "WHERE coder = :coder AND type = :type");
       query->bindValue(":tail", tailIndex);
       query->bindValue(":head", headIndex);
       query->bindValue(":coder", selectedCoder);
@@ -2693,7 +2695,7 @@ void LinkagesWidget::findFuturePaths(std::vector<int> *pIgnore, int currentIncid
     query2->exec();
     query2->first();
     int newIndex = 0;
-    newIndex = query->value(0).toInt();
+    newIndex = query2->value(0).toInt();
     results.push_back(newIndex);
     delete query2;
   }

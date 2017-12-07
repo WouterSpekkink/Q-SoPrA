@@ -2229,6 +2229,9 @@ void EventGraphWidget::colligateEvents() {
 	QVectorIterator<EventItem*> it3(tempIncidents);
 	while (it3.hasNext()) {
 	  EventItem* item = it3.next();
+	  if (item->getMacroEvent() != NULL) {
+	    item->getMacroEvent()->hide();
+	  }
 	  item->setMacroEvent(current);
 	  item->hide();
 	}
@@ -2289,22 +2292,30 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
   QVector<int> markOne;
   while (dit.hasNext()) {
     EventItem *departure = dit.next();
-    if (direction == PAST) {
-      // First we check the internal consistency;
-      findPastPaths(&markOne, departure->getId());
-      QVectorIterator<EventItem*> cit(incidents);
-      while (cit.hasNext()) {
-	EventItem *current = cit.next();
-	bool found = false;
-	if (current != departure) {
-	  QVectorIterator<int> mit(markOne);
-	  while(mit.hasNext()) {
-	    int numb = mit.next();
-	    if (current->getId() == numb) {
-	      found = true;
-	    }
-	  }
+    // First we check the internal consistency;
+    findPastPaths(&markOne, departure->getId());
+    QVectorIterator<EventItem*> cit(incidents);
+    while (cit.hasNext()) {
+      EventItem *current = cit.next();
+      bool found = false;
+      if (current != departure) {
+	if (markOne.contains(current->getId())) {
+	  found = true;
+	}
+	if (direction == PAST) {
 	  if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
+	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	    warningBox->addButton(QMessageBox::Ok);
+	    warningBox->setIcon(QMessageBox::Warning);
+	    warningBox->setText("<b>Constraints not met.</b>");
+	    warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					   "that were set for colligation.");
+	    warningBox->exec();
+	    delete warningBox;
+	    return false;
+	  }
+	} else if (direction == FUTURE) {
+	  if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
 	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
 	    warningBox->addButton(QMessageBox::Ok);
 	    warningBox->setIcon(QMessageBox::Warning);
@@ -2317,37 +2328,66 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
 	  }
 	}
       }
-      // Then we check the external consistency.
-      query->prepare("SELECT tail FROM linkages "
-		     "WHERE head = :head AND type = :type AND coder = :coder");
-      query->bindValue(":head", departure->getId());
-      query->bindValue(":type", selectedType);
-      query->bindValue(":coder", selectedCoder);
-      query->exec();
-      while (query->next()) {
-	QVector<int> markTwo;
-	int currentTail = query->value(0).toInt();
-	if (!(incidentId.contains(currentTail))) {
-	  findPastPaths(&markTwo, currentTail);
-	  QVectorIterator<EventItem*> kit(incidents);
-	  while (kit.hasNext()) {
-	    EventItem *current = kit.next();
+    }
+    // Then we check the external consistency.
+    query->prepare("SELECT tail FROM linkages "
+		   "WHERE head = :head AND type = :type AND coder = :coder");
+    query->bindValue(":head", departure->getId());
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    while (query->next()) {
+      QVector<int> markTwo;
+      int currentTail = query->value(0).toInt();
+      if (!(incidentId.contains(currentTail))) {
+	findPastPaths(&markTwo, currentTail);
+	QVectorIterator<EventItem*> kit(incidents);
+	while (kit.hasNext()) {
+	  EventItem *current = kit.next();
+	  bool found = false;
+	  if (markTwo.contains(current->getId())) {
+	    found = true;
+	  }
+	  if (!found) {
+	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	    warningBox->addButton(QMessageBox::Ok);
+	    warningBox->setIcon(QMessageBox::Warning);
+	    warningBox->setText("<b>Constraints not met.</b>");
+	    warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					   "that were set for colligation.");
+	    warningBox->exec();
+	    delete warningBox;
+	    return false;
+	  }
+	}
+      }
+    }
+    query->prepare("SELECT head FROM linkages "
+		   "WHERE tail = :tail AND type = :type AND coder = :coder");
+    query->bindValue(":tail", departure->getId());
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    while (query->next()) {
+      int currentHead = query->value(0).toInt();
+      if (!(incidentId.contains(currentHead))) {
+	QVectorIterator<EventItem*> lit(incidents);
+	while (lit.hasNext()) {
+	  EventItem *current = lit.next();
+	  if (current != departure) {
+	    QVector<int> markTwo;
+	    findPastPaths(&markTwo, current->getId());
 	    bool found = false;
-	    QVectorIterator<int> mit(markTwo);
-	    while (mit.hasNext()) {
-	      int numb = mit.next();
-	      if (current->getId() == numb) {
-		found = true;
-	      }
+	    if (markTwo.contains(currentHead)) {
+	      found = true;
 	    }
 	    if (!found) {
 	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
 	      warningBox->addButton(QMessageBox::Ok);
 	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("Constraints not met.");
-	      warningBox->setInformativeText("Colligatting these events breaks "
-					     "the constraints that were set for "
-					     "colligation.");
+	      warningBox->setText("<b>Constraints not met.</b>");
+	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					     "that were set for colligation.");
 	      warningBox->exec();
 	      delete warningBox;
 	      return false;
@@ -2355,13 +2395,6 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
 	  }
 	}
       }
-      // And then we can also rewire the linkages.
-    } else if (direction == FUTURE) {
-      // TODO!!!!!
-
-      // AFTER I FINISH THE ABOVE COPY AND ADJUST
-
-      // TODO!!!!!!
     }
   }
   return true;
