@@ -46,6 +46,15 @@ public:
   int getOrder();
   enum {Type = UserType + 8};
   int type() const;
+  void insertAttribute(QString attribute);
+  void removeAttribute(QString attribute);
+  void setAttributes(QSet<QString> submittedAttributes);
+  QSet<QString> getAttributes();
+  void insertValue(QString attribute, QString value);
+  void removeValue(QString attribute);
+  void setValues(QMap<QString, QString> submittedValue);
+  QMap<QString, QString> getValues();
+  void cleanUp();
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -56,6 +65,8 @@ private:
   MacroLabel *label;
   MacroEvent *macroEvent;
   QVector<EventItem*> incidents;
+  QSet<QString> attributes;
+  QMap<QString, QString> values;
   QColor color;
   QColor selectionColor;
   QPointF originalPos;

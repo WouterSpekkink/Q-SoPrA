@@ -27,6 +27,11 @@
 #include "MacroEvent.h"
 #include "MacroLabel.h"
 #include "LargeTextDialog.h"
+#include "DeselectableTreeView.h"
+#include "AttributeTreeFilter.h"
+#include "AttributesWidget.h"
+
+class AttributesWidget;
 
 class EventGraphWidget : public QWidget {
   Q_OBJECT
@@ -36,12 +41,27 @@ public:
   EventGraphWidget(QWidget *parent = 0);
   ~EventGraphWidget() {};
 
+  QVector<MacroEvent*> getMacros();
+  void resetTree();
+
 private slots:
   void setCommentBool();
   void setComment();
   void toggleDetails();
   void toggleGraphicsControls();
   void retrieveData();
+  void showAttributes();
+  void showComments();
+  void setTree();
+  void buildHierarchy(QStandardItem *top, QString name);
+  void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
+		    QString type = "", QModelIndex parent = QModelIndex());
+//void fixTree(QString entity);
+//  void setFilter(const QString &text);
+  void assignAttribute();
+  void unassignAttribute();
+  
   void seeIncidents();
   void previousDataItem();
   void nextDataItem();
@@ -99,12 +119,15 @@ private slots:
   void findPastPaths(QVector<int> *mark, int currentIncident);
   void findFuturePaths(QVector<int> *mark, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
+  void setAttributesWidget(AttributesWidget* aw);
   
 private:
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> graphicsWidget;
+  QPointer<QWidget> attWidget;
+  QPointer<QWidget> commentWidget;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
   QVector<QGraphicsItem*> currentData;
@@ -112,7 +135,11 @@ private:
   QVector<Arrow*> compareVector;
   QVector<NodeLabel*> nodeLabelVector;
   QVector<MacroLabel*> macroLabelVector;
-  QVector<QGraphicsTextItem*> textVector;
+  AttributesWidget *attributesWidget;
+
+  QPointer<QStandardItemModel> attributesTree;
+  QPointer<DeselectableTreeView> attributesTreeView;
+  QPointer<AttributeTreeFilter> treeFilter;
   
   QPointer<QLabel> coderLabel;
   QPointer<QLabel> typeLabel;
@@ -127,6 +154,9 @@ private:
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
   QPointer<QLabel> indexLabel;
+  QPointer<QLabel> attributesLabel;
+  QPointer<QLabel> attributesFilterLabel;
+  QPointer<QLabel> valueLabel;
   
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> savePlotButton;
@@ -145,9 +175,19 @@ private:
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> seeIncidentsButton;
+  QPointer<QPushButton> seeAttributesButton;
+  QPointer<QPushButton> seeCommentsButton;
+  QPointer<QPushButton> valueButton; 
+  QPointer<QPushButton> assignAttributeButton;
+  QPointer<QPushButton> unassignAttributeButton;
+  QPointer<QPushButton> addAttributeButton;
+  QPointer<QPushButton> editAttributeButton;
+  QPointer<QPushButton> removeUnusedAttributesButton;  
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
+  QPointer<QLineEdit> attributesFilterField;
+  QPointer<QLineEdit> valueField;
 
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;

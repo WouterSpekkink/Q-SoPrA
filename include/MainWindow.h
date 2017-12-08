@@ -22,12 +22,14 @@
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
-
+  
 public:
   MainWindow(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
 
   ~MainWindow() {};
 
+  QPointer<QStackedWidget> getStacked();
+				       
 private slots:
   void createActions();
   void createMenus();

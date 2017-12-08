@@ -17,6 +17,11 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   journalWidget = new JournalWidget(this);
   eventGraphWidget = new EventGraphWidget(this);
   networkGraphWidget = new NetworkGraphWidget(this);
+
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
+  aw->setEventGraph(egw);
+  egw->setAttributesWidget(aw);
   
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);
@@ -374,5 +379,4 @@ void MainWindow::switchToNetworkGraphView() {
   const QModelIndex index;  
   stacked->setCurrentWidget(networkGraphWidget);
 }
-
 

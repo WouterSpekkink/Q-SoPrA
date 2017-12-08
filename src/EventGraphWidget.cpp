@@ -32,6 +32,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   
   infoWidget = new QWidget(this);
   graphicsWidget = new QWidget(this);
+  attWidget = new QWidget(this);
+  commentWidget = new QWidget(this);
   
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
@@ -44,6 +46,21 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   view->setRenderHint(QPainter::Antialiasing);
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
 
+  attributesTreeView = new DeselectableTreeView(attWidget);
+  attributesTreeView->setHeaderHidden(true);
+  attributesTreeView->setDragEnabled(true);
+  attributesTreeView->setAcceptDrops(true);
+  attributesTreeView->setDropIndicatorShown(true);
+  attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
+  attributesTreeView->header()->setStretchLastSection(false);
+  attributesTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
+  treeFilter = new AttributeTreeFilter(this);
+  treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
+  setTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  attributesTreeView->installEventFilter(this);
+
   coderLabel = new QLabel(tr("Choose coder:"), this);
   typeLabel = new QLabel(tr("Choose linkage:"), this);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
@@ -53,10 +70,13 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   sourceLabel = new QLabel("<b>Source:</b>", infoWidget);
   descriptionLabel = new QLabel("<b>Description:</b>", infoWidget);
   rawLabel = new QLabel("<b>Raw:</b>", infoWidget);
-  commentLabel = new QLabel("<b>Comments:</b>", infoWidget);
+  commentLabel = new QLabel("<b>Comments:</b>", commentWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   indexLabel = new QLabel(tr("<b>(0/0)</b>"), infoWidget);
+  attributesLabel = new QLabel(tr("<b>Attributes:</b>"), attWidget);
+  attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), attWidget);
+  valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -77,6 +97,20 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
   upperRangeSpinBox->setEnabled(false);
+
+  timeStampField = new QLineEdit(infoWidget);
+  timeStampField->setReadOnly(true);
+  sourceField = new QLineEdit(infoWidget);
+  sourceField->setReadOnly(true);
+  descriptionField = new QTextEdit(infoWidget);
+  descriptionField->setReadOnly(true);
+  rawField = new QTextEdit(infoWidget);
+  rawField->setReadOnly(true);
+  commentField = new QTextEdit(commentWidget);
+  commentField->installEventFilter(commentWidget);
+  attributesFilterField = new QLineEdit(attWidget);
+  valueField = new QLineEdit(attWidget);
+  valueField->setEnabled(false);
   
   plotButton = new QPushButton(tr("Plot new"), this);
   savePlotButton = new QPushButton(tr("Save plot"), this);
@@ -102,19 +136,21 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
+  valueButton = new QPushButton(tr("Store value"), attWidget);
+  valueButton->setEnabled(false);
+  assignAttributeButton = new QPushButton(tr("Assign attribute"), attWidget);
+  unassignAttributeButton = new QPushButton(tr("Unassign attribute"), attWidget);
+  addAttributeButton = new QPushButton(tr("New attribute"), attWidget);
+  editAttributeButton = new QPushButton(tr("Edit attribute"), attWidget);
+  removeUnusedAttributesButton = new QPushButton(tr("Remove unused"), attWidget);
+  seeAttributesButton = new QPushButton(tr("Attributes"), commentWidget);
+  seeCommentsButton = new QPushButton(tr("Comments"), attWidget);
   
-  timeStampField = new QLineEdit(infoWidget);
-  timeStampField->setReadOnly(true);
-  sourceField = new QLineEdit(infoWidget);
-  sourceField->setReadOnly(true);
-  descriptionField = new QTextEdit(infoWidget);
-  descriptionField->setReadOnly(true);
-  rawField = new QTextEdit(infoWidget);
-  rawField->setReadOnly(true);
-  commentField = new QTextEdit(infoWidget);
-  commentField->installEventFilter(infoWidget);
-
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
+  connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
+  connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
+  connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
+  connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
@@ -138,7 +174,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posDecreased(EventItem*)), this, SLOT(decreasePos(EventItem*)));
   connect(scene, SIGNAL(posIncreased(MacroEvent*)), this, SLOT(increasePos(MacroEvent*)));
   connect(scene, SIGNAL(posDecreased(MacroEvent*)), this, SLOT(decreasePos(MacroEvent*)));
-  //  connect(scene, SIGNAL(selectionChanged()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
 	  this, SLOT(processEventItemContextMenu(const QString &)));
@@ -201,8 +236,43 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   detailsLayout->addWidget(descriptionField);
   detailsLayout->addWidget(rawLabel);
   detailsLayout->addWidget(rawField);
-  detailsLayout->addWidget(commentLabel);
-  detailsLayout->addWidget(commentField);
+  QPointer<QVBoxLayout> commentLayout = new QVBoxLayout;
+  commentLayout->setContentsMargins(0,0,0,0);
+  QPointer<QHBoxLayout> commentTopLayout = new QHBoxLayout;
+  commentTopLayout->addWidget(commentLabel);
+  commentTopLayout->addWidget(seeAttributesButton);
+  commentTopLayout->setContentsMargins(0,0,0,0);
+  commentLayout->addLayout(commentTopLayout);
+  commentLayout->addWidget(commentField);
+  commentWidget->setLayout(commentLayout);
+  detailsLayout->addWidget(commentWidget);
+  QPointer<QVBoxLayout> attributesLayout = new QVBoxLayout;
+  attributesLayout->setContentsMargins(0,0,0,0);
+  QPointer<QHBoxLayout> attributesTitleLayout = new QHBoxLayout;
+  attributesTitleLayout->addWidget(attributesLabel);
+  attributesTitleLayout->addWidget(seeCommentsButton);
+  attributesLayout->addLayout(attributesTitleLayout);
+  attributesLayout->addWidget(attributesTreeView);
+  QPointer<QHBoxLayout> filterLayout = new QHBoxLayout;
+  filterLayout->addWidget(attributesFilterLabel);
+  filterLayout->addWidget(attributesFilterField);
+  attributesLayout->addLayout(filterLayout);
+  QPointer<QHBoxLayout> valueLayout = new QHBoxLayout;
+  valueLayout->addWidget(valueLabel);
+  valueLayout->addWidget(valueField);
+  valueLayout->addWidget(valueButton);
+  attributesLayout->addLayout(valueLayout);
+  QPointer<QHBoxLayout> attributesTopLayout = new QHBoxLayout;
+  attributesTopLayout->addWidget(assignAttributeButton);
+  attributesTopLayout->addWidget(unassignAttributeButton);
+  attributesLayout->addLayout(attributesTopLayout);
+  QPointer<QHBoxLayout> attributesBottomLayout = new QHBoxLayout;
+  attributesBottomLayout->addWidget(addAttributeButton);
+  attributesBottomLayout->addWidget(editAttributeButton);
+  attributesBottomLayout->addWidget(removeUnusedAttributesButton);
+  attributesLayout->addLayout(attributesBottomLayout);
+  attWidget->setLayout(attributesLayout);
+  detailsLayout->addWidget(attWidget);
   infoWidget->setLayout(detailsLayout);
   screenLayout->addWidget(infoWidget);
   QScreen *screen = QGuiApplication::primaryScreen();
@@ -261,6 +331,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   setLayout(mainLayout);
   infoWidget->hide();
   graphicsWidget->hide();
+  attWidget->hide();
 }
 
 void EventGraphWidget::setCommentBool() {
@@ -306,6 +377,16 @@ void EventGraphWidget::toggleGraphicsControls() {
   }
 }
 
+void EventGraphWidget::showAttributes() {
+  commentWidget->hide();
+  attWidget->show();
+}
+
+void EventGraphWidget::showComments() {
+  attWidget->hide();
+  commentWidget->show();
+}
+
 void EventGraphWidget::retrieveData() {
   setComment();
   if (currentData.size() > 0) {
@@ -321,12 +402,16 @@ void EventGraphWidget::retrieveData() {
 	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
 	currentEvent->setSelectionColor(Qt::black);
 	currentEvent->update();
-	currentData.push_back(currentEvent);
+	if (currentEvent->isVisible()) {
+	  currentData.push_back(currentEvent);
+	}
       }	else if (macro) {
 	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
 	currentMacro->setSelectionColor(Qt::black);
 	currentMacro->update();
-	currentData.push_back(currentMacro);
+	if (currentMacro->isVisible()) {
+	  currentData.push_back(currentMacro);
+	}
       } else if (arrow && currentData.size() > 0) {
 	scene->blockSignals(true);
 	arrow->setSelected(false);
@@ -379,6 +464,16 @@ void EventGraphWidget::retrieveData() {
 	  rawField->setText(raw);
 	  commentField->setText(comment);
 	  sourceField->setText(source);
+	  resetFont(attributesTree);
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT attribute FROM attributes_to_incidents "
+			 "WHERE incident = :id");
+	  query->bindValue(":id", id);
+	  query->exec();
+	  while (query->next()) {
+	    QString attribute = query->value(0).toString();
+	    boldSelected(attributesTree, attribute, id, INCIDENT);
+	  }
 	}
 	delete query;
       } else if (currentMacro) {
@@ -413,6 +508,14 @@ void EventGraphWidget::retrieveData() {
 	sourceField->setText(count);
 	commentField->setText(currentMacro->getComment());
 	delete query;
+	resetFont(attributesTree);
+	QSet<QString> attributes = currentMacro->getAttributes();
+	QSet<QString>::iterator it;
+	id = currentMacro->getId();
+	for (it = attributes.begin(); it != attributes.end(); it++) {
+	  QString attribute  = *it;
+	  boldSelected(attributesTree, attribute, id, MACRO);
+	}
       }
       previousEventButton->setEnabled(true);
       nextEventButton->setEnabled(true);
@@ -430,6 +533,7 @@ void EventGraphWidget::retrieveData() {
     indexLabel->setText("(0/0)");
     selectedIncident = 0;
     selectedMacro = NULL;
+    resetFont(attributesTree);
   }
 }
 
@@ -513,6 +617,7 @@ void EventGraphWidget::previousDataItem() {
       currentMacro->update();
     }
     if (currentEvent) {
+      selectedMacro = NULL;
       seeIncidentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
@@ -601,6 +706,7 @@ void EventGraphWidget::previousDataItem() {
       currentMacro->update();
     }
     if (currentEvent) {
+      selectedMacro = 0;
       seeIncidentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
@@ -694,6 +800,7 @@ void EventGraphWidget::nextDataItem() {
       currentMacro->update();
     }
     if (currentEvent) {
+      selectedMacro = NULL;
       seeIncidentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
@@ -781,6 +888,7 @@ void EventGraphWidget::nextDataItem() {
       currentMacro->update();
     }
     if (currentEvent) {
+      selectedMacro = NULL;
       seeIncidentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
@@ -848,7 +956,222 @@ void EventGraphWidget::nextDataItem() {
   }
 }
 
-    
+void EventGraphWidget::setTree() {
+  attributesTree = new QStandardItemModel(this);
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
+  while (query->next()) {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *father = new QStandardItem(name);    
+    attributesTree->appendRow(father);
+    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    father->setToolTip(hint);
+    father->setEditable(false);
+    buildHierarchy(father, name);
+  }
+  treeFilter->setSourceModel(attributesTree);
+  attributesTreeView->setModel(treeFilter);
+  delete query;
+}
+
+void EventGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
+  query->bindValue(":father", name);
+  query->exec();
+  int children = 0;
+  while (query->next()) {
+    QString childName = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *child = new QStandardItem(childName);
+    top->setChild(children, child);
+    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    child->setToolTip(hint);
+    child->setEditable(false);
+    children++;
+    buildHierarchy(child, childName);
+  }
+  delete query;
+}
+
+void EventGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) {
+  for(int i = 0; i != model->rowCount(parent); i++) {
+    QModelIndex index = model->index(i, 0, parent);
+    QString currentName = model->data(index).toString();
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+    QFont font;
+    font.setBold(false);
+    font.setItalic(false);
+    currentAttribute->setFont(font);
+    if (model->hasChildren(index)) {
+      resetFont(model, index);
+    }
+  }
+}
+
+void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
+				    int event, QString type, QModelIndex parent) {
+  for(int i = 0; i != model->rowCount(parent); i++) {
+    QModelIndex index = model->index(i, 0, parent);
+    QString currentName = model->data(index).toString();
+    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+    QFont font;
+    font.setBold(true);
+    QFont font2;
+    font2.setItalic(true);
+    QFont font3;
+    font3.setBold(true);
+    font3.setItalic(true);
+    if (name == currentName) {
+      if (currentAttribute->font().italic()) {
+	currentAttribute->setFont(font3);
+      } else {
+	currentAttribute->setFont(font);
+      }
+      if (currentAttribute->parent()) {
+	while (currentAttribute->parent()) {
+          currentAttribute = currentAttribute->parent();
+	  QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
+	  if (type == INCIDENT) {
+	    QSqlQuery *query = new QSqlQuery;
+	    query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			   "WHERE attribute = :attribute AND incident = :incident");
+	    query->bindValue(":attribute", parentName);
+	    query->bindValue(":incident", event);
+	    query->exec();
+	    query->first();
+	    if (query->isNull(0)) {
+	      currentAttribute->setFont(font2);      
+	    } else {
+	      currentAttribute->setFont(font3);
+	    }
+	  } else if (type == MACRO) {
+	    QSet<QString> attributes = selectedMacro->getAttributes();
+	    QSet<QString>::iterator it;
+	    bool found = false;
+	    for (it = attributes.begin(); it != attributes.end(); it++) {
+	      QString current = *it;
+	      if (current == parentName) {
+		found = true;
+	      }
+	    }
+	    if (!found) {
+	      currentAttribute->setFont(font2);      
+	    } else {
+	      currentAttribute->setFont(font3);
+	    }
+	  }
+        }
+      }
+    }
+    if (model->hasChildren(index)) {
+      boldSelected(model, name, event, type, index);
+    }
+  }
+}
+
+void EventGraphWidget::assignAttribute() {
+  if (selectedIncident != 0) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      QSqlQuery *query = new QSqlQuery;
+      bool empty = false;
+      query->prepare("SELECT attribute FROM "
+		     "attributes_to_incidents WHERE "
+		     "attribute = :att AND incident = :incident");
+      query->bindValue(":att", attribute);
+      query->bindValue(":incident", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (empty) {
+	query->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
+		       "VALUES (:attribute, :incident)");
+	query->bindValue(":attribute", attribute);
+	query->bindValue(":incident", selectedIncident);
+	query->exec();
+	boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
+	valueField->setEnabled(true);
+      }
+      delete query;
+    }
+  } else if (selectedMacro != NULL) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      QSet<QString> attributes = selectedMacro->getAttributes();
+      if (!attributes.contains(attribute)) {
+	selectedMacro->insertAttribute(attribute);
+	boldSelected(attributesTree, attribute, selectedMacro->getId(), MACRO);
+	valueField->setEnabled(true);
+      }
+    }
+  }
+}
+
+void EventGraphWidget::unassignAttribute() {
+  if (selectedIncident != 0) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      bool empty = false;
+      query->prepare("SELECT attribute, incident "
+		     "FROM attributes_to_incidents "
+		     "WHERE attribute = :att AND incident = :incident");
+      query->bindValue(":att", attribute);
+      query->bindValue(":incident", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	query->prepare("DELETE FROM attributes_to_incidents "
+		       "WHERE attribute = :att AND incident = :incident");
+	query->bindValue(":att", attribute);
+	query->bindValue(":incident", selectedIncident);
+	query->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources "
+			"WHERE attribute = :att AND incident = :incident");
+        query2->bindValue(":att", attribute);
+        query2->bindValue(":inc", selectedIncident);
+	query2->exec();
+	resetFont(attributesTree);
+	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			"WHERE incident = :incident");
+	query2->bindValue(":incident", selectedIncident);
+	query2->exec();
+	while (query2->next()) {
+	  QString attribute = query2->value(0).toString();
+	  boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
+	}
+	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
+      }
+      delete query;
+      delete query2;
+    }
+  } else if (selectedMacro != NULL) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      QSet<QString> attributes = selectedMacro->getAttributes();
+      if (attributes.contains(attribute)) {
+	selectedMacro->removeAttribute(attribute);
+	QSet<QString>::iterator it;
+	resetFont(attributesTree);
+	attributes = selectedMacro->getAttributes();
+	for (it = attributes.begin(); it != attributes.end(); it++) {
+	  QString current = *it;
+	  boldSelected(attributesTree, current, selectedMacro->getId(), MACRO);	  
+	}
+	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
+      }
+    }
+  }
+}
+
 void EventGraphWidget::getEvents() {
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT ch_order, description FROM incidents ORDER BY ch_order");
@@ -979,22 +1302,19 @@ void EventGraphWidget::addLabels() {
 
 void EventGraphWidget::cleanUp() {
   scene->clearSelection();
-  qDeleteAll(currentData);
   currentData.clear();
+  qDeleteAll(macroVector);
+  macroVector.clear();
+  qDeleteAll(macroLabelVector);
+  macroLabelVector.clear();
   qDeleteAll(eventVector);
   eventVector.clear();
   qDeleteAll(edgeVector);
   edgeVector.clear();
   qDeleteAll(nodeLabelVector);
   nodeLabelVector.clear();
-  qDeleteAll(textVector);
-  textVector.clear();
   qDeleteAll(compareVector);
   compareVector.clear();
-  qDeleteAll(macroVector);
-  macroVector.clear();
-  qDeleteAll(macroLabelVector);
-  macroLabelVector.clear();
   selectedType = "";
   selectedCoder = "";
   selectedCompare = "";
@@ -1519,6 +1839,26 @@ void EventGraphWidget::saveCurrentPlot() {
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
+      // saved_eg_plots_macro_events
+      query->prepare("DELETE FROM saved_eg_plots_macro_events "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_eg_plots_incidents_to_macro_events
+      query->prepare("DELETE FROM saved_eg_plots_incidents_to_macro_events "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_eg_plots_attributes_to_macro_events
+      query->prepare("DELETE FROM saved_eg_plots_incidents_to_macro_events "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+      // saved_eg_plots_macro_labels
+      query->prepare("DELETE FROM saved_eg_plots_macro_labels "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
       query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
@@ -1550,14 +1890,18 @@ void EventGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
+      int hidden = 1;
       if (currentItem->isDislodged()) {
 	dislodged = 1;
       }
+      if (currentItem->isVisible()) {
+	hidden = 0;
+      }
       query->prepare("INSERT INTO saved_eg_plots_event_items "
 		     "(plot, incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
-		     "green, blue, alpha) "
+		     "green, blue, alpha, hidden) "
 		     "VALUES (:plot, :incident, :width, :curxpos, :curypos, :orixpos, "
-		     ":oriypos, :dislodged, :red, :green, :blue, :alpha)");
+		     ":oriypos, :dislodged, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", incident);
       query->bindValue(":width", width);
@@ -1570,6 +1914,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -1596,11 +1941,15 @@ void EventGraphWidget::saveCurrentPlot() {
       int green = currentLabel->defaultTextColor().green();
       int blue = currentLabel->defaultTextColor().blue();
       int alpha = currentLabel->defaultTextColor().alpha();
+      int hidden = 1;
+      if (currentLabel->isVisible()) {
+	hidden = 0;
+      }
       query->prepare("INSERT INTO saved_eg_plots_event_labels "
 		     "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha) "
+		     "red, green, blue, alpha, hidden) "
 		     "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
-		     ":xoffset, :yoffset, :red, :green, :blue, :alpha)");
+		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", id);
       query->bindValue(":label", text);
@@ -1612,12 +1961,12 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
       qApp->processEvents();
     }
-
     
     saveProgress->close();
     delete saveProgress;
@@ -1639,6 +1988,7 @@ void EventGraphWidget::saveCurrentPlot() {
       int head = 0;
       int mTail = 0;
       int mHead = 0;
+      int hidden = 1;
       if (eventTail) {
 	tail = eventTail->getId();
       } else if (macroTail) {
@@ -1651,20 +2001,157 @@ void EventGraphWidget::saveCurrentPlot() {
 	head = macroHead->getId();
 	mHead = 1;
       }
+      if (currentEdge->isVisible()) {
+	hidden = 0;
+      }
       query->prepare("INSERT INTO saved_eg_plots_edges "
-		     "(plot, tail, head, tailmacro, headmacro) "
-		     "VALUES (:plot, :tail, :head, :tmacro, :hmacro)");
+		     "(plot, tail, head, tailmacro, headmacro, hidden) "
+		     "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
       query->bindValue(":tmacro", mTail);
       query->bindValue(":hmacro", mHead);
+      query->bindValue(":hidden", hidden);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
       qApp->processEvents();
     }
     saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, macroVector.size());
+    saveProgress->setWindowTitle("Saving macro events");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    QVectorIterator<MacroEvent*> it4(macroVector);
+    while (it4.hasNext()) {
+      MacroEvent *currentMacro = it4.next();
+      QVector<EventItem*> incidents = currentMacro->getIncidents();
+      QVectorIterator<EventItem*> tit(incidents);
+      while (tit.hasNext()) {
+	EventItem* currentIncident = tit.next();
+	query->prepare("INSERT INTO saved_eg_plots_incidents_to_macro_events "
+		       "(plot, incident, macro) "
+		       "VALUES (:plot, :incident, :macro)");
+	query->bindValue(":plot", name);
+	query->bindValue(":incident", currentIncident->getId());
+	query->bindValue(":macro", currentMacro->getId());
+	query->exec();
+      }
+      QSet<QString> attributes = currentMacro->getAttributes();
+      QMap<QString, QString> values = currentMacro->getValues();
+      QSet<QString>::iterator tit2;
+      for (tit2 = attributes.begin(); tit2 != attributes.end(); tit2++) {
+	QString attribute = *tit2;
+	QString value = values.value(attribute);
+	query->prepare("INSERT INTO saved_eg_plots_attributes_to_macro_events "
+		       "(plot, attribute, macro, value) "
+		       "VALUES(:plot, :attribute, :macro, :value)");
+	query->bindValue(":plot", name);
+	query->bindValue(":attribute", attribute);
+	query->bindValue(":macro", currentMacro->getId());
+	query->bindValue(":value", value);
+	query->exec();
+      }
+      QString description = currentMacro->getDescription();
+      QString comment = currentMacro->getComment();
+      int width = currentMacro->getWidth();
+      qreal currentX = currentMacro->pos().x();
+      qreal currentY = currentMacro->pos().y();
+      qreal originalX = currentMacro->getOriginalPos().x();
+      qreal originalY = currentMacro->getOriginalPos().y();
+      int dislodged = 0;
+      QColor color = currentMacro->getColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      int hidden = 1;
+      if (currentMacro->isDislodged()) {
+	dislodged = 1;
+      }
+      if (currentMacro->isVisible()) {
+	hidden = 0;
+      }
+      query->prepare("INSERT INTO saved_eg_plots_macro_events "
+		     "(plot, eventid, ch_order, description, comment, width, curxpos, curypos, "
+		     "orixpos, oriypos, dislodged, red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :eventid, :ch_order, :description, :comment, :width, "
+		     ":curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
+		     ":red, :green, :blue, :alpha, :hidden)");;
+      query->bindValue(":plot", name);
+      query->bindValue(":eventid", currentMacro->getId());
+      query->bindValue(":ch_order", currentMacro->getOrder());
+      query->bindValue(":description", description);
+      query->bindValue(":comment", comment);
+      query->bindValue(":width", width);
+      query->bindValue(":curxpos", currentX);
+      query->bindValue(":curypos", currentY);
+      query->bindValue(":orixpos", originalX);
+      query->bindValue(":oriypos", originalY);
+      query->bindValue(":dislodged", dislodged);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, macroLabelVector.size());
+    saveProgress->setWindowTitle("Saving macro labels");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    QVectorIterator<MacroLabel*> it5(macroLabelVector);
+    while (it5.hasNext()) {
+      MacroLabel *currentLabel = it5.next();
+      int id = currentLabel->getMacroEvent()->getId();
+      QString text = currentLabel->toPlainText();
+      qreal currentX = currentLabel->scenePos().x();
+      qreal currentY = currentLabel->scenePos().y();
+      qreal xOffset = currentLabel->getOffset().x();
+      qreal yOffset = currentLabel->getOffset().y();
+      int red = currentLabel->defaultTextColor().red();
+      int green = currentLabel->defaultTextColor().green();
+      int blue = currentLabel->defaultTextColor().blue();
+      int alpha = currentLabel->defaultTextColor().alpha();
+      int hidden = 1;
+      if (currentLabel->isVisible()) {
+	hidden = 0;
+      }
+      query->prepare("INSERT INTO saved_eg_plots_macro_labels "
+		     "(plot, eventid, label, curxpos, curypos, xoffset, yoffset, "
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :eventid, :label, :curxpos, :curypos, :xoffset, :yoffset, "
+		     ":red, :green, :blue, :alpha, :hidden)");
+      query->bindValue(":plot", name);
+      query->bindValue(":eventid", id);
+      query->bindValue(":label", text);
+      query->bindValue(":curxpos", currentX);
+      query->bindValue(":curypos", currentY);
+      query->bindValue(":xoffset", xOffset);
+      query->bindValue(":yoffset", yOffset);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->bindValue(":hidden", hidden);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
     plotLabel->setText(name);
     changeLabel->setText("");
     delete saveProgress;
@@ -1696,7 +2183,7 @@ void EventGraphWidget::seePlots() {
     index = typeComboBox->findText(type);
     typeComboBox->setCurrentIndex(index);
     query->prepare("SELECT incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
-		   "green, blue, alpha "
+		   "green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_event_items "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -1713,6 +2200,7 @@ void EventGraphWidget::seePlots() {
       int green = query->value(8).toInt();
       int blue = query->value(9).toInt();
       int alpha = query->value(10).toInt();
+      int hidden = query->value(11).toInt();
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT description FROM incidents WHERE id = :id");
       query2->bindValue(":id", id);
@@ -1725,14 +2213,22 @@ void EventGraphWidget::seePlots() {
       EventItem *currentItem = new EventItem(width, toolTip, originalPos, id);
       currentItem->setPos(currentPos);
       currentItem->setColor(QColor(red, green, blue, alpha));
+      currentItem->setZValue(1);
+      eventVector.push_back(currentItem);
+      scene->addItem(currentItem);
       if (dislodged == 1) {
 	currentItem->setDislodged(true);
       }
-      eventVector.push_back(currentItem);
+      if (hidden == 1) {
+	currentItem->hide();
+      } else {
+	currentItem->show();
+      }
     }
     query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
-		   "red, green, blue, alpha "
-		   "FROM saved_eg_plots_event_labels WHERE plot = :plot");
+		   "red, green, blue, alpha, hidden "
+		   "FROM saved_eg_plots_event_labels "
+		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
     while (query->next()) {
@@ -1746,6 +2242,7 @@ void EventGraphWidget::seePlots() {
       int green = query->value(7).toInt();
       int blue = query->value(8).toInt();
       int alpha = query->value(9).toInt();
+      int hidden = query->value(10).toInt();
       QVectorIterator<EventItem*> it(eventVector);
       while (it.hasNext()) {
 	EventItem *currentItem = it.next();
@@ -1760,11 +2257,142 @@ void EventGraphWidget::seePlots() {
 	  currentLabel->setZValue(2);
 	  currentItem->setLabel(currentLabel);
 	  nodeLabelVector.push_back(currentLabel);
+	  scene->addItem(currentLabel);
+	  if (hidden == 1) {
+	    currentLabel->hide();
+	  } else {
+	    currentLabel->show();
+	  }
 	  break;
 	}
       }
     }
-   query->prepare("SELECT tail, head, tailmacro, headmacro, "
+    query->prepare("SELECT eventid, ch_order, description, comment, width, curxpos, curypos, "
+		   "orixpos, oriypos, dislodged, red, green, blue, alpha, hidden "
+		   "FROM saved_eg_plots_macro_events "
+		   "WHERE plot = :plot ");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      int id = query->value(0).toInt();
+      int order = query->value(1).toInt();
+      QString description = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      int width = query->value(4).toInt();
+      qreal currentX = query->value(5).toReal();
+      qreal currentY = query->value(6).toReal();
+      qreal originalX = query->value(7).toReal();
+      qreal originalY = query->value(8).toReal();
+      int dislodged = query->value(9).toInt();
+      int red = query->value(10).toInt();
+      int green = query->value(11).toInt();
+      int blue = query->value(12).toInt();
+      int alpha = query->value(13).toInt();
+      int hidden = query->value(14).toInt();
+      QPointF currentPos = QPointF(currentX, currentY);
+      QPointF originalPos = QPointF(originalX, originalY);
+      QColor color = QColor(red, green, blue, alpha);
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT incident FROM saved_eg_plots_incidents_to_macro_events "
+		      "WHERE plot = :plot AND macro = :id");
+      query2->bindValue(":plot", plot);
+      query2->bindValue(":id", id);
+      query2->exec();
+      QVector<EventItem*> incidents;
+      while (query2->next()) {
+	int incidentId = query2->value(0).toInt();
+	QVectorIterator<EventItem*> it(eventVector);
+	while (it.hasNext()) {
+	  EventItem *currentEvent = it.next();
+	  if (incidentId == currentEvent->getId()) {
+	    incidents.push_back(currentEvent);
+	    break;
+	  }
+	}
+      }
+      qSort(incidents.begin(), incidents.end(), eventLessThan);
+      query2->prepare("SELECT attribute, value FROM saved_eg_plots_attributes_to_macro_events "
+		      "WHERE plot = :plot AND macro = :id");
+      query2->bindValue(":plot", plot);
+      query2->bindValue(":id", id);
+      query2->exec();
+      QSet<QString> attributes;
+      QMap<QString, QString> values;
+      while (query2->next()) {
+	QString attribute = query2->value(0).toString();
+	QString value = query2->value(1).toString();
+	attributes.insert(attribute);
+	values.insert(attribute, value);
+      }
+      delete query2;
+      MacroEvent* newMacro = new MacroEvent(width, description, originalPos, macroVector.size(),
+					    incidents);
+      QVectorIterator<EventItem*> it(incidents);
+      while (it.hasNext()) {
+	EventItem *currentEvent = it.next();
+	currentEvent->setMacroEvent(newMacro);
+	currentEvent->hide();
+      }
+      newMacro->setOriginalPos(originalPos);
+      newMacro->setPos(currentPos);
+      newMacro->setZValue(1);
+      newMacro->setColor(color);
+      newMacro->setAttributes(attributes);
+      newMacro->setValues(values);
+      newMacro->setOrder(order);
+      if (hidden == 1) {
+	newMacro->hide();
+      }
+      if (dislodged == 1) {
+	newMacro->setDislodged(true);
+      }
+      scene->addItem(newMacro);
+      macroVector.push_back(newMacro);
+    }
+    query->prepare("SELECT eventid, label, curxpos, curypos, xoffset, yoffset, "
+		   "red, green, blue, alpha, hidden "
+		   "FROM saved_eg_plots_macro_labels "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      int event = query->value(0).toInt();
+      QString text = query->value(1).toString();
+      qreal currentX = query->value(2).toReal();
+      qreal currentY = query->value(3).toReal();
+      qreal xOffset = query->value(4).toReal();
+      qreal yOffset = query->value(5).toReal();
+      int red = query->value(6).toInt();
+      int green = query->value(7).toInt();
+      int blue = query->value(8).toInt();
+      int alpha = query->value(9).toInt();
+      int hidden = query->value(10).toInt();
+      QVectorIterator<MacroEvent*> it(macroVector);
+      while (it.hasNext()) {
+	MacroEvent *currentMacro = it.next();
+	int eventId = currentMacro->getId();
+	if (eventId == event) {
+	  MacroLabel *currentLabel = new MacroLabel(currentMacro);
+	  currentLabel->setPlainText(text);
+	  currentLabel->setTextWidth(currentLabel->boundingRect().width());
+	  currentLabel->setPos(QPointF(currentX, currentY));
+	  currentLabel->setOffset(QPointF(xOffset, yOffset));
+	  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
+	  currentLabel->setZValue(2);
+	  currentMacro->setLabel(currentLabel);
+	  macroLabelVector.push_back(currentLabel);
+	  scene->addItem(currentLabel);
+	  if (hidden == 1) {
+	    currentLabel->hide();
+	  } else {
+	    currentLabel->show();
+	  }
+	  break;
+	}
+      }
+    }
+    qSort(macroVector.begin(), macroVector.end(), eventLessThan);
+    query->prepare("SELECT tail, head, tailmacro, headmacro, hidden "
 		   "FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -1774,6 +2402,7 @@ void EventGraphWidget::seePlots() {
       int head = query->value(1).toInt();
       int tM = query->value(2).toInt();
       int hM = query->value(3).toInt();
+      int hidden = query->value(4).toInt();
       bool tailMacro = false;
       bool headMacro = false;
       if (tM == 1) {
@@ -1816,7 +2445,7 @@ void EventGraphWidget::seePlots() {
 	}
 	while (it.hasNext()) {
 	  EventItem *currentTarget = it.next();
-	  if (currentTarget->getId() == tail) {
+	  if (currentTarget->getId() == head) {
 	    tempTarget = currentTarget;
 	  }
 	}
@@ -1829,7 +2458,7 @@ void EventGraphWidget::seePlots() {
 	}
 	while (it2.hasNext()) {
 	  MacroEvent *currentTarget = it2.next();
-	  if (currentTarget->getId() == tail) {
+	  if (currentTarget->getId() == head) {
 	    tempTarget = currentTarget;
 	  }
 	}
@@ -1840,9 +2469,10 @@ void EventGraphWidget::seePlots() {
 	    tempSource = currentSource;
 	  }
 	}
+	it2.toFront();
 	while (it2.hasNext()) {
 	  MacroEvent *currentTarget = it2.next();
-	  if (currentTarget->getId() == tail) {
+	  if (currentTarget->getId() == head) {
 	    tempTarget = currentTarget;
 	  }
 	}
@@ -1853,9 +2483,10 @@ void EventGraphWidget::seePlots() {
 	    tempSource = currentSource;
 	  }
 	}
+	it.toFront();
 	while (it.hasNext()) {
 	  EventItem *currentTarget = it.next();
-	  if (currentTarget->getId() == tail) {
+	  if (currentTarget->getId() == head) {
 	    tempTarget = currentTarget;
 	  }
 	}
@@ -1863,17 +2494,22 @@ void EventGraphWidget::seePlots() {
       if (tempSource != NULL && tempTarget != NULL) {
 	Arrow *currentEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
 	currentEdge->setToolTip(toolTip);
+	if (hidden == 1) {
+	  currentEdge->hide();
+	} else {
+	  currentEdge->show();
+	}
 	edgeVector.push_back(currentEdge);
+	scene->addItem(currentEdge);
       }
     }
-    distance = 70;
-    plotLabel->setText(plot);
-    changeLabel->setText("");
-    plotEvents();
-    plotEdges();
-    addLabels();
-    setRangeControls();
-    delete query;
+     distance = 70;
+   plotLabel->setText(plot);
+   changeLabel->setText("");
+   scene->update();
+   setVisibility();
+   setRangeControls();
+   delete query;
   } else if (savedPlotsDialog->getExitStatus() == 2) {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
     QString plot = savedPlotsDialog->getSelectedPlot();
@@ -1894,6 +2530,26 @@ void EventGraphWidget::seePlots() {
     query->bindValue(":plot", plot);
     // saved_eg_plots_event_labels
     query->prepare("DELETE FROM saved_eg_plots_event_labels "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_macro_events
+    query->prepare("DELETE FROM saved_eg_plots_macro_events "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_incidents_to_macro_events
+    query->prepare("DELETE FROM saved_eg_plots_incidents_to_macro_events "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_attributes_to_macro_events
+    query->prepare("DELETE FROM saved_eg_plots_incidents_to_macro_events "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_macro_labels
+    query->prepare("DELETE FROM saved_eg_plots_macro_labels "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
@@ -1938,6 +2594,15 @@ void EventGraphWidget::colorByAttribute() {
 	}
       }
       delete query;
+      QVectorIterator<MacroEvent*> it3(macroVector);
+      while (it3.hasNext()) {
+	MacroEvent *currentMacro = it3.next();
+	QSet<QString> attributes = currentMacro->getAttributes();
+	if (attributes.contains(currentAttribute)) {
+	  currentMacro->setColor(color);
+	  currentMacro->getLabel()->setDefaultTextColor(textColor);
+	}
+      }
     }
   }
   delete attributeColorDialog;
@@ -1997,6 +2662,18 @@ void EventGraphWidget::plotLabels() {
   while (it.hasNext()) {
     NodeLabel *currentItem = it.next();
     EventItem *currentEvent = currentItem->getNode();
+    if (currentEvent->isVisible()) {
+      if (labelsVisible) {
+	currentItem->hide();
+      } else {
+	currentItem->show();
+      }
+    }
+  }
+  QVectorIterator<MacroLabel*> it2(macroLabelVector);
+  while (it2.hasNext()) {
+    MacroLabel *currentItem = it2.next();
+    MacroEvent *currentEvent = currentItem->getMacroEvent();
     if (currentEvent->isVisible()) {
       if (labelsVisible) {
 	currentItem->hide();
@@ -2221,7 +2898,7 @@ void EventGraphWidget::colligateEvents() {
 					     tempIncidents);
 	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
-	current->setZValue(2);
+	current->setZValue(1);
 	int order = 1;
 	QVectorIterator<MacroEvent*> mit(macroVector);
 	if (macroVector.size() == 0) {
@@ -2233,7 +2910,7 @@ void EventGraphWidget::colligateEvents() {
 	      order = temp->getOrder() + 1;
 	    } else {
 	      temp->setOrder(temp->getOrder() + 1);
-	      QString label = "M-" + QString::number(temp->getOrder());
+	      QString label = "E-" + QString::number(temp->getOrder());
 	      temp->getLabel()->setPlainText(label);
 	      temp->getLabel()->setPlainText(label);
 	      temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
@@ -2255,7 +2932,7 @@ void EventGraphWidget::colligateEvents() {
 	scene->addItem(current);
 	MacroLabel *macroLabel = new MacroLabel(current);
 	current->setLabel(macroLabel);
-	QString label = "M-" + QString::number(order);
+	QString label = "E-" + QString::number(order);
 	macroLabel->setPlainText(label);
 	macroLabel->setTextWidth(macroLabel->boundingRect().width());
 	qreal xOffset = (current->getWidth() / 2) - 20;
@@ -2938,3 +3615,17 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) {
   return false;
 }
 
+QVector<MacroEvent*> EventGraphWidget::getMacros() {
+  return macroVector;
+}
+
+void EventGraphWidget::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
+}
+
+void EventGraphWidget::resetTree() {
+  scene->clearSelection();
+  retrieveData();
+  delete attributesTree;
+  setTree();
+}

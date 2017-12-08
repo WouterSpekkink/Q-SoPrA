@@ -16,6 +16,12 @@
 #include "DeselectableTreeView.h"
 #include "AttributeIndexDialog.h"
 #include "AttributeTreeFilter.h"
+#include "EventGraphWidget.h"
+#include "MainWindow.h"
+#include "MacroEvent.h"
+#include "EventGraphWidget.h"
+
+class EventGraphWidget;
 
 class AttributesWidget : public QWidget {
   Q_OBJECT
@@ -24,6 +30,7 @@ class AttributesWidget : public QWidget {
 public:
   AttributesWidget(QWidget *parent=0);
   ~AttributesWidget() {};
+  void resetTree();
 
 private slots:
   void setCommentBool();
@@ -69,6 +76,7 @@ private slots:
   void getValue();
   void fixTree();
   bool eventFilter(QObject *object, QEvent *event);
+  void setEventGraph(EventGraphWidget *egw);
   
 private:
   QPointer<AttributeDialog> attributeDialog;
@@ -78,6 +86,7 @@ private:
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
+  EventGraphWidget *eventGraph;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

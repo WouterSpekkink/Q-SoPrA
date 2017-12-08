@@ -669,6 +669,7 @@ void AttributesWidget::newAttribute() {
       attributesModel->setData(attributesModel->index(newIndex, 2), description);
       attributesModel->setData(attributesModel->index(newIndex, 3), currentParent);
       attributesModel->submitAll();
+      eventGraph->resetTree();
     }
     delete attributeDialog;
   } else {
@@ -694,6 +695,7 @@ void AttributesWidget::newAttribute() {
       QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
       attribute->setToolTip(hint);
       attribute->setEditable(false);
+      eventGraph->resetTree();
     }
     delete attributeDialog;
   }
@@ -930,18 +932,21 @@ void AttributesWidget::unassignAttribute() {
       
       assignedModel->select();
       bool empty = false;
-      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc  ");
+      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+		      "WHERE attribute = :att AND incident = :inc  ");
       query2->bindValue(":att", attribute);
       query2->bindValue(":inc", id);
       query2->exec();
       query2->first();
       empty = query2->isNull(0);
       if (!empty) {
-        query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc");
+        query2->prepare("DELETE FROM attributes_to_incidents "
+			"WHERE attribute = :att AND incident = :inc");
         query2->bindValue(":att", attribute);
         query2->bindValue(":inc", id);
         query2->exec();
-        query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :att AND incident = :inc");
+        query2->prepare("DELETE FROM attributes_to_incidents_sources "
+			"WHERE attribute = :att AND incident = :inc");
         query2->bindValue(":att", attribute);
         query2->bindValue(":inc", id);
         query2->exec();
@@ -1061,24 +1066,45 @@ void AttributesWidget::removeUnusedAttributes() {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  while (unfinished) {
-    query->exec("SELECT name FROM incident_attributes EXCEPT SELECT attribute "
-                "FROM attributes_to_incidents EXCEPT SELECT father "
-                "FROM incident_attributes");
-    while (query->next()) {
-      QString current = query->value(0).toString();
-      query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
-      query2->bindValue(":current", current);
-      query2->exec();
+  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QSet<QString> takenAttributes;
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent* current = it.next();
+    QSet<QString> attributes = current->getAttributes();
+    QSet<QString>::iterator it2;
+    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+      takenAttributes.insert(*it2);
     }
-    query->first();
-    if (query->isNull(0)) {
+  }
+  while (unfinished) {
+    query->exec("SELECT name FROM incident_attributes "
+		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT father FROM incident_attributes");
+    QSet<QString> temp;
+    while (query->next()) {
+      QString current = query->value(0).toString();			   
+      temp.insert(current);
+    }
+    QSet<QString>::iterator it3;
+    bool found = false;
+    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
+      if (!takenAttributes.contains(*it3)) {
+	found = true;
+	query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+      }
+    }
+    if (!found) {
       unfinished = false;
     }
   }
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
-  setTree();
+  resetTree();
+  eventGraph->resetTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
@@ -1515,4 +1541,13 @@ bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
     }
   }
   return false;
+}
+
+void AttributesWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void AttributesWidget::resetTree() {
+  delete attributesTree;
+  setTree();
 }

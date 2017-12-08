@@ -9,7 +9,7 @@
 */
 
 MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
-		     QVector<EventItem*> submittedIncidents)
+		       QVector<EventItem*> submittedIncidents)
   : color(255, 255, 255) {
   width = subWidth;
   description = submittedDescription;
@@ -227,4 +227,44 @@ void MacroEvent::setOrder(int submittedOrder) {
 
 int MacroEvent::getOrder() {
   return order;
+}
+
+void MacroEvent::insertAttribute(QString attribute) {
+  attributes.insert(attribute);
+}
+
+void MacroEvent::removeAttribute(QString attribute) {
+  attributes.remove(attribute);
+}
+
+QSet<QString> MacroEvent::getAttributes() {
+  return attributes;
+}
+
+void MacroEvent::insertValue(QString attribute, QString value) {
+  values.insert(attribute, value);
+}
+
+void MacroEvent::removeValue(QString attribute) {
+  values.remove(attribute);
+}
+
+QMap<QString, QString> MacroEvent::getValues() {
+  return values;
+}
+
+void MacroEvent::setAttributes(QSet<QString> submittedAttributes) {
+  attributes = submittedAttributes;
+}
+
+void MacroEvent::setValues(QMap<QString, QString> submittedValues) {
+  values = submittedValues;
+}
+
+void MacroEvent::cleanUp() {
+  label = NULL;
+  macroEvent = NULL;
+  incidents.clear();
+  attributes.clear();
+  values.clear();
 }

@@ -26,6 +26,7 @@ extern QString IGNORE;
 extern QString REMOVENORMALLINKAGE;
 extern QString ENTITY;
 extern QString INCIDENT;
+extern QString MACRO;
 extern QString CREATED;
 extern QString EVENTGRAPH;
 extern QString NETWORKGRAPH;
