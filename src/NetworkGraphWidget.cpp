@@ -33,6 +33,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
   view->setRenderHint(QPainter::Antialiasing);
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+  view->viewport()->installEventFilter(this);
 
   infoWidget = new QWidget(this);
   graphicsWidget = new QWidget(this);
@@ -181,7 +182,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
-  connect(scene, SIGNAL(selectionChanged()), this, SLOT(retrieveData()));
   connect(previousNodeButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
   connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
@@ -3210,7 +3210,9 @@ void NetworkGraphWidget::cleanUp() {
 }
 
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) {
-  if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
+  if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    retrieveData();
+  } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree(selectedEntityName);
   } else if (event->type() == QEvent::Wheel) {
     QWheelEvent *wheelEvent = (QWheelEvent*) event;

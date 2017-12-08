@@ -98,6 +98,7 @@ private slots:
   void removeNormalLinkage();
   void findPastPaths(QVector<int> *mark, int currentIncident);
   void findFuturePaths(QVector<int> *mark, int currentIncident);
+  bool eventFilter(QObject *object, QEvent *event);
   
 private:
   QPointer<Scene> scene;

@@ -28,7 +28,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   view = new GraphicsView(scene);
   view->setDragMode(QGraphicsView::RubberBandDrag);
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
-
+  view->viewport()->installEventFilter(this);
+  
   infoWidget = new QWidget(this);
   graphicsWidget = new QWidget(this);
   
@@ -137,7 +138,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posDecreased(EventItem*)), this, SLOT(decreasePos(EventItem*)));
   connect(scene, SIGNAL(posIncreased(MacroEvent*)), this, SLOT(increasePos(MacroEvent*)));
   connect(scene, SIGNAL(posDecreased(MacroEvent*)), this, SLOT(decreasePos(MacroEvent*)));
-  connect(scene, SIGNAL(selectionChanged()), this, SLOT(retrieveData()));
+  //  connect(scene, SIGNAL(selectionChanged()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
 	  this, SLOT(processEventItemContextMenu(const QString &)));
@@ -282,6 +283,9 @@ void EventGraphWidget::setComment() {
     query->exec();
     commentBool = false;
     delete query;
+  } else if (commentBool && selectedMacro != NULL) {
+    QString comment = commentField->toPlainText();
+    selectedMacro->setComment(comment);
   }
 }
 
@@ -328,7 +332,7 @@ void EventGraphWidget::retrieveData() {
 	arrow->setSelected(false);
 	scene->blockSignals(false);
 	it.next();
-      } else {
+          } else {
 	it.next();
       }
     }
@@ -379,6 +383,7 @@ void EventGraphWidget::retrieveData() {
 	delete query;
       } else if (currentMacro) {
 	selectedMacro = currentMacro;
+	selectedIncident = 0;
 	currentMacro->setSelectionColor(Qt::red);
 	currentMacro->update();
 	seeIncidentsButton->setEnabled(true);
@@ -406,6 +411,7 @@ void EventGraphWidget::retrieveData() {
 	QString count = QString::number(currentMacro->getIncidents().size());
 	timeStampField->setText(duration);
 	sourceField->setText(count);
+	commentField->setText(currentMacro->getComment());
 	delete query;
       }
       previousEventButton->setEnabled(true);
@@ -422,6 +428,8 @@ void EventGraphWidget::retrieveData() {
     previousEventButton->setEnabled(false);
     nextEventButton->setEnabled(false);
     indexLabel->setText("(0/0)");
+    selectedIncident = 0;
+    selectedMacro = NULL;
   }
 }
 
@@ -540,6 +548,7 @@ void EventGraphWidget::previousDataItem() {
       delete query;
     } else if (currentMacro) {
       selectedMacro = currentMacro;
+      selectedIncident = 0;
       seeIncidentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
@@ -565,6 +574,7 @@ void EventGraphWidget::previousDataItem() {
       QString count = QString::number(currentMacro->getIncidents().size());
       timeStampField->setText(duration);
       sourceField->setText(count);
+      commentField->setText(currentMacro->getComment());
       delete query;
     }
   } else {
@@ -626,6 +636,7 @@ void EventGraphWidget::previousDataItem() {
       delete query;
     } else if (currentMacro) {
       selectedMacro = currentMacro;
+      selectedIncident = 0;
       seeIncidentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
@@ -651,6 +662,7 @@ void EventGraphWidget::previousDataItem() {
       QString count = QString::number(currentMacro->getIncidents().size());
       timeStampField->setText(duration);
       sourceField->setText(count);
+      commentField->setText(currentMacro->getComment());
       delete query;
     }
   }
@@ -742,6 +754,7 @@ void EventGraphWidget::nextDataItem() {
       QString count = QString::number(currentMacro->getIncidents().size());
       timeStampField->setText(duration);
       sourceField->setText(count);
+      commentField->setText(currentMacro->getComment());
       delete query;
     }
   } else {
@@ -803,6 +816,7 @@ void EventGraphWidget::nextDataItem() {
       }
     } else if (currentMacro) {
       selectedMacro = currentMacro;
+      selectedIncident = 0;
       seeIncidentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
@@ -828,6 +842,7 @@ void EventGraphWidget::nextDataItem() {
       QString count = QString::number(currentMacro->getIncidents().size());
       timeStampField->setText(duration);
       sourceField->setText(count);
+      commentField->setText(currentMacro->getComment());
       delete query;
     }
   }
@@ -984,6 +999,7 @@ void EventGraphWidget::cleanUp() {
   selectedCoder = "";
   selectedCompare = "";
   selectedIncident = 0;
+  selectedMacro = NULL;
 }
 
 void EventGraphWidget::increaseWidth(EventItem *item) {
@@ -2913,5 +2929,12 @@ void EventGraphWidget::findFuturePaths(QVector<int> *pMark, int currentIncident)
     pMark->push_back(*it);
     findFuturePaths(pMark, *it);
   }
+}
+
+bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) {
+  if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    retrieveData();
+  }
+  return false;
 }
 
