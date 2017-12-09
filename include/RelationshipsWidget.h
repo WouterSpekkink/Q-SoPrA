@@ -19,10 +19,13 @@
 #include "RelationshipTreeFilter.h"
 #include "RelationshipsDialog.h"
 #include "AttributeIndexDialog.h"
+#include "NetworkGraphWidget.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
   friend class MainWindow;
+  friend class RelationshipsDialog;
+  friend class EntityDialog;
 
 public:
   RelationshipsWidget(QWidget *parent=0);
@@ -66,13 +69,16 @@ private slots:
   void sourceText(const QString &relationship, const QString &type, const int &incident);
   void highlightText();
   void setTree();
-  void boldSelected(QAbstractItemModel *model, QString name = "", QString type = "", QModelIndex parent = QModelIndex());
-  void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void boldSelected(QAbstractItemModel *model, QString name = "",
+		    QString type = "", QModelIndex parent = QModelIndex());
+  void resetFont(QAbstractItemModel *model,
+		 QModelIndex parent = QModelIndex());
   void expandTree();
   void collapseTree();
   void finalBusiness();
-  bool eventFilter(QObject *object, QEvent *event); 
-
+  bool eventFilter(QObject *object, QEvent *event);
+  void setNetworkGraph(NetworkGraphWidget *ngw);
+  
 private:
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> typeModel;
@@ -82,6 +88,7 @@ private:
   QPointer<DeselectableTreeView> relationshipsTreeView;
   QPointer<RelationshipTypeDialog> typeDialog;
   QPointer<RelationshipTreeFilter> treeFilter;
+  NetworkGraphWidget *networkGraph;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

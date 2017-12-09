@@ -2771,7 +2771,7 @@ void LinkagesWidget::findPastPaths(std::vector<int> *pIgnore, int currentInciden
     query2->exec();
     query2->first();
     int newIndex = 0;
-    newIndex = query->value(0).toInt();
+    newIndex = query2->value(0).toInt();
     results.push_back(newIndex);
     delete query2;
   }

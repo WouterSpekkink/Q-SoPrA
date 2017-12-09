@@ -42,6 +42,8 @@ public:
   NetworkGraphWidget(QWidget *parent = 0);
   ~NetworkGraphWidget() {};
 
+  void resetTree();			  
+			  
 private slots:
   void toggleDetails();
   void toggleGraphicsControls();

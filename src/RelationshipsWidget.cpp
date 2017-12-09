@@ -1560,6 +1560,10 @@ void RelationshipsWidget::finalBusiness() {
   setComment();
 }
 
+void RelationshipsWidget::setNetworkGraph(NetworkGraphWidget *ngw) {
+  networkGraph = ngw;
+}
+
 /*
   The event filter originally captures only mousewheel events,
   but I am keeping the function generalised in order to keep 

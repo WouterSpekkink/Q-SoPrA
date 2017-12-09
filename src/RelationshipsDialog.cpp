@@ -41,9 +41,8 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   resetButton = new QPushButton(tr("Reset"), this);
   saveCloseButton = new QPushButton(tr("Save relationship"), this);
   
-  //connect(sourceListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
-  //connect(targetListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(editEntity()));
-  connect(entityFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(filterEntity(const QString &)));
+  connect(entityFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(filterEntity(const QString &)));
   connect(assignLeftEntityButton, SIGNAL(clicked()), this, SLOT(assignLeftEntity()));
   connect(assignRightEntityButton, SIGNAL(clicked()), this, SLOT(assignRightEntity()));
   connect(newEntityButton, SIGNAL(clicked()), this, SLOT(addEntity()));

@@ -468,6 +468,11 @@ void NetworkGraphWidget::setTree() {
   delete query;
 }
 
+void NetworkGraphWidget::resetTree() {
+  delete attributesTree;
+  setTree();
+}
+
 void NetworkGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
@@ -907,8 +912,7 @@ void NetworkGraphWidget::removeUnusedAttributes() {
   }
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
-  delete attributesTree;
-  setTree();
+  resetTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   this->setCursor(Qt::ArrowCursor);

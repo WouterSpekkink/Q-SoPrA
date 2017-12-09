@@ -44,7 +44,7 @@ public:
   void submitType(QString type);
   void submitDescription(QString description);
   void submitDirectedness(QString directedness);					     
-			   
+					       
 private slots:
   void filterEntity(const QString &text);
   void assignLeftEntity();

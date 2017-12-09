@@ -1,5 +1,5 @@
-
 #include "../include/EntityDialog.h"
+#include "../include/RelationshipsWidget.h"
 
 EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   name = "";
@@ -351,6 +351,8 @@ void EntityDialog::addAttribute() {
       attributesModel->setData(attributesModel->index(newIndex, 2), description);
       attributesModel->setData(attributesModel->index(newIndex, 3), currentParent);
       attributesModel->submitAll();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
+      rw->networkGraph->resetTree();
     }
     delete attributeDialog;
   } else {
@@ -375,6 +377,8 @@ void EntityDialog::addAttribute() {
       attributesTree->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
+      rw->networkGraph->resetTree();
     }
     delete attributeDialog;
   }
@@ -415,6 +419,8 @@ void EntityDialog::editAttribute() {
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
+      rw->networkGraph->resetTree();
     }
     delete attributeDialog;
     delete query;
@@ -442,6 +448,8 @@ void EntityDialog::removeUnusedAttributes() {
       unfinished = false;
     }
   }
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
+  rw->networkGraph->resetTree();
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   delete attributesTree;

@@ -719,31 +719,47 @@ void AttributesWidget::editAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       QString newName = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      QStandardItem *currentAttribute = attributesTree->
+	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);
       QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
       currentAttribute->setToolTip(hint);
-      query->prepare("UPDATE incident_attributes SET name = :newname, description = :newdescription WHERE name = :oldname");
+      query->prepare("UPDATE incident_attributes "
+		     "SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":newdescription", description);
       query->bindValue(":oldname", name);
       query->exec();
-      query->prepare("UPDATE incident_attributes SET father = :newname WHERE father = :oldname");
+      query->prepare("UPDATE incident_attributes "
+		     "SET father = :newname "
+		     "WHERE father = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
-      query->prepare("UPDATE attributes_to_incidents SET attribute = :newname WHERE attribute = :oldname");
+      query->prepare("UPDATE attributes_to_incidents "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
-      query->prepare("UPDATE attributes_to_incidents_sources SET attribute = :newname WHERE attribute = :oldname");
+      query->prepare("UPDATE attributes_to_incidents_sources "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
       this->setCursor(Qt::WaitCursor);
       retrieveData();
       this->setCursor(Qt::ArrowCursor);
+      eventGraph->resetTree();
     }
     delete query;
     delete attributeDialog;
@@ -788,7 +804,8 @@ void AttributesWidget::sourceText(const QString &attribute, const int &incident)
 void AttributesWidget::highlightText() {
   QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) {
-    QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+    QStandardItem *currentAttribute = attributesTree->
+      itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
     QString currentName = attributesTreeView->currentIndex().data().toString();
     QSqlQueryModel *query = new QSqlQueryModel(this);
     if (currentAttribute->font().bold()) {
@@ -810,7 +827,9 @@ void AttributesWidget::highlightText() {
       QTextCursor cursor = rawField->textCursor();
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
-      query2->prepare("SELECT source_text FROM attributes_to_incidents_sources WHERE attribute = :attribute AND incident = :id");
+      query2->prepare("SELECT source_text "
+		      "FROM attributes_to_incidents_sources "
+		      "WHERE attribute = :attribute AND incident = :id");
       query2->bindValue(":attribute", currentName);
       query2->bindValue(":id", id);
       query2->exec();
@@ -857,47 +876,38 @@ void AttributesWidget::highlightText() {
 
 void AttributesWidget::assignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QSqlQueryModel *query = new QSqlQueryModel(this);
-    query->setQuery("SELECT * FROM save_data");
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    query->first();
     int order = 0; 
-    order = query->record(0).value("attributes_record").toInt();
-
-    QSqlQuery *query2 = new QSqlQuery;
-    query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
-    query2->bindValue(":order", order);
-    query2->exec();
-    query2->first();
-    if (!(query2->isNull(0))) {
+    order = query->value(0).toInt();
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    if (!(query->isNull(0))) {
       int id = 0;
-      id = query2->value(0).toInt();
+      id = query->value(0).toInt();
       QString attribute = attributesTreeView->currentIndex().data().toString();
-      
-      assignedModel->select();
-      int max = assignedModel->rowCount();
-      
       bool empty = false;
-      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents WHERE attribute = :att AND incident = :inc");
-      query2->bindValue(":att", attribute);
-      query2->bindValue(":inc", id);
-      query2->exec();
-      query2->first();
-      empty = query2->isNull(0);
+      query->prepare("SELECT attribute, incident "
+		      "FROM attributes_to_incidents "
+		      "WHERE attribute = :att AND incident = :inc");
+      query->bindValue(":att", attribute);
+      query->bindValue(":inc", id);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
       QTextCursor cursPos = rawField->textCursor();
       if (empty) {
-        assignedModel->insertRow(max);
-        assignedModel->setData(assignedModel->index(max, 1), attribute);
-        assignedModel->setData(assignedModel->index(max, 2), id);
-        assignedModel->submitAll();
+	query->prepare("INSERT INTO attributes_to_incidents "
+		       "(attribute, incident) "
+		       "VALUES (:attribute, :incident)");
+	query->bindValue(":attribute", attribute);
+	query->bindValue(":incident", id);
+	query->exec();
 	sourceText(attribute, id);
-	resetFont(attributesTree);
-        query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
-        while (query2->next()) {
-          QString attribute = query2->value(0).toString();
-          int incident = query2->value(1).toInt();
-          if (incident == id) {
-            boldSelected(attributesTree, attribute);
-          }
-        }
+	boldSelected(attributesTree, attribute);
         highlightText();
 	rawField->setTextCursor(cursPos);
 	valueField->setEnabled(true);
@@ -909,7 +919,6 @@ void AttributesWidget::assignAttribute() {
       setButtons();
     }
     delete query;
-    delete query2;
   }
 }
 
@@ -1033,7 +1042,8 @@ void AttributesWidget::resetTexts() {
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
-    warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
+    warningBox->setInformativeText("Resetting source texts cannot be undone. "
+				   "Are you sure you want to proceed?");
     if (warningBox->exec() == QMessageBox::Yes) {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");

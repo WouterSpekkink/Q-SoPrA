@@ -20,8 +20,11 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
+  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
   aw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
+  rw->setNetworkGraph(ngw);
   
   stacked->addWidget(dataWidget);
   stacked->addWidget(attributesWidget);

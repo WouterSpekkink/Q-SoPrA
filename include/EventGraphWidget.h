@@ -30,6 +30,7 @@
 #include "DeselectableTreeView.h"
 #include "AttributeTreeFilter.h"
 #include "AttributesWidget.h"
+#include "AttributeDialog.h"
 
 class AttributesWidget;
 
@@ -57,11 +58,18 @@ private slots:
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
 		    QString type = "", QModelIndex parent = QModelIndex());
-//void fixTree(QString entity);
-//  void setFilter(const QString &text);
+  void sourceText(const QString &attribute, const int &incident);
+  void removeText();
+  void resetTexts();
+  void setButtons();
+  void fixTree();
+  void changeFilter(const QString &text);
   void assignAttribute();
   void unassignAttribute();
-  
+  void highlightText();
+  void newAttribute();
+  void editAttribute();
+  void removeUnusedAttributes();  
   void seeIncidents();
   void previousDataItem();
   void nextDataItem();
@@ -183,6 +191,8 @@ private:
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> editAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;  
+  QPointer<QPushButton> removeTextButton;
+  QPointer<QPushButton> resetTextsButton;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;

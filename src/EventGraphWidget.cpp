@@ -145,11 +145,20 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   removeUnusedAttributesButton = new QPushButton(tr("Remove unused"), attWidget);
   seeAttributesButton = new QPushButton(tr("Attributes"), commentWidget);
   seeCommentsButton = new QPushButton(tr("Comments"), attWidget);
+  removeTextButton = new QPushButton("Remove text", attWidget);
+  removeTextButton->setEnabled(false);
+  resetTextsButton = new QPushButton("Reset texts", attWidget);
+  resetTextsButton->setEnabled(false);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
+  connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
+  connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
+  connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
+  connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
@@ -179,6 +188,14 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processEventItemContextMenu(const QString &)));
   connect(scene, SIGNAL(ArrowContextMenuAction(const QString &)),
 	  this, SLOT(processArrowContextMenu(const QString &)));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(highlightText()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
+  connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(changeFilter(const QString &)));
   connect(previousEventButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
   connect(seeIncidentsButton, SIGNAL(clicked()), this, SLOT(seeIncidents()));
   connect(nextEventButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
@@ -271,6 +288,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   attributesBottomLayout->addWidget(editAttributeButton);
   attributesBottomLayout->addWidget(removeUnusedAttributesButton);
   attributesLayout->addLayout(attributesBottomLayout);
+  QPointer<QHBoxLayout> textButtonsLayout = new QHBoxLayout;
+  textButtonsLayout->addWidget(removeTextButton);
+  textButtonsLayout->addWidget(resetTextsButton);
+  attributesLayout->addLayout(textButtonsLayout);
   attWidget->setLayout(attributesLayout);
   detailsLayout->addWidget(attWidget);
   infoWidget->setLayout(detailsLayout);
@@ -1085,16 +1106,23 @@ void EventGraphWidget::assignAttribute() {
       query->exec();
       query->first();
       empty = query->isNull(0);
+      QTextCursor cursPos = rawField->textCursor();
       if (empty) {
 	query->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
 		       "VALUES (:attribute, :incident)");
 	query->bindValue(":attribute", attribute);
 	query->bindValue(":incident", selectedIncident);
 	query->exec();
+	sourceText(attribute, selectedIncident);
 	boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
 	valueField->setEnabled(true);
+      } else {
+        sourceText(attribute, selectedIncident);
+        highlightText();
+	rawField->setTextCursor(cursPos);
       }
       delete query;
+      setButtons();
     }
   } else if (selectedMacro != NULL) {
     if (attributesTreeView->currentIndex().isValid()) {
@@ -1106,6 +1134,7 @@ void EventGraphWidget::assignAttribute() {
 	valueField->setEnabled(true);
       }
     }
+    setButtons();
   }
 }
 
@@ -1148,6 +1177,7 @@ void EventGraphWidget::unassignAttribute() {
 	valueField->setEnabled(false);
 	valueButton->setEnabled(false);
       }
+      setButtons();
       delete query;
       delete query2;
     }
@@ -1164,12 +1194,436 @@ void EventGraphWidget::unassignAttribute() {
 	  QString current = *it;
 	  boldSelected(attributesTree, current, selectedMacro->getId(), MACRO);	  
 	}
+	setButtons();
 	valueField->setText("");
 	valueField->setEnabled(false);
 	valueButton->setEnabled(false);
       }
     }
   }
+}
+
+void EventGraphWidget::sourceText(const QString &attribute, const int &incident) {
+  if (selectedIncident != 0) {
+    if (rawField->textCursor().selectedText().trimmed() != "") {
+      QSqlQuery *query = new QSqlQuery;
+      int end = 0;
+      int begin = 0;
+      QTextCursor selectCursor = rawField->textCursor();
+      if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
+	begin = rawField->textCursor().position();
+	end = rawField->textCursor().anchor();
+      } else {
+	begin = rawField->textCursor().anchor();
+	end = rawField->textCursor().position();
+      }
+      begin++;
+      end--;   
+      selectCursor.setPosition(begin);
+      selectCursor.movePosition(QTextCursor::StartOfWord);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+      rawField->setTextCursor(selectCursor);
+      QString sourceText = rawField->textCursor().selectedText().trimmed();
+    
+      query->prepare("INSERT INTO attributes_to_incidents_sources "
+		     "(attribute, incident, source_text)"
+		     "VALUES (:att, :inc, :text)");
+      query->bindValue(":att", attribute);
+      query->bindValue(":inc", incident);
+      query->bindValue(":text", sourceText);
+      query->exec();
+      delete query;
+    }
+  }
+}
+  
+void EventGraphWidget::removeText() {
+  if (selectedIncident != 0) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      if (rawField->textCursor().selectedText().trimmed() != "") {
+	QSqlQuery *query = new QSqlQuery;
+	int end = 0;
+	int begin = 0;
+	QTextCursor selectCursor = rawField->textCursor();
+	if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
+	  begin = rawField->textCursor().position();
+	  end = rawField->textCursor().anchor();
+	} else {
+	  begin = rawField->textCursor().anchor();
+	  end = rawField->textCursor().position();
+	}
+	begin++;
+	end--;
+	selectCursor.setPosition(begin);
+	selectCursor.movePosition(QTextCursor::StartOfWord);
+	selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+	rawField->setTextCursor(selectCursor);
+	QString sourceText = rawField->textCursor().selectedText().trimmed();
+	query->prepare("DELETE FROM attributes_to_incidents_sources "
+		       "WHERE attribute = :att AND incident = :inc AND source_text = :text");
+	query->bindValue(":att", attribute);
+	query->bindValue(":inc", selectedIncident);
+	query->bindValue(":text", sourceText);
+	query->exec();
+	delete query;
+      }
+      setButtons();
+      highlightText();
+    }
+  }
+}
+
+void EventGraphWidget::resetTexts() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    if (selectedIncident != 0) {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Resetting source texts cannot be undone. "
+				     "Are you sure you want to proceed?");
+      if (warningBox->exec() == QMessageBox::Yes) {
+	QSqlQuery *query = new QSqlQuery;
+	if (!(query->isNull(0))) {
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  query->prepare("DELETE FROM attributes_to_incidents_sources "
+			 "WHERE attribute = :att AND incident = :inc");
+	  query->bindValue(":att", attribute);
+	  query->bindValue(":inc", selectedIncident);
+	  query->exec();
+	}
+	highlightText();
+	delete query;
+      }
+      setButtons();
+      delete warningBox;
+    }
+  }
+}
+
+void EventGraphWidget::setButtons() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    if (selectedIncident != 0) {
+      QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+      QSqlQuery *query = new QSqlQuery;
+      bool empty = false;
+      query->prepare("SELECT attribute, incident FROM "
+		     "attributes_to_incidents "
+		     "WHERE attribute = :att AND incident = :inc  ");
+      query->bindValue(":att", currentAttribute);
+      query->bindValue(":inc", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	unassignAttributeButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+      }
+      query->prepare("SELECT attribute, incident FROM "
+		     "attributes_to_incidents_sources "
+		     "WHERE attribute = :att AND incident = :inc");
+      query->bindValue(":att", currentAttribute);
+      query->bindValue(":inc", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	removeTextButton->setEnabled(true);
+	resetTextsButton->setEnabled(true);
+      } else {
+	removeTextButton->setEnabled(false);
+	resetTextsButton->setEnabled(false);
+      }
+      assignAttributeButton->setEnabled(true);
+      editAttributeButton->setEnabled(true);
+          delete query;
+    } else if (selectedMacro != NULL) {
+      QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+      QSet<QString> attributes = selectedMacro->getAttributes();
+      if (attributes.contains(currentAttribute)) {
+	unassignAttributeButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+      }
+      removeTextButton->setEnabled(false);
+      resetTextsButton->setEnabled(false);
+    }
+  } else {
+    assignAttributeButton->setEnabled(false);
+    editAttributeButton->setEnabled(false);
+    unassignAttributeButton->setEnabled(false);
+    removeTextButton->setEnabled(false);
+    resetTextsButton->setEnabled(false);
+  }
+}
+
+void EventGraphWidget::removeUnusedAttributes() {
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  bool unfinished = true;
+  QSet<QString> takenAttributes;
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent* current = it.next();
+    QSet<QString> attributes = current->getAttributes();
+    QSet<QString>::iterator it2;
+    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+      takenAttributes.insert(*it2);
+    }
+  }
+  while (unfinished) {
+    query->exec("SELECT name FROM incident_attributes "
+		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT father FROM incident_attributes");
+    QSet<QString> temp;
+    while (query->next()) {
+      QString current = query->value(0).toString();			   
+      temp.insert(current);
+    }
+    QSet<QString>::iterator it3;
+    bool found = false;
+    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
+      if (!takenAttributes.contains(*it3)) {
+	found = true;
+	query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+      }
+    }
+    if (!found) {
+      unfinished = false;
+    }
+  }
+  this->setCursor(Qt::WaitCursor);
+  attributesTreeView->setSortingEnabled(false);
+  resetTree();
+  attributesWidget->resetTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  retrieveData();
+  this->setCursor(Qt::ArrowCursor);
+  delete query;  
+  delete query2;
+}
+
+void EventGraphWidget::highlightText() {
+  if (selectedIncident != 0) {
+    QTextCursor currentPos = rawField->textCursor();
+    if (attributesTreeView->currentIndex().isValid()) {
+      QStandardItem *currentAttribute = attributesTree->
+	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      QString currentName = attributesTreeView->currentIndex().data().toString();
+      if (currentAttribute->font().bold()) {
+	QTextCharFormat format;
+	format.setFontWeight(QFont::Normal);
+	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+	rawField->selectAll();
+	rawField->textCursor().mergeCharFormat(format);
+	QTextCursor cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT source_text "
+			"FROM attributes_to_incidents_sources "
+			"WHERE attribute = :attribute AND incident = :id");
+	query->bindValue(":attribute", currentName);
+	query->bindValue(":id", selectedIncident);
+	query->exec();
+	while (query->next()) {
+	  QString currentText = query->value(0).toString();
+	  while (rawField->find(currentText, QTextDocument::FindWholeWords)) {
+	    format.setFontWeight(QFont::Bold);
+	    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	    format.setUnderlineColor(Qt::blue);
+	    rawField->textCursor().mergeCharFormat(format);
+	  }
+	  cursor = rawField->textCursor();
+	  cursor.movePosition(QTextCursor::Start);
+	  rawField->setTextCursor(cursor);
+	}
+	rawField->setTextCursor(currentPos);
+	delete query;
+      } else {
+	QString currentSelected = rawField->textCursor().selectedText();
+	QTextCharFormat format;
+	format.setFontWeight(QFont::Normal);
+	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+	rawField->selectAll();
+	rawField->textCursor().mergeCharFormat(format);
+	QTextCursor cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
+	rawField->find(currentSelected);
+	rawField->setTextCursor(currentPos);
+      }
+    } else {
+      QTextCharFormat format;
+      format.setFontWeight(QFont::Normal);
+      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+      rawField->selectAll();
+      rawField->textCursor().mergeCharFormat(format);
+      QTextCursor cursor = rawField->textCursor();
+      cursor.movePosition(QTextCursor::Start);
+      rawField->setTextCursor(cursor);
+      rawField->setTextCursor(currentPos);
+    }
+  }
+}
+
+void EventGraphWidget::fixTree() {
+  resetFont(attributesTree);
+  if (selectedIncident != 0) {
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute FROM attributes_to_incidents "
+		   "WHERE incident = :id");
+    query->bindValue(":id", selectedIncident);
+    query->exec();
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      boldSelected(attributesTree, attribute);
+    }
+    delete query;
+  } else if (selectedMacro != NULL) {
+    QSet<QString> attributes = selectedMacro->getAttributes();
+    QSet<QString>::iterator it;
+    for (it = attributes.begin(); it != attributes.end(); it++) {
+      boldSelected(attributesTree, *it);
+    }
+  }
+}
+
+void EventGraphWidget::changeFilter(const QString &text) {
+  QRegExp regExp(text, Qt::CaseInsensitive);
+  treeFilter->setFilterRegExp(regExp);
+}
+
+void EventGraphWidget::newAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString currentParent = treeFilter->
+      mapToSource(attributesTreeView->currentIndex()).data().toString();
+    QString name = "";
+    QString description = "";
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      name = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attribute->setToolTip(description);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QStandardItem *father = attributesTree->
+	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+      father->appendRow(attribute);
+      attribute->setToolTip(hint);
+      attribute->setEditable(false);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO incident_attributes "
+		     "(name, description, father) "
+		     "VALUES (:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", currentParent);
+      query->exec();
+      delete query;
+      attributesWidget->resetTree();
+    }
+    delete attributeDialog;
+  } else {
+    QString name = "";
+    QString description = "";
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->exec();
+    
+    if (attributeDialog->getExitStatus() == 0) {
+      name = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO incident_attributes "
+		     "(name, description, father) "
+		     "VALUES (:name, :description, 'NONE')");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->exec();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attributesTree->appendRow(attribute);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      delete query;
+      attribute->setToolTip(hint);
+      attribute->setEditable(false);
+      attributesWidget->resetTree();
+    }
+    delete attributeDialog;
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void EventGraphWidget::editAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString name = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->submitName(name);
+    attributeDialog->setDescription(description);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QString newName = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *currentAttribute = attributesTree->
+	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      currentAttribute->setData(newName);
+      currentAttribute->setData(newName, Qt::DisplayRole);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      currentAttribute->setToolTip(hint);
+      query->prepare("UPDATE incident_attributes "
+		     "SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":newdescription", description);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE incident_attributes "
+		     "SET father = :newname "
+		     "WHERE father = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents_sources "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      this->setCursor(Qt::WaitCursor);
+      retrieveData();
+      this->setCursor(Qt::ArrowCursor);
+      attributesWidget->resetTree();
+    }
+    delete query;
+    delete attributeDialog;
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void EventGraphWidget::getEvents() {
@@ -3610,7 +4064,25 @@ void EventGraphWidget::findFuturePaths(QVector<int> *pMark, int currentIncident)
 
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) {
   if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
-    retrieveData();
+    QMouseEvent *mouseEvent = (QMouseEvent*) event;
+    if (mouseEvent->button() == Qt::LeftButton) {
+      retrieveData();
+      setButtons();
+    }
+  } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
+    fixTree();
+  } else if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
   }
   return false;
 }
