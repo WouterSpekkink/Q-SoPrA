@@ -11,6 +11,24 @@ bool nodeLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
   }
 }
 
+bool nameLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
+  QString one = itemOne->getName();
+  QString two = itemTwo->getName();
+  if (one < two) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+bool stringLessThan(const QString one, const QString two) {
+  if (one < two) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedType = "";
   selectedEntityName = "";
@@ -66,6 +84,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   valueLabel = new QLabel(tr("<b>Value:</b>"), infoWidget);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
   changeLabel = new QLabel(tr("*"), this);
+  incongruencyLabel = new QLabel(tr(""), this);
+  incongruencyLabel->setStyleSheet("QLabel {color : red;}");
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
@@ -235,6 +255,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
   plotOptionsLayout->addWidget(changeLabel);
+  plotOptionsLayout->addWidget(incongruencyLabel);
 
   topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
@@ -370,12 +391,104 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   legendWidget->hide();
 }
 
+void NetworkGraphWidget::checkCongruency() {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM entities ORDER BY name ASC");
+  QVector<QString> tempNames;
+  QVector<QString> tempDescs;
+  while (query->next()) {
+    QString name = query->value(0).toString();
+    QString desc = query->value(1).toString();
+    tempNames.push_back(name);
+    tempDescs.push_back(desc);
+  }
+  QVector<QString> tempDirected;
+  QVector<QString> tempUndirected;  
+  query->prepare("SELECT name FROM relationship_types "
+		 "WHERE directedness = :directed");
+  query->bindValue(":directed", DIRECTED);
+  query->exec();
+  while (query->next()) {
+    QString type = query->value(0).toString();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT name "
+		    "FROM entity_relationships "
+		    "WHERE type = :type");
+    query2->bindValue(":type", type);
+    query2->exec();
+    while (query2->next()) {
+      QString relationship = query2->value(0).toString();
+      tempDirected.push_back(relationship);
+    }
+    delete query2;
+  }
+  query->prepare("SELECT name FROM relationship_types "
+		 "WHERE directedness = :undirected");
+  query->bindValue(":undirected", UNDIRECTED);
+  query->exec();
+  while (query->next()) {
+    QString type = query->value(0).toString();
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT name "
+		    "FROM entity_relationships "
+		    "WHERE type = :type");
+    query2->bindValue(":type", type);
+    query2->exec();
+    while (query2->next()) {
+      QString relationship = query2->value(0).toString();
+      tempUndirected.push_back(relationship);
+    }
+    delete query2;
+  }
+  qSort(nodeVector.begin(), nodeVector.end(), nameLessThan);
+  if (tempNames.size() != nodeVector.size()) {
+    incongruencyLabel->setText("Incongruency detected");
+    return;
+  }
+  for (QVector<NetworkNode*>::size_type i = 0; i != nodeVector.size(); i++) {
+    NetworkNode *current = nodeVector[i];
+    if (current->getName() != tempNames[i]) {
+      incongruencyLabel->setText("Incongruency detected");
+      return;
+    }
+    if (current->getDescription() != tempDescs[i]) {
+      incongruencyLabel->setText("Incongruency detected");
+      return;
+    }
+  }
+  query->exec("SELECT COUNT(*) FROM entity_relationships");
+  query->first();
+  int originalRelationships = query->value(0).toInt();
+  int count = 0;
+  QVectorIterator<DirectedEdge*> it(directedVector);
+  while (it.hasNext()) {
+    DirectedEdge *current = it.next();
+    if (current->getName() != CREATED) {
+      count++;
+    }
+  }
+  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  while (it2.hasNext()) {
+    UndirectedEdge *current = it2.next();
+    if (current->getName() != CREATED) {
+      count++;
+    }
+  }
+  if (count != originalRelationships) {
+    incongruencyLabel->setText("Incongruency detected");
+    return;
+  }
+  delete query;
+  incongruencyLabel->setText("");
+}
+
 void NetworkGraphWidget::toggleDetails() {
   if (infoWidget->isHidden()) {
     infoWidget->show();
   } else {
     infoWidget->hide();
   }
+  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
 void NetworkGraphWidget::toggleGraphicsControls() {
@@ -384,6 +497,7 @@ void NetworkGraphWidget::toggleGraphicsControls() {
   } else {
     graphicsWidget->hide();
   }
+  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
 void NetworkGraphWidget::toggleLegend() {
@@ -392,6 +506,7 @@ void NetworkGraphWidget::toggleLegend() {
   } else {
     legendWidget->hide();
   }
+  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
 void NetworkGraphWidget::retrieveData() {
@@ -1323,6 +1438,7 @@ void NetworkGraphWidget::simpleLayout() {
       }
     }
   }
+  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
 /*
@@ -2245,6 +2361,8 @@ void NetworkGraphWidget::plotNewGraph() {
   savePlotButton->setEnabled(true);
   setRangeControls();
   plotLabel->setText("Unsaved plot");
+  checkCongruency();
+  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
 
@@ -3006,10 +3124,12 @@ void NetworkGraphWidget::seePlots() {
       }
       delete query2;
     }
+    checkCongruency();
     setRangeControls();
     setVisibility();
     plotLabel->setText(plot);
     changeLabel->setText("");
+    view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
     delete query;
   } else if (savedPlotsDialog->getExitStatus() == 2) {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
@@ -3040,12 +3160,12 @@ void NetworkGraphWidget::seePlots() {
     query->bindValue(":plot", plot);
     query->exec();
     // saved_ng_plots_directed
-    query->prepare("DELETE FROM saved_eg_plots_directed "
+    query->prepare("DELETE FROM saved_ng_plots_directed "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
     // saved_ng_plots_undirected
-    query->prepare("DELETE FROM saved_eg_plots_undirected "
+    query->prepare("DELETE FROM saved_ng_plots_undirected "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();

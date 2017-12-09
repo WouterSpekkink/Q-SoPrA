@@ -137,7 +137,7 @@ void NetworkNode::setColor(QColor newColor) {
   color = newColor;
 }
 
-QString NetworkNode::getName() {
+QString NetworkNode::getName() const {
   return name;
 }
 

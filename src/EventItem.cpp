@@ -134,7 +134,7 @@ int EventItem::getCorrection() {
   return width - 39;
 }
 
-QPointF EventItem::getOriginalPos() {
+QPointF EventItem::getOriginalPos() const {
   return originalPos;
 }
 

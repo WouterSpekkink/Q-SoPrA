@@ -140,6 +140,7 @@ void DataWidget::appendRecord() {
   } else {
     delete recordDialog;
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::editRecord() {
@@ -172,6 +173,7 @@ void DataWidget::editRecord() {
     }
     delete query;
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::insertRecordBefore() {
@@ -191,6 +193,7 @@ void DataWidget::insertRecordBefore() {
       delete recordDialog;
     }
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::insertRecordAfter() {
@@ -210,6 +213,7 @@ void DataWidget::insertRecordAfter() {
       delete recordDialog;
     }
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::moveUp() {
@@ -233,6 +237,7 @@ void DataWidget::moveUp() {
     }
     delete query;
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::moveDown() {
@@ -256,6 +261,7 @@ void DataWidget::moveDown() {
       delete query;
     }
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::duplicateRow() {
@@ -295,6 +301,7 @@ void DataWidget::duplicateRow() {
     QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
     tableView->setCurrentIndex(newIndex);
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::removeRow() {
@@ -354,8 +361,13 @@ void DataWidget::removeRow() {
     }
     delete warningBox;
   }
+  eventGraph->checkCongruency();
 }
 
 void DataWidget::resetHeader(int header) {
   tableView->verticalHeader()->resizeSection(header, 30);
+}
+
+void DataWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
 }

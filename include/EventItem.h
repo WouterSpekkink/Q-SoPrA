@@ -23,7 +23,7 @@ public:
   void setColor(const QColor &subColor); 
   void setSelectionColor(const QColor &subColor);
   int getCorrection();
-  QPointF getOriginalPos();
+  QPointF getOriginalPos() const;
   void setOriginalPos(QPointF &newPos);
   int getId();
   void setWidth(int newWidth);

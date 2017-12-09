@@ -23,7 +23,7 @@ public:
   QColor getColor();
   void setSelectionColor(const QColor &subColor);
   int getCorrection();
-  QString getName();
+  QString getName() const;
   QString getDescription();
   void setMode(const QString &submittedMode);
   QString getMode();

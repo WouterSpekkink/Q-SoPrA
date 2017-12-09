@@ -798,7 +798,8 @@ void RelationshipsWidget::resetTexts() {
 
 void RelationshipsWidget::newRelationship() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (!currentItem->parent()) {
       QString currentType = relationshipsTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
@@ -837,11 +838,13 @@ void RelationshipsWidget::newRelationship() {
       delete query;
     }
   }
+  networkGraph->checkCongruency();
 }
 
 void RelationshipsWidget::editRelationship() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QStandardItem *typeItem = currentItem->parent();
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
@@ -909,6 +912,7 @@ void RelationshipsWidget::editRelationship() {
 	  query2->bindValue(":id", id);
 	  query2->exec();
 	  delete query2;
+	  networkGraph->checkCongruency();
 	}
 	currentItem->setData(name, Qt::DisplayRole);
       }
@@ -922,6 +926,7 @@ void RelationshipsWidget::editRelationship() {
       delete query;
     }
   }
+  networkGraph->checkCongruency();
 }
 
 void RelationshipsWidget::removeUnusedRelationships() {
@@ -954,6 +959,7 @@ void RelationshipsWidget::removeUnusedRelationships() {
   this->setCursor(Qt::ArrowCursor);
   delete query;
   delete query2;
+  networkGraph->checkCongruency();
 }
 
 void RelationshipsWidget::setTree() {

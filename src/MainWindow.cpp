@@ -18,10 +18,13 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   eventGraphWidget = new EventGraphWidget(this);
   networkGraphWidget = new NetworkGraphWidget(this);
 
+  // Some of these widgets need some pointers to each other to communicate properly.
+  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
+  dw->setEventGraph(egw);
   aw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
   rw->setNetworkGraph(ngw);

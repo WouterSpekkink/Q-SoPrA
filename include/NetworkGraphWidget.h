@@ -42,7 +42,8 @@ public:
   NetworkGraphWidget(QWidget *parent = 0);
   ~NetworkGraphWidget() {};
 
-  void resetTree();			  
+  void resetTree();
+  void checkCongruency();
 			  
 private slots:
   void toggleDetails();
@@ -150,6 +151,7 @@ private:
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> plotLabel;
   QPointer<QLabel> changeLabel;
+  QPointer<QLabel> incongruencyLabel;
   
   QPointer<QComboBox> typeComboBox;
 

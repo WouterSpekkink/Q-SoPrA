@@ -1,6 +1,7 @@
 #include "../include/Scene.h"
 #include "../include/NodeLabel.h"
 #include "../include/MacroLabel.h"
+#include "../include/NetworkNode.h"
 #include <QtCore>
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
@@ -68,6 +69,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
+								       QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -78,6 +81,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       incident->setSelected(true);
     } else if (macro) {
       macro->setSelected(true);
+    } else if (networkNode) {
+      networkNode->setSelected(true);
     } else {
       this->clearSelection();
     }
@@ -119,6 +124,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
+								       QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -131,6 +138,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else if (macro) {
       this->clearSelection();
       macro->setSelected(true);
+    } else if (networkNode) {
+      this->clearSelection();
+      networkNode->setSelected(true);
     }
     selectedEvent = NULL;
     selectedMacro = NULL;

@@ -44,6 +44,7 @@ public:
 
   QVector<MacroEvent*> getMacros();
   void resetTree();
+  void checkCongruency();
 
 private slots:
   void setCommentBool();
@@ -165,6 +166,7 @@ private:
   QPointer<QLabel> attributesLabel;
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
+  QPointer<QLabel> incongruencyLabel;
   
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> savePlotButton;

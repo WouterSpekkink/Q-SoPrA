@@ -11,6 +11,16 @@ bool eventLessThan(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
   }
 }
 
+bool originalLessThan(const EventItem *itemOne, const EventItem *itemTwo) {
+  qreal orderOne = itemOne->getOriginalPos().x();
+  qreal orderTwo = itemTwo->getOriginalPos().x();
+  if (orderOne < orderTwo) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedCoder = "";
   selectedCompare = "";
@@ -77,6 +87,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   attributesLabel = new QLabel(tr("<b>Attributes:</b>"), attWidget);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), attWidget);
   valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
+  incongruencyLabel = new QLabel(tr(""), this);
+  incongruencyLabel->setStyleSheet("QLabel {color : red;}");
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -220,6 +232,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
   plotOptionsLayout->addWidget(changeLabel);
+  plotOptionsLayout->addWidget(incongruencyLabel);
   plotOptionsLayout->addSpacerItem(new QSpacerItem(100,0));
   topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
@@ -353,6 +366,30 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   infoWidget->hide();
   graphicsWidget->hide();
   attWidget->hide();
+}
+
+void EventGraphWidget::checkCongruency() {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT id FROM incidents ORDER BY ch_order ASC");
+  QVector<int> temp;
+  while (query->next()) {
+    int id = query->value(0).toInt();
+    temp.push_back(id);
+  }
+  qSort(eventVector.begin(), eventVector.end(), originalLessThan);
+  if (temp.size() != eventVector.size()) {
+    incongruencyLabel->setText("Incongruency detected");
+    return;
+  }
+  for (QVector<EventItem*>::size_type i = 0; i != eventVector.size(); i++) {
+    EventItem *current = eventVector[i];
+    if (current->getId() != temp[i]) {
+      incongruencyLabel->setText("Incongruency detected");
+      return;
+    }
+  }
+  delete query;
+  incongruencyLabel->setText("");
 }
 
 void EventGraphWidget::setCommentBool() {
@@ -2138,6 +2175,7 @@ void EventGraphWidget::plotGraph() {
   savePlotButton->setEnabled(true);
   setRangeControls();
   plotLabel->setText("Unsaved plot");
+  checkCongruency();
 }
 
 void EventGraphWidget::setCompareButton() {
@@ -2963,6 +3001,7 @@ void EventGraphWidget::seePlots() {
    scene->update();
    setVisibility();
    setRangeControls();
+   checkCongruency();
    delete query;
   } else if (savedPlotsDialog->getExitStatus() == 2) {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
