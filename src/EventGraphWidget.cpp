@@ -3429,6 +3429,10 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     recolorLabels();
   } else if (action == SETTLEACTION) {
     settleEvent();
+  } else if (action == NORMALIZEACTION) {
+    normalizeDistance();
+  } else if (action == CLOSEGAPACTION) {
+    closeGap();
   }
 }
 
@@ -3854,13 +3858,13 @@ void EventGraphWidget::disaggregateEvent() {
         event->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
         event->setOriginalPos(event->scenePos());
 	event->getLabel()->setNewPos(event->scenePos());
-	diff += distance + event->getWidth() - 30;
+	diff += distance + event->getWidth() - 40;
       } else if (macro) {
 	macro = qgraphicsitem_cast<MacroEvent*>(it4.next());
         macro->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
         macro->setOriginalPos(macro->scenePos());
 	macro->getLabel()->setNewPos(macro->scenePos());
-	diff += distance + macro->getWidth() - 30;
+	diff += distance + macro->getWidth() - 40;
       }
     }
     qSort(eventVector.begin(), eventVector.end(), eventLessThan);
@@ -3881,9 +3885,9 @@ void EventGraphWidget::disaggregateEvent() {
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(components.last());
       qreal dist = 0;
       if (event) {
-	dist = 	nextUp->scenePos().x() - event->scenePos().x() - event->getWidth() + 30;
+	dist = 	nextUp->scenePos().x() - event->scenePos().x() - event->getWidth() + 40;
       } else if (macro) {
-	dist = nextUp->scenePos().x() - macro->scenePos().x() - macro->getWidth() + 30;
+	dist = nextUp->scenePos().x() - macro->scenePos().x() - macro->getWidth() + 40;
       }
       QPointF currentPos = nextUp->scenePos();
       QVector<QGraphicsItem*> allEvents;
@@ -4012,17 +4016,153 @@ void EventGraphWidget::recolorLabels() {
 }
 
 void EventGraphWidget::settleEvent() {
-  QVectorIterator<QGraphicsItem*> it(currentData);
-  while (it.hasNext()) {
-    EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+  if (currentData.size() == 1) {
+    QGraphicsItem *current = currentData[0];
+    EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
     if (event) {
-      EventItem *current = qgraphicsitem_cast<EventItem*>(it.next());
-      current->setOriginalPos(current->scenePos());
+      event->setOriginalPos(current->scenePos());
     } else if (macro) {
-      MacroEvent *current = qgraphicsitem_cast<MacroEvent*>(it.next());
-      current->setOriginalPos(current->scenePos());
+      macro->setOriginalPos(current->scenePos());
     }
+  } else {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>Multiple events selected</b>");
+    warningBox->setInformativeText("You can only settle one event at a time.");
+    warningBox->exec();
+    delete warningBox;
+  }
+}
+
+void EventGraphWidget::normalizeDistance() {
+  if (currentData.size() == 1) {
+    QVector<QGraphicsItem*> allEvents;
+    QVectorIterator<EventItem*> it(eventVector);
+    while (it.hasNext()) {
+      allEvents.push_back(it.next());
+    }
+    QVectorIterator<MacroEvent*> it2(macroVector);
+    while (it2.hasNext()) {
+      allEvents.push_back(it2.next());
+    }
+    qSort(allEvents.begin(), allEvents.end(), eventLessThan);
+    QGraphicsItem *current = currentData[0];
+    QVectorIterator<QGraphicsItem*> it3(allEvents);
+    QGraphicsItem *target = NULL;
+    while (it3.hasNext()) {
+      QGraphicsItem *item = it3.next();
+      if (item->scenePos().x() < current->scenePos().x()) {
+	target = item;
+      } else {
+	break;
+      }
+    }
+    if (target != NULL) {
+      EventItem *targetEvent = qgraphicsitem_cast<EventItem*>(target);
+      MacroEvent *targetMacro = qgraphicsitem_cast<MacroEvent*>(target);
+      int width = 0;
+      if (targetEvent) {
+	width = targetEvent->getWidth();
+      } else if (targetMacro) {
+	width = targetMacro->getWidth();
+      }
+      current->setPos(target->scenePos().x() + distance + width - 40, current->scenePos().y());
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) {
+	event->setOriginalPos(event->scenePos());
+	event->getLabel()->setNewPos(event->scenePos());
+      } else if (macro) {
+	macro->setOriginalPos(macro->scenePos());
+	macro->getLabel()->setNewPos(macro->scenePos());
+      }
+    }
+  } else {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>Multiple events selected</b>");
+    warningBox->setInformativeText("You can only normalize one event at a time.");
+    warningBox->exec();
+    delete warningBox;
+  }
+}
+
+void EventGraphWidget::closeGap() {
+  if (currentData.size() == 1) {
+    QVector<QGraphicsItem*> allEvents;
+    QVectorIterator<EventItem*> it(eventVector);
+    while (it.hasNext()) {
+      allEvents.push_back(it.next());
+    }
+    QVectorIterator<MacroEvent*> it2(macroVector);
+    while (it2.hasNext()) {
+      allEvents.push_back(it2.next());
+    }
+    qSort(allEvents.begin(), allEvents.end(), eventLessThan);
+    QGraphicsItem *current = currentData[0];
+    QVectorIterator<QGraphicsItem*> it3(allEvents);
+    QGraphicsItem *target = NULL;
+    while (it3.hasNext()) {
+      QGraphicsItem *item = it3.next();
+      if (item->scenePos().x() < current->scenePos().x()) {
+	target = item;
+      } else {
+	break;
+      }
+    }
+    if (target != NULL) {
+      EventItem *targetEvent = qgraphicsitem_cast<EventItem*>(target);
+      MacroEvent *targetMacro = qgraphicsitem_cast<MacroEvent*>(target);
+      int width = 0;
+      if (targetEvent) {
+	width = targetEvent->getWidth();
+      } else if (targetMacro) {
+	width = targetMacro->getWidth();
+      }
+      if (current->scenePos().x() - target->scenePos().x() > distance) {
+	qreal oldX = current->scenePos().x();
+	current->setPos(target->scenePos().x() + distance + width - 40, current->scenePos().y());
+	qreal newX = current->scenePos().x();
+	qreal dist = oldX - newX;
+	EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+	if (event) {
+	  event->setOriginalPos(event->scenePos());
+	  event->getLabel()->setNewPos(event->scenePos());
+	} else if (macro) {
+	  macro->setOriginalPos(macro->scenePos());
+	  macro->getLabel()->setNewPos(macro->scenePos());
+	}
+	QVectorIterator<QGraphicsItem*> it4(allEvents);
+	while (it4.hasNext()) {
+	  QGraphicsItem *follow = it4.next();
+	  if (follow->scenePos().x() > current->scenePos().x()) {
+	    EventItem *followEvent = qgraphicsitem_cast<EventItem*>(follow);
+	    MacroEvent *followMacro = qgraphicsitem_cast<MacroEvent*>(follow);
+	    if (followEvent) {
+	      followEvent->setPos(followEvent->scenePos().x() - dist, followEvent->scenePos().y());
+	      followEvent->setOriginalPos(followEvent->scenePos());
+	      followEvent->getLabel()->setNewPos(followEvent->scenePos());
+	    } else if (followMacro) {
+	      followMacro->setPos(followMacro->scenePos().x() - dist, followMacro->scenePos().y());
+	      followMacro->setOriginalPos(followMacro->scenePos());
+	      followMacro->getLabel()->setNewPos(followMacro->scenePos());
+	    }
+	  }
+	}
+      }
+    }
+  } else {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>Multiple events selected</b>");
+    warningBox->setInformativeText("You can only normalize one event at a time.");
+    warningBox->exec();
+    delete warningBox;
   }
 }
 

@@ -25,6 +25,8 @@
 #include <windows.h>
 #endif
 
+class EventGraphWidget;
+
 class LinkagesWidget : public QWidget {
   Q_OBJECT
   friend class MainWindow;

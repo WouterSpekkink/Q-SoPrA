@@ -24,6 +24,8 @@ extern QString KEEPLINKAGEACTION;
 extern QString ACCEPTLINKAGEACTION;
 extern QString REJECTLINKAGEACTION;
 extern QString SETTLEACTION;
+extern QString NORMALIZEACTION;
+extern QString CLOSEGAPACTION;
 extern QString IGNORE;
 extern QString REMOVENORMALLINKAGE;
 extern QString ENTITY;
