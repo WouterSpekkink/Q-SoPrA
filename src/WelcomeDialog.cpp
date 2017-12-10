@@ -153,6 +153,7 @@ void WelcomeDialog::newDatabase() {
 		  "(id integer PRIMARY KEY, "
 		  "plot text, "
 		  "incident integer, "
+		  "ch_order integer, "
 		  "width integer, "
 		  "curxpos real, " // Current x position (scenePos)
 		  "curypos real, " // Current y position (scenePos)
@@ -453,6 +454,7 @@ void WelcomeDialog::openDatabase() {
 		  "(id integer PRIMARY KEY, "
 		  "plot text, "
 		  "incident integer ,"
+		  "ch_order integer, "
 		  "width integer, "
 		  "curxpos real, "
 		  "curypos real, "

@@ -20,6 +20,7 @@
 #include "LinkageTypeDialog.h"
 #include "SimpleTextDialog.h"
 #include "LinkagesIndexDialog.h"
+#include "EventGraphWidget.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif
@@ -85,12 +86,14 @@ private slots:
   void unsetLink();
   void findPastPaths(std::vector<int> *pIgnore, int currentIncident);
   void findFuturePaths(std::vector<int> *pIgnore, int currentIncident);
-  bool eventFilter(QObject *object, QEvent *event); 
+  bool eventFilter(QObject *object, QEvent *event);
+  void setEventGraph(EventGraphWidget *egw);
   
 private:
   QPointer<QSqlTableModel> typesModel;
   QPointer<QSqlTableModel> linkagesModel;
   QPointer<QSqlTableModel> incidentsModel;
+  EventGraphWidget *eventGraph;
   
   QPointer<QLabel> settingsLabel;
   QPointer<QLabel> selectCoderLabel;

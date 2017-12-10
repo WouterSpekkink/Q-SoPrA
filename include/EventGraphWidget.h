@@ -114,10 +114,12 @@ private slots:
   void setBackgroundColor();
   void processEventItemContextMenu(const QString &action);
   void colligateEvents();
+  void disaggregateEvent();
   bool checkConstraints(QVector<EventItem*> incidents);
   void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();
+  void settleEvent();
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();

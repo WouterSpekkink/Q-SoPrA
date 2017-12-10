@@ -21,6 +21,23 @@ bool originalLessThan(const EventItem *itemOne, const EventItem *itemTwo) {
   }
 }
 
+bool componentsSort(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
+  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
+  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
+  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
+  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
+  if (eventOne && eventTwo) {
+    return (eventOne->getOrder() < eventTwo->getOrder());
+  } else if (eventOne && macroTwo) {
+    return (eventOne->getOrder() < macroTwo->getIncidents().first()->getOrder());
+  } else if (macroOne && macroTwo) {
+    return (macroOne->getIncidents().first()->getOrder() <
+	    macroTwo->getIncidents().first()->getOrder());
+  } else {
+    return (macroOne->getIncidents().first()->getOrder() < eventTwo->getOrder());
+  }
+}
+
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedCoder = "";
   selectedCompare = "";
@@ -369,29 +386,105 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void EventGraphWidget::checkCongruency() {
-  QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT id FROM incidents ORDER BY ch_order ASC");
-  QVector<int> temp;
-  while (query->next()) {
-    int id = query->value(0).toInt();
-    temp.push_back(id);
-  }
-  qSort(eventVector.begin(), eventVector.end(), originalLessThan);
-  if (temp.size() != eventVector.size()) {
-    incongruencyLabel->setText("Incongruency detected");
-    return;
-  }
-  for (QVector<EventItem*>::size_type i = 0; i != eventVector.size(); i++) {
-    EventItem *current = eventVector[i];
-    if (current->getId() != temp[i]) {
+  if (eventVector.size() > 0) {
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT id FROM incidents ORDER BY ch_order ASC");
+    QVector<int> temp;
+    while (query->next()) {
+      int id = query->value(0).toInt();
+      temp.push_back(id);
+    }
+    qSort(eventVector.begin(), eventVector.end(), originalLessThan);
+    if (temp.size() != eventVector.size()) {
       incongruencyLabel->setText("Incongruency detected");
       return;
     }
+    for (QVector<EventItem*>::size_type i = 0; i != eventVector.size(); i++) {
+      EventItem *current = eventVector[i];
+      if (current->getId() != temp[i]) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+      }
+    }
+    int originalCount = 0;
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *current = it.next();
+      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
+      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
+      if (startEvent && endEvent) {
+	originalCount++;
+      }
+    }
+    query->prepare("SELECT COUNT(*) FROM linkages "
+		   "WHERE type = :type AND coder = :coder");
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    query->first();
+    if (query->value(0).toInt() != originalCount) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+    }
+    query->prepare("SELECT tail, head FROM linkages "
+		   "WHERE type = :type AND coder = :coder");
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    while (query->next()) {
+      bool found = false;
+      int tail = query->value(0).toInt();
+      int head = query->value(1).toInt();
+      QVectorIterator<Arrow*> it2(edgeVector);
+      while (it2.hasNext()) {
+	Arrow* current = it2.next();
+	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
+	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
+	if (startEvent && endEvent) {
+	  int currentTail = startEvent->getId();
+	  int currentHead = endEvent->getId();
+	  if (currentTail == tail && currentHead == head) {
+	    found = true;
+	  }
+	}
+      }
+      if (!found) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+      }
+    }
+    QVectorIterator<Arrow*> it3(edgeVector);
+    while (it3.hasNext()) {
+      Arrow* current = it3.next();
+      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
+      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
+      if (startEvent && endEvent) {
+	int currentTail = startEvent->getId();
+	int currentHead = endEvent->getId();
+	bool found = false;
+	query->prepare("SELECT tail, head FROM linkages "
+		       "WHERE type = :type AND coder = :coder");
+	query->bindValue(":type", selectedType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();
+	while (query->next()) {
+	  int tail = query->value(0).toInt();
+	  int head = query->value(1).toInt();
+	  if (currentTail == tail && currentHead == head) {
+	    found = true;
+	  }
+	}
+	if (!found) {
+	  incongruencyLabel->setText("Incongruency detected");
+	  return;
+	}
+      }
+    }
+    delete query;
+    incongruencyLabel->setText("");
   }
-  delete query;
-  incongruencyLabel->setText("");
 }
-
+  
 void EventGraphWidget::setCommentBool() {
   commentBool = true;
 }
@@ -470,12 +563,12 @@ void EventGraphWidget::retrieveData() {
 	if (currentMacro->isVisible()) {
 	  currentData.push_back(currentMacro);
 	}
-      } else if (arrow && currentData.size() > 0) {
+      } else if (arrow && scene->selectedItems().size() > 0) {
 	scene->blockSignals(true);
 	arrow->setSelected(false);
 	scene->blockSignals(false);
 	it.next();
-          } else {
+      } else {
 	it.next();
       }
     }
@@ -1677,7 +1770,7 @@ void EventGraphWidget::getEvents() {
     QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
     int vertical = qrand() % 240 - 120;
     QPointF position = QPointF((order * distance), vertical);
-    EventItem *currentItem = new EventItem(40, toolTip, position, id);
+    EventItem *currentItem = new EventItem(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
     eventVector.push_back(currentItem);
     delete query2;
@@ -2375,6 +2468,7 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal originalX = currentItem->getOriginalPos().x();
       qreal originalY = currentItem->getOriginalPos().y();
       int incident = currentItem->getId();
+      int order = currentItem->getOrder();
       int width = currentItem->getWidth();
       int dislodged = 0;
       QColor color = currentItem->getColor();
@@ -2390,12 +2484,13 @@ void EventGraphWidget::saveCurrentPlot() {
 	hidden = 0;
       }
       query->prepare("INSERT INTO saved_eg_plots_event_items "
-		     "(plot, incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
-		     "green, blue, alpha, hidden) "
-		     "VALUES (:plot, :incident, :width, :curxpos, :curypos, :orixpos, "
+		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
+		     "dislodged, red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
 		     ":oriypos, :dislodged, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", incident);
+      query->bindValue(":order", order);
       query->bindValue(":width", width);
       query->bindValue(":curxpos", currentX);
       query->bindValue(":curypos", currentY);
@@ -2674,25 +2769,26 @@ void EventGraphWidget::seePlots() {
     coderComboBox->setCurrentIndex(index);
     index = typeComboBox->findText(type);
     typeComboBox->setCurrentIndex(index);
-    query->prepare("SELECT incident, width, curxpos, curypos, orixpos, oriypos, dislodged, red, "
-		   "green, blue, alpha, hidden "
+    query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, dislodged, "
+		   "red, green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_event_items "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
     query->exec();
     while (query->next()) {
       int id = query->value(0).toInt();
-      int width = query->value(1).toInt();
-      qreal currentX = query->value(2).toReal();
-      qreal currentY = query->value(3).toReal();
-      qreal originalX = query->value(4).toReal();
-      qreal originalY = query->value(5).toReal();
-      int dislodged = query->value(6).toInt();
-      int red = query->value(7).toInt();
-      int green = query->value(8).toInt();
-      int blue = query->value(9).toInt();
-      int alpha = query->value(10).toInt();
-      int hidden = query->value(11).toInt();
+      int order = query->value(1).toInt();
+      int width = query->value(2).toInt();
+      qreal currentX = query->value(3).toReal();
+      qreal currentY = query->value(4).toReal();
+      qreal originalX = query->value(5).toReal();
+      qreal originalY = query->value(6).toReal();
+      int dislodged = query->value(7).toInt();
+      int red = query->value(8).toInt();
+      int green = query->value(9).toInt();
+      int blue = query->value(10).toInt();
+      int alpha = query->value(11).toInt();
+      int hidden = query->value(12).toInt();
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT description FROM incidents WHERE id = :id");
       query2->bindValue(":id", id);
@@ -2702,7 +2798,7 @@ void EventGraphWidget::seePlots() {
       delete query2;
       QPointF currentPos = QPointF(currentX, currentY);
       QPointF originalPos = QPointF(originalX, originalY);
-      EventItem *currentItem = new EventItem(width, toolTip, originalPos, id);
+      EventItem *currentItem = new EventItem(width, toolTip, originalPos, id, order);
       currentItem->setPos(currentPos);
       currentItem->setColor(QColor(red, green, blue, alpha));
       currentItem->setZValue(1);
@@ -3219,6 +3315,14 @@ void EventGraphWidget::setVisibility() {
       }
     }
   }
+  QVectorIterator<MacroEvent*> it2(macroVector);
+  while (it2.hasNext()) {
+    MacroEvent* current = it2.next();
+    if (current->getMacroEvent() != NULL) {
+      current->hide();
+    }
+  }
+  
   QVectorIterator<Arrow*> it3(edgeVector);
   while (it3.hasNext()) {
     Arrow *currentEdge = it3.next();
@@ -3314,12 +3418,17 @@ void EventGraphWidget::exportSvg() {
 }
 
 void EventGraphWidget::processEventItemContextMenu(const QString &action) {
-  if (action == COLLIGATEACTION) {
+  retrieveData();
+  if (action == EQUIVALENCEACTION) {
     colligateEvents();
+  } else if (action == DISAGGREGATEACTION) {
+    disaggregateEvent();
   } else if (action == RECOLOREVENTSACTION) {
     recolorEvents();
   } else if (action == RECOLORLABELSACTION) {
     recolorLabels();
+  } else if (action == SETTLEACTION) {
+    settleEvent();
   }
 }
 
@@ -3387,7 +3496,7 @@ void EventGraphWidget::colligateEvents() {
 	qreal xPos = lowestX;
 	qreal yPos = lowestY + ((highestY - lowestY) / 2);
 	QPointF originalPos = QPointF(xPos, yPos);
-   	MacroEvent* current = new MacroEvent(width, description, originalPos, macroVector.size(),
+   	MacroEvent* current = new MacroEvent(width, description, originalPos, macroVector.size() + 1,
 					     tempIncidents);
 	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
@@ -3403,7 +3512,7 @@ void EventGraphWidget::colligateEvents() {
 	      order = temp->getOrder() + 1;
 	    } else {
 	      temp->setOrder(temp->getOrder() + 1);
-	      QString label = "E-" + QString::number(temp->getOrder());
+	      QString label = "E-" + QString::number(temp->getId());
 	      temp->getLabel()->setPlainText(label);
 	      temp->getLabel()->setPlainText(label);
 	      temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
@@ -3412,20 +3521,26 @@ void EventGraphWidget::colligateEvents() {
 	  }
 	  current->setOrder(order);
 	}
-	QVectorIterator<EventItem*> it3(tempIncidents);
+
+	QVectorIterator<QGraphicsItem*> it3(currentData);
 	while (it3.hasNext()) {
-	  EventItem* item = it3.next();
-	  if (item->getMacroEvent() != NULL) {
-	    item->getMacroEvent()->hide();
+	  EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
+	  if (event) {
+	    EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
+	    item->setMacroEvent(current);
+	    item->hide();
+	  } else if (macro) {
+	    MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
+	    item->setMacroEvent(current);
+	    item->hide();
 	  }
-	  item->setMacroEvent(current);
-	  item->hide();
 	}
 	macroVector.push_back(current);
 	scene->addItem(current);
 	MacroLabel *macroLabel = new MacroLabel(current);
 	current->setLabel(macroLabel);
-	QString label = "E-" + QString::number(order);
+	QString label = "E-" + QString::number(current->getId());
 	macroLabel->setPlainText(label);
 	macroLabel->setTextWidth(macroLabel->boundingRect().width());
 	qreal xOffset = (current->getWidth() / 2) - 20;
@@ -3629,10 +3744,19 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	  } else {
 	    tempSource = currentEvent->getMacroEvent();
 	  }
-	  Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
-	  scene->addItem(newEdge);
-	  edgeVector.push_back(newEdge);
-
+	  bool found = false;
+	  QVectorIterator<Arrow*> it3(edgeVector);
+	  while (it3.hasNext()) {
+	    Arrow* temp = it3.next();
+	    if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
+	      found = true;
+	    }
+	  }
+	  if (!found) {
+	    Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
+	    scene->addItem(newEdge);
+	    edgeVector.push_back(newEdge);
+	  }
 	}
       }
     }
@@ -3650,11 +3774,11 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
       }
     }
     QList<int> headList = headSet.toList();
-    QListIterator<int> it3(headList);
-    while (it3.hasNext()) {
+    QListIterator<int> it4(headList);
+    while (it4.hasNext()) {
       QGraphicsItem *tempTarget = NULL;
       QGraphicsItem *tempSource = macro;
-      int currentHead = it3.next();
+      int currentHead = it4.next();
       QVectorIterator<EventItem*> et(eventVector);
       while (et.hasNext()) {
 	EventItem *currentEvent = et.next();
@@ -3664,9 +3788,19 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	  } else {
 	    tempTarget = currentEvent->getMacroEvent();
 	  }
-	  Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
-	  scene->addItem(newEdge);
-	  edgeVector.push_back(newEdge);
+	  bool found = false;
+	  QVectorIterator<Arrow*> it5(edgeVector);
+	  while (it5.hasNext()) {
+	    Arrow *temp = it5.next();
+	    if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
+	      found = true;
+	    }
+	  }
+	  if (!found) {
+	    Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
+	    scene->addItem(newEdge);
+	    edgeVector.push_back(newEdge);
+	  }
 	}
       }
     }
@@ -3674,6 +3808,158 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
   }
 }
 
+void EventGraphWidget::disaggregateEvent() {
+  if (currentData.size() == 1) {
+    // We make a vector for all items included in the current macro event
+    // so that we can position them properly.
+    QVector<QGraphicsItem*> components;
+    // First we find all macro events that are in the selected macro event.
+    QVectorIterator<MacroEvent*> it(macroVector);
+    while (it.hasNext()) {
+      MacroEvent *current = it.next();
+      if (current->getMacroEvent() == selectedMacro) {
+	// We want to make these macro events visible.
+	current->setMacroEvent(NULL);
+	current->show();
+	components.push_back(current);
+	// And we want to reassign their child incidents.
+	QVector<EventItem*> tempIncidents = current->getIncidents();
+	QVectorIterator<EventItem*> it2(tempIncidents);
+	while (it2.hasNext()) {
+	  EventItem *tempIncident = it2.next();
+	  tempIncident->setMacroEvent(current);
+	}
+      }
+    }
+    QVector<EventItem*> incidents = selectedMacro->getIncidents();
+    QVectorIterator<EventItem*> it3(incidents);
+    while (it3.hasNext()) {
+      EventItem *current = it3.next();
+      // Some child incidents may be reassigned to a component macro event.
+      // We want to keep hiding these.
+      if (current->getMacroEvent() == selectedMacro) {
+	current->setMacroEvent(NULL);
+	current->show();
+	components.push_back(current);
+      }
+    }
+    qSort(components.begin(), components.end(), componentsSort);
+    QVectorIterator<QGraphicsItem*> it4(components);
+    int diff = 0;
+    while (it4.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it4.peekNext());
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it4.peekNext());
+      if (event) {
+	event = qgraphicsitem_cast<EventItem*>(it4.next());
+        event->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
+        event->setOriginalPos(event->scenePos());
+	event->getLabel()->setNewPos(event->scenePos());
+	diff += distance + event->getWidth() - 30;
+      } else if (macro) {
+	macro = qgraphicsitem_cast<MacroEvent*>(it4.next());
+        macro->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
+        macro->setOriginalPos(macro->scenePos());
+	macro->getLabel()->setNewPos(macro->scenePos());
+	diff += distance + macro->getWidth() - 30;
+      }
+    }
+    qSort(eventVector.begin(), eventVector.end(), eventLessThan);
+    QVectorIterator<EventItem*> it5(eventVector);
+    EventItem* nextUp = NULL;
+    while (it5.hasNext()) {
+      EventItem* current = it5.next();
+      if (current->scenePos().x() > selectedMacro->scenePos().x() + selectedMacro->getWidth()) {
+	if (!components.contains(current)) {
+	  nextUp = current;
+	  qDebug() << nextUp->getId() + 1;
+	  break;
+	}
+      }
+    }
+    if (nextUp != NULL) {
+      EventItem* event = qgraphicsitem_cast<EventItem*>(components.last());
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(components.last());
+      qreal dist = 0;
+      if (event) {
+	dist = 	nextUp->scenePos().x() - event->scenePos().x() - event->getWidth() + 30;
+      } else if (macro) {
+	dist = nextUp->scenePos().x() - macro->scenePos().x() - macro->getWidth() + 30;
+      }
+      QPointF currentPos = nextUp->scenePos();
+      QVector<QGraphicsItem*> allEvents;
+      if (dist < distance) {
+	QVectorIterator<EventItem*> it6(eventVector);
+	while (it6.hasNext()) {
+	  EventItem *item = it6.next();
+	  allEvents.push_back(item);
+	}
+	QVectorIterator<MacroEvent*> it7(macroVector);
+	while (it7.hasNext()) {
+	  MacroEvent *item = it7.next();
+	  allEvents.push_back(item);
+	}
+	qSort(allEvents.begin(), allEvents.end(), componentsSort);
+	QVectorIterator<QGraphicsItem*> it8(allEvents);
+	while (it8.hasNext()) {
+	  EventItem *event = qgraphicsitem_cast<EventItem*>(it8.peekNext());
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it8.peekNext());
+	  if (event) {
+	    event = qgraphicsitem_cast<EventItem*>(it8.next());
+	    if (event->scenePos().x() >= currentPos.x()) {
+	      if (!components.contains(event)) {
+		event->setPos(event->scenePos().x() + distance - dist, event->scenePos().y());
+		event->setOriginalPos(event->scenePos());
+		event->getLabel()->setNewPos(event->scenePos());
+	      }
+	    }
+	  } else if (macro) {
+	    macro = qgraphicsitem_cast<MacroEvent*>(it8.next());
+	    if (macro->scenePos().x() >= currentPos.x()) {
+	      if (!components.contains(macro)) {
+		macro->setPos(macro->scenePos().x() + distance - dist, macro->scenePos().y());
+		macro->setOriginalPos(macro->scenePos());
+		macro->getLabel()->setNewPos(macro->scenePos());
+	      }
+	    }
+	  }
+	}
+      }
+    }  
+    QVector<Arrow*>::iterator it9;
+    for (it9 = edgeVector.begin(); it9 != edgeVector.end();) {
+      Arrow *current = *it9;
+      if (current->endItem() == selectedMacro) {
+	scene->removeItem(current);
+	edgeVector.removeOne(current);
+      } else if (current->startItem() == selectedMacro) {
+	scene->removeItem(current);
+	edgeVector.removeOne(current);
+      } else {
+	it9++;
+      }
+    }
+    scene->removeItem(selectedMacro->getLabel());
+    macroLabelVector.removeOne(selectedMacro->getLabel());
+    scene->removeItem(selectedMacro);
+    macroVector.removeOne(selectedMacro);
+    selectedMacro = NULL;
+    QVectorIterator<MacroEvent*> it10(macroVector);
+    while (it10.hasNext()) {
+      MacroEvent *macro = it10.next();
+      QVector<EventItem*> currentIncidents = macro->getIncidents();
+      rewireLinkages(macro, currentIncidents);
+    }
+    setVisibility();
+  } else {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>Multiple events selected</b>");
+    warningBox->setInformativeText("You can only disaggregate one event at a time.");
+    warningBox->exec();
+    delete warningBox;
+  }
+}
 void EventGraphWidget::recolorEvents() {
   if (scene->selectedItems().size() > 0) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -3725,6 +4011,21 @@ void EventGraphWidget::recolorLabels() {
   }
 }
 
+void EventGraphWidget::settleEvent() {
+  QVectorIterator<QGraphicsItem*> it(currentData);
+  while (it.hasNext()) {
+    EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+    if (event) {
+      EventItem *current = qgraphicsitem_cast<EventItem*>(it.next());
+      current->setOriginalPos(current->scenePos());
+    } else if (macro) {
+      MacroEvent *current = qgraphicsitem_cast<MacroEvent*>(it.next());
+      current->setOriginalPos(current->scenePos());
+    }
+  }
+}
+
 void EventGraphWidget::processArrowContextMenu(const QString &action) {
   if (action == REMOVELINKAGEACTION) {
     removeLinkage();
@@ -3749,7 +4050,7 @@ void EventGraphWidget::removeLinkage() {
       if (arrow) {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
 	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
-	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
+	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
 	int tail = startEvent->getId();
 	int head = endEvent->getId();
 	QSqlQuery *query =  new QSqlQuery;
@@ -3786,14 +4087,15 @@ void EventGraphWidget::removeNormalLinkage() {
 	warningBox->setInformativeText("Are you sure you want to remove this linkage?");
 	if (warningBox->exec() == QMessageBox::Yes) {
 	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
-	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
+	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
 	  if (startEvent && endEvent) {
 	    int tail = startEvent->getId();
 	    int head = endEvent->getId();
 	  
 	    QSqlQuery *query =  new QSqlQuery;
 	    query->prepare("DELETE FROM linkages "
-			   "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
+			   "WHERE tail = :tail AND head = :head "
+			   "AND coder = :coder AND type = :type");
 	    query->bindValue(":tail", tail);
 	    query->bindValue(":head", head);
 	    query->bindValue(":coder", selectedCoder);
@@ -3937,7 +4239,7 @@ void EventGraphWidget::acceptLinkage() {
       if (arrow && !(event) && !(text)) {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
 	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
-	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
+	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
 	int tail = startEvent->getId();
 	int head = endEvent->getId();
 	currentEdge->setColor(Qt::black);

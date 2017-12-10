@@ -25,7 +25,7 @@ public:
   void setSelectionColor(const QColor &subColor);
   int getCorrection();
   QPointF getOriginalPos();
-  void setOriginalPos(QPointF &newPos);
+  void setOriginalPos(QPointF newPos);
   int getId();
   void setWidth(int newWidth);
   int getWidth();
@@ -34,7 +34,7 @@ public:
   void setLabel(MacroLabel *submittedLabel);
   MacroLabel* getLabel();
   void setIncidents(QVector<EventItem*> submittedIncidents);
-  QVector<EventItem*> getIncidents();
+  QVector<EventItem*> getIncidents() const;
   QColor getColor();
   void setDescription(const QString text);
   QString getDescription();

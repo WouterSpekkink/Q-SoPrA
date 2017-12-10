@@ -7,7 +7,7 @@
 class NodeLabel : public QGraphicsTextItem {
 
 public:
-  NodeLabel(EventItem *submittedNode = new EventItem(30, "", QPointF(0,0), -1));
+  NodeLabel(EventItem *submittedNode = new EventItem(30, "", QPointF(0,0), -1, -1));
   ~NodeLabel() {};
 
   EventItem* getNode();

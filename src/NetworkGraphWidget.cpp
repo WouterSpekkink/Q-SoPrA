@@ -392,94 +392,96 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 }
 
 void NetworkGraphWidget::checkCongruency() {
-  QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name, description FROM entities ORDER BY name ASC");
-  QVector<QString> tempNames;
-  QVector<QString> tempDescs;
-  while (query->next()) {
-    QString name = query->value(0).toString();
-    QString desc = query->value(1).toString();
-    tempNames.push_back(name);
-    tempDescs.push_back(desc);
-  }
-  QVector<QString> tempDirected;
-  QVector<QString> tempUndirected;  
-  query->prepare("SELECT name FROM relationship_types "
-		 "WHERE directedness = :directed");
-  query->bindValue(":directed", DIRECTED);
-  query->exec();
-  while (query->next()) {
-    QString type = query->value(0).toString();
-    QSqlQuery *query2 = new QSqlQuery;
-    query2->prepare("SELECT name "
-		    "FROM entity_relationships "
-		    "WHERE type = :type");
-    query2->bindValue(":type", type);
-    query2->exec();
-    while (query2->next()) {
-      QString relationship = query2->value(0).toString();
-      tempDirected.push_back(relationship);
+  if (nodeVector.size() > 0) {
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT name, description FROM entities ORDER BY name ASC");
+    QVector<QString> tempNames;
+    QVector<QString> tempDescs;
+    while (query->next()) {
+      QString name = query->value(0).toString();
+      QString desc = query->value(1).toString();
+      tempNames.push_back(name);
+      tempDescs.push_back(desc);
     }
-    delete query2;
-  }
-  query->prepare("SELECT name FROM relationship_types "
-		 "WHERE directedness = :undirected");
-  query->bindValue(":undirected", UNDIRECTED);
-  query->exec();
-  while (query->next()) {
-    QString type = query->value(0).toString();
-    QSqlQuery *query2 = new QSqlQuery;
-    query2->prepare("SELECT name "
-		    "FROM entity_relationships "
-		    "WHERE type = :type");
-    query2->bindValue(":type", type);
-    query2->exec();
-    while (query2->next()) {
-      QString relationship = query2->value(0).toString();
-      tempUndirected.push_back(relationship);
+    QVector<QString> tempDirected;
+    QVector<QString> tempUndirected;  
+    query->prepare("SELECT name FROM relationship_types "
+		   "WHERE directedness = :directed");
+    query->bindValue(":directed", DIRECTED);
+    query->exec();
+    while (query->next()) {
+      QString type = query->value(0).toString();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT name "
+		      "FROM entity_relationships "
+		      "WHERE type = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      while (query2->next()) {
+	QString relationship = query2->value(0).toString();
+	tempDirected.push_back(relationship);
+      }
+      delete query2;
     }
-    delete query2;
-  }
-  qSort(nodeVector.begin(), nodeVector.end(), nameLessThan);
-  if (tempNames.size() != nodeVector.size()) {
-    incongruencyLabel->setText("Incongruency detected");
-    return;
-  }
-  for (QVector<NetworkNode*>::size_type i = 0; i != nodeVector.size(); i++) {
-    NetworkNode *current = nodeVector[i];
-    if (current->getName() != tempNames[i]) {
+    query->prepare("SELECT name FROM relationship_types "
+		   "WHERE directedness = :undirected");
+    query->bindValue(":undirected", UNDIRECTED);
+    query->exec();
+    while (query->next()) {
+      QString type = query->value(0).toString();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT name "
+		      "FROM entity_relationships "
+		      "WHERE type = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      while (query2->next()) {
+	QString relationship = query2->value(0).toString();
+	tempUndirected.push_back(relationship);
+      }
+      delete query2;
+    }
+    qSort(nodeVector.begin(), nodeVector.end(), nameLessThan);
+    if (tempNames.size() != nodeVector.size()) {
       incongruencyLabel->setText("Incongruency detected");
       return;
     }
-    if (current->getDescription() != tempDescs[i]) {
+    for (QVector<NetworkNode*>::size_type i = 0; i != nodeVector.size(); i++) {
+      NetworkNode *current = nodeVector[i];
+      if (current->getName() != tempNames[i]) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+      }
+      if (current->getDescription() != tempDescs[i]) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+      }
+    }
+    query->exec("SELECT COUNT(*) FROM entity_relationships");
+    query->first();
+    int originalRelationships = query->value(0).toInt();
+    int count = 0;
+    QVectorIterator<DirectedEdge*> it(directedVector);
+    while (it.hasNext()) {
+      DirectedEdge *current = it.next();
+      if (current->getName() != CREATED) {
+	count++;
+      }
+    }
+    QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+    while (it2.hasNext()) {
+      UndirectedEdge *current = it2.next();
+      if (current->getName() != CREATED) {
+	count++;
+      }
+    }
+    if (count != originalRelationships) {
       incongruencyLabel->setText("Incongruency detected");
       return;
     }
+    delete query;
+    incongruencyLabel->setText("");
   }
-  query->exec("SELECT COUNT(*) FROM entity_relationships");
-  query->first();
-  int originalRelationships = query->value(0).toInt();
-  int count = 0;
-  QVectorIterator<DirectedEdge*> it(directedVector);
-  while (it.hasNext()) {
-    DirectedEdge *current = it.next();
-    if (current->getName() != CREATED) {
-      count++;
-    }
-  }
-  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
-  while (it2.hasNext()) {
-    UndirectedEdge *current = it2.next();
-    if (current->getName() != CREATED) {
-      count++;
-    }
-  }
-  if (count != originalRelationships) {
-    incongruencyLabel->setText("Incongruency detected");
-    return;
-  }
-  delete query;
-  incongruencyLabel->setText("");
 }
 
 void NetworkGraphWidget::toggleDetails() {

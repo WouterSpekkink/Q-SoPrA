@@ -143,7 +143,7 @@ int MacroEvent::getId() {
   return id;
 }
 
-void MacroEvent::setOriginalPos(QPointF &newPos) {
+void MacroEvent::setOriginalPos(QPointF newPos) {
   originalPos = newPos;
 }
 
@@ -191,7 +191,7 @@ void MacroEvent::setIncidents(QVector<EventItem*> submittedIncidents) {
   incidents = submittedIncidents;
 }
 
-QVector<EventItem*> MacroEvent::getIncidents() {
+QVector<EventItem*> MacroEvent::getIncidents() const {
   return incidents;
 }
 

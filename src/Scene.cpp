@@ -257,18 +257,21 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   }
   if (incident) {
     QMenu menu;
-    menu.addAction(COLLIGATEACTION);
+    menu.addAction(EQUIVALENCEACTION);
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
+    menu.addAction(SETTLEACTION);
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
     }
     // And then we'll capture some action, and send a signal to the main widget.
   } else if (macro) {
     QMenu menu;
-    menu.addAction(COLLIGATEACTION);
+    menu.addAction(EQUIVALENCEACTION);
+    menu.addAction(DISAGGREGATEACTION);
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
+    menu.addAction(SETTLEACTION);
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
     }

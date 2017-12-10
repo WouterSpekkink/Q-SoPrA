@@ -16,7 +16,7 @@ class MacroEvent;
 class EventItem : public QGraphicsItem {
 
 public:
-  EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId);
+  EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId, int subOrder);
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -24,8 +24,9 @@ public:
   void setSelectionColor(const QColor &subColor);
   int getCorrection();
   QPointF getOriginalPos() const;
-  void setOriginalPos(QPointF &newPos);
-  int getId();
+  void setOriginalPos(QPointF newPos);
+  int getId() const;
+  int getOrder() const;
   void setWidth(int newWidth);
   int getWidth();
   bool isDislodged();
@@ -52,6 +53,7 @@ private:
   int id;
   int width;
   bool dislodged;
+  int order;
  
 };
 

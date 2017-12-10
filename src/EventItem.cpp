@@ -8,13 +8,15 @@
   in real applications.
 */
 
-EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId) : color(255, 255, 255) {
+EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId, int subOrder)
+  : color(255, 255, 255) {
   width = subWidth;
   setToolTip(toolTip);
   originalPos = originalPosition;
 
   selectionColor = QColor(Qt::black);
   id = subId;
+  order = subOrder;
   dislodged = false;
   label = NULL;
   macroEvent = NULL;
@@ -138,11 +140,15 @@ QPointF EventItem::getOriginalPos() const {
   return originalPos;
 }
 
-int EventItem::getId() {
+int EventItem::getId() const {
   return id;
 }
 
-void EventItem::setOriginalPos(QPointF &newPos) {
+int EventItem::getOrder() const {
+  return order;
+}
+
+void EventItem::setOriginalPos(QPointF newPos) {
   originalPos = newPos;
 }
 

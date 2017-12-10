@@ -2412,6 +2412,7 @@ void LinkagesWidget::setLink() {
   } 
   linkageFeedbackLabel->setText("LINKED");
   qApp->processEvents();
+  eventGraph->checkCongruency();
   if (codingType == ASSISTED && selectedDirection == PAST) {
     std::vector<int> ignore;
     if (headIndex != 1) {
@@ -2606,6 +2607,7 @@ void LinkagesWidget::unsetLink() {
     query->exec();
   }
   linkageFeedbackLabel->setText("");
+  eventGraph->checkCongruency();
   if (codingType == ASSISTED && selectedDirection == PAST) {
     std::vector<int> ignore;
     if (headIndex != 1) {
@@ -2870,4 +2872,8 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) {
     }
   }
   return false;
+}
+
+void LinkagesWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
 }
