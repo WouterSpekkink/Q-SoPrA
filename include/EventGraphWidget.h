@@ -118,9 +118,9 @@ private slots:
   void setLabelColor();
   void setBackgroundColor();
   void processEventItemContextMenu(const QString &action);
-  void colligateEvents();
+  void colligateEvents(QString constraint);
   void disaggregateEvent();
-  bool checkConstraints(QVector<EventItem*> incidents);
+  bool checkConstraints(QVector<EventItem*> incidents, QString constraint);
   void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();
@@ -135,6 +135,7 @@ private slots:
   void ignoreLinkage();
   void removeNormalLinkage();
   void findPastPaths(QVector<int> *mark, int currentIncident);
+  void findUndirectedPaths(QVector<int> *mark, int currentIncident);
   void findFuturePaths(QVector<int> *mark, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void setAttributesWidget(AttributesWidget* aw);

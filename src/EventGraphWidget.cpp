@@ -21,6 +21,14 @@ bool originalLessThan(const EventItem *itemOne, const EventItem *itemTwo) {
   }
 }
 
+bool intMoreThan(const int itemOne, const int itemTwo) {
+  if (itemOne > itemTwo) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool componentsSort(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
   const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
   const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
@@ -3614,7 +3622,9 @@ void EventGraphWidget::exportSvg() {
 void EventGraphWidget::processEventItemContextMenu(const QString &action) {
   retrieveData();
   if (action == EQUIVALENCEACTION) {
-    colligateEvents();
+    colligateEvents(EQUIVALENCE);
+  } else if (action == TOLERANCEACTION) {
+    colligateEvents(TOLERANCE);
   } else if (action == DISAGGREGATEACTION) {
     disaggregateEvent();
   } else if (action == RECOLOREVENTSACTION) {
@@ -3630,7 +3640,7 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
   }
 }
 
-void EventGraphWidget::colligateEvents() {
+void EventGraphWidget::colligateEvents(QString constraint) {
   if (currentData.size() > 1) {
     QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
     textDialog->setWindowTitle("Event description");
@@ -3656,8 +3666,9 @@ void EventGraphWidget::colligateEvents() {
 	  }
 	}
       }
+      qDebug() << tempIncidents.size();
       qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
-      if (checkConstraints(tempIncidents)) {
+      if (checkConstraints(tempIncidents, constraint)) {
 	qreal lowestX = 0.0;
 	qreal highestX = 0.0;
 	qreal lowestY = 0.0;
@@ -3766,7 +3777,7 @@ void EventGraphWidget::colligateEvents() {
   }
 }
 
-bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
+bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString constraint) {
   /* 
      Check whether colligating these events breaks constrains set for colligation
      First we check internal consistency.
@@ -3828,56 +3839,24 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
 	}
       }
     }
-    // Then we check the external consistency.
-    query->prepare("SELECT tail FROM linkages "
-		   "WHERE head = :head AND type = :type AND coder = :coder");
-    query->bindValue(":head", departure->getId());
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
-    query->exec();
-    while (query->next()) {
-      QVector<int> markTwo;
-      int currentTail = query->value(0).toInt();
-      if (!(incidentId.contains(currentTail))) {
-	findPastPaths(&markTwo, currentTail);
-	QVectorIterator<EventItem*> kit(incidents);
-	while (kit.hasNext()) {
-	  EventItem *current = kit.next();
-	  bool found = false;
-	  if (markTwo.contains(current->getId())) {
-	    found = true;
-	  }
-	  if (!found) {
-	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	    warningBox->addButton(QMessageBox::Ok);
-	    warningBox->setIcon(QMessageBox::Warning);
-	    warningBox->setText("<b>Constraints not met.</b>");
-	    warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					   "that were set for colligation.");
-	    warningBox->exec();
-	    delete warningBox;
-	    return false;
-	  }
-	}
-      }
-    }
-    query->prepare("SELECT head FROM linkages "
-		   "WHERE tail = :tail AND type = :type AND coder = :coder");
-    query->bindValue(":tail", departure->getId());
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
-    query->exec();
-    while (query->next()) {
-      int currentHead = query->value(0).toInt();
-      if (!(incidentId.contains(currentHead))) {
-	QVectorIterator<EventItem*> lit(incidents);
-	while (lit.hasNext()) {
-	  EventItem *current = lit.next();
-	  if (current != departure) {
-	    QVector<int> markTwo;
-	    findPastPaths(&markTwo, current->getId());
+    if (constraint == EQUIVALENCE) {
+      // Then we check the external consistency.
+      query->prepare("SELECT tail FROM linkages "
+		     "WHERE head = :head AND type = :type AND coder = :coder");
+      query->bindValue(":head", departure->getId());
+      query->bindValue(":type", selectedType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();
+      while (query->next()) {
+	QVector<int> markTwo;
+	int currentTail = query->value(0).toInt();
+	if (!(incidentId.contains(currentTail))) {
+	  findPastPaths(&markTwo, currentTail);
+	  QVectorIterator<EventItem*> kit(incidents);
+	  while (kit.hasNext()) {
+	    EventItem *current = kit.next();
 	    bool found = false;
-	    if (markTwo.contains(currentHead)) {
+	    if (markTwo.contains(current->getId())) {
 	      found = true;
 	    }
 	    if (!found) {
@@ -3894,12 +3873,52 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents) {
 	  }
 	}
       }
+      query->prepare("SELECT head FROM linkages "
+		     "WHERE tail = :tail AND type = :type AND coder = :coder");
+      query->bindValue(":tail", departure->getId());
+      query->bindValue(":type", selectedType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();
+      while (query->next()) {
+	int currentHead = query->value(0).toInt();
+	if (!(incidentId.contains(currentHead))) {
+	  QVectorIterator<EventItem*> lit(incidents);
+	  while (lit.hasNext()) {
+	    EventItem *current = lit.next();
+	    if (current != departure) {
+	      QVector<int> markTwo;
+	      findPastPaths(&markTwo, current->getId());
+	      bool found = false;
+	      if (markTwo.contains(currentHead)) {
+		found = true;
+	      }
+	      if (!found) {
+		QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		warningBox->addButton(QMessageBox::Ok);
+		warningBox->setIcon(QMessageBox::Warning);
+		warningBox->setText("<b>Constraints not met.</b>");
+		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					       "that were set for colligation.");
+		warningBox->exec();
+		delete warningBox;
+		return false;
+	      }
+	    }
+	  }
+	}
+      }
     }
   }
   return true;
 }
 
 void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+  query->bindValue(":type", selectedType);
+  query->exec();
+  query->first();
+  QString direction = query->value(0).toString();
   QVector<int> incidentId;
   QVectorIterator<EventItem*> tit(incidents);
   while (tit.hasNext()) {
@@ -3912,7 +3931,6 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
   QVectorIterator<EventItem*> it(incidents);
   while (it.hasNext()) {
     EventItem *current = it.next();
-    QSqlQuery *query = new QSqlQuery;
     int incident = current->getId();
     query->prepare("SELECT tail FROM linkages "
 		   "WHERE head = :head AND coder = :coder AND type = :type");
@@ -3954,7 +3972,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	    Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
 	    scene->addItem(newEdge);
 	    edgeVector.push_back(newEdge);
-	  }
+ 	  }
 	}
       }
     }
@@ -4002,8 +4020,8 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	}
       }
     }
-    delete query; 
   }
+  delete query; 
 }
 
 void EventGraphWidget::disaggregateEvent() {
@@ -4069,7 +4087,6 @@ void EventGraphWidget::disaggregateEvent() {
       if (current->scenePos().x() > selectedMacro->scenePos().x() + selectedMacro->getWidth()) {
 	if (!components.contains(current)) {
 	  nextUp = current;
-	  qDebug() << nextUp->getId() + 1;
 	  break;
 	}
       }
@@ -4710,6 +4727,42 @@ void EventGraphWidget::findPastPaths(QVector<int> *pMark, int currentIncident) {
   for (it = results.begin(); it != results.end(); it++) {
     pMark->push_back(*it);
     findPastPaths(pMark, *it);
+  }
+}
+
+void EventGraphWidget::findUndirectedPaths(QVector<int> *pMark, int currentIncident) {
+  std::vector<int> results;
+  int currentTail = currentIncident;
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT head FROM linkages "
+		 "WHERE tail = :tail AND type = :type AND coder = :coder");
+  query->bindValue(":tail", currentTail);
+  query->bindValue(":type", selectedType);
+  query->bindValue(":coder", selectedCoder);
+  query->exec();
+  while (query->next()) {
+    int currentHead = 0;
+    currentHead = query->value(0).toInt();
+    results.push_back(currentHead);
+  }
+  query->prepare("SELECT tail FROM linkages "
+		 "WHERE head = :head AND type = :type AND coder = :coder");
+  query->bindValue(":head", currentTail);
+  query->bindValue(":type", selectedType);
+  query->bindValue(":coder", selectedCoder);
+  query->exec();
+  while (query->next()) {
+    int currentTail = 0;
+    currentTail = query->value(0).toInt();
+    results.push_back(currentTail);
+  }
+  delete query;
+  std::sort(results.begin(), results.end());
+  std::vector<int>::iterator it;
+  for (it = results.begin(); it != results.end(); it++) {
+    pMark->push_back(*it);
+    findPastPaths(pMark, *it);
+    findFuturePaths(pMark, *it);
   }
 }
 

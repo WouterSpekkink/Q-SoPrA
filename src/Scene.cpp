@@ -258,6 +258,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   if (incident) {
     QMenu menu;
     menu.addAction(EQUIVALENCEACTION);
+    //menu.addAction(TOLERANCEACTION);
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
     menu.addAction(SETTLEACTION);
@@ -270,6 +271,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   } else if (macro) {
     QMenu menu;
     menu.addAction(EQUIVALENCEACTION);
+    //menu.addAction(TOLERANCEACTION);
     menu.addAction(DISAGGREGATEACTION);
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
