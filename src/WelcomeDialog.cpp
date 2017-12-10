@@ -160,6 +160,7 @@ void WelcomeDialog::newDatabase() {
 		  "orixpos real, " // Original x position
 		  "oriypos real, " // Original y position
 		  "dislodged integer, "
+		  "mode text, "
 		  "red integer,"
 		  "green integer, "
 		  "blue integer, "
@@ -200,6 +201,7 @@ void WelcomeDialog::newDatabase() {
 		  "orixpos real, "
 		  "oriypos real, "
 		  "dislodged integer, "
+		  "mode text, "
 		  "red integer,"
 		  "green integer, "
 		  "blue integer, "
@@ -230,6 +232,15 @@ void WelcomeDialog::newDatabase() {
 		  "blue integer, "
 		  "alpha integer, "
 		  "hidden integer)");
+      query->exec("CREATE TABLE saved_eg_plots_legend "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "name text, "
+		  "tip text, "
+		  "red integer, "
+		  "blue integer, "
+		  "green integer, "
+		  "alpha integer)");
       query->exec("CREATE TABLE saved_ng_plots "
 		  "(id integer PRIMARY KEY, "
 		  "plot text)");
@@ -461,6 +472,7 @@ void WelcomeDialog::openDatabase() {
 		  "orixpos real, "
 		  "oriypos real, "
 		  "dislodged integer, "
+		  "mode text, "
 		  "red integer,"
 		  "green integer, "
 		  "blue integer, "
@@ -496,6 +508,7 @@ void WelcomeDialog::openDatabase() {
 		  "description text, "
 		  "comment text, "
 		  "width integer, "
+		  "mode text, "
 		  "curxpos real, "
 		  "curypos real, "
 		  "orixpos real, "
@@ -531,6 +544,15 @@ void WelcomeDialog::openDatabase() {
 		  "blue integer, "
 		  "alpha integer, "
 		  "hidden integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_legend "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "name text, "
+		  "tip text, "
+		  "red integer, "
+		  "blue integer, "
+		  "green integer, "
+		  "alpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		  "(id integer PRIMARY KEY, "
 		  "plot text)");

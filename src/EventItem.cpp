@@ -14,6 +14,7 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   setToolTip(toolTip);
   originalPos = originalPosition;
 
+  mode = "";
   selectionColor = QColor(Qt::black);
   id = subId;
   order = subOrder;
@@ -200,3 +201,10 @@ MacroEvent* EventItem::getMacroEvent() {
   return macroEvent;
 }
 
+void EventItem::setMode(const QString submittedMode) {
+  mode = submittedMode;
+}
+
+QString EventItem::getMode() const {
+  return mode;
+}

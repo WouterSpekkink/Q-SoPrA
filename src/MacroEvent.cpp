@@ -23,6 +23,7 @@ MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF origi
   label = NULL;
   incidents = submittedIncidents;
   macroEvent = NULL;
+  mode = "";
   
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -261,10 +262,10 @@ void MacroEvent::setValues(QMap<QString, QString> submittedValues) {
   values = submittedValues;
 }
 
-void MacroEvent::cleanUp() {
-  label = NULL;
-  macroEvent = NULL;
-  incidents.clear();
-  attributes.clear();
-  values.clear();
+void MacroEvent::setMode(const QString submittedMode) {
+  mode = submittedMode;
+}
+
+QString MacroEvent::getMode() const {
+  return mode;
 }

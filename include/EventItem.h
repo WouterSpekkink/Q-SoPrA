@@ -38,6 +38,8 @@ public:
   int type() const;
   void setMacroEvent(MacroEvent* submittedEvent);
   MacroEvent* getMacroEvent();
+  void setMode(const QString submittedMode);
+  QString getMode() const;
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -54,6 +56,7 @@ private:
   int width;
   bool dislodged;
   int order;
+  QString mode;
  
 };
 

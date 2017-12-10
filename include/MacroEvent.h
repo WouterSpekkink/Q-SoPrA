@@ -54,8 +54,9 @@ public:
   void removeValue(QString attribute);
   void setValues(QMap<QString, QString> submittedValue);
   QMap<QString, QString> getValues();
-  void cleanUp();
-  
+  void setMode(const QString submittedMode);
+  QString getMode() const;
+
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
@@ -76,6 +77,7 @@ private:
   bool dislodged;
   QString description;
   QString comment;
+  QString mode;
 };
 
 #endif

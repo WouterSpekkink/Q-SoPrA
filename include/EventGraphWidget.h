@@ -31,6 +31,7 @@
 #include "AttributeTreeFilter.h"
 #include "AttributesWidget.h"
 #include "AttributeDialog.h"
+#include "DeselectableListWidget.h"
 
 class AttributesWidget;
 
@@ -51,6 +52,10 @@ private slots:
   void setComment();
   void toggleDetails();
   void toggleGraphicsControls();
+  void toggleLegend();
+  void setModeButton(QTableWidgetItem *item);
+  void removeMode();
+  void disableModeButton();
   void retrieveData();
   void showAttributes();
   void showComments();
@@ -141,6 +146,7 @@ private:
   QPointer<QWidget> graphicsWidget;
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
+  QPointer<QWidget> legendWidget;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
   QVector<QGraphicsItem*> currentData;
@@ -171,6 +177,7 @@ private:
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> incongruencyLabel;
+  QPointer<QLabel> legendLabel;
   
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> savePlotButton;
@@ -180,6 +187,7 @@ private:
   QPointer<QPushButton> decreaseDistanceButton;
   QPointer<QPushButton> toggleDetailsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
+  QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> previousEventButton;
   QPointer<QPushButton> nextEventButton;
   QPointer<QPushButton> exportSvgButton;
@@ -199,6 +207,9 @@ private:
   QPointer<QPushButton> removeUnusedAttributesButton;  
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
+  QPointer<QPushButton> removeModeButton;
+  
+  QPointer<DeselectableListWidget> eventListWidget;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
