@@ -11,6 +11,33 @@ bool eventLessThan(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
   }
 }
 
+bool eventLessThanWidth(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
+  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
+  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
+  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
+  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
+  qreal valueOne = 0.0;
+  qreal valueTwo = 0.0;
+  if (eventOne && eventTwo) {
+    valueOne = eventOne->scenePos().x() + eventOne->getWidth();
+    valueTwo = eventTwo->scenePos().x() + eventTwo->getWidth();
+  } else if (eventOne && macroTwo) {
+    valueOne = eventOne->scenePos().x() + eventOne->getWidth();
+    valueTwo = macroTwo->scenePos().x() + macroTwo->getWidth();
+  } else if (macroOne && macroTwo) {
+    valueOne = macroOne->scenePos().x() + macroOne->getWidth();
+    valueTwo = macroTwo->scenePos().x() + macroTwo->getWidth();
+  } else {
+    valueOne = macroOne->scenePos().x() + macroOne->getWidth();
+    valueTwo = eventTwo->scenePos().x() + eventTwo->getWidth();
+  }
+  if (valueOne < valueTwo) {
+    return true;
+  } else {
+    return false;
+  }
+} 
+
 bool originalLessThan(const EventItem *itemOne, const EventItem *itemTwo) {
   qreal orderOne = itemOne->getOriginalPos().x();
   qreal orderTwo = itemTwo->getOriginalPos().x();
@@ -3633,6 +3660,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     recolorLabels();
   } else if (action == SETTLEACTION) {
     settleEvent();
+  } else if (action == PARALLELACTION) {
+    makeParallel();
   } else if (action == NORMALIZEACTION) {
     normalizeDistance();
   } else if (action == CLOSEGAPACTION) {
@@ -3641,72 +3670,72 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
 }
 
 void EventGraphWidget::colligateEvents(QString constraint) {
-  if (currentData.size() > 1) {
-    QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-    textDialog->setWindowTitle("Event description");
-    textDialog->setLabel("Event description:");
-    textDialog->exec();
-    if (textDialog->getExitStatus() == 0) {
-      QString description = textDialog->getText();
-      delete textDialog;
-      QVector<EventItem*> tempIncidents;
-      QVectorIterator<QGraphicsItem*> it(currentData);
-      while (it.hasNext()) {
-	EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
-	if (event) {
-	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
-	  tempIncidents.push_back(currentEvent);
-	}
-	if (macro) {
-	  MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	  QVectorIterator<EventItem*> it2(currentMacro->getIncidents());
-	  while (it2.hasNext()) {
-	    tempIncidents.push_back(it2.next());
-	  }
+  if (currentData.size() > 0) {
+    QVector<EventItem*> tempIncidents;
+    QVectorIterator<QGraphicsItem*> it(currentData);
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+      if (event) {
+	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	tempIncidents.push_back(currentEvent);
+      }
+      if (macro) {
+	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
+	QVectorIterator<EventItem*> it2(currentMacro->getIncidents());
+	while (it2.hasNext()) {
+	  tempIncidents.push_back(it2.next());
 	}
       }
-      qDebug() << tempIncidents.size();
-      qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
-      if (checkConstraints(tempIncidents, constraint)) {
-	qreal lowestX = 0.0;
-	qreal highestX = 0.0;
-	qreal lowestY = 0.0;
-	qreal highestY = 0.0;
-	QVectorIterator<EventItem*> it2(tempIncidents);
-	while (it2.hasNext()) {
-	  EventItem *current = it2.next();
-	  if (lowestX == 0.0) {
-	    lowestX = current->scenePos().x();
-	  }
-	  if (highestX == 0.0) {
-	    highestX = current->scenePos().x();
-	  }
-	  if (lowestY == 0.0) {
-	    lowestY = current->scenePos().y();
-	  }
-	  if (highestY == 0.0) {
-	    highestY = current->scenePos().y();
-	  }
-	  if (current->scenePos().x() < lowestX) {
-	    lowestX = current->scenePos().x();
-	  }
-	  if (current->scenePos().x() > highestX) {
-	    highestX = current->scenePos().x();
-	  }
-	  if (current->scenePos().y() < lowestY) {
-	    lowestY = current->scenePos().y();
-	  }
-	  if (current->scenePos().y() > highestY) {
-	    highestY = current->scenePos().y();
-	  }
+    }
+    qDebug() << tempIncidents.size();
+    qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
+    if (checkConstraints(tempIncidents, constraint)) {
+      qreal lowestX = 0.0;
+      qreal highestX = 0.0;
+      qreal lowestY = 0.0;
+      qreal highestY = 0.0;
+      QVectorIterator<EventItem*> it2(tempIncidents);
+      while (it2.hasNext()) {
+	EventItem *current = it2.next();
+	if (lowestX == 0.0) {
+	  lowestX = current->scenePos().x();
 	}
-	int width = highestX - lowestX + tempIncidents.last()->getWidth();
-	qreal xPos = lowestX;
-	qreal yPos = lowestY + ((highestY - lowestY) / 2);
-	QPointF originalPos = QPointF(xPos, yPos);
-   	MacroEvent* current = new MacroEvent(width, description, originalPos, macroVector.size() + 1,
-					     tempIncidents);
+	if (highestX == 0.0) {
+	  highestX = current->scenePos().x();
+	}
+	if (lowestY == 0.0) {
+	  lowestY = current->scenePos().y();
+	}
+	if (highestY == 0.0) {
+	  highestY = current->scenePos().y();
+	}
+	if (current->scenePos().x() < lowestX) {
+	  lowestX = current->scenePos().x();
+	}
+	if (current->scenePos().x() > highestX) {
+	  highestX = current->scenePos().x();
+	}
+	if (current->scenePos().y() < lowestY) {
+	  lowestY = current->scenePos().y();
+	}
+	if (current->scenePos().y() > highestY) {
+	  highestY = current->scenePos().y();
+	}
+      }
+      int width = highestX - lowestX + tempIncidents.last()->getWidth();
+      qreal xPos = lowestX;
+      qreal yPos = lowestY + ((highestY - lowestY) / 2);
+      QPointF originalPos = QPointF(xPos, yPos);
+      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+      textDialog->setWindowTitle("Event description");
+      textDialog->setLabel("Event description:");
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString description = textDialog->getText();
+	delete textDialog;
+	MacroEvent* current = new MacroEvent(width, description, originalPos,
+					     macroVector.size() + 1, tempIncidents);
 	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
 	current->setZValue(1);
@@ -4258,13 +4287,19 @@ void EventGraphWidget::normalizeDistance() {
     while (it2.hasNext()) {
       allEvents.push_back(it2.next());
     }
-    qSort(allEvents.begin(), allEvents.end(), eventLessThan);
+    qSort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
     QGraphicsItem *current = currentData[0];
     QVectorIterator<QGraphicsItem*> it3(allEvents);
     QGraphicsItem *target = NULL;
     while (it3.hasNext()) {
       QGraphicsItem *item = it3.next();
-      if (item->scenePos().x() < current->scenePos().x()) {
+      EventItem *itemEvent = qgraphicsitem_cast<EventItem*>(item);
+      MacroEvent *itemMacro = qgraphicsitem_cast<MacroEvent*>(item);
+      if (itemEvent && itemEvent->scenePos().x() +
+	  itemEvent->getWidth() < current->scenePos().x()) {
+	target = item;
+      } else if (itemMacro && itemMacro->scenePos().x() +
+		 itemMacro->getWidth() < current->scenePos().x()) {
 	target = item;
       } else {
 	break;
@@ -4283,10 +4318,8 @@ void EventGraphWidget::normalizeDistance() {
       EventItem *event = qgraphicsitem_cast<EventItem*>(current);
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
       if (event) {
-	event->setOriginalPos(event->scenePos());
 	event->getLabel()->setNewPos(event->scenePos());
       } else if (macro) {
-	macro->setOriginalPos(macro->scenePos());
 	macro->getLabel()->setNewPos(macro->scenePos());
       }
     }
@@ -4296,6 +4329,46 @@ void EventGraphWidget::normalizeDistance() {
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<b>Multiple events selected</b>");
     warningBox->setInformativeText("You can only normalize one event at a time.");
+    warningBox->exec();
+    delete warningBox;
+  }
+}
+
+void EventGraphWidget::makeParallel() {
+  if (currentData.size() > 1) {
+    QGraphicsItem *lowest = NULL;
+    QVectorIterator<QGraphicsItem*> it(currentData);
+    while (it.hasNext()) {
+      QGraphicsItem *current = it.next();
+      if (lowest == NULL) {
+	lowest = current;
+      } else {
+	if (current->scenePos().x() < lowest->scenePos().x()) {
+	  lowest = current;
+	}
+      }
+    }
+    QVectorIterator<QGraphicsItem*> it2(currentData);
+    while (it2.hasNext()) {
+      QGraphicsItem *current = it2.next();
+      if (current != lowest) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+	if (event) {
+	  event->setPos(lowest->scenePos().x(), event->scenePos().y());
+	  event->getLabel()->setNewPos(event->scenePos());
+	} else if (macro) {
+	  macro->setPos(lowest->scenePos().x(), macro->scenePos().y());
+	  macro->getLabel()->setNewPos(macro->scenePos());
+	}
+      } 
+    }
+  } else {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>Multiple events required </b>");
+    warningBox->setInformativeText("You cannot perform this action on a single event.");
     warningBox->exec();
     delete warningBox;
   }
@@ -4312,13 +4385,19 @@ void EventGraphWidget::closeGap() {
     while (it2.hasNext()) {
       allEvents.push_back(it2.next());
     }
-    qSort(allEvents.begin(), allEvents.end(), eventLessThan);
+    qSort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
     QGraphicsItem *current = currentData[0];
-    QVectorIterator<QGraphicsItem*> it3(allEvents);
     QGraphicsItem *target = NULL;
+    QVectorIterator<QGraphicsItem*> it3(allEvents);
     while (it3.hasNext()) {
       QGraphicsItem *item = it3.next();
-      if (item->scenePos().x() < current->scenePos().x()) {
+      EventItem *itemEvent = qgraphicsitem_cast<EventItem*>(item);
+      MacroEvent *itemMacro = qgraphicsitem_cast<MacroEvent*>(item);
+      if (itemEvent && itemEvent->scenePos().x() +
+	  itemEvent->getWidth() < current->scenePos().x()) {
+	target = item;
+      } else if (itemMacro && itemMacro->scenePos().x() +
+		 itemMacro->getWidth() < current->scenePos().x()) {
 	target = item;
       } else {
 	break;
@@ -4347,9 +4426,9 @@ void EventGraphWidget::closeGap() {
 	  macro->setOriginalPos(macro->scenePos());
 	  macro->getLabel()->setNewPos(macro->scenePos());
 	}
-	QVectorIterator<QGraphicsItem*> it4(allEvents);
-	while (it4.hasNext()) {
-	  QGraphicsItem *follow = it4.next();
+	QVectorIterator<QGraphicsItem*> it5(allEvents);
+	while (it5.hasNext()) {
+	  QGraphicsItem *follow = it5.next();
 	  if (follow->scenePos().x() > current->scenePos().x()) {
 	    EventItem *followEvent = qgraphicsitem_cast<EventItem*>(follow);
 	    MacroEvent *followMacro = qgraphicsitem_cast<MacroEvent*>(follow);

@@ -262,6 +262,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
     menu.addAction(SETTLEACTION);
+    menu.addAction(PARALLELACTION);
     menu.addAction(NORMALIZEACTION);
     menu.addAction(CLOSEGAPACTION);
     if (QAction *action = menu.exec(event->screenPos())) {
@@ -276,6 +277,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(RECOLOREVENTSACTION);
     menu.addAction(RECOLORLABELSACTION);
     menu.addAction(SETTLEACTION);
+    menu.addAction(PARALLELACTION);
     menu.addAction(NORMALIZEACTION);
     menu.addAction(CLOSEGAPACTION);
     if (QAction *action = menu.exec(event->screenPos())) {

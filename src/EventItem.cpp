@@ -165,7 +165,7 @@ void EventItem::setWidth(int newWidth) {
   width = newWidth;
 }
 
-int EventItem::getWidth() {
+int EventItem::getWidth() const {
   return width;
 }
 

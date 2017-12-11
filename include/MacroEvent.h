@@ -28,7 +28,7 @@ public:
   void setOriginalPos(QPointF newPos);
   int getId();
   void setWidth(int newWidth);
-  int getWidth();
+  int getWidth() const;
   bool isDislodged();
   void setDislodged(bool state);
   void setLabel(MacroLabel *submittedLabel);

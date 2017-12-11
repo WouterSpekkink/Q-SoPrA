@@ -160,7 +160,7 @@ void MacroEvent::setWidth(int newWidth) {
   width = newWidth;
 }
 
-int MacroEvent::getWidth() {
+int MacroEvent::getWidth() const {
   return width;
 }
 

@@ -28,7 +28,7 @@ public:
   int getId() const;
   int getOrder() const;
   void setWidth(int newWidth);
-  int getWidth();
+  int getWidth() const;
   bool isDislodged();
   void setDislodged(bool state);
   void setLabel(NodeLabel *submittedLabel);

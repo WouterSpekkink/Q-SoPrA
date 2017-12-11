@@ -125,6 +125,7 @@ private slots:
   void recolorEvents();
   void recolorLabels();
   void settleEvent();
+  void makeParallel();
   void normalizeDistance();
   void closeGap();
   void processArrowContextMenu(const QString &action);

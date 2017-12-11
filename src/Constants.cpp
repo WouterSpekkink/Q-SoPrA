@@ -26,6 +26,7 @@ QString KEEPLINKAGEACTION = "Keep linkage";
 QString ACCEPTLINKAGEACTION = "Accept linkage";
 QString REJECTLINKAGEACTION = "Reject linkage";
 QString SETTLEACTION = "Settle in current position";
+QString PARALLELACTION = "Make parallel";
 QString NORMALIZEACTION = "Normalize distance";
 QString CLOSEGAPACTION = "Close gap";
 QString IGNORE = "Ignore";
