@@ -18,6 +18,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
   if (event->modifiers() & Qt::ShiftModifier) {
     this->setDragMode(QGraphicsView::NoDrag);
     QGraphicsView::mousePressEvent(event);
+  } else if (event->modifiers() & Qt::ControlModifier) {
+    this->setDragMode(QGraphicsView::NoDrag);
+    QGraphicsView::mousePressEvent(event);
   } else if (event->button() == Qt::RightButton) {
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));

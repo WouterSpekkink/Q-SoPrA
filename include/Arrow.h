@@ -80,8 +80,9 @@ public:
   int type() const {return Type;}
   
 protected:
-    void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
-
+  void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
+  void calculate();
+  
 private:
   QGraphicsItem *start;
   QGraphicsItem *end;
@@ -89,6 +90,9 @@ private:
   QPolygonF arrowHead;
   QString typeInd;
   QString coder;
+  QLineF newLine;
+  QPointF arrowP1;
+  QPointF arrowP2;
 };
 
 #endif

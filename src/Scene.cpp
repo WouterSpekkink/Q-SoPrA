@@ -7,6 +7,7 @@
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOnEvent = false;
   resizeOnMacro = false;
+  moveOn = false;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -79,8 +80,12 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
     if (incident) {
       incident->setSelected(true);
+      selectedEvent = incident;
+      moveOn = true;
     } else if (macro) {
       macro->setSelected(true);
+      selectedMacro = macro;
+      moveOn = true;
     } else if (networkNode) {
       networkNode->setSelected(true);
     } else {
@@ -151,6 +156,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   resizeOnEvent = false;
   resizeOnMacro = false;
+  moveOn = false;
   lastMousePos = event->scenePos();
 
   if (selectedEvent) {
@@ -238,6 +244,27 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
     lastMousePos = event->scenePos();
   } else {
+    if (selectedItems().size() > 1 && moveOn) {
+      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
+      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								   QTransform()));
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
+      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+								      QTransform()));
+      if (nodeLabel) {
+	incident = nodeLabel->getNode();
+      }
+      if (macroLabel) {
+	macro = macroLabel->getMacroEvent();
+      }
+      if (incident) {
+ 	emit moveItems(incident, event->scenePos());
+      } else if (macro) {
+	emit moveItems(macro, event->scenePos());
+      } else {
+	moveOn = false;
+      }
+    }
     QGraphicsScene::mouseMoveEvent(event);
   }
 }

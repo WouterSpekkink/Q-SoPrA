@@ -2361,6 +2361,8 @@ void LinkagesWidget::pause(int time) {
 }
 
 void LinkagesWidget::setLink() {
+  setComments();
+  setLinkageComment();
   if (codingType == MANUAL) {
     setLinkButton->setEnabled(false);
     unsetLinkButton->setEnabled(true);
@@ -2557,6 +2559,8 @@ void LinkagesWidget::setLink() {
 }
 
 void LinkagesWidget::unsetLink() {
+  setComments();
+  setLinkageComment();
   if (codingType == MANUAL) {
     setLinkButton->setEnabled(true);
     unsetLinkButton->setEnabled(false);

@@ -264,6 +264,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posIncreased(MacroEvent*)), this, SLOT(increasePos(MacroEvent*)));
   connect(scene, SIGNAL(posDecreased(MacroEvent*)), this, SLOT(decreasePos(MacroEvent*)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
+	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
 	  this, SLOT(processEventItemContextMenu(const QString &)));
   connect(scene, SIGNAL(ArrowContextMenuAction(const QString &)),
@@ -1844,7 +1846,7 @@ void EventGraphWidget::getEvents() {
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
-    int vertical = qrand() % 480 - 240;
+    int vertical = qrand() % 1000 - 500;
     QPointF position = QPointF((order * distance), vertical);
     EventItem *currentItem = new EventItem(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
@@ -1902,15 +1904,26 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	tempTarget = currentItem;
       }
       if (tempSource != NULL && tempTarget != NULL) {
-	int sourceHeight = tempSource->getOriginalPos().y();
-	int newTargetHeight = sourceHeight + qrand() % 30 - 15;
-	int targetOrder = tempTarget->getOriginalPos().x();
-	tempTarget->setPos(targetOrder, newTargetHeight);
-	Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
-	currentEdge->setToolTip(toolTip);
-	edgeVector.push_back(currentEdge);
-	break;
-      }
+	if (tempSource->getOrder() < tempTarget->getOrder()) {
+	  qreal sourceHeight = tempSource->scenePos().y();
+	  qreal newTargetHeight = sourceHeight + qrand() % 150 - 75;
+	  int targetOrder = tempTarget->getOriginalPos().x();
+	  tempTarget->setPos(QPointF(targetOrder, newTargetHeight));
+	  Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
+	  currentEdge->setToolTip(toolTip);
+	  edgeVector.push_back(currentEdge);
+	  break;
+	} else if (tempSource->getOrder() > tempTarget->getOrder()) {
+	  qreal targetHeight = tempTarget->scenePos().y();
+	  qreal newSourceHeight = targetHeight + qrand() % 150 - 75;
+	  int sourceOrder = tempSource->getOriginalPos().x();
+	  tempSource->setPos(QPointF(sourceOrder, newSourceHeight));
+	  Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
+	  currentEdge->setToolTip(toolTip);
+	  edgeVector.push_back(currentEdge);
+	  break;
+	}
+      } 
     }
     delete query2;
   }
@@ -2155,7 +2168,6 @@ void EventGraphWidget::increasePos(MacroEvent *item) {
   }
 }
 
-
 void EventGraphWidget::decreasePos(EventItem *item) {
   QPointF original = item->scenePos();
   int order = original.x();
@@ -2286,6 +2298,44 @@ void EventGraphWidget::decreaseDistance() {
     }
   }
   distance--;
+}
+
+void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
+  if (currentData.size() > 0) {
+    QGraphicsItem *source = NULL;
+    QVectorIterator<QGraphicsItem*> it(currentData);
+    while (it.hasNext()) {
+      QGraphicsItem *temp = it.next();
+      if (temp == item) {
+	source = temp;
+      }
+    }
+    if (source != NULL) {
+      qreal currentY = source->scenePos().y();
+      qreal newY = pos.y();
+      qreal yDiff = newY - currentY;
+
+      QVectorIterator<QGraphicsItem*> it2(currentData);
+      while (it2.hasNext()) {
+	QGraphicsItem *current = it2.next();
+
+	current->setPos(current->scenePos().x(), current->scenePos().y() + yDiff);
+	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	if (currentEvent) {
+	  currentEvent->getLabel()->setNewPos(currentEvent->scenePos());
+	} else if (currentMacro) {
+	  currentMacro->getLabel()->setNewPos(currentMacro->scenePos());
+	}
+      }
+    }
+  }
+  QRectF currentRect = this->scene->itemsBoundingRect();
+  currentRect.setX(currentRect.x() - 50);
+  currentRect.setY(currentRect.y() - 50);
+  currentRect.setWidth(currentRect.width() + 100);
+  currentRect.setHeight(currentRect.height() + 100);
+  scene->setSceneRect(currentRect);
 }
 
 void EventGraphWidget::setPlotButton() {
@@ -3820,12 +3870,12 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	    } else {
 	      temp->setOrder(temp->getOrder() + 1);
 	      if (temp->getConstraint() == PATHS) {
-		QString label = "E-" + QString::number(temp->getId());
+		QString label = "P-" + QString::number(temp->getId());
 		temp->getLabel()->setPlainText(label);
 		temp->getLabel()->setPlainText(label);
 		temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
 	      } else if (temp->getConstraint() == SEMIPATHS) {
-		QString label = "T-" + QString::number(temp->getId());
+		QString label = "S-" + QString::number(temp->getId());
 		temp->getLabel()->setPlainText(label);
 		temp->getLabel()->setPlainText(label);
 		temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
@@ -3854,11 +3904,11 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	MacroLabel *macroLabel = new MacroLabel(current);
 	current->setLabel(macroLabel);
 	if (constraint == PATHS) {
-	  QString label = "E-" + QString::number(current->getId());
+	  QString label = "P-" + QString::number(current->getId());
 	  macroLabel->setPlainText(label);
 	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
 	} else if (constraint == SEMIPATHS) {
-	  QString label = "T-" + QString::number(current->getId());
+	  QString label = "S-" + QString::number(current->getId());
 	  macroLabel->setPlainText(label);
 	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
 	}

@@ -25,7 +25,8 @@ signals:
   void widthDecreased(MacroEvent *);
   void posIncreased(MacroEvent *);
   void posDecreased(MacroEvent *);
-
+  void moveItems(QGraphicsItem *, QPointF);
+  
   void relevantChange();
   void EventItemContextMenuAction(const QString&);
   void ArrowContextMenuAction(const QString&);
@@ -39,6 +40,7 @@ protected:
   
   bool resizeOnEvent;
   bool resizeOnMacro;
+  bool moveOn;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;

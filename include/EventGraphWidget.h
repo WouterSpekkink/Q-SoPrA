@@ -96,6 +96,7 @@ private slots:
   void decreasePos(MacroEvent *item);
   void increaseDistance();
   void decreaseDistance();
+  void processMoveItems(QGraphicsItem *item, QPointF pos);
   void setPlotButton();
   void getLinkageDetails();
   void plotGraph();
