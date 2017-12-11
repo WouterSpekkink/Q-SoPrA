@@ -257,29 +257,71 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   }
   if (incident) {
     QMenu menu;
-    menu.addAction(EQUIVALENCEACTION);
-    //menu.addAction(TOLERANCEACTION);
-    menu.addAction(RECOLOREVENTSACTION);
-    menu.addAction(RECOLORLABELSACTION);
-    menu.addAction(SETTLEACTION);
-    menu.addAction(PARALLELACTION);
-    menu.addAction(NORMALIZEACTION);
-    menu.addAction(CLOSEGAPACTION);
+    QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
+    menu.addAction(action1);
+    QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
+    menu.addAction(action2);
+    QAction *action3 = new QAction(MAKEMACROACTION, this);
+    menu.addAction(action3);
+    QAction *action4= new QAction(RECOLOREVENTSACTION, this);
+    menu.addAction(action4);
+    QAction *action5 = new QAction(RECOLORLABELSACTION, this);
+    menu.addAction(action5);
+    QAction *action6 = new QAction(SETTLEACTION, this);
+    menu.addAction(action6);
+    QAction *action7 = new QAction(PARALLELACTION, this);
+    menu.addAction(action7);
+    QAction *action8 = new QAction(NORMALIZEACTION, this);
+    menu.addAction(action8);
+    QAction *action9 = new QAction(CLOSEGAPACTION, this);
+    menu.addAction(action9);
+    if (selectedItems().size() > 1) {
+      action3->setEnabled(false);
+      action6->setEnabled(false);
+      action8->setEnabled(false);
+      action9->setEnabled(false);
+    }
+    if (selectedItems().size() == 1) {
+      action1->setEnabled(false);
+      action2->setEnabled(false);
+      action7->setEnabled(false);
+    }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
     }
     // And then we'll capture some action, and send a signal to the main widget.
   } else if (macro) {
     QMenu menu;
-    menu.addAction(EQUIVALENCEACTION);
-    //menu.addAction(TOLERANCEACTION);
-    menu.addAction(DISAGGREGATEACTION);
-    menu.addAction(RECOLOREVENTSACTION);
-    menu.addAction(RECOLORLABELSACTION);
-    menu.addAction(SETTLEACTION);
-    menu.addAction(PARALLELACTION);
-    menu.addAction(NORMALIZEACTION);
-    menu.addAction(CLOSEGAPACTION);
+    QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
+    menu.addAction(action1);
+    QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
+    menu.addAction(action2);
+    QAction *action3 = new QAction(DISAGGREGATEACTION, this);
+    menu.addAction(action3);
+    QAction *action4 = new QAction(RECOLOREVENTSACTION, this);
+    menu.addAction(action4);
+    QAction *action5 = new QAction(RECOLORLABELSACTION, this);
+    menu.addAction(action5);
+    QAction *action6 = new QAction(SETTLEACTION, this);
+    menu.addAction(action6);
+    QAction *action7 = new QAction(PARALLELACTION, this);
+    menu.addAction(action7);
+    QAction *action8 = new QAction(NORMALIZEACTION, this);
+    menu.addAction(action8);
+    QAction *action9 = new QAction(CLOSEGAPACTION, this);
+    menu.addAction(action9);
+    if (selectedItems().size() > 1) {
+      action3->setEnabled(false);
+      action6->setEnabled(false);
+      action7->setEnabled(false);
+      action8->setEnabled(false);
+      action8->setEnabled(false);
+    }
+    if (selectedItems().size() == 1) {
+      action1->setEnabled(false);
+      action2->setEnabled(false);
+      action7->setEnabled(false);
+    }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
     }

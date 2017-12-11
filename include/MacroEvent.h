@@ -17,7 +17,7 @@ class MacroEvent : public QGraphicsItem {
 
 public:
   MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
-	     QVector<EventItem*> submittedIncidents);
+	     QString submittedConstraint, QVector<EventItem*> submittedIncidents);
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
@@ -56,6 +56,7 @@ public:
   QMap<QString, QString> getValues();
   void setMode(const QString submittedMode);
   QString getMode() const;
+  QString getConstraint() const;
 
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -78,6 +79,7 @@ private:
   QString description;
   QString comment;
   QString mode;
+  QString constraint;
 };
 
 #endif

@@ -135,9 +135,9 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
-  void findPastPaths(QVector<int> *mark, int currentIncident);
-  void findUndirectedPaths(QVector<int> *mark, int currentIncident);
-  void findFuturePaths(QVector<int> *mark, int currentIncident);
+  void findPastPaths(QSet<int> *mark, int currentIncident);
+  void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
+  void findFuturePaths(QSet<int> *mark, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void setAttributesWidget(AttributesWidget* aw);
   

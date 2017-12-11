@@ -9,7 +9,7 @@
 */
 
 MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
-		       QVector<EventItem*> submittedIncidents)
+		       QString submittedConstraint, QVector<EventItem*> submittedIncidents)
   : color(255, 255, 255) {
   width = subWidth;
   description = submittedDescription;
@@ -24,6 +24,7 @@ MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF origi
   incidents = submittedIncidents;
   macroEvent = NULL;
   mode = "";
+  constraint = submittedConstraint;
   
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -268,4 +269,8 @@ void MacroEvent::setMode(const QString submittedMode) {
 
 QString MacroEvent::getMode() const {
   return mode;
+}
+
+QString MacroEvent::getConstraint() const {
+  return constraint;
 }

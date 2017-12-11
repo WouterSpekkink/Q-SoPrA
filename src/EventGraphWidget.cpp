@@ -1844,7 +1844,7 @@ void EventGraphWidget::getEvents() {
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
-    int vertical = qrand() % 240 - 120;
+    int vertical = qrand() % 480 - 240;
     QPointF position = QPointF((order * distance), vertical);
     EventItem *currentItem = new EventItem(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
@@ -1903,7 +1903,7 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
       }
       if (tempSource != NULL && tempTarget != NULL) {
 	int sourceHeight = tempSource->getOriginalPos().y();
-	int newTargetHeight = sourceHeight + qrand() % 240 - 120;
+	int newTargetHeight = sourceHeight + qrand() % 30 - 15;
 	int targetOrder = tempTarget->getOriginalPos().x();
 	tempTarget->setPos(targetOrder, newTargetHeight);
 	Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
@@ -2750,14 +2750,15 @@ void EventGraphWidget::saveCurrentPlot() {
 	hidden = 0;
       }
       query->prepare("INSERT INTO saved_eg_plots_macro_events "
-		     "(plot, eventid, ch_order, description, comment, width, mode, curxpos, curypos, "
-		     "orixpos, oriypos, dislodged, red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :eventid, :ch_order, :description, :comment, :width, "
-		     ":curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
+		     "(plot, eventid, ch_order, constraint, description, comment, width, mode, "
+		     "curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :eventid, :ch_order, :constraint, :description, :comment, "
+		     ":width, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
 		     ":red, :green, :blue, :alpha, :hidden)");;
       query->bindValue(":plot", name);
       query->bindValue(":eventid", currentMacro->getId());
       query->bindValue(":ch_order", currentMacro->getOrder());
+      query->bindValue(":constraint", currentMacro->getConstraint());
       query->bindValue(":description", description);
       query->bindValue(":comment", comment);
       query->bindValue(":width", width);
@@ -2976,8 +2977,8 @@ void EventGraphWidget::seePlots() {
 	}
       }
     }
-    query->prepare("SELECT eventid, ch_order, description, comment, width, mode, curxpos, curypos, "
-		   "orixpos, oriypos, dislodged, red, green, blue, alpha, hidden "
+    query->prepare("SELECT eventid, ch_order, constraint, description, comment, width, mode, "
+		   "curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_macro_events "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -2985,20 +2986,21 @@ void EventGraphWidget::seePlots() {
     while (query->next()) {
       int id = query->value(0).toInt();
       int order = query->value(1).toInt();
-      QString description = query->value(2).toString();
-      QString comment = query->value(3).toString();
-      int width = query->value(4).toInt();
-      QString mode = query->value(5).toString();
-      qreal currentX = query->value(6).toReal();
-      qreal currentY = query->value(7).toReal();
-      qreal originalX = query->value(8).toReal();
-      qreal originalY = query->value(9).toReal();
-      int dislodged = query->value(10).toInt();
-      int red = query->value(11).toInt();
-      int green = query->value(12).toInt();
-      int blue = query->value(13).toInt();
-      int alpha = query->value(14).toInt();
-      int hidden = query->value(15).toInt();
+      QString constraint = query->value(2).toString();
+      QString description = query->value(3).toString();
+      QString comment = query->value(4).toString();
+      int width = query->value(5).toInt();
+      QString mode = query->value(6).toString();
+      qreal currentX = query->value(7).toReal();
+      qreal currentY = query->value(8).toReal();
+      qreal originalX = query->value(9).toReal();
+      qreal originalY = query->value(10).toReal();
+      int dislodged = query->value(11).toInt();
+      int red = query->value(12).toInt();
+      int green = query->value(13).toInt();
+      int blue = query->value(14).toInt();
+      int alpha = query->value(15).toInt();
+      int hidden = query->value(16).toInt();
       QPointF currentPos = QPointF(currentX, currentY);
       QPointF originalPos = QPointF(originalX, originalY);
       QColor color = QColor(red, green, blue, alpha);
@@ -3036,7 +3038,7 @@ void EventGraphWidget::seePlots() {
       }
       delete query2;
       MacroEvent* newMacro = new MacroEvent(width, description, originalPos, macroVector.size(),
-					    incidents);
+					    constraint, incidents);
       QVectorIterator<EventItem*> it(incidents);
       while (it.hasNext()) {
 	EventItem *currentEvent = it.next();
@@ -3648,12 +3650,14 @@ void EventGraphWidget::exportSvg() {
 
 void EventGraphWidget::processEventItemContextMenu(const QString &action) {
   retrieveData();
-  if (action == EQUIVALENCEACTION) {
-    colligateEvents(EQUIVALENCE);
-  } else if (action == TOLERANCEACTION) {
-    colligateEvents(TOLERANCE);
+  if (action == COLLIGATEPATHSACTION) {
+    colligateEvents(PATHS);
+  } else if (action == COLLIGATESEMIPATHSACTION) {
+    colligateEvents(SEMIPATHS);
   } else if (action == DISAGGREGATEACTION) {
     disaggregateEvent();
+  } else if (action == MAKEMACROACTION) {
+    colligateEvents(PATHS);
   } else if (action == RECOLOREVENTSACTION) {
     recolorEvents();
   } else if (action == RECOLORLABELSACTION) {
@@ -3688,7 +3692,72 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	}
       }
     }
-    qDebug() << tempIncidents.size();
+    QVector<QGraphicsItem*> allEvents;
+    QVectorIterator<EventItem*> evIt(eventVector);
+    while (evIt.hasNext()) {
+      allEvents.push_back(evIt.next());
+    }
+    QVectorIterator<MacroEvent*> maIt(macroVector);
+    while (maIt.hasNext()) {
+      allEvents.push_back(maIt.next());
+    }
+    qSort(allEvents.begin(), allEvents.end(), componentsSort);
+    
+    QVector<EventItem*> tempVec;
+    qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
+    if (constraint == SEMIPATHS) {
+      QVectorIterator<EventItem*> it2(tempIncidents);
+      while (it2.hasNext()) {
+	EventItem *first = it2.next();
+	QSet<int> markOne;
+	QSet<int> tempOne;
+	tempOne.insert(first->getId());
+	findUndirectedPaths(&markOne, &tempOne);
+	QVectorIterator<EventItem*> it3(tempIncidents);
+	while (it3.hasNext()) {
+	  EventItem *second = it3.next();
+	  if (first != second) {
+	    QSet<int> markTwo;
+	    QSet<int> tempTwo;
+	    tempTwo.insert(second->getId());
+	    findUndirectedPaths(&markTwo, &tempTwo);
+	    markOne.unite(markTwo);
+	    QVectorIterator<QGraphicsItem*> it4(allEvents);
+	    while (it4.hasNext()) {
+	      QGraphicsItem *temp = it4.next();
+	      EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
+	      MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
+	      if (eventTemp) {
+		if (markOne.contains(eventTemp->getId()) &&
+		    eventTemp->scenePos().x() <= tempIncidents.last()->scenePos().x() &&
+		    eventTemp->scenePos().x() >= tempIncidents.first()->scenePos().x() &&
+		    !tempIncidents.contains(eventTemp) && !tempVec.contains(eventTemp)) {
+		  tempVec.push_back(eventTemp);
+		}
+	      } else if (macroTemp) {
+		currentData.push_back(macroTemp);
+		QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
+		QVectorIterator<EventItem*> it5(macroIncidents);
+		while (it5.hasNext()) {
+		  eventTemp = it5.next();
+		  if (markOne.contains(eventTemp->getId()) &&
+		      eventTemp->scenePos().x() <= tempIncidents.last()->scenePos().x() &&
+		      eventTemp->scenePos().x() >= tempIncidents.first()->scenePos().x() &&
+		      !tempIncidents.contains(eventTemp) && !tempVec.contains(eventTemp)) {
+		    tempVec.push_back(eventTemp);
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+      }
+    }
+    QVectorIterator<EventItem*> it5(tempVec);
+    while (it5.hasNext()) {
+      tempIncidents.push_back(it5.peekNext());
+      currentData.push_back(it5.next());
+    }
     qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
     if (checkConstraints(tempIncidents, constraint)) {
       qreal lowestX = 0.0;
@@ -3735,7 +3804,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	QString description = textDialog->getText();
 	delete textDialog;
 	MacroEvent* current = new MacroEvent(width, description, originalPos,
-					     macroVector.size() + 1, tempIncidents);
+					     macroVector.size() + 1, constraint, tempIncidents);
 	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
 	current->setZValue(1);
@@ -3750,11 +3819,17 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	      order = temp->getOrder() + 1;
 	    } else {
 	      temp->setOrder(temp->getOrder() + 1);
-	      QString label = "E-" + QString::number(temp->getId());
-	      temp->getLabel()->setPlainText(label);
-	      temp->getLabel()->setPlainText(label);
-	      temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
-
+	      if (temp->getConstraint() == PATHS) {
+		QString label = "E-" + QString::number(temp->getId());
+		temp->getLabel()->setPlainText(label);
+		temp->getLabel()->setPlainText(label);
+		temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
+	      } else if (temp->getConstraint() == SEMIPATHS) {
+		QString label = "T-" + QString::number(temp->getId());
+		temp->getLabel()->setPlainText(label);
+		temp->getLabel()->setPlainText(label);
+		temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
+	      }
 	    }
 	  }
 	  current->setOrder(order);
@@ -3778,9 +3853,15 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	scene->addItem(current);
 	MacroLabel *macroLabel = new MacroLabel(current);
 	current->setLabel(macroLabel);
-	QString label = "E-" + QString::number(current->getId());
-	macroLabel->setPlainText(label);
-	macroLabel->setTextWidth(macroLabel->boundingRect().width());
+	if (constraint == PATHS) {
+	  QString label = "E-" + QString::number(current->getId());
+	  macroLabel->setPlainText(label);
+	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
+	} else if (constraint == SEMIPATHS) {
+	  QString label = "T-" + QString::number(current->getId());
+	  macroLabel->setPlainText(label);
+	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
+	}
 	qreal xOffset = (current->getWidth() / 2) - 20;
 	macroLabel->setOffset(QPointF(xOffset,0));
 	macroLabel->setNewPos(current->scenePos());
@@ -3828,11 +3909,17 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
   QString direction = query->value(0).toString();
   QVectorIterator<EventItem*> dit(incidents);
 
-  QVector<int> markOne;
+  QSet<int> markOne;
   while (dit.hasNext()) {
     EventItem *departure = dit.next();
     // First we check the internal consistency;
-    findPastPaths(&markOne, departure->getId());
+    if (constraint == PATHS) {
+      findPastPaths(&markOne, departure->getId());
+    } else if (constraint == SEMIPATHS) {
+      QSet<int> items;
+      items.insert(departure->getId());
+      findUndirectedPaths(&markOne, &items);
+    }
     QVectorIterator<EventItem*> cit(incidents);
     while (cit.hasNext()) {
       EventItem *current = cit.next();
@@ -3841,20 +3928,34 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	if (markOne.contains(current->getId())) {
 	  found = true;
 	}
-	if (direction == PAST) {
-	  if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
-	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	    warningBox->addButton(QMessageBox::Ok);
-	    warningBox->setIcon(QMessageBox::Warning);
-	    warningBox->setText("<b>Constraints not met.</b>");
-	    warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					   "that were set for colligation.");
-	    warningBox->exec();
-	    delete warningBox;
-	    return false;
+	if (constraint == PATHS) {
+	  if (direction == PAST) {
+	    if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
+	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->addButton(QMessageBox::Ok);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<b>Constraints not met.</b>");
+	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					     "that were set for colligation.");
+	      warningBox->exec();
+	      delete warningBox;
+	      return false;
+	    }
+	  } else if (direction == FUTURE) {
+	    if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
+	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->addButton(QMessageBox::Ok);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<b>Constraints not met.</b>");
+	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					     "that were set for colligation.");
+	      warningBox->exec();
+	      delete warningBox;
+	      return false;
+	    }
 	  }
-	} else if (direction == FUTURE) {
-	  if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
+	} else if (constraint == SEMIPATHS) {
+	  if (!found) {
 	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
 	    warningBox->addButton(QMessageBox::Ok);
 	    warningBox->setIcon(QMessageBox::Warning);
@@ -3868,7 +3969,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	}
       }
     }
-    if (constraint == EQUIVALENCE) {
+    if (constraint == PATHS) {
       // Then we check the external consistency.
       query->prepare("SELECT tail FROM linkages "
 		     "WHERE head = :head AND type = :type AND coder = :coder");
@@ -3877,7 +3978,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
       query->bindValue(":coder", selectedCoder);
       query->exec();
       while (query->next()) {
-	QVector<int> markTwo;
+	QSet<int> markTwo;
 	int currentTail = query->value(0).toInt();
 	if (!(incidentId.contains(currentTail))) {
 	  findPastPaths(&markTwo, currentTail);
@@ -3915,7 +4016,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	  while (lit.hasNext()) {
 	    EventItem *current = lit.next();
 	    if (current != departure) {
-	      QVector<int> markTwo;
+	      QSet<int> markTwo;
 	      findPastPaths(&markTwo, current->getId());
 	      bool found = false;
 	      if (markTwo.contains(currentHead)) {
@@ -4580,8 +4681,8 @@ void EventGraphWidget::keepLinkage() {
 	query->exec();
 	query->first();
 	QString direction = query->value(0).toString();
-	QVector<int> markOne;
-	QVector<int> markTwo;
+	QSet<int> markOne;
+	QSet<int> markTwo;
 	if (direction == PAST) {
 	  findPastPaths(&markOne, tail);
 	  findFuturePaths(&markTwo, tail);
@@ -4589,7 +4690,7 @@ void EventGraphWidget::keepLinkage() {
 	  findFuturePaths(&markOne, tail);
 	  findPastPaths(&markTwo, tail);
 	}
-	QVectorIterator<int> it2(markOne);
+	QSetIterator<int> it2(markOne);
 	bool found = false;
 	while (it2.hasNext()) {
 	  int currentPathMate = it2.next();
@@ -4620,7 +4721,7 @@ void EventGraphWidget::keepLinkage() {
 	    currentEdge->setColor(Qt::darkGreen);
 	  }
 	}
-	QVectorIterator<int> it3(markTwo);
+	QSetIterator<int> it3(markTwo);
         found = false;
 	while (it3.hasNext()) {
 	  int currentPathMate = it3.next();
@@ -4688,8 +4789,8 @@ void EventGraphWidget::acceptLinkage() {
 	query->exec();
 	query->first();
 	QString direction = query->value(0).toString();
-	QVector<int> markOne;
-	QVector<int> markTwo;
+	QSet<int> markOne;
+	QSet<int> markTwo;
 	if (direction == PAST) {
 	  findPastPaths(&markOne, tail);
 	  findFuturePaths(&markTwo, tail);
@@ -4697,7 +4798,7 @@ void EventGraphWidget::acceptLinkage() {
 	  findFuturePaths(&markOne, tail);
 	  findPastPaths(&markTwo, tail);
 	}
-	QVectorIterator<int> it2(markOne);
+	QSetIterator<int> it2(markOne);
 	bool found = false;
 	while (it2.hasNext()) {
 	  int currentPathMate = it2.next();
@@ -4728,7 +4829,7 @@ void EventGraphWidget::acceptLinkage() {
 	    currentEdge->setColor(Qt::darkGreen);
 	  }
 	}
-	QVectorIterator<int> it3(markTwo);
+	QSetIterator<int> it3(markTwo);
         found = false;
 	while (it3.hasNext()) {
 	  int currentPathMate = it3.next();
@@ -4785,7 +4886,7 @@ void EventGraphWidget::rejectLinkage() {
   }
 }
 
-void EventGraphWidget::findPastPaths(QVector<int> *pMark, int currentIncident) {
+void EventGraphWidget::findPastPaths(QSet<int> *pMark, int currentIncident) {
   int currentTail = currentIncident;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head FROM linkages "
@@ -4804,48 +4905,49 @@ void EventGraphWidget::findPastPaths(QVector<int> *pMark, int currentIncident) {
   std::sort(results.begin(), results.end());
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
-    pMark->push_back(*it);
+    pMark->insert(*it);
     findPastPaths(pMark, *it);
   }
 }
 
-void EventGraphWidget::findUndirectedPaths(QVector<int> *pMark, int currentIncident) {
-  std::vector<int> results;
-  int currentTail = currentIncident;
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  query->bindValue(":tail", currentTail);
-  query->bindValue(":type", selectedType);
-  query->bindValue(":coder", selectedCoder);
-  query->exec();
-  while (query->next()) {
-    int currentHead = 0;
-    currentHead = query->value(0).toInt();
-    results.push_back(currentHead);
+void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submittedItems) {
+  QSet<int> temp = *submittedItems;
+  QSetIterator<int> it(temp);
+  while (it.hasNext()) {
+    int current = it.next();
+    pMark->insert(current);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT head FROM linkages "
+		   "WHERE tail = :tail AND type = :type AND coder = :coder");
+    query->bindValue(":tail", current);
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    while (query->next()) {
+      int currentHead = 0;
+      currentHead = query->value(0).toInt();
+      submittedItems->insert(currentHead);
+    }
+    query->prepare("SELECT tail FROM linkages "
+		   "WHERE head = :head AND type = :type AND coder = :coder");
+    query->bindValue(":head", current);
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    while (query->next()) {
+      int currentTail = 0;
+      currentTail = query->value(0).toInt();
+      submittedItems->insert(currentTail);
+    }
   }
-  query->prepare("SELECT tail FROM linkages "
-		 "WHERE head = :head AND type = :type AND coder = :coder");
-  query->bindValue(":head", currentTail);
-  query->bindValue(":type", selectedType);
-  query->bindValue(":coder", selectedCoder);
-  query->exec();
-  while (query->next()) {
-    int currentTail = 0;
-    currentTail = query->value(0).toInt();
-    results.push_back(currentTail);
-  }
-  delete query;
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) {
-    pMark->push_back(*it);
-    findPastPaths(pMark, *it);
-    findFuturePaths(pMark, *it);
+  if (submittedItems->size() > temp.size()) {
+    findUndirectedPaths(pMark, submittedItems);
+  } else {
+    return;
   }
 }
 
-void EventGraphWidget::findFuturePaths(QVector<int> *pMark, int currentIncident) {
+void EventGraphWidget::findFuturePaths(QSet<int> *pMark, int currentIncident) {
   int currentHead = currentIncident;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail FROM linkages "
@@ -4864,7 +4966,7 @@ void EventGraphWidget::findFuturePaths(QVector<int> *pMark, int currentIncident)
   std::sort(results.begin(), results.end());
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
-    pMark->push_back(*it);
+    pMark->insert(*it);
     findFuturePaths(pMark, *it);
   }
 }

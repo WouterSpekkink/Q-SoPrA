@@ -110,213 +110,95 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   EventItem *endEvent = qgraphicsitem_cast<EventItem*>(end);
   MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(start);
   MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(end);
-  if (start->pos().x() < end->pos().x()) {
-    if (startEvent && endEvent) {
-      if(endEvent->pos().x() < startEvent->pos().x() +
-	 startEvent->getWidth() - endEvent->getWidth() / 2 - 20) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 (QPointF(startX, endEvent->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (endEvent->pos().x() < startEvent->pos().x() +
-		 startEvent->getWidth()) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 endEvent->pos());
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2 - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()), end->pos());
-	newLine.setLength(newLine.length() - 23);
-      }
-    } else if (startEvent && endMacro) {
-      if(endMacro->pos().x() < startEvent->pos().x() +
-	 startEvent->getWidth() - endMacro->getWidth() / 2 - 20) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 2) - 20;
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 (QPointF(startX, endMacro->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (endMacro->pos().x() < startEvent->pos().x() +
-		 startEvent->getWidth()) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 endMacro->pos());
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2 - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()), end->pos());
-	newLine.setLength(newLine.length() - 23);
-      }
-    } else if (startMacro && endMacro) {
-      if(endMacro->pos().x() < startMacro->pos().x() +
-	 startMacro->getWidth() - endMacro->getWidth() / 2 - 20) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
-	qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 2) - 20;
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 (QPointF(startX, endMacro->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (endMacro->pos().x() < startMacro->pos().x() +
-		 startMacro->getWidth()) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 endMacro->pos());
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2 - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()), end->pos());
-	newLine.setLength(newLine.length() - 23);
-      }
-    } else if (startMacro && endEvent) {
-      if (endEvent->pos().x() < startMacro->pos().x() +
-	 startMacro->getWidth() - endEvent->getWidth() / 2 - 20) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
-	qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 (QPointF(startX, endEvent->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (endEvent->pos().x() < startMacro->pos().x() +
-		 startMacro->getWidth()) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 endEvent->pos());
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2 - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()), end->pos());
-	newLine.setLength(newLine.length() - 23);
-      }
-    }
-  } else if (start->pos().x() > end->pos().x()) {
-    if (startEvent && endEvent) {
-      if(startEvent->pos().x() < endEvent->pos().x() +
-	 endEvent->getWidth() - startEvent->getWidth() / 2 - 20) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 (QPointF(startX, endEvent->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (startEvent->pos().x() < endEvent->pos().x() +
-		 endEvent->getWidth()) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	QPointF correction = QPointF(endEvent->getCorrection(), 0);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 endEvent->pos() + correction);
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	QPointF correction = QPointF(endEvent->getCorrection(), 0);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 endEvent->pos() + correction);
-	newLine.setLength(newLine.length() - 23);
-      }
-    } else if (startEvent && endMacro) {
-      if (startEvent->pos().x() < endMacro->pos().x() +
-	  endMacro->getWidth() - startEvent->getWidth() / 2 - 20) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 4);
-	qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 4);
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 (QPointF(endX, endMacro->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (startEvent->pos().x() < endMacro->pos().x() +
-		 endMacro->getWidth()) {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-	QPointF correction = QPointF(endMacro->getCorrection(), 0);
-	newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			 endMacro->pos() + correction);
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2 - 20);
-	qreal endX = endMacro->pos().x() + (endMacro->getWidth() - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()),
-			 QPointF(endX, end->pos().y()));
-	newLine.setLength(newLine.length() - 23);
-      }
-    } else if (startMacro && endMacro) {
-      if (startMacro->pos().x() < endMacro->pos().x() +
-	  endMacro->getWidth() - startMacro->getWidth() / 2 - 20) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 4);
-	qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 4);
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 (QPointF(endX, endMacro->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (startMacro->pos().x() < endMacro->pos().x() +
-		 endMacro->getWidth()) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
-	QPointF correction = QPointF(endMacro->getCorrection(), 0);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 endMacro->pos() + correction);
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2 - 20);
-	qreal endX = endMacro->pos().x() + (endMacro->getWidth() - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()),
-			 QPointF(endX, end->pos().y()));
-	newLine.setLength(newLine.length() - 23);
-      }
-    } else if (startMacro && endEvent) {
-      if (startMacro->pos().x() < endEvent->pos().x() +
-	  endEvent->getWidth() - startMacro->getWidth() / 2 - 20) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 4);
-	qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 4);
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 (QPointF(endX, endEvent->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
-      } else if (startMacro->pos().x() < endEvent->pos().x() +
-		 endEvent->getWidth()) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
-	QPointF correction = QPointF(endEvent->getCorrection(), 0);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 endEvent->pos() + correction);
-	newLine.setLength(newLine.length() - 23);
-      } else {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2 - 20);
-	qreal endX = endEvent->pos().x() + (endEvent->getWidth() - 20);
-	newLine = QLineF(QPointF(startX, start->pos().y()),
-			 QPointF(endX, end->pos().y()));
-	newLine.setLength(newLine.length() - 23);
-      }
-    }
-  } else if (start->pos().x() == end->pos().x()) {
-    if (startEvent && endEvent) {
-      qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
-      qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
-      qreal dist = abs(endX - startX);
+  if (startEvent && endEvent) {
+    // startX is middle of start node
+    qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
+    // endX is middle of end node
+    qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
+    // endStart is the left-most edge of the end node
+    qreal endStart = endEvent->pos().x() - 20;
+    if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endEvent->getWidth()) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(startX, endEvent->pos().y())));
-      newLine.setLength(newLine.length() + dist/8 - 28);
-    } else if (startEvent && endMacro) {
-      qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 4);
-      qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 4);
-      qreal dist = abs(endX - startX);
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX < endStart) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-		       (QPointF(endX, endMacro->pos().y())));
-      newLine.setLength(newLine.length() + dist/8 - 28);
-    } else if (startMacro && endMacro) {
-      qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 4);
-      qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 4);
-      qreal dist = abs(endX - startX);
+		       (QPointF(endX - (endEvent->getWidth() / 2) + 20, endEvent->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX > endStart) {
+      newLine = QLineF(QPointF(startX, startEvent->pos().y()),
+		       (QPointF(endX + (endEvent->getWidth() / 2) - 20,
+				endEvent->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    }
+  } else if (startEvent && endMacro) {
+    // startX is middle of start node
+    qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
+    // endX is middle of end node;
+    qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 2) - 20;
+    // endStart is the left-most edge of the end node.
+    qreal endStart = endMacro->pos().x() - 20;
+    if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endMacro->getWidth()) {
+      newLine = QLineF(QPointF(startX, startEvent->pos().y()),
+		       (QPointF(startX, endMacro->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+
+    } else if (startX < endStart) {
+      newLine = QLineF(QPointF(startX, startEvent->pos().y()),
+		       (QPointF(endX - (endMacro->getWidth() / 2) + 20, endMacro->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX > endStart) {
+      newLine = QLineF(QPointF(startX, startEvent->pos().y()),
+		       (QPointF(endX + (endMacro->getWidth() / 2) - 20,
+				endMacro->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    }
+  } else if (startMacro && endMacro) {
+    // startX is middle of start node
+    qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
+    // endX is middle of end node;
+    qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 2) - 20;
+    // endStart is the left-most edge of the end node.
+    qreal endStart = endMacro->pos().x() - 20;
+    if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endMacro->getWidth()) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-		       (QPointF(endX, endMacro->pos().y())));
-      newLine.setLength(newLine.length() + dist/8 - 28);
-    } else if (startMacro && endEvent) {
-	qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 4);
-	qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 4);
-	qreal dist = abs(endX - startX);
-	newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			 (QPointF(endX, endEvent->pos().y())));
-	newLine.setLength(newLine.length() + dist/8 - 28);
+		       (QPointF(startX, endMacro->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+
+    } else if (startX < endStart) {
+      newLine = QLineF(QPointF(startX, startMacro->pos().y()),
+		       (QPointF(endX - (endMacro->getWidth() / 2) + 20, endMacro->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX > endStart) {
+      newLine = QLineF(QPointF(startX, startMacro->pos().y()),
+		       (QPointF(endX + (endMacro->getWidth() / 2) - 20,
+				endMacro->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    }
+  } else if (startMacro && endEvent) {
+    // startX is middle of start node
+    qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
+    // endX is middle of end node;
+    qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
+    // endStart is the left-most edge of the end node.
+    qreal endStart = endEvent->pos().x() - 20;
+    if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endEvent->getWidth()) {
+      newLine = QLineF(QPointF(startX, startMacro->pos().y()),
+		       (QPointF(startX, endEvent->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+      
+    } else if (startX < endStart) {
+      newLine = QLineF(QPointF(startX, startMacro->pos().y()),
+		       (QPointF(endX - (endEvent->getWidth() / 2) + 20, endEvent->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX > endStart) {
+      newLine = QLineF(QPointF(startX, startMacro->pos().y()),
+		       (QPointF(endX + (endEvent->getWidth() / 2) - 20,
+				endEvent->pos().y())));
+      newLine.setLength(newLine.length() - 28);
     }
   }
+  
   setLine(newLine);
   
   double angle = ::acos(line().dx() / line().length());
