@@ -167,6 +167,8 @@ void DataWidget::editRecord() {
     } else {
       delete recordDialog;
     }
+    QModelIndex newIndex = tableView->model()->index(currentOrder - 1, 0);
+    tableView->setCurrentIndex(newIndex);
     delete query;
   }
   eventGraph->checkCongruency();
@@ -353,6 +355,7 @@ void DataWidget::removeRow() {
       query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentOrder - 1);
       query->exec();
+      incidentsModel->select();
       updateTable();
       QModelIndex newIndex = tableView->model()->index(currentOrder - 1, 0);
       tableView->setCurrentIndex(newIndex);
