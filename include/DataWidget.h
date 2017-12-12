@@ -26,7 +26,7 @@ public:
   void setEventGraph(EventGraphWidget *egw);
 		  
 private slots:
-
+  void updateTable();
   void resetHeader(int header);
   void setData(const int index, RecordDialog *recordDialog, const QString type);
   void appendRecord();
