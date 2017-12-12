@@ -3785,9 +3785,9 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 		  tempVec.push_back(eventTemp);
 		}
 	      } else if (macroTemp) {
-		currentData.push_back(macroTemp);
 		QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
 		QVectorIterator<EventItem*> it5(macroIncidents);
+		bool inclusion = false;
 		while (it5.hasNext()) {
 		  eventTemp = it5.next();
 		  if (markOne.contains(eventTemp->getId()) &&
@@ -3795,7 +3795,11 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 		      eventTemp->scenePos().x() >= tempIncidents.first()->scenePos().x() &&
 		      !tempIncidents.contains(eventTemp) && !tempVec.contains(eventTemp)) {
 		    tempVec.push_back(eventTemp);
+		    inclusion = true;
 		  }
+		}
+		if (inclusion) {
+		  currentData.push_back(macroTemp);
 		}
 	      }
 	    }
