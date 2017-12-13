@@ -141,6 +141,7 @@ private slots:
   void findFuturePaths(QSet<int> *mark, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void setAttributesWidget(AttributesWidget* aw);
+  void finalBusiness();
   
 private:
   QPointer<Scene> scene;

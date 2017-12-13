@@ -200,6 +200,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   connect(setLinkButton, SIGNAL(clicked()), this, SLOT(setLink()));
   connect(unsetLinkButton, SIGNAL(clicked()), this, SLOT(unsetLink()));
   connect(linkageCommentField, SIGNAL(textChanged()), this, SLOT(setLinkageCommentBool()));
+  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(settingsLabel);
@@ -2880,4 +2881,9 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) {
 
 void LinkagesWidget::setEventGraph(EventGraphWidget *egw) {
   eventGraph = egw;
+}
+
+void LinkagesWidget::finalBusiness() {
+  setComments();
+  setLinkageComment();
 }

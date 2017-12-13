@@ -90,6 +90,7 @@ private slots:
   void findFuturePaths(std::vector<int> *pIgnore, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void setEventGraph(EventGraphWidget *egw);
+  void finalBusiness();
   
 private:
   QPointer<QSqlTableModel> typesModel;

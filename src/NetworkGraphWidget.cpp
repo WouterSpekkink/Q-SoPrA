@@ -243,7 +243,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
-    
+  
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotOptionsLayout = new QHBoxLayout;
@@ -1366,10 +1366,12 @@ void NetworkGraphWidget::simpleLayout() {
 	      qreal firstYDiff = firstPoint.y() - midPoint.y();
 	      first->setPos(first->scenePos().x() + firstXDiff,
 			    first->scenePos().y() + firstYDiff);
+	      first->getLabel()->setNewPos(first->scenePos());
 	      qreal secondXDiff = secondPoint.x() - midPoint.x();
 	      qreal secondYDiff = secondPoint.y() - midPoint.y();
 	      second->setPos(second->scenePos().x() + secondXDiff,
 			     second->scenePos().y() + secondYDiff);
+	      second->getLabel()->setNewPos(first->scenePos());
 	    }
 	  }
 	}
@@ -1408,30 +1410,22 @@ void NetworkGraphWidget::simpleLayout() {
 			      second->pos().x(), 2) +
 			 qPow(first->pos().y() -
 			      second->pos().y(), 2));
-	    qreal xDist = first->pos().x() - second->pos().x();
-	    qreal yDist = first->pos().y() - second->pos().y();
 	    if (dist < 80) {
-	      if (xDist > yDist && first->pos().y() > second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() + 5);
-	        second->setPos(second->pos().x(), second->pos().y() - 5);
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());		
-	      } else if (xDist > yDist && first->pos().y() < second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() - 5);
-	        second->setPos(second->pos().x(), second->pos().y() + 5);
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());		
-	      } else if (xDist < yDist && first->pos().y() > second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() + 5);
-	        second->setPos(second->pos().x(), second->pos().y() - 5);
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());		
-	      } else if (xDist < yDist && first->pos().y() < second->pos().y()) {
-		first->setPos(first->pos().x(), first->pos().y() - 5);
-	        second->setPos(second->pos().x(), second->pos().y() + 5);
-		first->getLabel()->setNewPos(first->scenePos());
-		second->getLabel()->setNewPos(second->scenePos());		
-	      }
+	      QPointF firstPoint = first->scenePos();
+	      QPointF secondPoint = second->scenePos();
+	      qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
+	      qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
+	      QPointF midPoint = QPointF(mX, mY);
+	      qreal firstXDiff = firstPoint.x() - midPoint.x();
+	      qreal firstYDiff = firstPoint.y() - midPoint.y();
+	      first->setPos(first->scenePos().x() + firstXDiff,
+			    first->scenePos().y() + firstYDiff);
+	      first->getLabel()->setNewPos(first->scenePos());
+	      qreal secondXDiff = secondPoint.x() - midPoint.x();
+	      qreal secondYDiff = secondPoint.y() - midPoint.y();
+	      second->setPos(second->scenePos().x() + secondXDiff,
+			     second->scenePos().y() + secondYDiff);
+	      second->getLabel()->setNewPos(first->scenePos());
 	    }
 	  }
 	}
@@ -3355,3 +3349,5 @@ bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) {
   }
   return false;
 }
+
+

@@ -295,7 +295,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(eventListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableModeButton()));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
-
+  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
+  
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotOptionsLayout = new QHBoxLayout;
@@ -5063,4 +5064,8 @@ void EventGraphWidget::resetTree() {
   retrieveData();
   delete attributesTree;
   setTree();
+}
+
+void EventGraphWidget::finalBusiness() {
+  setComment();
 }
