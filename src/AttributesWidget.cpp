@@ -1267,75 +1267,95 @@ void AttributesWidget::collapseTree() {
 void AttributesWidget::previousCoded() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString attribute = attributesTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel(this);
-    query->setQuery("SELECT * FROM save_data");
-    int currentOrder = 0; 
-    currentOrder = query->record(0).value("attributes_record").toInt();
-    QSqlQuery *query2 = new QSqlQuery;
-    query2->prepare("SELECT incident, ch_order FROM "
-                    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
-                    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-                    "WHERE ch_order < :order AND attribute = :attribute)"
-                    "ORDER BY ch_order desc");
-    query2->bindValue(":order", currentOrder);
-    query2->bindValue(":attribute", attribute);
-    query2->exec();
-    int id = 0;
-    query2->first();
-    id = query2->value(0).toInt();
-    if (!(query2->isNull(0))) {
-      id = query2->value(0).toInt();
-      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
-      query2->bindValue(":id", id);
-      query2->exec();
-      query2->first();
-      int newOrder = query2->value(0).toInt();
-      query2->prepare("UPDATE save_data "
-                      "SET attributes_record=:new");
-      query2->bindValue(":new", newOrder);
-      query2->exec();
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    query->first();
+    int currentOrder = query->value(0).toInt();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(attribute);
+    findChildren(attribute, &attributeVector);
+    QVectorIterator<QString> it(attributeVector);
+    int order = -1;
+    while (it.hasNext()) {
+      QString currentAttribute = it.next();
+      query->prepare("SELECT ch_order FROM "
+		      "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+		      "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+		      "WHERE ch_order < :order AND attribute = :attribute)"
+		      "ORDER BY ch_order desc");
+      query->bindValue(":order", currentOrder);
+      query->bindValue(":attribute", currentAttribute);
+      query->exec();
+      query->first();
+      if (order == -1 && !(query->isNull(0))) {
+	order = query->value(0).toInt();
+      } else if (!(query->isNull(0)) && query->value(0).toInt() > order) {
+	order = query->value(0).toInt();
+      }
+      
+    }
+    if (order != -1) {
+      query->prepare("UPDATE save_data "
+		      "SET attributes_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
       retrieveData();
     }
     delete query;
-    delete query2;
   }
 }
 
 void AttributesWidget::nextCoded() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString attribute = attributesTreeView->currentIndex().data().toString();
-    QSqlQueryModel *query = new QSqlQueryModel(this);
-    query->setQuery("SELECT * FROM save_data");
-    int currentOrder = 0; 
-    currentOrder = query->record(0).value("attributes_record").toInt();
-    QSqlQuery *query2 = new QSqlQuery;
-    query2->prepare("SELECT incident, ch_order FROM "
-                    "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
-                    "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-                    "WHERE ch_order > :order AND attribute = :attribute)"
-                    "ORDER BY ch_order asc");
-    query2->bindValue(":order", currentOrder);
-    query2->bindValue(":attribute", attribute);
-    query2->exec();
-    int id = 0;
-    query2->first();
-    id = query2->value(0).toInt();
-    if (!(query2->isNull(0))) {
-      id = query2->value(0).toInt();
-      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
-      query2->bindValue(":id", id);
-      query2->exec();
-      query2->first();
-      int newOrder = query2->value(0).toInt();
-      query2->prepare("UPDATE save_data "
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT attributes_record FROM save_data");
+    query->first();
+    int currentOrder = query->value(0).toInt();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(attribute);
+    findChildren(attribute, &attributeVector);
+    QVectorIterator<QString> it(attributeVector);
+    int order = -1;
+    while (it.hasNext()) {
+      QString currentAttribute = it.next();
+      query->prepare("SELECT ch_order FROM "
+		      "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+		      "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+		      "WHERE ch_order > :order AND attribute = :attribute)"
+		      "ORDER BY ch_order asc");
+      query->bindValue(":order", currentOrder);
+      query->bindValue(":attribute", currentAttribute);
+      query->exec();
+      query->first();
+      if (order == -1 && !(query->isNull(0))) {
+	order = query->value(0).toInt();
+      } else if (!(query->isNull(0)) && query->value(0).toInt() < order) {
+	order = query->value(0).toInt();
+      }
+    }
+    if (order != -1) {
+      query->prepare("UPDATE save_data "
                       "SET attributes_record=:new");
-      query2->bindValue(":new", newOrder);
-      query2->exec();
+      query->bindValue(":new", order);
+      query->exec();
       retrieveData();
     }
     delete query;
-    delete query2;
   }
+}
+
+void AttributesWidget::findChildren(QString father, QVector<QString> *children) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  query->bindValue(":father", father);
+  query->exec();
+  while (query->next()) {
+    QString currentChild = query->value(0).toString();
+    children->push_back(currentChild);
+    findChildren(currentChild, children);
+  }
+  delete query;
 }
 
 void AttributesWidget::setButtons() {
@@ -1350,9 +1370,8 @@ void AttributesWidget::setButtons() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    int id = 0;
     if (!(query->isNull(0))) {
-      id = query->value(0).toInt();
+      int id = query->value(0).toInt();
       assignedModel->select();
       bool empty = false;
       query->prepare("SELECT attribute, incident FROM "

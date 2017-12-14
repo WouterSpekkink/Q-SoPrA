@@ -64,6 +64,7 @@ private slots:
   void setTree();
   void expandTree();
   void collapseTree();
+  void findChildren(QString father, QVector<QString> *children);
   void previousCoded();
   void nextCoded();
   void setButtons();
