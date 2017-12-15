@@ -29,6 +29,14 @@ bool stringLessThan(const QString one, const QString two) {
   }
 }
 
+bool modeSort(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
+  if (itemOne->getMode() < itemTwo->getMode()) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedType = "";
   selectedEntityName = "";
@@ -149,6 +157,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   removeModeButton->setEnabled(false);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
   simpleLayoutButton = new QPushButton(tr("Spring layout"), graphicsWidget);
+  circularLayoutButton = new QPushButton(tr("Circular layout"), graphicsWidget);
   expandLayoutButton = new QPushButton(tr("Expand"), graphicsWidget);
   contractLayoutButton = new QPushButton(tr("Contract"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
@@ -208,6 +217,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(simpleLayoutButton, SIGNAL(clicked()), this, SLOT(simpleLayout()));
+  connect(circularLayoutButton, SIGNAL(clicked()), this, SLOT(circularLayout()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(addRelationshipType()));
@@ -228,12 +238,16 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(mergeButton, SIGNAL(clicked()), this, SLOT(mergeRelationships()));
   connect(edgeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setFilterButtons(QTableWidgetItem *)));
+  connect(edgeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeEdgeColor(QTableWidgetItem *)));
   connect(edgeListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableFilterButtons()));
   connect(nodeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButton(QTableWidgetItem *)));
   connect(nodeListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableModeButton()));
+  connect(nodeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(setFilteredButton, SIGNAL(clicked()), this, SLOT(activateFilter()));
   connect(unsetFilteredButton, SIGNAL(clicked()), this, SLOT(deactivateFilter()));
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
@@ -336,6 +350,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(simpleLayoutButton);
+  graphicsControlsLayout->addWidget(circularLayoutButton);
   QPointer<QHBoxLayout> expansionLayout = new QHBoxLayout;
   expansionLayout->addWidget(expandLayoutButton);
   expansionLayout->addWidget(contractLayoutButton);
@@ -1440,6 +1455,44 @@ void NetworkGraphWidget::simpleLayout() {
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
+void NetworkGraphWidget::circularLayout() {
+  const qreal Pi = 3.14;
+  QVector<NetworkNode*> visible;
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while(it.hasNext()) {
+    NetworkNode *current = it.next();
+    if (current->isVisible()) {
+      visible.push_back(current);
+    }
+  }
+  qSort(visible.begin(), visible.end(), modeSort);
+  QVectorIterator<NetworkNode*> it2(visible);  
+  int count = 1;
+  while (it2.hasNext()) {
+    NetworkNode *current = it2.next();
+    if (current->isVisible()) {
+      qreal x = 100 * cos(count * 2 * Pi / visible.size());
+      qreal y = 100 * sin(count * 2 * Pi / visible.size());
+      current->setPos(QPointF(x, y));
+      current->getLabel()->setNewPos(current->scenePos());
+      count++;
+    }
+  }
+  NetworkNode *first = visible[0];
+  NetworkNode *second = visible[1];
+  qreal dist = qSqrt(qPow(first->scenePos().x() -
+			  second->scenePos().x(), 2) +
+		     qPow(first->scenePos().y() -
+			  second->scenePos().y(), 2));
+  while (dist < 50) {
+    expandLayout();
+    dist = qSqrt(qPow(first->scenePos().x() -
+		      second->scenePos().x(), 2) +
+		 qPow(first->scenePos().y() -
+		      second->scenePos().y(), 2));
+  }
+}
+
 /*
   The idea behind this function below was inspired on the code for expanding
   layouts in Gephi.
@@ -1551,9 +1604,6 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
 	      QPointF temp = QPointF(second->scenePos().x() + xDiff,
 				     second->scenePos().y() + yDiff);
 	      second->move(temp);
-	      //	      second->setPos(second->scenePos().x() + xDiff,
-	      //		     second->scenePos().y() + yDiff);
-	      //second->getLabel()->setNewPos(first->scenePos());
 	    }
 	  }
 	}
@@ -1561,6 +1611,7 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
     }
   }
 }
+
 void NetworkGraphWidget::colorByAttribute() {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, ENTITY);
   attributeColorDialog->exec();
@@ -2360,6 +2411,53 @@ void NetworkGraphWidget::setBackgroundColor() {
     view->setBackgroundBrush(color);
   }
   delete colorDialog;
+}
+
+void NetworkGraphWidget::changeEdgeColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = edgeListWidget->item(item->row(), 0);
+      QString type = neighbour->data(Qt::DisplayRole).toString();
+      QVectorIterator<DirectedEdge*> it(directedVector);
+      while (it.hasNext()) {
+	DirectedEdge *directed = it.next();
+	if (directed->getType() == type) {
+	  directed->setColor(color);
+	}
+      }
+      QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+      while (it2.hasNext()) {
+	UndirectedEdge *undirected = it2.next();
+	if (undirected->getType() == type) {
+	  undirected->setColor(color);
+	}
+      }
+    }
+  }
+}
+
+void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = nodeListWidget->item(item->row(), 0);
+      QString mode = neighbour->data(Qt::DisplayRole).toString();
+      QVectorIterator<NetworkNode*> it(nodeVector);
+      while (it.hasNext()) {
+	NetworkNode *current = it.next();
+	if (current->getMode() == mode) {
+	  current->setColor(color);
+	}
+      }
+    }
+  }
 }
 
 void NetworkGraphWidget::setPlotButton() {

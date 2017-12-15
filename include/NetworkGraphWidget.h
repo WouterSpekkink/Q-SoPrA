@@ -97,6 +97,8 @@ private slots:
   void setNodeColor();
   void setLabelColor();
   void setBackgroundColor();
+  void changeEdgeColor(QTableWidgetItem *item);
+  void changeModeColor(QTableWidgetItem *item);
   void toggleLabels();
   void increaseLabelSize();
   void decreaseLabelSize();
@@ -113,6 +115,7 @@ private slots:
   void setChangeLabel();
   
   void simpleLayout();
+  void circularLayout();
   void expandLayout();
   void contractLayout();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
@@ -195,6 +198,7 @@ private:
   QPointer<QPushButton> mergeButton;
   QPointer<QPushButton> removeTypeButton;
   QPointer<QPushButton> simpleLayoutButton;
+  QPointer<QPushButton> circularLayoutButton;
   QPointer<QPushButton> expandLayoutButton;
   QPointer<QPushButton> contractLayoutButton;
   QPointer<QPushButton> savePlotButton;

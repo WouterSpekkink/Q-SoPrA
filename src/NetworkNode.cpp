@@ -179,7 +179,7 @@ void NetworkNode::setMode(const QString &submittedMode) {
   mode = submittedMode;
 }
 
-QString NetworkNode::getMode() {
+QString NetworkNode::getMode() const {
   return mode;
 }
 

@@ -26,7 +26,7 @@ public:
   QString getName() const;
   QString getDescription();
   void setMode(const QString &submittedMode);
-  QString getMode();
+  QString getMode() const;
   void move(QPointF newPos);
 
   void setLabel(NetworkNodeLabel *newLabel);
