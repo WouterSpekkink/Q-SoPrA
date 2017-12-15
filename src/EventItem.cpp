@@ -109,9 +109,6 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
     } else {
       dislodged = false;
     }
-    setCursor(Qt::OpenHandCursor);
-  } else if (event->modifiers() & Qt::ShiftModifier) {
-    setCursor(Qt::OpenHandCursor);
   } else {
     qreal oldX = originalPos.x();
     QPointF currentPos = this->scenePos();
@@ -127,8 +124,8 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
     } else {
       dislodged = true;
     }
-    setCursor(Qt::OpenHandCursor);
   }
+  setCursor(Qt::OpenHandCursor);
   update();
   QGraphicsItem::mouseReleaseEvent(event);
 }

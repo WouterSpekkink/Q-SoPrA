@@ -62,39 +62,57 @@ void NetworkNode::mousePressEvent(QGraphicsSceneMouseEvent *event) {
   }
   previousPos = event->scenePos();
   setCursor(Qt::ClosedHandCursor);
+  
 }
 
-void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-  QPointF newPos = event->scenePos();
-  qreal x = newPos.x();
-  qreal y = newPos.y();
-  bool trespass = false;
-
-  for (int i = 0; i < scene()->items().count(); i++) {
-    QGraphicsItem *item = scene()->items()[i];
-    NetworkNode *currentItem = qgraphicsitem_cast<NetworkNode*>(item);
-    Arrow *no = qgraphicsitem_cast<Arrow*>(item);
-    if (currentItem && !(no) && item != this && item->isVisible()) {
-      qreal dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
-      if (dist <= 40) {
-	trespass = true;
-      } else {
-	previousPos = this->scenePos();
+void NetworkNode::move(QPointF newPos) {
+  this->setPos(newPos);
+  this->getLabel()->setNewPos(newPos);
+  QListIterator<QGraphicsItem*> it(scene()->items());
+  while (it.hasNext()) {
+    QGraphicsItem *item = it.next();
+    NetworkNode *first = this;
+    NetworkNode *second = qgraphicsitem_cast<NetworkNode*>(item);
+    if (second && first != second && second->isVisible()) {
+      qreal dist = qSqrt(qPow(first->scenePos().x() -
+			      second->scenePos().x(), 2) +
+			 qPow(first->scenePos().y() -
+			      second->scenePos().y(), 2));
+      if (dist <= 30) {
+	QPointF firstPoint = first->scenePos();
+	QPointF secondPoint = second->scenePos();
+	qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
+	qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
+	QPointF midPoint = QPointF(mX, mY);
+	qreal secondXDiff = secondPoint.x() - midPoint.x();
+	qreal secondYDiff = secondPoint.y() - midPoint.y();
+	qreal xDiff = 0;
+	qreal yDiff = 0;
+	if (secondXDiff > 0) {
+	  xDiff = 3;
+	} else if (secondXDiff < 0) {
+	  xDiff = -3;
+	}
+	if (secondYDiff > 0) {
+	  yDiff = 3;
+	} else if (secondYDiff < 0) {
+	  yDiff = -3;
+	}
+	QPointF temp = QPointF(second->scenePos().x() + xDiff,
+			       second->scenePos().y() + yDiff);
+	second->move(temp);
       }
     }
-  }
-  if (trespass) {
-    this->setPos(previousPos);
-  } else {
-    this->setPos(newPos);
-  }
-  if (label != NULL) {
-    label->setNewPos(this->scenePos());
   }
   Scene *myScene = qobject_cast<Scene*>(scene());
   myScene->relevantChange();
   update();
   setCursor(Qt::ClosedHandCursor);
+}
+
+void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+  this->move(event->scenePos());
+  setCursor(Qt::ClosedHandCursor);  
 }
 
 void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {

@@ -100,7 +100,7 @@ private slots:
   void toggleLabels();
   void increaseLabelSize();
   void decreaseLabelSize();
-
+  
   void findChildren(QString father, QVector<QString> *children);
 
   void processLowerRange(int value);
@@ -115,7 +115,8 @@ private slots:
   void simpleLayout();
   void expandLayout();
   void contractLayout();
-  
+  void processMoveItems(QGraphicsItem *item, QPointF pos);
+ 
   void setPlotButton();
   void plotNewGraph();
   void addRelationshipType();
@@ -214,6 +215,7 @@ private:
   int vectorPos;
   
   bool labelsShown;
+  bool massMove;
 };
 
 

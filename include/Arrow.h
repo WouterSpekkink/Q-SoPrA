@@ -69,15 +69,13 @@ public:
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
-  void setColor(const QColor &subColor) { color = subColor; }
-  QColor getColor() {return color;}
-  QGraphicsItem *startItem() const { return start; }
-  QGraphicsItem *endItem() const { return end; }
-
-  void updatePosition();
+  void setColor(const QColor &subColor);
+  QColor getColor();
+  QGraphicsItem *startItem() const;
+  QGraphicsItem *endItem() const;
 
   enum {Type = UserType + 2};
-  int type() const {return Type;}
+  int type() const;
   
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;

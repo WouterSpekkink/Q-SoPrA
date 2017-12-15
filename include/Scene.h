@@ -4,6 +4,7 @@
 #include <QGraphicsScene>
 #include "EventItem.h"
 #include "Arrow.h"
+#include "NetworkNode.h"
 #include "Constants.h"
 #include <QGraphicsSceneWheelEvent>
 #include <QGraphicsView>
@@ -44,6 +45,7 @@ protected:
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;
+  NetworkNode *selectedNode;
 };
 
 #endif 

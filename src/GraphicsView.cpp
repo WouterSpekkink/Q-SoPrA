@@ -2,6 +2,7 @@
 #include "../include/Scene.h"
 #include "../include/NodeLabel.h"
 #include "../include/MacroLabel.h"
+#include "../include/NetworkNode.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -27,6 +28,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
 
     if (nodeLabel) {
       incident = nodeLabel->getNode();
@@ -34,7 +36,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (macroLabel) {
       macro = macroLabel->getMacroEvent();
     }
-    if (!incident && !macro && !arrow) {
+    if (!incident && !macro && !arrow && !networkNode) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -47,6 +49,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     } else if (arrow) {
       arrow->setSelected(true);
       return;
+    } else if (networkNode) {
+      networkNode->setSelected(true);
     }
   } else {
     QGraphicsView::mousePressEvent(event);

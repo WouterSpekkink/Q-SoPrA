@@ -88,6 +88,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       moveOn = true;
     } else if (networkNode) {
       networkNode->setSelected(true);
+      selectedNode = networkNode;
+      moveOn = true;
     } else {
       this->clearSelection();
     }
@@ -149,6 +151,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
+    selectedNode  = NULL;
     QGraphicsScene::mousePressEvent(event);
   }
 }
@@ -157,19 +160,26 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   resizeOnEvent = false;
   resizeOnMacro = false;
   moveOn = false;
-  lastMousePos = event->scenePos();
-
-  if (selectedEvent) {
-    selectedEvent->setCursor(Qt::OpenHandCursor);
-    selectedEvent = NULL;
-  } else if (selectedMacro) {
-    selectedMacro->setCursor(Qt::OpenHandCursor);
-    selectedMacro = NULL;
-  } else {
-    QGraphicsScene::mouseReleaseEvent(event);
+  QListIterator<QGraphicsItem*> it(this->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(current);
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);    
+    if (incident) {
+      incident->setCursor(Qt::OpenHandCursor);
+    } else if (macro) {
+      macro->setCursor(Qt::OpenHandCursor);
+    } else if (networkNode) {
+      networkNode->setCursor(Qt::OpenHandCursor);
+    }
   }
+  selectedEvent = NULL;
+  selectedMacro = NULL;
+  selectedNode = NULL;
+  QGraphicsScene::mouseReleaseEvent(event);
 }
-
+  
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   if (resizeOnEvent) {
     emit relevantChange();
@@ -245,22 +255,12 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     lastMousePos = event->scenePos();
   } else {
     if (selectedItems().size() > 1 && moveOn) {
-      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
-      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
-								   QTransform()));
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
-      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
-								      QTransform()));
-      if (nodeLabel) {
-	incident = nodeLabel->getNode();
-      }
-      if (macroLabel) {
-	macro = macroLabel->getMacroEvent();
-      }
-      if (incident) {
- 	emit moveItems(incident, event->scenePos());
-      } else if (macro) {
-	emit moveItems(macro, event->scenePos());
+      if (selectedEvent) {
+ 	emit moveItems(selectedEvent, event->scenePos());
+      } else if (selectedMacro) {
+	emit moveItems(selectedMacro, event->scenePos());
+      } else if (selectedNode) {
+	emit moveItems(selectedNode, event->scenePos());
       } else {
 	moveOn = false;
       }

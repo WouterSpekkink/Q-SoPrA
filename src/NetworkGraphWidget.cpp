@@ -33,6 +33,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedType = "";
   selectedEntityName = "";
   labelsShown = false;
+  massMove = false;
 
   minOrder = 0;
   maxOrder = 0;
@@ -241,6 +242,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
+	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
   
@@ -1487,6 +1490,77 @@ void NetworkGraphWidget::contractLayout() {
   }
 }
 
+void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
+  massMove = true;
+  if (currentData.size() > 0) {
+    QGraphicsItem *source = NULL;
+    QVectorIterator<NetworkNode*> it(currentData);
+    while (it.hasNext()) {
+      NetworkNode *temp = it.next();
+      if (temp == item) {
+	source = temp;
+      }
+    }
+    if (source != NULL) {
+      qreal currentY = source->scenePos().y();
+      qreal currentX = source->scenePos().x();
+      qreal newY = pos.y();
+      qreal newX = pos.x();
+      qreal yDiff = newY - currentY;
+      qreal xDiff = newX - currentX;
+
+      QVectorIterator<NetworkNode*> it2(currentData);
+      while (it2.hasNext()) {
+	NetworkNode *current = it2.next();
+	current->setPos(current->scenePos().x() + xDiff, current->scenePos().y() + yDiff);
+	current->getLabel()->setNewPos(current->scenePos());
+      }
+    }
+    QVectorIterator<NetworkNode*> it3(nodeVector);
+    while (it3.hasNext()) {
+      NetworkNode *first = it3.next();
+      if (first->isSelected()) {
+	QVectorIterator<NetworkNode*> it4(nodeVector);
+	while (it4.hasNext()) {
+	  NetworkNode *second = it4.next();
+	  if (!second->isSelected()) {
+	    qreal dist = qSqrt(qPow(first->scenePos().x() -
+				    second->scenePos().x(), 2) +
+			       qPow(first->scenePos().y() -
+				    second->scenePos().y(), 2));
+	    if (dist <= 40) {
+	      QPointF firstPoint = first->scenePos();
+	      QPointF secondPoint = second->scenePos();
+	      qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
+	      qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
+	      QPointF midPoint = QPointF(mX, mY);
+	      qreal secondXDiff = secondPoint.x() - midPoint.x();
+	      qreal secondYDiff = secondPoint.y() - midPoint.y();
+	      qreal xDiff = 0;
+	      qreal yDiff = 0;
+	      if (secondXDiff > 0) {
+		xDiff = 5;
+	      } else if (secondXDiff < 0) {
+		xDiff = -5;
+	      }
+	      if (secondYDiff > 0) {
+		yDiff = 5;
+	      } else if (secondYDiff < 0) {
+		yDiff = -5;
+	      }
+	      QPointF temp = QPointF(second->scenePos().x() + xDiff,
+				     second->scenePos().y() + yDiff);
+	      second->move(temp);
+	      //	      second->setPos(second->scenePos().x() + xDiff,
+	      //		     second->scenePos().y() + yDiff);
+	      //second->getLabel()->setNewPos(first->scenePos());
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
 void NetworkGraphWidget::colorByAttribute() {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, ENTITY);
   attributeColorDialog->exec();
@@ -3332,6 +3406,9 @@ void NetworkGraphWidget::cleanUp() {
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) {
   if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
     retrieveData();
+    if (massMove) {
+      massMove = false;
+    }
   } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree(selectedEntityName);
   } else if (event->type() == QEvent::Wheel) {

@@ -91,23 +91,21 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   view->setDragMode(QGraphicsView::RubberBandDrag);
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
   view->viewport()->installEventFilter(this);
-  
-  infoWidget = new QWidget(this);
-  graphicsWidget = new QWidget(this);
-  attWidget = new QWidget(this);
-  commentWidget = new QWidget(this);
-  legendWidget = new QWidget(this);
-  
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
-
   view->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
   view->setRenderHint(QPainter::Antialiasing);
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+  
+  infoWidget = new QWidget(this);
+  graphicsWidget = new QWidget(this);
+  attWidget = new QWidget(this);
+  commentWidget = new QWidget(this);
+  legendWidget = new QWidget(this); 
 
   attributesTreeView = new DeselectableTreeView(attWidget);
   attributesTreeView->setHeaderHidden(true);
@@ -2331,12 +2329,6 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
       }
     }
   }
-  QRectF currentRect = this->scene->itemsBoundingRect();
-  currentRect.setX(currentRect.x() - 50);
-  currentRect.setY(currentRect.y() - 50);
-  currentRect.setWidth(currentRect.width() + 100);
-  currentRect.setHeight(currentRect.height() + 100);
-  scene->setSceneRect(currentRect);
 }
 
 void EventGraphWidget::setPlotButton() {

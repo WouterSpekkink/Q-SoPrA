@@ -34,6 +34,7 @@ QRectF UndirectedEdge::boundingRect() const {
 QPainterPath UndirectedEdge::shape() const {
   QPainterPath path = QGraphicsLineItem::shape();
   path.addPolygon(arrowHead);
+  path.addPolygon(arrowHead2);
   return path;
 }
 

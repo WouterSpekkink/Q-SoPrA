@@ -71,6 +71,7 @@ Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, 
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   color = Qt::black;
   setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   typeInd = subType;
   coder = subCoder;
 }
@@ -78,8 +79,8 @@ Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, 
 QRectF Arrow::boundingRect() const {
   qreal extra = (pen().width() + 20) / 2.0;
   
-  return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),
-				    line().p2().y() - line().p1().y()))
+  return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
+				     end->pos().y() - start->pos().y()))
     .normalized()
     .adjusted(-extra, -extra, extra, extra);
 }
@@ -90,15 +91,7 @@ QPainterPath Arrow::shape() const {
   return path;
 }
 
-void Arrow::updatePosition() {
-  QLineF line(mapFromItem(start, 0, 0), mapFromItem(end, 0, 0));
-  setLine(line);
-  Scene *myScene = qobject_cast<Scene*>(scene());
-  myScene->relevantChange();
-}
-
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
-  prepareGeometryChange();
   calculate();
   QPen myPen = pen();
   myPen.setColor(color);
@@ -106,8 +99,8 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   painter->setBrush(color);
 
   arrowHead.clear();
-
   arrowHead << line().p2() << arrowP1 << arrowP2;
+  
   painter->drawPolygon(arrowHead);
   painter->drawLine(line());
   if (isSelected()) {
@@ -121,6 +114,7 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
 }
 
 void Arrow::calculate() {
+  prepareGeometryChange();
   qreal arrowSize = 10;
   EventItem *startEvent = qgraphicsitem_cast<EventItem*>(start);
   EventItem *endEvent = qgraphicsitem_cast<EventItem*>(end);
@@ -226,4 +220,25 @@ void Arrow::calculate() {
 					  cos(angle + Pi / 3) * arrowSize);
   arrowP2 = line().p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 					  cos(angle + Pi - Pi / 3) * arrowSize);
+}
+
+
+void Arrow::setColor(const QColor &subColor) {
+  color = subColor;
+}
+
+QColor Arrow::getColor() {
+  return color;
+}
+
+QGraphicsItem* Arrow::startItem() const {
+  return start;
+}
+
+QGraphicsItem* Arrow::endItem() const {
+  return end;
+}
+
+int Arrow::type() const {
+  return Type;
 }
