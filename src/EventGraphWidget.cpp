@@ -292,6 +292,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(setModeButton(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableModeButton()));
+  connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
@@ -3518,6 +3520,34 @@ void EventGraphWidget::setBackgroundColor() {
     view->setBackgroundBrush(color);
   }
   delete colorDialog;
+}
+
+void EventGraphWidget::changeModeColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
+      QString mode = neighbour->data(Qt::DisplayRole).toString();
+      QVectorIterator<EventItem*> it(eventVector);
+      while (it.hasNext()) {
+	EventItem *current = it.next();
+	if (current->getMode() == mode) {
+	  current->setColor(color);
+	}
+      }
+      QVectorIterator<MacroEvent*> it2(macroVector);
+      while (it2.hasNext()) {
+	MacroEvent *current = it2.next();
+	if (current->getMode() == mode) {
+	  current->setColor(color);
+	}
+      }
+
+    }
+  }
 }
 
 void EventGraphWidget::plotLabels() {

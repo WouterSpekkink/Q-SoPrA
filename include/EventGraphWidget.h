@@ -118,6 +118,7 @@ private slots:
   void setEventColor();
   void setLabelColor();
   void setBackgroundColor();
+  void changeModeColor(QTableWidgetItem *item);
   void processEventItemContextMenu(const QString &action);
   void colligateEvents(QString constraint);
   void disaggregateEvent();
