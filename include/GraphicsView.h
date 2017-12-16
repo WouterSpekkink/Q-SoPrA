@@ -10,6 +10,7 @@
 #include <QGraphicsSceneMouseEvent>
 #include "SimpleTextDialog.h"
 
+
 class GraphicsView : public QGraphicsView {
   
 public:

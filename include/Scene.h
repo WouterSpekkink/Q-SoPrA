@@ -9,6 +9,8 @@
 #include <QGraphicsSceneWheelEvent>
 #include <QGraphicsView>
 #include <QMenu>
+#include "../include/NetworkNode.h"
+#include "../include/OccurrenceItem.h"
 
 class Scene : public QGraphicsScene {
   Q_OBJECT
@@ -16,6 +18,7 @@ class Scene : public QGraphicsScene {
 public:
   Scene(QObject *parent = 0);
   QRectF itemsBoundingRect() const;
+  OccurrenceItem* getSelectedOccurrence();
 
 signals:
   void widthIncreased(EventItem *);
@@ -46,6 +49,7 @@ protected:
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;
   NetworkNode *selectedNode;
+  OccurrenceItem *selectedOccurrence;
 };
 
 #endif 

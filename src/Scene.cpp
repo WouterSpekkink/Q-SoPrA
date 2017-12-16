@@ -1,7 +1,7 @@
 #include "../include/Scene.h"
 #include "../include/NodeLabel.h"
 #include "../include/MacroLabel.h"
-#include "../include/NetworkNode.h"
+#include "../include/OccurrenceLabel.h"
 #include <QtCore>
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
@@ -133,11 +133,18 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
 								       QTransform()));
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
+									    QTransform()));
+    OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
+										   QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
     if (macroLabel) {
       macro = macroLabel->getMacroEvent();
+    }
+    if (occurrenceLabel) {
+      occurrence = occurrenceLabel->getOccurrence();
     }
     if (incident) {
       this->clearSelection();
@@ -148,6 +155,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else if (networkNode) {
       this->clearSelection();
       networkNode->setSelected(true);
+    } else if (occurrence) {
+      this->clearSelection();
+      occurrence->setSelected(true);
+      selectedOccurrence = occurrence;
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
@@ -177,6 +188,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   selectedEvent = NULL;
   selectedMacro = NULL;
   selectedNode = NULL;
+  selectedOccurrence = NULL;
   QGraphicsScene::mouseReleaseEvent(event);
 }
   
@@ -263,6 +275,10 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	emit moveItems(selectedNode, event->scenePos());
       } else {
 	moveOn = false;
+      }
+    } else {
+      if (selectedOccurrence) {
+	emit moveItems(selectedOccurrence, event->scenePos());
       }
     }
     QGraphicsScene::mouseMoveEvent(event);
@@ -375,3 +391,6 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   }
 }
 
+OccurrenceItem* Scene::getSelectedOccurrence() {
+  return selectedOccurrence;
+}

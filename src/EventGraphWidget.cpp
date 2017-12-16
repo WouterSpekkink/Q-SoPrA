@@ -1847,7 +1847,7 @@ void EventGraphWidget::getEvents() {
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
-    int vertical = qrand() % 1000 - 500;
+    qreal vertical = qrand() % 1000 - 500;
     QPointF position = QPointF((order * distance), vertical);
     EventItem *currentItem = new EventItem(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
@@ -2235,27 +2235,42 @@ void EventGraphWidget::increaseDistance() {
   }
   qSort(temp.begin(), temp.end(), eventLessThan);
   QVectorIterator<QGraphicsItem*> it3(temp);  
-  int unit = 1;
-  if (distance < 100) {
+  int unit = 0;
+  qreal last = -9999;
+  if (distance < 300) {
     while (it3.hasNext()) {
       EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
       if (event) {
 	event = qgraphicsitem_cast<EventItem*>(it3.next());
-	QPointF newPos = QPointF(event->pos().x() + unit, event->pos().y());
+	qreal oldX = event->scenePos().x();
+	if (last != oldX) {
+	  unit++;
+	}
+	if (last == -9999) {
+	  last = event->scenePos().x();
+	}
+	QPointF newPos = QPointF(oldX + unit, event->pos().y());
 	NodeLabel *currentLabel = event->getLabel();
 	currentLabel->setNewPos(newPos);
 	event->setOriginalPos(newPos);
 	event->setPos(newPos);
-	unit++;
+	last = oldX;
       } else if (macro) {
 	macro = qgraphicsitem_cast<MacroEvent*>(it3.next());
-	QPointF newPos = QPointF(macro->pos().x() + unit, macro->pos().y());
+	qreal oldX = macro->scenePos().x();
+	if (last != oldX) {
+	  unit++;
+	}
+	if (last == -9999) {
+	  last = macro->scenePos().x();
+	}
+	QPointF newPos = QPointF(oldX + unit, macro->pos().y());
 	MacroLabel *currentLabel = macro->getLabel();
 	currentLabel->setNewPos(newPos);
 	macro->setOriginalPos(newPos);
 	macro->setPos(newPos);
-	unit++;
+	last = oldX;
       }
     }
   }
@@ -2274,27 +2289,42 @@ void EventGraphWidget::decreaseDistance() {
   }
   qSort(temp.begin(), temp.end(), eventLessThan);
   QVectorIterator<QGraphicsItem*> it3(temp);  
-  int unit = 1;
+  int unit = 0;
+  qreal last = -9999;
   if (distance > 35) {
     while (it3.hasNext()) {
       EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
       if (event) {
 	event = qgraphicsitem_cast<EventItem*>(it3.next());
-	QPointF newPos = QPointF(event->pos().x() - unit, event->pos().y());
+	qreal oldX = event->scenePos().x();
+	if (last != oldX) {
+	  unit++;
+	}      
+	if (last == -9999) {
+	  last = event->scenePos().x();
+	}      
+	QPointF newPos = QPointF(oldX - unit, event->pos().y());
 	NodeLabel *currentLabel = event->getLabel();
 	currentLabel->setNewPos(newPos);
 	event->setOriginalPos(newPos);
 	event->setPos(newPos);
-	unit++;
+	last = oldX;
       } else if (macro) {
 	macro = qgraphicsitem_cast<MacroEvent*>(it3.next());
-	QPointF newPos = QPointF(macro->pos().x() - unit, macro->pos().y());
+	qreal oldX = macro->scenePos().x();
+	if (last != oldX) {
+	  unit++;
+	}      
+	if (last == -9999) {
+	  last = macro->scenePos().x();
+	}      
+	QPointF newPos = QPointF(oldX, macro->pos().y());
 	MacroLabel *currentLabel = macro->getLabel();
 	currentLabel->setNewPos(newPos);
 	macro->setOriginalPos(newPos);
 	macro->setPos(newPos);
-	unit++;
+	last = oldX;
       }
     }
   }
@@ -5075,6 +5105,10 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) {
 
 QVector<MacroEvent*> EventGraphWidget::getMacros() {
   return macroVector;
+}
+
+QVector<EventItem*> EventGraphWidget::getEventItems() {
+  return eventVector;
 }
 
 void EventGraphWidget::setAttributesWidget(AttributesWidget *aw) {

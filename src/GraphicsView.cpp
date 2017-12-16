@@ -3,6 +3,8 @@
 #include "../include/NodeLabel.h"
 #include "../include/MacroLabel.h"
 #include "../include/NetworkNode.h"
+#include "../include/OccurrenceItem.h"
+#include "../include/OccurrenceLabel.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -29,14 +31,18 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
-
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
+    OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
     if (macroLabel) {
       macro = macroLabel->getMacroEvent();
     }
-    if (!incident && !macro && !arrow && !networkNode) {
+    if (occurrenceLabel) {
+      occurrence = occurrenceLabel->getOccurrence();
+    }
+    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -49,10 +55,13 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     } else if (arrow) {
       arrow->setSelected(true);
       return;
+    } else if (occurrence) {
+      occurrence->setSelected(true);
     } else if (networkNode) {
       networkNode->setSelected(true);
     }
   } else {
+    pan = false;
     QGraphicsView::mousePressEvent(event);
   }
 }

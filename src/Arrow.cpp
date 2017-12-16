@@ -120,6 +120,8 @@ void Arrow::calculate() {
   EventItem *endEvent = qgraphicsitem_cast<EventItem*>(end);
   MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(start);
   MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(end);
+  OccurrenceItem *occurrenceStart = qgraphicsitem_cast<OccurrenceItem*>(start);
+  OccurrenceItem *occurrenceEnd = qgraphicsitem_cast<OccurrenceItem*>(end);
   if (startEvent && endEvent) {
     // startX is middle of start node
     qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
@@ -205,6 +207,29 @@ void Arrow::calculate() {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(endX + (endEvent->getWidth() / 2) - 20,
 				endEvent->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    }
+  } else if (occurrenceStart && occurrenceEnd) {
+    // startX is middle of start node
+    qreal startX = occurrenceStart->pos().x() + (occurrenceStart->getWidth() / 2) - 20;
+    // endX is middle of end node
+    qreal endX = occurrenceEnd->pos().x() + (occurrenceEnd->getWidth() / 2) - 20;
+    // endStart is the left-most edge of the end node
+    qreal endStart = occurrenceEnd->pos().x() - 20;
+    if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 +
+	occurrenceEnd->getWidth()) {
+      newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
+		       (QPointF(startX, occurrenceEnd->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX < endStart) {
+      newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
+		       (QPointF(endX - (occurrenceEnd->getWidth() / 2) + 20,
+				occurrenceEnd->pos().y())));
+      newLine.setLength(newLine.length() - 28);
+    } else if (startX > endStart) {
+      newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
+		       (QPointF(endX + (occurrenceEnd->getWidth() / 2) - 20,
+				occurrenceEnd->pos().y())));
       newLine.setLength(newLine.length() - 28);
     }
   }

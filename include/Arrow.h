@@ -58,6 +58,7 @@
 #include <QGraphicsLineItem>
 #include "EventItem.h"
 #include "MacroEvent.h"
+#include "OccurrenceItem.h"
 
 class Arrow : public QGraphicsLineItem {
 

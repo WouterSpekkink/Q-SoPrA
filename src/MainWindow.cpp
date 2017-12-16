@@ -17,7 +17,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   journalWidget = new JournalWidget(this);
   eventGraphWidget = new EventGraphWidget(this);
   networkGraphWidget = new NetworkGraphWidget(this);
-
+  occurrenceGraphWidget = new OccurrenceGraphWidget(this);
+  
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
@@ -25,10 +26,12 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
-
+  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
+  
   dw->setEventGraph(egw);
   aw->setEventGraph(egw);
   lw->setEventGraph(egw);
+  ogw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
   rw->setNetworkGraph(ngw);
   
@@ -39,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(journalWidget);
   stacked->addWidget(eventGraphWidget);
   stacked->addWidget(networkGraphWidget);
+  stacked->addWidget(occurrenceGraphWidget);
 
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
@@ -100,6 +104,10 @@ void MainWindow::createActions() {
   networkGraphViewAct = new QAction(tr("&Network graph view"), this);
   networkGraphViewAct->setStatusTip("Switch to network graph view");
   connect(networkGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToNetworkGraphView()));
+
+  occurrenceGraphViewAct = new QAction(tr("&Occurrence graph view"), this);
+  occurrenceGraphViewAct->setStatusTip("Switch to occurrence graph view");
+  connect(occurrenceGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToOccurrenceGraphView()));
 }
 
 void MainWindow::createMenus() {
@@ -117,6 +125,7 @@ void MainWindow::createMenus() {
   viewMenu->addAction(journalViewAct);
   viewMenu->addAction(eventGraphViewAct);
   viewMenu->addAction(networkGraphViewAct);
+  viewMenu->addAction(occurrenceGraphViewAct);
 
   this->setMenuBar(menuBar);
 }
@@ -386,7 +395,20 @@ void MainWindow::switchToNetworkGraphView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   egw->setComment();
-  const QModelIndex index;  
   stacked->setCurrentWidget(networkGraphWidget);
+}
+
+void MainWindow::switchToOccurrenceGraphView() {
+  // TO CHECK
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->getLinkageDetails();
+  egw->setComment();
+  stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 

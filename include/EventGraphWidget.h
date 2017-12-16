@@ -44,6 +44,7 @@ public:
   ~EventGraphWidget() {};
 
   QVector<MacroEvent*> getMacros();
+  QVector<EventItem*> getEventItems();
   void resetTree();
   void checkCongruency();
 
