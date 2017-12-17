@@ -32,6 +32,8 @@
 #include "AttributesWidget.h"
 #include "AttributeDialog.h"
 #include "DeselectableListWidget.h"
+#include "LineageColorDialog.h"
+#include "OccurrenceGraphWidget.h"
 
 class AttributesWidget;
 
@@ -54,9 +56,10 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
-  void setModeButton(QTableWidgetItem *item);
   void removeMode();
+  void setModeButton(QTableWidgetItem *item);
   void disableModeButton();
+  void restoreModeColors();
   void retrieveData();
   void showAttributes();
   void showComments();
@@ -127,6 +130,11 @@ private slots:
   void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();
+  void colorLineage();
+
+  void findAncestors(QColor ancestor, QGraphicsItem *origin);
+  void findDescendants(QColor descendant, QGraphicsItem *origin);
+  
   void settleEvent();
   void makeParallel();
   void normalizeDistance();
@@ -143,6 +151,7 @@ private slots:
   void findFuturePaths(QSet<int> *mark, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void setAttributesWidget(AttributesWidget* aw);
+  void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void finalBusiness();
   
 private:
@@ -161,7 +170,8 @@ private:
   QVector<NodeLabel*> nodeLabelVector;
   QVector<MacroLabel*> macroLabelVector;
   AttributesWidget *attributesWidget;
-
+  OccurrenceGraphWidget *occurrenceGraph;
+  
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
@@ -214,6 +224,7 @@ private:
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
   QPointer<QPushButton> removeModeButton;
+  QPointer<QPushButton> restoreModeColorsButton;
   
   QPointer<DeselectableListWidget> eventListWidget;
   

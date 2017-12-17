@@ -323,6 +323,50 @@ void WelcomeDialog::newDatabase() {
 		  "blue integer, "
 		  "alpha integer, "
 		  "hidden integer)");
+      query->exec("CREATE TABLE saved_og_plots "
+		  "(id integer PRIMARY KEY, "
+		  "plot text)");
+      query->exec("CREATE TABLE saved_og_plots_occurrence_items "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "ch_order integer, "
+		  "attribute text, "
+		  "width integer, "
+		  "curxpos real, " // Current x position (scenePos)
+		  "curypos real, " // Current y position (scenePos)
+		  "orixpos real, " // Original x position
+		  "oriypos real, " // Original y position
+		  "red integer,"
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer, "
+		  "hidden integer, "
+		  "perm integer)");
+      query->exec("CREATE TABLE saved_og_plots_occurrence_labels "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "attribute string, "
+		  "label text, "
+		  "curxpos integer, "
+		  "curypos integer, "
+		  "xoffset real, "
+		  "yoffset real, "
+		  "red integer, "
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer, "
+		  "hidden integer)");
+      query->exec("CREATE TABLE saved_og_plots_legend "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "name text, "
+		  "tip text, "
+		  "red integer, "
+		  "blue integer, "
+		  "green integer, "
+		  "alpha integer)");
       delete query;
     }
     exitStatus = 0;
@@ -636,6 +680,50 @@ void WelcomeDialog::openDatabase() {
 		  "blue integer, "
 		  "alpha integer, "
 		  "hidden integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
+		  "(id integer PRIMARY KEY, "
+		  "plot text)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_items " 
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "ch_order integer, "
+		  "attribute text, "
+		  "width integer, "
+		  "curxpos real, " // Current x position (scenePos)
+		  "curypos real, " // Current y position (scenePos)
+		  "orixpos real, " // Original x position
+		  "oriypos real, " // Original y position
+		  "red integer,"
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer, "
+		  "hidden integer, "
+		  "perm integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_labels "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "incident integer, "
+		  "attribute text, "
+		  "label text, "
+		  "curxpos integer, "
+		  "curypos integer, "
+		  "xoffset real, "
+		  "yoffset real, "
+		  "red integer, "
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer, "
+		  "hidden integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_legend "
+		  "(id integer PRIMARY KEY, "
+		  "plot text, "
+		  "name text, "
+		  "tip text, "
+		  "red integer, "
+		  "blue integer, "
+		  "green integer, "
+		  "alpha integer)");
       delete query;
       exitStatus = 0;
       this->close();

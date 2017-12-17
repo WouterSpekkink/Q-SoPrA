@@ -24,6 +24,7 @@ OccurrenceItem::OccurrenceItem(int subWidth, QString toolTip, QPointF originalPo
   setFlag(QGraphicsItem::ItemIsMovable);
   attribute = submittedAttribute;
   permHidden = false;
+  grouped = false;
 }
 
 QRectF OccurrenceItem::boundingRect() const {
@@ -153,4 +154,12 @@ void OccurrenceItem::setPermHidden(bool status) {
 
 bool OccurrenceItem::isPermHidden() {
   return permHidden;
+}
+
+void OccurrenceItem::setGrouped(bool status) {
+  grouped = status;
+}
+
+bool OccurrenceItem::isGrouped() {
+  return grouped;
 }

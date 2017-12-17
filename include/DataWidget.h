@@ -13,8 +13,10 @@
 #include "ZoomableTableView.h"
 #include "Constants.h"
 #include "EventGraphWidget.h"
+#include "OccurrenceGraphWidget.h"
 
 class EventGraphWidget;
+class OccurrenceGraphWidget;
 
 class DataWidget : public QWidget {
   Q_OBJECT
@@ -24,6 +26,7 @@ public:
   DataWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
   ~DataWidget() {};
   void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
 		  
 private slots:
   void updateTable();
@@ -44,6 +47,7 @@ private:
   QPointer<EventTableModel> incidentsModel;
   QPointer<ZoomableTableView> tableView;
   EventGraphWidget *eventGraph;
+  OccurrenceGraphWidget *occurrenceGraph;
   
   QPointer<QPushButton> appendRecordButton;
   QPointer<QPushButton> editRecordButton;

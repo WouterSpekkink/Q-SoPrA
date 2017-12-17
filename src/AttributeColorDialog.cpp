@@ -116,7 +116,7 @@ void AttributeColorDialog::setColor() {
   if (colorDialog->exec()) {
     chosenColor = colorDialog->selectedColor();
   }
-  QPalette pal = textColorButton->palette();
+  QPalette pal = colorButton->palette();
   pal.setColor(QPalette::Button, chosenColor);
   colorButton->setAutoFillBackground(true);
   colorButton->setPalette(pal);
@@ -130,7 +130,7 @@ void AttributeColorDialog::setTextColor() {
   if (colorDialog->exec()) {
     chosenTextColor = colorDialog->selectedColor();
   }
-  QPalette pal = colorButton->palette();
+  QPalette pal = textColorButton->palette();
   pal.setColor(QPalette::Button, chosenTextColor);
   textColorButton->setAutoFillBackground(true);
   textColorButton->setPalette(pal);

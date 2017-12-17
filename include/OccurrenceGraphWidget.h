@@ -32,6 +32,8 @@
 #include "EventGraphWidget.h"
 #include "EventItem.h"
 
+class EventGraphWidget;
+
 class OccurrenceGraphWidget : public QWidget {
   Q_OBJECT
   friend class MainWindow;
@@ -41,7 +43,8 @@ public:
   ~OccurrenceGraphWidget() {};
 
   void setEventGraph(EventGraphWidget *egw);			     
-			     
+  void checkCongruency();
+			
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
@@ -51,6 +54,7 @@ private slots:
   void setModeButton(QTableWidgetItem *item);
   void disableModeButton();
   void removeMode();
+  void changeModeColor(QTableWidgetItem *item);
   
   void wireLinkages();
   void groupOccurrences();
@@ -68,7 +72,11 @@ private slots:
   void exportSvg();
   
   void processMoveItems(QGraphicsItem *item, QPointF pos);
-
+  void processMoveLine(QGraphicsItem *item, QPointF pos);
+  
+  void saveCurrentPlot();
+  void seePlots();
+  
   void cleanUp();
   void finalBusiness();
   
@@ -82,9 +90,14 @@ private:
   QVector<OccurrenceLabel*> labelVector;
   EventGraphWidget *eventGraph;
 
+  QPointer<QLabel> plotLabel;
+  QPointer<QLabel> changeLabel;
+  QPointer<QLabel> incongruencyLabel;
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
-  
+
+  QPointer<QPushButton> savePlotButton;
+  QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> addAttributeButton;

@@ -23,6 +23,7 @@ extern QString SEMIPATHS;
 extern QString DISAGGREGATEACTION;
 extern QString RECOLOREVENTSACTION;
 extern QString RECOLORLABELSACTION;
+extern QString COLORLINEAGEACTION;
 extern QString REMOVELINKAGEACTION;
 extern QString KEEPLINKAGEACTION;
 extern QString ACCEPTLINKAGEACTION;
@@ -39,6 +40,7 @@ extern QString MACRO;
 extern QString CREATED;
 extern QString EVENTGRAPH;
 extern QString NETWORKGRAPH;
+extern QString OCCURRENCEGRAPH;
 
 #endif
 

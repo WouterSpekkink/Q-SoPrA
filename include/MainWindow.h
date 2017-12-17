@@ -61,7 +61,8 @@ private:
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
-  QPointer<QMenu> viewMenu;
+  QPointer<QMenu> toolMenu;
+  QPointer<QMenu> graphMenu;
   
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;

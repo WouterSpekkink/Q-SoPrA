@@ -15,6 +15,8 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDi
     query->exec("SELECT plot FROM saved_eg_plots");
   } else if (type == NETWORKGRAPH) {
     query->exec("SELECT plot FROM saved_ng_plots");
+  } else if (type == OCCURRENCEGRAPH) {
+    query->exec("SELECT plot FROM saved_og_plots");
   }
   while (query->next()) {
     QString currentName = query->value(0).toString();
@@ -63,7 +65,8 @@ void SavedPlotsDialog::removePlot() {
   warningBox->addButton(QMessageBox::No);
   warningBox->setIcon(QMessageBox::Warning);
   warningBox->setText("<h2>Are you sure?</h2>");
-  warningBox->setInformativeText("Removing an incident cannot be undone. Are you sure you want to remove this incident?");
+  warningBox->setInformativeText("Removing an incident cannot be undone. "
+				 "Are you sure you want to remove this incident?");
   if (warningBox->exec() == QMessageBox::Yes) {
     exitStatus = 2;
     selectedPlot = plotsComboBox->currentText();

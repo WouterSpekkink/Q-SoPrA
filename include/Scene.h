@@ -30,6 +30,7 @@ signals:
   void posIncreased(MacroEvent *);
   void posDecreased(MacroEvent *);
   void moveItems(QGraphicsItem *, QPointF);
+  void moveLine(QGraphicsItem *, QPointF);
   
   void relevantChange();
   void EventItemContextMenuAction(const QString&);

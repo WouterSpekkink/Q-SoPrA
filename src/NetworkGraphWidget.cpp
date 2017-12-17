@@ -133,7 +133,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   toggleLabelsButton->setCheckable(true);
   increaseFontSizeButton = new QPushButton(tr("+"));
   decreaseFontSizeButton = new QPushButton(tr("-"));
-  colorByAttributeButton = new QPushButton(tr("Create mode"), graphicsWidget);
+  colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
   nodeColorButton = new QPushButton(tr("Set node color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -166,6 +166,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   plotButton->setEnabled(false);
   removeTypeButton = new QPushButton(tr("Remove"), legendWidget);
   removeTypeButton->setEnabled(false);
+  restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -259,6 +260,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
+  connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -327,8 +329,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
   legendLayout->addWidget(nodeLegendLabel);
   legendLayout->addWidget(nodeListWidget);
+  legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(multimodeButton);
   legendLayout->addWidget(removeModeButton);
+  legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(edgeLegendLabel);
   legendLayout->addWidget(edgeListWidget);
   legendLayout->addWidget(setFilteredButton);
@@ -358,7 +362,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QFrame> sepLine3 = new QFrame();
   sepLine3->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine3);
-  graphicsControlsLayout->addWidget(colorByAttributeButton);
   graphicsControlsLayout->addWidget(nodeColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
@@ -2058,6 +2061,20 @@ void NetworkGraphWidget::disableModeButton() {
   removeModeButton->setEnabled(false);
 }
 
+void NetworkGraphWidget::restoreModeColors() {
+  for (int i = 0; i < nodeListWidget->rowCount(); i++) {
+    QString mode = nodeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    QColor color = nodeListWidget->item(i, 1)->background().color();
+    QVectorIterator<NetworkNode*> it(nodeVector);
+    while (it.hasNext()) {
+      NetworkNode *node = it.next();
+      if (node->getMode() == mode) {
+	node->setColor(color);
+      }
+    }
+  }
+}
+
 void NetworkGraphWidget::mergeRelationships() {
   QVector<QString> relVector;
   QVector<QString> directednessVector;
@@ -2382,9 +2399,6 @@ void NetworkGraphWidget::setNodeColor() {
     while (it.hasNext()) {
       NetworkNode *currentNode = it.next();
       currentNode->setColor(color);
-    }
-    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
-      nodeListWidget->item(i, 1)->setBackground(color);
     }
   }
   delete colorDialog;

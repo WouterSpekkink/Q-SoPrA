@@ -6,7 +6,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   rawFilter = "";
   commentFilter = "";
   commentBool = false;
-
+  
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
   incidentsModel->setSort(1, Qt::AscendingOrder);
@@ -920,6 +920,7 @@ void AttributesWidget::assignAttribute() {
     }
     delete query;
   }
+  occurrenceGraph->checkCongruency();
 }
 
 void AttributesWidget::unassignAttribute() {
@@ -986,6 +987,7 @@ void AttributesWidget::unassignAttribute() {
     delete query;
     delete query2;
   }
+  occurrenceGraph->checkCongruency();
 }
 
 void AttributesWidget::removeText() {
@@ -1115,6 +1117,7 @@ void AttributesWidget::removeUnusedAttributes() {
   attributesTreeView->setSortingEnabled(false);
   resetTree();
   eventGraph->resetTree();
+  occurrenceGraph->checkCongruency();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
@@ -1574,6 +1577,10 @@ bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
 
 void AttributesWidget::setEventGraph(EventGraphWidget *egw) {
   eventGraph = egw;
+}
+
+void AttributesWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
 }
 
 void AttributesWidget::resetTree() {

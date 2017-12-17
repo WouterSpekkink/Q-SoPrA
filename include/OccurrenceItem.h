@@ -39,6 +39,8 @@ public:
   QPainterPath shape() const override;
   void setPermHidden(bool status);
   bool isPermHidden();
+  void setGrouped(bool status);
+  bool isGrouped();
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -55,6 +57,7 @@ private:
   int order;
   QString attribute;
   bool permHidden;
+  bool grouped;
   
 };
 

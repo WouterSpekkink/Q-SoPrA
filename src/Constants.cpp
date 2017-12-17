@@ -22,6 +22,7 @@ QString SEMIPATHS = "Semi-paths";
 QString DISAGGREGATEACTION = "Disaggregate event";
 QString RECOLOREVENTSACTION = "Recolor selected events";
 QString RECOLORLABELSACTION = "Recolor selected labels";
+QString COLORLINEAGEACTION = "Color lineage";
 QString REMOVELINKAGEACTION = "Remove linkage";
 QString KEEPLINKAGEACTION = "Keep linkage";
 QString ACCEPTLINKAGEACTION = "Accept linkage";
@@ -38,3 +39,5 @@ QString MACRO = "Macro event";
 QString CREATED = "Created";
 QString EVENTGRAPH = "Event graph";
 QString NETWORKGRAPH = "Network graph";
+QString OCCURRENCEGRAPH = "Occurrence graph";
+

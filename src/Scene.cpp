@@ -72,6 +72,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
 								       QTransform()));
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
+									    QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -90,14 +92,24 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       networkNode->setSelected(true);
       selectedNode = networkNode;
       moveOn = true;
+    } else if (occurrence) {
+      this->clearSelection();
+      occurrence->setSelected(true);
+      selectedOccurrence = occurrence;
+      moveOn = true;
     } else {
       this->clearSelection();
+      selectedMacro = NULL;
+      selectedEvent = NULL;
+      selectedNode = NULL;
+      selectedOccurrence = NULL;
     }
   } else if (event->modifiers() & Qt::ShiftModifier) {
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
-    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+								    QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -176,13 +188,16 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     QGraphicsItem *current = it.next();
     EventItem *incident = qgraphicsitem_cast<EventItem*>(current);
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
-    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);    
+    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);    
     if (incident) {
       incident->setCursor(Qt::OpenHandCursor);
     } else if (macro) {
       macro->setCursor(Qt::OpenHandCursor);
     } else if (networkNode) {
       networkNode->setCursor(Qt::OpenHandCursor);
+    } else if (occurrence) {
+      occurrence->setCursor(Qt::OpenHandCursor);
     }
   }
   selectedEvent = NULL;
@@ -277,7 +292,9 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	moveOn = false;
       }
     } else {
-      if (selectedOccurrence) {
+      if (selectedOccurrence && moveOn) {
+	emit moveLine(selectedOccurrence, event->scenePos());
+      } else if (selectedOccurrence && !moveOn) {
 	emit moveItems(selectedOccurrence, event->scenePos());
       }
     }
@@ -310,24 +327,27 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action4);
     QAction *action5 = new QAction(RECOLORLABELSACTION, this);
     menu.addAction(action5);
-    QAction *action6 = new QAction(SETTLEACTION, this);
+    QAction *action6 = new QAction(COLORLINEAGEACTION, this);
     menu.addAction(action6);
-    QAction *action7 = new QAction(PARALLELACTION, this);
+    QAction *action7 = new QAction(SETTLEACTION, this);
     menu.addAction(action7);
-    QAction *action8 = new QAction(NORMALIZEACTION, this);
+    QAction *action8 = new QAction(PARALLELACTION, this);
     menu.addAction(action8);
-    QAction *action9 = new QAction(CLOSEGAPACTION, this);
+    QAction *action9 = new QAction(NORMALIZEACTION, this);
     menu.addAction(action9);
+    QAction *action10 = new QAction(CLOSEGAPACTION, this);
+    menu.addAction(action10);
     if (selectedItems().size() > 1) {
       action3->setEnabled(false);
       action6->setEnabled(false);
-      action8->setEnabled(false);
+      action7->setEnabled(false);
       action9->setEnabled(false);
+      action10->setEnabled(false);
     }
     if (selectedItems().size() == 1) {
       action1->setEnabled(false);
       action2->setEnabled(false);
-      action7->setEnabled(false);
+      action8->setEnabled(false);
     }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
@@ -345,25 +365,27 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action4);
     QAction *action5 = new QAction(RECOLORLABELSACTION, this);
     menu.addAction(action5);
-    QAction *action6 = new QAction(SETTLEACTION, this);
+    QAction *action6 = new QAction(COLORLINEAGEACTION, this);
     menu.addAction(action6);
-    QAction *action7 = new QAction(PARALLELACTION, this);
+    QAction *action7 = new QAction(SETTLEACTION, this);
     menu.addAction(action7);
-    QAction *action8 = new QAction(NORMALIZEACTION, this);
+    QAction *action8 = new QAction(PARALLELACTION, this);
     menu.addAction(action8);
-    QAction *action9 = new QAction(CLOSEGAPACTION, this);
+    QAction *action9 = new QAction(NORMALIZEACTION, this);
     menu.addAction(action9);
+    QAction *action10 = new QAction(CLOSEGAPACTION, this);
+    menu.addAction(action10);
     if (selectedItems().size() > 1) {
       action3->setEnabled(false);
       action6->setEnabled(false);
       action7->setEnabled(false);
-      action8->setEnabled(false);
-      action8->setEnabled(false);
+      action9->setEnabled(false);
+      action10->setEnabled(false);
     }
     if (selectedItems().size() == 1) {
       action1->setEnabled(false);
       action2->setEnabled(false);
-      action7->setEnabled(false);
+      action8->setEnabled(false);
     }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());

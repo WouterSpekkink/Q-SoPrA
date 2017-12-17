@@ -136,6 +136,7 @@ void DataWidget::appendRecord() {
   }
   updateTable();
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::editRecord() {
@@ -172,6 +173,7 @@ void DataWidget::editRecord() {
     delete query;
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::insertRecordBefore() {
@@ -192,6 +194,7 @@ void DataWidget::insertRecordBefore() {
     }
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::insertRecordAfter() {
@@ -212,6 +215,7 @@ void DataWidget::insertRecordAfter() {
     }
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::moveUp() {
@@ -238,6 +242,7 @@ void DataWidget::moveUp() {
     delete query;
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::moveDown() {
@@ -264,6 +269,7 @@ void DataWidget::moveDown() {
     }
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::duplicateRow() {
@@ -305,6 +311,7 @@ void DataWidget::duplicateRow() {
     tableView->setCurrentIndex(newIndex);
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::removeRow() {
@@ -364,6 +371,7 @@ void DataWidget::removeRow() {
     delete warningBox;
   }
   eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::resetHeader(int header) {
@@ -373,6 +381,10 @@ void DataWidget::resetHeader(int header) {
 
 void DataWidget::setEventGraph(EventGraphWidget *egw) {
   eventGraph = egw;
+}
+
+void DataWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
 }
 
 void DataWidget::updateTable() {

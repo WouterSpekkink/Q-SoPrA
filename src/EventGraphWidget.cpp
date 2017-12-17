@@ -206,7 +206,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   seeIncidentsButton->setEnabled(false);
   nextEventButton->setEnabled(false);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
-  colorByAttributeButton = new QPushButton(tr("Create mode"), graphicsWidget);
+  colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -227,6 +227,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   toggleLegendButton->setCheckable(true);
   removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
   removeModeButton->setEnabled(false);
+  restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
@@ -295,6 +296,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
+  connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -400,14 +402,15 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
   legendLayout->addWidget(legendLabel);
   legendLayout->addWidget(eventListWidget);
+  legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(removeModeButton);
+  legendLayout->addWidget(restoreModeColorsButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
-  graphicsControlsLayout->addWidget(colorByAttributeButton);
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
@@ -1345,6 +1348,7 @@ void EventGraphWidget::assignAttribute() {
     }
     setButtons();
   }
+  occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::unassignAttribute() {
@@ -1410,6 +1414,7 @@ void EventGraphWidget::unassignAttribute() {
       }
     }
   }
+  occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::sourceText(const QString &attribute, const int &incident) {
@@ -1619,6 +1624,7 @@ void EventGraphWidget::removeUnusedAttributes() {
   this->setCursor(Qt::ArrowCursor);
   delete query;  
   delete query2;
+  occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::highlightText() {
@@ -2990,7 +2996,12 @@ void EventGraphWidget::seePlots() {
       query2->bindValue(":id", id);
       query2->exec();
       query2->first();
-      QString toolTip = "<FONT SIZE = 3>" + query2->value(0).toString() + "</FONT>";
+      QString toolTip = "";
+      if (query2->isNull(0)) {
+	toolTip = "Incident was deleted";
+      } else {
+	toolTip = "<FONT SIZE = 3>" + query2->value(0).toString() + "</FONT>";
+      }
       delete query2;
       QPointF currentPos = QPointF(currentX, currentY);
       QPointF originalPos = QPointF(originalX, originalY);
@@ -3504,6 +3515,27 @@ void EventGraphWidget::disableModeButton() {
   removeModeButton->setEnabled(false);
 }
 
+void EventGraphWidget::restoreModeColors() {
+  for (int i = 0; i < eventListWidget->rowCount(); i++) {
+    QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QVectorIterator<EventItem*> it(eventVector);
+    while (it.hasNext()) {
+      EventItem *event = it.next();
+      if (event->getMode() == mode) {
+	event->setColor(color);
+      }
+    }
+    QVectorIterator<MacroEvent*> it2(macroVector);
+    while (it2.hasNext()) {
+      MacroEvent* macro = it2.next();
+      if (macro->getMode() == mode) {
+	macro->setColor(color);
+      }
+    }
+  }
+}
+
 void EventGraphWidget::findChildren(QString father, QVector<QString> *children) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
@@ -3575,7 +3607,6 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item) {
 	  current->setColor(color);
 	}
       }
-
     }
   }
 }
@@ -3765,6 +3796,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     recolorEvents();
   } else if (action == RECOLORLABELSACTION) {
     recolorLabels();
+  } else if (action == COLORLINEAGEACTION) {
+    colorLineage();
   } else if (action == SETTLEACTION) {
     settleEvent();
   } else if (action == PARALLELACTION) {
@@ -4454,10 +4487,123 @@ void EventGraphWidget::recolorLabels() {
 	  MacroEvent *currentEvent = qgraphicsitem_cast<MacroEvent*>(it.next());
 	  MacroLabel *currentLabel = currentEvent->getLabel();
 	  currentLabel->setDefaultTextColor(color);
-
 	} else {
 	  it.next();
 	}
+      }
+    }
+  }
+}
+
+void EventGraphWidget::colorLineage() {
+  if (currentData.size() == 1) {
+    QGraphicsItem *current = currentData[0];
+    QPointer<LineageColorDialog> lineage = new LineageColorDialog(this);
+    lineage->exec();
+    if (lineage->getExitStatus() == 0) {
+      QColor origin = lineage->getOriginColor();
+      QColor ancestors = lineage->getAncestorColor();
+      QColor descendants = lineage->getDescendantColor();
+      QColor unrelated = lineage->getUnrelatedColor();
+      QVectorIterator<EventItem*> it(eventVector);
+      while (it.hasNext()) {
+	EventItem *current = it.next();
+	current->setColor(unrelated);
+      }
+      QVectorIterator<MacroEvent*> it2(macroVector);
+      while (it2.hasNext()) {
+	MacroEvent *current = it2.next();
+	current->setColor(unrelated);
+      }
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) {
+	event->setColor(origin);
+      } else if (macro) {
+	macro->setColor(origin);
+      }
+      findAncestors(ancestors, current);
+      findDescendants(descendants, current);
+    }
+  }
+}
+
+void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+  query->bindValue(":type", selectedType);
+  query->exec();
+  query->first();
+  QString direction = query->value(0).toString();
+  if (direction == PAST) {
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *edge = it.next();
+      if (edge->startItem() == origin) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(edge->endItem());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	if (event) {
+	  event->setColor(ancestor);
+	} else if (macro) {
+	  macro->setColor(ancestor);
+	}
+	findAncestors(ancestor, edge->endItem());
+      }
+    }
+  } else if (direction == FUTURE) {
+ QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *edge = it.next();
+      if (edge->endItem() == origin) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(edge->startItem());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	if (event) {
+	  event->setColor(ancestor);
+	} else if (macro) {
+	  macro->setColor(ancestor);
+	}
+	findAncestors(ancestor, edge->startItem());
+      }
+    }
+  }
+}
+
+
+void EventGraphWidget::findDescendants(QColor descendant, QGraphicsItem *origin) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+  query->bindValue(":type", selectedType);
+  query->exec();
+  query->first();
+  QString direction = query->value(0).toString();
+  if (direction == PAST) {
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *edge = it.next();
+      if (edge->endItem() == origin) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(edge->startItem());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	if (event) {
+	  event->setColor(descendant);
+	} else if (macro) {
+	  macro->setColor(descendant);
+	}
+	findDescendants(descendant, edge->startItem());
+      }
+    }
+  } else if (direction == FUTURE) {
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *edge = it.next();
+      if (edge->startItem() == origin) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(edge->endItem());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	if (event) {
+	  event->setColor(descendant);
+	} else if (macro) {
+	  macro->setColor(descendant);
+	}
+	findDescendants(descendant, edge->endItem());
       }
     }
   }
@@ -5113,6 +5259,10 @@ QVector<EventItem*> EventGraphWidget::getEventItems() {
 
 void EventGraphWidget::setAttributesWidget(AttributesWidget *aw) {
   attributesWidget = aw;
+}
+
+void EventGraphWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
 }
 
 void EventGraphWidget::resetTree() {

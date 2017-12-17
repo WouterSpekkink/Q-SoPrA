@@ -20,6 +20,7 @@
 #include "MainWindow.h"
 #include "MacroEvent.h"
 #include "EventGraphWidget.h"
+#include "OccurrenceGraphWidget.h"
 
 class EventGraphWidget;
 
@@ -78,6 +79,7 @@ private slots:
   void fixTree();
   bool eventFilter(QObject *object, QEvent *event);
   void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
   
 private:
   QPointer<AttributeDialog> attributeDialog;
@@ -88,6 +90,7 @@ private:
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
   EventGraphWidget *eventGraph;
+  OccurrenceGraphWidget *occurrenceGraph;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

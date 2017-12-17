@@ -29,7 +29,9 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
   
   dw->setEventGraph(egw);
+  dw->setOccurrenceGraph(ogw);
   aw->setEventGraph(egw);
+  aw->setOccurrenceGraph(ogw);
   lw->setEventGraph(egw);
   ogw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
@@ -76,37 +78,38 @@ void MainWindow::createActions() {
   importAct->setStatusTip("Import existing data from csv file");
   connect(importAct, SIGNAL(triggered()), this, SLOT(importFromCsv()));
 
-  // View menu actions
-  dataViewAct = new QAction(tr("&Data view"), this);
-  dataViewAct->setStatusTip("Switch to data view");
+  // Tool menu actions
+  dataViewAct = new QAction(tr("&Data table"), this);
+  dataViewAct->setStatusTip("Switch to data table");
   connect(dataViewAct, SIGNAL(triggered()), this, SLOT(switchToDataView()));
 
-  attributeViewAct = new QAction(tr("&Attribute view"), this);
-  dataViewAct->setStatusTip("Switch to attribute view");
+  attributeViewAct = new QAction(tr("&Attribute coder"), this);
+  dataViewAct->setStatusTip("Switch to attribute coder");
   connect(attributeViewAct, SIGNAL(triggered()), this, SLOT(switchToAttributeView()));
 
-  relationshipViewAct = new QAction(tr("&Relationship view"), this);
-  relationshipViewAct->setStatusTip("Switch to relationship view");
+  relationshipViewAct = new QAction(tr("&Relationship coder"), this);
+  relationshipViewAct->setStatusTip("Switch to relationship coder");
   connect(relationshipViewAct, SIGNAL(triggered()), this, SLOT(switchToRelationshipView()));
 
-  linkageViewAct = new QAction(tr("&Linkage view"), this);
-  linkageViewAct->setStatusTip("Switch to linkage view");
+  linkageViewAct = new QAction(tr("&Linkage coder"), this);
+  linkageViewAct->setStatusTip("Switch to linkage coder");
   connect(linkageViewAct, SIGNAL(triggered()), this, SLOT(switchToLinkageView()));
   
-  journalViewAct = new QAction(tr("&Journal view"), this);
-  journalViewAct->setStatusTip("Switch to journal view");
+  journalViewAct = new QAction(tr("&Journal"), this);
+  journalViewAct->setStatusTip("Switch to journal");
   connect(journalViewAct, SIGNAL(triggered()), this, SLOT(switchToJournalView()));
 
-  eventGraphViewAct = new QAction(tr("&Event graph view"), this);
-  eventGraphViewAct->setStatusTip("Switch to event graph view");
+  // Graph menu actions
+  eventGraphViewAct = new QAction(tr("&Event graph"), this);
+  eventGraphViewAct->setStatusTip("Switch to event graph");
   connect(eventGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToEventGraphView()));
 
-  networkGraphViewAct = new QAction(tr("&Network graph view"), this);
-  networkGraphViewAct->setStatusTip("Switch to network graph view");
+  networkGraphViewAct = new QAction(tr("&Network graph"), this);
+  networkGraphViewAct->setStatusTip("Switch to network graph");
   connect(networkGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToNetworkGraphView()));
 
-  occurrenceGraphViewAct = new QAction(tr("&Occurrence graph view"), this);
-  occurrenceGraphViewAct->setStatusTip("Switch to occurrence graph view");
+  occurrenceGraphViewAct = new QAction(tr("&Occurrence graph"), this);
+  occurrenceGraphViewAct->setStatusTip("Switch to occurrence graph");
   connect(occurrenceGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToOccurrenceGraphView()));
 }
 
@@ -117,15 +120,17 @@ void MainWindow::createMenus() {
   fileMenu->addAction(importAct);
   fileMenu->addAction(exitAct);
 
-  viewMenu = menuBar->addMenu("View");
-  viewMenu->addAction(dataViewAct);
-  viewMenu->addAction(attributeViewAct);
-  viewMenu->addAction(relationshipViewAct);
-  viewMenu->addAction(linkageViewAct);
-  viewMenu->addAction(journalViewAct);
-  viewMenu->addAction(eventGraphViewAct);
-  viewMenu->addAction(networkGraphViewAct);
-  viewMenu->addAction(occurrenceGraphViewAct);
+  toolMenu = menuBar->addMenu("Tools");
+  toolMenu->addAction(dataViewAct);
+  toolMenu->addAction(attributeViewAct);
+  toolMenu->addAction(relationshipViewAct);
+  toolMenu->addAction(linkageViewAct);
+  toolMenu->addAction(journalViewAct);
+
+  graphMenu = menuBar->addMenu("Graphs");
+  graphMenu->addAction(eventGraphViewAct);
+  graphMenu->addAction(networkGraphViewAct);
+  graphMenu->addAction(occurrenceGraphViewAct);
 
   this->setMenuBar(menuBar);
 }
@@ -315,7 +320,6 @@ void MainWindow::switchToAttributeView() {
   aw->incidentsModel->select();
   aw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
   egw->setComment();
   stacked->setCurrentWidget(attributesWidget);
 }
@@ -331,7 +335,6 @@ void MainWindow::switchToRelationshipView() {
   rw->incidentsModel->select();
   rw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
   egw->setComment();
   stacked->setCurrentWidget(relationshipsWidget);
 }
@@ -346,7 +349,6 @@ void MainWindow::switchToLinkageView() {
   lw->incidentsModel->select();
   lw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
   egw->setComment();
   stacked->setCurrentWidget(linkagesWidget);
 }
@@ -367,7 +369,6 @@ void MainWindow::switchToJournalView() {
   jw->tableView->setCurrentIndex(index);
   jw->logField->setText("");
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
   egw->setComment();
   stacked->setCurrentWidget(journalWidget);
 }
@@ -379,6 +380,7 @@ void MainWindow::switchToEventGraphView() {
   rw->setComment();
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
+  lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   const QModelIndex index;
@@ -392,8 +394,8 @@ void MainWindow::switchToNetworkGraphView() {
   rw->setComment();
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
+  lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
   egw->setComment();
   stacked->setCurrentWidget(networkGraphWidget);
 }
@@ -406,8 +408,8 @@ void MainWindow::switchToOccurrenceGraphView() {
   rw->setComment();
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
+  lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
   egw->setComment();
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }

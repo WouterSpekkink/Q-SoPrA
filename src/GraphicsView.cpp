@@ -13,6 +13,7 @@
 GraphicsView::GraphicsView(QGraphicsScene *scene) : QGraphicsView(scene) {
   panSpeed = 4;
   scaleFact = 1;
+  pan = false;
 }
 
 void GraphicsView::resizeEvent(QResizeEvent *) {};
