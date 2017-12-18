@@ -90,7 +90,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
   toggleGraphicsControlsButton->setCheckable(true);
   addAttributeButton = new QPushButton(tr("Add to plot"), legendWidget);
-  removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
+  removeModeButton = new QPushButton(tr("Remove from plot"), legendWidget);
   removeModeButton->setEnabled(false);
   getEventsButton = new QPushButton(tr("Match event graph"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
