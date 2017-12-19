@@ -202,8 +202,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   previousEventButton = new QPushButton("<<", infoWidget);
   previousEventButton->setEnabled(false);   
   nextEventButton = new QPushButton(">>", infoWidget);
-  seeIncidentsButton = new QPushButton(tr("Incidents"), infoWidget);
-  seeIncidentsButton->setEnabled(false);
+  seeComponentsButton = new QPushButton(tr("Components"), infoWidget);
+  seeComponentsButton->setEnabled(false);
   nextEventButton->setEnabled(false);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
@@ -278,7 +278,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(changeFilter(const QString &)));
   connect(previousEventButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
-  connect(seeIncidentsButton, SIGNAL(clicked()), this, SLOT(seeIncidents()));
+  connect(seeComponentsButton, SIGNAL(clicked()), this, SLOT(seeComponents()));
   connect(nextEventButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
@@ -330,7 +330,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   indexLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   QPointer<QHBoxLayout> navigationLayout = new QHBoxLayout;
   navigationLayout->addWidget(previousEventButton);
-  navigationLayout->addWidget(seeIncidentsButton);
+  navigationLayout->addWidget(seeComponentsButton);
   navigationLayout->addWidget(nextEventButton);
   detailsLayout->addLayout(navigationLayout);
   QPointer<QHBoxLayout> timeStampLayout = new QHBoxLayout;
@@ -664,7 +664,7 @@ void EventGraphWidget::retrieveData() {
       MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(currentData.at(vectorPos));
       if (currentEvent) {
 	selectedMacro = NULL;
-	seeIncidentsButton->setEnabled(false);
+	seeComponentsButton->setEnabled(false);
 	timeStampLabel->setText("<b>Timing:</b>");
 	sourceLabel->setText("<b>Source:</b>");
 	rawLabel->show();
@@ -714,10 +714,10 @@ void EventGraphWidget::retrieveData() {
 	selectedIncident = 0;
 	currentMacro->setSelectionColor(Qt::red);
 	currentMacro->update();
-	seeIncidentsButton->setEnabled(true);
+	seeComponentsButton->setEnabled(true);
 	descriptionField->setText(currentMacro->getDescription());
 	timeStampLabel->setText("<b>Duration:</b>");
-	sourceLabel->setText("<b>Number of incidents:</b>");
+	sourceLabel->setText("<b>Number of components:</b>");
 	int id = currentMacro->getIncidents().first()->getId();
 	rawLabel->hide();
 	rawField->hide();
@@ -736,17 +736,25 @@ void EventGraphWidget::retrieveData() {
 	query->first();
 	QString end = query->value(0).toString();
 	QString duration =  "From " + begin + " to " + end;
-	QString count = QString::number(currentMacro->getIncidents().size());
+	int count = currentMacro->getIncidents().size();
+	QVectorIterator<MacroEvent*> it(macroVector);
+	while (it.hasNext()) {
+	  MacroEvent *temp = it.next();
+	  if (temp->getMacroEvent() == currentMacro) {
+	    count++;
+	  }
+	}
+	QString countText = QString::number(count);
 	timeStampField->setText(duration);
-	sourceField->setText(count);
+      sourceField->setText(countText);
 	commentField->setText(currentMacro->getComment());
 	delete query;
 	resetFont(attributesTree);
 	QSet<QString> attributes = currentMacro->getAttributes();
-	QSet<QString>::iterator it;
+	QSet<QString>::iterator it2;
 	id = currentMacro->getId();
-	for (it = attributes.begin(); it != attributes.end(); it++) {
-	  QString attribute  = *it;
+	for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+	  QString attribute  = *it2;
 	  boldSelected(attributesTree, attribute, id, MACRO);
 	}
       }
@@ -770,12 +778,20 @@ void EventGraphWidget::retrieveData() {
   }
 }
 
-void EventGraphWidget::seeIncidents() {
+void EventGraphWidget::seeComponents() {
+  currentData.clear();
   QVector<EventItem*> tempIncidents = selectedMacro->getIncidents();
   QVectorIterator<EventItem*> it(tempIncidents);
-  currentData.clear();
   while (it.hasNext()) {
-    currentData.push_back(it.next());
+    EventItem *event = it.next();
+    currentData.push_back(event);
+  }
+  QVectorIterator<MacroEvent*> it2(macroVector);
+  while (it2.hasNext()) {
+    MacroEvent *macro = it2.next();
+    if (macro->getMacroEvent() == selectedMacro) {
+      currentData.push_back(macro);
+    }
   }
   qSort(currentData.begin(), currentData.end(), eventLessThan);   
   vectorPos = 0;
@@ -783,55 +799,105 @@ void EventGraphWidget::seeIncidents() {
     + QString::number(currentData.size()) + ")";
   indexLabel->setText(indexText);
   EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData.at(vectorPos));
-  currentEvent->getMacroEvent()->setSelectionColor(Qt::red);
-  scene->blockSignals(true);
-  currentEvent->getMacroEvent()->setSelected(true);
-  scene->blockSignals(false);
-  selectedMacro = NULL;
-  seeIncidentsButton->setEnabled(false);
-  timeStampLabel->setText("<b>Timing:</b>");
-  sourceLabel->setText("<b>Source:</b>");
-  rawLabel->show();
-  rawField->show();
-  currentEvent->setSelectionColor(Qt::red);
-  currentEvent->update();
-  int id = currentEvent->getId();
-  selectedIncident = id;
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
-		 "WHERE id = :id");
-  query->bindValue(":id", id);
-  query->exec();
-  query->first();
-  if (query->isNull(0)) {
-    timeStampField->setText("Incident was deleted");
-    descriptionField->setText("Incident was deleted");
-    rawField->setText("Incident was deleted");
-    commentField->setText("Incident was deleted");
-    sourceField->setText("Incident was deleted");
-  } else {
-    QString timeStamp = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QString raw = query->value(2).toString();
-    QString comment = query->value(3).toString();
-    QString source = query->value(4).toString();
-    timeStampField->setText(timeStamp);
-    descriptionField->setText(description);
-    rawField->setText(raw);
-    commentField->setText(comment);
-    sourceField->setText(source);
-    resetFont(attributesTree);
+  MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(currentData.at(vectorPos));
+  if (currentEvent) {
+    selectedMacro = NULL;
+    seeComponentsButton->setEnabled(false);
+    timeStampLabel->setText("<b>Timing:</b>");
+    sourceLabel->setText("<b>Source:</b>");
+    rawLabel->show();
+    rawField->show();
+
+    currentEvent->setSelectionColor(Qt::red);
+    currentEvent->update();
+    int id = currentEvent->getId();
+    selectedIncident = id;
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT attribute FROM attributes_to_incidents "
-		   "WHERE incident = :id");
+    query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
+		   "WHERE id = :id");
     query->bindValue(":id", id);
     query->exec();
-    while (query->next()) {
-      QString attribute = query->value(0).toString();
-      boldSelected(attributesTree, attribute, id, INCIDENT);
+    query->first();
+    if (query->isNull(0)) {
+      timeStampField->setText("Incident was deleted");
+      descriptionField->setText("Incident was deleted");
+      rawField->setText("Incident was deleted");
+      commentField->setText("Incident was deleted");
+      sourceField->setText("Incident was deleted");
+    } else {
+      QString timeStamp = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString raw = query->value(2).toString();
+      QString comment = query->value(3).toString();
+      QString source = query->value(4).toString();
+      timeStampField->setText(timeStamp);
+      descriptionField->setText(description);
+      rawField->setText(raw);
+      commentField->setText(comment);
+      sourceField->setText(source);
+      resetFont(attributesTree);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE incident = :id");
+      query->bindValue(":id", id);
+      query->exec();
+      while (query->next()) {
+	QString attribute = query->value(0).toString();
+	boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
+    }
+    delete query;
+  } else if (currentMacro) {
+    selectedMacro = currentMacro;
+    selectedIncident = 0;
+    currentMacro->setSelectionColor(Qt::red);
+    currentMacro->update();
+    seeComponentsButton->setEnabled(true);
+    descriptionField->setText(currentMacro->getDescription());
+    timeStampLabel->setText("<b>Duration:</b>");
+    sourceLabel->setText("<b>Number of components:</b>");
+    int id = currentMacro->getIncidents().first()->getId();
+    rawLabel->hide();
+    rawField->hide();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT timestamp FROM incidents "
+		   "WHERE id = :id");
+    query->bindValue(":id", id);
+    query->exec();
+    query->first();
+    QString begin = query->value(0).toString();
+    id = currentMacro->getIncidents().last()->getId();
+    query->prepare("SELECT timestamp FROM incidents "
+		   "WHERE id = :id");
+    query->bindValue(":id", id);
+    query->exec();
+    query->first();
+    QString end = query->value(0).toString();
+    QString duration =  "From " + begin + " to " + end;
+    int count = currentMacro->getIncidents().size();
+    QVectorIterator<MacroEvent*> it(macroVector);
+    while (it.hasNext()) {
+      MacroEvent *temp = it.next();
+      if (temp->getMacroEvent() == currentMacro) {
+	count++;
+      }
+    }
+    QString countText = QString::number(count);
+    timeStampField->setText(duration);
+    sourceField->setText(countText);
+    commentField->setText(currentMacro->getComment());
+    delete query;
+    resetFont(attributesTree);
+    QSet<QString> attributes = currentMacro->getAttributes();
+    QSet<QString>::iterator it2;
+    id = currentMacro->getId();
+    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+      QString attribute  = *it2;
+      boldSelected(attributesTree, attribute, id, MACRO);
     }
   }
-  delete query;
+  previousEventButton->setEnabled(true);
+  nextEventButton->setEnabled(true);
 }
 
 void EventGraphWidget::previousDataItem() {
@@ -861,7 +927,7 @@ void EventGraphWidget::previousDataItem() {
     }
     if (currentEvent) {
       selectedMacro = NULL;
-      seeIncidentsButton->setEnabled(false);
+      seeComponentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
       rawLabel->show();
@@ -906,10 +972,10 @@ void EventGraphWidget::previousDataItem() {
     } else if (currentMacro) {
       selectedMacro = currentMacro;
       selectedIncident = 0;
-      seeIncidentsButton->setEnabled(true);
+      seeComponentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
-      sourceLabel->setText("<b>Number of incidents:</b>");
+      sourceLabel->setText("<b>Number of components:</b>");
       int id = currentMacro->getIncidents().first()->getId();
       rawLabel->hide();
       rawField->hide();
@@ -928,17 +994,25 @@ void EventGraphWidget::previousDataItem() {
       query->first();
       QString end = query->value(0).toString();
       QString duration =  "From " + begin + " to " + end;
-      QString count = QString::number(currentMacro->getIncidents().size());
+      int count = currentMacro->getIncidents().size();
+      QVectorIterator<MacroEvent*> it(macroVector);
+      while (it.hasNext()) {
+	MacroEvent *temp = it.next();
+	if (temp->getMacroEvent() == currentMacro) {
+	  count++;
+	}
+      }
+      QString countText = QString::number(count);
       timeStampField->setText(duration);
-      sourceField->setText(count);
+      sourceField->setText(countText);
       commentField->setText(currentMacro->getComment());
       delete query;
       resetFont(attributesTree);
       QSet<QString> attributes = currentMacro->getAttributes();
-      QSet<QString>::iterator it;
+      QSet<QString>::iterator it2;
       id = currentMacro->getId();
-      for (it = attributes.begin(); it != attributes.end(); it++) {
-	QString attribute  = *it;
+      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+	QString attribute  = *it2;
 	boldSelected(attributesTree, attribute, id, MACRO);
       }
     }
@@ -967,7 +1041,7 @@ void EventGraphWidget::previousDataItem() {
     }
     if (currentEvent) {
       selectedMacro = 0;
-      seeIncidentsButton->setEnabled(false);
+      seeComponentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
       rawLabel->show();
@@ -1012,10 +1086,10 @@ void EventGraphWidget::previousDataItem() {
     } else if (currentMacro) {
       selectedMacro = currentMacro;
       selectedIncident = 0;
-      seeIncidentsButton->setEnabled(true);
+      seeComponentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
-      sourceLabel->setText("<b>Number of incidents:</b>");
+      sourceLabel->setText("<b>Number of components:</b>");
       int id = currentMacro->getIncidents().first()->getId();
       rawLabel->hide();
       rawField->hide();
@@ -1034,17 +1108,25 @@ void EventGraphWidget::previousDataItem() {
       query->first();
       QString end = query->value(0).toString();
       QString duration =  "From " + begin + " to " + end;
-      QString count = QString::number(currentMacro->getIncidents().size());
+      int count = currentMacro->getIncidents().size();
+      QVectorIterator<MacroEvent*> it(macroVector);
+      while (it.hasNext()) {
+	MacroEvent *temp = it.next();
+	if (temp->getMacroEvent() == currentMacro) {
+	  count++;
+	}
+      }
+      QString countText = QString::number(count);
       timeStampField->setText(duration);
-      sourceField->setText(count);
+      sourceField->setText(countText);
       commentField->setText(currentMacro->getComment());
       delete query;
       resetFont(attributesTree);
       QSet<QString> attributes = currentMacro->getAttributes();
-      QSet<QString>::iterator it;
+      QSet<QString>::iterator it2;
       id = currentMacro->getId();
-      for (it = attributes.begin(); it != attributes.end(); it++) {
-	QString attribute  = *it;
+      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+	QString attribute  = *it2;
 	boldSelected(attributesTree, attribute, id, MACRO);
       }
     }
@@ -1078,7 +1160,7 @@ void EventGraphWidget::nextDataItem() {
     }
     if (currentEvent) {
       selectedMacro = NULL;
-      seeIncidentsButton->setEnabled(false);
+      seeComponentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
       rawLabel->show();
@@ -1122,10 +1204,10 @@ void EventGraphWidget::nextDataItem() {
       delete query;
     } else if (currentMacro) {
       selectedMacro = currentMacro;
-      seeIncidentsButton->setEnabled(true);
+      seeComponentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
-      sourceLabel->setText("<b>Number of incidents:</b>");
+      sourceLabel->setText("<b>Number of components:</b>");
       int id = currentMacro->getIncidents().first()->getId();
       rawLabel->hide();
       rawField->hide();
@@ -1144,17 +1226,25 @@ void EventGraphWidget::nextDataItem() {
       query->first();
       QString end = query->value(0).toString();
       QString duration =  "From " + begin + " to " + end;
-      QString count = QString::number(currentMacro->getIncidents().size());
+      int count = currentMacro->getIncidents().size();
+      QVectorIterator<MacroEvent*> it(macroVector);
+      while (it.hasNext()) {
+	MacroEvent *temp = it.next();
+	if (temp->getMacroEvent() == currentMacro) {
+	  count++;
+	}
+      }
+      QString countText = QString::number(count);
       timeStampField->setText(duration);
-      sourceField->setText(count);
+      sourceField->setText(countText);
       commentField->setText(currentMacro->getComment());
       delete query;
       resetFont(attributesTree);
       QSet<QString> attributes = currentMacro->getAttributes();
-      QSet<QString>::iterator it;
+      QSet<QString>::iterator it2;
       id = currentMacro->getId();
-      for (it = attributes.begin(); it != attributes.end(); it++) {
-	QString attribute  = *it;
+      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+	QString attribute  = *it2;
 	boldSelected(attributesTree, attribute, id, MACRO);
       }
     }
@@ -1183,7 +1273,7 @@ void EventGraphWidget::nextDataItem() {
     }
     if (currentEvent) {
       selectedMacro = NULL;
-      seeIncidentsButton->setEnabled(false);
+      seeComponentsButton->setEnabled(false);
       timeStampLabel->setText("<b>Timing:</b>");
       sourceLabel->setText("<b>Source:</b>");
       rawLabel->show();
@@ -1229,10 +1319,10 @@ void EventGraphWidget::nextDataItem() {
     } else if (currentMacro) {
       selectedMacro = currentMacro;
       selectedIncident = 0;
-      seeIncidentsButton->setEnabled(true);
+      seeComponentsButton->setEnabled(true);
       descriptionField->setText(currentMacro->getDescription());
       timeStampLabel->setText("<b>Duration:</b>");
-      sourceLabel->setText("<b>Number of incidents:</b>");
+      sourceLabel->setText("<b>Number of components:</b>");
       int id = currentMacro->getIncidents().first()->getId();
       rawLabel->hide();
       rawField->hide();
@@ -1251,17 +1341,25 @@ void EventGraphWidget::nextDataItem() {
       query->first();
       QString end = query->value(0).toString();
       QString duration =  "From " + begin + " to " + end;
-      QString count = QString::number(currentMacro->getIncidents().size());
+      int count = currentMacro->getIncidents().size();
+      QVectorIterator<MacroEvent*> it(macroVector);
+      while (it.hasNext()) {
+	MacroEvent *temp = it.next();
+	if (temp->getMacroEvent() == currentMacro) {
+	  count++;
+	}
+      }
+      QString countText = QString::number(count);
       timeStampField->setText(duration);
-      sourceField->setText(count);
+      sourceField->setText(countText);
       commentField->setText(currentMacro->getComment());
       delete query;
       resetFont(attributesTree);
       QSet<QString> attributes = currentMacro->getAttributes();
-      QSet<QString>::iterator it;
+      QSet<QString>::iterator it2;
       id = currentMacro->getId();
-      for (it = attributes.begin(); it != attributes.end(); it++) {
-	QString attribute  = *it;
+      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+	QString attribute  = *it2;
 	boldSelected(attributesTree, attribute, id, MACRO);
       }
     }

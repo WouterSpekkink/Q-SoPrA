@@ -80,7 +80,7 @@ private slots:
   void newAttribute();
   void editAttribute();
   void removeUnusedAttributes();  
-  void seeIncidents();
+  void seeComponents();
   void previousDataItem();
   void nextDataItem();
   void getEvents();
@@ -212,7 +212,7 @@ private:
   QPointer<QPushButton> eventColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;
-  QPointer<QPushButton> seeIncidentsButton;
+  QPointer<QPushButton> seeComponentsButton;
   QPointer<QPushButton> seeAttributesButton;
   QPointer<QPushButton> seeCommentsButton;
   QPointer<QPushButton> valueButton; 
