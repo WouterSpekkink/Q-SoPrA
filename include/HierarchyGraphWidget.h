@@ -37,13 +37,31 @@ public:
   void setOrigin(MacroEvent *submittedOrigin);
   void setEvents(QVector<EventItem*> submittedEvents);
   void setMacros(QVector<MacroEvent*> submittedMacros);
-
+  void cleanUp();
+						      
 private slots:
   void toggleDetails();
+  void retrieveData();
   void showAttributes();
   void showComments();
   void buildComponents(MacroEvent *submittedOrigin, int layer);
-  void cleanUp();
+  void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
+
+  void assignAttribute();
+  void sourceText(const QString &attribute, const int &incident);
+  void highlightText();
+  
+  void setTree();
+  void buildHierarchy(QStandardItem *top, QString name);
+  void fixTree();
+  void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
+		    QString type = "", QModelIndex parent = QModelIndex());
+  bool eventFilter(QObject *object, QEvent *event);
+
+  void switchBack();
+signals:
+  void goToEventGraph();
   
 private:
   QPointer<Scene> scene;
@@ -51,6 +69,7 @@ private:
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
+  QVector<QGraphicsItem*> currentData;
 
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> attWidget;
@@ -90,6 +109,10 @@ private:
   MacroEvent *origin;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
+
+  int vectorPos;
+  MacroEvent *selectedMacro;
+  int selectedIncident;
 };
 
 #endif

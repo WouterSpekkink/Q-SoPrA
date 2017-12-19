@@ -156,7 +156,7 @@ private slots:
   void finalBusiness();
 
 signals:
-  void seeHierarchy(MacroEvent *selectedMacro);
+  void seeHierarchy(MacroEvent *);
   
 private:
   QPointer<Scene> scene;

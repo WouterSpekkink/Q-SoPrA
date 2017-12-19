@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
-  //  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(hierarchyGraphWidget);
+  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(hierarchyGraphWidget);
   
   dw->setEventGraph(egw);
   dw->setOccurrenceGraph(ogw);
@@ -51,8 +51,9 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(hierarchyGraphWidget);
 
   // We need only a few signals
-  connect(egw, SIGNAL(seeHierarchy(MacroEvent *selectedMacro)),
-	  this, SLOT(switchToHierarchyView(MacroEvent *selectedMacro)));
+  connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
+	  this, SLOT(switchToHierarchyView(MacroEvent *)));
+  connect(hgw, SIGNAL(goToEventGraph()), this, SLOT(switchToEventGraphView()));
   
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
@@ -314,6 +315,7 @@ void MainWindow::switchToDataView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(dataWidget);
 }
 
@@ -329,6 +331,7 @@ void MainWindow::switchToAttributeView() {
   aw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(attributesWidget);
 }
 
@@ -344,6 +347,7 @@ void MainWindow::switchToRelationshipView() {
   rw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(relationshipsWidget);
 }
 
@@ -358,6 +362,7 @@ void MainWindow::switchToLinkageView() {
   lw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(linkagesWidget);
 }
 
@@ -378,6 +383,7 @@ void MainWindow::switchToJournalView() {
   jw->logField->setText("");
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(journalWidget);
 }
 
@@ -392,6 +398,7 @@ void MainWindow::switchToEventGraphView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   const QModelIndex index;
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(eventGraphWidget);
 }
 
@@ -405,6 +412,7 @@ void MainWindow::switchToNetworkGraphView() {
   lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(networkGraphWidget);
 }
 
@@ -419,6 +427,7 @@ void MainWindow::switchToOccurrenceGraphView() {
   lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 
@@ -432,9 +441,11 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
-  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(7));
-  hgw->setEvents(egw->getEvents());
+  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  hgw->cleanUp();
+  hgw->setEvents(egw->getEventItems());
   hgw->setMacros(egw->getMacros());
   hgw->setOrigin(selectedMacro);
+  menuBar->setEnabled(false);
   stacked->setCurrentWidget(hierarchyGraphWidget);
 }
