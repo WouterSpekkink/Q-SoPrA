@@ -820,6 +820,16 @@ void EventGraphWidget::seeIncidents() {
     rawField->setText(raw);
     commentField->setText(comment);
     sourceField->setText(source);
+    resetFont(attributesTree);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute FROM attributes_to_incidents "
+		   "WHERE incident = :id");
+    query->bindValue(":id", id);
+    query->exec();
+    while (query->next()) {
+      QString attribute = query->value(0).toString();
+      boldSelected(attributesTree, attribute, id, INCIDENT);
+    }
   }
   delete query;
 }
@@ -883,6 +893,15 @@ void EventGraphWidget::previousDataItem() {
 	commentField->setText(comment);
 	sourceField->setText(source);
       }
+      resetFont(attributesTree);
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE incident = :id");
+      query->bindValue(":id", id);
+      query->exec();
+      while (query->next()) {
+	QString attribute = query->value(0).toString();
+	boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
       delete query;
     } else if (currentMacro) {
       selectedMacro = currentMacro;
@@ -914,6 +933,14 @@ void EventGraphWidget::previousDataItem() {
       sourceField->setText(count);
       commentField->setText(currentMacro->getComment());
       delete query;
+      resetFont(attributesTree);
+      QSet<QString> attributes = currentMacro->getAttributes();
+      QSet<QString>::iterator it;
+      id = currentMacro->getId();
+      for (it = attributes.begin(); it != attributes.end(); it++) {
+	QString attribute  = *it;
+	boldSelected(attributesTree, attribute, id, MACRO);
+      }
     }
   } else {
     EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData.at(vectorPos));
@@ -972,6 +999,15 @@ void EventGraphWidget::previousDataItem() {
 	commentField->setText(comment);
 	sourceField->setText(source);
       }
+      resetFont(attributesTree);
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE incident = :id");
+      query->bindValue(":id", id);
+      query->exec();
+      while (query->next()) {
+	QString attribute = query->value(0).toString();
+	boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
       delete query;
     } else if (currentMacro) {
       selectedMacro = currentMacro;
@@ -1003,6 +1039,14 @@ void EventGraphWidget::previousDataItem() {
       sourceField->setText(count);
       commentField->setText(currentMacro->getComment());
       delete query;
+      resetFont(attributesTree);
+      QSet<QString> attributes = currentMacro->getAttributes();
+      QSet<QString>::iterator it;
+      id = currentMacro->getId();
+      for (it = attributes.begin(); it != attributes.end(); it++) {
+	QString attribute  = *it;
+	boldSelected(attributesTree, attribute, id, MACRO);
+      }
     }
   }
 }
@@ -1066,6 +1110,15 @@ void EventGraphWidget::nextDataItem() {
 	commentField->setText(comment);
 	sourceField->setText(source);
       }
+      resetFont(attributesTree);
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE incident = :id");
+      query->bindValue(":id", id);
+      query->exec();
+      while (query->next()) {
+	QString attribute = query->value(0).toString();
+	boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
       delete query;
     } else if (currentMacro) {
       selectedMacro = currentMacro;
@@ -1096,6 +1149,14 @@ void EventGraphWidget::nextDataItem() {
       sourceField->setText(count);
       commentField->setText(currentMacro->getComment());
       delete query;
+      resetFont(attributesTree);
+      QSet<QString> attributes = currentMacro->getAttributes();
+      QSet<QString>::iterator it;
+      id = currentMacro->getId();
+      for (it = attributes.begin(); it != attributes.end(); it++) {
+	QString attribute  = *it;
+	boldSelected(attributesTree, attribute, id, MACRO);
+      }
     }
   } else {
     EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData.at(vectorPos));
@@ -1154,6 +1215,16 @@ void EventGraphWidget::nextDataItem() {
 	commentField->setText(comment);
 	sourceField->setText(source);
 	delete query;
+	resetFont(attributesTree);
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT attribute FROM attributes_to_incidents "
+		       "WHERE incident = :id");
+	query->bindValue(":id", id);
+	query->exec();
+	while (query->next()) {
+	  QString attribute = query->value(0).toString();
+	  boldSelected(attributesTree, attribute, id, INCIDENT);
+	}
       }
     } else if (currentMacro) {
       selectedMacro = currentMacro;
@@ -1185,6 +1256,14 @@ void EventGraphWidget::nextDataItem() {
       sourceField->setText(count);
       commentField->setText(currentMacro->getComment());
       delete query;
+      resetFont(attributesTree);
+      QSet<QString> attributes = currentMacro->getAttributes();
+      QSet<QString>::iterator it;
+      id = currentMacro->getId();
+      for (it = attributes.begin(); it != attributes.end(); it++) {
+	QString attribute  = *it;
+	boldSelected(attributesTree, attribute, id, MACRO);
+      }
     }
   }
 }
@@ -1555,7 +1634,7 @@ void EventGraphWidget::setButtons() {
       }
       assignAttributeButton->setEnabled(true);
       editAttributeButton->setEnabled(true);
-          delete query;
+      delete query;
     } else if (selectedMacro != NULL) {
       QString currentAttribute = attributesTreeView->currentIndex().data().toString();
       QSet<QString> attributes = selectedMacro->getAttributes();
@@ -1564,6 +1643,8 @@ void EventGraphWidget::setButtons() {
       } else {
 	unassignAttributeButton->setEnabled(false);
       }
+      assignAttributeButton->setEnabled(true);
+      editAttributeButton->setEnabled(true);
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
     }
@@ -4011,6 +4092,9 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	scene->addItem(macroLabel);
 	rewireLinkages(current, tempIncidents);
 	setVisibility();
+	currentData.clear();
+	current->setSelected(true);
+	retrieveData();
       }
     } else {
       return;

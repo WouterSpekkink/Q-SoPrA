@@ -35,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   lw->setEventGraph(egw);
   ogw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
+  egw->setOccurrenceGraph(ogw);
   rw->setNetworkGraph(ngw);
   
   stacked->addWidget(dataWidget);

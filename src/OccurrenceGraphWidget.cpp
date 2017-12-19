@@ -205,75 +205,77 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 }
 
 void OccurrenceGraphWidget::checkCongruency() {
-  QSqlQuery *query = new QSqlQuery;
-  QVectorIterator<OccurrenceItem*> it(occurrenceVector);
-  while (it.hasNext()) {
-    OccurrenceItem* current = it.next();
-    int id = current->getId();
-    int order = current->getOrder();
-    QString attribute = current->getAttribute();
-    QVector<QString> attributeVector;
-    attributeVector.push_back(attribute);
-    findChildren(attribute, &attributeVector);
-    QVectorIterator<QString> it2(attributeVector);
-    bool found = false;
-    while (it2.hasNext()) {
-      QString currentAttribute = it2.next();
-      query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-		     "WHERE attribute = :attribute AND incident = :incident");
-      query->bindValue(":attribute", currentAttribute);
-      query->bindValue(":incident", id);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	found = true;
-      }
-    }
-    if (!found) {
-      incongruencyLabel->setText("Incongruency detected");
-      return;
-    }
-    query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE id = :incident");
-    query->bindValue(":incident", id);
-    query->exec();
-    query->first();
-    if (query->isNull(0)) {
-      incongruencyLabel->setText("Incongruency detected");
-      return;
-    } else if (query->value(0).toInt() != order) {
-      incongruencyLabel->setText("Incongruency detected");
-      return;
-    }
-  }
-  for (int i = 0; i != attributeListWidget->rowCount(); i++) {
-    QString text = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-    query->prepare("SELECT incident FROM attributes_to_incident "
-		   "WHERE attribute = :attribute");
-    query->bindValue(":attribute", text);
-    query->exec();
-    while (query->next()) {
-      int current = query->value(0).toInt();
+  if (occurrenceVector.size() > 0) {
+    QSqlQuery *query = new QSqlQuery;
+    QVectorIterator<OccurrenceItem*> it(occurrenceVector);
+    while (it.hasNext()) {
+      OccurrenceItem* current = it.next();
+      int id = current->getId();
+      int order = current->getOrder();
+      QString attribute = current->getAttribute();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(attribute);
+      findChildren(attribute, &attributeVector);
+      QVectorIterator<QString> it2(attributeVector);
       bool found = false;
-      QVectorIterator<OccurrenceItem*> it2(occurrenceVector);
       while (it2.hasNext()) {
-	OccurrenceItem *item = it2.next();
-	if (item->getId() == current &&
-	    item->getAttribute() == text) {
+	QString currentAttribute = it2.next();
+	query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+		       "WHERE attribute = :attribute AND incident = :incident");
+	query->bindValue(":attribute", currentAttribute);
+	query->bindValue(":incident", id);
+	query->exec();
+	query->first();
+	if (!query->isNull(0)) {
 	  found = true;
-	  break;
 	}
       }
       if (!found) {
 	incongruencyLabel->setText("Incongruency detected");
 	return;
       }
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE id = :incident");
+      query->bindValue(":incident", id);
+      query->exec();
+      query->first();
+      if (query->isNull(0)) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+      } else if (query->value(0).toInt() != order) {
+	incongruencyLabel->setText("Incongruency detected");
+	return;
+      }
     }
+    for (int i = 0; i != attributeListWidget->rowCount(); i++) {
+      QString text = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      query->prepare("SELECT incident FROM attributes_to_incident "
+		     "WHERE attribute = :attribute");
+      query->bindValue(":attribute", text);
+      query->exec();
+      while (query->next()) {
+	int current = query->value(0).toInt();
+	bool found = false;
+	QVectorIterator<OccurrenceItem*> it2(occurrenceVector);
+	while (it2.hasNext()) {
+	  OccurrenceItem *item = it2.next();
+	  if (item->getId() == current &&
+	      item->getAttribute() == text) {
+	    found = true;
+	    break;
+	  }
+	}
+	if (!found) {
+	  incongruencyLabel->setText("Incongruency detected");
+	  return;
+	}
+      }
+    }
+    delete query;
+    incongruencyLabel->setText("");
   }
-  delete query;
-  incongruencyLabel->setText("");
 }
-
+  
 void OccurrenceGraphWidget::toggleLegend() {
   if (legendWidget->isVisible()) {
     legendWidget->hide();
@@ -312,7 +314,6 @@ void OccurrenceGraphWidget::addAttribute() {
       attributeVector.push_back(attribute);
       findChildren(attribute, &attributeVector);
       QVectorIterator<QString> it(attributeVector);
-      QVector<OccurrenceItem*> tempVec;
       QVector<int> orders;
       while (it.hasNext()) {
 	QString currentAttribute = it.next();
@@ -339,7 +340,6 @@ void OccurrenceGraphWidget::addAttribute() {
 	    newOccurrence->setColor(color);
 	    newOccurrence->setZValue(1);
 	    occurrenceVector.push_back(newOccurrence);
-	    tempVec.push_back(newOccurrence);
 	    scene->addItem(newOccurrence);
 	    OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 	    QString text = QString::number(order) + " - " + attribute;
@@ -495,36 +495,38 @@ void OccurrenceGraphWidget::groupOccurrences() {
     QVector<OccurrenceItem*> temp;
     if (!temp.contains(first)) {
       temp.push_back(first);
-      QVector<OccurrenceItem*> rem;
-      while (it4.hasNext()) {
-	OccurrenceItem *second = it4.next();
-	if (first != second && second->scenePos().x() == first->scenePos().x()) {
-	  if (second->getAttribute() != first->getAttribute()) {
-	    temp.push_back(second);
-	  } else {
-	    rem.push_back(second);
-	  }
+    }
+    QVector<OccurrenceItem*> rem;
+    while (it4.hasNext()) {
+      OccurrenceItem *second = it4.next();
+      if (first != second && second->scenePos().x() == first->scenePos().x()) {
+	if (second->getAttribute() != first->getAttribute()) {
+	  temp.push_back(second);
+	} else {
+	  rem.push_back(second);
 	}
       }
-      QVectorIterator<OccurrenceItem*> it5(rem);
-      while (it5.hasNext()) {
-	OccurrenceItem *candidate = it5.next();
-	if (candidate != rem.first()) {
-	  candidate->hide();
-	  candidate->setPermHidden(true);
-	  candidate->getLabel()->hide();
-	}
+    }
+    QVectorIterator<OccurrenceItem*> it5(rem);
+    while (it5.hasNext()) {
+      OccurrenceItem *candidate = it5.next();
+      if (candidate != rem.first()) {
+	candidate->hide();
+	candidate->setPermHidden(true);
+	candidate->getLabel()->hide();
       }
-      qSort(temp.begin(), temp.end(), attributeLessThan);
-      QVectorIterator<OccurrenceItem*> it6(temp);
-      qreal x = temp.first()->scenePos().x();
-      qreal startY = temp.first()->scenePos().y();
-      int dist = 0;
-      while (it6.hasNext()) {
-	OccurrenceItem *current = it6.next();
-	if (temp.size() > 1) {
-	  current->setGrouped(true);
-	}  
+    }
+    qSort(temp.begin(), temp.end(), attributeLessThan);
+    QVectorIterator<OccurrenceItem*> it6(temp);
+    qreal x = temp.first()->scenePos().x();
+    qreal startY = temp.first()->scenePos().y();
+    int dist = 0;
+    while (it6.hasNext()) {
+      OccurrenceItem *current = it6.next();
+      if (temp.size() > 1) {
+	current->setGrouped(true);
+      }
+      if (current->isVisible()) {
 	current->setPos(x, startY - dist);
 	current->getLabel()->setNewPos(current->scenePos());
 	dist += 80;
@@ -568,7 +570,28 @@ void OccurrenceGraphWidget::wireLinkages() {
   }
 }
 
+// IS SHOULD PERHAPS ADD THE OPTION TO ALSO ADD ATTRIBUTES OF MACRO EVENTS.
+
 void OccurrenceGraphWidget::getEvents() {
+  QVector<OccurrenceItem*>::iterator it;
+  for (it = occurrenceVector.begin(); it != occurrenceVector.end();) {
+    OccurrenceItem *current = *it;
+    if (current->getId() < 0) {
+      scene->removeItem(current->getLabel());
+      scene->removeItem(current);
+      labelVector.removeOne(current->getLabel());
+      occurrenceVector.removeOne(*it);
+    } else {
+      current->setPos(QPointF((current->getOrder() * distance), 0));
+      current->setPermHidden(false); // We reset this here.
+      QString text = QString::number(current->getOrder()) + " - " + current->getAttribute();
+      current->getLabel()->setPlainText(text);
+      current->getLabel()->setTextWidth(current->getLabel()->boundingRect().width());
+      current->show();
+      current->getLabel()->show();
+      it++;
+    }
+  }
   QVector<EventItem*> incidents = eventGraph->getEventItems();
   if (incidents.size() > 0) {
     QVectorIterator<EventItem*> it(incidents);
@@ -577,23 +600,88 @@ void OccurrenceGraphWidget::getEvents() {
       QVectorIterator<OccurrenceItem*> it2(occurrenceVector);
       while (it2.hasNext()) {
 	OccurrenceItem *occurrence = it2.next();
-	occurrence->setPermHidden(false); // We reset this here.
 	if (incident->getId() == occurrence->getId()) {
 	  if (incident->getMacroEvent() != NULL) {
-	    occurrence->setPos(incident->getMacroEvent()->scenePos().x() +
-			       (incident->getMacroEvent()->getWidth() / 2),
-			       occurrence->scenePos().y());
+	    MacroEvent *macro = incident->getMacroEvent();
+	    QString type = "";
+	    if (macro->getConstraint() == PATHS) {
+	      type = "P";
+	    } else if (macro->getConstraint() == SEMIPATHS) {
+	      type = "S";
+	    }
+	    occurrence->setPos(incident->getMacroEvent()->scenePos().x(), 0);
+	    QString text = type + QString::number(macro->getOrder()) + " - " +
+	      occurrence->getAttribute();
+	    occurrence->getLabel()->setPlainText(text);
+	    occurrence->getLabel()->setTextWidth(occurrence->getLabel()->boundingRect().width());
 	    occurrence->getLabel()->setNewPos(occurrence->scenePos());
 	  } else {
-	    occurrence->setPos(incident->scenePos().x(), occurrence->scenePos().y());
+	    occurrence->setPos(incident->scenePos().x(), 0);
 	    occurrence->getLabel()->setNewPos(occurrence->scenePos());
 	  }
 	}
       }
     }
-    groupOccurrences();
-    wireLinkages();
   }
+  QVector<MacroEvent*> macros = eventGraph->getMacros();
+  if (macros.size() > 0) {
+    QVectorIterator<MacroEvent*> it(macros);
+    while (it.hasNext()) {
+      MacroEvent *macro = it.next();
+      QSet<QString> attributes = macro->getAttributes();
+      QSetIterator<QString> it2(attributes);
+      while (it2.hasNext()) {
+	QString currentAttribute = it2.next();
+	QColor color = QColor();
+	bool found = false;
+	for (int i = 0; i != attributeListWidget->rowCount(); i++) {
+	  QTableWidgetItem *item = attributeListWidget->item(i, 0);
+	  QString title = item->data(Qt::DisplayRole).toString();
+	  if (title == currentAttribute) {
+	    color = attributeListWidget->item(i, 1)->background().color();
+	    found = true;
+	  }
+	}
+	if (found) {
+	  QPointF position = QPointF(macro->scenePos().x(), 0);
+	  // I am setting macro id's to negatives to distinguish them from the incident ids.
+	  OccurrenceItem *newOccurrence = new OccurrenceItem(40, macro->getDescription(),
+							     position,
+							     (macro->getId() * -1),
+							     macro->getOrder(),
+							     currentAttribute);
+	  newOccurrence->setPos(newOccurrence->getOriginalPos());
+	  newOccurrence->setColor(color);
+	  newOccurrence->setZValue(1);
+	  occurrenceVector.push_back(newOccurrence);
+	  scene->addItem(newOccurrence);
+	  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
+	  MacroEvent *temp = macro;
+	  while (temp->getMacroEvent() != NULL) {
+	    temp = temp->getMacroEvent();
+	  }
+	  newOccurrence->setPos(temp->scenePos().x(), 0);
+	  QString type = "";
+	  if (temp->getConstraint() == PATHS) {
+	    type = "P";
+	  } else if (temp->getConstraint() == SEMIPATHS) {
+	    type = "S";
+	  }
+	  QString text = type + QString::number(temp->getOrder()) + " - " + currentAttribute;
+	  label->setPlainText(text);
+	  label->setDefaultTextColor(Qt::black);
+	  label->setTextWidth(label->boundingRect().width());
+	  label->setNewPos(newOccurrence->scenePos());
+	  labelVector.push_back(label);
+	  newOccurrence->setLabel(label);
+	  label->setZValue(2);
+	  scene->addItem(label);
+	}
+      }
+    }
+  }
+  groupOccurrences();
+  wireLinkages();
 }
 
 

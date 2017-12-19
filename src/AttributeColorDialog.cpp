@@ -65,7 +65,8 @@ void AttributeColorDialog::getAttributes() {
       addChildren(currentAttribute, 1);
     }
   } else if (type == INCIDENT) {
-    query->exec("SELECT DISTINCT name FROM incident_attributes "
+    query->exec("SELECT name FROM incident_attributes "
+		"WHERE father = 'NONE' "
 		"ORDER BY name asc");
     while (query->next()) {
       QString currentAttribute = query->value(0).toString();
