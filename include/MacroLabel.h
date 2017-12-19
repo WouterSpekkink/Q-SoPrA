@@ -1,5 +1,5 @@
 #ifndef MACROLABEL_H
-#define MACOLABEL_H
+#define MACROLABEL_H
 
 #include <QGraphicsTextItem>
 #include "MacroEvent.h"

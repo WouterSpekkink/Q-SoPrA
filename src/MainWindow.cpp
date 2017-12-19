@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   eventGraphWidget = new EventGraphWidget(this);
   networkGraphWidget = new NetworkGraphWidget(this);
   occurrenceGraphWidget = new OccurrenceGraphWidget(this);
+  hierarchyGraphWidget = new HierarchyGraphWidget(this);
   
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -27,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
+  //  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(hierarchyGraphWidget);
   
   dw->setEventGraph(egw);
   dw->setOccurrenceGraph(ogw);
@@ -46,7 +48,12 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(eventGraphWidget);
   stacked->addWidget(networkGraphWidget);
   stacked->addWidget(occurrenceGraphWidget);
+  stacked->addWidget(hierarchyGraphWidget);
 
+  // We need only a few signals
+  connect(egw, SIGNAL(seeHierarchy(MacroEvent *selectedMacro)),
+	  this, SLOT(switchToHierarchyView(MacroEvent *selectedMacro)));
+  
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
   stacked->setCurrentWidget(dataWidget);
@@ -415,3 +422,19 @@ void MainWindow::switchToOccurrenceGraphView() {
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 
+void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  lw->setLinkageComment();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->setComment();
+  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(7));
+  hgw->setEvents(egw->getEvents());
+  hgw->setMacros(egw->getMacros());
+  hgw->setOrigin(selectedMacro);
+  stacked->setCurrentWidget(hierarchyGraphWidget);
+}

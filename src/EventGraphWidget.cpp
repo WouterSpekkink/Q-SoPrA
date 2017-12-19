@@ -779,6 +779,9 @@ void EventGraphWidget::retrieveData() {
 }
 
 void EventGraphWidget::seeComponents() {
+  emit seeHierarchy(selectedMacro);  
+  
+  /*
   currentData.clear();
   QVector<EventItem*> tempIncidents = selectedMacro->getIncidents();
   QVectorIterator<EventItem*> it(tempIncidents);
@@ -897,7 +900,7 @@ void EventGraphWidget::seeComponents() {
     }
   }
   previousEventButton->setEnabled(true);
-  nextEventButton->setEnabled(true);
+  nextEventButton->setEnabled(true);*/
 }
 
 void EventGraphWidget::previousDataItem() {

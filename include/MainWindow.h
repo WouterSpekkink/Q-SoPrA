@@ -20,6 +20,7 @@
 #include "EventGraphWidget.h"
 #include "NetworkGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
+#include "HierarchyGraphWidget.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -43,6 +44,7 @@ private slots:
   void switchToEventGraphView();
   void switchToNetworkGraphView();
   void switchToOccurrenceGraphView();
+  void switchToHierarchyView(MacroEvent *selectedMacro);
   
   void importFromCsv();
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
@@ -57,6 +59,7 @@ private:
   QPointer<QWidget> eventGraphWidget;
   QPointer<QWidget> networkGraphWidget;
   QPointer<QWidget> occurrenceGraphWidget;
+  QPointer<QWidget> hierarchyGraphWidget;
   
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;

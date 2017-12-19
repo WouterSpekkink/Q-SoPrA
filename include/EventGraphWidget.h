@@ -34,6 +34,7 @@
 #include "DeselectableListWidget.h"
 #include "LineageColorDialog.h"
 #include "OccurrenceGraphWidget.h"
+#include "HierarchyGraphWidget.h"
 
 class AttributesWidget;
 
@@ -153,6 +154,9 @@ private slots:
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void finalBusiness();
+
+signals:
+  void seeHierarchy(MacroEvent *selectedMacro);
   
 private:
   QPointer<Scene> scene;
