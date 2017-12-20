@@ -6,34 +6,6 @@
   and then group occurrence in the events that are visible.
 */
 
-bool occurrenceLessThan(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
-  qreal orderOne = itemOne->scenePos().x();
-  qreal orderTwo = itemTwo->scenePos().x();
-  if (orderOne < orderTwo) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool attributeLessThan(const OccurrenceItem *itemOne, const OccurrenceItem *itemTwo) {
-  QString attributeOne = itemOne->getAttribute();
-  QString attributeTwo = itemTwo->getAttribute();
-  if (attributeOne < attributeTwo) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool stringSort(const QString one, const QString two) {
-  if (one < two) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) {
   distance = 70;
   labelsVisible = true;
@@ -538,7 +510,7 @@ void OccurrenceGraphWidget::groupOccurrences() {
 void OccurrenceGraphWidget::wireLinkages() {
   qDeleteAll(edgeVector);
   edgeVector.clear();
-  qSort(occurrenceVector.begin(), occurrenceVector.end(), occurrenceLessThan);
+  qSort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);
   while (it.hasNext()) {
     OccurrenceItem *tempSource = it.next();
@@ -563,6 +535,7 @@ void OccurrenceGraphWidget::wireLinkages() {
       }
       if (tempTarget != NULL) {
 	Arrow *newArrow = new Arrow(tempSource, tempTarget, tempSource->getAttribute(), "");
+	newArrow->setCopy(true);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       }
@@ -764,7 +737,7 @@ void OccurrenceGraphWidget::setBackgroundColor() {
 }
 
 void OccurrenceGraphWidget::increaseDistance() {
-  qSort(occurrenceVector.begin(), occurrenceVector.end(), occurrenceLessThan);
+  qSort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);  
   int unit = 0;
   qreal last = -9999;
@@ -789,7 +762,7 @@ void OccurrenceGraphWidget::increaseDistance() {
 }
 
 void OccurrenceGraphWidget::decreaseDistance() {
-  qSort(occurrenceVector.begin(), occurrenceVector.end(), occurrenceLessThan);
+  qSort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);  
   int unit = 0;
   qreal last = -9999;

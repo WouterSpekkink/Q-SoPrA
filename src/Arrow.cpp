@@ -74,6 +74,7 @@ Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, 
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   typeInd = subType;
   coder = subCoder;
+  copy = false;
 }
 
 QRectF Arrow::boundingRect() const {
@@ -247,7 +248,6 @@ void Arrow::calculate() {
 					  cos(angle + Pi - Pi / 3) * arrowSize);
 }
 
-
 void Arrow::setColor(const QColor &subColor) {
   color = subColor;
 }
@@ -266,4 +266,12 @@ QGraphicsItem* Arrow::endItem() const {
 
 int Arrow::type() const {
   return Type;
+}
+
+bool Arrow::isCopy() {
+  return copy;
+}
+
+void Arrow::setCopy(bool status) {
+  copy = status;
 }

@@ -31,6 +31,7 @@ QString SETTLEACTION = "Settle in current position";
 QString PARALLELACTION = "Make parallel";
 QString NORMALIZEACTION = "Normalize distance";
 QString CLOSEGAPACTION = "Close gap";
+QString CHANGEDESCRIPTIONACTION = "Edit event description";
 QString IGNORE = "Ignore";
 QString REMOVENORMALLINKAGE = "Remove";
 QString ENTITY = "Entity";

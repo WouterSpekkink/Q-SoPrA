@@ -31,6 +31,7 @@
 #include "DeselectableListWidget.h"
 #include "EventGraphWidget.h"
 #include "EventItem.h"
+#include "SortFunctions.h"
 
 class EventGraphWidget;
 

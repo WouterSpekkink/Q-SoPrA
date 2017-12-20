@@ -30,7 +30,7 @@ MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF origi
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
-  //  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+  copy = false;
 }
 
 QRectF MacroEvent::boundingRect() const {
@@ -273,4 +273,12 @@ QString MacroEvent::getMode() const {
 
 QString MacroEvent::getConstraint() const {
   return constraint;
+}
+
+bool MacroEvent::isCopy() {
+  return copy;
+}
+
+void MacroEvent::setCopy(bool status) {
+  copy = status;
 }

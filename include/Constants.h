@@ -32,6 +32,7 @@ extern QString SETTLEACTION;
 extern QString PARALLELACTION;
 extern QString NORMALIZEACTION;
 extern QString CLOSEGAPACTION;
+extern QString CHANGEDESCRIPTIONACTION;
 extern QString IGNORE;
 extern QString REMOVENORMALLINKAGE;
 extern QString ENTITY;

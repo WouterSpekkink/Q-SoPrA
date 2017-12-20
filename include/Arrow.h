@@ -62,8 +62,7 @@
 
 class Arrow : public QGraphicsLineItem {
 
-public:
- 
+public: 
   Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem,
 	QString subType, QString subCoder, QGraphicsItem *parent = 0);
   ~Arrow() {};
@@ -77,6 +76,8 @@ public:
 
   enum {Type = UserType + 2};
   int type() const;
+  bool isCopy();
+  void setCopy(bool status);
   
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
@@ -92,6 +93,7 @@ private:
   QLineF newLine;
   QPointF arrowP1;
   QPointF arrowP2;
+  bool copy;
 };
 
 #endif

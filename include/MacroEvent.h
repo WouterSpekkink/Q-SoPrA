@@ -57,6 +57,8 @@ public:
   void setMode(const QString submittedMode);
   QString getMode() const;
   QString getConstraint() const;
+  bool isCopy();
+  void setCopy(bool status);
 
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -80,6 +82,7 @@ private:
   QString comment;
   QString mode;
   QString constraint;
+  bool copy;
 };
 
 #endif

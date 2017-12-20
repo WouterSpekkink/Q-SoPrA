@@ -1,78 +1,6 @@
 #include "../include/EventGraphWidget.h"
 
 // Some sorting bools for qSort.
-bool eventLessThan(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
-  qreal orderOne = itemOne->scenePos().x();
-  qreal orderTwo = itemTwo->scenePos().x();
-  if (orderOne < orderTwo) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool eventLessThanWidth(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
-  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
-  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
-  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
-  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
-  qreal valueOne = 0.0;
-  qreal valueTwo = 0.0;
-  if (eventOne && eventTwo) {
-    valueOne = eventOne->scenePos().x() + eventOne->getWidth();
-    valueTwo = eventTwo->scenePos().x() + eventTwo->getWidth();
-  } else if (eventOne && macroTwo) {
-    valueOne = eventOne->scenePos().x() + eventOne->getWidth();
-    valueTwo = macroTwo->scenePos().x() + macroTwo->getWidth();
-  } else if (macroOne && macroTwo) {
-    valueOne = macroOne->scenePos().x() + macroOne->getWidth();
-    valueTwo = macroTwo->scenePos().x() + macroTwo->getWidth();
-  } else {
-    valueOne = macroOne->scenePos().x() + macroOne->getWidth();
-    valueTwo = eventTwo->scenePos().x() + eventTwo->getWidth();
-  }
-  if (valueOne < valueTwo) {
-    return true;
-  } else {
-    return false;
-  }
-} 
-
-bool originalLessThan(const EventItem *itemOne, const EventItem *itemTwo) {
-  qreal orderOne = itemOne->getOriginalPos().x();
-  qreal orderTwo = itemTwo->getOriginalPos().x();
-  if (orderOne < orderTwo) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool intMoreThan(const int itemOne, const int itemTwo) {
-  if (itemOne > itemTwo) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool componentsSort(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
-  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
-  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
-  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
-  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
-  if (eventOne && eventTwo) {
-    return (eventOne->getOrder() < eventTwo->getOrder());
-  } else if (eventOne && macroTwo) {
-    return (eventOne->getOrder() < macroTwo->getIncidents().first()->getOrder());
-  } else if (macroOne && macroTwo) {
-    return (macroOne->getIncidents().first()->getOrder() <
-	    macroTwo->getIncidents().first()->getOrder());
-  } else {
-    return (macroOne->getIncidents().first()->getOrder() < eventTwo->getOrder());
-  }
-}
-
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedCoder = "";
   selectedCompare = "";
@@ -774,16 +702,13 @@ void EventGraphWidget::retrieveData() {
     indexLabel->setText("(0/0)");
     selectedIncident = 0;
     selectedMacro = NULL;
+    seeComponentsButton->setEnabled(false);
     resetFont(attributesTree);
   }
 }
 
 void EventGraphWidget::seeComponents() {
-  
   emit seeHierarchy(selectedMacro);
-  resetTree();
-  attributesWidget->resetTree();
-  occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::previousDataItem() {
@@ -3871,6 +3796,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     normalizeDistance();
   } else if (action == CLOSEGAPACTION) {
     closeGap();
+  } else if (action == CHANGEDESCRIPTIONACTION) {
+    changeEventDescription();
   }
 }
 
@@ -4007,7 +3934,6 @@ void EventGraphWidget::colligateEvents(QString constraint) {
       textDialog->exec();
       if (textDialog->getExitStatus() == 0) {
 	QString description = textDialog->getText();
-	delete textDialog;
 	MacroEvent* current = new MacroEvent(width, description, originalPos,
 					     macroVector.size() + 1, constraint, tempIncidents);
 	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
@@ -4080,6 +4006,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	current->setSelected(true);
 	retrieveData();
       }
+      delete textDialog;
     } else {
       return;
     }
@@ -4876,6 +4803,19 @@ void EventGraphWidget::closeGap() {
     warningBox->exec();
     delete warningBox;
   }
+}
+
+void EventGraphWidget::changeEventDescription() {
+  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+  textDialog->setWindowTitle("Event description");
+  textDialog->setLabel("Event description:");
+  textDialog->submitText(selectedMacro->getDescription());
+  textDialog->exec();
+  if (textDialog->getExitStatus() == 0) {
+    QString description = textDialog->getText();
+    selectedMacro->setDescription(description);
+  }
+  delete textDialog;
 }
 
 void EventGraphWidget::processArrowContextMenu(const QString &action) {

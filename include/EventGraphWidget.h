@@ -35,6 +35,7 @@
 #include "LineageColorDialog.h"
 #include "OccurrenceGraphWidget.h"
 #include "HierarchyGraphWidget.h"
+#include "SortFunctions.h"
 
 class AttributesWidget;
 
@@ -140,6 +141,7 @@ private slots:
   void makeParallel();
   void normalizeDistance();
   void closeGap();
+  void changeEventDescription();
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();

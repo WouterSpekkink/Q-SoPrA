@@ -1,39 +1,11 @@
 #include "../include/HierarchyGraphWidget.h"
-
-bool componentsSortHier(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
-  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
-  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
-  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
-  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
-  if (eventOne && eventTwo) {
-    return (eventOne->getOrder() < eventTwo->getOrder());
-  } else if (eventOne && macroTwo) {
-    return (eventOne->getOrder() < macroTwo->getIncidents().first()->getOrder());
-  } else if (macroOne && macroTwo) {
-    return (macroOne->getIncidents().first()->getOrder() <
-	    macroTwo->getIncidents().first()->getOrder());
-  } else {
-    return (macroOne->getIncidents().first()->getOrder() < eventTwo->getOrder());
-  }
-}
-
-bool eventLessThanHier(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) {
-  qreal orderOne = itemOne->scenePos().x();
-  qreal orderTwo = itemTwo->scenePos().x();
-  if (orderOne < orderTwo) {
-    return true;
-  } else {
-    return false;
-  }
-}
                       
 HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {  
-  vectorPos = 0;
   selectedMacro = NULL;
   selectedIncident = 0;
   
   scene = new Scene(this);
-  view = new GraphicsView(scene);
+  view = new BandlessGraphicsView(scene);
   view->viewport()->installEventFilter(this);
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
@@ -101,29 +73,29 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   removeTextButton->setEnabled(false);
   resetTextsButton = new QPushButton("Reset texts", attWidget);
   resetTextsButton->setEnabled(false);
-  exitButton = new QPushButton(tr("Exit"), this);
+  exitButton = new QPushButton(tr("Return to event graph"), this);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
-  //connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
-  //connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
-  //connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
-  //connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
-  //connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
-  //connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
+  connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
+  connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
+  connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
+  connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
+  connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   //  connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
-  /*  connect(attributesTreeView->selectionModel(),
+  connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
-  this, SLOT(changeFilter(const QString &)));*/
+  	  this, SLOT(changeFilter(const QString &)));
   //  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
-  //  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
+  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
   connect(exitButton, SIGNAL(clicked()), this, SLOT(switchBack()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -210,7 +182,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   drawOptionsRightLayout->setAlignment(Qt::AlignRight);
   mainLayout->addLayout(drawOptionsLayout);
     
-  setLayout(mainLayout);  
+  setLayout(mainLayout);
+  attWidget->hide();
 }
 
 void HierarchyGraphWidget::toggleDetails() {
@@ -261,19 +234,20 @@ void HierarchyGraphWidget::retrieveData() {
       }
     }
     if (currentData.size() > 0) {
-      qSort(currentData.begin(), currentData.end(), eventLessThanHier);   
-      vectorPos = 0;
-      QString indexText = "(" + QString::number(vectorPos + 1) + "/"
-	+ QString::number(currentData.size()) + ")";
-      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData.at(vectorPos));
-      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(currentData.at(vectorPos));
+      qSort(currentData.begin(), currentData.end(), eventLessThan);
+      QGraphicsItem *temp = currentData[0];
+      scene->clearSelection();
+      temp->setSelected(true);
+      currentData.clear();
+      currentData.push_back(temp);
+      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData[0]);
+      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(currentData[0]);
       if (currentEvent) {
 	selectedMacro = NULL;
 	timeStampLabel->setText("<b>Timing:</b>");
 	sourceLabel->setText("<b>Source:</b>");
 	rawLabel->show();
 	rawField->show();
-
 	currentEvent->setSelectionColor(Qt::red);
 	currentEvent->update();
 	int id = currentEvent->getId();
@@ -381,6 +355,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 					 submittedOrigin->getId(),
 					 submittedOrigin->getConstraint(),
 					 submittedOrigin->getIncidents());
+  newOrigin->setCopy(true);
   newOrigin->setAttributes(submittedOrigin->getAttributes());
   newOrigin->setZValue(1);
   MacroLabel *macroLabel = new MacroLabel(newOrigin);
@@ -396,6 +371,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   }
   newOrigin->setPos(QPointF(newOrigin->scenePos().x(),
 			    newOrigin->scenePos().y() - layer * 80));
+  newOrigin->setOriginalPos(newOrigin->scenePos());
   qreal xOffset = (newOrigin->getWidth() / 2) - 20;
   macroLabel->setOffset(QPointF(xOffset,0));
   macroLabel->setNewPos(newOrigin->scenePos());
@@ -413,6 +389,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0, yPos),
 					    macro->getId(), macro->getConstraint(),
 					    macro->getIncidents());
+      newMacro->setCopy(true);
       newMacro->setAttributes(macro->getAttributes());
       newMacro->setPos(newMacro->getOriginalPos());
       newMacro->setZValue(1);
@@ -434,6 +411,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newMacroLabel->setDefaultTextColor(Qt::black);
       currentLayer.push_back(newMacro);
       Arrow *newArrow = new Arrow(newMacro, newOrigin, "Hierarchy", "", 0);
+      newArrow->setCopy(true);
       scene->addItem(newArrow);
       partners.push_back(macro);
     }
@@ -445,6 +423,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
 					  QPointF(0, yPos), event->getId(), event->getOrder());
       newEvent->setPos(newEvent->getOriginalPos());
+      newEvent->setCopy(true);
       QPointer<NodeLabel> text = new NodeLabel(newEvent);
       newEvent->setLabel(text);
       text->setPlainText(QString::number(newEvent->getOrder()));
@@ -457,12 +436,13 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       text->setDefaultTextColor(Qt::black);
       currentLayer.push_back(newEvent);
       Arrow *newArrow = new Arrow(newEvent, newOrigin, "Hierarchy", "", 0);
+      newArrow->setCopy(true);
       scene->addItem(newArrow);
       partners.push_back(event);
     }
   }
-  qSort(currentLayer.begin(), currentLayer.end(), componentsSortHier);
-  qSort(partners.begin(), partners.end(), componentsSortHier);
+  qSort(currentLayer.begin(), currentLayer.end(), componentsSort);
+  qSort(partners.begin(), partners.end(), componentsSort);
   int layerSize = currentLayer.size();
   qreal width = 120 * layerSize;
   qreal startX = 0 - width / 2 - 60;
@@ -478,10 +458,12 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
     EventItem *event = qgraphicsitem_cast<EventItem*>(current);
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
     if (event) {
+      event->setOriginalPos(event->scenePos());
       event->getLabel()->setNewPos(event->scenePos());
       scene->addItem(event);
       scene->addItem(event->getLabel());
     } else if (macro) {
+      macro->setOriginalPos(macro->scenePos());
       macro->getLabel()->setNewPos(macro->scenePos());
       scene->addItem(macro);
       scene->addItem(macro->getLabel());
@@ -511,6 +493,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0,yPos),
 					      macro->getId(), macro->getConstraint(),
 					      macro->getIncidents());
+	newMacro->setCopy(true);
 	newMacro->setAttributes(macro->getAttributes());
 	newMacro->setPos(newMacro->getOriginalPos());
 	newMacro->setZValue(1);
@@ -533,6 +516,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	currentLayer.push_back(newMacro);
 	partners.push_back(macro);
 	Arrow *newArrow = new Arrow(newMacro, partLayer[it] , "Hierarchy", "", 0);
+	newArrow->setCopy(true);
 	scene->addItem(newArrow);
       }
     }
@@ -554,6 +538,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	if (!found) {
 	  EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
 					      QPointF(0, yPos), event->getId(), event->getOrder());
+	  newEvent->setCopy(true);
 	  newEvent->setPos(newEvent->getOriginalPos());
 	  QPointer<NodeLabel> text = new NodeLabel(newEvent);
 	  newEvent->setLabel(text);
@@ -568,13 +553,14 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  currentLayer.push_back(newEvent);
 	  partners.push_back(event);
 	  Arrow *newArrow = new Arrow(newEvent, partLayer[it], "Hierarchy", "", 0);
+	  newArrow->setCopy(true);
 	  scene->addItem(newArrow);
 	}
       }
     }
   }
-  qSort(currentLayer.begin(), currentLayer.end(), componentsSortHier);
-  qSort(partners.begin(), partners.end(), componentsSortHier);
+  qSort(currentLayer.begin(), currentLayer.end(), componentsSort);
+  qSort(partners.begin(), partners.end(), componentsSort);
   QVector<MacroEvent*> newLayer;
   QVector<MacroEvent*> partnerLayer;
   int layerSize = currentLayer.size();
@@ -590,10 +576,12 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
     EventItem *event = qgraphicsitem_cast<EventItem*>(current);
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
     if (event) {
+      event->setOriginalPos(event->scenePos());
       event->getLabel()->setNewPos(event->scenePos());
       scene->addItem(event);
       scene->addItem(event->getLabel());
     } else if (macro) {
+      macro->setOriginalPos(macro->scenePos());
       macro->getLabel()->setNewPos(macro->scenePos());
       scene->addItem(macro);
       scene->addItem(macro->getLabel());
@@ -637,7 +625,7 @@ void HierarchyGraphWidget::assignAttribute() {
 	rawField->setTextCursor(cursPos);
       }
       delete query;
-      //      setButtons();
+      setButtons();
     }
   } else if (selectedMacro != NULL) {
     if (attributesTreeView->currentIndex().isValid()) {
@@ -651,13 +639,266 @@ void HierarchyGraphWidget::assignAttribute() {
 	  if (macro->getId() == selectedMacro->getId()) {
 	    macro->insertAttribute(attribute);							 
 	  }
-	}
+	} 
 	boldSelected(attributesTree, attribute, selectedMacro->getId(), MACRO);
 	valueField->setEnabled(true);
       }
     }
-    //setButtons();
+    setButtons();
   }
+}
+
+void HierarchyGraphWidget::unassignAttribute() {
+  if (selectedIncident != 0) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      bool empty = false;
+      query->prepare("SELECT attribute, incident "
+		     "FROM attributes_to_incidents "
+		     "WHERE attribute = :att AND incident = :incident");
+      query->bindValue(":att", attribute);
+      query->bindValue(":incident", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	query->prepare("DELETE FROM attributes_to_incidents "
+		       "WHERE attribute = :att AND incident = :incident");
+	query->bindValue(":att", attribute);
+	query->bindValue(":incident", selectedIncident);
+	query->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources "
+			"WHERE attribute = :att AND incident = :incident");
+        query2->bindValue(":att", attribute);
+        query2->bindValue(":inc", selectedIncident);
+	query2->exec();
+	resetFont(attributesTree);
+	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			"WHERE incident = :incident");
+	query2->bindValue(":incident", selectedIncident);
+	query2->exec();
+	while (query2->next()) {
+	  QString attribute = query2->value(0).toString();
+	  boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
+	}
+	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
+      }
+      setButtons();
+      delete query;
+      delete query2;
+    }
+  } else if (selectedMacro != NULL) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      QSet<QString> attributes = selectedMacro->getAttributes();
+      if (attributes.contains(attribute)) {
+	selectedMacro->removeAttribute(attribute);
+	QVectorIterator<MacroEvent*> it(macroVector);
+	while (it.hasNext()) {
+	  MacroEvent *macro = it.next();
+	  if (macro->getId() == selectedMacro->getId()) {
+	    macro->removeAttribute(attribute);							 
+	  }
+	} 
+	QSet<QString>::iterator it2;
+	resetFont(attributesTree);
+	attributes = selectedMacro->getAttributes();
+	for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+	  QString current = *it2;
+	  boldSelected(attributesTree, current, selectedMacro->getId(), MACRO);	  
+	}
+	setButtons();
+	valueField->setText("");
+	valueField->setEnabled(false);
+	valueButton->setEnabled(false);
+      }
+    }
+  }
+}
+
+void HierarchyGraphWidget::newAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString currentParent = treeFilter->
+      mapToSource(attributesTreeView->currentIndex()).data().toString();
+    QString name = "";
+    QString description = "";
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      name = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attribute->setToolTip(description);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QStandardItem *father = attributesTree->
+	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+      father->appendRow(attribute);
+      attribute->setToolTip(hint);
+      attribute->setEditable(false);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO incident_attributes "
+		     "(name, description, father) "
+		     "VALUES (:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", currentParent);
+      query->exec();
+      delete query;
+      attributesWidget->resetTree();
+      eventGraph->resetTree();
+    }
+    delete attributeDialog;
+  } else {
+    QString name = "";
+    QString description = "";
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->exec();    
+    if (attributeDialog->getExitStatus() == 0) {
+      name = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO incident_attributes "
+		     "(name, description, father) "
+		     "VALUES (:name, :description, 'NONE')");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->exec();
+      QStandardItem *attribute = new QStandardItem(name);    
+      attributesTree->appendRow(attribute);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      delete query;
+      attribute->setToolTip(hint);
+      attribute->setEditable(false);
+      attributesWidget->resetTree();
+      eventGraph->resetTree();
+    }
+    delete attributeDialog;
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void HierarchyGraphWidget::editAttribute() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString name = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->submitName(name);
+    attributeDialog->setDescription(description);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QString newName = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      QStandardItem *currentAttribute = attributesTree->
+	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      currentAttribute->setData(newName);
+      currentAttribute->setData(newName, Qt::DisplayRole);
+      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      currentAttribute->setToolTip(hint);
+      query->prepare("UPDATE incident_attributes "
+		     "SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":newdescription", description);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE incident_attributes "
+		     "SET father = :newname "
+		     "WHERE father = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents_sources "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", name);
+      query->exec();
+      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      this->setCursor(Qt::WaitCursor);
+      retrieveData();
+      this->setCursor(Qt::ArrowCursor);
+      attributesWidget->resetTree();
+      eventGraph->resetTree();
+    }
+    delete query;
+    delete attributeDialog;
+  }
+  attributesTree->sort(0, Qt::AscendingOrder);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void HierarchyGraphWidget::removeUnusedAttributes() {
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  bool unfinished = true;
+  QSet<QString> takenAttributes;
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent* current = it.next();
+    QSet<QString> attributes = current->getAttributes();
+    QSet<QString>::iterator it2;
+    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+      takenAttributes.insert(*it2);
+    }
+  }
+  while (unfinished) {
+    query->exec("SELECT name FROM incident_attributes "
+		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT father FROM incident_attributes");
+    QSet<QString> temp;
+    while (query->next()) {
+      QString current = query->value(0).toString();			   
+      temp.insert(current);
+    }
+    QSet<QString>::iterator it3;
+    bool found = false;
+    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
+      if (!takenAttributes.contains(*it3)) {
+	found = true;
+	query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+      }
+    }
+    if (!found) {
+      unfinished = false;
+    }
+  }
+  this->setCursor(Qt::WaitCursor);
+  attributesTreeView->setSortingEnabled(false);
+  resetTree();
+  attributesWidget->resetTree();
+  eventGraph->resetTree();
+  attributesTreeView->setSortingEnabled(true);
+  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+  retrieveData();
+  this->setCursor(Qt::ArrowCursor);
+  delete query;  
+  delete query2;
+}
+
+void HierarchyGraphWidget::changeFilter(const QString &text) {
+  QRegExp regExp(text, Qt::CaseInsensitive);
+  treeFilter->setFilterRegExp(regExp);
 }
 
 void HierarchyGraphWidget::sourceText(const QString &attribute, const int &incident) {
@@ -759,6 +1000,73 @@ void HierarchyGraphWidget::highlightText() {
   }
 }
 
+void HierarchyGraphWidget::removeText() {
+  if (selectedIncident != 0) {
+    if (attributesTreeView->currentIndex().isValid()) {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      if (rawField->textCursor().selectedText().trimmed() != "") {
+	QSqlQuery *query = new QSqlQuery;
+	int end = 0;
+	int begin = 0;
+	QTextCursor selectCursor = rawField->textCursor();
+	if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
+	  begin = rawField->textCursor().position();
+	  end = rawField->textCursor().anchor();
+	} else {
+	  begin = rawField->textCursor().anchor();
+	  end = rawField->textCursor().position();
+	}
+	begin++;
+	end--;
+	selectCursor.setPosition(begin);
+	selectCursor.movePosition(QTextCursor::StartOfWord);
+	selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+	rawField->setTextCursor(selectCursor);
+	QString sourceText = rawField->textCursor().selectedText().trimmed();
+	query->prepare("DELETE FROM attributes_to_incidents_sources "
+		       "WHERE attribute = :att AND incident = :inc AND source_text = :text");
+	query->bindValue(":att", attribute);
+	query->bindValue(":inc", selectedIncident);
+	query->bindValue(":text", sourceText);
+	query->exec();
+	delete query;
+      }
+      setButtons();
+      highlightText();
+    }
+  }
+}
+
+void HierarchyGraphWidget::resetTexts() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    if (selectedIncident != 0) {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Resetting source texts cannot be undone. "
+				     "Are you sure you want to proceed?");
+      if (warningBox->exec() == QMessageBox::Yes) {
+	QSqlQuery *query = new QSqlQuery;
+	if (!(query->isNull(0))) {
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  query->prepare("DELETE FROM attributes_to_incidents_sources "
+			 "WHERE attribute = :att AND incident = :inc");
+	  query->bindValue(":att", attribute);
+	  query->bindValue(":inc", selectedIncident);
+	  query->exec();
+	}
+	highlightText();
+	delete query;
+      }
+      setButtons();
+      delete warningBox;
+    }
+  }
+}
+
 void HierarchyGraphWidget::setOrigin(MacroEvent *submittedOrigin) {
   origin = submittedOrigin;
   buildComponents(origin, 1);
@@ -789,6 +1097,13 @@ void HierarchyGraphWidget::setTree() {
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
   delete query;
+}
+
+void HierarchyGraphWidget::resetTree() {
+  scene->clearSelection();
+  retrieveData();
+  delete attributesTree;
+  setTree();
 }
 
 void HierarchyGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
@@ -909,6 +1224,65 @@ void HierarchyGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
   }
 }
 
+void HierarchyGraphWidget::setButtons() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    if (selectedIncident != 0) {
+      QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+      QSqlQuery *query = new QSqlQuery;
+      bool empty = false;
+      query->prepare("SELECT attribute, incident FROM "
+		     "attributes_to_incidents "
+		     "WHERE attribute = :att AND incident = :inc  ");
+      query->bindValue(":att", currentAttribute);
+      query->bindValue(":inc", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	unassignAttributeButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+      }
+      query->prepare("SELECT attribute, incident FROM "
+		     "attributes_to_incidents_sources "
+		     "WHERE attribute = :att AND incident = :inc");
+      query->bindValue(":att", currentAttribute);
+      query->bindValue(":inc", selectedIncident);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	removeTextButton->setEnabled(true);
+	resetTextsButton->setEnabled(true);
+      } else {
+	removeTextButton->setEnabled(false);
+	resetTextsButton->setEnabled(false);
+      }
+      assignAttributeButton->setEnabled(true);
+      editAttributeButton->setEnabled(true);
+      delete query;
+    } else if (selectedMacro != NULL) {
+      QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+      QSet<QString> attributes = selectedMacro->getAttributes();
+      if (attributes.contains(currentAttribute)) {
+	unassignAttributeButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+      }
+      assignAttributeButton->setEnabled(true);
+      editAttributeButton->setEnabled(true);
+      removeTextButton->setEnabled(false);
+      resetTextsButton->setEnabled(false);
+    }
+  } else {
+    assignAttributeButton->setEnabled(false);
+    editAttributeButton->setEnabled(false);
+    unassignAttributeButton->setEnabled(false);
+    removeTextButton->setEnabled(false);
+    resetTextsButton->setEnabled(false);
+  }
+}
+
 void HierarchyGraphWidget::cleanUp() {
   QGraphicsItemGroup *group = NULL;
   if (scene->items().size() > 0) {
@@ -919,7 +1293,6 @@ void HierarchyGraphWidget::cleanUp() {
   }
   scene->clear();
   currentData.clear();
-  vectorPos = 0;
   selectedMacro = NULL;
   selectedIncident = 0;
   // also empty text fields.
@@ -934,7 +1307,7 @@ bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) {
     QMouseEvent *mouseEvent = (QMouseEvent*) event;
     if (mouseEvent->button() == Qt::LeftButton) {
       retrieveData();
-      //setButtons();
+      setButtons();
     }
   } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
@@ -954,3 +1327,10 @@ bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) {
   return false;
 }
 
+void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
+}
+
+void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}

@@ -40,6 +40,8 @@ public:
   MacroEvent* getMacroEvent();
   void setMode(const QString submittedMode);
   QString getMode() const;
+  bool isCopy();
+  void setCopy(bool status);
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -57,7 +59,8 @@ private:
   bool dislodged;
   int order;
   QString mode;
- 
+  bool copy;
+  
 };
 
 #endif

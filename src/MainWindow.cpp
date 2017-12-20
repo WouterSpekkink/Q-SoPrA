@@ -38,6 +38,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   ogw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
   egw->setOccurrenceGraph(ogw);
+  hgw->setAttributesWidget(aw);
+  hgw->setEventGraph(egw);
   rw->setNetworkGraph(ngw);
   
   stacked->addWidget(dataWidget);
@@ -395,8 +397,11 @@ void MainWindow::switchToEventGraphView() {
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
   lw->setLinkageComment();
+  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
+  ogw->checkCongruency();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
+  egw->checkCongruency();
   const QModelIndex index;
   menuBar->setEnabled(true);
   stacked->setCurrentWidget(eventGraphWidget);
@@ -412,12 +417,13 @@ void MainWindow::switchToNetworkGraphView() {
   lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
+  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
+  ngw->checkCongruency();
   menuBar->setEnabled(true);
   stacked->setCurrentWidget(networkGraphWidget);
 }
 
 void MainWindow::switchToOccurrenceGraphView() {
-  // TO CHECK
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -428,6 +434,8 @@ void MainWindow::switchToOccurrenceGraphView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
   menuBar->setEnabled(true);
+  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
+  ogw->checkCongruency();
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 

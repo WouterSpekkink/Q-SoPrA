@@ -35,7 +35,7 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
   if (macroLabel) {
     macro = macroLabel->getMacroEvent();
   }
-  if (incident) {
+  if (incident && !incident->isCopy()) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (wheelEvent->delta() > 0 && incident->getWidth() < 1000) {
 	incident->setWidth(incident->getWidth() + 1);
@@ -47,7 +47,7 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     }
     emit relevantChange();
     wheelEvent->accept();
-  } else if (macro) {
+  } else if (macro && !macro->isCopy()) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (wheelEvent->delta() > 0 && macro->getWidth() < 1000) {
 	macro->setWidth(macro->getWidth() + 1);
@@ -81,13 +81,25 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       macro = macroLabel->getMacroEvent();
     }
     if (incident) {
-      incident->setSelected(true);
-      selectedEvent = incident;
-      moveOn = true;
+      if (incident->isCopy()) {
+	clearSelection();
+	incident->setSelected(true);
+	selectedEvent = incident;
+      } else {
+	incident->setSelected(true);
+	selectedEvent = incident;
+	moveOn = true;
+      }
     } else if (macro) {
-      macro->setSelected(true);
-      selectedMacro = macro;
-      moveOn = true;
+      if (macro->isCopy()) {
+	clearSelection();
+	macro->setSelected(true);
+	selectedMacro = macro;
+      } else {
+	macro->setSelected(true);
+	selectedMacro = macro;
+	moveOn = true;
+      }
     } else if (networkNode) {
       networkNode->setSelected(true);
       selectedNode = networkNode;
@@ -118,23 +130,37 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     }
     if (incident) {
       if (event->modifiers() & Qt::AltModifier) {
-	incident->setPos(incident->getOriginalPos().x(), incident->scenePos().y());
-	incident->getLabel()->setNewPos(incident->scenePos());
+	if (incident->isCopy()) {
+	  incident->setPos(incident->getOriginalPos());
+	  incident->getLabel()->setNewPos(incident->scenePos());
+	} else {
+	  incident->setPos(incident->getOriginalPos().x(), incident->scenePos().y());
+	  incident->getLabel()->setNewPos(incident->scenePos());
+	}
       } else {
-	resizeOnEvent = true;
-	lastMousePos = event->scenePos();
-	selectedEvent = incident;
-	selectedMacro = NULL;
+	if (!incident->isCopy()) {
+	  resizeOnEvent = true;
+	  lastMousePos = event->scenePos();
+	  selectedEvent = incident;
+	  selectedMacro = NULL;
+	}
       }
     } else if (macro) {
       if (event->modifiers() & Qt::AltModifier) {
-	macro->setPos(macro->getOriginalPos().x(), macro->scenePos().y());
-	macro->getLabel()->setNewPos(macro->scenePos());
+	if (macro->isCopy()) {
+	  macro->setPos(macro->getOriginalPos());
+	  macro->getLabel()->setNewPos(macro->scenePos());
+	} else {
+	  macro->setPos(macro->getOriginalPos().x(), macro->scenePos().y());
+	  macro->getLabel()->setNewPos(macro->scenePos());
+	}
       } else {
-	resizeOnMacro = true;
-	lastMousePos = event->scenePos();
-	selectedMacro = macro;
-	selectedEvent = NULL;
+	if (!macro->isCopy()) {
+	  resizeOnMacro = true;
+	  lastMousePos = event->scenePos();
+	  selectedMacro = macro;
+	  selectedEvent = NULL;
+	}
       }
     }
     return;
@@ -315,7 +341,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   if (macroLabel) {
     macro = macroLabel->getMacroEvent();
   }
-  if (incident) {
+  if (incident && !incident->isCopy()) {
     QMenu menu;
     QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
     menu.addAction(action1);
@@ -353,7 +379,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       emit EventItemContextMenuAction(action->text());
     }
     // And then we'll capture some action, and send a signal to the main widget.
-  } else if (macro) {
+  } else if (macro && !macro->isCopy()) {
     QMenu menu;
     QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
     menu.addAction(action1);
@@ -375,12 +401,15 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action9);
     QAction *action10 = new QAction(CLOSEGAPACTION, this);
     menu.addAction(action10);
+    QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
+    menu.addAction(action11);
     if (selectedItems().size() > 1) {
       action3->setEnabled(false);
       action6->setEnabled(false);
       action7->setEnabled(false);
       action9->setEnabled(false);
       action10->setEnabled(false);
+      action11->setEnabled(false);
     }
     if (selectedItems().size() == 1) {
       action1->setEnabled(false);
@@ -390,7 +419,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());
     }
-  } else if (arrow) {
+  } else if (arrow && !arrow->isCopy()) {
     clearSelection();
     arrow->setSelected(true);
     QMenu menu;

@@ -25,13 +25,8 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
-  //  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+  copy = false;
 }
-
-/*
-  I assume that this is for collision or
-  selection purposes?
-*/
 
 QRectF EventItem::boundingRect() const {
   return QRectF(-26, -26, width + 12, 52);
@@ -204,4 +199,12 @@ void EventItem::setMode(const QString submittedMode) {
 
 QString EventItem::getMode() const {
   return mode;
+}
+
+bool EventItem::isCopy() {
+  return copy;
+}
+
+void EventItem::setCopy(bool status) {
+  copy = status;
 }

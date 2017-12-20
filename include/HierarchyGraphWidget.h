@@ -10,8 +10,9 @@
 #include <QMessageBox>
 #include <QSvgGenerator>
 #include <QFileDialog>
+#include "EventGraphWidget.h"
 #include "NodeLabel.h"
-#include "GraphicsView.h"
+#include "BandlessGraphicsView.h"
 #include "EventItem.h"
 #include "Arrow.h"
 #include "Scene.h"
@@ -27,6 +28,9 @@
 #include "AttributeTreeFilter.h"
 #include "AttributesWidget.h"
 #include "AttributeDialog.h"
+#include "SortFunctions.h"
+
+class AttributesWidget;
 
 class HierarchyGraphWidget : public QDialog {
   Q_OBJECT
@@ -38,7 +42,9 @@ public:
   void setEvents(QVector<EventItem*> submittedEvents);
   void setMacros(QVector<MacroEvent*> submittedMacros);
   void cleanUp();
-						      
+  void setAttributesWidget(AttributesWidget *aw);
+  void setEventGraph(EventGraphWidget *egw);
+					   
 private slots:
   void toggleDetails();
   void retrieveData();
@@ -48,15 +54,24 @@ private slots:
   void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
 
   void assignAttribute();
+  void unassignAttribute();
+  void newAttribute();
+  void editAttribute();
+  void removeUnusedAttributes();
+  void changeFilter(const QString &text);
   void sourceText(const QString &attribute, const int &incident);
   void highlightText();
+  void removeText();
+  void resetTexts();
   
   void setTree();
+  void resetTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void fixTree();
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
 		    QString type = "", QModelIndex parent = QModelIndex());
+  void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
 
   void switchBack();
@@ -65,12 +80,14 @@ signals:
   
 private:
   QPointer<Scene> scene;
-  QPointer<GraphicsView> view;
+  QPointer<BandlessGraphicsView> view;
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
   QVector<QGraphicsItem*> currentData;
-
+  AttributesWidget *attributesWidget;
+  EventGraphWidget *eventGraph;
+  
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
@@ -110,7 +127,6 @@ private:
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
 
-  int vectorPos;
   MacroEvent *selectedMacro;
   int selectedIncident;
 };
