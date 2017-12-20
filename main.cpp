@@ -5,6 +5,10 @@
 
 int main(int argc, char *argv[]) {
   QApplication SoPrA(argc, argv);
+
+  QString version = QString("0.8.0");
+  SoPrA.setApplicationVersion(version);
+
   EventSequenceDatabase *esd = new EventSequenceDatabase;
   
   WelcomeDialog *welcome = new WelcomeDialog(0, esd);

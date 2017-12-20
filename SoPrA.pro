@@ -6,7 +6,7 @@ TEMPLATE = app
 TARGET = SoPrA
 INCLUDEPATH += .
 CONFIG += c++11
-QT += widgets sql svg
+QT += widgets sql svg core
 
 # Input
 HEADERS += include/Arrow.h \

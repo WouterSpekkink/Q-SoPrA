@@ -820,9 +820,10 @@ moc_EventSequenceDatabase.cpp: include/EventSequenceDatabase.h
 moc_EventTableModel.cpp: include/EventTableModel.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/SoPrA -I/home/wouterdeveloper/Work-Related/SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventTableModel.h -o moc_EventTableModel.cpp
 
-moc_HierarchyGraphWidget.cpp: include/NodeLabel.h \
+moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
+		include/NodeLabel.h \
 		include/EventItem.h \
-		include/BandlessGraphicsView.h \
+		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
 		include/Arrow.h \
 		include/MacroEvent.h \
@@ -840,20 +841,16 @@ moc_HierarchyGraphWidget.cpp: include/NodeLabel.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/AttributeIndexDialog.h \
-		include/EventGraphWidget.h \
-		include/GraphicsView.h \
-		include/DeselectableListWidget.h \
-		include/LineageColorDialog.h \
-		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
-		include/SortFunctions.h \
-		include/HierarchyGraphWidget.h \
 		include/MainWindow.h \
 		include/EventSequenceDatabase.h \
 		include/DataWidget.h \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
+		include/OccurrenceGraphWidget.h \
+		include/OccurrenceLabel.h \
+		include/DeselectableListWidget.h \
+		include/SortFunctions.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		include/RelationshipTreeFilter.h \
@@ -873,6 +870,9 @@ moc_HierarchyGraphWidget.cpp: include/NodeLabel.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
 		include/JournalWidget.h \
+		include/HierarchyGraphWidget.h \
+		include/BandlessGraphicsView.h \
+		include/LineageColorDialog.h \
 		include/HierarchyGraphWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/SoPrA -I/home/wouterdeveloper/Work-Related/SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/HierarchyGraphWidget.h -o moc_HierarchyGraphWidget.cpp
 
@@ -1559,9 +1559,10 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GraphicsView.o src/GraphicsView.cpp
 
 HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidget.h \
+		include/EventGraphWidget.h \
 		include/NodeLabel.h \
 		include/EventItem.h \
-		include/BandlessGraphicsView.h \
+		include/GraphicsView.h \
 		include/SimpleTextDialog.h \
 		include/Arrow.h \
 		include/MacroEvent.h \
@@ -1579,19 +1580,16 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/AttributeIndexDialog.h \
-		include/EventGraphWidget.h \
-		include/GraphicsView.h \
-		include/DeselectableListWidget.h \
-		include/LineageColorDialog.h \
-		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
-		include/SortFunctions.h \
 		include/MainWindow.h \
 		include/EventSequenceDatabase.h \
 		include/DataWidget.h \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
+		include/OccurrenceGraphWidget.h \
+		include/OccurrenceLabel.h \
+		include/DeselectableListWidget.h \
+		include/SortFunctions.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		include/RelationshipTreeFilter.h \
@@ -1610,7 +1608,9 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
-		include/JournalWidget.h
+		include/JournalWidget.h \
+		include/LineageColorDialog.h \
+		include/BandlessGraphicsView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HierarchyGraphWidget.o src/HierarchyGraphWidget.cpp
 
 JournalWidget.o: src/JournalWidget.cpp include/JournalWidget.h \
