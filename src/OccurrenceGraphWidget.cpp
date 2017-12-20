@@ -38,6 +38,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   attributeListWidget->setStyleSheet("QTableView {gridline-color: black}");
   attributeListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
+  legendLabel = new QLabel(tr("<b>Legend:</b>"), this);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
   changeLabel = new QLabel(tr("*"), this);
   incongruencyLabel = new QLabel(tr(""), this);
@@ -64,12 +65,13 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   addAttributeButton = new QPushButton(tr("Add to plot"), legendWidget);
   removeModeButton = new QPushButton(tr("Remove from plot"), legendWidget);
   removeModeButton->setEnabled(false);
-  getEventsButton = new QPushButton(tr("Match event graph"), this);
+  getEventsButton = new QPushButton(tr("Match current event graph"), this);
+  restoreButton = new QPushButton(tr("Restore to original"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
-  exportSvgButton = new QPushButton(tr("Export"), graphicsWidget);
+  exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
@@ -86,6 +88,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(getEventsButton, SIGNAL(clicked()), this, SLOT(getEvents()));
+  connect(restoreButton, SIGNAL(clicked()), this, SLOT(restore()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(moveLine(QGraphicsItem *, QPointF)),
@@ -115,7 +119,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(topLayout);
-  
+
   QPointer<QHBoxLayout> screenLayout = new QHBoxLayout;
 
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
@@ -124,6 +128,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   screenLayout->addLayout(leftLayout);
 
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
+  legendLayout->addWidget(legendLabel);
   legendLayout->addWidget(attributeListWidget);
   legendLayout->addWidget(addAttributeButton);
   legendLayout->addWidget(removeModeButton);
@@ -131,7 +136,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
-  
+
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
@@ -153,7 +158,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   graphicsWidget->setLayout(graphicsControlsLayout);
   graphicsControlsLayout->setAlignment(Qt::AlignBottom);
   screenLayout->addWidget(graphicsWidget);
-  
+
   mainLayout->addLayout(screenLayout);
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
@@ -166,57 +171,61 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
   drawOptionsRightLayout->addWidget(getEventsButton);
+  drawOptionsRightLayout->addWidget(restoreButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsRightLayout->addWidget(toggleGraphicsControlsButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);
   drawOptionsRightLayout->setAlignment(Qt::AlignRight);
   mainLayout->addLayout(drawOptionsLayout);
-    
+
   setLayout(mainLayout);
   graphicsWidget->hide();
 }
 
 void OccurrenceGraphWidget::checkCongruency() {
+  qApp->setOverrideCursor(Qt::WaitCursor);
   if (occurrenceVector.size() > 0) {
     QSqlQuery *query = new QSqlQuery;
     QVectorIterator<OccurrenceItem*> it(occurrenceVector);
     while (it.hasNext()) {
       OccurrenceItem* current = it.next();
       int id = current->getId();
-      int order = current->getOrder();
-      QString attribute = current->getAttribute();
-      QVector<QString> attributeVector;
-      attributeVector.push_back(attribute);
-      findChildren(attribute, &attributeVector);
-      QVectorIterator<QString> it2(attributeVector);
-      bool found = false;
-      while (it2.hasNext()) {
-	QString currentAttribute = it2.next();
-	query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-		       "WHERE attribute = :attribute AND incident = :incident");
-	query->bindValue(":attribute", currentAttribute);
+      if (id >= 0) {
+	int order = current->getOrder();
+	QString attribute = current->getAttribute();
+	QVector<QString> attributeVector;
+	attributeVector.push_back(attribute);
+	findChildren(attribute, &attributeVector);
+	QVectorIterator<QString> it2(attributeVector);
+	bool found = false;
+	while (it2.hasNext()) {
+	  QString currentAttribute = it2.next();
+	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			 "WHERE attribute = :attribute AND incident = :incident");
+	  query->bindValue(":attribute", currentAttribute);
+	  query->bindValue(":incident", id);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) {
+	    found = true;
+	  }
+	}
+	if (!found) {
+	  incongruencyLabel->setText("Incongruency detected");
+	  return;
+	}
+	query->prepare("SELECT ch_order FROM incidents "
+		       "WHERE id = :incident");
 	query->bindValue(":incident", id);
 	query->exec();
 	query->first();
-	if (!query->isNull(0)) {
-	  found = true;
+	if (query->isNull(0)) {
+	  incongruencyLabel->setText("Incongruency detected");
+	  return;
+	} else if (query->value(0).toInt() != order) {
+	  incongruencyLabel->setText("Incongruency detected");
+	  return;
 	}
-      }
-      if (!found) {
-	incongruencyLabel->setText("Incongruency detected");
-	return;
-      }
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE id = :incident");
-      query->bindValue(":incident", id);
-      query->exec();
-      query->first();
-      if (query->isNull(0)) {
-	incongruencyLabel->setText("Incongruency detected");
-	return;
-      } else if (query->value(0).toInt() != order) {
-	incongruencyLabel->setText("Incongruency detected");
-	return;
       }
     }
     for (int i = 0; i != attributeListWidget->rowCount(); i++) {
@@ -246,6 +255,8 @@ void OccurrenceGraphWidget::checkCongruency() {
     delete query;
     incongruencyLabel->setText("");
   }
+  qApp->restoreOverrideCursor();
+  qApp->processEvents();
 }
   
 void OccurrenceGraphWidget::toggleLegend() {
@@ -265,10 +276,12 @@ void OccurrenceGraphWidget::toggleGraphicsControls() {
 }
 
 void OccurrenceGraphWidget::addAttribute() {
+  setChangeLabel();
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
   attributeColorDialog->setWindowTitle("Add attribute to plot");
   attributeColorDialog->exec();
   if (attributeColorDialog->getExitStatus() == 0) {
+    reset();
     QColor color = attributeColorDialog->getColor();
     QColor textColor = attributeColorDialog->getTextColor();
     QString attribute = attributeColorDialog->getAttribute();
@@ -363,6 +376,12 @@ void OccurrenceGraphWidget::addAttribute() {
   checkCongruency();
 }
 
+void OccurrenceGraphWidget::setChangeLabel() {
+  if (changeLabel->text() == "" && occurrenceVector.size() > 0) {
+    changeLabel->setText("*");
+  }
+}
+
 void OccurrenceGraphWidget::findChildren(QString father, QVector<QString> *children) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
@@ -377,7 +396,7 @@ void OccurrenceGraphWidget::findChildren(QString father, QVector<QString> *child
 }
 
 void OccurrenceGraphWidget::removeMode() {
-  //setChangeLabel();
+  setChangeLabel();
   QString text = attributeListWidget->currentItem()->data(Qt::DisplayRole).toString();
   for (QVector<OccurrenceItem*>::iterator it = occurrenceVector.begin();
        it != occurrenceVector.end();) {
@@ -446,6 +465,7 @@ void OccurrenceGraphWidget::groupOccurrences() {
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);
   while (it.hasNext()) {
     OccurrenceItem *current = it.next();
+    current->setGrouped(false);
     QVectorIterator<QString> it2(presentAttributes);
     int dist = 0;
     while (it2.hasNext()) {
@@ -459,14 +479,15 @@ void OccurrenceGraphWidget::groupOccurrences() {
       }
     }
   }
+  QVector<OccurrenceItem*> keep;
   QVectorIterator<OccurrenceItem*> it3(occurrenceVector);
   while (it3.hasNext()) {
     OccurrenceItem *first = it3.next();
-    first->setGrouped(false);
     QVectorIterator<OccurrenceItem*> it4(occurrenceVector);
     QVector<OccurrenceItem*> temp;
-    if (!temp.contains(first)) {
-      temp.push_back(first);
+    temp.push_back(first);
+    if (!keep.contains(first)) {
+      keep.push_back(first);
     }
     QVector<OccurrenceItem*> rem;
     while (it4.hasNext()) {
@@ -482,7 +503,7 @@ void OccurrenceGraphWidget::groupOccurrences() {
     QVectorIterator<OccurrenceItem*> it5(rem);
     while (it5.hasNext()) {
       OccurrenceItem *candidate = it5.next();
-      if (candidate != rem.first()) {
+      if (!keep.contains(candidate)) {
 	candidate->hide();
 	candidate->setPermHidden(true);
 	candidate->getLabel()->hide();
@@ -543,28 +564,47 @@ void OccurrenceGraphWidget::wireLinkages() {
   }
 }
 
-// IS SHOULD PERHAPS ADD THE OPTION TO ALSO ADD ATTRIBUTES OF MACRO EVENTS.
+void OccurrenceGraphWidget::restore() {
+  reset();
+  groupOccurrences();
+  wireLinkages();
+}
 
-void OccurrenceGraphWidget::getEvents() {
+void OccurrenceGraphWidget::reset() {
   QVector<OccurrenceItem*>::iterator it;
   for (it = occurrenceVector.begin(); it != occurrenceVector.end();) {
     OccurrenceItem *current = *it;
+    current->hide();
+    current->getLabel()->hide();
     if (current->getId() < 0) {
       scene->removeItem(current->getLabel());
       scene->removeItem(current);
       labelVector.removeOne(current->getLabel());
-      occurrenceVector.removeOne(*it);
+      occurrenceVector.removeOne(current);
     } else {
       current->setPos(QPointF((current->getOrder() * distance), 0));
       current->setPermHidden(false); // We reset this here.
       QString text = QString::number(current->getOrder()) + " - " + current->getAttribute();
-      current->getLabel()->setPlainText(text);
-      current->getLabel()->setTextWidth(current->getLabel()->boundingRect().width());
+      QColor textColor = current->getLabel()->defaultTextColor();
+      scene->removeItem(current->getLabel());
+      labelVector.removeOne(current->getLabel());
+      OccurrenceLabel *newLabel = new OccurrenceLabel(current);
+      newLabel->setPlainText(text);
+      newLabel->setTextWidth(current->getLabel()->boundingRect().width());
+      newLabel->setDefaultTextColor(textColor);
       current->show();
+      current->setLabel(newLabel);
       current->getLabel()->show();
+      current->getLabel()->setNewPos(current->scenePos());
+      scene->addItem(current->getLabel());
+      labelVector.push_back(current->getLabel());
       it++;
     }
   }
+}
+
+void OccurrenceGraphWidget::getEvents() {
+  reset();
   QVector<EventItem*> incidents = eventGraph->getEventItems();
   if (incidents.size() > 0) {
     QVectorIterator<EventItem*> it(incidents);
@@ -576,18 +616,31 @@ void OccurrenceGraphWidget::getEvents() {
 	if (incident->getId() == occurrence->getId()) {
 	  if (incident->getMacroEvent() != NULL) {
 	    MacroEvent *macro = incident->getMacroEvent();
+	    while (macro->getMacroEvent() != NULL) {
+	      macro = macro->getMacroEvent();
+	    }
 	    QString type = "";
 	    if (macro->getConstraint() == PATHS) {
 	      type = "P";
 	    } else if (macro->getConstraint() == SEMIPATHS) {
 	      type = "S";
 	    }
-	    occurrence->setPos(incident->getMacroEvent()->scenePos().x(), 0);
-	    QString text = type + QString::number(macro->getOrder()) + " - " +
+	    QString text = type + QString::number(macro->getId()) + " - " +
 	      occurrence->getAttribute();
-	    occurrence->getLabel()->setPlainText(text);
-	    occurrence->getLabel()->setTextWidth(occurrence->getLabel()->boundingRect().width());
-	    occurrence->getLabel()->setNewPos(occurrence->scenePos());
+	    QColor textColor = occurrence->getLabel()->defaultTextColor();
+	    scene->removeItem(occurrence->getLabel());
+	    labelVector.removeOne(occurrence->getLabel());
+	    OccurrenceLabel *newLabel = new OccurrenceLabel(occurrence);
+	    newLabel->setPlainText(text);
+	    newLabel->setDefaultTextColor(textColor);
+	    occurrence->setLabel(newLabel);
+	    newLabel->setTextWidth(occurrence->getLabel()->boundingRect().width());
+	    occurrence->show();
+	    occurrence->getLabel()->show();
+	    occurrence->setPos(macro->scenePos().x(), 0);
+  	    occurrence->getLabel()->setNewPos(occurrence->scenePos());
+	    scene->addItem(occurrence->getLabel());
+	    labelVector.push_back(occurrence->getLabel());
 	  } else {
 	    occurrence->setPos(incident->scenePos().x(), 0);
 	    occurrence->getLabel()->setNewPos(occurrence->scenePos());
@@ -616,11 +669,16 @@ void OccurrenceGraphWidget::getEvents() {
 	  }
 	}
 	if (found) {
+	  while (macro->getMacroEvent() != NULL) {
+	    macro = macro->getMacroEvent();
+	  }
+	  qDebug() << macro->getId();
+	  qDebug() << macro->getDescription();
+	  qDebug() << macro->getOrder();
 	  QPointF position = QPointF(macro->scenePos().x(), 0);
 	  // I am setting macro id's to negatives to distinguish them from the incident ids.
 	  OccurrenceItem *newOccurrence = new OccurrenceItem(40, macro->getDescription(),
-							     position,
-							     (macro->getId() * -1),
+							     position, (macro->getId() * -1),
 							     macro->getOrder(),
 							     currentAttribute);
 	  newOccurrence->setPos(newOccurrence->getOriginalPos());
@@ -629,18 +687,14 @@ void OccurrenceGraphWidget::getEvents() {
 	  occurrenceVector.push_back(newOccurrence);
 	  scene->addItem(newOccurrence);
 	  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
-	  MacroEvent *temp = macro;
-	  while (temp->getMacroEvent() != NULL) {
-	    temp = temp->getMacroEvent();
-	  }
-	  newOccurrence->setPos(temp->scenePos().x(), 0);
 	  QString type = "";
-	  if (temp->getConstraint() == PATHS) {
+	  if (macro->getConstraint() == PATHS) {
 	    type = "P";
-	  } else if (temp->getConstraint() == SEMIPATHS) {
+	  } else if (macro->getConstraint() == SEMIPATHS) {
 	    type = "S";
 	  }
-	  QString text = type + QString::number(temp->getOrder()) + " - " + currentAttribute;
+	  QString text = type + QString::number(macro->getId()) + " - " + currentAttribute;
+	  qDebug() << text;
 	  label->setPlainText(text);
 	  label->setDefaultTextColor(Qt::black);
 	  label->setTextWidth(label->boundingRect().width());
@@ -656,7 +710,6 @@ void OccurrenceGraphWidget::getEvents() {
   groupOccurrences();
   wireLinkages();
 }
-
 
 void OccurrenceGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
   OccurrenceItem *source = NULL;

@@ -20,6 +20,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   infoWidget = new QWidget(this);
   attWidget = new QWidget(this);
   commentWidget = new QWidget(this);
+  legendWidget = new QWidget(this); 
   
   attributesTreeView = new DeselectableTreeView(attWidget);
   attributesTreeView->setHeaderHidden(true);
@@ -44,6 +45,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   attributesLabel = new QLabel(tr("<b>Attributes:</b>"), attWidget);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), attWidget);
   valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
+  legendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
 
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -59,9 +61,21 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   valueField = new QLineEdit(attWidget);
   valueField->setEnabled(false);
 
-  //  exportSvgButton = new QPushButton(tr("Export"), graphicsWidget);
+  eventListWidget = new DeselectableListWidget(legendWidget);
+  eventListWidget->setColumnCount(2);
+  eventListWidget->horizontalHeader()->hide();
+  eventListWidget->verticalHeader()->hide();
+  eventListWidget->setColumnWidth(1, 20);
+  eventListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  eventListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  eventListWidget->setStyleSheet("QTableView {gridline-color: black}");
+  eventListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  exportSvgButton = new QPushButton(tr("Export svg"), this);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
   toggleDetailsButton->setCheckable(true);
+  toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
+  toggleLegendButton->setCheckable(true);
   assignAttributeButton = new QPushButton(tr("Assign attribute"), attWidget);
   unassignAttributeButton = new QPushButton(tr("Unassign attribute"), attWidget);
   addAttributeButton = new QPushButton(tr("New attribute"), attWidget);
@@ -74,8 +88,12 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   resetTextsButton = new QPushButton("Reset texts", attWidget);
   resetTextsButton->setEnabled(false);
   exitButton = new QPushButton(tr("Return to event graph"), this);
+  exitButton->setStyleSheet("QPushButton {color: blue; font-weight: bold}");
+  valueButton = new QPushButton(tr("Store value"), attWidget);
+  valueButton->setEnabled(false);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
+  connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
@@ -85,7 +103,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
-  //  connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
+  connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -94,8 +112,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
 	  this, SLOT(setButtons()));
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
   	  this, SLOT(changeFilter(const QString &)));
-  //  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
-  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(cleanUp()));
+  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
+  connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeModeColor(QTableWidgetItem *)));
+  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   connect(exitButton, SIGNAL(clicked()), this, SLOT(switchBack()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -169,6 +189,14 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   view->sizePolicy().setHorizontalPolicy(QSizePolicy::Maximum);
   screenLayout->addLayout(middleLayout);
 
+  QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
+  legendLayout->addWidget(legendLabel);
+  legendLayout->addWidget(eventListWidget);
+  legendWidget->setMinimumWidth(175);
+  legendWidget->setMaximumWidth(175);
+  legendWidget->setLayout(legendLayout);
+  screenLayout->addWidget(legendWidget);				   
+  
   mainLayout->addLayout(screenLayout);
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
@@ -177,21 +205,32 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
+  drawOptionsRightLayout->addWidget(exportSvgButton);
   drawOptionsRightLayout->addWidget(exitButton);
+  drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);
   drawOptionsRightLayout->setAlignment(Qt::AlignRight);
   mainLayout->addLayout(drawOptionsLayout);
     
   setLayout(mainLayout);
   attWidget->hide();
+  legendWidget->hide();
 }
 
 void HierarchyGraphWidget::toggleDetails() {
-  //  setComment();
+  setComment();
   if (infoWidget->isHidden()) {
     infoWidget->show();
   } else {
     infoWidget->hide();
+  }
+}
+
+void HierarchyGraphWidget::toggleLegend() {
+  if (legendWidget->isHidden()) {
+    legendWidget->show();
+  } else {
+    legendWidget->hide();
   }
 }
 
@@ -205,8 +244,41 @@ void HierarchyGraphWidget::showComments() {
   commentWidget->show();
 }
 
+void HierarchyGraphWidget::setCommentBool() {
+  commentBool = true;
+}
+
+void HierarchyGraphWidget::setComment() {
+  if (commentBool && selectedIncident != 0) {
+    QString comment = commentField->toPlainText();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+    query->bindValue(":incident", selectedIncident);
+    query->exec();
+    query->first();
+    int order = 0;
+    order = query->value(0).toInt();
+    query->prepare("UPDATE incidents SET comment = :comment WHERE ch_order = :order");
+    query->bindValue(":comment", comment);
+    query->bindValue(":order", order);
+    query->exec();
+    commentBool = false;
+    delete query;
+  } else if (commentBool && selectedMacro != NULL) {
+    QString comment = commentField->toPlainText();
+    selectedMacro->setComment(comment);
+    QVectorIterator<MacroEvent*> it(macroVector);
+    while (it.hasNext()) {
+      MacroEvent *macro = it.next();
+      if (macro->getId() == selectedMacro->getId()) {
+	macro->setComment(comment);
+      }
+    }
+  }
+}
+
 void HierarchyGraphWidget::retrieveData() {
-  //  setComment();
+  setComment();
   if (currentData.size() > 0) {
     currentData.clear();
   }
@@ -356,10 +428,35 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 					 submittedOrigin->getConstraint(),
 					 submittedOrigin->getIncidents());
   newOrigin->setCopy(true);
+  newOrigin->setMode(submittedOrigin->getMode());
+  newOrigin->setColor(submittedOrigin->getColor());
   newOrigin->setAttributes(submittedOrigin->getAttributes());
   newOrigin->setZValue(1);
   MacroLabel *macroLabel = new MacroLabel(newOrigin);
   newOrigin->setLabel(macroLabel);
+  QTableWidgetItem *item = new QTableWidgetItem(newOrigin->getMode());
+  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+  if (newOrigin->getMode() != "") {
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM incident_attributes "
+		   "WHERE name = :name");
+    query->bindValue(":name", newOrigin->getMode());
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    delete query;
+    QString toolTip = "<FONT SIZE = 3>" + newOrigin->getMode()  + " - " +
+      description + "</FONT SIZE>";
+    item->setToolTip(toolTip);
+    item->setData(Qt::DisplayRole, newOrigin->getMode());
+    eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+    eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+    eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(newOrigin->getColor());
+    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+      setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+	       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  }
   if (newOrigin->getConstraint() == PATHS) {
     QString label = "P-" + QString::number(newOrigin->getId());
     macroLabel->setPlainText(label);
@@ -390,9 +487,43 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 					    macro->getId(), macro->getConstraint(),
 					    macro->getIncidents());
       newMacro->setCopy(true);
+      newMacro->setMode(macro->getMode());
+      newMacro->setColor(macro->getColor());
       newMacro->setAttributes(macro->getAttributes());
       newMacro->setPos(newMacro->getOriginalPos());
       newMacro->setZValue(1);
+      bool found = false;
+      if (newMacro->getMode() != "") {
+	for (int i = 0; i < eventListWidget->rowCount(); i++) {
+	  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) {
+	    found = true;
+	  }
+	}
+	if (!found) {
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT description FROM incident_attributes "
+			 "WHERE name = :name");
+	  query->bindValue(":name", newMacro->getMode());
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  delete query;
+	  QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
+	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	  QString toolTip = "<FONT SIZE = 3>" + newMacro->getMode() + " - " +
+	    description + "</FONT SIZE>";
+	  item->setToolTip(toolTip);
+	  item->setData(Qt::DisplayRole, newMacro->getMode());
+	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	    setBackground(newMacro->getColor());
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	}
+      }
       MacroLabel *newMacroLabel = new MacroLabel(newMacro);
       newMacro->setLabel(newMacroLabel);
       if (newMacro->getConstraint() == PATHS) {
@@ -422,8 +553,42 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
     if (event->getMacroEvent() == submittedOrigin) {
       EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
 					  QPointF(0, yPos), event->getId(), event->getOrder());
-      newEvent->setPos(newEvent->getOriginalPos());
       newEvent->setCopy(true);
+      newEvent->setMode(event->getMode());
+      newEvent->setColor(event->getColor());
+      newEvent->setPos(newEvent->getOriginalPos());
+      bool found = false;
+      if (newEvent->getMode() != "") {
+	for (int i = 0; i < eventListWidget->rowCount(); i++) {
+	  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newEvent->getMode()) {
+	    found = true;
+	  }
+	}
+	if (!found) {
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT description FROM incident_attributes "
+			 "WHERE name = :name");
+	  query->bindValue(":name", newEvent->getMode());
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  delete query;
+	  QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
+	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	  QString toolTip = "<FONT SIZE = 3>" + newEvent->getMode() + " - " +
+	    description + "</FONT SIZE>";
+	  item->setToolTip(toolTip);
+	  item->setData(Qt::DisplayRole, newEvent->getMode());
+	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	    setBackground(newEvent->getColor());
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	}
+      }
       QPointer<NodeLabel> text = new NodeLabel(newEvent);
       newEvent->setLabel(text);
       text->setPlainText(QString::number(newEvent->getOrder()));
@@ -494,9 +659,43 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 					      macro->getId(), macro->getConstraint(),
 					      macro->getIncidents());
 	newMacro->setCopy(true);
+	newMacro->setMode(macro->getMode());
+	newMacro->setColor(macro->getColor());
 	newMacro->setAttributes(macro->getAttributes());
 	newMacro->setPos(newMacro->getOriginalPos());
 	newMacro->setZValue(1);
+	bool found = false;
+	if (newMacro->getMode() != "") {
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT description FROM incident_attributes "
+			 "WHERE name = :name");
+	  query->bindValue(":name", newMacro->getMode());
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  delete query;
+	  for (int i = 0; i < eventListWidget->rowCount(); i++) {
+	    if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) {
+	      found = true;
+	    }
+	  }
+	  if (!found) {
+	    QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
+	    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	    QString toolTip = "<FONT SIZE = 3>" + newMacro->getMode() + " - " +
+	      description + "</FONT SIZE>";
+	    item->setToolTip(toolTip);
+	    item->setData(Qt::DisplayRole, newMacro->getMode());
+	    eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+	    eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+	    eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	      setBackground(newMacro->getColor());
+	    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	      setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+		       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	  }
+	}
 	MacroLabel *newMacroLabel = new MacroLabel(newMacro);
 	newMacro->setLabel(newMacroLabel);
 	if (newMacro->getConstraint() == PATHS) {
@@ -539,7 +738,41 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
 					      QPointF(0, yPos), event->getId(), event->getOrder());
 	  newEvent->setCopy(true);
+	  newEvent->setMode(event->getMode());
+	  newEvent->setColor(event->getColor());
 	  newEvent->setPos(newEvent->getOriginalPos());
+	  bool found = false;
+	  if (newEvent->getMode() != "") {
+	    QSqlQuery *query = new QSqlQuery;
+	    query->prepare("SELECT description FROM incident_attributes "
+			   "WHERE name = :name");
+	    query->bindValue(":name", newEvent->getMode());
+	    query->exec();
+	    query->first();
+	    QString description = query->value(0).toString();
+	    delete query;
+	    for (int i = 0; i < eventListWidget->rowCount(); i++) {
+	      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newEvent->getMode()) {
+		found = true;
+	      }
+	    }
+	    if (!found) {
+	      QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
+	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	      QString toolTip = "<FONT SIZE = 3>" + newEvent->getMode() + " - " +
+		description + "</FONT SIZE>";
+	      item->setToolTip(toolTip);
+	      item->setData(Qt::DisplayRole, newEvent->getMode());
+	      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		setBackground(newEvent->getColor());
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	    }
+	  }
 	  QPointer<NodeLabel> text = new NodeLabel(newEvent);
 	  newEvent->setLabel(text);
 	  text->setPlainText(QString::number(newEvent->getOrder()));
@@ -592,6 +825,58 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
   }
   if (newLayer.size() > 0) {
     addLayer(newLayer, partnerLayer, layer + 1);
+  }
+}
+
+void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
+      QString mode = neighbour->data(Qt::DisplayRole).toString();
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+	if (event) {
+	  event = qgraphicsitem_cast<EventItem*>(it.next());
+	  if (event->getMode() == mode) {
+	    event->setColor(color);
+	  }
+	} else if (macro) {
+	  macro = qgraphicsitem_cast<MacroEvent*>(it.next());
+	  if (macro->getMode() == mode) {
+	    macro->setColor(color);
+	  }
+	} else {
+	  it.next();
+	}
+      }
+    }
+  }
+}
+
+void HierarchyGraphWidget::exportSvg() {
+  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if (!fileName.endsWith(".svg")) {
+      fileName.append(".svg");
+    }
+    QSvgGenerator gen;
+    gen.setFileName(fileName);
+    QRectF currentRect = this->scene->itemsBoundingRect();
+    currentRect.setX(currentRect.x());
+    currentRect.setY(currentRect.y());
+    currentRect.setWidth(currentRect.width());
+    currentRect.setHeight(currentRect.height());
+    gen.setSize(QSize(currentRect.width(), currentRect.height()));
+    QPainter painter;
+    painter.begin(&gen);
+    scene->render(&painter);
+    painter.end();
   }
 }
 
@@ -1285,6 +1570,7 @@ void HierarchyGraphWidget::setButtons() {
 
 void HierarchyGraphWidget::cleanUp() {
   QGraphicsItemGroup *group = NULL;
+  setComment();
   if (scene->items().size() > 0) {
     group = scene->createItemGroup(scene->items());
   }
@@ -1295,10 +1581,12 @@ void HierarchyGraphWidget::cleanUp() {
   currentData.clear();
   selectedMacro = NULL;
   selectedIncident = 0;
-  // also empty text fields.
+  retrieveData();
+  eventListWidget->setRowCount(0);
 }
 
 void HierarchyGraphWidget::switchBack() {
+  setComment();
   emit goToEventGraph();
 }
 
@@ -1333,4 +1621,8 @@ void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) {
 
 void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) {
   eventGraph = egw;
+}
+
+void HierarchyGraphWidget::finalBusiness() {
+  cleanUp();
 }

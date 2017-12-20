@@ -46,13 +46,17 @@ public:
   void setEventGraph(EventGraphWidget *egw);
 					   
 private slots:
+  void setCommentBool();
+  void setComment();
   void toggleDetails();
+  void toggleLegend();
+  void changeModeColor(QTableWidgetItem *item);
   void retrieveData();
   void showAttributes();
   void showComments();
   void buildComponents(MacroEvent *submittedOrigin, int layer);
   void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
-
+  void exportSvg();
   void assignAttribute();
   void unassignAttribute();
   void newAttribute();
@@ -73,8 +77,9 @@ private slots:
 		    QString type = "", QModelIndex parent = QModelIndex());
   void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
-
   void switchBack();
+  void finalBusiness();
+  
 signals:
   void goToEventGraph();
   
@@ -91,6 +96,7 @@ private:
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
+  QPointer<QWidget> legendWidget;
   
   QPointer<QLabel> timeStampLabel;
   QPointer<QLabel> sourceLabel;
@@ -100,6 +106,7 @@ private:
   QPointer<QLabel> attributesLabel;
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
+  QPointer<QLabel> legendLabel;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -111,6 +118,7 @@ private:
   QPointer<QTextEdit> commentField;
   
   QPointer<QPushButton> toggleDetailsButton;
+  QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> seeAttributesButton;
   QPointer<QPushButton> seeCommentsButton;
   QPointer<QPushButton> assignAttributeButton;
@@ -122,13 +130,17 @@ private:
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
   QPointer<QPushButton> exitButton;
+  QPointer<QPushButton> exportSvgButton;
 
+  QPointer<DeselectableListWidget> eventListWidget;
+  
   MacroEvent *origin;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
 
   MacroEvent *selectedMacro;
   int selectedIncident;
+  bool commentBool;
 };
 
 #endif

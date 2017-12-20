@@ -137,7 +137,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   nodeColorButton = new QPushButton(tr("Set node color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
-  exportSvgButton = new QPushButton(tr("Export"), graphicsWidget);
+  exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   setFilteredButton = new QPushButton(tr("Filter on"), legendWidget);
   setFilteredButton->setCheckable(true);
   setFilteredButton->setChecked(true);

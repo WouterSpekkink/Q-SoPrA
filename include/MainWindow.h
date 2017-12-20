@@ -62,7 +62,7 @@ private:
   QPointer<QWidget> hierarchyGraphWidget;
   
   QPointer<ProgressBar> loadProgress;
-  QPointer<QMenuBar> menuBar;
+  QPointer<QMenuBar> menu;
   QPointer<QMenu> fileMenu;
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;

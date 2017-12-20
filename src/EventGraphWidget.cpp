@@ -119,7 +119,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
   plotButton->setEnabled(false);
-  exportSvgButton = new QPushButton(tr("Export"), graphicsWidget);
+  exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
   compareButton = new QPushButton(tr("Compare"), this);

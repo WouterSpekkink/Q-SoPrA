@@ -59,8 +59,9 @@ private slots:
   
   void wireLinkages();
   void groupOccurrences();
+  void reset();
   void getEvents();
-
+  void restore();
   void plotLabels();
   void setBackgroundColor();
   void increaseDistance();
@@ -71,6 +72,7 @@ private slots:
   void setVisibility();
   void setRangeControls();
   void exportSvg();
+  void setChangeLabel();
   
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void processMoveLine(QGraphicsItem *item, QPointF pos);
@@ -91,6 +93,7 @@ private:
   QVector<OccurrenceLabel*> labelVector;
   EventGraphWidget *eventGraph;
 
+  QPointer<QLabel> legendLabel;
   QPointer<QLabel> plotLabel;
   QPointer<QLabel> changeLabel;
   QPointer<QLabel> incongruencyLabel;
@@ -103,6 +106,7 @@ private:
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> getEventsButton;
+  QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> increaseDistanceButton;
