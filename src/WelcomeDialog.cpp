@@ -4,20 +4,28 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEs
   esd = submittedEsd;
   exitStatus = 0;
   
-  titleLabel = new QLabel("<h1>Start menu</h1>", this);
+  titleLabel = new QLabel("<h1>Welcome to SoPrA</h1>", this);
+  titleLabel->setAlignment(Qt::AlignHCenter);
+  imageLabel = new QLabel(this);
+  QPixmap image("./images/welcome_background");
+  imageLabel->setPixmap(image);
+  
   newDatabaseButton = new QPushButton("Create new database", this);
   openDatabaseButton = new QPushButton("Open existing database", this);
   exitButton = new QPushButton("Exit program", this);
-
+  
   connect(newDatabaseButton, SIGNAL(clicked()), this, SLOT(newDatabase()));
   connect(openDatabaseButton, SIGNAL(clicked()), this, SLOT(openDatabase()));
   connect(exitButton, SIGNAL(clicked()), this, SLOT(quitApp()));
 
   QPointer<QVBoxLayout> welcomeLayout = new QVBoxLayout;
   welcomeLayout->addWidget(titleLabel);
-  welcomeLayout->addWidget(newDatabaseButton);
-  welcomeLayout->addWidget(openDatabaseButton);
-  welcomeLayout->addWidget(exitButton);
+  welcomeLayout->addWidget(imageLabel);
+  QPointer<QHBoxLayout> buttonLayout = new QHBoxLayout;
+  buttonLayout->addWidget(newDatabaseButton);
+  buttonLayout->addWidget(openDatabaseButton);
+  buttonLayout->addWidget(exitButton);
+  welcomeLayout->addLayout(buttonLayout);
   setWindowTitle("SoPrA (Social Process Analysis)");
   setLayout(welcomeLayout);  
 }

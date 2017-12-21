@@ -30,7 +30,8 @@ private slots:
 
 private:
   QPointer<EventSequenceDatabase> esd;
-  
+
+  QPointer<QLabel> imageLabel;
   QPointer<QLabel> titleLabel;
 
   QPointer<QPushButton> newDatabaseButton;
