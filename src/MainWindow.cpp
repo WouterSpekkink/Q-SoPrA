@@ -234,8 +234,9 @@ void MainWindow::importFromCsv() {
 	 is skipped in all subsequent line reads.
       */
       headerFound = true;
-    } else { // This is the block that is run after the header was
-      already imported.
+
+      // This is the block that is run after the header was already imported.
+    } else { 
       // We iterate through the tokens and push them into the row vector.
       std::vector<std::string> row;
       std::vector<std::string>::iterator it; 
@@ -369,7 +370,7 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
       stringLength--;
       /* 
 	 If we are in a text field, and we encounter another quote, then we
-	 should first check if it is accompanied by yet another one. 
+	 should first check if it is accompanied by yet another pair of quotes. 
 	 This is based on the fact that csv files (if written correctly), 
 	 always use double quotes for
 	 quotes that are embedded in text fields. 
