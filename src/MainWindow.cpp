@@ -392,8 +392,19 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
 	previousPos++;
 	stringLength--;
       }
-      // And then we store the resulting string as a new token.
+      // We create a substring here.
       std::string tempString = line.substr(previousPos, stringLength);
+      // In case we have any remaining double quotes, let us remove them.
+      if (tempString.size() > 1) {
+	for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) {
+	  if (*(it - 1) == '"' && *it == '"') {
+	    tempString.erase(it);
+	  } else {
+	    it++;
+	  }
+	}
+      }
+      // And then we store the resulting string as a new token.
       tokens->push_back(tempString);
       previousPos = i + 1; // We set a new starting position for the next token.
       stringLength = 0; // And we reset the string length.
@@ -401,12 +412,21 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
       stringLength++; // We increment the string length as we go on.
     }
   }
-  // After we finish reading the line, we should still include the last token. 
+  // After we finish reading the line, we should still include the last token.
   while (line[previousPos] == ' ') {
     previousPos++;
     stringLength--;
   }
   std::string tempString = line.substr(previousPos, stringLength);
+  if (tempString.size() > 1) {
+    for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) {
+      if (*(it - 1) == '"' && *it == '"') {
+	tempString.erase(it);
+      } else {
+	it++;
+      }
+    }
+  }
   tokens->push_back(tempString);
 }
 
