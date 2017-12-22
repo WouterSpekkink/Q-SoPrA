@@ -146,38 +146,32 @@ void MainWindow::createMenus() {
   setMenuBar(menu);
 }
 
-void MainWindow::importFromCsv() {
-  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"", tr("csv files (*.csv)"));
-  std::ifstream file ((csvName.toStdString()).c_str());
-  std::vector<std::vector <std::string> > data;
-  bool headerFound = false;
-  while (file) {
-    std::string buffer;
+/* 
+   This function is designed to facilitate importing data from an external csv file.
 
-    // First we find out if there are any break lines in the file we should get rid of.
-    bool quoteFound = false;
-    for (std::string::size_type i = 0; i != buffer.length(); i++) {
-      if (quoteFound == false && buffer[i] == '"') {
-	quoteFound = true;
-      } else if (quoteFound == true && buffer[i] == '"') {
-	  quoteFound = false;
-      }
+*/
+void MainWindow::importFromCsv() {
+  // We ask the user to open a file to import from.
+  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
+						 tr("csv files (*.csv)"));
+  // We then create an ifstream object that goes through the file.
+  std::ifstream file ((csvName.toStdString()).c_str());
+  std::vector<std::vector <std::string> > data; // To store our data in.
+  bool headerFound = false; // To be used in a condition further below.
+  while (file) {
+    std::string buffer; // The buffer will hold each line of data as we read the file.
+    if (!getline(file, buffer)) break; // We get the current line/
+
+    // We should check if there are any extra line breaks in the file and handle these.
+    while (checkLineBreaks(buffer) == true) {
+      std::string extra;
+      getline(file, extra);
+      buffer = buffer + "\n\n" + extra;
     }
-    if (quoteFound == true) {
-      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-      errorBox->setText(tr("<b>ERROR: Import cancelled</b>"));
-      errorBox->setInformativeText("Unmatched quotes (\") were found in one of the lines of the file.");
-      errorBox->exec();
-      delete errorBox;
-      return;
-    }
-    
-    if (!getline(file, buffer)) break;
-    
-    std::vector<std::string> tokens;
+    std::vector<std::string> tokens; // An object to keep the separate tokens in a line.
+    // Let us now it
     std::vector<std::string>::iterator it;
     splitCsvLine(&tokens, buffer);
-    
     if (headerFound == false) {
       if (tokens[0] != "Timing" && tokens[0] != "timing") {
 	QPointer<QMessageBox> errorBox = new QMessageBox(this);
@@ -214,7 +208,7 @@ void MainWindow::importFromCsv() {
       if (tokens[4] != "Source" && tokens[4] != "source") {
 	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Source\" in third column.");
+	errorBox->setInformativeText("Expected \"Source\" in fifth column.");
 	errorBox->exec();
 	delete errorBox;
 	return;
@@ -234,33 +228,52 @@ void MainWindow::importFromCsv() {
   loadProgress->show();
   
   std::vector<std::vector <std::string> >::iterator it;
-  int counter = 0;
+  DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
+  dw->updateTable();
+  int order = dw->incidentsModel->rowCount() + 1;
   for (it = data.begin(); it != data.end(); it++) {
     std::vector<std::string> currentRow = *it;
-    DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0)); 
     QString timeStamp = QString::fromStdString(currentRow[0]);
     QString description = QString::fromStdString(currentRow[1]);
     QString raw = QString::fromStdString(currentRow[2]);
     QString comment = QString::fromStdString(currentRow[3]);
     QString source = QString::fromStdString(currentRow[4]);
-
-    dw->incidentsModel->insertRow(counter);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 1), counter + 1);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 2), timeStamp);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 3), description);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 4), raw);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 5), comment);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 6), source);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 7), 0);
-    dw->incidentsModel->submitAll();
-    counter++;
-    loadProgress->setProgress(counter + 1);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("INSERT INTO incidents "
+		   "(ch_order, timestamp, description, raw, comment, source, mark) "
+		   "VALUES "
+		   "(:order, :timestamp, :description, :raw, :comment, :source, :mark)");
+    query->bindValue(":order", order);
+    query->bindValue(":timestamp", timeStamp);
+    query->bindValue(":description", description);
+    query->bindValue(":raw", raw);
+    query->bindValue(":comment", comment);
+    query->bindValue(":source", source);
+    query->bindValue(":mark", 0);
+    query->exec();		   
+    order++;
+    loadProgress->setProgress(order);
     qApp->processEvents();
+    delete query;
   }
+  dw->incidentsModel->select();
+  dw->updateTable();
   loadProgress->close();
   delete loadProgress;
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->retrieveData();
+}
+
+bool MainWindow::checkLineBreaks(std::string line) {
+  bool lineBreak = false;
+  for (std::string::size_type i = 0; i != line.length(); i++) {
+    if (lineBreak == false && line[i] == '"') {
+      lineBreak = true;
+    } else if (lineBreak == true && line[i] == '"') {
+      lineBreak = false;
+    }
+  }
+  return lineBreak;  
 }
 
 void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line) {

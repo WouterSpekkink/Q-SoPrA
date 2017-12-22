@@ -47,8 +47,9 @@ private slots:
   void switchToHierarchyView(MacroEvent *selectedMacro);
   
   void importFromCsv();
+  bool checkLineBreaks(std::string line);
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
-
+  
 private:
   QPointer<QStackedWidget> stacked;
   QPointer<QWidget> dataWidget;
