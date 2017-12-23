@@ -1,8 +1,10 @@
 #include "../include/DataWidget.h"
+#include <QDebug>
 
 DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
-
+  currentData = "";
+  
   // This widget uses a table model.
   incidentsModel = new EventTableModel(this);
   tableView = new ZoomableTableView(this);
@@ -54,7 +56,12 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   connect(moveDownButton, SIGNAL(clicked()), this, SLOT(moveDown()));
   connect(duplicateRowButton, SIGNAL(clicked()), this, SLOT(duplicateRow()));
   connect(removeRowButton, SIGNAL(clicked()), this, SLOT(removeRow()));
-  connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
+  connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)),
+	  this, SLOT(resetHeader(int)));
+  connect(tableView, SIGNAL(doubleClicked(const QModelIndex &)),
+	  this, SLOT(saveCurrent(const QModelIndex &)));
+  connect(tableView->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
+	  this, SLOT(checkChange(const QModelIndex &, const QModelIndex &)));
   
   // Then we create the layout.
   QPointer<QHBoxLayout> recordButtonsLayout = new QHBoxLayout;
@@ -390,5 +397,22 @@ void DataWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
 void DataWidget::updateTable() {
   while (incidentsModel->canFetchMore()) {
     incidentsModel->fetchMore();
+  }
+}
+
+void DataWidget::saveCurrent(const QModelIndex &index) {
+  currentData = tableView->model()->
+    index(index.row(), index.column()).data(Qt::DisplayRole).toString();
+}
+
+void DataWidget::checkChange(const QModelIndex &topLeft, const QModelIndex &bottomRight) {
+  if (topLeft == bottomRight) {
+    if (topLeft.column() == 2 ||
+	topLeft.column() == 3 ||
+	topLeft.column() == 6) {
+      if (tableView->model()->index(topLeft.row(), topLeft.column()).data().toString() == "") {
+	tableView->model()->setData(topLeft, currentData);
+      }
+    }
   }
 }

@@ -40,6 +40,8 @@ private slots:
   void moveDown();
   void duplicateRow();
   void removeRow();
+  void saveCurrent(const QModelIndex &index);
+  void checkChange(const QModelIndex &topLeft, const QModelIndex &bottomRight);
   
 private:
   QPointer<EventSequenceDatabase> esd;
@@ -57,6 +59,8 @@ private:
   QPointer<QPushButton> moveDownButton;
   QPointer<QPushButton> duplicateRowButton;
   QPointer<QPushButton> removeRowButton;
+
+  QString currentData;
 };
 
 

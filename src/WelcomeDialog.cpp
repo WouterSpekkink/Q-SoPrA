@@ -51,6 +51,7 @@ void WelcomeDialog::newDatabase() {
       return;
     } else {
       QSqlQuery *query = new QSqlQuery;
+      qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE incidents "
 		  "(id integer PRIMARY KEY, "
 		  "ch_order integer, "
@@ -376,6 +377,8 @@ void WelcomeDialog::newDatabase() {
 		  "green integer, "
 		  "alpha integer)");
       delete query;
+      qApp->restoreOverrideCursor();
+      qApp->processEvents();
     }
     exitStatus = 0;
   } else {
@@ -404,6 +407,7 @@ void WelcomeDialog::openDatabase() {
 	 For example, this could be the case after updates of the program. 
       */
       QSqlQuery *query = new QSqlQuery;
+      qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE IF NOT EXISTS incidents "
 		  "(id integer PRIMARY KEY, "
 		  "ch_order integer, "
@@ -733,6 +737,8 @@ void WelcomeDialog::openDatabase() {
 		  "green integer, "
 		  "alpha integer)");
       delete query;
+      qApp->restoreOverrideCursor();
+      qApp->processEvents();
       exitStatus = 0;
       this->close();
     }
