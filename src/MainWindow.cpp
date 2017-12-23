@@ -146,38 +146,44 @@ void MainWindow::createMenus() {
   setMenuBar(menu);
 }
 
-void MainWindow::importFromCsv() {
-  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"", tr("csv files (*.csv)"));
-  std::ifstream file ((csvName.toStdString()).c_str());
-  std::vector<std::vector <std::string> > data;
-  bool headerFound = false;
-  while (file) {
-    std::string buffer;
+/* 
+   This function is designed to facilitate importing data from 
+   an external csv file. We read each line of data in turn, 
+   check whether we should append any other lines due to 
+   embedded line breaks, then cut up the resulting line 
+   into tokens, and store these in a data vector before writing 
+   the data into our sqlite database.
 
-    // First we find out if there are any break lines in the file we should get rid of.
-    bool quoteFound = false;
-    for (std::string::size_type i = 0; i != buffer.length(); i++) {
-      if (quoteFound == false && buffer[i] == '"') {
-	quoteFound = true;
-      } else if (quoteFound == true && buffer[i] == '"') {
-	  quoteFound = false;
-      }
+   We also check whether the file has the correct headers.
+*/
+void MainWindow::importFromCsv() {
+  // We ask the user to open a file to import from.
+  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
+						 tr("csv files (*.csv)"));
+  // We then create an ifstream object that goes through the file.
+  std::ifstream file ((csvName.toStdString()).c_str());
+  std::vector<std::vector <std::string> > data; // To store our data in.
+  bool headerFound = false; // To be used in a condition further below.
+  while (file) {
+    // The buffer will hold each line of data as we read the file.
+    std::string buffer; 
+    if (!getline(file, buffer)) break; // We get the current line/
+
+    // We should check and handle any extra line breaks in the file.
+    while (checkLineBreaks(buffer) == true) {
+      std::string extra;
+      getline(file, extra);
+      buffer = buffer + "\n\n" + extra;
     }
-    if (quoteFound == true) {
-      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-      errorBox->setText(tr("<b>ERROR: Import cancelled</b>"));
-      errorBox->setInformativeText("Unmatched quotes (\") were found in one of the lines of the file.");
-      errorBox->exec();
-      delete errorBox;
-      return;
-    }
-    
-    if (!getline(file, buffer)) break;
-    
-    std::vector<std::string> tokens;
-    std::vector<std::string>::iterator it;
+    // We need an object to keep the separate tokens in a line.
+    std::vector<std::string> tokens; 
+    // We then split the current line into different tokens.
     splitCsvLine(&tokens, buffer);
-    
+    /* 
+       If we still need to import the header, let's do that first.
+       We immediately check if the correct headers were used.
+       If not, we report an error and return, letting the user fix the issue.
+    */
     if (headerFound == false) {
       if (tokens[0] != "Timing" && tokens[0] != "timing") {
 	QPointer<QMessageBox> errorBox = new QMessageBox(this);
@@ -190,7 +196,8 @@ void MainWindow::importFromCsv() {
       if (tokens[1] != "Description" && tokens[1] != "description") {
 	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Description\" in second column.");
+	errorBox->setInformativeText("Expected \"Description\" "
+				     "in second column.");
 	errorBox->exec();
 	delete errorBox;
 	return;
@@ -206,7 +213,8 @@ void MainWindow::importFromCsv() {
       if (tokens[3] != "Comments" && tokens[3] != "comments") {
 	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Comments\" in fourth column.");
+	errorBox->setInformativeText("Expected \"Comments\" in "
+				     "fourth column.");
 	errorBox->exec();
 	delete errorBox;
 	return;
@@ -214,90 +222,211 @@ void MainWindow::importFromCsv() {
       if (tokens[4] != "Source" && tokens[4] != "source") {
 	QPointer<QMessageBox> errorBox = new QMessageBox(this);
 	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Source\" in third column.");
+	errorBox->setInformativeText("Expected \"Source\" in "
+				     "fifth column.");
 	errorBox->exec();
 	delete errorBox;
 	return;
       }
+      /* 
+	 If we checked all headers and imported the header correctly,
+	 we can set the headerFound bool to true, so that this block 
+	 is skipped in all subsequent line reads.
+      */
       headerFound = true;
-    } else {
+
+      // This is the block that is run after the header was already imported.
+    } else { 
+      // We iterate through the tokens and push them into the row vector.
       std::vector<std::string> row;
+      std::vector<std::string>::iterator it; 
       for (it = tokens.begin(); it != tokens.end(); it++) {
 	row.push_back(*it);
       }
+      // Then we push the row vector into the data vector.
       data.push_back(row);
     }
   }
+  /* 
+     Writing to sqlite databases is quite slow, so if the 
+     csv-file is large, it will take a while. We use a progress bar 
+     to report to the user how much we have already imported 
+     into the sqlite database.
+  */
   loadProgress = new ProgressBar(0, 1, (int)data.size());
   loadProgress->setAttribute(Qt::WA_DeleteOnClose);
   loadProgress->setModal(true);
   loadProgress->show();
-  
+
+  /* 
+     We need a pointer to the data widget to determine the 
+     number of rows already in the table
+  */
+  DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
+  dw->updateTable(); // A function to make sure all table rows are read.
+  /* 
+     Since imported rows are appended to the end of the data base, 
+     we can assume that the order variable is the number of 
+     existing rows + 1.
+  */
+  int order = dw->incidentsModel->rowCount() + 1;
   std::vector<std::vector <std::string> >::iterator it;
-  int counter = 0;
   for (it = data.begin(); it != data.end(); it++) {
+    // We create all the necessary variables and write them to the table.
     std::vector<std::string> currentRow = *it;
-    DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0)); 
     QString timeStamp = QString::fromStdString(currentRow[0]);
     QString description = QString::fromStdString(currentRow[1]);
     QString raw = QString::fromStdString(currentRow[2]);
     QString comment = QString::fromStdString(currentRow[3]);
     QString source = QString::fromStdString(currentRow[4]);
-
-    dw->incidentsModel->insertRow(counter);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 1), counter + 1);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 2), timeStamp);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 3), description);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 4), raw);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 5), comment);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 6), source);
-    dw->incidentsModel->setData(dw->incidentsModel->index(counter, 7), 0);
-    dw->incidentsModel->submitAll();
-    counter++;
-    loadProgress->setProgress(counter + 1);
-    qApp->processEvents();
+    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
+    query->prepare("INSERT INTO incidents "
+		   "(ch_order, timestamp, description, raw, comment, "
+		   "source, mark) "
+		   "VALUES "
+		   "(:order, :timestamp, :description, :raw, :comment, "
+		   ":source, :mark)");
+    query->bindValue(":order", order);
+    query->bindValue(":timestamp", timeStamp);
+    query->bindValue(":description", description);
+    query->bindValue(":raw", raw);
+    query->bindValue(":comment", comment);
+    query->bindValue(":source", source);
+    query->bindValue(":mark", 0);
+    query->exec();		   
+    order++; // Make sure that we increment the order variable.
+    loadProgress->setProgress(order); // Set progress and report
+    qApp->processEvents(); // Make sure that the progress is visible
+    delete query; // Memory management
   }
-  loadProgress->close();
-  delete loadProgress;
+  loadProgress->close(); // We can close the progress bar.
+  delete loadProgress; // Memory management
+  // The imported data won't be visible unless we run the following lines.
+  dw->incidentsModel->select();
+  dw->updateTable();
+  // We should also update the attributes widget at this point. 
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->retrieveData();
 }
 
-void MainWindow::splitCsvLine(std::vector<std::string> *tokens, std::string line) {
-  bool inTextField = false;
+/* 
+   Function to check for line breaks in current line of imported csv file.
+   The logic is that a finished line of data will always have an 
+   equal number of quotes ("). If this is not the case, we can assume 
+   that another line of data should be appended. 
+*/
+bool MainWindow::checkLineBreaks(std::string line) {
+  bool lineBreak = false; // This is the variable that will be returned.
+  for (std::string::size_type i = 0; i != line.length(); i++) {
+    /* 
+       If we did not find a quote yet, and we find one,
+       we set the lineBreak variable to true.
+    */
+    if (lineBreak == false && line[i] == '"') {
+      lineBreak = true;
+      /*
+	If we then find another quote, 
+	we can assume that no embedded line break exists.
+      */
+    } else if (lineBreak == true && line[i] == '"') {
+      lineBreak = false;
+    }
+  }
+  // After reading the line, we return the result.
+  return lineBreak;  
+}
+
+/* 
+   Function to split csv lines.
+   Here, we should be careful with embedded quotes in text fields.
+   Text fields in csv-files are marked by quotes.
+   We repeatedly check whether or not we are in a text field and 
+   respond accordingly.
+
+   We also clean up the line of text a bit before we cut it up.
+*/
+void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
+			      std::string line) {
+  bool inTextField = false; // To check whether or not we are in a text field.
+  /* 
+     The next two variables are to make sure that 
+     we cut out clean segments of the line.
+  */
   std::string::size_type stringLength = 0;
   std::string::size_type previousPos = 0;
-  int quoteCount = 0;
+  // We use this integer to count the number of quotes in a line so far.
+  int quoteCount = 0; 
   for (std::string::size_type i = 0; i != line.length(); i++) {
     if (line[i] == '"') {
-      quoteCount++;
+      quoteCount++; // If we found a quote, we increment this variable.
     }
     if (inTextField == false && line[i] == '"') {
+      /* 
+	 Finding a quote will mean that we are now 
+	 in a text field if we weren't already.
+      */
       inTextField = true;
-      previousPos++;
+      previousPos++; // We don't want to include the quote itself.
       stringLength--;
-    } else if (inTextField == true && line[i] == '"' && line[i + 1] != '"' && quoteCount % 2 == 0) {
+      /* 
+	 If we are in a text field, and we encounter another quote, then we
+	 should first check if it is accompanied by yet another pair of quotes. 
+	 This is based on the fact that csv files (if written correctly), 
+	 always use double quotes for
+	 quotes that are embedded in text fields. 
+
+	 We also double check by checking if the current amount of 
+	 quotes is divisible by 2, that is, if we have an 
+	 equal number of quotes.
+      */
+    } else if (inTextField == true && line[i] == '"' &&
+	       line[i + 1] != '"' && quoteCount % 2 == 0) {
+      // If these conditions hold, it means that we have now left the text field.
       inTextField = false;
-      stringLength--;
+      stringLength--; // We don't want to include the quote itself.
     }
+    // If we encounter a comma, it means that we have encountered a new token.
     if (inTextField == false && line[i] == ',') {
+      // We remove any white spaces before the start of this new token.
       while (line[previousPos] == ' ') {
 	previousPos++;
 	stringLength--;
       }
+      // We create a substring here.
       std::string tempString = line.substr(previousPos, stringLength);
+      // In case we have any remaining double quotes, let us remove them.
+      if (tempString.size() > 1) {
+	for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) {
+	  if (*(it - 1) == '"' && *it == '"') {
+	    tempString.erase(it);
+	  } else {
+	    it++;
+	  }
+	}
+      }
+      // And then we store the resulting string as a new token.
       tokens->push_back(tempString);
-      previousPos = i + 1;
-      stringLength = 0;
+      previousPos = i + 1; // We set a new starting position for the next token.
+      stringLength = 0; // And we reset the string length.
     } else {
-      stringLength++;
+      stringLength++; // We increment the string length as we go on.
     }
   }
+  // After we finish reading the line, we should still include the last token.
   while (line[previousPos] == ' ') {
     previousPos++;
     stringLength--;
   }
   std::string tempString = line.substr(previousPos, stringLength);
+  if (tempString.size() > 1) {
+    for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) {
+      if (*(it - 1) == '"' && *it == '"') {
+	tempString.erase(it);
+      } else {
+	it++;
+      }
+    }
+  }
   tokens->push_back(tempString);
 }
 
