@@ -92,6 +92,11 @@ QPainterPath Arrow::shape() const {
   return path;
 }
 
+void Arrow::updatePosition() {
+  QLineF line(mapFromItem(start, 0, 0), mapFromItem(end, 0, 0));
+  setLine(line);
+}
+
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   calculate();
   QPen myPen = pen();
@@ -246,6 +251,7 @@ void Arrow::calculate() {
 					  cos(angle + Pi / 3) * arrowSize);
   arrowP2 = line().p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 					  cos(angle + Pi - Pi / 3) * arrowSize);
+  prepareGeometryChange();
 }
 
 void Arrow::setColor(const QColor &subColor) {
@@ -275,3 +281,4 @@ bool Arrow::isCopy() {
 void Arrow::setCopy(bool status) {
   copy = status;
 }
+
