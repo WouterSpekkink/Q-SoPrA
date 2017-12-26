@@ -11,6 +11,8 @@
 #include <QColorDialog>
 #include <QtSql>
 #include "Constants.h"
+#include "DeselectableTreeView.h"
+#include "AttributeTreeFilter.h"
 
 class AttributeColorDialog : public QDialog {
   Q_OBJECT
@@ -25,19 +27,25 @@ public:
   int getExitStatus();
 			    
 private slots:
-  void getAttributes();
+  void setTree();
+  void buildHierarchy(QStandardItem *top, QString name);
+  void changeFilter(const QString &text);
   void setColor();
   void setTextColor();
-  void setAttribute(const QString &newAttribute);
+  void setAttribute();
   void cancelAndClose();
   void saveAndClose();
-  void addChildren(QString father, int indent);
     
 private:
   QPointer<QLabel> attributeLabel;
 
-  QPointer<QListWidget> attributeListWidget;
-
+  QPointer<QStandardItemModel> attributesTree;
+  QPointer<DeselectableTreeView> attributesTreeView;
+  QPointer<AttributeTreeFilter> treeFilter;
+  QPointer<QLabel> attributesFilterLabel;
+  
+  QPointer<QLineEdit> attributesFilterField;
+  
   QPointer<QPushButton> colorButton;
   QPointer<QPushButton> textColorButton;
   QPointer<QPushButton> cancelCloseButton;
