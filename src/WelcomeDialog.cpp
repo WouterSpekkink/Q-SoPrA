@@ -4,7 +4,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEs
   esd = submittedEsd;
   exitStatus = 0;
   
-  titleLabel = new QLabel("<h1>Welcome to SoPrA</h1>", this);
+  titleLabel = new QLabel("<h1>Welcome to Q-SoPrA</h1>", this);
   titleLabel->setAlignment(Qt::AlignHCenter);
   imageLabel = new QLabel(this);
   QPixmap image("./images/welcome_background");
@@ -26,7 +26,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEs
   buttonLayout->addWidget(openDatabaseButton);
   buttonLayout->addWidget(exitButton);
   welcomeLayout->addLayout(buttonLayout);
-  setWindowTitle("SoPrA (Social Process Analysis)");
+  setWindowTitle("Q-SoPrA (Qualitative Social Process Analysis)");
   setLayout(welcomeLayout);  
 }
 

@@ -74,7 +74,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   createMenus();
 
   // Final stuff before showing the default widget (dataWidget).
-  setWindowTitle("SoPrA");  
+  setWindowTitle("Q-SoPrA");  
   stacked->show();
 }
 

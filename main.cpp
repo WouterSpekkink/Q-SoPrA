@@ -4,10 +4,10 @@
 #include "./include/EventSequenceDatabase.h"
 
 int main(int argc, char *argv[]) {
-  QApplication SoPrA(argc, argv);
+  QApplication QSoPrA(argc, argv);
 
   QString version = QString("0.8.0");
-  SoPrA.setApplicationVersion(version);
+  QSoPrA.setApplicationVersion(version);
 
   EventSequenceDatabase *esd = new EventSequenceDatabase;
   
@@ -19,5 +19,5 @@ int main(int argc, char *argv[]) {
   } else if (welcome->getExitStatus() == 1) {
     return 0;
   }
-  return SoPrA.exec();
+  return QSoPrA.exec();
 }
