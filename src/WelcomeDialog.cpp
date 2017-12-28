@@ -53,7 +53,7 @@ void WelcomeDialog::newDatabase() {
       QSqlQuery *query = new QSqlQuery;
       qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "ch_order integer, "
 		  "timestamp text, "
 		  "description text, "
@@ -62,50 +62,50 @@ void WelcomeDialog::newDatabase() {
 		  "source text, "
 		  "mark integer)");
       query->exec("CREATE TABLE incident_attributes "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name varchar text, "
 		  "description text, "
 		  "father text)");
       query->exec("CREATE TABLE_to_incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "incident integer, "
 		  "value text)");
       query->exec("CREATE TABLE attributes_to_incidents_sources "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "incident integer, "
 		  "source_text)");
       query->exec("CREATE TABLE entity_attributes "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text, "
 		  "description text, "
 		  "father text)");
       query->exec("CREATE TABLE attributes_to_entities "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "entity text, "
 		  "value text, "
 		  "new integer)");
       query->exec("CREATE TABLE entity_relationships "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text, "
 		  "source text, "
 		  "target text, "
 		  "comment text, "
 		  "type text)");
       query->exec("CREATE TABLE relationship_types "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text, "
 		  "directedness, "
 		  "description)");
       query->exec("CREATE TABLE relationships_to_incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "relationship text, "
 		  "type text, "
 		  "incident integer)");
       query->exec("CREATE TABLE relationships_to_incidents_sources "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "relationship text, "
 		  "type text, "
 		  "incident integer, "
@@ -115,32 +115,32 @@ void WelcomeDialog::newDatabase() {
 		  "name text, "
 		  "description text)");
       query->exec("CREATE TABLE journal "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "time text, "
 		  "entry text)");
       query->exec("CREATE TABLE linkage_types "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name TEXT, "
 		  "description text, "
 		  "question text, "
 		  "direction text)");
       query->exec("CREATE TABLE linkages "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "tail integer, "
 		  "head integer, "
 		  "type text, "
 		  "coder text)");
       query->exec("CREATE TABLE coders "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text)");
       query->exec("CREATE TABLE coders_to_linkage_types "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "coder text, "
 		  "type text, "
 		  "tail integer, "
 		  "head integer)");
       query->exec("CREATE TABLE linkage_comments "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "tail integer, "
 		  "head integer, "
 		  "comment text, "
@@ -154,12 +154,12 @@ void WelcomeDialog::newDatabase() {
 		  "relationships_record) "
 		  "VALUES (1, 1)");
       query->exec("CREATE TABLE saved_eg_plots "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "linkage text, "
 		  "coder text)");
       query->exec("CREATE TABLE saved_eg_plots_event_items " // We'll get information from incidents
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "ch_order integer, "
@@ -176,7 +176,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");   // dislodged boolean (if relevant)
       query->exec("CREATE TABLE saved_eg_plots_edges "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "tail integer, "
 		  "head integer , "
@@ -184,7 +184,7 @@ void WelcomeDialog::newDatabase() {
 		  "headmacro integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_eg_plots_event_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "label text, "
@@ -198,7 +198,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_eg_plots_macro_events "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "eventid integer, "
 		  "ch_order integer, "
@@ -218,28 +218,28 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_eg_plots_incidents_to_macro_events "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "macro integer)");
       query->exec("CREATE TABLE saved_eg_plots_embedded_incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "macro integer)");
       query->exec("CREATE TABLE saved_eg_plots_macros_to_macros "
-		  "id integer PRIMARY KEY, "
+		  "id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "son integer, "
 		  "father integer)");
       query->exec("CREATE TABLE saved_eg_plots_attributes_to_macro_events "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "attribute text, "
 		  "macro integer, "
 		  "value text)");
       query->exec("CREATE TABLE saved_eg_plots_macro_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "eventid integer, "
 		  "label text, "
@@ -253,7 +253,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_eg_plots_legend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -262,10 +262,10 @@ void WelcomeDialog::newDatabase() {
 		  "green integer, "
 		  "alpha integer)");
       query->exec("CREATE TABLE saved_ng_plots "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
       query->exec("CREATE TABLE saved_ng_plots_network_nodes "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "entity text, "
 		  "description text, "
@@ -278,7 +278,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_ng_plots_node_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "entity text, "
 		  "curxpos real, "
@@ -292,7 +292,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_ng_plots_nodelegend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -301,7 +301,7 @@ void WelcomeDialog::newDatabase() {
 		  "green integer, "
 		  "alpha integer)");
       query->exec("CREATE TABLE saved_ng_plots_edgelegend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -311,7 +311,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_ng_plots_directed "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "tail text, "
 		  "head text, "
@@ -327,7 +327,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_ng_plots_undirected "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "tail text, "
 		  "head text, "
@@ -343,10 +343,10 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_og_plots "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
       query->exec("CREATE TABLE saved_og_plots_occurrence_items "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "ch_order integer, "
@@ -363,7 +363,7 @@ void WelcomeDialog::newDatabase() {
 		  "hidden integer, "
 		  "perm integer)");
       query->exec("CREATE TABLE saved_og_plots_occurrence_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "attribute string, "
@@ -378,7 +378,7 @@ void WelcomeDialog::newDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE saved_og_plots_legend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -419,7 +419,7 @@ void WelcomeDialog::openDatabase() {
       QSqlQuery *query = new QSqlQuery;
       qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE IF NOT EXISTS incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "ch_order integer, "
 		  "timestamp text, "
 		  "description text, "
@@ -428,50 +428,50 @@ void WelcomeDialog::openDatabase() {
 		  "source text, "
 		  "mark integer)");
       query->exec("CREATE TABLE IF NOT EXISTS incident_attributes "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name varchar text, "
 		  "description text, "
 		  "father text)");
       query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "incident integer, "
 		  "value text)");
       query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents_sources "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "incident integer, "
 		  "source_text)");
       query->exec("CREATE TABLE IF NOT EXISTS entity_attributes "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text, "
 		  "description text, "
 		  "father text)");
       query->exec("CREATE TABLE IF NOT EXISTS attributes_to_entities "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "entity text, "
 		  "value text, "
 		  "new integer)");
       query->exec("CREATE TABLE IF NOT EXISTS entity_relationships "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text, "
 		  "source text, "
 		  "target text, "
 		  "comment text, "
 		  "type text)");
       query->exec("CREATE TABLE IF NOT EXISTS relationship_types "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text, "
 		  "directedness, "
 		  "description)");
       query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "relationship text, "
 		  "type text, "
 		  "incident integer)");
       query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents_sources "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "relationship text, "
 		  "type text, "
 		  "incident integer, "
@@ -481,32 +481,32 @@ void WelcomeDialog::openDatabase() {
 		  "name text, "
 		  "description text)");
       query->exec("CREATE TABLE IF NOT EXISTS journal "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "time text, "
 		  "entry text)");
       query->exec("CREATE TABLE IF NOT EXISTS linkage_types "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name TEXT, "
 		  "description text, "
 		  "question text, "
 		  "direction text)");
       query->exec("CREATE TABLE IF NOT EXISTS linkages "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "tail integer, "
 		  "head integer, "
 		  "type text, "
 		  "coder text)");
       query->exec("CREATE TABLE IF NOT EXISTS coders "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name text)");
       query->exec("CREATE TABLE IF NOT EXISTS coders_to_linkage_types "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "coder text, "
 		  "type text, "
 		  "tail integer, "
 		  "head integer)");
       query->exec("CREATE TABLE IF NOT EXISTS linkage_comments "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "tail integer, "
 		  "head integer, "
 		  "comment text, "
@@ -524,12 +524,12 @@ void WelcomeDialog::openDatabase() {
 		    "VALUES (1, 1)");
       }
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "linkage text, "
 		  "coder text)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_event_items " 
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer , "
 		  "ch_order integer, "
@@ -546,7 +546,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_edges "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "tail integer, "
 		  "head integer, "
@@ -554,7 +554,7 @@ void WelcomeDialog::openDatabase() {
 		  "headmacro integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_event_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "label text, "
@@ -568,7 +568,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_macro_events "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "eventid integer, "
 		  "ch_order integer, "
@@ -588,28 +588,28 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incidents_to_macro_events "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "macro integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_embedded_incidents "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "macro integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_macros_to_macros "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "son integer, "
 		  "father integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_attributes_to_macro_events "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "attribute text, "
 		  "macro integer, "
 		  "value text)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_macro_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "eventid integer, "
 		  "label text, "
@@ -623,7 +623,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_legend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -632,10 +632,10 @@ void WelcomeDialog::openDatabase() {
 		  "green integer, "
 		  "alpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_network_nodes "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "entity text, "
 		  "description text, "
@@ -648,7 +648,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_node_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "entity text, "
 		  "curxpos real, "
@@ -662,7 +662,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_nodelegend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -671,7 +671,7 @@ void WelcomeDialog::openDatabase() {
 		  "green integer, "
 		  "alpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_edgelegend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
@@ -681,7 +681,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_directed "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "tail text, "
 		  "head text, "
@@ -697,7 +697,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_undirected "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "tail text, "
 		  "head text, "
@@ -713,10 +713,10 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_items " 
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "ch_order integer, "
@@ -733,7 +733,7 @@ void WelcomeDialog::openDatabase() {
 		  "hidden integer, "
 		  "perm integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_labels "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "incident integer, "
 		  "attribute text, "
@@ -748,7 +748,7 @@ void WelcomeDialog::openDatabase() {
 		  "alpha integer, "
 		  "hidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_legend "
-		  "(id integer PRIMARY KEY, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "name text, "
 		  "tip text, "
