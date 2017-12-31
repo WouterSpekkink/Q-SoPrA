@@ -3849,12 +3849,6 @@ void EventGraphWidget::exportSvg() {
 }
 
 void EventGraphWidget::exportTable() {
-  // First we create the export directory if it does not yet exist.
-  QString path = QCoreApplication::applicationDirPath();
-  path.append("/export/");
-  if (!QDir(path).exists()) {
-    QDir().mkdir(path);
-  }
   // Then we create a vector of all types of events and fill it.
   QVector<QGraphicsItem*> events;
   QVectorIterator<EventItem*> it(eventVector);
@@ -3991,6 +3985,7 @@ void EventGraphWidget::exportTable() {
 	      source.append(query->value(1).toString());
 	    }
 	  }
+	  delete query;
 	}
 	fileOut << row << ","
 		<< "\"" << id.toStdString() << "\"" << ","

@@ -138,6 +138,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
+  exportNodesButton = new QPushButton(tr("Export nodes"), graphicsWidget);
+  exportEdgesButton = new QPushButton(tr("Export edges"), graphicsWidget);
   setFilteredButton = new QPushButton(tr("Filter on"), legendWidget);
   setFilteredButton->setCheckable(true);
   setFilteredButton->setChecked(true);
@@ -254,6 +256,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
   connect(showTypeButton, SIGNAL(clicked()), this, SLOT(showType()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
+  connect(exportNodesButton, SIGNAL(clicked()), this, SLOT(exportNodes()));
+  connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
@@ -383,6 +387,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
   graphicsControlsLayout->addWidget(exportSvgButton);
+  graphicsControlsLayout->addWidget(exportNodesButton);
+  graphicsControlsLayout->addWidget(exportEdgesButton);
   graphicsWidget->setMaximumWidth(175);
   graphicsWidget->setMinimumWidth(175);
   graphicsWidget->setLayout(graphicsControlsLayout);
@@ -2687,6 +2693,91 @@ void NetworkGraphWidget::exportSvg() {
     painter.begin(&gen);
     scene->render(&painter);
     painter.end();
+  }
+}
+
+void NetworkGraphWidget::exportNodes() {
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // Let us first create the file header.
+    fileOut << "Id" << ","
+	    << "Label" << ","
+	    << "Description" <<","
+	    << "Mode" << "\n";
+    // Then we iterate through all the nodes.  
+    QVectorIterator<NetworkNode*> it(nodeVector);
+    while (it.hasNext()) {
+      NetworkNode *node = it.next();
+      if (node->isVisible()) {
+	QString name = node->getName();
+	QString description = node->getDescription();
+	QString mode = node->getMode();
+	fileOut << "\"" << name.toStdString() << "\"" << ","
+		<< "\"" << name.toStdString() << "\"" << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << mode.toStdString() << "\"" << "\n";
+      }
+    }
+    // And that should be it.
+    fileOut.close();
+  }
+}
+
+void NetworkGraphWidget::exportEdges() {
+ // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // Let us first create the file header.
+    fileOut << "Source" << ","
+	    << "Target" << ","
+	    << "Type" <<","
+	    << "Description" << ","
+	    << "Comment" << "\n";
+    // Then we iterate through the directed edges first.
+    QVectorIterator<DirectedEdge*> it(directedVector);
+    while (it.hasNext()) {
+      DirectedEdge *directed = it.next();
+      if (directed->isVisible()) {
+	QString source = directed->startItem()->getName();
+	QString target = directed->endItem()->getName();
+	QString description = directed->getType();
+	QString comment = directed->getComment();
+	fileOut << "\"" << source.toStdString() << "\"" << ","
+		<< "\"" << target.toStdString() << "\"" << ","
+		<< "Directed" << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << comment.toStdString() << "\"" << "\n";
+      }
+    }
+    // Then we iterate through the undirected edges second.
+    QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+    while (it2.hasNext()) {
+      UndirectedEdge* undirected = it2.next();
+      if (undirected->isVisible()) {
+	QString source = undirected->startItem()->getName();
+	QString target = undirected->endItem()->getName();
+	QString description = undirected->getType();
+	QString comment = undirected->getComment();
+	fileOut << "\"" << source.toStdString() << "\"" << ","
+		<< "\"" << target.toStdString() << "\"" << ","
+		<< "Undirected" << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << comment.toStdString() << "\"" << "\n";
+      }
+    }
+    // And that should be it!
+    fileOut.close();
   }
 }
 

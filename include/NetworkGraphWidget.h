@@ -15,6 +15,7 @@
 #include <QColorDialog>
 #include <QHeaderView>
 #include <QStandardItemModel>
+#include <fstream>
 #include "DeselectableTreeView.h"
 #include "NodeLabel.h"
 #include "GraphicsView.h"
@@ -111,6 +112,8 @@ private slots:
   void setRangeControls();
 
   void exportSvg();
+  void exportNodes();
+  void exportEdges();
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
@@ -190,6 +193,8 @@ private:
   QPointer<QPushButton> increaseFontSizeButton;
   QPointer<QPushButton> decreaseFontSizeButton;
   QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> exportNodesButton;
+  QPointer<QPushButton> exportEdgesButton;
   QPointer<QPushButton> setFilteredButton;
   QPointer<QPushButton> unsetFilteredButton;
   QPointer<QPushButton> hideTypeButton;
