@@ -120,6 +120,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
   plotButton->setEnabled(false);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
+  exportTableButton = new QPushButton(tr("Export table"), graphicsWidget);
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
   compareButton = new QPushButton(tr("Compare"), this);
@@ -181,6 +182,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
+  connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
   connect(scene, SIGNAL(widthIncreased(EventItem*)), this, SLOT(increaseWidth(EventItem*)));
   connect(scene, SIGNAL(widthDecreased(EventItem*)), this, SLOT(decreaseWidth(EventItem*)));
@@ -355,6 +357,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
   graphicsControlsLayout->addWidget(exportSvgButton);
+  graphicsControlsLayout->addWidget(exportTableButton);
   graphicsWidget->setMaximumWidth(175);
   graphicsWidget->setMinimumWidth(175);
   graphicsWidget->setLayout(graphicsControlsLayout);
@@ -3842,6 +3845,167 @@ void EventGraphWidget::exportSvg() {
     painter.begin(&gen);
     scene->render(&painter);
     painter.end();
+  }
+}
+
+void EventGraphWidget::exportTable() {
+  // First we create the export directory if it does not yet exist.
+  QString path = QCoreApplication::applicationDirPath();
+  path.append("/export/");
+  if (!QDir(path).exists()) {
+    QDir().mkdir(path);
+  }
+  // Then we create a vector of all types of events and fill it.
+  QVector<QGraphicsItem*> events;
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem* current = it.next();
+    if (current->isVisible()) {
+      events.push_back(current);
+    }
+  }
+  QVectorIterator<MacroEvent*> it2(macroVector);
+  while (it2.hasNext()) {
+    MacroEvent *current = it2.next();
+    if (current->isVisible()) {
+      events.push_back(current);
+    }
+  }
+  // We finish this vector by sorting it.
+  qSort(events.begin(), events.end(), componentsSort);
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // First we should write the headers of the columns.
+    fileOut << "row_number" << ","
+	    << "Id" << ","
+	    << "Timing" << ","
+	    << "Description" << ","
+	    << "Raw" << ","
+	    << "Comments" << ","
+	    << "Type" << ","
+	    << "Mode" << ","
+	    << "Incidents" << ","
+	    << "Source" << "\n";
+    // We set up a variable to keep track of row numbers.
+    int row = 0;
+    // Now we can iterate the vector and write the results.
+    QVectorIterator<QGraphicsItem*> it3(events);
+    while (it3.hasNext()) {
+      row++;
+      QGraphicsItem *current = it3.next();
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) {
+	QString timing = "";
+	QString description = "";
+	QString raw = "";
+	QString comment = "";
+	QString source = "";
+	QString mode = event->getMode();
+	QString type = "Incident";
+	int id = event->getId();
+	QString order = event->getLabel()->toPlainText();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
+		       "WHERE id = :id");
+	query->bindValue(":id", id);
+	query->exec();
+	query->first();
+	if (!(query->isNull(0))) {
+	  timing = query->value(0).toString();
+	  description = query->value(1).toString();
+	  raw = query->value(2).toString();
+	  comment = query->value(3).toString();
+	  source = query->value(4).toString();
+	}
+	delete query;
+	fileOut << row << ","
+		<< order.toStdString() << ","
+		<< "\"" << timing.toStdString() << "\"" << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << raw.toStdString() << "\"" << ","
+		<< "\"" << comment.toStdString() << "\"" << ","
+		<< "\"" << type.toStdString() << "\"" << ","
+		<< "\"" << mode.toStdString() << "\"" << ","
+		<< "NA" << ","
+		<< "\"" << source.toStdString() << "\""<< "\n";
+      } else if (macro) {
+	QString description = macro->getDescription();
+	QString raw = "";
+	QString comment = macro->getComment();
+	QString source = "";
+	QString mode = macro->getMode();
+	QString type = "";
+	QString id = macro->getLabel()->toPlainText();
+	if (macro->getConstraint() == PATHS) {
+	  type = "Paths based";
+	} else if (macro->getConstraint() == SEMIPATHS) {
+	  type = "Semi-paths based";
+	}
+	QString components = "";
+	QVector<EventItem*> incidents = macro->getIncidents();
+	int incidentId = macro->getIncidents().first()->getId();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT timestamp FROM incidents "
+		       "WHERE id = :id");
+	query->bindValue(":id", incidentId);
+	query->exec();
+	query->first();
+	QString begin = query->value(0).toString();
+	incidentId = macro->getIncidents().last()->getId();
+	query->prepare("SELECT timestamp FROM incidents "
+		       "WHERE id = :id");
+	query->bindValue(":id", incidentId);
+	query->exec();
+	query->first();
+	QString end = query->value(0).toString();
+	QString duration =  "From " + begin + " to " + end;
+	delete query;
+	QVectorIterator<EventItem*> it4(incidents);
+	while (it4.hasNext()) {
+	  EventItem* incident = it4.next();
+	  incidentId = incident->getId();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT ch_order, source FROM incidents "
+			 "WHERE id = :id");
+	  query->bindValue(":id", incidentId);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) {
+	    if (components == "") {
+	      components = query->value(0).toString();
+	    } else {
+	      components.append(";");
+	      components.append(query->value(0).toString());
+	    }
+	    if (source == "") {
+	      source = query->value(1).toString();
+	    } else {
+	      source.append(";");
+	      source.append(query->value(1).toString());
+	    }
+	  }
+	}
+	fileOut << row << ","
+		<< "\"" << id.toStdString() << "\"" << ","
+		<< "\"" << duration.toStdString() << "\"" << ","
+		<< "\"" << description.toStdString() << "\"" ","
+		<< "" << ","
+		<< "\"" << comment.toStdString() << "\"" << ","
+		<< "\"" << type.toStdString() << "\"" << ","
+		<< "\"" << mode.toStdString() << "\"" << ","
+		<< "\"" << components.toStdString() << "\"" << ","
+		<< "\"" << source.toStdString() << "\"" << "\n";
+      }
+    }
+    // And that should be it.
+    fileOut.close();
   }
 }
 

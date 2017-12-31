@@ -10,10 +10,11 @@
 #include <QMessageBox>
 #include <QSvgGenerator>
 #include <QFileDialog>
-#include <math.h>
 #include <QGraphicsTextItem>
 #include <QColorDialog>
+#include <math.h>
 #include <vector>
+#include <fstream>
 #include "NodeLabel.h"
 #include "GraphicsView.h"
 #include "EventItem.h"
@@ -119,6 +120,7 @@ private slots:
   void setVisibility();
   void setRangeControls();
   void exportSvg();
+  void exportTable();
   void colorByAttribute();
   void findChildren(QString father, QVector<QString> *children);
   void setEventColor();
@@ -213,6 +215,7 @@ private:
   QPointer<QPushButton> previousEventButton;
   QPointer<QPushButton> nextEventButton;
   QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> exportTableButton;
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> eventColorButton;
