@@ -121,6 +121,8 @@ private slots:
   void setRangeControls();
   void exportSvg();
   void exportTable();
+  void exportNodes();
+  void exportEdges();
   void colorByAttribute();
   void findChildren(QString father, QVector<QString> *children);
   void setEventColor();
@@ -216,6 +218,8 @@ private:
   QPointer<QPushButton> nextEventButton;
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> exportTableButton;
+  QPointer<QPushButton> exportNodesButton;
+  QPointer<QPushButton> exportEdgesButton;
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> eventColorButton;

@@ -34,6 +34,7 @@
 #include "AttributeTreeFilter.h"
 #include "AttributeDialog.h"
 #include "MergeRelationshipsDialog.h"
+#include "SortFunctions.h"
 
 class NetworkGraphWidget : public QWidget {
   Q_OBJECT

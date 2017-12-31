@@ -121,6 +121,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   plotButton->setEnabled(false);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   exportTableButton = new QPushButton(tr("Export table"), graphicsWidget);
+  exportNodesButton = new QPushButton(tr("Export nodes"), graphicsWidget);
+  exportEdgesButton = new QPushButton(tr("Export edges"), graphicsWidget);
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
   compareButton = new QPushButton(tr("Compare"), this);
@@ -183,6 +185,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
+  connect(exportNodesButton, SIGNAL(clicked()), this, SLOT(exportNodes()));
+  connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
   connect(scene, SIGNAL(widthIncreased(EventItem*)), this, SLOT(increaseWidth(EventItem*)));
   connect(scene, SIGNAL(widthDecreased(EventItem*)), this, SLOT(decreaseWidth(EventItem*)));
@@ -344,6 +348,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
+  QPointer<QFrame> sepLine = new QFrame();
+  sepLine->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine);
   graphicsControlsLayout->addWidget(upperRangeLabel);
   upperRangeLabel->setAlignment(Qt::AlignHCenter);
   QPointer<QHBoxLayout> upperRangeLayout = new QHBoxLayout;
@@ -356,8 +363,13 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   lowerRangeLayout->addWidget(lowerRangeDial);
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
+  QPointer<QFrame> sepLine2 = new QFrame();
+  sepLine2->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine2);
   graphicsControlsLayout->addWidget(exportSvgButton);
   graphicsControlsLayout->addWidget(exportTableButton);
+  graphicsControlsLayout->addWidget(exportNodesButton);
+  graphicsControlsLayout->addWidget(exportEdgesButton);
   graphicsWidget->setMaximumWidth(175);
   graphicsWidget->setMinimumWidth(175);
   graphicsWidget->setLayout(graphicsControlsLayout);
@@ -3853,7 +3865,7 @@ void EventGraphWidget::exportSvg() {
 }
 
 void EventGraphWidget::exportTable() {
-  // Then we create a vector of all types of events and fill it.
+  // We create a vector of all types of events and fill it.
   QVector<QGraphicsItem*> events;
   QVectorIterator<EventItem*> it(eventVector);
   while (it.hasNext()) {
@@ -4004,6 +4016,176 @@ void EventGraphWidget::exportTable() {
       }
     }
     // And that should be it.
+    fileOut.close();
+  }
+}
+
+void EventGraphWidget::exportNodes() {
+  // We create a vector of all types of events and fill it.
+  QVector<QGraphicsItem*> events;
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem* current = it.next();
+    if (current->isVisible()) {
+      events.push_back(current);
+    }
+  }
+  QVectorIterator<MacroEvent*> it2(macroVector);
+  while (it2.hasNext()) {
+    MacroEvent *current = it2.next();
+    if (current->isVisible()) {
+      events.push_back(current);
+    }
+  }
+  // We finish this vector by sorting it.
+  qSort(events.begin(), events.end(), componentsSort);
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // First we create the file headers
+    fileOut << "Id" << ","
+	    << "Label" << ","
+	    << "Description" << ","
+	    << "Comment" << ","
+	    << "Type" << ","
+	    << "Mode" << ","
+	    << "X" << ","
+	    << "Y" << "\n";
+    // And then we iterate through our events.
+    QVectorIterator<QGraphicsItem*> it3(events);
+    while (it3.hasNext()) {
+      QGraphicsItem *current = it3.next();
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) {
+	int id = event->getId();
+	QString label = event->getLabel()->toPlainText();
+	QString description = "";
+	QString comment = "";
+	QString mode = event->getMode();
+	QString xCoord = QString::number(event->scenePos().x());
+	QString yCoord = QString::number(event->scenePos().y());
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT description, comment FROM incidents "
+		       "WHERE id = :id");
+	query->bindValue(":id", id);
+	query->exec();
+	query->first();
+	if (!(query->isNull(0))) {
+	  description = query->value(0).toString();
+	  comment = query->value(1).toString();
+	}
+	delete query;
+	fileOut << "i" << id << ","
+		<< label.toStdString() << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << comment.toStdString() << "\"" << ","
+		<< "Incident" << ","
+		<< "\"" << mode.toStdString() << "\"" << ","
+		<< xCoord.toStdString() << ","
+		<< yCoord.toStdString() << "\n";
+      } else if (macro) {
+	int id = macro->getId();
+	QString label = macro->getLabel()->toPlainText();
+	QString description = macro->getDescription();
+	QString comment = macro->getComment();
+	QString mode = macro->getMode();
+	QString xCoord = QString::number(macro->scenePos().x());
+	QString yCoord = QString::number(macro->scenePos().y());
+	QString identifier = "";
+	QString type = "";
+	if (macro->getConstraint() == PATHS) {
+	  identifier = "p";
+	  type = "Paths based";
+	} else if (macro->getConstraint() == SEMIPATHS) {
+	  identifier = "s";
+	  type = "Semi-paths based";
+	}
+	fileOut << identifier.toStdString() << id << ","
+		<< label.toStdString() << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << comment.toStdString() << "\"" << ","
+		<< "\"" << type.toStdString() << "\"" << ","
+		<< "\"" << mode.toStdString() << "\"" << ","
+		<< xCoord.toStdString() << ","
+		<< yCoord.toStdString() << "\n";
+      }
+    }
+    // And that should be it!
+    fileOut.close();
+  }
+}
+
+void EventGraphWidget::exportEdges() {
+  // We let the user pick a file name.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // First we create the file headers
+    fileOut << "Source" << ","
+	    << "Target" << ","
+	    << "Type" << ","
+	    << "Description" << ","
+	    << "Coder" << "\n";
+    // Then we iterate through our edges.
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *edge = it.next();
+      if (edge->isVisible()) {
+	EventItem *eventStart = qgraphicsitem_cast<EventItem*>(edge->startItem());
+	EventItem *eventEnd = qgraphicsitem_cast<EventItem*>(edge->endItem());
+	MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	MacroEvent *macroEnd = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	QString description = selectedType;
+	QString coder = selectedCoder;
+	QString source = "";
+	QString target = "";
+	if (eventStart && eventEnd) {
+	  source = "i" + QString::number(eventStart->getId());
+	  target = "i" + QString::number(eventEnd->getId());
+	} else if (eventStart && macroEnd) {
+	  source = "i" + QString::number(eventStart->getId());
+	  if (macroEnd->getConstraint() == PATHS) {
+	    target = "p" + QString::number(macroEnd->getId());
+	  } else if (macroEnd->getConstraint() == SEMIPATHS) {
+	    target = "s" + QString::number(macroEnd->getId());
+	  }
+	} else if (macroStart && macroEnd) {
+	  if (macroStart->getConstraint() == PATHS) {
+	    source = "p" + QString::number(macroStart->getId());
+	  } else if (macroStart->getConstraint() == SEMIPATHS) {
+	    source = "s" + QString::number(macroStart->getId());
+	  }
+	  if (macroEnd->getConstraint() == PATHS) {
+	    target = "p" + QString::number(macroEnd->getId());
+	  } else if (macroEnd->getConstraint() == SEMIPATHS) {
+	    target = "s" + QString::number(macroEnd->getId());
+	  }
+	} else if (macroStart && eventEnd) {
+	  if (macroStart->getConstraint() == PATHS) {
+	    source = "p" + QString::number(macroStart->getId());
+	  } else if (macroStart->getConstraint() == SEMIPATHS) {
+	    source = "s" + QString::number(macroStart->getId());
+	  }
+	  target = "i" + QString::number(eventEnd->getId());
+	}
+      	fileOut << source.toStdString() << ","
+		<< target.toStdString() << ","
+		<< "Directed" << ","
+		<< "\"" << description.toStdString() << "\"" << ","
+		<< "\"" << coder.toStdString() << "\"" << "\n";
+      }
+    }
+    // And that should be it!
     fileOut.close();
   }
 }

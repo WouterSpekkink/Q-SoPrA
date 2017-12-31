@@ -1,42 +1,5 @@
 #include "../include/NetworkGraphWidget.h"
 
-// Some sorting bools for qSort.
-bool nodeLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
-  qreal oneX = itemOne->scenePos().x();
-  qreal twoX = itemTwo->scenePos().x();
-  if (oneX < twoX) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool nameLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
-  QString one = itemOne->getName();
-  QString two = itemTwo->getName();
-  if (one < two) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool stringLessThan(const QString one, const QString two) {
-  if (one < two) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
-bool modeSort(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
-  if (itemOne->getMode() < itemTwo->getMode()) {
-    return true;
-  } else {
-    return false;
-  }
-}
-
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedType = "";
   selectedEntityName = "";
