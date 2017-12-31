@@ -3792,7 +3792,9 @@ void EventGraphWidget::setVisibility() {
     if (!(currentParent->isVisible())) {
       currentText->hide();
     } else {
-      currentText->show();
+      if (labelsVisible) {
+	currentText->show();
+      }
     }
   }
   QVectorIterator<MacroLabel*> it5(macroLabelVector);
@@ -3802,7 +3804,9 @@ void EventGraphWidget::setVisibility() {
     if (!(currentParent->isVisible())) {
       currentText->hide();
     } else {
-      currentText->show();
+      if (labelsVisible) {
+	currentText->show();
+      }
     }
   }
   QRectF currentRect = this->scene->itemsBoundingRect();

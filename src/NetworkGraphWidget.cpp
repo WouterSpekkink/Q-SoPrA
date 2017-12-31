@@ -130,7 +130,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   addButton = new QPushButton(tr("Add relationship type"), this);
   addButton->setEnabled(false);
   toggleLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
-  toggleLabelsButton->setCheckable(true);
   increaseFontSizeButton = new QPushButton(tr("+"));
   decreaseFontSizeButton = new QPushButton(tr("-"));
   colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
@@ -374,6 +373,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   fontSizeLayout->addWidget(increaseFontSizeButton);
   fontSizeLayout->addWidget(decreaseFontSizeButton);
   graphicsControlsLayout->addLayout(fontSizeLayout);
+  QPointer<QFrame> sepLine4 = new QFrame();
+  sepLine4->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine4);
   graphicsControlsLayout->addWidget(upperRangeLabel);
   upperRangeLabel->setAlignment(Qt::AlignHCenter);
   QPointer<QHBoxLayout> upperRangeLayout = new QHBoxLayout;
@@ -386,6 +388,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   lowerRangeLayout->addWidget(lowerRangeDial);
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
+  QPointer<QFrame> sepLine5 = new QFrame();
+  sepLine5->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine5);
   graphicsControlsLayout->addWidget(exportSvgButton);
   graphicsControlsLayout->addWidget(exportNodesButton);
   graphicsControlsLayout->addWidget(exportEdgesButton);
