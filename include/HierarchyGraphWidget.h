@@ -29,6 +29,7 @@
 #include "AttributesWidget.h"
 #include "AttributeDialog.h"
 #include "SortFunctions.h"
+#include "SupportingFunctions.h"
 
 class AttributesWidget;
 

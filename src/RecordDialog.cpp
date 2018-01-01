@@ -28,8 +28,10 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
   cancelButton = new QPushButton("Cancel", this);
 
   // We connect all the signals.
-  connect(timeStampField, SIGNAL(textChanged(const QString &)), this, SLOT(setTimeStamp(const QString &)));
-  connect(sourceField, SIGNAL(textChanged(const QString &)), this, SLOT(setSource(const QString &)));
+  connect(timeStampField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setTimeStamp(const QString &)));
+  connect(sourceField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setSource(const QString &)));
   connect(saveRecordButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   

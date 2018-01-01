@@ -20,6 +20,7 @@
 #include "RelationshipsDialog.h"
 #include "AttributeIndexDialog.h"
 #include "NetworkGraphWidget.h"
+#include "SupportingFunctions.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT

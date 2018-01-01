@@ -19,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   networkGraphWidget = new NetworkGraphWidget(this);
   occurrenceGraphWidget = new OccurrenceGraphWidget(this);
   hierarchyGraphWidget = new HierarchyGraphWidget(this);
+  rawAttributesTableWidget = new RawAttributesTable(this);
+  rawRelationshipsTableWidget = new RawRelationshipsTable(this);
   
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -42,16 +44,18 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   hgw->setEventGraph(egw);
   rw->setNetworkGraph(ngw);
   
-  stacked->addWidget(dataWidget);
-  stacked->addWidget(attributesWidget);
-  stacked->addWidget(relationshipsWidget);
-  stacked->addWidget(linkagesWidget);
-  stacked->addWidget(journalWidget);
-  stacked->addWidget(eventGraphWidget);
-  stacked->addWidget(networkGraphWidget);
-  stacked->addWidget(occurrenceGraphWidget);
-  stacked->addWidget(hierarchyGraphWidget);
-
+  stacked->addWidget(dataWidget); // 0
+  stacked->addWidget(attributesWidget); // 1
+  stacked->addWidget(relationshipsWidget); // 2
+  stacked->addWidget(linkagesWidget); // 3
+  stacked->addWidget(journalWidget); // 4
+  stacked->addWidget(eventGraphWidget); // 5
+  stacked->addWidget(networkGraphWidget); // 6
+  stacked->addWidget(occurrenceGraphWidget); // 7
+  stacked->addWidget(hierarchyGraphWidget); // 8
+  stacked->addWidget(rawAttributesTableWidget); // 9
+  stacked->addWidget(rawRelationshipsTableWidget); // 10
+  
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
 	  this, SLOT(switchToHierarchyView(MacroEvent *)));
@@ -122,6 +126,16 @@ void MainWindow::createActions() {
   occurrenceGraphViewAct = new QAction(tr("&Occurrence graph"), this);
   occurrenceGraphViewAct->setStatusTip("Switch to occurrence graph");
   connect(occurrenceGraphViewAct, SIGNAL(triggered()), this, SLOT(switchToOccurrenceGraphView()));
+
+  // Table menu actions
+  rawAttributesTableViewAct = new QAction(tr("&Attributes texts table"), this);
+  rawAttributesTableViewAct->setStatusTip("Switch to attributes texts table");
+  connect(rawAttributesTableViewAct, SIGNAL(triggered()), this, SLOT(switchToRawAttributesTableView()));
+
+  rawRelationshipsTableViewAct = new QAction(tr("&Relationships texts table"), this);
+  rawRelationshipsTableViewAct->setStatusTip("Switch to relationships texts table");
+  connect(rawRelationshipsTableViewAct, SIGNAL(triggered()), this, SLOT(switchToRawRelationshipsTableView()));
+
 }
 
 void MainWindow::createMenus() {
@@ -143,6 +157,10 @@ void MainWindow::createMenus() {
   graphMenu->addAction(networkGraphViewAct);
   graphMenu->addAction(occurrenceGraphViewAct);
 
+  tableMenu = menu->addMenu("Tables");
+  tableMenu->addAction(rawAttributesTableViewAct);
+  tableMenu->addAction(rawRelationshipsTableViewAct);
+  
   setMenuBar(menu);
 }
 
@@ -583,4 +601,18 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->setOrigin(selectedMacro);
   menuBar()->setEnabled(false);
   stacked->setCurrentWidget(hierarchyGraphWidget);
+}
+
+void MainWindow::switchToRawAttributesTableView() {
+  // Still need to figure out what else needs to happen here.
+  RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(stacked->widget(9));
+  rat->updateTable();
+  stacked->setCurrentWidget(rawAttributesTableWidget);
+}
+
+void MainWindow::switchToRawRelationshipsTableView() {
+  // Still need to figure out what else needs to happen here.
+  RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(stacked->widget(10));
+  rrt->updateTable();
+  stacked->setCurrentWidget(rawRelationshipsTableWidget);
 }

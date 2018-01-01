@@ -21,6 +21,7 @@
 #include "MacroEvent.h"
 #include "EventGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
+#include "SupportingFunctions.h"
 
 class EventGraphWidget;
 

@@ -176,7 +176,7 @@ void UndirectedEdge::setMassHidden(bool state) {
 
 void UndirectedEdge::setComment(const QString submittedComment) {
   comment = submittedComment;
-  QString toolTip = "<FONT SIZE = 3>" + comment + "</FONT>";
+  QString toolTip = breakString(comment);
   this->setToolTip(toolTip);
 }
 

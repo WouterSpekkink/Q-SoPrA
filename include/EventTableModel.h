@@ -2,6 +2,7 @@
 #define EVENTTABLEMODEL_H
 
 #include <QtSql>
+#include "SupportingFunctions.h"
 
 class EventTableModel : public QSqlTableModel {
   Q_OBJECT
@@ -9,7 +10,7 @@ class EventTableModel : public QSqlTableModel {
 public:
   EventTableModel(QWidget *parent=0);
   ~EventTableModel() {};
-
+  
 protected:
   QVariant data(const QModelIndex &index, int role) const;
 

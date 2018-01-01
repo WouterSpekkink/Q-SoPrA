@@ -28,8 +28,10 @@ LinkagesIndexDialog::LinkagesIndexDialog(QWidget *parent, int size, const QStrin
   // We connect the signals to the appropriate slots.
   connect(goButton, SIGNAL(clicked()), this, SLOT(go()));
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancel()));
-  connect(tailIndexField, SIGNAL(textChanged(const QString &)), this, SLOT(setTailIndexText(const QString &)));
-  connect(headIndexField, SIGNAL(textChanged(const QString &)), this, SLOT(setHeadIndexText(const QString &)));
+  connect(tailIndexField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setTailIndexText(const QString &)));
+  connect(headIndexField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setHeadIndexText(const QString &)));
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
 

@@ -160,7 +160,7 @@ void DirectedEdge::setMassHidden(bool state) {
 
 void DirectedEdge::setComment(const QString submittedComment) {
   comment = submittedComment;
-  QString toolTip = "<FONT SIZE = 3>" + comment + "</FONT>";
+  QString toolTip = breakString(comment);
   this->setToolTip(toolTip);
 }
 

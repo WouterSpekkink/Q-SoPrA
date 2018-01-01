@@ -32,6 +32,7 @@
 #include "EventGraphWidget.h"
 #include "EventItem.h"
 #include "SortFunctions.h"
+#include "SupportingFunctions.h"
 
 class EventGraphWidget;
 

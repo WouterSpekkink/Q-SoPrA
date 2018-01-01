@@ -79,7 +79,7 @@ void AttributeColorDialog::setTree() {
       QString description = query->value(1).toString();
       QStandardItem *father = new QStandardItem(name);    
       attributesTree->appendRow(father);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       father->setToolTip(hint);
       father->setEditable(false);
       buildHierarchy(father, name);
@@ -91,7 +91,7 @@ void AttributeColorDialog::setTree() {
       QString description = query->value(1).toString();
       QStandardItem *father = new QStandardItem(name);    
       attributesTree->appendRow(father);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       father->setToolTip(hint);
       father->setEditable(false);
       buildHierarchy(father, name);
@@ -114,7 +114,7 @@ void AttributeColorDialog::buildHierarchy(QStandardItem *top, QString name) {
       QString description = query->value(1).toString();
       QStandardItem *child = new QStandardItem(childName);
       top->setChild(children, child);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       child->setToolTip(hint);
       child->setEditable(false);
       children++;
@@ -130,7 +130,7 @@ void AttributeColorDialog::buildHierarchy(QStandardItem *top, QString name) {
       QString description = query->value(1).toString();
       QStandardItem *child = new QStandardItem(childName);
       top->setChild(children, child);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       child->setToolTip(hint);
       child->setEditable(false);
       children++;

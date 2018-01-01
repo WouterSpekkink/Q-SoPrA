@@ -166,12 +166,18 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   connect(selectTypeButton, SIGNAL(clicked()), this, SLOT(setLinkageType()));
   connect(manualCodingButton, SIGNAL(clicked()), this, SLOT(checkManualButton()));
   connect(assistedCodingButton, SIGNAL(clicked()), this, SLOT(checkAssistedButton()));
-  connect(tailDescriptionFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setTailDescriptionFilter(const QString &)));
-  connect(tailRawFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setTailRawFilter(const QString &)));
-  connect(tailCommentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setTailCommentFilter(const QString &)));
-  connect(headDescriptionFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setHeadDescriptionFilter(const QString &)));
-  connect(headRawFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setHeadRawFilter(const QString &)));
-  connect(headCommentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setHeadCommentFilter(const QString &)));
+  connect(tailDescriptionFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setTailDescriptionFilter(const QString &)));
+  connect(tailRawFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setTailRawFilter(const QString &)));
+  connect(tailCommentFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setTailCommentFilter(const QString &)));
+  connect(headDescriptionFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setHeadDescriptionFilter(const QString &)));
+  connect(headRawFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setHeadRawFilter(const QString &)));
+  connect(headCommentFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setHeadCommentFilter(const QString &)));
   connect(tailDescriptionPreviousButton, SIGNAL(clicked()), this, SLOT(previousTailDescription()));
   connect(tailDescriptionNextButton, SIGNAL(clicked()), this, SLOT(nextTailDescription()));
   connect(tailRawPreviousButton, SIGNAL(clicked()), this, SLOT(previousTailRaw()));
@@ -693,9 +699,9 @@ void LinkagesWidget::setLinkageType() {
     query->first();
     QString description = query->value(0).toString();
     QString question = query->value(1).toString();
-    QString label = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
+    QString label = "<FONT SIZE = 3--[" + typeComboBox->currentText() + "]--></FONT>";
     linkageTypeFeedbackLabel->setText(label);
-    QString toolTip = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString toolTip = breakString(description);
     linkageTypeFeedbackLabel->setToolTip(toolTip);
     linkageQuestionFeedbackLabel->setText(question);
     linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->sizeHint().height());

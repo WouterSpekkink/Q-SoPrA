@@ -13,6 +13,7 @@
 #include <QPointer>
 #include <QtSql>
 #include "Constants.h"
+#include "SupportingFunctions.h"
 
 class LinkageTypeDialog : public QDialog {
   Q_OBJECT
