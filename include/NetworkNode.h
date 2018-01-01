@@ -2,13 +2,7 @@
 #define NETWORKNODE_H
 
 #include <QGraphicsItem>
-//#include "NetworkNodeLabel.h"
-
-/*
-  So graphics items are things that can be draw. They are classes, and 
-  here we subclass one.
-*/
-
+#include "SupportingFunctions.h"
 
 class NetworkNodeLabel;
 

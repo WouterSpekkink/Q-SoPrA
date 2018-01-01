@@ -519,7 +519,7 @@ void RelationshipsWidget::newType() {
     QString description = typeDialog->getDescription();
     QString directedness = typeDialog->getDirectedness();
     QStandardItem *type = new QStandardItem(name);
-    QString hint =  "<FONT SIZE = 3>" + directedness + " - " + description + "<FONT SIZE = 3>";
+    QString hint =  breakString(directedness + " - " + description);
     type->setToolTip(hint);
     type->setEditable(false);
     relationshipsTree->appendRow(type);
@@ -560,7 +560,7 @@ void RelationshipsWidget::editType() {
 	QStandardItem *currentType = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	currentType->setData(newName);
 	currentType->setData(newName, Qt::DisplayRole);
-	QString hint =  "<FONT SIZE = 3>" + directedness + " - " + description + "<FONT SIZE = 3>";
+	QString hint = breakString(directedness + " - " + description);
 	currentType->setToolTip(hint);
 	for (int i = 0; i != currentType->rowCount(); i++) {
 	  QStandardItem *currentChild = currentType->takeChild(i);
@@ -972,7 +972,7 @@ void RelationshipsWidget::setTree() {
     QString typeDescription = query->value(2).toString();
     QStandardItem *type = new QStandardItem(currentType);    
     relationshipsTree->appendRow(type);
-    QString hint =  "<FONT SIZE = 3>" + currentDirection + " - " + typeDescription + "<FONT SIZE = 3>";
+    QString hint = breakString(currentDirection + " - " + typeDescription);
     type->setToolTip(hint);
     type->setEditable(false);
     QSqlQuery *query2 = new QSqlQuery;

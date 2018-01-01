@@ -1162,7 +1162,7 @@ void EventGraphWidget::setTree() {
     QString description = query->value(1).toString();
     QStandardItem *father = new QStandardItem(name);    
     attributesTree->appendRow(father);
-    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString hint = breakString(description);
     father->setToolTip(hint);
     father->setEditable(false);
     buildHierarchy(father, name);
@@ -1183,7 +1183,7 @@ void EventGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
     QString description = query->value(1).toString();
     QStandardItem *child = new QStandardItem(childName);
     top->setChild(children, child);
-    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString hint = breakString(description);
     child->setToolTip(hint);
     child->setEditable(false);
     children++;
@@ -1697,7 +1697,7 @@ void EventGraphWidget::newAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       QStandardItem *father = attributesTree->
 	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);
@@ -1733,7 +1733,7 @@ void EventGraphWidget::newAttribute() {
       query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       delete query;
       attribute->setToolTip(hint);
       attribute->setEditable(false);
@@ -1765,7 +1765,7 @@ void EventGraphWidget::editAttribute() {
 	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       currentAttribute->setToolTip(hint);
       query->prepare("UPDATE incident_attributes "
 		     "SET name = :newname, description = :newdescription "
@@ -1818,7 +1818,7 @@ void EventGraphWidget::getEvents() {
     query2->exec();
     query2->first();
     int id = query2->value(0).toInt();
-    QString toolTip = "<FONT SIZE = 3>" + query->value(1).toString() + "</FONT>";
+    QString toolTip = breakString(query->value(1).toString());
     qreal vertical = qrand() % 1000 - 500;
     QPointF position = QPointF((order * distance), vertical);
     EventItem *currentItem = new EventItem(40, toolTip, position, id, order);
@@ -1862,7 +1862,7 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
     if (!(query2->isNull(0))) {
       comment = query2->value(0).toString();
       commentCoder = query2->value(1).toString();
-      toolTip = "<FONT SIZE = 3>" + commentCoder + " - " + comment + "</FONT>";
+      toolTip = breakString(commentCoder + " - " + comment);
     } else {
       toolTip = "No comments";
     }
@@ -2438,7 +2438,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
     if (!(query2->isNull(0))) {
       comment = query2->value(0).toString();
       commentCoder = query2->value(1).toString();
-      toolTip = "<FONT SIZE = 3>" + commentCoder + " - " + comment + "</FONT>";
+      toolTip = breakString(commentCoder + " - " + comment);
     } else {
       toolTip = "No comments";
     }
@@ -3023,7 +3023,7 @@ void EventGraphWidget::seePlots() {
       if (query2->isNull(0)) {
 	toolTip = "Incident was deleted";
       } else {
-	toolTip = "<FONT SIZE = 3>" + query2->value(0).toString() + "</FONT>";
+	toolTip = breakString(query2->value(0).toString());
       }
       delete query2;
       QPointF currentPos = QPointF(currentX, currentY);
@@ -3292,7 +3292,7 @@ void EventGraphWidget::seePlots() {
 	if (!(query2->isNull(0))) {
 	  comment = query2->value(0).toString();
 	  commentCoder = query2->value(1).toString();
-	  toolTip = "<FONT SIZE = 3>" + commentCoder + " - " + comment + "</FONT>";
+	  toolTip = breakString(commentCoder + " - " + comment);
 	} else {
 	  toolTip = "No comments";
 	}
@@ -3523,7 +3523,7 @@ void EventGraphWidget::colorByAttribute() {
       if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) {
 	found = true;
 	QTableWidgetItem *item = eventListWidget->item(i,0);
-	QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+	QString toolTip = breakString(attribute + " - " + description);
 	item->setToolTip(toolTip);
 	eventListWidget->item(i, 1)->setBackground(color);
 	break;
@@ -3532,7 +3532,7 @@ void EventGraphWidget::colorByAttribute() {
     if (!found) {
       QTableWidgetItem *item = new QTableWidgetItem(attribute);
       item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-      QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+      QString toolTip = breakString(attribute + " - " + description);
       item->setToolTip(toolTip);
       item->setData(Qt::DisplayRole, attribute);
       eventListWidget->setRowCount(eventListWidget->rowCount() + 1);

@@ -21,6 +21,8 @@
 #include "NetworkGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
 #include "HierarchyGraphWidget.h"
+#include "RawAttributesTable.h"
+#include "RawRelationshipsTable.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -45,6 +47,8 @@ private slots:
   void switchToNetworkGraphView();
   void switchToOccurrenceGraphView();
   void switchToHierarchyView(MacroEvent *selectedMacro);
+  void switchToRawAttributesTableView();
+  void switchToRawRelationshipsTableView();
   
   void importFromCsv();
   bool checkLineBreaks(std::string line);
@@ -61,12 +65,15 @@ private:
   QPointer<QWidget> networkGraphWidget;
   QPointer<QWidget> occurrenceGraphWidget;
   QPointer<QWidget> hierarchyGraphWidget;
+  QPointer<QWidget> rawAttributesTableWidget;
+  QPointer<QWidget> rawRelationshipsTableWidget;
   
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menu;
   QPointer<QMenu> fileMenu;
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
+  QPointer<QMenu> tableMenu;
   
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;
@@ -76,9 +83,13 @@ private:
   QPointer<QAction> relationshipViewAct;
   QPointer<QAction> linkageViewAct;
   QPointer<QAction> journalViewAct;
+  
   QPointer<QAction> eventGraphViewAct;
   QPointer<QAction> networkGraphViewAct;
   QPointer<QAction> occurrenceGraphViewAct;
+
+  QPointer<QAction> rawAttributesTableViewAct;
+  QPointer<QAction> rawRelationshipsTableViewAct;
   
   QPointer<EventSequenceDatabase> esd;
 };

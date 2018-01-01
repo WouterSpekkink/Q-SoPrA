@@ -64,6 +64,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 	  this, SLOT(checkChange(const QModelIndex &, const QModelIndex &)));
   
   // Then we create the layout.
+  QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
+  mainLayout->addWidget(tableView);
   QPointer<QHBoxLayout> recordButtonsLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> recordButtonsLeftLayout = new QVBoxLayout;
   recordButtonsLeftLayout->addWidget(appendRecordButton);
@@ -81,8 +83,6 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   recordButtonsRightLayout->addWidget(duplicateRowButton);
   recordButtonsRightLayout->addWidget(removeRowButton);
   recordButtonsLayout->addLayout(recordButtonsRightLayout);
-  QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(tableView);
   mainLayout->addLayout(recordButtonsLayout);
 
   // Final settings.

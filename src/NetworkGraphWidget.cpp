@@ -570,7 +570,7 @@ void NetworkGraphWidget::setTree() {
     QString description = query->value(1).toString();
     QStandardItem *father = new QStandardItem(name);    
     attributesTree->appendRow(father);
-    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString hint = breakString(description);
     father->setToolTip(hint);
     father->setEditable(false);
     buildHierarchy(father, name);
@@ -596,7 +596,7 @@ void NetworkGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
     QString description = query->value(1).toString();
     QStandardItem *child = new QStandardItem(childName);
     top->setChild(children, child);
-    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString hint = breakString(description);
     child->setToolTip(hint);
     child->setEditable(false);
     children++;
@@ -1632,7 +1632,7 @@ void NetworkGraphWidget::colorByAttribute() {
       if (nodeListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) {
 	found = true;
 	QTableWidgetItem *item = nodeListWidget->item(i,0);
-	QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+	QString toolTip = breakString(attribute + " - " + description);
 	item->setToolTip(toolTip);
 	nodeListWidget->item(i, 1)->setBackground(color);
 	break;
@@ -1641,7 +1641,7 @@ void NetworkGraphWidget::colorByAttribute() {
     if (!found) {
       QTableWidgetItem *item = new QTableWidgetItem(attribute);
       item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-      QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+      QString toolTip = breakString(attribute + " - " + description);
       item->setToolTip(toolTip);
       item->setData(Qt::DisplayRole, attribute);
       nodeListWidget->setRowCount(nodeListWidget->rowCount() + 1);
@@ -1988,7 +1988,7 @@ void NetworkGraphWidget::multimodeTransformation() {
     plotUndirectedEdges(name, color);
     QTableWidgetItem *item = new QTableWidgetItem(selectedType);
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-    QString toolTip = "<FONT SIZE = 3>" + name + " (Undirected) - " + description + "</FONT>";
+    QString toolTip = breakString(name + " (Undirected) - " + description);
     item->setToolTip(toolTip);
     item->setData(Qt::DisplayRole, name);
     edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
@@ -2171,8 +2171,7 @@ void NetworkGraphWidget::mergeRelationships() {
     presentTypes.push_back(name);
     QTableWidgetItem *item = new QTableWidgetItem(name);
     item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-    QString toolTip = "<FONT SIZE = 3>" + name + " (" + directedness + ") - " +
-    description + "</FONT SIZE>";
+    QString toolTip = breakString(name + " (" + directedness + ") - " + description);
     item->setToolTip(toolTip);
     item->setData(Qt::DisplayRole, name);
     edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
@@ -2500,8 +2499,7 @@ void NetworkGraphWidget::plotNewGraph() {
   query->first();
   QString directedness = query->value(0).toString();
   QString description = query->value(1).toString();
-  QString toolTip = "<FONT SIZE = 3>" + selectedType + " (" + directedness + ") - " +
-    description + "</FONT SIZE>";
+  QString toolTip = breakString(selectedType + " (" + directedness + ") - " + description);
   QTableWidgetItem *item = new QTableWidgetItem(selectedType);
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
   item->setToolTip(toolTip);
@@ -2546,8 +2544,7 @@ void NetworkGraphWidget::addRelationshipType() {
   query->first();
   QString directedness = query->value(0).toString();
   QString description = query->value(1).toString();
-  QString toolTip = "<FONT SIZE = 3>" + selectedType + " (" + directedness + ") - " + description
-    + "</FONT SIZE>";
+  QString toolTip = breakString(selectedType + " (" + directedness + ") - " + description);
   QTableWidgetItem *item = new QTableWidgetItem(selectedType);
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
   item->setToolTip(toolTip);

@@ -13,7 +13,7 @@ MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF origi
   : color(255, 255, 255) {
   width = subWidth;
   description = submittedDescription;
-  QString tip = "<FONT SIZE = 3>" + description + "</FONT>";
+  QString tip = breakString(description);
   setToolTip(tip);
   originalPos = originalPosition;
   order = 0;
@@ -199,7 +199,7 @@ QVector<EventItem*> MacroEvent::getIncidents() const {
 
 void MacroEvent::setDescription(const QString text) {
   description = text;
-  QString tip = "<FONT SIZE = 3>" + description + "</FONT>";
+  QString tip = breakString(description);
   setToolTip(tip);
 }
 

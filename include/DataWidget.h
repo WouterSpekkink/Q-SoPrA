@@ -22,8 +22,9 @@ class DataWidget : public QWidget {
   Q_OBJECT
 
   friend class MainWindow;
+  
 public:
-  DataWidget(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
+  DataWidget(QWidget *parent = 0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
   ~DataWidget() {};
   void setEventGraph(EventGraphWidget *egw);
   void setOccurrenceGraph(OccurrenceGraphWidget *ogw);

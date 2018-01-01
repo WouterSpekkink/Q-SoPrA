@@ -37,6 +37,7 @@
 #include "OccurrenceGraphWidget.h"
 #include "HierarchyGraphWidget.h"
 #include "SortFunctions.h"
+#include "SupportingFunctions.h"
 
 class AttributesWidget;
 

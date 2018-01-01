@@ -12,7 +12,7 @@ OccurrenceItem::OccurrenceItem(int subWidth, QString toolTip, QPointF originalPo
 			       int subId, int subOrder, QString submittedAttribute)
   : color(255, 255, 255) {
   width = subWidth;
-  setToolTip(QString("<FONT SIZE = 3>") + toolTip + QString("</FONT>"));
+  setToolTip(breakString(toolTip));
   originalPos = originalPosition;
   selectionColor = QColor(Qt::black);
   id = subId;

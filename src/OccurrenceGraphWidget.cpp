@@ -344,7 +344,7 @@ void OccurrenceGraphWidget::addAttribute() {
 	if (attributeListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) {
 	  found = true;
 	  QTableWidgetItem *item = attributeListWidget->item(i,0);
-	  QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+	  QString toolTip = breakString(attribute + " - " + description);
 	  item->setToolTip(toolTip);
 	  attributeListWidget->item(i, 1)->setBackground(color);
 	  break;
@@ -353,7 +353,7 @@ void OccurrenceGraphWidget::addAttribute() {
       if (!found) {
 	QTableWidgetItem *item = new QTableWidgetItem(attribute);
 	item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	QString toolTip = "<FONT SIZE = 3>" + attribute + " - " + description + "</FONT SIZE>";
+	QString toolTip = breakString(attribute + " - " + description);
 	item->setToolTip(toolTip);
 	item->setData(Qt::DisplayRole, attribute);
 	attributeListWidget->setRowCount(attributeListWidget->rowCount() + 1);

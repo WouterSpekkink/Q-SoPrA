@@ -18,6 +18,7 @@
 #include "EntityTableModel.h"
 #include "EntityDialog.h"
 #include "ZoomableListView.h"
+#include "SupportingFunctions.h"
 
 /*
   I need to forward declare the class here because this header is also included in the

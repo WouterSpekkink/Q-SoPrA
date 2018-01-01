@@ -3,6 +3,7 @@
 
 #include <QGraphicsItem>
 #include <QWheelEvent>
+#include "SupportingFunctions.h"
 
 /*
   So graphics items are things that can be draw. They are classes, and 

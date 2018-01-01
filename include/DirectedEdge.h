@@ -3,6 +3,7 @@
 
 #include <QGraphicsLineItem>
 #include "NetworkNode.h"
+#include "SupportingFunctions.h"
 
 class DirectedEdge : public QGraphicsLineItem {
 

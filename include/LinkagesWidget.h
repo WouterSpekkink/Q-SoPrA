@@ -21,6 +21,7 @@
 #include "SimpleTextDialog.h"
 #include "LinkagesIndexDialog.h"
 #include "EventGraphWidget.h"
+#include "SupportingFunctions.h"
 #ifdef _WIN32
 #include <windows.h>
 #endif

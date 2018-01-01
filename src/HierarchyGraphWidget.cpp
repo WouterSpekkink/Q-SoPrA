@@ -445,8 +445,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
     query->first();
     QString description = query->value(0).toString();
     delete query;
-    QString toolTip = "<FONT SIZE = 3>" + newOrigin->getMode()  + " - " +
-      description + "</FONT SIZE>";
+    QString toolTip = breakString(newOrigin->getMode()  + " - " + description);
     item->setToolTip(toolTip);
     item->setData(Qt::DisplayRole, newOrigin->getMode());
     eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
@@ -510,8 +509,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 	  delete query;
 	  QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
 	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	  QString toolTip = "<FONT SIZE = 3>" + newMacro->getMode() + " - " +
-	    description + "</FONT SIZE>";
+	  QString toolTip = breakString(newMacro->getMode() + " - " + description);
 	  item->setToolTip(toolTip);
 	  item->setData(Qt::DisplayRole, newMacro->getMode());
 	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
@@ -575,8 +573,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 	  delete query;
 	  QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
 	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	  QString toolTip = "<FONT SIZE = 3>" + newEvent->getMode() + " - " +
-	    description + "</FONT SIZE>";
+	  QString toolTip = breakString(newEvent->getMode() + " - " + description);
 	  item->setToolTip(toolTip);
 	  item->setData(Qt::DisplayRole, newEvent->getMode());
 	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
@@ -682,8 +679,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  if (!found) {
 	    QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
 	    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	    QString toolTip = "<FONT SIZE = 3>" + newMacro->getMode() + " - " +
-	      description + "</FONT SIZE>";
+	    QString toolTip = breakString(newMacro->getMode() + " - " + description);
 	    item->setToolTip(toolTip);
 	    item->setData(Qt::DisplayRole, newMacro->getMode());
 	    eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
@@ -759,8 +755,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	    if (!found) {
 	      QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
 	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	      QString toolTip = "<FONT SIZE = 3>" + newEvent->getMode() + " - " +
-		description + "</FONT SIZE>";
+	      QString toolTip = breakString(newEvent->getMode() + " - " + description);
 	      item->setToolTip(toolTip);
 	      item->setData(Qt::DisplayRole, newEvent->getMode());
 	      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
@@ -1018,7 +1013,7 @@ void HierarchyGraphWidget::newAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);;
       QStandardItem *father = attributesTree->
 	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);
@@ -1054,7 +1049,7 @@ void HierarchyGraphWidget::newAttribute() {
       query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       delete query;
       attribute->setToolTip(hint);
       attribute->setEditable(false);
@@ -1087,7 +1082,7 @@ void HierarchyGraphWidget::editAttribute() {
 	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+      QString hint = breakString(description);
       currentAttribute->setToolTip(hint);
       query->prepare("UPDATE incident_attributes "
 		     "SET name = :newname, description = :newdescription "
@@ -1374,7 +1369,7 @@ void HierarchyGraphWidget::setTree() {
     QString description = query->value(1).toString();
     QStandardItem *father = new QStandardItem(name);    
     attributesTree->appendRow(father);
-    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString hint = breakString(description);
     father->setToolTip(hint);
     father->setEditable(false);
     buildHierarchy(father, name);
@@ -1402,7 +1397,7 @@ void HierarchyGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
     QString description = query->value(1).toString();
     QStandardItem *child = new QStandardItem(childName);
     top->setChild(children, child);
-    QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+    QString hint = breakString(description);
     child->setToolTip(hint);
     child->setEditable(false);
     children++;

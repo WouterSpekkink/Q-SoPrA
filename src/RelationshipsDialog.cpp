@@ -123,7 +123,7 @@ void RelationshipsDialog::submitType(QString type) {
 }
 
 void RelationshipsDialog::submitDescription(QString description) {
-  QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+  QString hint = breakString(description);
   typeLabel->setToolTip(hint);
 }
 

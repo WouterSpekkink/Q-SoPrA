@@ -12,7 +12,7 @@
 NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : color(255, 255, 255) {
   name = submittedName;
   description = submittedDescription;
-  QString toolTip = "<FONT SIZE = 3>" + name + " - " + description + "</FONT>";
+  QString toolTip = breakString(name + " - " + description);
   setToolTip(toolTip);
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);

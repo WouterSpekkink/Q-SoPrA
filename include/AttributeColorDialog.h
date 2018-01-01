@@ -13,6 +13,7 @@
 #include "Constants.h"
 #include "DeselectableTreeView.h"
 #include "AttributeTreeFilter.h"
+#include "SupportingFunctions.h"
 
 class AttributeColorDialog : public QDialog {
   Q_OBJECT
