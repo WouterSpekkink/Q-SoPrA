@@ -2,7 +2,7 @@
 
 RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) {
   // We first create our model, our table, the view and the filter of the view
-  relationshipsModel = new EventTableModel(this);
+  relationshipsModel = new RelationalTable(this);
   relationshipsModel->setTable("relationships_to_incidents_sources");
   relationshipsModel->select();
   filter = new QSortFilterProxyModel(this);
@@ -11,6 +11,9 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  // We set the incident column to show the order variable.
+  relationshipsModel->setRelation(3, QSqlRelation("incidents", "id", "ch_order")); 
   
   // Then we set how the data are displayed.
   relationshipsModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Relationship"));
@@ -118,9 +121,16 @@ void RawRelationshipsTable::removeText() {
       int row = tableView->currentIndex().row();
       QString relationship = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
       QString type = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
-      QString incident = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
-      QString text = tableView->model()->index(row, 4).data(Qt::DisplayRole).toString();
+      QString order = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT id FROM incidents "
+		     "WHERE ch_order = :order");
+      query->bindValue(":order", order);
+      query->exec();
+      query->first();
+      QString incident = query->value(0).toString();
+      QString text = tableView->model()->index(row, 4).data(Qt::DisplayRole).toString();
+
       query->prepare("DELETE FROM relationships_to_incidents_sources "
 		     "WHERE relationship = :relationship AND type = :type "
 		     "AND incident = :incident AND source_text = :text");

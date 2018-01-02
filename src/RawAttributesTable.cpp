@@ -2,7 +2,7 @@
 
 RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   // We first create our model, our table, the view and the filter of the view
-  attributesModel = new EventTableModel(this);
+  attributesModel = new RelationalTable(this);
   attributesModel->setTable("attributes_to_incidents_sources");
   attributesModel->select();
   filter = new QSortFilterProxyModel(this);
@@ -11,6 +11,9 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+
+  // We set the incidents column to show the order variable.
+  attributesModel->setRelation(2, QSqlRelation("incidents", "id", "ch_order")); 
   
   // Then we set how the data are displayed.
   attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute"));
@@ -113,9 +116,16 @@ void RawAttributesTable::removeText() {
     if (warningBox->exec() == QMessageBox::Yes) {
       int row = tableView->currentIndex().row();
       QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
-      QString incident = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
-      QString text = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+      QString order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT id FROM incidents "
+		     "WHERE ch_order = :order");
+      query->bindValue(":order", order);
+      query->exec();
+      query->first();
+      QString incident = query->value(0).toString();
+      QString text = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+    
       query->prepare("DELETE FROM attributes_to_incidents_sources "
 		     "WHERE attribute = :attribute "
 		     "AND incident = :incident AND source_text = :text");

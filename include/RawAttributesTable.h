@@ -13,7 +13,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
-#include "EventTableModel.h"
+#include "RelationalTable.h"
 #include "ZoomableTableView.h"
 
 class RawAttributesTable : public QWidget {
@@ -35,7 +35,7 @@ private slots:
   void exportTable();
   
 private:
-  QPointer<EventTableModel> attributesModel;
+  QPointer<RelationalTable> attributesModel;
   QPointer<ZoomableTableView> tableView;
   QPointer<QSortFilterProxyModel> filter;
 
