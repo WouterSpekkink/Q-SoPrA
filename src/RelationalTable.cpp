@@ -8,6 +8,8 @@ RelationalTable::RelationalTable(QWidget *parent) : QSqlRelationalTableModel(par
   description of the incident. Therefore, I have decided to fetch the description data
   from the incidents table, and to show that description whenever the user is hovering
   the mouse over a cell that belongs to a column with the header called "Incident".
+
+  I later implemented the same principle for entities.
 */
 
 QVariant RelationalTable::data(const QModelIndex &index, int role) const {
@@ -25,6 +27,17 @@ QVariant RelationalTable::data(const QModelIndex &index, int role) const {
       QString toolTip = breakString(description);
       return toolTip;
       delete query;
+    } else if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole).toString() == "Entity") {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT description FROM entities "
+		     "WHERE name = :name");
+      query->bindValue(":name", original);
+      query->exec();
+      query->first();
+      QString description = query->value(0).toString();
+      QString toolTip = breakString(description);
+      return toolTip;
+      delete query;      
     } else {
       QString toolTip = breakString(original);
       return toolTip;

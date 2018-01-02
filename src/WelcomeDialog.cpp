@@ -66,7 +66,7 @@ void WelcomeDialog::newDatabase() {
 		  "name varchar text, "
 		  "description text, "
 		  "father text)");
-      query->exec("CREATE TABLE_to_incidents "
+      query->exec("CREATE TABLE attributes_to_incidents "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "attribute text, "
 		  "incident integer, "

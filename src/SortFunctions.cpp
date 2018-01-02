@@ -72,6 +72,14 @@ bool intMoreThan(const int itemOne, const int itemTwo) {
   }
 }
 
+bool intLessThan(const int itemOne, const int itemTwo) {
+  if (itemOne < itemTwo) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 bool attributeLessThan(const OccurrenceItem *itemOne, const OccurrenceItem *itemTwo) {
   QString attributeOne = itemOne->getAttribute();
   QString attributeTwo = itemTwo->getAttribute();

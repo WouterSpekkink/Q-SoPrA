@@ -62,6 +62,7 @@ SOURCES       = main.cpp \
 		src/DeselectableTreeView.cpp \
 		src/DeselectableTreeViewEntities.cpp \
 		src/DirectedEdge.cpp \
+		src/EntitiesAttributesTable.cpp \
 		src/EntitiesFilter.cpp \
 		src/EntityDialog.cpp \
 		src/EntityTableModel.cpp \
@@ -71,6 +72,7 @@ SOURCES       = main.cpp \
 		src/EventTableModel.cpp \
 		src/GraphicsView.cpp \
 		src/HierarchyGraphWidget.cpp \
+		src/IncidentsAttributesTable.cpp \
 		src/JournalWidget.cpp \
 		src/LargeTextDialog.cpp \
 		src/LineageColorDialog.cpp \
@@ -115,6 +117,7 @@ SOURCES       = main.cpp \
 		moc_DeselectableListWidget.cpp \
 		moc_DeselectableTreeView.cpp \
 		moc_DeselectableTreeViewEntities.cpp \
+		moc_EntitiesAttributesTable.cpp \
 		moc_EntitiesFilter.cpp \
 		moc_EntityDialog.cpp \
 		moc_EntityTableModel.cpp \
@@ -122,6 +125,7 @@ SOURCES       = main.cpp \
 		moc_EventSequenceDatabase.cpp \
 		moc_EventTableModel.cpp \
 		moc_HierarchyGraphWidget.cpp \
+		moc_IncidentsAttributesTable.cpp \
 		moc_JournalWidget.cpp \
 		moc_LargeTextDialog.cpp \
 		moc_LineageColorDialog.cpp \
@@ -162,6 +166,7 @@ OBJECTS       = main.o \
 		DeselectableTreeView.o \
 		DeselectableTreeViewEntities.o \
 		DirectedEdge.o \
+		EntitiesAttributesTable.o \
 		EntitiesFilter.o \
 		EntityDialog.o \
 		EntityTableModel.o \
@@ -171,6 +176,7 @@ OBJECTS       = main.o \
 		EventTableModel.o \
 		GraphicsView.o \
 		HierarchyGraphWidget.o \
+		IncidentsAttributesTable.o \
 		JournalWidget.o \
 		LargeTextDialog.o \
 		LineageColorDialog.o \
@@ -216,6 +222,7 @@ OBJECTS       = main.o \
 		moc_DeselectableListWidget.o \
 		moc_DeselectableTreeView.o \
 		moc_DeselectableTreeViewEntities.o \
+		moc_EntitiesAttributesTable.o \
 		moc_EntitiesFilter.o \
 		moc_EntityDialog.o \
 		moc_EntityTableModel.o \
@@ -223,6 +230,7 @@ OBJECTS       = main.o \
 		moc_EventSequenceDatabase.o \
 		moc_EventTableModel.o \
 		moc_HierarchyGraphWidget.o \
+		moc_IncidentsAttributesTable.o \
 		moc_JournalWidget.o \
 		moc_LargeTextDialog.o \
 		moc_LineageColorDialog.o \
@@ -320,6 +328,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/DeselectableTreeView.h \
 		include/DeselectableTreeViewEntities.h \
 		include/DirectedEdge.h \
+		include/EntitiesAttributesTable.h \
 		include/EntitiesFilter.h \
 		include/EntityDialog.h \
 		include/EntityTableModel.h \
@@ -329,6 +338,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/EventTableModel.h \
 		include/GraphicsView.h \
 		include/HierarchyGraphWidget.h \
+		include/IncidentsAttributesTable.h \
 		include/JournalWidget.h \
 		include/LargeTextDialog.h \
 		include/LineageColorDialog.h \
@@ -378,6 +388,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/DeselectableTreeView.cpp \
 		src/DeselectableTreeViewEntities.cpp \
 		src/DirectedEdge.cpp \
+		src/EntitiesAttributesTable.cpp \
 		src/EntitiesFilter.cpp \
 		src/EntityDialog.cpp \
 		src/EntityTableModel.cpp \
@@ -387,6 +398,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/EventTableModel.cpp \
 		src/GraphicsView.cpp \
 		src/HierarchyGraphWidget.cpp \
+		src/IncidentsAttributesTable.cpp \
 		src/JournalWidget.cpp \
 		src/LargeTextDialog.cpp \
 		src/LineageColorDialog.cpp \
@@ -596,8 +608,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/HierarchyGraphWidget.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeRelationshipsDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RelationalTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeRelationshipsDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RelationalTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventSequenceDatabase.h include/EventTableModel.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeRelationshipsDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RelationalTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeRelationshipsDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RelationalTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -620,9 +632,9 @@ check: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_HierarchyGraphWidget.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeRelationshipsDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeRelationshipsDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_HierarchyGraphWidget.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeRelationshipsDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeRelationshipsDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 moc_AttributeColorDialog.cpp: include/Constants.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
@@ -693,6 +705,8 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/AttributesWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributesWidget.h -o moc_AttributesWidget.cpp
@@ -756,6 +770,8 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/DataWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DataWidget.h -o moc_DataWidget.cpp
@@ -768,6 +784,18 @@ moc_DeselectableTreeView.cpp: include/DeselectableTreeView.h
 
 moc_DeselectableTreeViewEntities.cpp: include/DeselectableTreeViewEntities.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/DeselectableTreeViewEntities.h -o moc_DeselectableTreeViewEntities.cpp
+
+moc_EntitiesAttributesTable.cpp: include/RelationalTable.h \
+		include/SupportingFunctions.h \
+		include/ZoomableTableView.h \
+		include/SortFunctions.h \
+		include/EventItem.h \
+		include/OccurrenceItem.h \
+		include/MacroEvent.h \
+		include/NetworkNode.h \
+		include/ProgressBar.h \
+		include/EntitiesAttributesTable.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EntitiesAttributesTable.h -o moc_EntitiesAttributesTable.cpp
 
 moc_EntitiesFilter.cpp: include/RelationshipsDialog.h \
 		include/EntitiesFilter.h \
@@ -850,6 +878,8 @@ moc_EventGraphWidget.cpp: include/NodeLabel.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/EventGraphWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventGraphWidget.h -o moc_EventGraphWidget.cpp
 
@@ -916,9 +946,23 @@ moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/HierarchyGraphWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/HierarchyGraphWidget.h -o moc_HierarchyGraphWidget.cpp
+
+moc_IncidentsAttributesTable.cpp: include/RelationalTable.h \
+		include/SupportingFunctions.h \
+		include/ZoomableTableView.h \
+		include/SortFunctions.h \
+		include/EventItem.h \
+		include/OccurrenceItem.h \
+		include/MacroEvent.h \
+		include/NetworkNode.h \
+		include/ProgressBar.h \
+		include/IncidentsAttributesTable.h
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/IncidentsAttributesTable.h -o moc_IncidentsAttributesTable.cpp
 
 moc_JournalWidget.cpp: include/EventTableModel.h \
 		include/SupportingFunctions.h \
@@ -993,6 +1037,8 @@ moc_LinkagesWidget.cpp: include/Constants.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/LinkagesWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/LinkagesWidget.h -o moc_LinkagesWidget.cpp
@@ -1058,6 +1104,8 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/MainWindow.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
@@ -1161,6 +1209,8 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceLabel.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/OccurrenceGraphWidget.h
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/home/wouterdeveloper/Work-Related/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/5 -I/usr/include/x86_64-linux-gnu/c++/5 -I/usr/include/c++/5/backward -I/usr/lib/gcc/x86_64-linux-gnu/5/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/5/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/OccurrenceGraphWidget.h -o moc_OccurrenceGraphWidget.cpp
@@ -1344,7 +1394,9 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/JournalWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
-		include/RawRelationshipsTable.h
+		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 Arrow.o: src/Arrow.cpp include/Arrow.h \
@@ -1427,7 +1479,9 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/JournalWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
-		include/RawRelationshipsTable.h
+		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributesWidget.o src/AttributesWidget.cpp
 
 AttributeTreeFilter.o: src/AttributeTreeFilter.cpp include/AttributeTreeFilter.h
@@ -1507,6 +1561,8 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DataWidget.o src/DataWidget.cpp
 
@@ -1523,6 +1579,18 @@ DirectedEdge.o: src/DirectedEdge.cpp include/DirectedEdge.h \
 		include/NetworkNode.h \
 		include/SupportingFunctions.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DirectedEdge.o src/DirectedEdge.cpp
+
+EntitiesAttributesTable.o: src/EntitiesAttributesTable.cpp include/EntitiesAttributesTable.h \
+		include/RelationalTable.h \
+		include/SupportingFunctions.h \
+		include/ZoomableTableView.h \
+		include/SortFunctions.h \
+		include/EventItem.h \
+		include/OccurrenceItem.h \
+		include/MacroEvent.h \
+		include/NetworkNode.h \
+		include/ProgressBar.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EntitiesAttributesTable.o src/EntitiesAttributesTable.cpp
 
 EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/RelationshipsDialog.h \
@@ -1633,6 +1701,8 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventGraphWidget.o src/EventGraphWidget.cpp
 
@@ -1724,9 +1794,23 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h \
 		include/BandlessGraphicsView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HierarchyGraphWidget.o src/HierarchyGraphWidget.cpp
+
+IncidentsAttributesTable.o: src/IncidentsAttributesTable.cpp include/IncidentsAttributesTable.h \
+		include/RelationalTable.h \
+		include/SupportingFunctions.h \
+		include/ZoomableTableView.h \
+		include/SortFunctions.h \
+		include/EventItem.h \
+		include/OccurrenceItem.h \
+		include/MacroEvent.h \
+		include/NetworkNode.h \
+		include/ProgressBar.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o IncidentsAttributesTable.o src/IncidentsAttributesTable.cpp
 
 JournalWidget.o: src/JournalWidget.cpp include/JournalWidget.h \
 		include/EventTableModel.h \
@@ -1801,6 +1885,8 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinkagesWidget.o src/LinkagesWidget.cpp
 
@@ -1881,7 +1967,9 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/JournalWidget.h \
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
-		include/RawRelationshipsTable.h
+		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
 MergeRelationshipsDialog.o: src/MergeRelationshipsDialog.cpp include/MergeRelationshipsDialog.h \
@@ -2009,6 +2097,8 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/RawAttributesTable.h \
 		include/RelationalTable.h \
 		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
 		include/LineageColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OccurrenceGraphWidget.o src/OccurrenceGraphWidget.cpp
 
@@ -2181,6 +2271,9 @@ moc_DeselectableTreeView.o: moc_DeselectableTreeView.cpp
 moc_DeselectableTreeViewEntities.o: moc_DeselectableTreeViewEntities.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_DeselectableTreeViewEntities.o moc_DeselectableTreeViewEntities.cpp
 
+moc_EntitiesAttributesTable.o: moc_EntitiesAttributesTable.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EntitiesAttributesTable.o moc_EntitiesAttributesTable.cpp
+
 moc_EntitiesFilter.o: moc_EntitiesFilter.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EntitiesFilter.o moc_EntitiesFilter.cpp
 
@@ -2201,6 +2294,9 @@ moc_EventTableModel.o: moc_EventTableModel.cpp
 
 moc_HierarchyGraphWidget.o: moc_HierarchyGraphWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_HierarchyGraphWidget.o moc_HierarchyGraphWidget.cpp
+
+moc_IncidentsAttributesTable.o: moc_IncidentsAttributesTable.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_IncidentsAttributesTable.o moc_IncidentsAttributesTable.cpp
 
 moc_JournalWidget.o: moc_JournalWidget.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_JournalWidget.o moc_JournalWidget.cpp

@@ -23,6 +23,8 @@
 #include "HierarchyGraphWidget.h"
 #include "RawAttributesTable.h"
 #include "RawRelationshipsTable.h"
+#include "IncidentsAttributesTable.h"
+#include "EntitiesAttributesTable.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -49,6 +51,8 @@ private slots:
   void switchToHierarchyView(MacroEvent *selectedMacro);
   void switchToRawAttributesTableView();
   void switchToRawRelationshipsTableView();
+  void switchToIncidentsAttributesTableView();
+  void switchToEntitiesAttributesTableView();
   
   void importFromCsv();
   bool checkLineBreaks(std::string line);
@@ -67,6 +71,8 @@ private:
   QPointer<QWidget> hierarchyGraphWidget;
   QPointer<QWidget> rawAttributesTableWidget;
   QPointer<QWidget> rawRelationshipsTableWidget;
+  QPointer<QWidget> incidentsAttributesTableWidget;
+  QPointer<QWidget> entitiesAttributesTableWidget;
   
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menu;
@@ -90,6 +96,8 @@ private:
 
   QPointer<QAction> rawAttributesTableViewAct;
   QPointer<QAction> rawRelationshipsTableViewAct;
+  QPointer<QAction> incidentsAttributesTableViewAct;
+  QPointer<QAction> entitiesAttributesTableViewAct;
   
   QPointer<EventSequenceDatabase> esd;
 };

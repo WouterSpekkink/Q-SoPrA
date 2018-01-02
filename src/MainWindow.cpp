@@ -21,6 +21,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   hierarchyGraphWidget = new HierarchyGraphWidget(this);
   rawAttributesTableWidget = new RawAttributesTable(this);
   rawRelationshipsTableWidget = new RawRelationshipsTable(this);
+  incidentsAttributesTableWidget = new IncidentsAttributesTable(this);
+  entitiesAttributesTableWidget = new EntitiesAttributesTable(this);
   
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -55,6 +57,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(hierarchyGraphWidget); // 8
   stacked->addWidget(rawAttributesTableWidget); // 9
   stacked->addWidget(rawRelationshipsTableWidget); // 10
+  stacked->addWidget(incidentsAttributesTableWidget); // 11;
+  stacked->addWidget(entitiesAttributesTableWidget); // 12;
   
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
@@ -134,7 +138,18 @@ void MainWindow::createActions() {
 
   rawRelationshipsTableViewAct = new QAction(tr("&Relationships texts table"), this);
   rawRelationshipsTableViewAct->setStatusTip("Switch to relationships texts table");
-  connect(rawRelationshipsTableViewAct, SIGNAL(triggered()), this, SLOT(switchToRawRelationshipsTableView()));
+  connect(rawRelationshipsTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToRawRelationshipsTableView()));
+
+  incidentsAttributesTableViewAct = new QAction(tr("&Incidents-Attributes table"), this);
+  incidentsAttributesTableViewAct->setStatusTip("Switch to incidents-attributes table");
+  connect(incidentsAttributesTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToIncidentsAttributesTableView()));
+
+  entitiesAttributesTableViewAct = new QAction(tr("&Entities-Attributes table"), this);
+  entitiesAttributesTableViewAct->setStatusTip("Switch to entitie-attributes table");
+  connect(entitiesAttributesTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToEntitiesAttributesTableView()));
 
 }
 
@@ -160,6 +175,8 @@ void MainWindow::createMenus() {
   tableMenu = menu->addMenu("Tables");
   tableMenu->addAction(rawAttributesTableViewAct);
   tableMenu->addAction(rawRelationshipsTableViewAct);
+  tableMenu->addAction(incidentsAttributesTableViewAct);
+  tableMenu->addAction(entitiesAttributesTableViewAct);
   
   setMenuBar(menu);
 }
@@ -615,4 +632,18 @@ void MainWindow::switchToRawRelationshipsTableView() {
   RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(stacked->widget(10));
   rrt->updateTable();
   stacked->setCurrentWidget(rawRelationshipsTableWidget);
+}
+
+void MainWindow::switchToIncidentsAttributesTableView() {
+  // Still need to figure out what else needs to happen here.
+  IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(11));
+  iat->updateTable();
+  stacked->setCurrentWidget(incidentsAttributesTableWidget);
+}
+
+void MainWindow::switchToEntitiesAttributesTableView() {
+  // Still need to figure out what else needs to happen here.
+  EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
+  eat->updateTable();
+  stacked->setCurrentWidget(entitiesAttributesTableWidget);
 }
