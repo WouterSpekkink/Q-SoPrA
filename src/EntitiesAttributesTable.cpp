@@ -145,7 +145,7 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
     QListIterator<QString> it(entityList);
     while (it.hasNext()) {
       QString currentEntity = it.next();
-      fileOut << "," << currentEntity.toStdString();
+      fileOut << "," << doubleQuote(currentEntity).toStdString();
     }
     fileOut << "\n"; // we need a newline symbol at the end of the header.
     // Then we iterate through our lists and fetch values from the value map.
@@ -159,7 +159,7 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
     while (it2.hasNext()) {
       QString currentAttribute = it2.next();
       QListIterator<QString> it3(entityList);
-      fileOut << "\"" << currentAttribute.toStdString() << "\"";
+      fileOut << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
       while (it3.hasNext()) {
 	QString currentEntity = it3.next();
 	QList<QVector<QString>> values = valueMap.values(currentEntity);
@@ -172,7 +172,7 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
 	      if (currentPair[1] == "") {
 		fileOut << "," << "1";
 	      } else {
-		fileOut << "," << "\"" << currentPair[1].toStdString() << "\"";
+		fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
 	      }
 	    } else {
 	      fileOut << "," << "1";

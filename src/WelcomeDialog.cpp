@@ -2,7 +2,7 @@
 
 WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEsd) : QDialog(parent) {
   esd = submittedEsd;
-  exitStatus = 0;
+  exitStatus = 2;
   
   titleLabel = new QLabel("<h1>Welcome to Q-SoPrA</h1>", this);
   titleLabel->setAlignment(Qt::AlignHCenter);

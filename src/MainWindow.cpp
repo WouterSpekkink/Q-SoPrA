@@ -97,6 +97,10 @@ void MainWindow::createActions() {
   importAct->setStatusTip("Import existing data from csv file");
   connect(importAct, SIGNAL(triggered()), this, SLOT(importFromCsv()));
 
+  exportAct = new QAction(tr("&Export to csv"), this);
+  exportAct->setStatusTip("Export current data set to csv file");
+  connect(exportAct, SIGNAL(triggered()), this, SLOT(exportToCsv()));
+
   // Tool menu actions
   dataViewAct = new QAction(tr("&Data table"), this);
   dataViewAct->setStatusTip("Switch to data table");
@@ -134,7 +138,8 @@ void MainWindow::createActions() {
   // Table menu actions
   rawAttributesTableViewAct = new QAction(tr("&Attributes texts table"), this);
   rawAttributesTableViewAct->setStatusTip("Switch to attributes texts table");
-  connect(rawAttributesTableViewAct, SIGNAL(triggered()), this, SLOT(switchToRawAttributesTableView()));
+  connect(rawAttributesTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToRawAttributesTableView()));
 
   rawRelationshipsTableViewAct = new QAction(tr("&Relationships texts table"), this);
   rawRelationshipsTableViewAct->setStatusTip("Switch to relationships texts table");
@@ -150,7 +155,6 @@ void MainWindow::createActions() {
   entitiesAttributesTableViewAct->setStatusTip("Switch to entitie-attributes table");
   connect(entitiesAttributesTableViewAct, SIGNAL(triggered()),
 	  this, SLOT(switchToEntitiesAttributesTableView()));
-
 }
 
 void MainWindow::createMenus() {
@@ -158,6 +162,7 @@ void MainWindow::createMenus() {
 
   fileMenu = menu->addMenu("File");
   fileMenu->addAction(importAct);
+  fileMenu->addAction(exportAct);
   fileMenu->addAction(exitAct);
 
   toolMenu = menu->addMenu("Tools");
@@ -274,7 +279,15 @@ void MainWindow::importFromCsv() {
     } else { 
       // We iterate through the tokens and push them into the row vector.
       std::vector<std::string> row;
-      std::vector<std::string>::iterator it; 
+      std::vector<std::string>::iterator it;
+      if (tokens[0] == "" || tokens[1] == "" || tokens[4] == "") {
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	errorBox->setText(tr("<b>ERROR</b>"));
+	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	errorBox->exec();
+	delete errorBox;
+	return;
+      }
       for (it = tokens.begin(); it != tokens.end(); it++) {
 	row.push_back(*it);
       }
@@ -465,6 +478,42 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
   tokens->push_back(tempString);
 }
 
+void MainWindow::exportToCsv() {
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // We first write the header of the file.
+    fileOut << "Timing" << ","
+	    << "Description" << "," 
+	    << "Raw" << ","
+	    << "Comments" << ","
+	    << "Source" << "\n";
+    // Let us then just fetch the data from the current incidents table.
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT timestamp, description, raw, comment, source FROM incidents "
+		"ORDER BY ch_order ASC ");
+    while (query->next()) {
+      QString timing = doubleQuote(query->value(0).toString());
+      QString description = doubleQuote(query->value(1).toString());
+      QString raw = doubleQuote(query->value(2).toString());
+      QString comment = doubleQuote(query->value(3).toString());
+      QString source = doubleQuote(query->value(4).toString());
+      fileOut << "\"" << timing.toStdString() << "\"" << ","
+	      << "\"" << description.toStdString() << "\"" << ","
+	      << "\"" << raw.toStdString() << "\"" << ","
+	      << "\"" << comment.toStdString() << "\"" << ","
+	      << "\"" << source.toStdString() << "\"" << "\n";
+    }
+    // And that should be it!
+    fileOut.close();
+  }
+}
+
 void MainWindow::switchToDataView() {
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
@@ -646,4 +695,18 @@ void MainWindow::switchToEntitiesAttributesTableView() {
   EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
   eat->updateTable();
   stacked->setCurrentWidget(entitiesAttributesTableWidget);
+}
+
+void MainWindow::closeEvent(QCloseEvent *event) {
+  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->addButton(QMessageBox::Yes);
+  warningBox->addButton(QMessageBox::No);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Are you sure?</h2>");
+  warningBox->setInformativeText("Are you sure you want to exit the program?");
+  if (warningBox->exec() == QMessageBox::Yes) {
+    event->accept();
+  } else {
+    event->ignore();
+  } 
 }

@@ -4,5 +4,6 @@
 #include <QString>
 
 QString breakString(QString original);
+QString doubleQuote(QString original);
 
 #endif 

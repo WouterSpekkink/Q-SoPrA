@@ -160,7 +160,7 @@ void IncidentsAttributesTable::exportMatrix(bool valued) {
     while (it2.hasNext()) {
       QString currentAttribute = it2.next();
       QListIterator<int> it3(incidentList);
-      fileOut << "\"" << currentAttribute.toStdString() << "\"";
+      fileOut << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
       while (it3.hasNext()) {
 	int currentIncident = it3.next();
 	QList<QVector<QString>> values = valueMap.values(currentIncident);
@@ -173,7 +173,7 @@ void IncidentsAttributesTable::exportMatrix(bool valued) {
 	      if (currentPair[1] == "") {
 		fileOut << "," << "1";
 	      } else {
-		fileOut << "," << "\"" << currentPair[1].toStdString() << "\"";
+		fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
 	      }
 	    } else {
 	      fileOut << "," << "1";

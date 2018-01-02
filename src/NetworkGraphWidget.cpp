@@ -2683,10 +2683,10 @@ void NetworkGraphWidget::exportNodes() {
 	QString name = node->getName();
 	QString description = node->getDescription();
 	QString mode = node->getMode();
-	fileOut << "\"" << name.toStdString() << "\"" << ","
-		<< "\"" << name.toStdString() << "\"" << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << mode.toStdString() << "\"" << "\n";
+	fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(name).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(mode).toStdString() << "\"" << "\n";
       }
     }
     // And that should be it.
@@ -2718,11 +2718,11 @@ void NetworkGraphWidget::exportEdges() {
 	QString target = directed->endItem()->getName();
 	QString description = directed->getType();
 	QString comment = directed->getComment();
-	fileOut << "\"" << source.toStdString() << "\"" << ","
-		<< "\"" << target.toStdString() << "\"" << ","
+	fileOut << "\"" << doubleQuote(source).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(target).toStdString() << "\"" << ","
 		<< "Directed" << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << comment.toStdString() << "\"" << "\n";
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(comment).toStdString() << "\"" << "\n";
       }
     }
     // Then we iterate through the undirected edges second.
@@ -2734,11 +2734,11 @@ void NetworkGraphWidget::exportEdges() {
 	QString target = undirected->endItem()->getName();
 	QString description = undirected->getType();
 	QString comment = undirected->getComment();
-	fileOut << "\"" << source.toStdString() << "\"" << ","
-		<< "\"" << target.toStdString() << "\"" << ","
+	fileOut << "\"" << doubleQuote(source).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(target).toStdString() << "\"" << ","
 		<< "Undirected" << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << comment.toStdString() << "\"" << "\n";
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(comment).toStdString() << "\"" << "\n";
       }
     }
     // And that should be it!

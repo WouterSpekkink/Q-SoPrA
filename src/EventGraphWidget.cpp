@@ -3937,14 +3937,14 @@ void EventGraphWidget::exportTable() {
 	delete query;
 	fileOut << row << ","
 		<< order.toStdString() << ","
-		<< "\"" << timing.toStdString() << "\"" << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << raw.toStdString() << "\"" << ","
-		<< "\"" << comment.toStdString() << "\"" << ","
-		<< "\"" << type.toStdString() << "\"" << ","
-		<< "\"" << mode.toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(timing).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(raw).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(comment).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(type).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(mode).toStdString() << "\"" << ","
 		<< "NA" << ","
-		<< "\"" << source.toStdString() << "\""<< "\n";
+		<< "\"" << doubleQuote(source).toStdString() << "\""<< "\n";
       } else if (macro) {
 	QString description = macro->getDescription();
 	QString raw = "";
@@ -4005,14 +4005,14 @@ void EventGraphWidget::exportTable() {
 	}
 	fileOut << row << ","
 		<< "\"" << id.toStdString() << "\"" << ","
-		<< "\"" << duration.toStdString() << "\"" << ","
-		<< "\"" << description.toStdString() << "\"" ","
+		<< "\"" << doubleQuote(duration).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(description).toStdString() << "\"" ","
 		<< "" << ","
-		<< "\"" << comment.toStdString() << "\"" << ","
-		<< "\"" << type.toStdString() << "\"" << ","
-		<< "\"" << mode.toStdString() << "\"" << ","
-		<< "\"" << components.toStdString() << "\"" << ","
-		<< "\"" << source.toStdString() << "\"" << "\n";
+		<< "\"" << doubleQuote(comment).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(type).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(mode).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(components).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(source).toStdString() << "\"" << "\n";
       }
     }
     // And that should be it.
@@ -4082,11 +4082,11 @@ void EventGraphWidget::exportNodes() {
 	}
 	delete query;
 	fileOut << "i" << id << ","
-		<< label.toStdString() << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << comment.toStdString() << "\"" << ","
+		<< doubleQuote(label).toStdString() << ","
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(comment).toStdString() << "\"" << ","
 		<< "Incident" << ","
-		<< "\"" << mode.toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(mode).toStdString() << "\"" << ","
 		<< xCoord.toStdString() << ","
 		<< yCoord.toStdString() << "\n";
       } else if (macro) {
@@ -4107,11 +4107,11 @@ void EventGraphWidget::exportNodes() {
 	  type = "Semi-paths based";
 	}
 	fileOut << identifier.toStdString() << id << ","
-		<< label.toStdString() << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << comment.toStdString() << "\"" << ","
-		<< "\"" << type.toStdString() << "\"" << ","
-		<< "\"" << mode.toStdString() << "\"" << ","
+		<< doubleQuote(label).toStdString() << ","
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(comment).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(type).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(mode).toStdString() << "\"" << ","
 		<< xCoord.toStdString() << ","
 		<< yCoord.toStdString() << "\n";
       }
@@ -4178,11 +4178,11 @@ void EventGraphWidget::exportEdges() {
 	  }
 	  target = "i" + QString::number(eventEnd->getId());
 	}
-      	fileOut << source.toStdString() << ","
-		<< target.toStdString() << ","
+      	fileOut << doubleQuote(source).toStdString() << ","
+		<< doubleQuote(target).toStdString() << ","
 		<< "Directed" << ","
-		<< "\"" << description.toStdString() << "\"" << ","
-		<< "\"" << coder.toStdString() << "\"" << "\n";
+		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		<< "\"" << doubleQuote(coder).toStdString() << "\"" << "\n";
       }
     }
     // And that should be it!

@@ -43,6 +43,7 @@ private slots:
   void removeRow();
   void saveCurrent(const QModelIndex &index);
   void checkChange(const QModelIndex &topLeft, const QModelIndex &bottomRight);
+  void setButtons();
   
 private:
   QPointer<EventSequenceDatabase> esd;

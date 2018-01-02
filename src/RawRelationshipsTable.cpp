@@ -167,10 +167,10 @@ void RawRelationshipsTable::exportTable() {
       QString type = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
       QString incident = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
       QString text = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-      fileOut << "\"" << relationship.toStdString() << "\"" << ","
-	      << "\"" << type.toStdString() << "\"" << ","
+      fileOut << "\"" << doubleQuote(relationship).toStdString() << "\"" << ","
+	      << "\"" << doubleQuote(type).toStdString() << "\"" << ","
 	      << incident.toStdString() << ","
-	      << "\"" << text.toStdString() << "\"" << "\n";
+	      << "\"" << doubleQuote(text).toStdString() << "\"" << "\n";
     }
     // And that should be it!
     fileOut.close();

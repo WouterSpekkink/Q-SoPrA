@@ -159,9 +159,9 @@ void RawAttributesTable::exportTable() {
       QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
       QString incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
       QString text = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-      fileOut << "\"" << attribute.toStdString() << "\"" << ","
-	      << incident.toStdString() << ","
-	      << "\"" << text.toStdString() << "\"" << "\n";
+      fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+	      << doubleQuote(incident).toStdString() << ","
+	      << "\"" << doubleQuote(text).toStdString() << "\"" << "\n";
     }
     // And that should be it!
     fileOut.close();

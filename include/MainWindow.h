@@ -25,6 +25,7 @@
 #include "RawRelationshipsTable.h"
 #include "IncidentsAttributesTable.h"
 #include "EntitiesAttributesTable.h"
+#include "SupportingFunctions.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -55,8 +56,12 @@ private slots:
   void switchToEntitiesAttributesTableView();
   
   void importFromCsv();
+  void exportToCsv();
   bool checkLineBreaks(std::string line);
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
+
+protected:
+  void closeEvent(QCloseEvent *event);
   
 private:
   QPointer<QStackedWidget> stacked;
@@ -83,6 +88,7 @@ private:
   
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;
+  QPointer<QAction> exportAct;
 
   QPointer<QAction> dataViewAct;
   QPointer<QAction> attributeViewAct;

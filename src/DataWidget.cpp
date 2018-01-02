@@ -46,6 +46,15 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   moveDownButton = new QPushButton("Move down", this);
   duplicateRowButton = new QPushButton("Duplicate incident", this);
   removeRowButton = new QPushButton("Remove incident", this);
+
+  // We disable some buttons initially.
+  editRecordButton->setEnabled(false);
+  removeRowButton->setEnabled(false);
+  duplicateRowButton->setEnabled(false);
+  insertRecordBeforeButton->setEnabled(false);
+  moveUpButton->setEnabled(false);
+  insertRecordAfterButton->setEnabled(false);
+  moveDownButton->setEnabled(false);
   
   // We set the connections
   connect(appendRecordButton, SIGNAL(clicked()), this, SLOT(appendRecord()));
@@ -62,6 +71,9 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 	  this, SLOT(saveCurrent(const QModelIndex &)));
   connect(tableView->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
 	  this, SLOT(checkChange(const QModelIndex &, const QModelIndex &)));
+  connect(tableView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
   
   // Then we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -415,4 +427,34 @@ void DataWidget::checkChange(const QModelIndex &topLeft, const QModelIndex &bott
       }
     }
   }
+}
+
+void DataWidget::setButtons() {
+  if (tableView->currentIndex().isValid()) {
+    editRecordButton->setEnabled(true);
+    removeRowButton->setEnabled(true);
+    duplicateRowButton->setEnabled(true);
+    if (tableView->currentIndex().row() == 0) {
+      insertRecordBeforeButton->setEnabled(false);
+      moveUpButton->setEnabled(false);
+    } else {
+      insertRecordBeforeButton->setEnabled(true);
+      moveUpButton->setEnabled(true);;
+    }
+    if (tableView->currentIndex().row() == tableView->verticalHeader()->count() - 1) {
+      insertRecordAfterButton->setEnabled(false);
+      moveDownButton->setEnabled(false);
+    } else {
+      insertRecordAfterButton->setEnabled(true);
+      moveDownButton->setEnabled(true);
+    }
+  } else {
+    editRecordButton->setEnabled(false);
+    removeRowButton->setEnabled(false);
+    duplicateRowButton->setEnabled(false);
+    insertRecordBeforeButton->setEnabled(false);
+    moveUpButton->setEnabled(false);
+    insertRecordAfterButton->setEnabled(false);
+    moveDownButton->setEnabled(false);
+  }    
 }

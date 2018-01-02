@@ -999,7 +999,7 @@ void OccurrenceGraphWidget::exportMatrix() {
     QVectorIterator<QString> it3(headerRow);
     while (it3.hasNext()) {
       QString currentHeader = it3.next();
-      fileOut << "," << "\"" << currentHeader.toStdString() << "\"";
+      fileOut << "," << "\"" << doubleQuote(currentHeader).toStdString() << "\"";
     }
     fileOut << "\n"; // End the header with a newline symbol.
     // Then we write the other data.
@@ -1007,7 +1007,7 @@ void OccurrenceGraphWidget::exportMatrix() {
     QVectorIterator<QVector<int>> it4(matrix);
     while (it4.hasNext()) {
       QVector<int> currentRow = it4.next();
-      fileOut << headerRow[counter].toStdString(); // The first row should always be the attribute label.
+      fileOut << doubleQuote(headerRow[counter]).toStdString(); // The first row should always be the attribute label.
       counter++;
       QVectorIterator<int> it5(currentRow);
       while (it5.hasNext()) {
