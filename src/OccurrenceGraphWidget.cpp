@@ -72,6 +72,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
+  exportMatrixButton = new QPushButton(tr("Export matrix"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
@@ -103,6 +104,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
+  connect(exportMatrixButton, SIGNAL(clicked()), this, SLOT(exportMatrix()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
@@ -140,6 +142,9 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
+  QPointer<QFrame> sepLine = new QFrame();
+  sepLine->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine);
   graphicsControlsLayout->addWidget(upperRangeLabel);
   upperRangeLabel->setAlignment(Qt::AlignHCenter);
   QPointer<QHBoxLayout> upperRangeLayout = new QHBoxLayout;
@@ -152,7 +157,11 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   lowerRangeLayout->addWidget(lowerRangeDial);
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
+  QPointer<QFrame> sepLine2 = new QFrame();
+  sepLine2->setFrameShape(QFrame::HLine);
+  graphicsControlsLayout->addWidget(sepLine2);
   graphicsControlsLayout->addWidget(exportSvgButton);
+  graphicsControlsLayout->addWidget(exportMatrixButton);
   graphicsWidget->setMaximumWidth(175);
   graphicsWidget->setMinimumWidth(175);
   graphicsWidget->setLayout(graphicsControlsLayout);
@@ -946,6 +955,69 @@ void OccurrenceGraphWidget::exportSvg() {
     painter.begin(&gen);
     scene->render(&painter);
     painter.end();
+  }
+}
+
+void OccurrenceGraphWidget::exportMatrix() {
+  // First we make a matrix (in the form of a vector of vectors).
+  QVector<QVector<int>> matrix;
+  QVector<QString> headerRow;
+  for (int i = 0; i != attributeListWidget->rowCount(); i++) {
+    QVector<int> currentRow;
+    QString currentAttribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+    headerRow.push_back(currentAttribute);
+    for (int j = 0; j != attributeListWidget->rowCount(); j++) {
+      QString currentPartner = attributeListWidget->item(j,0)->data(Qt::DisplayRole).toString();
+      int count = 0;
+      QVectorIterator<OccurrenceItem*> it(occurrenceVector);
+      while (it.hasNext()) {
+	OccurrenceItem *first = it.next();
+	if (first->getAttribute() == currentAttribute) {
+	  QVectorIterator<OccurrenceItem*> it2(occurrenceVector);
+	  while (it2.hasNext()) {
+	    OccurrenceItem *second = it2.next();
+	    if (second->getAttribute() == currentPartner &&
+		first->scenePos().x() == second->scenePos().x()) {
+	      count++;
+	    }
+	  }
+	}
+      }
+      currentRow.push_back(count);
+    }
+    matrix.push_back(currentRow);
+  }
+  // Then we can create a file.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // We first write the header.
+    QVectorIterator<QString> it3(headerRow);
+    while (it3.hasNext()) {
+      QString currentHeader = it3.next();
+      fileOut << "," << "\"" << currentHeader.toStdString() << "\"";
+    }
+    fileOut << "\n"; // End the header with a newline symbol.
+    // Then we write the other data.
+    int counter = 0;
+    QVectorIterator<QVector<int>> it4(matrix);
+    while (it4.hasNext()) {
+      QVector<int> currentRow = it4.next();
+      fileOut << headerRow[counter].toStdString(); // The first row should always be the attribute label.
+      counter++;
+      QVectorIterator<int> it5(currentRow);
+      while (it5.hasNext()) {
+	int currentValue = it5.next();
+	fileOut << "," << currentValue;
+      }
+      fileOut << "\n"; // End each row with a newline symbol.
+    }
+    // And that should be it!
+    fileOut.close();
   }
 }
 

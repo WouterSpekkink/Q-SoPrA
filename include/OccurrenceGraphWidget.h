@@ -73,6 +73,7 @@ private slots:
   void setVisibility();
   void setRangeControls();
   void exportSvg();
+  void exportMatrix();
   void setChangeLabel();
   
   void processMoveItems(QGraphicsItem *item, QPointF pos);
@@ -114,6 +115,7 @@ private:
   QPointer<QPushButton> decreaseDistanceButton;
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> exportMatrixButton;
   
   QPointer<DeselectableListWidget> attributeListWidget;
 
