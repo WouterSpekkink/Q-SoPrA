@@ -15,6 +15,8 @@
 #include <fstream>
 #include "RelationalTable.h"
 #include "ZoomableTableView.h"
+#include "RelationshipTypeDialog.h"
+#include "RelationshipsWidget.h"
 
 class RawRelationshipsTable : public QWidget {
   Q_OBJECT
@@ -25,6 +27,8 @@ public:
   RawRelationshipsTable(QWidget *parent = 0);
   ~RawRelationshipsTable() {};
 
+  void setRelationshipsWidget(RelationshipsWidget *rw);
+						      
 private slots:
   void updateTable();
   void resetHeader(int header);
@@ -32,9 +36,12 @@ private slots:
   void changeFilter(const QString &text);
   void setFilterColumn();
   void removeText();
+  void editType();
   void exportTable();
   
 private:
+  RelationshipsWidget *relationshipsWidget;
+  
   QPointer<RelationalTable> relationshipsModel;
   QPointer<ZoomableTableView> tableView;
   QPointer<QSortFilterProxyModel> filter;
@@ -46,6 +53,7 @@ private:
 
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> exportTableButton;
+  QPointer<QPushButton> editTypeButton;
   
   QPointer<QComboBox> filterComboBox;
 };

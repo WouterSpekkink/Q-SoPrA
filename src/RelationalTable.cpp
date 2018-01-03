@@ -37,7 +37,7 @@ QVariant RelationalTable::data(const QModelIndex &index, int role) const {
       QString description = query->value(0).toString();
       QString toolTip = breakString(description);
       return toolTip;
-      delete query;      
+      delete query;
     } else {
       QString toolTip = breakString(original);
       return toolTip;

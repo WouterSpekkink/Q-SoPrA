@@ -7,21 +7,26 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   attributesModel->select();
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(1);
+  filter->setFilterKeyColumn(0);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-
-  // We set the incidents column to show the order variable.
+  
+  // We set a few columns to display the data a bit differently.
+  attributesModel->setRelation(0,
+			       QSqlRelation("attributes_to_incidents_sources", "id", "attribute"));
+  attributesModel->setRelation(1, QSqlRelation("incident_attributes", "name", "description")); 
   attributesModel->setRelation(2, QSqlRelation("incidents", "id", "ch_order")); 
   
   // Then we set how the data are displayed.
-  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
   attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Text"));
-  tableView->setColumnHidden(0, true);
+			       //  tableView->setColumnHidden(0, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
-  tableView->setColumnWidth(1, 300);
+  tableView->setColumnWidth(0, 200);
+  tableView->setColumnWidth(1, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);
@@ -36,10 +41,12 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 
   filterComboBox = new QComboBox(this);
   filterComboBox->addItem("Attributes");
+  filterComboBox->addItem("Descriptions");
   filterComboBox->addItem("Incidents");
   filterComboBox->addItem("Texts");
 
   removeTextButton = new QPushButton(tr("Remove selected"), this);
+  editAttributeButton = new QPushButton(tr("Edit attribute"), this);
   exportTableButton = new QPushButton(tr("Export visible table"), this);
 
   // Connecting the signals
@@ -52,6 +59,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setFilterColumn()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
+  connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   
   // We fetch and sort the data.
@@ -66,6 +74,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   filterLayout->addWidget(filterFieldLabel);
   filterLayout->addWidget(filterField);
   filterLayout->addWidget(removeTextButton);
+  filterLayout->addWidget(editAttributeButton);
   filterLayout->addWidget(exportTableButton);
   mainLayout->addLayout(filterLayout);
 
@@ -95,7 +104,9 @@ void RawAttributesTable::changeFilter(const QString &text) {
 
 void RawAttributesTable::setFilterColumn() {
   if (filterComboBox->currentText() == "Attributes") {
-    filter->setFilterKeyColumn(1);    
+    filter->setFilterKeyColumn(0);
+  } else if (filterComboBox->currentText() == "Descriptions") {
+    filter->setFilterKeyColumn(1);
   } else if (filterComboBox->currentText() == "Incidents") {
     filter->setFilterKeyColumn(2);
   } else if (filterComboBox->currentText() == "Texts") {
@@ -115,7 +126,7 @@ void RawAttributesTable::removeText() {
 				   "Are you sure you want to proceed?");
     if (warningBox->exec() == QMessageBox::Yes) {
       int row = tableView->currentIndex().row();
-      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
       QString order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT id FROM incidents "
@@ -125,7 +136,6 @@ void RawAttributesTable::removeText() {
       query->first();
       QString incident = query->value(0).toString();
       QString text = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
-    
       query->prepare("DELETE FROM attributes_to_incidents_sources "
 		     "WHERE attribute = :attribute "
 		     "AND incident = :incident AND source_text = :text");
@@ -140,10 +150,68 @@ void RawAttributesTable::removeText() {
   }
 }
 
+void RawAttributesTable::editAttribute() {
+  if (tableView->currentIndex().isValid()) {
+    int row = tableView->currentIndex().row();
+    QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+    query->bindValue(":name", attribute);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+    attributeDialog->submitName(attribute);
+    attributeDialog->setDescription(description);
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QString newName = attributeDialog->getName();
+      description = attributeDialog->getDescription();
+      query->prepare("UPDATE incident_attributes "
+		     "SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":newdescription", description);
+      query->bindValue(":oldname", attribute);
+      query->exec();
+      query->prepare("UPDATE incident_attributes "
+		     "SET father = :newname "
+		     "WHERE father = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", attribute);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", attribute);
+      query->exec();
+      query->prepare("UPDATE attributes_to_incidents_sources "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", attribute);
+      query->exec();
+      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		     "SET attribute = :newname "
+		     "WHERE attribute = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", attribute);
+      query->exec();
+      eventGraph->resetTree();
+      attributesWidget->resetTree();
+    }
+    delete query;
+    delete attributeDialog;
+    updateTable();
+  }
+}
+
 void RawAttributesTable::exportTable() {
   updateTable();
   // We let the user set the file name and location.
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"",
+						  tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) {
     if(!fileName.endsWith(".csv")) {
       fileName.append(".csv");
@@ -152,18 +220,29 @@ void RawAttributesTable::exportTable() {
     std::ofstream fileOut(fileName.toStdString().c_str());
     // We first write the header.
     fileOut << "Attribute" << ","
+	    << "Description" << ","
 	    << "Incident" << ","
 	    << "Text" << "\n";
     // Then we iterate through the visible table.
     for (int i = 0; i != tableView->verticalHeader()->count(); i++) {
-      QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
+      QString description = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
       QString incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
       QString text = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
       fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
 	      << doubleQuote(incident).toStdString() << ","
 	      << "\"" << doubleQuote(text).toStdString() << "\"" << "\n";
     }
     // And that should be it!
     fileOut.close();
   }
+}
+
+void RawAttributesTable::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void RawAttributesTable::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
 }

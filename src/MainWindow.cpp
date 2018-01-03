@@ -33,6 +33,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(hierarchyGraphWidget);
+  RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(rawAttributesTableWidget);
+  RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(rawRelationshipsTableWidget);
   
   dw->setEventGraph(egw);
   dw->setOccurrenceGraph(ogw);
@@ -45,6 +47,9 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   hgw->setAttributesWidget(aw);
   hgw->setEventGraph(egw);
   rw->setNetworkGraph(ngw);
+  rat->setEventGraph(egw);
+  rat->setAttributesWidget(aw);
+  rrt->setRelationshipsWidget(rw);
   
   stacked->addWidget(dataWidget); // 0
   stacked->addWidget(attributesWidget); // 1

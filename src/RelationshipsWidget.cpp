@@ -593,6 +593,15 @@ void RelationshipsWidget::editType() {
 	query->bindValue(":newtype", newName);
 	query->bindValue(":oldtype", currentName);
 	query->exec();
+	query->prepare("UPDATE relationships_to_incidents SET type = :newtype WHERE type = :oldtype");
+	query->bindValue(":newtype", newName);
+	query->bindValue(":oldtype", currentName);
+	query->exec();
+	query->prepare("UPDATE relationships_to_incidents_sources "
+		       "SET type = :newtype WHERE type = :oldtype");
+	query->bindValue(":newtype", newName);
+	query->bindValue(":oldtype", currentName);
+	query->exec();
 	this->setCursor(Qt::WaitCursor);
 	retrieveData();
 	this->setCursor(Qt::ArrowCursor);

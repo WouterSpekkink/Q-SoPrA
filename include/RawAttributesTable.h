@@ -15,6 +15,11 @@
 #include <fstream>
 #include "RelationalTable.h"
 #include "ZoomableTableView.h"
+#include "AttributeDialog.h"
+#include "EventGraphWidget.h"
+#include "AttributesWidget.h"
+
+class AttributesWidget;
 
 class RawAttributesTable : public QWidget {
   Q_OBJECT
@@ -25,6 +30,9 @@ public:
   RawAttributesTable(QWidget *parent = 0);
   ~RawAttributesTable() {};
 
+  void setEventGraph(EventGraphWidget *egw);
+  void setAttributesWidget(AttributesWidget *aw);					   
+
 private slots:
   void updateTable();
   void resetHeader(int header);
@@ -32,9 +40,13 @@ private slots:
   void changeFilter(const QString &text);
   void setFilterColumn();
   void removeText();
+  void editAttribute();
   void exportTable();
   
 private:
+  EventGraphWidget *eventGraph;
+  AttributesWidget *attributesWidget;
+  
   QPointer<RelationalTable> attributesModel;
   QPointer<ZoomableTableView> tableView;
   QPointer<QSortFilterProxyModel> filter;
@@ -46,6 +58,7 @@ private:
 
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> exportTableButton;
+  QPointer<QPushButton> editAttributeButton;
   
   QPointer<QComboBox> filterComboBox;
 };

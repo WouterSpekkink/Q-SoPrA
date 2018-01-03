@@ -32,6 +32,8 @@ public:
   RelationshipsWidget(QWidget *parent=0);
   ~RelationshipsWidget() {};
 
+  void resetTree();
+			   
 private slots:
   void retrieveData();
   void setCommentBool();
@@ -70,7 +72,6 @@ private slots:
   void sourceText(const QString &relationship, const QString &type, const int &incident);
   void highlightText();
   void setTree();
-  void resetTree();
   void boldSelected(QAbstractItemModel *model, QString name = "",
 		    QString type = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model,
