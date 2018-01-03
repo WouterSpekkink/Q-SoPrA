@@ -41,7 +41,8 @@ public:
 private slots:
   void createActions();
   void createMenus();
-
+  void cleanUpMenuBar();
+  
   void switchToDataView();
   void switchToAttributeView();
   void switchToRelationshipView();
@@ -93,6 +94,7 @@ private:
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
+  QPointer<QMenu> transferMenu;
   
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;

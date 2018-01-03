@@ -82,7 +82,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   // Functions to create the menu bar.
   createActions();
-  menuBar = new QMenuBar(this);
   createMenus();
 
   // Final stuff before showing the default widget (dataWidget).
@@ -192,7 +191,8 @@ void MainWindow::createActions() {
 	  this, SLOT(importEntityAttributes()));
 }
 
-void MainWindow::createMenus() {  
+void MainWindow::createMenus() {
+  menuBar = new QMenuBar(this);
   fileMenu = menuBar->addMenu("File");
   fileMenu->addAction(importAct);
   fileMenu->addAction(exportAct);
@@ -216,14 +216,14 @@ void MainWindow::createMenus() {
   tableMenu->addAction(incidentsAttributesTableViewAct);
   tableMenu->addAction(entitiesAttributesTableViewAct);
 
-  tableMenu = menuBar->addMenu("Transfer");
-  tableMenu->addAction(exportIncidentAttributesAct);
-  tableMenu->addAction(importIncidentAttributesAct);
-  tableMenu->addAction(exportRelTypesAct);
-  tableMenu->addAction(importRelTypesAct);
-  tableMenu->addAction(exportEntityAttributesAct);
-  tableMenu->addAction(importEntityAttributesAct);
-  
+  transferMenu = menuBar->addMenu("Transfer");
+  transferMenu->addAction(exportIncidentAttributesAct);
+  transferMenu->addAction(importIncidentAttributesAct);
+  transferMenu->addAction(exportRelTypesAct);
+  transferMenu->addAction(importRelTypesAct);
+  transferMenu->addAction(exportEntityAttributesAct);
+  transferMenu->addAction(importEntityAttributesAct);
+
   setMenuBar(menuBar);
 }
 
@@ -701,8 +701,7 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->setEvents(egw->getEventItems());
   hgw->setMacros(egw->getMacros());
   hgw->setOrigin(selectedMacro);
-  menuBar->clear();
-  menusDestroyed = true;
+  cleanUpMenuBar();
   menuBar->setEnabled(false);
   stacked->setCurrentWidget(hierarchyGraphWidget);
 }
@@ -1210,3 +1209,18 @@ void MainWindow::importEntityAttributes() {
   delete loadProgress; // Memory management
 }
 
+void MainWindow::cleanUpMenuBar() {
+  setMenuBar(NULL);
+  menuBar->clear();
+  fileMenu->clear();
+  delete fileMenu;
+  toolMenu->clear();
+  delete toolMenu;
+  graphMenu->clear();
+  delete graphMenu;
+  tableMenu->clear();
+  delete tableMenu;
+  transferMenu->clear();
+  delete transferMenu;
+  menusDestroyed = true;
+}
