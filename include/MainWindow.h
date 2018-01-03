@@ -41,7 +41,7 @@ public:
 private slots:
   void createActions();
   void createMenus();
-  void cleanUpMenuBar();
+  void showMenus(bool status);
   
   void switchToDataView();
   void switchToAttributeView();
@@ -123,8 +123,6 @@ private:
   QPointer<QAction> importEntityAttributesAct;
   
   QPointer<EventSequenceDatabase> esd;
-
-  bool menusDestroyed;
 };
 
 #endif

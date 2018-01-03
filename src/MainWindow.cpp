@@ -4,9 +4,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   // We make sure that the sql database is set.
   esd = submittedEsd;
 
-  // We need to set menuDestroyed to false by default.
-  menusDestroyed = false;
-
   // We set the windows size to the maximum possible.
   QPointer<QDesktopWidget> desktop = new QDesktopWidget;
   this->resize(desktop->screenGeometry(this).size());
@@ -648,10 +645,7 @@ void MainWindow::switchToEventGraphView() {
   egw->getLinkageDetails();
   egw->checkCongruency();
   const QModelIndex index;
-  if (menusDestroyed) {
-    createMenus();
-    menusDestroyed = false;
-  }
+  showMenus(true);
   menuBar->setEnabled(true);
   stacked->setCurrentWidget(eventGraphWidget);
 }
@@ -701,7 +695,7 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->setEvents(egw->getEventItems());
   hgw->setMacros(egw->getMacros());
   hgw->setOrigin(selectedMacro);
-  cleanUpMenuBar();
+  showMenus(false);
   menuBar->setEnabled(false);
   stacked->setCurrentWidget(hierarchyGraphWidget);
 }
@@ -1209,18 +1203,11 @@ void MainWindow::importEntityAttributes() {
   delete loadProgress; // Memory management
 }
 
-void MainWindow::cleanUpMenuBar() {
-  setMenuBar(NULL);
-  menuBar->clear();
-  fileMenu->clear();
-  delete fileMenu;
-  toolMenu->clear();
-  delete toolMenu;
-  graphMenu->clear();
-  delete graphMenu;
-  tableMenu->clear();
-  delete tableMenu;
-  transferMenu->clear();
-  delete transferMenu;
-  menusDestroyed = true;
+void MainWindow::showMenus(bool status) {
+  fileMenu->menuAction()->setVisible(status);
+  toolMenu->menuAction()->setVisible(status);
+  graphMenu->menuAction()->setVisible(status);
+  tableMenu->menuAction()->setVisible(status);
+  tableMenu->menuAction()->setVisible(status);
+  transferMenu->menuAction()->setVisible(status);
 }
