@@ -13,8 +13,11 @@
 #include <QHeaderView>
 #include <QItemSelection>
 #include <QMessageBox>
+#include <QFileDialog>
+#include <fstream>
 #include "EventTableModel.h"
 #include "ZoomableTableView.h"
+#include "SupportingFunctions.h"
 
 class JournalWidget : public QWidget {
   friend class MainWindow;
@@ -31,6 +34,7 @@ private slots:
   void saveChanges();
   void setData();
   void removeEntry();
+  void exportJournal();
   void setButtons();
   void resetHeader(int header);
   bool eventFilter(QObject *object, QEvent *event);
@@ -48,6 +52,7 @@ private:
   QPointer<QPushButton> addEntryButton;
   QPointer<QPushButton> saveChangesButton;
   QPointer<QPushButton> removeEntryButton;
+  QPointer<QPushButton> exportJournalButton;
 };
 
 #endif

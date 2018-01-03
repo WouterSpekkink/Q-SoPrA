@@ -24,12 +24,13 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   logField->setEnabled(false);
   logField->installEventFilter(this);
   
-  addEntryButton = new QPushButton("New entry", this);
-  saveChangesButton = new QPushButton("Save changes", this);
+  addEntryButton = new QPushButton(tr("New entry"), this);
+  saveChangesButton = new QPushButton(tr("Save changes"), this);
   saveChangesButton->setEnabled(false);
-  removeEntryButton = new QPushButton("Remove selected entry", this);
-  saveChangesButton->setEnabled(true);
-
+  removeEntryButton = new QPushButton(tr("Remove selected entry"), this);
+  removeEntryButton->setEnabled(false);
+  exportJournalButton = new QPushButton(tr("Export"), this);
+  
   connect(logField, SIGNAL(textChanged()), this, SLOT(setButtons()));
   connect(addEntryButton, SIGNAL(clicked()), this, SLOT(addEntry()));
   connect(saveChangesButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
@@ -38,7 +39,8 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setData()));
   connect(tableView->verticalHeader(),
-	  SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));    
+	  SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
+  connect(exportJournalButton, SIGNAL(clicked()), this, SLOT(exportJournal()));
   
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
@@ -52,6 +54,7 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   buttonLayout->addWidget(addEntryButton);
   buttonLayout->addWidget(removeEntryButton);
   buttonLayout->addWidget(saveChangesButton);
+  buttonLayout->addWidget(exportJournalButton);
   rightLayout->addLayout(buttonLayout);
   mainLayout->addLayout(rightLayout);
 
@@ -154,4 +157,31 @@ bool JournalWidget::eventFilter(QObject *object, QEvent *event) {
     }
   }
   return false;
+}
+
+void JournalWidget::exportJournal() {
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // We first write the header of the file.
+    fileOut << "Time" << ","
+	    << "Entry" << "\n";
+    // And then we fetch the journal entries.
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT time, entry FROM journal");
+    while (query->next()) {
+      QString time = query->value(0).toString();
+      QString entry = query->value(1).toString();
+      fileOut << "\"" << time.toStdString() << "\"" << ","
+	      << "\"" << doubleQuote(entry).toStdString() << "\"" << "\n";
+    }
+    delete query;
+    // And that's it.
+    fileOut.close();
+  }
 }

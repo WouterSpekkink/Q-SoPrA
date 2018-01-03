@@ -88,7 +88,7 @@ private:
   QPointer<QWidget> entitiesAttributesTableWidget;
   
   QPointer<ProgressBar> loadProgress;
-  QPointer<QMenuBar> menu;
+  QPointer<QMenuBar> menuBar;
   QPointer<QMenu> fileMenu;
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
@@ -121,6 +121,8 @@ private:
   QPointer<QAction> importEntityAttributesAct;
   
   QPointer<EventSequenceDatabase> esd;
+
+  bool menusDestroyed;
 };
 
 #endif

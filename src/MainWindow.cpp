@@ -4,6 +4,9 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   // We make sure that the sql database is set.
   esd = submittedEsd;
 
+  // We need to set menuDestroyed to false by default.
+  menusDestroyed = false;
+
   // We set the windows size to the maximum possible.
   QPointer<QDesktopWidget> desktop = new QDesktopWidget;
   this->resize(desktop->screenGeometry(this).size());
@@ -79,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   // Functions to create the menu bar.
   createActions();
+  menuBar = new QMenuBar(this);
   createMenus();
 
   // Final stuff before showing the default widget (dataWidget).
@@ -188,33 +192,31 @@ void MainWindow::createActions() {
 	  this, SLOT(importEntityAttributes()));
 }
 
-void MainWindow::createMenus() {
-  menu = new QMenuBar(this);
-
-  fileMenu = menu->addMenu("File");
+void MainWindow::createMenus() {  
+  fileMenu = menuBar->addMenu("File");
   fileMenu->addAction(importAct);
   fileMenu->addAction(exportAct);
   fileMenu->addAction(exitAct);
 
-  toolMenu = menu->addMenu("Coding Tools");
+  toolMenu = menuBar->addMenu("Coding");
   toolMenu->addAction(dataViewAct);
   toolMenu->addAction(attributeViewAct);
   toolMenu->addAction(relationshipViewAct);
   toolMenu->addAction(linkageViewAct);
   toolMenu->addAction(journalViewAct);
 
-  graphMenu = menu->addMenu("Graphs");
+  graphMenu = menuBar->addMenu("Graphs");
   graphMenu->addAction(eventGraphViewAct);
   graphMenu->addAction(networkGraphViewAct);
   graphMenu->addAction(occurrenceGraphViewAct);
 
-  tableMenu = menu->addMenu("Tables");
+  tableMenu = menuBar->addMenu("Tables");
   tableMenu->addAction(rawAttributesTableViewAct);
   tableMenu->addAction(rawRelationshipsTableViewAct);
   tableMenu->addAction(incidentsAttributesTableViewAct);
   tableMenu->addAction(entitiesAttributesTableViewAct);
 
-  tableMenu = menu->addMenu("Code Transfer");
+  tableMenu = menuBar->addMenu("Transfer");
   tableMenu->addAction(exportIncidentAttributesAct);
   tableMenu->addAction(importIncidentAttributesAct);
   tableMenu->addAction(exportRelTypesAct);
@@ -222,7 +224,7 @@ void MainWindow::createMenus() {
   tableMenu->addAction(exportEntityAttributesAct);
   tableMenu->addAction(importEntityAttributesAct);
   
-  setMenuBar(menu);
+  setMenuBar(menuBar);
 }
 
 /* 
@@ -569,7 +571,6 @@ void MainWindow::switchToDataView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   egw->setComment();
-  menuBar()->setEnabled(true);
   stacked->setCurrentWidget(dataWidget);
 }
 
@@ -585,7 +586,6 @@ void MainWindow::switchToAttributeView() {
   aw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
-  menuBar()->setEnabled(true);
   stacked->setCurrentWidget(attributesWidget);
 }
 
@@ -601,7 +601,6 @@ void MainWindow::switchToRelationshipView() {
   rw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
-  menuBar()->setEnabled(true);
   stacked->setCurrentWidget(relationshipsWidget);
 }
 
@@ -616,7 +615,6 @@ void MainWindow::switchToLinkageView() {
   lw->retrieveData();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
-  menuBar()->setEnabled(true);
   stacked->setCurrentWidget(linkagesWidget);
 }
 
@@ -631,7 +629,6 @@ void MainWindow::switchToJournalView() {
   lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
-  menuBar()->setEnabled(true);
   JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
   jw->tableView->clearSelection();
   jw->logField->setText("");
@@ -651,7 +648,11 @@ void MainWindow::switchToEventGraphView() {
   egw->getLinkageDetails();
   egw->checkCongruency();
   const QModelIndex index;
-  menuBar()->setEnabled(true);
+  if (menusDestroyed) {
+    createMenus();
+    menusDestroyed = false;
+  }
+  menuBar->setEnabled(true);
   stacked->setCurrentWidget(eventGraphWidget);
 }
 
@@ -667,7 +668,6 @@ void MainWindow::switchToNetworkGraphView() {
   egw->setComment();
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
   ngw->checkCongruency();
-  menuBar()->setEnabled(true);
   stacked->setCurrentWidget(networkGraphWidget);
 }
 
@@ -681,7 +681,6 @@ void MainWindow::switchToOccurrenceGraphView() {
   lw->setLinkageComment();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
-  menuBar()->setEnabled(true);
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
   ogw->checkCongruency();
   stacked->setCurrentWidget(occurrenceGraphWidget);
@@ -702,7 +701,9 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->setEvents(egw->getEventItems());
   hgw->setMacros(egw->getMacros());
   hgw->setOrigin(selectedMacro);
-  menuBar()->setEnabled(false);
+  menuBar->clear();
+  menusDestroyed = true;
+  menuBar->setEnabled(false);
   stacked->setCurrentWidget(hierarchyGraphWidget);
 }
 
@@ -776,6 +777,8 @@ void MainWindow::exportIncidentAttributes() {
 	      << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
     }
     delete query;
+    // And that is it.
+    fileOut.close();
   }
 }
 
@@ -926,6 +929,8 @@ void MainWindow::exportRelTypes() {
 	      << "\"" << doubleQuote(description).toStdString() << "\"" << "\n";
     }
     delete query;
+    // And that is it.
+    fileOut.close();
   }
 }
 
@@ -1083,6 +1088,8 @@ void MainWindow::exportEntityAttributes() {
 	      << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
     }
     delete query;
+    // And that is it.
+    fileOut.close();
   }
 }
 
@@ -1202,3 +1209,4 @@ void MainWindow::importEntityAttributes() {
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
 }
+
