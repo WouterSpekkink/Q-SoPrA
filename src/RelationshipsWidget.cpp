@@ -115,21 +115,26 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   connect(markButton, SIGNAL(clicked()), this, SLOT(toggleMark()));
   connect(previousMarkedButton, SIGNAL(clicked()), this, SLOT(previousMarked()));
   connect(nextMarkedButton, SIGNAL(clicked()), this, SLOT(nextMarked()));
-  connect(descriptionFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setDescriptionFilter(const QString &)));
+  connect(descriptionFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setDescriptionFilter(const QString &)));
   connect(descriptionPreviousButton, SIGNAL(clicked()), this, SLOT(previousDescription()));
   connect(descriptionNextButton, SIGNAL(clicked()), this, SLOT(nextDescription()));
-  connect(rawFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setRawFilter(const QString &)));
+  connect(rawFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setRawFilter(const QString &)));
   connect(rawPreviousButton, SIGNAL(clicked()), this, SLOT(previousRaw()));
   connect(rawNextButton, SIGNAL(clicked()), this, SLOT(nextRaw()));
-  connect(commentFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentFilter(const QString &)));
+  connect(commentFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setCommentFilter(const QString &)));
   connect(commentPreviousButton, SIGNAL(clicked()), this, SLOT(previousComment()));
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
   connect(nextCodedButton, SIGNAL(clicked()), this, SLOT(nextCoded()));
-  connect(relationshipFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(changeFilter(const QString &)));
-  connect(relationshipCommentField, SIGNAL(textChanged(const QString &)), this, SLOT(setCommentButton()));
-  connect(submitRelationshipCommentButton, SIGNAL(clicked()), this, SLOT(submitRelationshipComment()));
-  
+  connect(relationshipFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(changeFilter(const QString &)));
+  connect(relationshipCommentField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setCommentButton()));
+  connect(submitRelationshipCommentButton, SIGNAL(clicked()),
+	  this, SLOT(submitRelationshipComment()));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
@@ -137,9 +142,15 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
-  connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(highlightText()));
-  connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(getComment()));
-  connect(relationshipsTreeView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(setButtons()));
+  connect(relationshipsTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(highlightText()));
+  connect(relationshipsTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(getComment()));
+  connect(relationshipsTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
   connect(relationshipsTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
   connect(editRelationshipButton, SIGNAL(clicked()), this, SLOT(editRelationship()));
@@ -300,54 +311,57 @@ void RelationshipsWidget::retrieveData() {
   indexLabel->setText(indexText);
 
   QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark FROM incidents WHERE ch_order = :order");
+  query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
+		  "FROM incidents WHERE ch_order = :order");
   query2->bindValue(":order", order);
   query2->exec();
   query2->first();
-  int id = query2->value(0).toInt();
-  QString timeStamp = query2->value(1).toString();
-  QString source = query2->value(2).toString();
-  QString description = query2->value(3).toString();
-  QString raw = query2->value(4).toString();
-  QString comment = query2->value(5).toString();
-  int mark = query2->value(6).toInt();
+  if (!(query2->isNull(0))) {
+    int id = query2->value(0).toInt();
+    QString timeStamp = query2->value(1).toString();
+    QString source = query2->value(2).toString();
+    QString description = query2->value(3).toString();
+    QString raw = query2->value(4).toString();
+    QString comment = query2->value(5).toString();
+    int mark = query2->value(6).toInt();
 
-  timeStampField->setText(timeStamp);
-  sourceField->setText(source);
-  descriptionField->setText(description);
-  rawField->setText(raw);
-  commentField->blockSignals(true);
-  commentField->setText(comment);
-  commentField->blockSignals(false);
-  if (mark == 0) {
-    markLabel->setText("");
-  } else {
-    markLabel->setText("MARKED");
-  }
-  resetFont(relationshipsTree);
-  query2->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
-  while (query2->next()) {
-    QString relationship = query2->value(0).toString();
-    QString type = query2->value(1).toString();
-    int incident = query2->value(2).toInt();
-    if (incident == id) {
-      boldSelected(relationshipsTree, relationship, type);
+    timeStampField->setText(timeStamp);
+    sourceField->setText(source);
+    descriptionField->setText(description);
+    rawField->setText(raw);
+    commentField->blockSignals(true);
+    commentField->setText(comment);
+    commentField->blockSignals(false);
+    if (mark == 0) {
+      markLabel->setText("");
+    } else {
+      markLabel->setText("MARKED");
     }
+    resetFont(relationshipsTree);
+    query2->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+    while (query2->next()) {
+      QString relationship = query2->value(0).toString();
+      QString type = query2->value(1).toString();
+      int incident = query2->value(2).toInt();
+      if (incident == id) {
+	boldSelected(relationshipsTree, relationship, type);
+      }
+    }
+    relationshipsTreeView->setModel(treeFilter);
+    relationshipsTreeView->resetSelection();
+    relationshipsTree->sort(0, Qt::AscendingOrder);
+    relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+    QTextCharFormat format;
+    format.setFontWeight(QFont::Normal);
+    format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+    rawField->selectAll();
+    rawField->textCursor().mergeCharFormat(format);
+    QTextCursor cursor = rawField->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    rawField->setTextCursor(cursor);
+    delete query;
+    delete query2;
   }
-  relationshipsTreeView->setModel(treeFilter);
-  relationshipsTreeView->resetSelection();
-  relationshipsTree->sort(0, Qt::AscendingOrder);
-  relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
-  QTextCharFormat format;
-  format.setFontWeight(QFont::Normal);
-  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-  rawField->selectAll();
-  rawField->textCursor().mergeCharFormat(format);
-  QTextCursor cursor = rawField->textCursor();
-  cursor.movePosition(QTextCursor::Start);
-  rawField->setTextCursor(cursor);
-  delete query;
-  delete query2;
 }
 
 void RelationshipsWidget::sourceText(const QString &relationship, const QString &type, const int &incident) {
@@ -1570,12 +1584,16 @@ void RelationshipsWidget::setNetworkGraph(NetworkGraphWidget *ngw) {
   networkGraph = ngw;
 }
 
+void RelationshipsWidget::resetTree() {
+  delete relationshipsTree;
+  setTree();
+}
+
 /*
   The event filter originally captures only mousewheel events,
   but I am keeping the function generalised in order to keep 
   flexibility for possible future events that I want to filter out.
  */
-
 bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event) {
   if (event->type() == QEvent::Wheel) {
     QWheelEvent *wheelEvent = (QWheelEvent*) event;
@@ -1613,3 +1631,4 @@ bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event) {
   }
   return false;
 }
+

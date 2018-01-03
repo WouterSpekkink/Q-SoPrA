@@ -28,13 +28,17 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   saveChangesButton = new QPushButton("Save changes", this);
   saveChangesButton->setEnabled(false);
   removeEntryButton = new QPushButton("Remove selected entry", this);
+  saveChangesButton->setEnabled(true);
 
-  connect(logField, SIGNAL(textChanged()), this, SLOT(setButton()));
+  connect(logField, SIGNAL(textChanged()), this, SLOT(setButtons()));
   connect(addEntryButton, SIGNAL(clicked()), this, SLOT(addEntry()));
   connect(saveChangesButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
   connect(removeEntryButton, SIGNAL(clicked()), this, SLOT(removeEntry()));
-  connect(tableView->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)), this, SLOT(setData()));
-  connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));    
+  connect(tableView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setData()));
+  connect(tableView->verticalHeader(),
+	  SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));    
   
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
@@ -54,12 +58,17 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   setLayout(mainLayout);
 }
 
-void JournalWidget::setButton() {
+void JournalWidget::setButtons() {
   if (tableView->currentIndex().isValid()) {
     saveChangesButton->setEnabled(true);
   }
 }
 
+void JournalWidget::resetButtons() {
+  saveChangesButton->setEnabled(false);
+  removeEntryButton->setEnabled(false);
+  logField->setEnabled(false);
+}
 
 void JournalWidget::saveChanges() {
   if (tableView->currentIndex().isValid()) {
@@ -83,6 +92,7 @@ void JournalWidget::setData() {
     removeEntryButton->setEnabled(true);
   } else {
     removeEntryButton->setEnabled(false);
+    saveChangesButton->setEnabled(false);
     logField->setEnabled(false);
   }
 }

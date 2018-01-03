@@ -26,6 +26,7 @@
 #include "IncidentsAttributesTable.h"
 #include "EntitiesAttributesTable.h"
 #include "SupportingFunctions.h"
+#include "Constants.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -54,6 +55,13 @@ private slots:
   void switchToRawRelationshipsTableView();
   void switchToIncidentsAttributesTableView();
   void switchToEntitiesAttributesTableView();
+
+  void exportIncidentAttributes();
+  void importIncidentAttributes();
+  void exportRelTypes();
+  void importRelTypes();
+  void exportEntityAttributes();
+  void importEntityAttributes();
   
   void importFromCsv();
   void exportToCsv();
@@ -104,6 +112,13 @@ private:
   QPointer<QAction> rawRelationshipsTableViewAct;
   QPointer<QAction> incidentsAttributesTableViewAct;
   QPointer<QAction> entitiesAttributesTableViewAct;
+
+  QPointer<QAction> exportIncidentAttributesAct;
+  QPointer<QAction> importIncidentAttributesAct;
+  QPointer<QAction> exportRelTypesAct;
+  QPointer<QAction> importRelTypesAct;
+  QPointer<QAction> exportEntityAttributesAct;
+  QPointer<QAction> importEntityAttributesAct;
   
   QPointer<EventSequenceDatabase> esd;
 };

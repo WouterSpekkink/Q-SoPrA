@@ -24,12 +24,14 @@ public:
   JournalWidget(QWidget *parent = 0);
   ~JournalWidget() {};
 
+  void resetButtons();
+	     
 private slots:
   void addEntry();
   void saveChanges();
   void setData();
   void removeEntry();
-  void setButton();
+  void setButtons();
   void resetHeader(int header);
   bool eventFilter(QObject *object, QEvent *event);
   

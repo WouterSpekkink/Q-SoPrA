@@ -1171,7 +1171,8 @@ void AttributesWidget::getValue() {
     query2->first();
     int id = 0;
     id = query2->value(0).toInt();    
-    query2->prepare("SELECT attribute, value FROM attributes_to_incidents WHERE incident = :id AND attribute =:att");
+    query2->prepare("SELECT attribute, value FROM attributes_to_incidents "
+		    "WHERE incident = :id AND attribute =:att");
     query2->bindValue(":id", id);
     query2->bindValue(":att", attribute);
     query2->exec();
@@ -1206,57 +1207,59 @@ void AttributesWidget::retrieveData() {
     incidentsModel->fetchMore();
   int total = incidentsModel->rowCount();
 
-  QString indexText = "<b>Incident (" + QString::number(order) + " / " + QString::number(total) + ")<b>";
+  QString indexText = "<b>Incident (" + QString::number(order) + " / " +
+    QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
-
   QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark FROM incidents WHERE ch_order = :order");
+  query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark FROM "
+		  "incidents WHERE ch_order = :order");
   query2->bindValue(":order", order);
   query2->exec();
   query2->first();
-  int id = query2->value(0).toInt();
-  QString timeStamp = query2->value(1).toString();
-  QString source = query2->value(2).toString();
-  QString description = query2->value(3).toString();
-  QString raw = query2->value(4).toString();
-  QString comment = query2->value(5).toString();
-  int mark = query2->value(6).toInt();
-  timeStampField->setText(timeStamp);
-  sourceField->setText(source);
-  descriptionField->setText(description);
-  rawField->setText(raw);
-  commentField->blockSignals(true);
-  commentField->setText(comment);
-  commentField->blockSignals(false);
-  if (mark == 0) {
-    markLabel->setText("");
-  } else {
-    markLabel->setText("MARKED");
-  }
-
-  resetFont(attributesTree);
-  query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
-  while (query2->next()) {
-    QString attribute = query2->value(0).toString();
-    int incident = query2->value(1).toInt();
-    if (incident == id) {
-      boldSelected(attributesTree, attribute);
+  if (!(query2->isNull(0))) {
+    int id = query2->value(0).toInt();
+    QString timeStamp = query2->value(1).toString();
+    QString source = query2->value(2).toString();
+    QString description = query2->value(3).toString();
+    QString raw = query2->value(4).toString();
+    QString comment = query2->value(5).toString();
+    int mark = query2->value(6).toInt();
+    timeStampField->setText(timeStamp);
+    sourceField->setText(source);
+    descriptionField->setText(description);
+    rawField->setText(raw);
+    commentField->blockSignals(true);
+    commentField->setText(comment);
+    commentField->blockSignals(false);
+    if (mark == 0) {
+      markLabel->setText("");
+    } else {
+      markLabel->setText("MARKED");
     }
+    resetFont(attributesTree);
+    query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+    while (query2->next()) {
+      QString attribute = query2->value(0).toString();
+      int incident = query2->value(1).toInt();
+      if (incident == id) {
+	boldSelected(attributesTree, attribute);
+      }
+    }
+    attributesTreeView->setModel(treeFilter);
+    attributesTreeView->resetSelection();
+    attributesTree->sort(0, Qt::AscendingOrder);
+    attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+    QTextCharFormat format;
+    format.setFontWeight(QFont::Normal);
+    format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+    rawField->selectAll();
+    rawField->textCursor().mergeCharFormat(format);
+    QTextCursor cursor = rawField->textCursor();
+    cursor.movePosition(QTextCursor::Start);
+    rawField->setTextCursor(cursor);
+    delete query;
+    delete query2;
   }
-  attributesTreeView->setModel(treeFilter);
-  attributesTreeView->resetSelection();
-  attributesTree->sort(0, Qt::AscendingOrder);
-  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  QTextCharFormat format;
-  format.setFontWeight(QFont::Normal);
-  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-  rawField->selectAll();
-  rawField->textCursor().mergeCharFormat(format);
-  QTextCursor cursor = rawField->textCursor();
-  cursor.movePosition(QTextCursor::Start);
-  rawField->setTextCursor(cursor);
-  delete query;
-  delete query2;
 }
 
 void AttributesWidget::expandTree() {

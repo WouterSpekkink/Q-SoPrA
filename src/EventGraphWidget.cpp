@@ -5723,8 +5723,6 @@ void EventGraphWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
 }
 
 void EventGraphWidget::resetTree() {
-  scene->clearSelection();
-  retrieveData();
   delete attributesTree;
   setTree();
 }
