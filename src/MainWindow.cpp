@@ -201,7 +201,7 @@ void MainWindow::createMenus() {
   fileMenu->addAction(exportAct);
   fileMenu->addAction(exitAct);
 
-  toolMenu = menuBar->addMenu("Coding");
+  toolMenu = menuBar->addMenu("Tools");
   toolMenu->addAction(dataViewAct);
   toolMenu->addAction(attributeViewAct);
   toolMenu->addAction(relationshipViewAct);

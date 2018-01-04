@@ -221,6 +221,8 @@ void OccurrenceGraphWidget::checkCongruency() {
 	}
 	if (!found) {
 	  incongruencyLabel->setText("Incongruency detected");
+	  qApp->restoreOverrideCursor();
+	  qApp->processEvents();
 	  return;
 	}
 	query->prepare("SELECT ch_order FROM incidents "
@@ -230,9 +232,13 @@ void OccurrenceGraphWidget::checkCongruency() {
 	query->first();
 	if (query->isNull(0)) {
 	  incongruencyLabel->setText("Incongruency detected");
+	  qApp->restoreOverrideCursor();
+	  qApp->processEvents();
 	  return;
 	} else if (query->value(0).toInt() != order) {
 	  incongruencyLabel->setText("Incongruency detected");
+	  qApp->restoreOverrideCursor();
+	  qApp->processEvents();
 	  return;
 	}
       }
@@ -257,6 +263,8 @@ void OccurrenceGraphWidget::checkCongruency() {
 	}
 	if (!found) {
 	  incongruencyLabel->setText("Incongruency detected");
+	  qApp->restoreOverrideCursor();
+	  qApp->processEvents();
 	  return;
 	}
       }

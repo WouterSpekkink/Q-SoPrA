@@ -434,18 +434,16 @@ void DataWidget::setButtons() {
     editRecordButton->setEnabled(true);
     removeRowButton->setEnabled(true);
     duplicateRowButton->setEnabled(true);
+    insertRecordBeforeButton->setEnabled(true);
+    insertRecordAfterButton->setEnabled(true);
     if (tableView->currentIndex().row() == 0) {
-      insertRecordBeforeButton->setEnabled(false);
       moveUpButton->setEnabled(false);
     } else {
-      insertRecordBeforeButton->setEnabled(true);
       moveUpButton->setEnabled(true);;
     }
     if (tableView->currentIndex().row() == tableView->verticalHeader()->count() - 1) {
-      insertRecordAfterButton->setEnabled(false);
       moveDownButton->setEnabled(false);
     } else {
-      insertRecordAfterButton->setEnabled(true);
       moveDownButton->setEnabled(true);
     }
   } else {
