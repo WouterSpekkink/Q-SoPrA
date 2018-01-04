@@ -35,6 +35,9 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
 
+  // We first sort by attribute
+  attributesModel->sort(0, Qt::AscendingOrder);
+  
   // We add the controls.
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
   filterFieldLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -84,8 +87,6 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 }
 
 void RawAttributesTable::updateTable() {
-  // We sort by attribute
-  attributesModel->sort(1, Qt::AscendingOrder);
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }
@@ -93,15 +94,18 @@ void RawAttributesTable::updateTable() {
 
 void RawAttributesTable::resetHeader(int header) {
   tableView->verticalHeader()->resizeSection(header, 30);
+  updateTable();
 }
 
 void RawAttributesTable::sortHeader(int header) {
   attributesModel->sort(header, Qt::AscendingOrder);
+  updateTable();
 }
 
 void RawAttributesTable::changeFilter(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive);
   filter->setFilterRegExp(regExp);
+  updateTable();
 }
 
 void RawAttributesTable::setFilterColumn() {

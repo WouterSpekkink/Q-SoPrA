@@ -36,6 +36,9 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
 
+  // We first sort by type
+  relationshipsModel->sort(0, Qt::AscendingOrder);
+  
   // We add the controls.
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
   filterFieldLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -92,8 +95,6 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
 }
 
 void RawRelationshipsTable::updateTable() {
-  // We sort by relationship
-  relationshipsModel->sort(1, Qt::AscendingOrder);
   while (relationshipsModel->canFetchMore()) {
     relationshipsModel->fetchMore();
   }
@@ -101,15 +102,18 @@ void RawRelationshipsTable::updateTable() {
 
 void RawRelationshipsTable::resetHeader(int header) {
   tableView->verticalHeader()->resizeSection(header, 30);
+  updateTable();
 }
 
 void RawRelationshipsTable::sortHeader(int header) {
   relationshipsModel->sort(header, Qt::AscendingOrder);
+  updateTable();
 }
 
 void RawRelationshipsTable::changeFilter(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive);
   filter->setFilterRegExp(regExp);
+  updateTable();
 }
 
 void RawRelationshipsTable::setFilterColumn() {
