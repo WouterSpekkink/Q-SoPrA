@@ -35,15 +35,9 @@ QString breakString(QString original) {
 */
 QString doubleQuote(QString original) {
   QString copy = original;
-  for (QString::size_type i = 0; i != copy.length();) {
+  for (QString::size_type i = 0; i != copy.length(); i++) {
     if (copy[i] == '"') {
-      copy.insert(i, '"');
-      i++;
-      if (i != copy.length() - 1) {
-	i++;
-      }
-    } else {
-      i++;
+      copy[i] = '\"';
     }
   }
   return copy;

@@ -23,8 +23,10 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
   attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Text"));
-			       //  tableView->setColumnHidden(0, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
+  tableView->horizontalHeader()->setSectionsMovable(true);
+  tableView->horizontalHeader()->swapSections(0, 2);
+  tableView->horizontalHeader()->swapSections(1, 2);
   tableView->setColumnWidth(0, 200);
   tableView->setColumnWidth(1, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
@@ -40,9 +42,9 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
+  filterComboBox->addItem("Incidents");
   filterComboBox->addItem("Attributes");
   filterComboBox->addItem("Descriptions");
-  filterComboBox->addItem("Incidents");
   filterComboBox->addItem("Texts");
 
   removeTextButton = new QPushButton(tr("Remove selected"), this);
@@ -219,9 +221,9 @@ void RawAttributesTable::exportTable() {
     // And we create a file outstream.  
     std::ofstream fileOut(fileName.toStdString().c_str());
     // We first write the header.
-    fileOut << "Attribute" << ","
+    fileOut << "Incident" << ","
+	    << "Attribute" << ","
 	    << "Description" << ","
-	    << "Incident" << ","
 	    << "Text" << "\n";
     // Then we iterate through the visible table.
     for (int i = 0; i != tableView->verticalHeader()->count(); i++) {
@@ -229,9 +231,9 @@ void RawAttributesTable::exportTable() {
       QString description = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
       QString incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
       QString text = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-      fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+      fileOut << incident.toStdString() << ","
+	      << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
 	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-	      << doubleQuote(incident).toStdString() << ","
 	      << "\"" << doubleQuote(text).toStdString() << "\"" << "\n";
     }
     // And that should be it!

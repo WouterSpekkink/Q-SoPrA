@@ -17,6 +17,7 @@
 #include "ZoomableTableView.h"
 #include "RelationshipTypeDialog.h"
 #include "RelationshipsWidget.h"
+#include "ComboBoxDialog.h"
 
 class RawRelationshipsTable : public QWidget {
   Q_OBJECT
@@ -28,19 +29,23 @@ public:
   ~RawRelationshipsTable() {};
 
   void setRelationshipsWidget(RelationshipsWidget *rw);
+  void setNetworkGraph(NetworkGraphWidget *ngw);
 						      
 private slots:
-  void updateTable();
+  void updateTable();  
   void resetHeader(int header);
   void sortHeader(int header);
   void changeFilter(const QString &text);
   void setFilterColumn();
   void removeText();
   void editType();
+  void switchType();
+  void editRelationship();
   void exportTable();
   
 private:
   RelationshipsWidget *relationshipsWidget;
+  NetworkGraphWidget *networkGraph;
   
   QPointer<RelationalTable> relationshipsModel;
   QPointer<ZoomableTableView> tableView;
@@ -54,6 +59,8 @@ private:
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> exportTableButton;
   QPointer<QPushButton> editTypeButton;
+  QPointer<QPushButton> switchTypeButton;
+  QPointer<QPushButton> editRelationshipButton;
   
   QPointer<QComboBox> filterComboBox;
 };

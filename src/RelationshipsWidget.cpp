@@ -908,35 +908,21 @@ void RelationshipsWidget::editRelationship() {
 	query->exec();
 	query->exec("SELECT relationships_record FROM save_data");
 	query->first();
-	int order = 0;
-	order = query->value(0).toInt();
-	query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
-	query->bindValue(":order", order);
+	query->prepare("UPDATE relationships_to_incidents "
+			"SET relationship = :newName "
+			"WHERE name = :oldName AND type = :type");
+	query->bindValue(":newName", name);
+	query->bindValue(":oldName", currentRelationship);
+	query->bindValue(":type", currentType);
 	query->exec();
-	query->first();
-	int id = 0;
-	if (!(query->isNull(0))) {
-	  id = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("UPDATE relationships_to_incidents "
-			  "SET relationship = :newName "
-			  "WHERE name = :oldName AND type = :type AND incident = :id");
-	  query2->bindValue(":newName", name);
-	  query2->bindValue(":oldName", currentRelationship);
-	  query2->bindValue(":type", currentType);
-	  query2->bindValue(":id", id);
-	  query2->exec();
-	  query2->prepare("UPDATE relationships_to_incidents_sources "
-			  "SET relationship = :newName "
-			  "WHERE name = :oldName AND type = :type AND incident = :id");
-	  query2->bindValue(":newName", name);
-	  query2->bindValue(":oldName", currentRelationship);
-	  query2->bindValue(":type", currentType);
-	  query2->bindValue(":id", id);
-	  query2->exec();
-	  delete query2;
-	  networkGraph->checkCongruency();
-	}
+	query->prepare("UPDATE relationships_to_incidents_sources "
+			"SET relationship = :newName "
+			"WHERE name = :oldName AND type = :type");
+	query->bindValue(":newName", name);
+	query->bindValue(":oldName", currentRelationship);
+	query->bindValue(":type", currentType);
+	query->exec();
+	networkGraph->checkCongruency();
 	currentItem->setData(name, Qt::DisplayRole);
       }
       if (relationshipsDialog->getEntityEdited() == 1) {

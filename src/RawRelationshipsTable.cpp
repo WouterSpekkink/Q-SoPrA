@@ -24,6 +24,9 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
   relationshipsModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Incident"));
   relationshipsModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Text"));
   tableView->horizontalHeader()->setStretchLastSection(true);
+  tableView->horizontalHeader()->setSectionsMovable(true);
+  tableView->horizontalHeader()->swapSections(3, 0);
+  tableView->horizontalHeader()->swapSections(3, 2);
   tableView->setColumnWidth(1, 100);
   tableView->setColumnWidth(1, 400);
   tableView->setColumnWidth(2, 600);
@@ -48,6 +51,8 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
 
   removeTextButton = new QPushButton(tr("Remove selected"), this);
   editTypeButton = new QPushButton(tr("Edit relationship type"), this);
+  switchTypeButton = new QPushButton(tr("Switch relationship type"), this);
+  editRelationshipButton = new QPushButton(tr("Edit relationship"), this);
   exportTableButton = new QPushButton(tr("Export visible table"), this);
 
   // Connecting the signals
@@ -61,6 +66,8 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
 	  this, SLOT(setFilterColumn()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
+  connect(switchTypeButton, SIGNAL(clicked()), this, SLOT(switchType()));
+  connect(editRelationshipButton, SIGNAL(clicked()), this, SLOT(editRelationship()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   
   // We fetch and sort the data.
@@ -76,6 +83,8 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
   filterLayout->addWidget(filterField);
   filterLayout->addWidget(removeTextButton);
   filterLayout->addWidget(editTypeButton);
+  filterLayout->addWidget(switchTypeButton);
+  filterLayout->addWidget(editRelationshipButton);
   filterLayout->addWidget(exportTableButton);
   mainLayout->addLayout(filterLayout);
 
@@ -166,10 +175,10 @@ void RawRelationshipsTable::exportTable() {
     // And we create a file outstream.  
     std::ofstream fileOut(fileName.toStdString().c_str());
     // We first write the header.
-    fileOut << "Type" << ","
+    fileOut << "Incident" << ","
 	    << "Relationship" << ","
+	    << "Type" << ","
 	    << "Description" << ","
-	    << "Incident" << ","
 	    << "Text" << "\n";
     // Then we iterate through the visible table.
     for (int i = 0; i != tableView->verticalHeader()->count(); i++) {
@@ -178,10 +187,10 @@ void RawRelationshipsTable::exportTable() {
       QString description = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
       QString incident = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
       QString text = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-      fileOut << "\"" << doubleQuote(type).toStdString() << "\"" << ","
+      fileOut << incident.toStdString() << ","
 	      << "\"" << doubleQuote(relationship).toStdString() << "\"" << ","
+	      << "\"" << doubleQuote(type).toStdString() << "\"" << ","
 	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-	      << incident.toStdString() << ","
 	      << "\"" << doubleQuote(text).toStdString() << "\"" << "\n";
     }
     // And that should be it!
@@ -237,6 +246,118 @@ void RawRelationshipsTable::editType() {
   }
 }
 
+void RawRelationshipsTable::switchType() {
+  if (tableView->currentIndex().isValid()) {
+    int row = tableView->currentIndex().row();
+    QString type = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
+    QString relationship = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+    QString incident = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+    QPointer<ComboBoxDialog> comboBoxDialog = new ComboBoxDialog(this);
+    comboBoxDialog->exec();
+    if (comboBoxDialog->getExitStatus() == 0) {
+      QString newType = comboBoxDialog->getType();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE entity_relationships "
+		     "SET type = :newType "
+		     "WHERE type = :oldType AND name = :relationship");
+      query->bindValue(":newType", newType);
+      query->bindValue(":oldType", type);
+      query->bindValue(":relationship", relationship);
+      query->exec();
+      query->prepare("UPDATE relationships_to_incidents "
+		     "SET type = :newType "
+		     "WHERE type = :oldType AND incident = :incident "
+		     "AND relationship = :relationship");
+      query->bindValue(":newType", newType);
+      query->bindValue(":oldType", type);
+      query->bindValue(":incident", incident);
+      query->bindValue(":relationship", relationship);
+      query->exec();
+      query->prepare("UPDATE relationships_to_incidents_sources "
+		     "SET type = :newType "
+		     "WHERE type = :oldType AND incident = :incident "
+		     "AND relationship = :relationship");
+      query->bindValue(":newType", newType);
+      query->bindValue(":oldType", type);
+      query->bindValue(":incident", incident);
+      query->bindValue(":relationship", relationship);
+      query->exec();
+    }
+    delete comboBoxDialog;
+    networkGraph->checkCongruency();
+    relationshipsWidget->resetTree();
+    updateTable();
+  }
+}
+
+void RawRelationshipsTable::editRelationship() {
+  if (tableView->currentIndex().isValid()) {
+    int row = tableView->currentIndex().row();
+    QString type = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
+    QString relationship = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT directedness, description FROM relationship_types WHERE name = :name");
+    query->bindValue(":name", type);
+    query->exec();
+    query->first();
+    QString directedness = query->value(0).toString();
+    QString description = query->value(1).toString();
+    query->prepare("SELECT source, target FROM entity_relationships WHERE name = :name");
+    query->bindValue(":name", relationship);
+    query->exec();
+    query->first();
+    QString leftEntity = query->value(0).toString();
+    QString rightEntity = query->value(1).toString();
+    QPointer<RelationshipsDialog> relationshipsDialog = new RelationshipsDialog(this);
+    relationshipsDialog->submitType(type);
+    relationshipsDialog->submitDescription(description);
+    relationshipsDialog->submitDirectedness(directedness);
+    relationshipsDialog->submitLeftEntity(leftEntity);
+    relationshipsDialog->submitRightEntity(rightEntity);
+    relationshipsDialog->submitName(relationship);
+    relationshipsDialog->exec();
+    if (relationshipsDialog->getExitStatus() == 0) {
+      QString name = relationshipsDialog->getName();
+      QString leftEntity = relationshipsDialog->getLeftEntity();
+      QString rightEntity = relationshipsDialog->getRightEntity();
+      query->prepare("UPDATE entity_relationships "
+		     "SET name = :name, source = :leftEntity, target = :rightEntity, type = :type "
+		     "WHERE name = :oldName");
+      query->bindValue(":name", name);
+      query->bindValue(":leftEntity", leftEntity);
+      query->bindValue(":rightEntity", rightEntity);
+      query->bindValue(":type", type);
+      query->bindValue(":oldName", relationship);
+      query->exec();
+      query->prepare("UPDATE relationships_to_incidents "
+		     "SET relationship = :newName "
+		     "WHERE name = :oldName AND type = :type");
+      query->bindValue(":newName", name);
+      query->bindValue(":oldName", relationship);
+      query->bindValue(":type", type);
+      query->exec();
+      query->prepare("UPDATE relationships_to_incidents_sources "
+		     "SET relationship = :newName "
+		     "WHERE name = :oldName AND type = :type");
+      query->bindValue(":newName", name);
+      query->bindValue(":oldName", relationship);
+      query->bindValue(":type", type);
+      query->exec();
+      networkGraph->checkCongruency();
+    }
+    if (relationshipsDialog->getEntityEdited() == 1) {
+      relationshipsWidget->resetTree();
+    }
+    delete relationshipsDialog;
+    delete query;
+  }
+  networkGraph->checkCongruency();
+}
+
 void RawRelationshipsTable::setRelationshipsWidget(RelationshipsWidget *rw) {
   relationshipsWidget = rw;
+}
+
+void RawRelationshipsTable::setNetworkGraph(NetworkGraphWidget *ngw) {
+  networkGraph = ngw;
 }
