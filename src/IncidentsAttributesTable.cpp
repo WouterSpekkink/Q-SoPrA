@@ -39,6 +39,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   filterComboBox->addItem("Incidents");
   filterComboBox->addItem("Values");
 
+  editValueButton = new QPushButton(tr("Edit value"), this);
   exportNormalMatrixButton = new QPushButton(tr("Export normal matrix"), this);
   exportValuedMatrixButton = new QPushButton(tr("Export valued matrix"), this);
 
@@ -51,6 +52,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
 	  this, SLOT(sortHeader(int)));
   connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setFilterColumn()));
+  connect(editValueButton, SIGNAL(clicked()), this, SLOT(editValue()));
   connect(exportNormalMatrixButton, SIGNAL(clicked()), this, SLOT(exportNormalMatrix()));
   connect(exportValuedMatrixButton, SIGNAL(clicked()), this, SLOT(exportValuedMatrix()));
   
@@ -65,6 +67,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   filterLayout->addWidget(filterComboBox);
   filterLayout->addWidget(filterFieldLabel);
   filterLayout->addWidget(filterField);
+  filterLayout->addWidget(editValueButton);
   filterLayout->addWidget(exportNormalMatrixButton);
   filterLayout->addWidget(exportValuedMatrixButton);
   mainLayout->addLayout(filterLayout);
@@ -100,6 +103,38 @@ void IncidentsAttributesTable::setFilterColumn() {
     filter->setFilterKeyColumn(2);
   } else if (filterComboBox->currentText() == "Values") {
     filter->setFilterKeyColumn(3);
+  }
+}
+
+void IncidentsAttributesTable::editValue() {
+  if (tableView->currentIndex().isValid()) {
+    int row = tableView->currentIndex().row();
+    QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+    int order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toInt();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    int incident = query->value(0).toInt();
+    QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+    QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
+    simpleTextDialog->submitText(value);
+    simpleTextDialog->setLabel("<b>Change value:</b>");
+    simpleTextDialog->setWindowTitle("Edit value");
+    simpleTextDialog->exec();
+    if (simpleTextDialog->getExitStatus() == 0) {
+      QString newValue = simpleTextDialog->getText();
+      query->prepare("UPDATE attributes_to_incidents SET value = :newValue "
+		     "WHERE value = :oldValue AND attribute = :attribute AND incident = :incident");
+      query->bindValue(":newValue", newValue);
+      query->bindValue(":oldValue", value);
+      query->bindValue(":attribute", attribute);
+      query->bindValue(":incident", incident);
+      query->exec();
+      updateTable();
+    }
+    delete query;
   }
 }
 

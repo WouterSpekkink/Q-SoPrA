@@ -17,6 +17,7 @@
 #include "ZoomableTableView.h"
 #include "SortFunctions.h"
 #include "ProgressBar.h"
+#include "SimpleTextDialog.h"
 
 class EntitiesAttributesTable : public QWidget {
   Q_OBJECT
@@ -33,6 +34,7 @@ private slots:
   void sortHeader(int header);
   void changeFilter(const QString &text);
   void setFilterColumn();
+  void editValue();
   void exportNormalMatrix();
   void exportValuedMatrix();
   void exportMatrix(bool valued);
@@ -47,6 +49,7 @@ private:
 
   QPointer<QLineEdit> filterField;
 
+  QPointer<QPushButton> editValueButton;
   QPointer<QPushButton> exportNormalMatrixButton;
   QPointer<QPushButton> exportValuedMatrixButton;
   

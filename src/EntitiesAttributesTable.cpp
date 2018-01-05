@@ -38,6 +38,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   filterComboBox->addItem("Entities");
   filterComboBox->addItem("Values");
 
+  editValueButton = new QPushButton(tr("Edit value"), this);
   exportNormalMatrixButton = new QPushButton(tr("Export normal matrix"), this);
   exportValuedMatrixButton = new QPushButton(tr("Export valued matrix"), this);
 
@@ -50,6 +51,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
 	  this, SLOT(sortHeader(int)));
   connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setFilterColumn()));
+  connect(editValueButton, SIGNAL(clicked()), this, SLOT(editValue()));
   connect(exportNormalMatrixButton, SIGNAL(clicked()), this, SLOT(exportNormalMatrix()));
   connect(exportValuedMatrixButton, SIGNAL(clicked()), this, SLOT(exportValuedMatrix()));
   
@@ -64,6 +66,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   filterLayout->addWidget(filterComboBox);
   filterLayout->addWidget(filterFieldLabel);
   filterLayout->addWidget(filterField);
+  filterLayout->addWidget(editValueButton);
   filterLayout->addWidget(exportNormalMatrixButton);
   filterLayout->addWidget(exportValuedMatrixButton);
   mainLayout->addLayout(filterLayout);
@@ -99,6 +102,33 @@ void EntitiesAttributesTable::setFilterColumn() {
     filter->setFilterKeyColumn(2);
   } else if (filterComboBox->currentText() == "Values") {
     filter->setFilterKeyColumn(3);
+  }
+}
+
+void EntitiesAttributesTable::editValue() {
+  if (tableView->currentIndex().isValid()) {
+    int row = tableView->currentIndex().row();
+    QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+    QString entity = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
+    QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+    QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
+    simpleTextDialog->submitText(value);
+    simpleTextDialog->setLabel("<b>Change value:</b>");
+    simpleTextDialog->setWindowTitle("Edit value");
+    simpleTextDialog->exec();
+    if (simpleTextDialog->getExitStatus() == 0) {
+      QSqlQuery *query = new QSqlQuery;
+      QString newValue = simpleTextDialog->getText();
+      query->prepare("UPDATE attributes_to_entities SET value = :newValue "
+		     "WHERE value = :oldValue AND attribute = :attribute AND entity = :entity");
+      query->bindValue(":newValue", newValue);
+      query->bindValue(":oldValue", value);
+      query->bindValue(":attribute", attribute);
+      query->bindValue(":entity", entity);
+      query->exec();
+      updateTable();
+      delete query;
+    }
   }
 }
 
