@@ -59,6 +59,9 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   // We fetch and sort the data.
   updateTable();
 
+  // We first sort by attribute
+  attributesModel->sort(1, Qt::AscendingOrder);
+
   // And we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
@@ -76,8 +79,6 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
 }
 
 void IncidentsAttributesTable::updateTable() {
-  // We sort by attribute
-  attributesModel->sort(1, Qt::AscendingOrder);
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }

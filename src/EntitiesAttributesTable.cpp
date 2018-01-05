@@ -26,7 +26,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
-
+  
   // We add the controls.
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
   filterFieldLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -58,6 +58,9 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   // We fetch and sort the data.
   updateTable();
 
+  // We first sort by attribute
+  attributesModel->sort(1, Qt::AscendingOrder);
+
   // And we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
@@ -75,8 +78,6 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
 }
 
 void EntitiesAttributesTable::updateTable() {
-  // We sort by attribute
-  attributesModel->sort(1, Qt::AscendingOrder);
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }
@@ -209,7 +210,7 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
 	    }
 	  }
 	}
-	if (!found) {
+	if (!found) { 
 	  fileOut << "," << "0";
 	}
       }
