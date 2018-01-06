@@ -268,7 +268,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailDescriptionLayoutRight->addWidget(tailDescriptionPreviousButton);
   tailDescriptionPreviousButton->setMaximumWidth(tailDescriptionPreviousButton->sizeHint().width());
   tailDescriptionLayoutRight->addWidget(tailDescriptionFilterField);
-  tailDescriptionFilterField->setFixedWidth(250);
+  tailDescriptionFilterField->setFixedWidth(100);
   tailDescriptionLayoutRight->addWidget(tailDescriptionNextButton);
   tailDescriptionNextButton->setMaximumWidth(tailDescriptionNextButton->sizeHint().width());
   tailDescriptionLayout->addLayout(tailDescriptionLayoutRight);
@@ -284,7 +284,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailRawLayoutRight->addWidget(tailRawPreviousButton);
   tailRawPreviousButton->setMaximumWidth(tailRawPreviousButton->sizeHint().width());
   tailRawLayoutRight->addWidget(tailRawFilterField);
-  tailRawFilterField->setFixedWidth(250);
+  tailRawFilterField->setFixedWidth(100);
   tailRawLayoutRight->addWidget(tailRawNextButton);
   tailRawNextButton->setMaximumWidth(tailRawNextButton->sizeHint().width());
   tailRawLayout->addLayout(tailRawLayoutRight);
@@ -300,7 +300,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailCommentLayoutRight->addWidget(tailCommentPreviousButton);
   tailCommentPreviousButton->setMaximumWidth(tailCommentPreviousButton->sizeHint().width());
   tailCommentLayoutRight->addWidget(tailCommentFilterField);
-  tailCommentFilterField->setFixedWidth(250);
+  tailCommentFilterField->setFixedWidth(100);
   tailCommentLayoutRight->addWidget(tailCommentNextButton);
   tailCommentNextButton->setMaximumWidth(tailCommentNextButton->sizeHint().width());
   tailCommentLayout->addLayout(tailCommentLayoutRight);
@@ -367,7 +367,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headDescriptionLayoutRight->addWidget(headDescriptionPreviousButton);
   headDescriptionPreviousButton->setMaximumWidth(headDescriptionPreviousButton->sizeHint().width());
   headDescriptionLayoutRight->addWidget(headDescriptionFilterField);
-  headDescriptionFilterField->setFixedWidth(250);
+  headDescriptionFilterField->setFixedWidth(100);
   headDescriptionLayoutRight->addWidget(headDescriptionNextButton);
   headDescriptionNextButton->setMaximumWidth(headDescriptionNextButton->sizeHint().width());
   headDescriptionLayout->addLayout(headDescriptionLayoutRight);
@@ -383,7 +383,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headRawLayoutRight->addWidget(headRawPreviousButton);
   headRawPreviousButton->setMaximumWidth(headRawPreviousButton->sizeHint().width());
   headRawLayoutRight->addWidget(headRawFilterField);
-  headRawFilterField->setFixedWidth(250);
+  headRawFilterField->setFixedWidth(100);
   headRawLayoutRight->addWidget(headRawNextButton);
   headRawNextButton->setMaximumWidth(headRawNextButton->sizeHint().width());
   headRawLayout->addLayout(headRawLayoutRight);
@@ -399,7 +399,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headCommentLayoutRight->addWidget(headCommentPreviousButton);
   headCommentPreviousButton->setMaximumWidth(headCommentPreviousButton->sizeHint().width());
   headCommentLayoutRight->addWidget(headCommentFilterField);
-  headCommentFilterField->setFixedWidth(250);
+  headCommentFilterField->setFixedWidth(100);
   headCommentLayoutRight->addWidget(headCommentNextButton);
   headCommentNextButton->setMaximumWidth(headCommentNextButton->sizeHint().width());
   headCommentLayout->addLayout(headCommentLayoutRight);
