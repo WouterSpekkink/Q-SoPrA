@@ -697,7 +697,7 @@ void LinkagesWidget::setLinkageType() {
     query->first();
     QString description = query->value(0).toString();
     QString question = query->value(1).toString();
-    QString label = "<FONT SIZE = 3--[" + typeComboBox->currentText() + "]--></FONT>";
+    QString label = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
     linkageTypeFeedbackLabel->setText(label);
     QString toolTip = breakString(description);
     linkageTypeFeedbackLabel->setToolTip(toolTip);
