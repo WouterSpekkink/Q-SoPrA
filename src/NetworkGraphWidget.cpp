@@ -1712,6 +1712,7 @@ void NetworkGraphWidget::multimodeTransformation() {
     }
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     QColor color = QColor(Qt::black);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
       color = colorDialog->selectedColor();
     } else {
@@ -2087,6 +2088,7 @@ void NetworkGraphWidget::mergeRelationships() {
     QString description = mergeRelationshipsDialog->getDescription();
     QString directedness = mergeRelationshipsDialog->getDirectedness();
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     QColor color = QColor(Qt::black);
     if (colorDialog->exec()) {
       color = colorDialog->selectedColor();
@@ -2365,6 +2367,7 @@ void NetworkGraphWidget::showType() {
 
 void NetworkGraphWidget::setNodeColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     setChangeLabel();
     QColor color = colorDialog->selectedColor();
@@ -2379,6 +2382,7 @@ void NetworkGraphWidget::setNodeColor() {
 
 void NetworkGraphWidget::setLabelColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     setChangeLabel();
     QColor color = colorDialog->selectedColor();
@@ -2393,6 +2397,7 @@ void NetworkGraphWidget::setLabelColor() {
 
 void NetworkGraphWidget::setBackgroundColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     QColor color = colorDialog->selectedColor();
     view->setBackgroundBrush(color);
@@ -2404,6 +2409,7 @@ void NetworkGraphWidget::changeEdgeColor(QTableWidgetItem *item) {
   if (item->column() == 1) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     colorDialog->setCurrentColor(item->background().color());
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
       item->setBackground(color);
@@ -2430,6 +2436,7 @@ void NetworkGraphWidget::changeEdgeColor(QTableWidgetItem *item) {
 void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item) {
   if (item->column() == 1) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     colorDialog->setCurrentColor(item->background().color());
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
@@ -2478,6 +2485,7 @@ void NetworkGraphWidget::plotNewGraph() {
   getDirectedEdges();
   getUndirectedEdges();  
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   QColor color = QColor(Qt::black);
   colorDialog->setCurrentColor(color);
   if (colorDialog->exec()) {
@@ -2523,6 +2531,7 @@ void NetworkGraphWidget::plotNewGraph() {
 void NetworkGraphWidget::addRelationshipType() {
   selectedType = typeComboBox->currentText();  
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   QColor color = QColor(Qt::black);
   if (colorDialog->exec()) {
     color = colorDialog->selectedColor();

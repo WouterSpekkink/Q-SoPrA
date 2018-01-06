@@ -611,7 +611,6 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   int count = 1;
   QVector<MacroEvent*> newLayer;
   QVector<MacroEvent*> partnerLayer;
-  QVector<QGraphicsItem*>::iterator it3;
   for (QVector<QGraphicsItem*>::size_type it3 = 0; it3 != currentLayer.size(); it3++) {
     QGraphicsItem *current = currentLayer[it3];
     qreal xPos = startX + count * 120;
@@ -795,7 +794,6 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
   qreal width = 120 * layerSize;
   qreal startX = 0 - width / 2 - 60;
   int count = 1;
-  QVector<QGraphicsItem*>::iterator it5;
   for (QVector<QGraphicsItem*>::size_type it5 = 0; it5 != currentLayer.size(); it5++) {
     QGraphicsItem *current = currentLayer[it5];
     qreal xPos = startX + count * 120;
@@ -826,6 +824,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
   if (item->column() == 1) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     colorDialog->setCurrentColor(item->background().color());
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();

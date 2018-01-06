@@ -3629,6 +3629,7 @@ void EventGraphWidget::findChildren(QString father, QVector<QString> *children) 
 
 void EventGraphWidget::setEventColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     QColor color = colorDialog->selectedColor();
     QVectorIterator<EventItem*> it(eventVector);
@@ -3642,6 +3643,7 @@ void EventGraphWidget::setEventColor() {
 
 void EventGraphWidget::setLabelColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     QColor color = colorDialog->selectedColor();
     QVectorIterator<NodeLabel*> it(nodeLabelVector);
@@ -3655,6 +3657,7 @@ void EventGraphWidget::setLabelColor() {
 
 void EventGraphWidget::setBackgroundColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     QColor color = colorDialog->selectedColor();
     view->setBackgroundBrush(color);
@@ -3665,6 +3668,7 @@ void EventGraphWidget::setBackgroundColor() {
 void EventGraphWidget::changeModeColor(QTableWidgetItem *item) {
   if (item->column() == 1) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     colorDialog->setCurrentColor(item->background().color());
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
@@ -4886,6 +4890,7 @@ void EventGraphWidget::disaggregateEvent() {
 void EventGraphWidget::recolorEvents() {
   if (scene->selectedItems().size() > 0) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
       delete colorDialog;
@@ -4910,6 +4915,7 @@ void EventGraphWidget::recolorEvents() {
 void EventGraphWidget::recolorLabels() {
   if (scene->selectedItems().size() > 0) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
       delete colorDialog;

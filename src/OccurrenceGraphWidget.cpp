@@ -461,6 +461,7 @@ void OccurrenceGraphWidget::changeModeColor(QTableWidgetItem *item) {
   if (item->column() == 1) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     colorDialog->setCurrentColor(item->background().color());
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
       item->setBackground(color);
@@ -799,6 +800,7 @@ void OccurrenceGraphWidget::plotLabels() {
 
 void OccurrenceGraphWidget::setBackgroundColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     QColor color = colorDialog->selectedColor();
     view->setBackgroundBrush(color);

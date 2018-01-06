@@ -5,8 +5,10 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   esd = submittedEsd;
 
   // We set the windows size to the maximum possible.
-  QPointer<QDesktopWidget> desktop = new QDesktopWidget;
-  this->resize(desktop->screenGeometry(this).size());
+  QSize availableSize = qApp->desktop()->availableGeometry().size();
+  int width = availableSize.width() * 0.7;
+  int height = availableSize.height() * 0.7;
+  this->resize(width, height);
 
   // Creating the stack and te  widgets it can display.
   stacked = new QStackedWidget(this);
@@ -89,7 +91,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Q-SoPrA");  
-  stacked->show();
+  stacked->showMaximized();
 }
 
 void MainWindow::createActions() {

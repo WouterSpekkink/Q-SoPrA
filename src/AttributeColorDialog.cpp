@@ -24,20 +24,22 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   attributesFilterField = new QLineEdit(this);
   
   colorButton = new QPushButton(tr("Choose node color"), this);
+  colorButton->setMinimumWidth(200);
+  QPixmap pixmapOne(colorButton->width(), colorButton->height());
+  pixmapOne.fill(chosenColor);
+  colorOneLabel = new QLabel(this);
+  colorOneLabel->setMaximumWidth(50);
+  colorOneLabel->setPixmap(pixmapOne);
   textColorButton = new QPushButton(tr("Choose text color"), this);
+  textColorButton->setMinimumWidth(200);
+  QPixmap pixmapTwo(textColorButton->width(), textColorButton->height());
+  pixmapTwo.fill(chosenTextColor);
+  colorTwoLabel = new QLabel(this);
+  colorTwoLabel->setMaximumWidth(50);
+  colorTwoLabel->setPixmap(pixmapTwo);
+
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save"), this);
-
-  QPalette pal = colorButton->palette();
-  pal.setColor(QPalette::Button, chosenColor);
-  colorButton->setAutoFillBackground(true);
-  colorButton->setPalette(pal);
-  colorButton->update();
-  pal = textColorButton->palette();
-  pal.setColor(QPalette::Button, chosenTextColor);
-  textColorButton->setAutoFillBackground(true);
-  textColorButton->setPalette(pal);
-  textColorButton->update();
   
   connect(colorButton, SIGNAL(clicked()), this, SLOT(setColor()));
   connect(textColorButton, SIGNAL(clicked()), this, SLOT(setTextColor()));
@@ -56,16 +58,20 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   filterLayout->addWidget(attributesFilterLabel);
   filterLayout->addWidget(attributesFilterField);
   mainLayout->addLayout(filterLayout);
-  mainLayout->addWidget(colorButton);
-  mainLayout->addWidget(textColorButton);
+  QPointer<QHBoxLayout> colorOneLayout = new QHBoxLayout;
+  colorOneLayout->addWidget(colorButton);
+  colorOneLayout->addWidget(colorOneLabel);
+  mainLayout->addLayout(colorOneLayout);
+  QPointer<QHBoxLayout> colorTwoLayout = new QHBoxLayout;
+  colorTwoLayout->addWidget(textColorButton);
+  colorTwoLayout->addWidget(colorTwoLabel);
+  mainLayout->addLayout(colorTwoLayout);
   QPointer<QHBoxLayout> optionsLayout = new QHBoxLayout;
   optionsLayout->addWidget(cancelCloseButton);
   optionsLayout->addWidget(saveCloseButton);
   mainLayout->addLayout(optionsLayout);
   setLayout(mainLayout);
 
-  setMinimumWidth(400);
-  setMinimumHeight(400);
   setWindowTitle("Create mode");
 }
 
@@ -147,28 +153,26 @@ void AttributeColorDialog::changeFilter(const QString &text) {
 
 void AttributeColorDialog::setColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     chosenColor = colorDialog->selectedColor();
   }
-  QPalette pal = colorButton->palette();
-  pal.setColor(QPalette::Button, chosenColor);
-  colorButton->setAutoFillBackground(true);
-  colorButton->setPalette(pal);
-  colorButton->update();
+  QPixmap pixmapOne(100, colorButton->height());
+  pixmapOne.fill(chosenColor);
+  colorOneLabel->setPixmap(pixmapOne);
   saveCloseButton->setFocus();
   delete colorDialog;
 }
 
 void AttributeColorDialog::setTextColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     chosenTextColor = colorDialog->selectedColor();
   }
-  QPalette pal = textColorButton->palette();
-  pal.setColor(QPalette::Button, chosenTextColor);
-  textColorButton->setAutoFillBackground(true);
-  textColorButton->setPalette(pal);
-  textColorButton->update();
+  QPixmap pixmapTwo(100, textColorButton->height());
+  pixmapTwo.fill(chosenTextColor);
+  colorTwoLabel->setPixmap(pixmapTwo);
   saveCloseButton->setFocus();
   delete colorDialog;
 }

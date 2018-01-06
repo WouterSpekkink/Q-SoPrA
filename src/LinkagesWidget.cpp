@@ -209,8 +209,9 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(settingsLabel);
-  settingsLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  QPointer<QHBoxLayout> settingsLayout = new QHBoxLayout;
+  settingsLayout->addWidget(settingsLabel);
+  settingsLabel->setAlignment(Qt::AlignVCenter);
   QPointer<QVBoxLayout> linkageOptionsLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> coderLayout = new QHBoxLayout;
   coderLayout->addWidget(selectCoderLabel);
@@ -222,6 +223,10 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   editCoderButton->setMaximumWidth(editCoderButton->sizeHint().width());
   coderLayout->addWidget(removeCoderButton);
   removeCoderButton->setMaximumWidth(removeCoderButton->sizeHint().width());
+  coderLayout->addWidget(manualCodingButton);
+  manualCodingButton->setMaximumWidth(manualCodingButton->sizeHint().width());
+  coderLayout->addWidget(assistedCodingButton);
+  assistedCodingButton->setMaximumWidth(assistedCodingButton->sizeHint().width());
   linkageOptionsLayout->addLayout(coderLayout);
   coderLayout->setAlignment(Qt::AlignLeft);
   QPointer<QHBoxLayout> typeLayout = new QHBoxLayout;
@@ -238,7 +243,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   linkageOptionsLayout->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   typeLayout->addWidget(selectTypeButton);
   selectTypeButton->setMaximumWidth(selectTypeButton->sizeHint().width());
-  mainLayout->addLayout(linkageOptionsLayout);
+  settingsLayout->addLayout(linkageOptionsLayout);
+  mainLayout->addLayout(settingsLayout);
 
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
@@ -268,7 +274,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailDescriptionLayoutRight->addWidget(tailDescriptionPreviousButton);
   tailDescriptionPreviousButton->setMaximumWidth(tailDescriptionPreviousButton->sizeHint().width());
   tailDescriptionLayoutRight->addWidget(tailDescriptionFilterField);
-  tailDescriptionFilterField->setFixedWidth(100);
+  tailDescriptionFilterField->setFixedWidth(90);
   tailDescriptionLayoutRight->addWidget(tailDescriptionNextButton);
   tailDescriptionNextButton->setMaximumWidth(tailDescriptionNextButton->sizeHint().width());
   tailDescriptionLayout->addLayout(tailDescriptionLayoutRight);
@@ -284,7 +290,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailRawLayoutRight->addWidget(tailRawPreviousButton);
   tailRawPreviousButton->setMaximumWidth(tailRawPreviousButton->sizeHint().width());
   tailRawLayoutRight->addWidget(tailRawFilterField);
-  tailRawFilterField->setFixedWidth(100);
+  tailRawFilterField->setFixedWidth(90);
   tailRawLayoutRight->addWidget(tailRawNextButton);
   tailRawNextButton->setMaximumWidth(tailRawNextButton->sizeHint().width());
   tailRawLayout->addLayout(tailRawLayoutRight);
@@ -300,7 +306,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailCommentLayoutRight->addWidget(tailCommentPreviousButton);
   tailCommentPreviousButton->setMaximumWidth(tailCommentPreviousButton->sizeHint().width());
   tailCommentLayoutRight->addWidget(tailCommentFilterField);
-  tailCommentFilterField->setFixedWidth(100);
+  tailCommentFilterField->setFixedWidth(90);
   tailCommentLayoutRight->addWidget(tailCommentNextButton);
   tailCommentNextButton->setMaximumWidth(tailCommentNextButton->sizeHint().width());
   tailCommentLayout->addLayout(tailCommentLayoutRight);
@@ -319,12 +325,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   middleLayout->addWidget(linkageTypeFeedbackLabel);
   linkageTypeFeedbackLabel->setAlignment(Qt::AlignHCenter);
   linkageTypeFeedbackLabel->setStyleSheet("color: red");
-  middleLayout->addSpacerItem(new QSpacerItem(250, 50));
+  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
   middleLayout->addWidget(linkageQuestionLabel);
   linkageQuestionLabel->setAlignment(Qt::AlignHCenter);
   middleLayout->addWidget(linkageQuestionFeedbackLabel);
   middleLayout->setAlignment(linkageQuestionFeedbackLabel, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addSpacerItem(new QSpacerItem(250, 50));
+  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
   middleLayout->addWidget(linkageFeedbackLabel);
   linkageFeedbackLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   linkageFeedbackLabel->setStyleSheet("color: blue");
@@ -335,14 +341,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   middleLayout->addWidget(unsetLinkButton);
   unsetLinkButton->setMaximumWidth(unsetLinkButton->sizeHint().width());
   middleLayout->setAlignment(unsetLinkButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  QPointer<QHBoxLayout> codingTypeLayout = new QHBoxLayout;
-  codingTypeLayout->addWidget(manualCodingButton);
-  manualCodingButton->setMaximumWidth(manualCodingButton->sizeHint().width());
-  middleLayout->setAlignment(manualCodingButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  codingTypeLayout->addWidget(assistedCodingButton);
-  assistedCodingButton->setMaximumWidth(assistedCodingButton->sizeHint().width());
-  middleLayout->setAlignment(assistedCodingButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addLayout(codingTypeLayout);
   fieldsLayout->addLayout(middleLayout);
 
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
@@ -367,7 +365,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headDescriptionLayoutRight->addWidget(headDescriptionPreviousButton);
   headDescriptionPreviousButton->setMaximumWidth(headDescriptionPreviousButton->sizeHint().width());
   headDescriptionLayoutRight->addWidget(headDescriptionFilterField);
-  headDescriptionFilterField->setFixedWidth(100);
+  headDescriptionFilterField->setFixedWidth(90);
   headDescriptionLayoutRight->addWidget(headDescriptionNextButton);
   headDescriptionNextButton->setMaximumWidth(headDescriptionNextButton->sizeHint().width());
   headDescriptionLayout->addLayout(headDescriptionLayoutRight);
@@ -383,7 +381,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headRawLayoutRight->addWidget(headRawPreviousButton);
   headRawPreviousButton->setMaximumWidth(headRawPreviousButton->sizeHint().width());
   headRawLayoutRight->addWidget(headRawFilterField);
-  headRawFilterField->setFixedWidth(100);
+  headRawFilterField->setFixedWidth(90);
   headRawLayoutRight->addWidget(headRawNextButton);
   headRawNextButton->setMaximumWidth(headRawNextButton->sizeHint().width());
   headRawLayout->addLayout(headRawLayoutRight);
@@ -399,7 +397,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   headCommentLayoutRight->addWidget(headCommentPreviousButton);
   headCommentPreviousButton->setMaximumWidth(headCommentPreviousButton->sizeHint().width());
   headCommentLayoutRight->addWidget(headCommentFilterField);
-  headCommentFilterField->setFixedWidth(100);
+  headCommentFilterField->setFixedWidth(90);
   headCommentLayoutRight->addWidget(headCommentNextButton);
   headCommentNextButton->setMaximumWidth(headCommentNextButton->sizeHint().width());
   headCommentLayout->addLayout(headCommentLayoutRight);

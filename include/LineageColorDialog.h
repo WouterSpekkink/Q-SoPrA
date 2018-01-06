@@ -35,7 +35,11 @@ private slots:
     
 private:
   QPointer<QLabel> lineageLabel;
-
+  QPointer<QLabel> colorOneLabel;
+  QPointer<QLabel> colorTwoLabel;
+  QPointer<QLabel> colorThreeLabel;
+  QPointer<QLabel> colorFourLabel;
+  
   QPointer<QPushButton> originButton;
   QPointer<QPushButton> ancestorButton;
   QPointer<QPushButton> descendantButton;

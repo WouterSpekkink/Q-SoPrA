@@ -44,6 +44,8 @@ private:
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
   QPointer<QLabel> attributesFilterLabel;
+  QPointer<QLabel> colorOneLabel;
+  QPointer<QLabel> colorTwoLabel;
   
   QPointer<QLineEdit> attributesFilterField;
   
@@ -51,7 +53,7 @@ private:
   QPointer<QPushButton> textColorButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
-
+  
   QColor chosenColor;
   QColor chosenTextColor;
   QString chosenAttribute;

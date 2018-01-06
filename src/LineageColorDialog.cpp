@@ -10,32 +10,32 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) {
   lineageLabel = new QLabel(tr("Choose lineage colors:"), this);
 
   originButton = new QPushButton(tr("Choose origin color"), this);
+  QPixmap pixmapOne(originButton->width(), originButton->height());
+  pixmapOne.fill(originColor);
+  colorOneLabel = new QLabel(this);
+  colorOneLabel->setMaximumWidth(50);
+  colorOneLabel->setPixmap(pixmapOne);
   ancestorButton = new QPushButton(tr("Choose ancestors color"), this);
+  QPixmap pixmapTwo(ancestorButton->width(), ancestorButton->height());
+  pixmapTwo.fill(ancestorColor);
+  colorTwoLabel = new QLabel(this);
+  colorTwoLabel->setMaximumWidth(50);
+  colorTwoLabel->setPixmap(pixmapTwo);
   descendantButton = new QPushButton(tr("Choose descendants color"), this);
+  QPixmap pixmapThree(descendantButton->width(), descendantButton->height());
+  pixmapThree.fill(descendantColor);
+  colorThreeLabel = new QLabel(this);
+  colorThreeLabel->setMaximumWidth(50);
+  colorThreeLabel->setPixmap(pixmapThree);
   unrelatedButton = new QPushButton(tr("Choose unrelated color"), this);
+  QPixmap pixmapFour(unrelatedButton->width(), unrelatedButton->height());
+  pixmapFour.fill(unrelatedColor);
+  colorFourLabel = new QLabel(this);
+  colorFourLabel->setMaximumWidth(50);
+  colorFourLabel->setPixmap(pixmapFour);
+
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save"), this);
-
-  QPalette pal = originButton->palette();
-  pal.setColor(QPalette::Button, originColor);
-  originButton->setAutoFillBackground(true);
-  originButton->setPalette(pal);
-  originButton->update();
-  pal = ancestorButton->palette();
-  pal.setColor(QPalette::Button, ancestorColor);
-  ancestorButton->setAutoFillBackground(true);
-  ancestorButton->setPalette(pal);
-  ancestorButton->update();
-  pal = descendantButton->palette();
-  pal.setColor(QPalette::Button, descendantColor);
-  descendantButton->setAutoFillBackground(true);
-  descendantButton->setPalette(pal);
-  descendantButton->update();
-  pal = unrelatedButton->palette();
-  pal.setColor(QPalette::Button, unrelatedColor);
-  unrelatedButton->setAutoFillBackground(true);
-  unrelatedButton->setPalette(pal);
-  unrelatedButton->update();
   
   connect(originButton, SIGNAL(clicked()), this, SLOT(setOriginColor()));
   connect(ancestorButton, SIGNAL(clicked()), this, SLOT(setAncestorColor()));
@@ -46,10 +46,22 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) {
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(lineageLabel);
-  mainLayout->addWidget(originButton);
-  mainLayout->addWidget(ancestorButton);
-  mainLayout->addWidget(descendantButton);
-  mainLayout->addWidget(unrelatedButton);
+  QPointer<QHBoxLayout> colorOneLayout = new QHBoxLayout;
+  colorOneLayout->addWidget(originButton);
+  colorOneLayout->addWidget(colorOneLabel);
+  mainLayout->addLayout(colorOneLayout);
+  QPointer<QHBoxLayout> colorTwoLayout = new QHBoxLayout;
+  colorTwoLayout->addWidget(ancestorButton);
+  colorTwoLayout->addWidget(colorTwoLabel);
+  mainLayout->addLayout(colorTwoLayout);
+  QPointer<QHBoxLayout> colorThreeLayout = new QHBoxLayout;
+  colorThreeLayout->addWidget(descendantButton);
+  colorThreeLayout->addWidget(colorThreeLabel);
+  mainLayout->addLayout(colorThreeLayout);
+  QPointer<QHBoxLayout> colorFourLayout = new QHBoxLayout;
+  colorFourLayout->addWidget(unrelatedButton);
+  colorFourLayout->addWidget(colorFourLabel);
+  mainLayout->addLayout(colorFourLayout);
   QPointer<QHBoxLayout> optionsLayout = new QHBoxLayout;
   optionsLayout->addWidget(cancelCloseButton);
   optionsLayout->addWidget(saveCloseButton);
@@ -61,56 +73,52 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) {
 
 void LineageColorDialog::setOriginColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     originColor = colorDialog->selectedColor();
   }
-  QPalette pal = originButton->palette();
-  pal.setColor(QPalette::Button, originColor);
-  originButton->setAutoFillBackground(true);
-  originButton->setPalette(pal);
-  originButton->update();
+  QPixmap pixmapOne(originButton->width(), originButton->height());
+  pixmapOne.fill(originColor);
+  colorOneLabel->setPixmap(pixmapOne);
   saveCloseButton->setFocus();
   delete colorDialog;
 }
 
 void LineageColorDialog::setAncestorColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     ancestorColor = colorDialog->selectedColor();
   }
-  QPalette pal = ancestorButton->palette();
-  pal.setColor(QPalette::Button, ancestorColor);
-  ancestorButton->setAutoFillBackground(true);
-  ancestorButton->setPalette(pal);
-  ancestorButton->update();
+  QPixmap pixmapTwo(ancestorButton->width(), ancestorButton->height());
+  pixmapTwo.fill(ancestorColor);
+  colorTwoLabel->setPixmap(pixmapTwo);
   saveCloseButton->setFocus();
   delete colorDialog;
 }
 
 void LineageColorDialog::setDescendantColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     descendantColor = colorDialog->selectedColor();
   }
-  QPalette pal = descendantButton->palette();
-  pal.setColor(QPalette::Button, descendantColor);
-  descendantButton->setAutoFillBackground(true);
-  descendantButton->setPalette(pal);
-  descendantButton->update();
+  QPixmap pixmapThree(descendantButton->width(), descendantButton->height());
+  pixmapThree.fill(descendantColor);
+  colorThreeLabel->setPixmap(pixmapThree);
   saveCloseButton->setFocus();
   delete colorDialog;
 }
 
 void LineageColorDialog::setUnrelatedColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
     unrelatedColor = colorDialog->selectedColor();
   }
-  QPalette pal = unrelatedButton->palette();
-  pal.setColor(QPalette::Button, unrelatedColor);
-  unrelatedButton->setAutoFillBackground(true);
-  unrelatedButton->setPalette(pal);
-  unrelatedButton->update();
+  QPixmap pixmapFour(unrelatedButton->width(), unrelatedButton->height());
+  pixmapFour.fill(unrelatedColor);
+  colorFourLabel->setPixmap(pixmapFour);
   saveCloseButton->setFocus();
   delete colorDialog;
 }
