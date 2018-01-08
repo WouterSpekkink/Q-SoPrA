@@ -646,7 +646,6 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
   QVector<QGraphicsItem*> partners;
   for (QVector<MacroEvent*>::size_type it = 0; it != presentLayer.size(); it++) {
     MacroEvent *currentFather = presentLayer[it];
-    qDebug() << currentFather->getDescription();
     QVectorIterator<MacroEvent*> it2(macroVector);
     while (it2.hasNext()) {
       MacroEvent *macro = it2.next();
