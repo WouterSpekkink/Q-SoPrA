@@ -11,14 +11,21 @@ QString breakString(QString original) {
     result = original;
   } else {
     QString subString = "";
+    int count = 0;
     for (QString::size_type it = 0; it != original.length(); it++) {
       subString.append(original[it]);
-      if (subString.length() >= 50) {
+      count++;
+      if (count >= 50 || original[it] == '\n') {
 	if (it != original.length() - 1) {
-	  if (original[it + 1] == ' ') {
+	  if (original[it + 1] == '\n') {
+	    result += subString;
+	    subString = "";
+	    count = 0;
+	  } else if (original[it + 1] == ' ') {
 	    subString.append("\n");
 	    result += subString;
 	    subString = "";
+	    count = 0;
 	  }
 	}
       }
