@@ -20,8 +20,11 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
   
   timeStampField = new QLineEdit(this);
   descriptionField = new QTextEdit(this);
+  descriptionField->installEventFilter(this);
   rawField = new QTextEdit(this);
+  rawField->installEventFilter(this);
   commentField = new QTextEdit(this);
+  commentField->installEventFilter(this);
   sourceField = new QLineEdit(this);
 
   saveRecordButton = new QPushButton("Save incident", this);
@@ -159,4 +162,21 @@ void RecordDialog::saveAndClose() {
     exitStatus = 0;
     this->close();
   }
+}
+
+bool RecordDialog::eventFilter(QObject *object, QEvent *event) {
+  if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+        if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
+  }
+  return false;
 }

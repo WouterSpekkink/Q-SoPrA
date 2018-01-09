@@ -9,6 +9,7 @@
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QTextEdit>
 #include <QMessageBox>
+#include <QWheelEvent>
 #include "EventSequenceDatabase.h"
 #include "Constants.h"
 
@@ -16,7 +17,9 @@ class RecordDialog : public QDialog {
   Q_OBJECT
 
 public:
-  RecordDialog(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase, QString type = NEW);
+  RecordDialog(QWidget *parent=0,
+	       EventSequenceDatabase *submittedEsd = new EventSequenceDatabase,
+	       QString type = NEW);
   ~RecordDialog() {};
 
   QString getTimeStamp();
@@ -33,7 +36,8 @@ public:
   void initialize();
   
   int getExitStatus();		      
-		     
+  bool eventFilter(QObject *object, QEvent *event);
+								
 private slots:
   void setTimeStamp(const QString &text);
   void setSource(const QString &source);
