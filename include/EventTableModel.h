@@ -13,7 +13,6 @@ public:
   
 protected:
   QVariant data(const QModelIndex &index, int role) const;
-
 };
 
 #endif

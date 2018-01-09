@@ -63,6 +63,8 @@ private:
   QPointer<QPushButton> removeRowButton;
 
   QString currentData;
+
+  int currentRow;
 };
 
 

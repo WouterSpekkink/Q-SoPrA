@@ -4,6 +4,7 @@
 DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
   currentData = "";
+  currentRow = 0;
   
   // This widget uses a table model.
   incidentsModel = new EventTableModel(this);
@@ -13,8 +14,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsModel->setTable("incidents");
   incidentsModel->setSort(1, Qt::AscendingOrder);
   incidentsModel->select();
-  updateTable();
   tableView->setModel(incidentsModel);
+  updateTable();
   
   // We prepare some display related options.
   incidentsModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Timing"));
@@ -27,8 +28,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setColumnHidden(7, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setColumnWidth(2, parent->width()/15);
-  tableView->setColumnWidth(3, parent->width()/4);
-  tableView->setColumnWidth(4, parent->width()/4);
+  tableView->setColumnWidth(3, parent->width()/5);
+  tableView->setColumnWidth(4, parent->width()/5);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
