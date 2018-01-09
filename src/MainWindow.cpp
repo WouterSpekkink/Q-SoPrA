@@ -25,6 +25,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   rawRelationshipsTableWidget = new RawRelationshipsTable(this);
   incidentsAttributesTableWidget = new IncidentsAttributesTable(this);
   entitiesAttributesTableWidget = new EntitiesAttributesTable(this);
+  missingAttributesTableWidget = new MissingAttributesTable(this);
   
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -65,8 +66,9 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(hierarchyGraphWidget); // 8
   stacked->addWidget(rawAttributesTableWidget); // 9
   stacked->addWidget(rawRelationshipsTableWidget); // 10
-  stacked->addWidget(incidentsAttributesTableWidget); // 11;
-  stacked->addWidget(entitiesAttributesTableWidget); // 12;
+  stacked->addWidget(incidentsAttributesTableWidget); // 11
+  stacked->addWidget(entitiesAttributesTableWidget); // 12
+  stacked->addWidget(missingAttributesTableWidget); // 13
   
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
@@ -160,10 +162,15 @@ void MainWindow::createActions() {
 	  this, SLOT(switchToIncidentsAttributesTableView()));
 
   entitiesAttributesTableViewAct = new QAction(tr("&Entities-Attributes table"), this);
-  entitiesAttributesTableViewAct->setStatusTip("Switch to entitie-attributes table");
+  entitiesAttributesTableViewAct->setStatusTip("Switch to entities-attributes table");
   connect(entitiesAttributesTableViewAct, SIGNAL(triggered()),
 	  this, SLOT(switchToEntitiesAttributesTableView()));
 
+  missingAttributesTableViewAct = new QAction(tr("&Incidents without attributes table"), this);
+  missingAttributesTableViewAct->setStatusTip("Switch to incidents without attributes table");
+  connect(missingAttributesTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToMissingAttributesTableView()));
+  
   // Code management actions
   exportIncidentAttributesAct = new QAction(tr("&Export incident attributes coding tree"), this);
   exportIncidentAttributesAct->setStatusTip("Export attributes coding tree");
@@ -220,6 +227,7 @@ void MainWindow::createMenus() {
   tableMenu->addAction(rawRelationshipsTableViewAct);
   tableMenu->addAction(incidentsAttributesTableViewAct);
   tableMenu->addAction(entitiesAttributesTableViewAct);
+  tableMenu->addAction(missingAttributesTableViewAct);
 
   transferMenu = menuBar->addMenu("Transfer");
   transferMenu->addAction(exportIncidentAttributesAct);
@@ -734,6 +742,13 @@ void MainWindow::switchToEntitiesAttributesTableView() {
   EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
   eat->updateTable();
   stacked->setCurrentWidget(entitiesAttributesTableWidget);
+}
+
+void MainWindow::switchToMissingAttributesTableView() {
+  // Still need to figure out what else needs to happen here.
+  MissingAttributesTable *mat = qobject_cast<MissingAttributesTable*>(stacked->widget(13));
+  mat->updateTable();
+  stacked->setCurrentWidget(missingAttributesTableWidget);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) {
