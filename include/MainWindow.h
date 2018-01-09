@@ -26,6 +26,7 @@
 #include "IncidentsAttributesTable.h"
 #include "EntitiesAttributesTable.h"
 #include "MissingAttributesTable.h"
+#include "MissingRelationshipsTable.h"
 #include "SupportingFunctions.h"
 #include "Constants.h"
 
@@ -58,6 +59,7 @@ private slots:
   void switchToIncidentsAttributesTableView();
   void switchToEntitiesAttributesTableView();
   void switchToMissingAttributesTableView();
+  void switchToMissingRelationshipsTableView();
 
   void exportIncidentAttributes();
   void importIncidentAttributes();
@@ -90,6 +92,7 @@ private:
   QPointer<QWidget> incidentsAttributesTableWidget;
   QPointer<QWidget> entitiesAttributesTableWidget;
   QPointer<QWidget> missingAttributesTableWidget;
+  QPointer<QWidget> missingRelationshipsTableWidget;
   
   QPointer<ProgressBar> loadProgress;
   QPointer<QMenuBar> menuBar;
@@ -118,6 +121,7 @@ private:
   QPointer<QAction> incidentsAttributesTableViewAct;
   QPointer<QAction> entitiesAttributesTableViewAct;
   QPointer<QAction> missingAttributesTableViewAct;
+  QPointer<QAction> missingRelationshipsTableViewAct;
 
   QPointer<QAction> exportIncidentAttributesAct;
   QPointer<QAction> importIncidentAttributesAct;

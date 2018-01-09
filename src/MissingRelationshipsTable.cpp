@@ -1,7 +1,7 @@
-#include "../include/MissingAttributesTable.h"
+#include "../include/MissingRelationshipsTable.h"
 
 
-MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent) {
+MissingRelationshipsTable::MissingRelationshipsTable(QWidget *parent) : QWidget(parent) {
   model = new QSqlQueryModel(this);
   tableView = new ZoomableTableView(this);
   tableView->setModel(model);
@@ -38,7 +38,7 @@ MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent
 }
 
 
-void MissingAttributesTable::updateTable() {
+void MissingRelationshipsTable::updateTable() {
   model->clear();
   if (mapper) {
     delete mapper;
@@ -48,8 +48,8 @@ void MissingAttributesTable::updateTable() {
   query->exec("SELECT id, ch_order, timestamp, description, raw, source "
 	      "FROM incidents "
 	      "WHERE NOT EXISTS "
-	      "(SELECT incident FROM attributes_to_incidents "
-	      "WHERE attributes_to_incidents.incident = incidents.id) "
+	      "(SELECT incident FROM relationships_to_incidents "
+	      "WHERE relationships_to_incidents.incident = incidents.id) "
 	      "ORDER BY ch_order");
   model->setQuery(*query);
   delete query;
@@ -99,12 +99,12 @@ void MissingAttributesTable::updateTable() {
   model->setHeaderData(6, Qt::Horizontal, QObject::tr("Marked"));
 }
 
-void MissingAttributesTable::resetHeader(int header) {
+void MissingRelationshipsTable::resetHeader(int header) {
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 
 
-void MissingAttributesTable::markIncident(int state) {
+void MissingRelationshipsTable::markIncident(int state) {
   // First we check whether rows were selected.
   int order = tableView->model()->index(currentRow, 1).data(Qt::DisplayRole).toInt();
   QSqlQuery *query = new QSqlQuery;
@@ -123,11 +123,11 @@ void MissingAttributesTable::markIncident(int state) {
   }
 }
 
-void MissingAttributesTable::exportTable() {
+void MissingRelationshipsTable::exportTable() {
 
 }
 
-void MissingAttributesTable::setRow(int row) {
+void MissingRelationshipsTable::setRow(int row) {
   currentRow = row;
 }
 

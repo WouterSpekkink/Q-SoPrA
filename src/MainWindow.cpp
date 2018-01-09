@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsAttributesTableWidget = new IncidentsAttributesTable(this);
   entitiesAttributesTableWidget = new EntitiesAttributesTable(this);
   missingAttributesTableWidget = new MissingAttributesTable(this);
+  missingRelationshipsTableWidget = new MissingRelationshipsTable(this);
   
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -69,6 +70,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(incidentsAttributesTableWidget); // 11
   stacked->addWidget(entitiesAttributesTableWidget); // 12
   stacked->addWidget(missingAttributesTableWidget); // 13
+  stacked->addWidget(missingRelationshipsTableWidget); // 14
   
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
@@ -170,6 +172,11 @@ void MainWindow::createActions() {
   missingAttributesTableViewAct->setStatusTip("Switch to incidents without attributes table");
   connect(missingAttributesTableViewAct, SIGNAL(triggered()),
 	  this, SLOT(switchToMissingAttributesTableView()));
+
+  missingRelationshipsTableViewAct = new QAction(tr("&Incidents without relationships table"), this);
+  missingRelationshipsTableViewAct->setStatusTip("Switch to incidents without relationships table");
+  connect(missingRelationshipsTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToMissingRelationshipsTableView()));
   
   // Code management actions
   exportIncidentAttributesAct = new QAction(tr("&Export incident attributes coding tree"), this);
@@ -228,6 +235,7 @@ void MainWindow::createMenus() {
   tableMenu->addAction(incidentsAttributesTableViewAct);
   tableMenu->addAction(entitiesAttributesTableViewAct);
   tableMenu->addAction(missingAttributesTableViewAct);
+  tableMenu->addAction(missingRelationshipsTableViewAct);
 
   transferMenu = menuBar->addMenu("Transfer");
   transferMenu->addAction(exportIncidentAttributesAct);
@@ -578,9 +586,7 @@ void MainWindow::switchToDataView() {
   lw->setLinkageComment();
   DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
   dw->incidentsModel->select();
-  while (dw->incidentsModel->canFetchMore()) {
-    dw->incidentsModel->fetchMore();
-  }
+  dw->updateTable();
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   egw->setComment();
@@ -751,6 +757,13 @@ void MainWindow::switchToMissingAttributesTableView() {
   stacked->setCurrentWidget(missingAttributesTableWidget);
 }
 
+void MainWindow::switchToMissingRelationshipsTableView() {
+  // Still need to figure out what else needs to happen here.
+  MissingRelationshipsTable *mrt = qobject_cast<MissingRelationshipsTable*>(stacked->widget(14));
+  mrt->updateTable();
+  stacked->setCurrentWidget(missingRelationshipsTableWidget);
+}
+
 void MainWindow::closeEvent(QCloseEvent *event) {
   QPointer<QMessageBox> warningBox = new QMessageBox(this);
   warningBox->addButton(QMessageBox::Yes);
@@ -809,7 +822,6 @@ void MainWindow::importIncidentAttributes() {
     // The buffer will hold each line of data as we read the file.
     std::string buffer; 
     if (!getline(file, buffer)) break; // We get the current line/
-
     // We should check and handle any extra line breaks in the file.
     while (checkLineBreaks(buffer) == true) {
       std::string extra;
@@ -857,7 +869,6 @@ void MainWindow::importIncidentAttributes() {
 	 is skipped in all subsequent line reads.
       */
       headerFound = true;
-
       // This is the block that is run after the header was already imported.
     } else { 
       // We iterate through the tokens and push them into the row vector.
@@ -961,7 +972,6 @@ void MainWindow::importRelTypes() {
     // The buffer will hold each line of data as we read the file.
     std::string buffer; 
     if (!getline(file, buffer)) break; // We get the current line/
-
     // We should check and handle any extra line breaks in the file.
     while (checkLineBreaks(buffer) == true) {
       std::string extra;
@@ -1009,7 +1019,6 @@ void MainWindow::importRelTypes() {
 	 is skipped in all subsequent line reads.
       */
       headerFound = true;
-
       // This is the block that is run after the header was already imported.
     } else { 
       // We iterate through the tokens and push them into the row vector.
@@ -1230,7 +1239,6 @@ void MainWindow::showMenus(bool status) {
   fileMenu->menuAction()->setVisible(status);
   toolMenu->menuAction()->setVisible(status);
   graphMenu->menuAction()->setVisible(status);
-  tableMenu->menuAction()->setVisible(status);
   tableMenu->menuAction()->setVisible(status);
   transferMenu->menuAction()->setVisible(status);
 }

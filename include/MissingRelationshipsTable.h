@@ -1,5 +1,5 @@
-#ifndef MISSINGATTRIBUTESTABLE_H
-#define MISSINGATTRIBUTESTABLE_H
+#ifndef MISSINGRELATIONSHIPSTABLE_H
+#define MISSINGRELATIONSHIPSTABLE_H
 
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
@@ -19,14 +19,14 @@
 #include "RelationalTable.h"
 #include "ZoomableTableView.h"
 
-class MissingAttributesTable : public QWidget {
+class MissingRelationshipsTable : public QWidget {
   Q_OBJECT
 
   friend class MainWindow;
 
 public:
-  MissingAttributesTable(QWidget *parent = 0);
-  ~MissingAttributesTable() {};
+  MissingRelationshipsTable(QWidget *parent = 0);
+  ~MissingRelationshipsTable() {};
 
 private slots:
   void updateTable();
