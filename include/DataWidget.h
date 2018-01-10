@@ -14,6 +14,7 @@
 #include "Constants.h"
 #include "EventGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
+#include "CheckBoxDelegate.h"
 
 class EventGraphWidget;
 class OccurrenceGraphWidget;

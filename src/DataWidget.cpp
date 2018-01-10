@@ -26,19 +26,19 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsModel->setHeaderData(7, Qt::Horizontal, QObject::tr("Marked"));
   tableView->setColumnHidden(0, true);
   tableView->setColumnHidden(1, true);
-  tableView->horizontalHeader()->swapSections(0, 7);
-  tableView->horizontalHeader()->swapSections(1, 0);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setColumnWidth(2, parent->width()/15);
-  tableView->setColumnWidth(3, parent->width()/5);
-  tableView->setColumnWidth(4, parent->width()/5);
+  tableView->setColumnWidth(3, parent->width()/4);
+  tableView->setColumnWidth(4, parent->width()/4);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
+  tableView->setItemDelegateForColumn(7, new CheckBoxDelegate(tableView));
 
+  
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident", this);
   editRecordButton = new QPushButton("Edit incident", this);
