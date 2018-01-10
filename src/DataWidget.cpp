@@ -1,5 +1,4 @@
 #include "../include/DataWidget.h"
-#include <QDebug>
 
 DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
@@ -38,7 +37,6 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setTextElideMode(Qt::ElideMiddle);
   tableView->setItemDelegateForColumn(7, new CheckBoxDelegate(tableView));
 
-  
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident", this);
   editRecordButton = new QPushButton("Edit incident", this);

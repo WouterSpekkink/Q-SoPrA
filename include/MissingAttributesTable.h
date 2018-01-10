@@ -16,8 +16,9 @@
 #include <QFileDialog>
 #include <fstream>
 #include <QSignalMapper>
-#include "RelationalTable.h"
+#include "EventQueryModel.h"
 #include "ZoomableTableView.h"
+#include "CheckBoxDelegate.h"
 
 class MissingAttributesTable : public QWidget {
   Q_OBJECT
@@ -31,17 +32,10 @@ public:
 private slots:
   void updateTable();
   void resetHeader(int header);
-  void markIncident(int state);
-  void exportTable();
-  void setRow(int row);
   
 private:
-  QPointer<QSqlQueryModel> model;
+  QPointer<EventQueryModel> model;
   QPointer<ZoomableTableView> tableView;
-  QPointer<QSortFilterProxyModel> filter;
-  QPointer<QSignalMapper> mapper;
-  
-  int currentRow = 0;
   
 };
 

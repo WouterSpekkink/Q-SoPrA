@@ -4,8 +4,6 @@
 */
 
 #include "../include/CheckBoxDelegate.h"
-#include <QApplication>
-#include <QMouseEvent>
 
 CheckBoxDelegate::CheckBoxDelegate(QObject *parent) : QStyledItemDelegate(parent) {};
 

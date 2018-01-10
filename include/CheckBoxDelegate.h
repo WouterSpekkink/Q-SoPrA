@@ -4,6 +4,8 @@
 #include <QStyledItemDelegate>
 #include <QtWidgets/QCheckBox>
 #include <QtWidgets/QHBoxLayout>
+#include <QApplication>
+#include <QMouseEvent>
 
 class CheckBoxDelegate : public QStyledItemDelegate {
   Q_OBJECT
