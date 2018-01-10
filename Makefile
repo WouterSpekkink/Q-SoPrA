@@ -1204,9 +1204,9 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
 		include/EventQueryModel.h \
+		include/CheckBoxDelegate.h \
 		include/MissingRelationshipsTable.h \
 		include/LineageColorDialog.h \
-		include/CheckBoxDelegate.h \
 		include/MainWindow.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MainWindow.h -o moc_MainWindow.cpp
@@ -1223,13 +1223,15 @@ moc_MergeRelationshipsDialog.cpp: include/Constants.h \
 moc_MissingAttributesTable.cpp: include/EventQueryModel.h \
 		include/SupportingFunctions.h \
 		include/ZoomableTableView.h \
+		include/CheckBoxDelegate.h \
 		include/MissingAttributesTable.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MissingAttributesTable.h -o moc_MissingAttributesTable.cpp
 
-moc_MissingRelationshipsTable.cpp: include/RelationalTable.h \
+moc_MissingRelationshipsTable.cpp: include/EventQueryModel.h \
 		include/SupportingFunctions.h \
 		include/ZoomableTableView.h \
+		include/CheckBoxDelegate.h \
 		include/MissingRelationshipsTable.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/MissingRelationshipsTable.h -o moc_MissingRelationshipsTable.cpp
@@ -1819,9 +1821,9 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
 		include/EventQueryModel.h \
+		include/CheckBoxDelegate.h \
 		include/MissingRelationshipsTable.h \
-		include/LineageColorDialog.h \
-		include/CheckBoxDelegate.h
+		include/LineageColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DataWidget.o src/DataWidget.cpp
 
 DeselectableListWidget.o: src/DeselectableListWidget.cpp include/DeselectableListWidget.h
@@ -2267,13 +2269,15 @@ MergeRelationshipsDialog.o: src/MergeRelationshipsDialog.cpp include/MergeRelati
 MissingAttributesTable.o: src/MissingAttributesTable.cpp include/MissingAttributesTable.h \
 		include/EventQueryModel.h \
 		include/SupportingFunctions.h \
-		include/ZoomableTableView.h
+		include/ZoomableTableView.h \
+		include/CheckBoxDelegate.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MissingAttributesTable.o src/MissingAttributesTable.cpp
 
 MissingRelationshipsTable.o: src/MissingRelationshipsTable.cpp include/MissingRelationshipsTable.h \
-		include/RelationalTable.h \
+		include/EventQueryModel.h \
 		include/SupportingFunctions.h \
-		include/ZoomableTableView.h
+		include/ZoomableTableView.h \
+		include/CheckBoxDelegate.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MissingRelationshipsTable.o src/MissingRelationshipsTable.cpp
 
 MultimodeDialog.o: src/MultimodeDialog.cpp include/MultimodeDialog.h \

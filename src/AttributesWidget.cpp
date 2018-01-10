@@ -160,6 +160,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QHBoxLayout> topFieldsLayout = new QHBoxLayout;
   topFieldsLayout->addWidget(timeStampLabel);
   topFieldsLayout->addWidget(timeStampField);
+  topFieldsLayout->addSpacerItem(new QSpacerItem(20, 0));
   topFieldsLayout->addWidget(sourceLabel);
   topFieldsLayout->addWidget(sourceField);
   leftLayout->addLayout(topFieldsLayout);
@@ -224,6 +225,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   mainLayout->addLayout(leftLayout);
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> titleLayout = new QHBoxLayout;
+  titleLayout->addSpacerItem(new QSpacerItem(20, 0));
   titleLayout->addWidget(attributesLabel);
   QPointer<QHBoxLayout> collapseLayout = new QHBoxLayout;
   collapseLayout->addWidget(expandTreeButton);
