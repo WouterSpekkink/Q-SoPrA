@@ -1,5 +1,4 @@
 #include "../include/DataWidget.h"
-#include <QDebug>
 
 DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
   esd = submittedEsd;
@@ -23,20 +22,20 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Raw"));
   incidentsModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Comments"));
   incidentsModel->setHeaderData(6, Qt::Horizontal, QObject::tr("Source"));
+  incidentsModel->setHeaderData(7, Qt::Horizontal, QObject::tr("Marked"));
   tableView->setColumnHidden(0, true);
   tableView->setColumnHidden(1, true);
-  tableView->setColumnHidden(7, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setColumnWidth(2, parent->width()/15);
-  tableView->setColumnWidth(3, parent->width()/5);
-  tableView->setColumnWidth(4, parent->width()/5);
+  tableView->setColumnWidth(3, parent->width()/4);
+  tableView->setColumnWidth(4, parent->width()/4);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
-  tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
+  tableView->setItemDelegateForColumn(7, new CheckBoxDelegate(tableView));
 
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident", this);

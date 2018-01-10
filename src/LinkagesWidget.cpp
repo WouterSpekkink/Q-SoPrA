@@ -215,13 +215,14 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> settingsLayout = new QHBoxLayout;
   settingsLayout->addWidget(settingsLabel);
-  settingsLabel->setAlignment(Qt::AlignVCenter);
+  settingsLabel->setAlignment(Qt::AlignCenter);
   settingsLabel->setMaximumWidth(200);
+  settingsLayout->addSpacerItem(new QSpacerItem(40, 0));
   QPointer<QVBoxLayout> linkageOptionsLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> coderLayout = new QHBoxLayout;
   coderLayout->addWidget(selectCoderLabel);
   coderLayout->addWidget(coderComboBox);
-  coderComboBox->setFixedWidth(200);
+  coderComboBox->setMaximumWidth(200);
   coderLayout->addWidget(createCoderButton);
   createCoderButton->setMaximumWidth(createCoderButton->sizeHint().width());
   coderLayout->addWidget(editCoderButton);
@@ -237,7 +238,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QHBoxLayout> typeLayout = new QHBoxLayout;
   typeLayout->addWidget(selectTypeLabel);
   typeLayout->addWidget(typeComboBox);
-  typeComboBox->setFixedWidth(200);
+  typeComboBox->setMaximumWidth(200);
   typeLayout->addWidget(createTypeButton);
   createTypeButton->setMaximumWidth(createTypeButton->sizeHint().width());
   typeLayout->addWidget(editTypeButton);
@@ -250,6 +251,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   selectTypeButton->setMaximumWidth(selectTypeButton->sizeHint().width());
   settingsLayout->addLayout(linkageOptionsLayout);
   mainLayout->addLayout(settingsLayout);
+  settingsLayout->setAlignment(Qt::AlignCenter);
 
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
@@ -319,13 +321,13 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   sepLineLeft->setFrameShape(QFrame::VLine);
   fieldsLayout->addWidget(sepLineLeft);
   if (width <= 1280) {
-    tailDescriptionFilterField->setFixedWidth(90);
-    tailRawFilterField->setFixedWidth(90);
-    tailCommentFilterField->setFixedWidth(90);
+    tailDescriptionFilterField->setMaximumWidth(90);
+    tailRawFilterField->setMaximumWidth(90);
+    tailCommentFilterField->setMaximumWidth(90);
   } else {
-    tailDescriptionFilterField->setFixedWidth(200);
-    tailRawFilterField->setFixedWidth(200);
-    tailCommentFilterField->setFixedWidth(200);
+    tailDescriptionFilterField->setMaximumWidth(200);
+    tailRawFilterField->setMaximumWidth(200);
+    tailCommentFilterField->setMaximumWidth(200);
   }
   QPointer<QVBoxLayout> middleLayout = new QVBoxLayout;
   middleLayout->setAlignment(Qt::AlignVCenter);
@@ -338,20 +340,15 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   middleLayout->addWidget(linkageTypeFeedbackLabel);
   linkageTypeFeedbackLabel->setAlignment(Qt::AlignHCenter);
   linkageTypeFeedbackLabel->setStyleSheet("color: red");
-  if (width <= 1280) {
-    middleLayout->addSpacerItem(new QSpacerItem(200, 40));
-  } else {
-    middleLayout->addSpacerItem(new QSpacerItem(240, 40));
-  }
+  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
+  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
   middleLayout->addWidget(linkageQuestionLabel);
   linkageQuestionLabel->setAlignment(Qt::AlignHCenter);
   middleLayout->addWidget(linkageQuestionFeedbackLabel);
+  linkageQuestionFeedbackLabel->setMinimumWidth(180);
   middleLayout->setAlignment(linkageQuestionFeedbackLabel, Qt::AlignHCenter | Qt::AlignVCenter);
-  if (width <= 1280) {
-    middleLayout->addSpacerItem(new QSpacerItem(200, 40));
-  } else {
-    middleLayout->addSpacerItem(new QSpacerItem(240, 40));
-  }
+  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
+  middleLayout->addSpacerItem(new QSpacerItem(240, 40));
   middleLayout->addWidget(linkageFeedbackLabel);
   linkageFeedbackLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   linkageFeedbackLabel->setStyleSheet("color: blue");
@@ -426,13 +423,13 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   rightLayout->addWidget(headCommentField);
   fieldsLayout->addLayout(rightLayout);
   if (width <= 1280) {
-    headDescriptionFilterField->setFixedWidth(90);
-    headRawFilterField->setFixedWidth(90);
-    headCommentFilterField->setFixedWidth(90);
+    headDescriptionFilterField->setMaximumWidth(90);
+    headRawFilterField->setMaximumWidth(90);
+    headCommentFilterField->setMaximumWidth(90);
   } else {
-    headDescriptionFilterField->setFixedWidth(200);
-    headRawFilterField->setFixedWidth(200);
-    headCommentFilterField->setFixedWidth(200);
+    headDescriptionFilterField->setMaximumWidth(200);
+    headRawFilterField->setMaximumWidth(200);
+    headCommentFilterField->setMaximumWidth(200);
   }  
   mainLayout->addLayout(fieldsLayout);
   QPointer<QFrame> bottomLine = new QFrame;
