@@ -23,9 +23,11 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   incidentsModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Raw"));
   incidentsModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Comments"));
   incidentsModel->setHeaderData(6, Qt::Horizontal, QObject::tr("Source"));
+  incidentsModel->setHeaderData(7, Qt::Horizontal, QObject::tr("Marked"));
   tableView->setColumnHidden(0, true);
   tableView->setColumnHidden(1, true);
-  tableView->setColumnHidden(7, true);
+  tableView->horizontalHeader()->swapSections(0, 7);
+  tableView->horizontalHeader()->swapSections(1, 0);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setColumnWidth(2, parent->width()/15);
   tableView->setColumnWidth(3, parent->width()/5);
@@ -34,7 +36,6 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setColumnWidth(6, parent->width()/8);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
-  tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
 
