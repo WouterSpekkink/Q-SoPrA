@@ -5,5 +5,6 @@
 
 QString breakString(QString original);
 QString doubleQuote(QString original);
+QString removeAmpersand(QString original);
 
 #endif 

@@ -49,3 +49,18 @@ QString doubleQuote(QString original) {
   }
   return copy;
 }
+
+/*
+  I encountered an annoying problem where Qt always returns texts from
+  QCheckBoxes with ampersands, even when I did not assign one. I therefore 
+  wrote this function that ensures that the ampersand is removed whenever one is present.
+*/
+QString removeAmpersand(QString original) {
+  QString newString = QString();
+  for (QString::size_type i = 0; i != original.size(); i++) {
+    if (original[i] != '&') {
+      newString.append(original[i]);
+    }
+  }
+  return newString;
+}

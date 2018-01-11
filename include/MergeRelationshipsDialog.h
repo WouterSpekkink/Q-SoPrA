@@ -13,6 +13,7 @@
 #include "Constants.h"
 #include "DirectedEdge.h"
 #include "UndirectedEdge.h"
+#include "SupportingFunctions.h"
 
 class MergeRelationshipsDialog : public QDialog {
   Q_OBJECT

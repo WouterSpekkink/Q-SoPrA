@@ -191,7 +191,8 @@ void MergeRelationshipsDialog::saveAndClose() {
   while (it4.hasNext()) {
     QPointer<QCheckBox> current = it4.next();
     if (current->isChecked()) {
-      types.push_back(current->text());
+      QString currentText = removeAmpersand(current->text());
+      types.push_back(currentText);
     }
   }
   exitStatus = 0;
