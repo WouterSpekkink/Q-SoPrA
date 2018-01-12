@@ -785,14 +785,16 @@ void AttributesWidget::sourceText(const QString &attribute, const int &incident)
     }
     begin++;
     end--;
-    
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
+    qDebug() << rawField->textCursor().selectedText().trimmed();
     QString sourceText = rawField->textCursor().selectedText().trimmed();
-    
+    //    if (sourceText.contains(QChar::ParagraphSeparator)) {
+    //sourceText.replace(QChar::ParagraphSeparator, '\n');
+    //}
     query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
 		    "VALUES (:att, :inc, :text)");
     query->bindValue(":att", attribute);
@@ -837,15 +839,20 @@ void AttributesWidget::highlightText() {
       query2->exec();
       while (query2->next()) {
         QString currentText = query2->value(0).toString();
-        while (rawField->find(currentText, QTextDocument::FindWholeWords)) {
-          format.setFontWeight(QFont::Bold);
-          format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-          format.setUnderlineColor(Qt::blue);
-          rawField->textCursor().mergeCharFormat(format);
-        }
-        cursor = rawField->textCursor();
-        cursor.movePosition(QTextCursor::Start);
-        rawField->setTextCursor(cursor);
+	QVector<QString> blocks = splitLines(currentText);
+	QVectorIterator<QString> it(blocks);
+	while (it.hasNext()) {
+	  QString currentLine = it.next();
+	  while (rawField->find(currentLine, QTextDocument::FindWholeWords)) {
+	    format.setFontWeight(QFont::Bold);
+	    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	    format.setUnderlineColor(Qt::blue);
+	    rawField->textCursor().mergeCharFormat(format);
+	  }
+	}
+	cursor = rawField->textCursor();
+	cursor.movePosition(QTextCursor::Start);
+	rawField->setTextCursor(cursor);
       }
       rawField->setTextCursor(currentPos);
       delete query2;

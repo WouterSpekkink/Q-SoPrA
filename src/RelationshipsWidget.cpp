@@ -436,11 +436,16 @@ void RelationshipsWidget::highlightText() {
 	query2->exec();
 	while(query2->next()) {
 	  QString currentText = query2->value(0).toString();
-	  while (rawField->find(currentText, QTextDocument::FindWholeWords)) {
-	    format.setFontWeight(QFont::Bold);
-	    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	    format.setUnderlineColor(Qt::blue);
-	    rawField->textCursor().mergeCharFormat(format);
+	  QVector<QString> blocks = splitLines(currentText);
+	  QVectorIterator<QString> it(blocks);
+	  while (it.hasNext()) {
+	    QString currentLine = it.next();
+	    while (rawField->find(currentLine, QTextDocument::FindWholeWords)) {
+	      format.setFontWeight(QFont::Bold);
+	      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	      format.setUnderlineColor(Qt::blue);
+	      rawField->textCursor().mergeCharFormat(format);
+	    }
 	  }
 	  cursor = rawField->textCursor();
 	  cursor.movePosition(QTextCursor::Start);

@@ -55,12 +55,51 @@ QString doubleQuote(QString original) {
   QCheckBoxes with ampersands, even when I did not assign one. I therefore 
   wrote this function that ensures that the ampersand is removed whenever one is present.
 */
-QString removeAmpersand(QString original) {
+QString removeChar(QString original, QChar chara) {
   QString newString = QString();
-  for (QString::size_type i = 0; i != original.size(); i++) {
-    if (original[i] != '&') {
+  for (QString::size_type i = 0; i != original.length(); i++) {
+    if (original[i] != chara) {
       newString.append(original[i]);
     }
   }
   return newString;
+}
+
+/*
+  I found out that the find() function of QTextEdit fields does not attempt
+  to find words across paragraph/line breaks. That was a problem for my
+  text highlighting function, because the text to be highlighted might contain
+  multiple lines. 
+
+  In this case, the solution I came up with is to break the text to be highlighted
+  into separate lines. QTextCursor->selectedText() uses QChar::ParagraphSeparator 
+  as newline symbols. Therefore, in the function below, we use this symbol as
+  the line break symbol. We copy a string onto an empty one until we encounter the
+  line break. Then we push the string to a vector, and continue with the next line
+  if there is any.
+
+  The highlighting function iterators through the entire vector of lines, and hightlights
+  each separately. 
+
+  Perhaps a cleaner solution would be to reimplement the find() function in a 
+  subclassed version of QTextEdit.
+*/
+
+QVector<QString> splitLines(QString original) {
+  QVector<QString> result;
+  QString temp = QString();
+  for (QString::size_type i = 0; i != original.length(); i++) {
+    if (original[i] != QChar::ParagraphSeparator) {
+      temp.append(original[i]);
+    } else {
+      if (temp.length() > 0) {
+	result.push_back(temp);
+      }
+      temp = "";
+    }
+  }
+  if (temp.length() > 0) {
+    result.push_back(temp);
+  }
+  return result;
 }

@@ -22,6 +22,7 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
   descriptionField = new QTextEdit(this);
   descriptionField->installEventFilter(this);
   rawField = new QTextEdit(this);
+  rawField->setAcceptRichText(false);
   rawField->installEventFilter(this);
   commentField = new QTextEdit(this);
   commentField->installEventFilter(this);
@@ -139,6 +140,9 @@ void RecordDialog::setComment(QString &text) {
 void RecordDialog::saveAndClose() {
   description = descriptionField->toPlainText();
   raw = rawField->toPlainText();
+  while (raw.endsWith("\n")) {
+    raw = raw.left(raw.length() - 1);
+  }
   comment = commentField->toPlainText();
   if (description == "") {
     QPointer<QMessageBox> errorBox = new QMessageBox(this);

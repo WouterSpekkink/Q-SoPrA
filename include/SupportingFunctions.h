@@ -2,9 +2,11 @@
 #define SUPPORTINGFUNCTIONS_H
 
 #include <QString>
+#include <QVector>
 
 QString breakString(QString original);
 QString doubleQuote(QString original);
-QString removeAmpersand(QString original);
+QString removeChar(QString original, QChar chara);
+QVector<QString> splitLines(QString original);
 
 #endif 
