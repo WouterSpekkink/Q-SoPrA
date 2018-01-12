@@ -26,6 +26,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setSectionsMovable(true);
   tableView->horizontalHeader()->swapSections(0, 2);
+  tableView->horizontalHeader()->swapSections(1, 2);
   tableView->setColumnWidth(0, 200);
   tableView->setColumnWidth(1, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
