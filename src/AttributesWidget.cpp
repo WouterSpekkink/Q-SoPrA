@@ -790,11 +790,7 @@ void AttributesWidget::sourceText(const QString &attribute, const int &incident)
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
-    qDebug() << rawField->textCursor().selectedText().trimmed();
     QString sourceText = rawField->textCursor().selectedText().trimmed();
-    //    if (sourceText.contains(QChar::ParagraphSeparator)) {
-    //sourceText.replace(QChar::ParagraphSeparator, '\n');
-    //}
     query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
 		    "VALUES (:att, :inc, :text)");
     query->bindValue(":att", attribute);
