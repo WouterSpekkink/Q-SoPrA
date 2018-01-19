@@ -31,7 +31,7 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setColumnWidth(4, parent->width()/4);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
-  tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
+  //  tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
@@ -68,6 +68,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)),
 	  this, SLOT(resetHeader(int)));
   connect(tableView, SIGNAL(doubleClicked(const QModelIndex &)),
+	  this, SLOT(saveCurrent(const QModelIndex &)));
+  connect(tableView, SIGNAL(entered(const QModelIndex &)),
 	  this, SLOT(saveCurrent(const QModelIndex &)));
   connect(tableView->model(), SIGNAL(dataChanged(const QModelIndex &, const QModelIndex &)),
 	  this, SLOT(checkChange(const QModelIndex &, const QModelIndex &)));
@@ -422,7 +424,8 @@ void DataWidget::checkChange(const QModelIndex &topLeft, const QModelIndex &bott
     if (topLeft.column() == 2 ||
 	topLeft.column() == 3 ||
 	topLeft.column() == 6) {
-      if (tableView->model()->index(topLeft.row(), topLeft.column()).data().toString() == "") {
+      if (tableView->model()->index(topLeft.row(),
+				    topLeft.column()).data().toString().trimmed() == "") {
 	tableView->model()->setData(topLeft, currentData);
       }
     }

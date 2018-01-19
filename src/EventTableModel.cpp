@@ -40,12 +40,18 @@ QVariant EventTableModel::data(const QModelIndex &index, int role) const {
     */
     return QSqlTableModel::data(index, role);
   }
-  return QVariant();
+  return QVariant(); // This prevents a compiler warning.
 }
 
 bool EventTableModel::setData(const QModelIndex & index,
 			      const QVariant & value, int role) {
+  /* 
+     Let's check whether the selected column is the column with our boolean variable
+     (always column 7), and whether we are trying to set data under the 
+     Qt::CheckStateRole.
+  */
   if (index.column() == 7 && role == Qt::CheckStateRole) {
+    // Writing the data when the check box is set to checked.
     if (value == Qt::Checked) {
       QSqlQuery *query = new QSqlQuery;
       int order = index.row() + 1;
@@ -54,6 +60,7 @@ bool EventTableModel::setData(const QModelIndex & index,
       query->exec();
       delete query;
       return true;
+      // Writing the data when the check box is set to unchecked
     } else if (value == Qt::Unchecked) {
       QSqlQuery *query = new QSqlQuery;
       int order = index.row() + 1;
@@ -64,12 +71,21 @@ bool EventTableModel::setData(const QModelIndex & index,
       return true;
     }
   }
+  // In all other situations revert to default behaviour.
   return QSqlTableModel::setData(index, value, role);
 }
 
+/* 
+   To make sure that the column with the pretend boolean is recognised
+   as a 'checkable' column, we need to re-implement the flags() function
+   and create a special case for the target column.
+*/
 Qt::ItemFlags EventTableModel::flags(const QModelIndex & index) const {
+  // Column 7 always records the mark variable (our boolean).
   if (index.column() == 7) {
+    // Make sure that this item is checkable.
     return QSqlTableModel::flags(index) | Qt::ItemIsUserCheckable;
   }
+  // Default behaviour in all other cases.
   return QSqlTableModel::flags(index);
 }

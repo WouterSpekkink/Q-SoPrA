@@ -10,7 +10,9 @@ CheckBoxDelegate::CheckBoxDelegate(QObject *parent) : QStyledItemDelegate(parent
 void CheckBoxDelegate::paint (QPainter * painter, const QStyleOptionViewItem & option,
 	    const QModelIndex & index ) const {
   QStyleOptionViewItem viewItemOption(option);
+  // Only do this if we are accessing the column with boolean variables.
   if (index.column() == 7) {
+    // This basically changes the rectangle in which the check box is drawn.
     const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
     QRect newRect = QStyle::alignedRect(option.direction, Qt::AlignCenter,
 					QSize(option.decorationSize.width() +
@@ -20,6 +22,7 @@ void CheckBoxDelegate::paint (QPainter * painter, const QStyleOptionViewItem & o
 					      (2 * textMargin), option.rect.height()));
     viewItemOption.rect = newRect;
   }
+  // Draw the check box using the new rectangle.
   QStyledItemDelegate::paint(painter, viewItemOption, index);
 }
 
@@ -49,19 +52,26 @@ bool CheckBoxDelegate::editorEvent(QEvent *event, QAbstractItemModel *model,
 					  QRect(option.rect.x() + (2 * textMargin), option.rect.y(),
 						option.rect.width() - (2 * textMargin),
 						option.rect.height()));
+    // If the event did not take place in the rectangle that contains our check box
     QMouseEvent *mEvent = (QMouseEvent*) event;
     if (!checkRect.contains(mEvent->pos())) {
       return false;
     }
+    // 
   } else if (event->type() == QEvent::KeyPress) {
-    if (static_cast<QKeyEvent*>(event)->key() !=
-	Qt::Key_Space&& static_cast<QKeyEvent*>(event)->key() != Qt::Key_Select) {
+    if ((static_cast<QKeyEvent*>(event)->key() !=
+	 Qt::Key_Space&& static_cast<QKeyEvent*>(event)->key() != Qt::Key_Select) &&
+	(static_cast<QKeyEvent*>(event)->key() !=
+	 Qt::Key_Space&& static_cast<QKeyEvent*>(event)->key() != Qt::Key_Space)
+	) {
       return false;
     }
   } else {
     return false;
   }
+  // Determine the new check state
   Qt::CheckState state = (static_cast<Qt::CheckState>(value.toInt()) == Qt::Checked
 			  ? Qt::Unchecked : Qt::Checked);
+  // And set the new check state by calling the model's setData() function.
   return model->setData(index, state, Qt::CheckStateRole);
 }
