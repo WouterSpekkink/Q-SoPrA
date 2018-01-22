@@ -31,7 +31,7 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setColumnWidth(4, parent->width()/4);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
-  //  tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
+  tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
