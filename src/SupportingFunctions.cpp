@@ -119,7 +119,7 @@ bool exceptionCharacterExists(char candidate) {
      Further processing is handled in the function that calls this one.
   */
   if (candidate == ' ' ||
-      candidate == ' ' ||
+      candidate == '.' ||
       candidate == '\\' ||
       candidate == '/' ||
       candidate == ':' ||
