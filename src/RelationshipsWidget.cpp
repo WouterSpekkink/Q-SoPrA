@@ -381,7 +381,10 @@ void RelationshipsWidget::sourceText(const QString &relationship, const QString 
     }
     begin++;
     end--;
-    
+    while (begin != 0 &&
+	   !exceptionCharacterExists(rawField->toPlainText().toStdString()[begin - 1])) {
+      begin--;
+    }
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);

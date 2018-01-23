@@ -1194,7 +1194,11 @@ void HierarchyGraphWidget::sourceText(const QString &attribute, const int &incid
 	end = rawField->textCursor().position();
       }
       begin++;
-      end--;   
+      end--;
+      while (begin != 0 &&
+	     !exceptionCharacterExists(rawField->toPlainText().toStdString()[begin - 1])) {
+	begin--;
+      }
       selectCursor.setPosition(begin);
       selectCursor.movePosition(QTextCursor::StartOfWord);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);

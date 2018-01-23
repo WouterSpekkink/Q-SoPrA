@@ -785,7 +785,11 @@ void AttributesWidget::sourceText(const QString &attribute, const int &incident)
     }
     begin++;
     end--;
-    selectCursor.setPosition(begin);
+    while (begin != 0 &&
+	   !exceptionCharacterExists(rawField->toPlainText().toStdString()[begin - 1])) {
+      begin--;
+    }
+    selectCursor.setPosition(begin);    
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
