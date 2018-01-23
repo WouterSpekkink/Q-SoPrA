@@ -7,7 +7,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   attributesModel->select();
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(0);
+  filter->setFilterKeyColumn(2);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -87,6 +87,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 }
 
 void RawAttributesTable::updateTable() {
+  attributesModel->select();
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }

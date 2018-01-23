@@ -95,6 +95,7 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
 }
 
 void RawRelationshipsTable::updateTable() {
+  relationshipsModel->select();
   while (relationshipsModel->canFetchMore()) {
     relationshipsModel->fetchMore();
   }
