@@ -124,6 +124,8 @@ bool exceptionCharacterExists(char candidate) {
       candidate == '/' ||
       candidate == ':' ||
       candidate == ';' ||
+      candidate == '\n' ||
+      candidate == '\r' ||
       candidate == '&') {
     return true;
   } else {
