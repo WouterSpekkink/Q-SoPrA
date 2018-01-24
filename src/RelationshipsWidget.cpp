@@ -311,7 +311,6 @@ void RelationshipsWidget::retrieveData() {
 
   QString indexText = "<b>Incident (" + QString::number(order) + " / " + QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
-
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
 		  "FROM incidents WHERE ch_order = :order");
@@ -326,7 +325,6 @@ void RelationshipsWidget::retrieveData() {
     QString raw = query2->value(4).toString();
     QString comment = query2->value(5).toString();
     int mark = query2->value(6).toInt();
-
     timeStampField->setText(timeStamp);
     sourceField->setText(source);
     descriptionField->setText(description);
@@ -366,7 +364,9 @@ void RelationshipsWidget::retrieveData() {
   }
 }
 
-void RelationshipsWidget::sourceText(const QString &relationship, const QString &type, const int &incident) {
+void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
+						 const QString &type,
+						 const int &incident) {
   if (rawField->textCursor().selectedText().trimmed() != "") {
     QSqlQuery *query = new QSqlQuery;
     int end = 0;
@@ -379,11 +379,22 @@ void RelationshipsWidget::sourceText(const QString &relationship, const QString 
       begin = rawField->textCursor().anchor();
       end = rawField->textCursor().position();
     }
-    begin++;
-    end--;
-    while (begin != 0 &&
-	   !exceptionCharacterExists(rawField->toPlainText().toStdString()[begin - 1])) {
-      begin--;
+    selectCursor.setPosition(begin);
+    selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+    rawField->setTextCursor(selectCursor);
+    while (rawField->textCursor().selectedText()[0].isSpace() ||
+	   rawField->textCursor().selectedText()[0].isPunct()) {
+      begin++;
+      selectCursor.setPosition(begin);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      rawField->setTextCursor(selectCursor);
+    }
+    while (rawField->textCursor().selectedText()[rawField->textCursor().
+						 selectedText().length() - 1].isSpace()) {
+      end--;
+      selectCursor.setPosition(begin);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      rawField->setTextCursor(selectCursor);
     }
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
@@ -391,14 +402,25 @@ void RelationshipsWidget::sourceText(const QString &relationship, const QString 
     selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
     QString sourceText = rawField->textCursor().selectedText().trimmed();
-    
-    query->prepare("INSERT INTO relationships_to_incidents_sources (relationship, type, incident, source_text)"
-		    "VALUES (:relationship, :type, :incident, :text)");
+    query->prepare("SELECT relationship FROM relationships_to_incidents_sources "
+		   "WHERE relationship = :relationship AND type = :type AND "
+		   "incident = :incident AND source_text = :text)");
     query->bindValue(":relationship", relationship);
     query->bindValue(":type", type);
     query->bindValue(":incident", incident);
     query->bindValue(":text", sourceText);
     query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      query->prepare("INSERT INTO relationships_to_incidents_sources "
+		     "(relationship, type, incident, source_text)"
+		     "VALUES (:relationship, :type, :incident, :text)");
+      query->bindValue(":relationship", relationship);
+      query->bindValue(":type", type);
+      query->bindValue(":incident", incident);
+      query->bindValue(":text", sourceText);
+      query->exec();
+    }
     delete query;
   }
 }
@@ -661,12 +683,12 @@ void RelationshipsWidget::assignRelationship() {
 	  query2->bindValue(":type", currentType);
 	  query2->bindValue(":incident", id);
 	  query2->exec();
-	  sourceText(currentRelationship, currentType, id);
+	  sourceRelationshipText(currentRelationship, currentType, id);
 	  rawField->setTextCursor(cursorPos);
 	  boldSelected(relationshipsTree, currentRelationship, currentType);
 	  highlightText();
 	} else {
-	  sourceText(currentRelationship, currentType, id);
+	  sourceRelationshipText(currentRelationship, currentType, id);
 	  highlightText();
 	  rawField->setTextCursor(cursorPos);
 	}

@@ -770,7 +770,7 @@ void AttributesWidget::editAttribute() {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
-void AttributesWidget::sourceText(const QString &attribute, const int &incident) {
+void AttributesWidget::sourceAttributeText(const QString &attribute, const int &incident) {
   if (rawField->textCursor().selectedText().trimmed() != "") {
     QSqlQuery *query = new QSqlQuery;
     int end = 0;
@@ -783,24 +783,44 @@ void AttributesWidget::sourceText(const QString &attribute, const int &incident)
       begin = rawField->textCursor().anchor();
       end = rawField->textCursor().position();
     }
-    begin++;
-    end--;
-    while (begin != 0 &&
-	   !exceptionCharacterExists(rawField->toPlainText().toStdString()[begin - 1])) {
-      begin--;
+    selectCursor.setPosition(begin);
+    selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+    rawField->setTextCursor(selectCursor);
+    while (rawField->textCursor().selectedText()[0].isSpace() ||
+	   rawField->textCursor().selectedText()[0].isPunct()) {
+      begin++;
+      selectCursor.setPosition(begin);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      rawField->setTextCursor(selectCursor);
     }
-    selectCursor.setPosition(begin);    
+    while (rawField->textCursor().selectedText()[rawField->textCursor().
+						 selectedText().length() - 1].isSpace()) {
+      end--;
+      selectCursor.setPosition(begin);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      rawField->setTextCursor(selectCursor);
+    }
+    selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
     QString sourceText = rawField->textCursor().selectedText().trimmed();
-    query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-		    "VALUES (:att, :inc, :text)");
-    query->bindValue(":att", attribute);
-    query->bindValue(":inc", incident);
-    query->bindValue(":text", sourceText);
+    query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
+		   "WHERE attribute = :att AND inc = :incident AND source_text = :text");
+    query->bindValue("att", attribute);
+    query->bindValue("inc", incident);
+    query->bindValue("text", sourceText);
     query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+		     "VALUES (:att, :inc, :text)");
+      query->bindValue(":att", attribute);
+      query->bindValue(":inc", incident);
+      query->bindValue(":text", sourceText);
+      query->exec();
+    }
     delete query;
   }
 }
@@ -915,13 +935,13 @@ void AttributesWidget::assignAttribute() {
 	query->bindValue(":attribute", attribute);
 	query->bindValue(":incident", id);
 	query->exec();
-	sourceText(attribute, id);
+	sourceAttributeText(attribute, id);
 	boldSelected(attributesTree, attribute);
         highlightText();
 	rawField->setTextCursor(cursPos);
 	valueField->setEnabled(true);
       } else {
-        sourceText(attribute, id);
+        sourceAttributeText(attribute, id);
         highlightText();
 	rawField->setTextCursor(cursPos);
       }

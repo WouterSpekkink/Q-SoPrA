@@ -56,7 +56,7 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
-  void sourceText(const QString &attribute, const int &incident);
+  void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
   void assignAttribute();
   void unassignAttribute();

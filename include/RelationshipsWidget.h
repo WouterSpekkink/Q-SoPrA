@@ -69,7 +69,7 @@ private slots:
   void removeText();
   void resetTexts();
   void setButtons();
-  void sourceText(const QString &relationship, const QString &type, const int &incident);
+  void sourceRelationshipText(const QString &relationship, const QString &type, const int &incident);
   void highlightText();
   void setTree();
   void boldSelected(QAbstractItemModel *model, QString name = "",

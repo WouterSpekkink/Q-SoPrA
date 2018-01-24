@@ -103,32 +103,3 @@ QVector<QString> splitLines(QString original) {
   }
   return result;
 }
-
-/*
-  When selecting text with QTextEdit text cursors, I ran into some issues
-  when trying to complete words in selection. It seems that certain
-  characters are not handled well. That is why I implement this function to 
-  help move the cursor to the beginning/end of words.
- */
-
-bool exceptionCharacterExists(char candidate) {
-  /* 
-     When we encounter one in the list of characters below as the first
-     at the current cursor position, then we return true. 
-
-     Further processing is handled in the function that calls this one.
-  */
-  if (candidate == ' ' ||
-      candidate == '.' ||
-      candidate == '\\' ||
-      candidate == '/' ||
-      candidate == ':' ||
-      candidate == ';' ||
-      candidate == '\n' ||
-      candidate == '\r' ||
-      candidate == '&') {
-    return true;
-  } else {
-    return false;
-  }
-}
