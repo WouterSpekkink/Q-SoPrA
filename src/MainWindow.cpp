@@ -599,13 +599,17 @@ void MainWindow::switchToAttributeView() {
   lw->setLinkageComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
   rw->setComment();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->setComment();
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->incidentsModel->sort(1, Qt::AscendingOrder);
   aw->incidentsModel->select();
   aw->retrieveData();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
   stacked->setCurrentWidget(attributesWidget);
+  aw->attributesTreeView->clearSelection();
+  const QModelIndex index;
+  aw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+  aw->setButtons();
 }
 
 void MainWindow::switchToRelationshipView() {
