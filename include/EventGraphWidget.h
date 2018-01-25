@@ -138,6 +138,7 @@ private slots:
   void recolorEvents();
   void recolorLabels();
   void colorLineage();
+  void exportTransitionMatrix();
 
   void findAncestors(QColor ancestor, QGraphicsItem *origin);
   void findDescendants(QColor descendant, QGraphicsItem *origin);
@@ -239,6 +240,7 @@ private:
   QPointer<QPushButton> resetTextsButton;
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> restoreModeColorsButton;
+  QPointer<QPushButton> exportTransitionMatrixButton;
   
   QPointer<DeselectableListWidget> eventListWidget;
   

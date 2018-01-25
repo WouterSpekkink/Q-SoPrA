@@ -90,6 +90,7 @@ void IncidentsAttributesTable::resetHeader(int header) {
 
 void IncidentsAttributesTable::sortHeader(int header) {
   attributesModel->sort(header, Qt::AscendingOrder);
+  updateTable();
 }
 
 void IncidentsAttributesTable::changeFilter(const QString &text) {

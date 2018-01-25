@@ -159,6 +159,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
   removeModeButton->setEnabled(false);
   restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  exportTransitionMatrixButton = new QPushButton(tr("Export transitions"), legendWidget);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
@@ -230,6 +231,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
+  connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -338,6 +340,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
+  legendLayout->addWidget(exportTransitionMatrixButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
@@ -5074,6 +5077,150 @@ void EventGraphWidget::findDescendants(QColor descendant, QGraphicsItem *origin)
 	}
 	findDescendants(descendant, edge->endItem());
       }
+    }
+  }
+}
+
+void EventGraphWidget::exportTransitionMatrix() {
+  // We make a vector of vectors for our matrix.
+  QVector<QVector<int>> matrix;
+  // We make a vector to hold the row and column names of our matrix.
+  QVector<QString> names;
+  // We also want to know how often an event of a given mode occurs.
+  QVector<int> occurrenceCol;
+  // And we can count the number of times an event with a given attribute occurs overall.
+  QVector<int> overallOccurrenceCol;
+  // And we want to know how often an event of a given mode appears (as the source) in a transition.
+  QVector<int> transitionsRow;
+  // We need to iterate through the list widget twice.
+  for (int i = 0; i != eventListWidget->rowCount(); i++) {
+    // We initialise the transitions count here.
+    int transitions = 0;
+    QTableWidgetItem *rowItem = eventListWidget->item(i, 0);
+    QString rowMode = rowItem->data(Qt::DisplayRole).toString();
+    QVector<int> currentRow; // Current row of our new matrix.
+    names.push_back(rowMode); // fill the vector of names.
+    // Let's first count the number of times an event with this mode occurs.
+    int occurrence = 0;
+    int overallOccurrence = 0;
+    QVectorIterator<EventItem*> eventIt(eventVector);
+    while (eventIt.hasNext()) {
+      EventItem *event = eventIt.next();
+      if (event->getMode() == rowMode) {
+	occurrence++;
+      }
+      int id = event->getId();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(rowMode);
+      findChildren(rowMode, &attributeVector);
+      QVectorIterator<QString> attIt(attributeVector);
+      while (attIt.hasNext()) {
+	QString attribute = attIt.next();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT attribute FROM attributes_to_incidents "
+		       "WHERE attribute = :attribute AND incident = :id");
+	query->bindValue(":attribute", attribute);
+	query->bindValue(":id", id);
+	query->exec();
+	query->first();
+	if (!query->isNull(0)) {
+	  overallOccurrence++;
+	}
+	delete query;
+      }
+    }
+    QVectorIterator<MacroEvent*> macroIt(macroVector);
+    while (macroIt.hasNext()) {
+      MacroEvent *macro = macroIt.next();
+      if (macro->getMode() == rowMode) {
+	occurrence++;
+      }
+      if (macro->getAttributes().contains(rowMode)) {
+	overallOccurrence++;
+      }
+    }
+    // And we add the results to the appropriate columns.
+    occurrenceCol.push_back(occurrence);
+    overallOccurrenceCol.push_back(overallOccurrence);
+    for (int j = 0; j != eventListWidget->rowCount(); j++) {
+      QTableWidgetItem *colItem = eventListWidget->item(j, 0);
+      QString colMode = colItem->data(Qt::DisplayRole).toString();
+      // Now we need to iterate through our edges.
+      QVectorIterator<Arrow*> it(edgeVector);
+      int count = 0;
+      while (it.hasNext()) {
+	Arrow *edge = it.next();
+	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(edge->startItem());
+	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(edge->endItem());
+	MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	QString startMode = "";
+	QString endMode = "";
+	if (startEvent) {
+	  startMode = startEvent->getMode();
+	} else if (startMacro) {
+	  startMode = startMacro->getMode();
+	}
+	if (endEvent) {
+	  endMode = endEvent->getMode(); 
+	} else if (endMacro) {
+	  endMode = endMacro->getMode();
+	}
+	if (startMode == rowMode && endMode == colMode) {
+	  transitions++;
+	  count++;
+	}
+      }
+      // We push the current cell value to our row vector.
+      currentRow.push_back(count);
+    }
+    // We push the number of transitions observed into the appropriate row.
+    transitionsRow.push_back(transitions);
+    // And then we add our row to the matrix.
+    matrix.push_back(currentRow);
+  }
+  // If we have a filled matrix, let's write it to a file.
+  if (matrix.size() > 0) {
+    QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"",
+						    tr("csv files (*.csv)"));
+    if (!fileName.trimmed().isEmpty()) {
+      if(!fileName.endsWith(".csv")) {
+	fileName.append(".csv");
+      }
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header.
+      QVectorIterator<QString> it2(names);
+      while (it2.hasNext()) {
+	QString currentName = it2.next();
+	fileOut << "," << "\"" << doubleQuote(currentName).toStdString() << "\"";
+      }
+      // Add row marginals labels and end the header with a newline symbol.
+      fileOut << "," << "mode occurrence" << "," << "attribute occurrence" << "\n"; 
+      int counter = 0;
+      QVectorIterator<QVector<int>> it3(matrix);
+      while (it3.hasNext()) {
+	QVector<int> currentRow = it3.next();
+	fileOut << doubleQuote(names[counter]).toStdString(); // First row contains row names.
+	QVectorIterator<int> it4(currentRow);
+	while (it4.hasNext()) {
+	  int currentCell = it4.next();
+	  fileOut << "," << currentCell;
+	}
+	// We add the row marginals to the end and close with a newline symbol.
+	fileOut << "," << occurrenceCol[counter] << ","
+		<< overallOccurrenceCol[counter] << "\n";
+	counter++;
+      }
+      // Our final row is the number of times our items were observed in transitions.
+      fileOut << "Transitions observed";
+      QVectorIterator<int> it5(transitionsRow);
+      while (it5.hasNext()) {
+	int currentCol = it5.next();
+	fileOut << "," << currentCol;
+      }
+      // And that is it.
+      fileOut.close();
     }
   }
 }

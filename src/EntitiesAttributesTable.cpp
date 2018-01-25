@@ -89,6 +89,7 @@ void EntitiesAttributesTable::resetHeader(int header) {
 
 void EntitiesAttributesTable::sortHeader(int header) {
   attributesModel->sort(header, Qt::AscendingOrder);
+  updateTable();
 }
 
 void EntitiesAttributesTable::changeFilter(const QString &text) {
