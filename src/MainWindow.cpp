@@ -723,6 +723,7 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->setOrigin(selectedMacro);
   showMenus(false);
   menuBar->setEnabled(false);
+  hgw->resetTree();
   stacked->setCurrentWidget(hierarchyGraphWidget);
 }
 

@@ -45,6 +45,7 @@ public:
   void cleanUp();
   void setAttributesWidget(AttributesWidget *aw);
   void setEventGraph(EventGraphWidget *egw);
+  void resetTree();
 					   
 private slots:
   void setCommentBool();
@@ -70,7 +71,6 @@ private slots:
   void resetTexts();
   
   void setTree();
-  void resetTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void fixTree();
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
