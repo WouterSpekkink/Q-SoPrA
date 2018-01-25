@@ -9,15 +9,25 @@ ExportTransitionMatrixDialog::ExportTransitionMatrixDialog(QWidget *parent) : QD
   modesButton = new QPushButton(tr("Mode based"), this);
   modesButton->setCheckable(true);
   modesButton->setChecked(true);
+  modesButton->setToolTip(breakString("The values of the transition matrix will be based only on "
+				      "how often transitions between events of a given mode "
+				      "are observed. "));
   attributesButton = new QPushButton(tr("Attributes based"), this);
   attributesButton->setCheckable(true);
   attributesButton->setChecked(false);
+  attributesButton->setToolTip(breakString("The values of the transition matrix will be based "
+					   "on the number of times transitions are observed "
+					   "between events that have one of the attributes in the "
+					   "list of modes assigned to them."));
   rawButton = new QPushButton(tr("Raw values"), this);
   rawButton->setCheckable(true);
   rawButton->setChecked(true);
+  rawButton->setToolTip(breakString("The values of the transition matrix will be raw counts."));
   probButton = new QPushButton(tr("Probabilities"), this);
   probButton->setCheckable(true);
   probButton->setChecked(false);
+  probButton->setToolTip(breakString("The values of the transition matrix will be raw counts "
+				     "divided by the row marginals."));
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save"), this);
 
