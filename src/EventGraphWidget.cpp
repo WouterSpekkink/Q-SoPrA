@@ -3606,6 +3606,44 @@ void EventGraphWidget::removeMode() {
       i++;
     }
   }
+  // We also want to restore any other modes that were overruled by the one we just removed.
+  for (int i = 0; i != eventListWidget->rowCount(); i++) {
+    QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(currentMode);
+    findChildren(currentMode, &attributeVector);
+    QVectorIterator<QString> it3(attributeVector);
+    while (it3.hasNext()) {
+      QString currentAttribute = it3.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	int currentIncident = query->value(0).toInt();
+	QVectorIterator<EventItem*> it4(eventVector);
+	while (it4.hasNext()) {
+	  EventItem* currentEvent = it4.next();
+	  if (currentEvent->getId() == currentIncident) {
+	    currentEvent->setColor(color);
+	    currentEvent->setMode(currentMode);
+	  }
+	}
+      }
+      delete query;
+      QVectorIterator<MacroEvent*> it5(macroVector);
+      while (it5.hasNext()) {
+	MacroEvent *currentMacro = it5.next();
+	QSet<QString> attributes = currentMacro->getAttributes();
+	if (attributes.contains(currentAttribute)) {
+	  currentMacro->setColor(color);
+	  currentMacro->setMode(currentMode);
+	}
+      }
+    }
+  }
 }
 
 void EventGraphWidget::setModeButton(QTableWidgetItem *item) {

@@ -6,7 +6,7 @@ ExportTransitionMatrixDialog::ExportTransitionMatrixDialog(QWidget *parent) : QD
   typeLabel = new QLabel(tr("<b>Matrix type:</b>"), this);
   probLabel = new QLabel(tr("<b>Values type:</b>"), this);
 
-  modesButton = new QPushButton(tr("Mode based"), this);
+  modesButton = new QPushButton(tr("Modes based"), this);
   modesButton->setCheckable(true);
   modesButton->setChecked(true);
   modesButton->setToolTip(breakString("The values of the transition matrix will be based only on "
