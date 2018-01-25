@@ -38,6 +38,7 @@
 #include "HierarchyGraphWidget.h"
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
+#include "ExportTransitionMatrixDialog.h"
 
 class AttributesWidget;
 
