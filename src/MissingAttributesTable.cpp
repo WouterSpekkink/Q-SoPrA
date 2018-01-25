@@ -30,7 +30,6 @@ MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent
   setMouseTracking(true);
 }
 
-
 void MissingAttributesTable::updateTable() {
   model->clear();
   QSqlQuery *query = new QSqlQuery;
