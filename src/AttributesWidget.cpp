@@ -1016,6 +1016,7 @@ void AttributesWidget::unassignAttribute() {
     delete query;
     delete query2;
   }
+  setButtons();
   occurrenceGraph->checkCongruency();
 }
 

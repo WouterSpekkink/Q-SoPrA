@@ -995,6 +995,7 @@ void HierarchyGraphWidget::unassignAttribute() {
 	valueButton->setEnabled(false);
       }
     }
+    setButtons();
   }
 }
 

@@ -72,6 +72,8 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   mainLayout->addLayout(optionsLayout);
   setLayout(mainLayout);
 
+  setMinimumWidth(400);
+  setMinimumHeight(600);
   setWindowTitle("Create mode");
 }
 
