@@ -7,8 +7,8 @@ AttributeDialog::AttributeDialog(QWidget *parent, QString submittedType) : QDial
   exitStatus = 1;
   type = submittedType;
   
-  nameLabel = new QLabel("Name:", this);
-  descriptionLabel = new QLabel("Description:", this);
+  nameLabel = new QLabel("<b>Name:</b>", this);
+  descriptionLabel = new QLabel("<b>Description:</b>", this);
 
   cancelCloseButton = new QPushButton("Cancel", this);
   saveCloseButton = new QPushButton("Save", this);
@@ -26,10 +26,8 @@ AttributeDialog::AttributeDialog(QWidget *parent, QString submittedType) : QDial
   nameLayout->addWidget(nameLabel);
   nameLayout->addWidget(nameField);
   mainLayout->addLayout(nameLayout);
-  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(descriptionLabel);
-  descriptionLayout->addWidget(descriptionField);
-  mainLayout->addLayout(descriptionLayout);
+  mainLayout->addWidget(descriptionLabel);
+  mainLayout->addWidget(descriptionField);
   QPointer<QHBoxLayout> buttonLayout = new QHBoxLayout;
   buttonLayout->addWidget(cancelCloseButton);
   cancelCloseButton->setMaximumWidth(cancelCloseButton->sizeHint().width());

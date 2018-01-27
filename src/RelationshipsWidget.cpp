@@ -1393,6 +1393,7 @@ void RelationshipsWidget::nextComment() {
 }
 
 void RelationshipsWidget::previousCoded() {
+  setComment();
   if (relationshipsTreeView->currentIndex().isValid()) {
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
@@ -1434,6 +1435,7 @@ void RelationshipsWidget::previousCoded() {
 }
 
 void RelationshipsWidget::nextCoded() {
+  setComment();
   if (relationshipsTreeView->currentIndex().isValid()) {
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
     QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));

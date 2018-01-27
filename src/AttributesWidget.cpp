@@ -1301,6 +1301,7 @@ void AttributesWidget::collapseTree() {
 }
 
 void AttributesWidget::previousCoded() {
+  setComment();
   if (attributesTreeView->currentIndex().isValid()) {
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
@@ -1342,6 +1343,7 @@ void AttributesWidget::previousCoded() {
 }
 
 void AttributesWidget::nextCoded() {
+  setComment();
   if (attributesTreeView->currentIndex().isValid()) {
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
