@@ -4,21 +4,26 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   journalLabel = new QLabel("<h2>Journal</h2>", this);
   logLabel = new QLabel("<h2>Selected entry</h2>", this);
 
-  journalModel = new EventTableModel(this);
+  journalModel = new JournalTableModel(this);
   journalModel->setTable("journal");
   journalModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Log date"));
+  journalModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entry"));
+  journalModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Needs attention"));
   journalModel->select();
 
   tableView = new ZoomableTableView(this);
   tableView->setModel(journalModel);
   tableView->setColumnHidden(0, true);
-  tableView->setColumnWidth(1, 200);
+  tableView->setColumnWidth(1, (parent->width() / 2) / 4);
+  tableView->setColumnWidth(2, (parent->width() / 2) / 2);
+  tableView->setColumnWidth(3, (parent->width() / 2) / 7);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
+  tableView->setItemDelegateForColumn(3, new CheckBoxDelegate(tableView));
   
   logField = new QTextEdit(this);
   logField->setEnabled(false);
@@ -104,9 +109,10 @@ void JournalWidget::addEntry() {
   QDateTime time = QDateTime::currentDateTime();
   QString timeText = time.toString(Qt::TextDate);
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("INSERT INTO journal (time) "
-		 "VALUES (:time)");
+  query->prepare("INSERT INTO journal (time, mark) "
+		 "VALUES (:time, :mark)");
   query->bindValue(":time", timeText);
+  query->bindValue(":mark", 0);
   query->exec();
   journalModel->select();
   delete query;

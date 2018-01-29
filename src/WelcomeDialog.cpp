@@ -117,7 +117,8 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE journal "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "time text, "
-		  "entry text)");
+		  "entry text, "
+		  "mark integer)");
       query->exec("CREATE TABLE linkage_types "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name TEXT, "
@@ -483,7 +484,8 @@ void WelcomeDialog::openDatabase() {
       query->exec("CREATE TABLE IF NOT EXISTS journal "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "time text, "
-		  "entry text)");
+		  "entry text "
+		  "mark integer)");
       query->exec("CREATE TABLE IF NOT EXISTS linkage_types "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "name TEXT, "

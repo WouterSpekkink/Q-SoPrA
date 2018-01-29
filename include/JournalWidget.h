@@ -15,9 +15,10 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
-#include "EventTableModel.h"
+#include "JournalTableModel.h"
 #include "ZoomableTableView.h"
 #include "SupportingFunctions.h"
+#include "CheckBoxDelegate.h"
 
 class JournalWidget : public QWidget {
   friend class MainWindow;
@@ -41,7 +42,7 @@ private slots:
   
 private:
 
-  QPointer<EventTableModel> journalModel;
+  QPointer<JournalTableModel> journalModel;
   QPointer<ZoomableTableView> tableView;
 
   QPointer<QLabel> journalLabel;
