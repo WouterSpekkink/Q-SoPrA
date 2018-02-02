@@ -144,6 +144,7 @@ void RelationshipsDialog::assignLeftEntity() {
     QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
     selectedSourceLabel->setText(selected);
   }
+  filterEntity(entityFilterField->text());
 }
 
 void RelationshipsDialog::assignRightEntity() {
@@ -151,6 +152,7 @@ void RelationshipsDialog::assignRightEntity() {
     QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
     selectedTargetLabel->setText(selected);
   }
+  filterEntity(entityFilterField->text());
 }
 
 
@@ -342,6 +344,7 @@ void RelationshipsDialog::editLeftAssignedEntity() {
     }
     delete query;
     delete entityDialog;
+    filterEntity(entityFilterField->text());
     entitiesTable->select();
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
@@ -372,6 +375,7 @@ void RelationshipsDialog::editRightAssignedEntity() {
     delete query;
     delete entityDialog;
     entitiesTable->select();
+    filterEntity(entityFilterField->text());
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
