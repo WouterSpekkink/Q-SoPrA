@@ -1381,6 +1381,7 @@ void EventGraphWidget::unassignAttribute() {
       }
     }
   }
+  setButtons();
   occurrenceGraph->checkCongruency();
 }
 

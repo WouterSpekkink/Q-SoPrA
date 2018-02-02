@@ -10,18 +10,15 @@ CheckBoxDelegate::CheckBoxDelegate(QObject *parent) : QStyledItemDelegate(parent
 void CheckBoxDelegate::paint (QPainter * painter, const QStyleOptionViewItem & option,
 	    const QModelIndex & index ) const {
   QStyleOptionViewItem viewItemOption(option);
-  // Only do this if we are accessing the column with boolean variables.
-  if (index.column() == 7) {
-    // This basically changes the rectangle in which the check box is drawn.
-    const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
-    QRect newRect = QStyle::alignedRect(option.direction, Qt::AlignCenter,
-					QSize(option.decorationSize.width() +
-					      5,option.decorationSize.height()),
-					QRect(option.rect.x() + textMargin, option.rect.y(),
-					      option.rect.width() -
-					      (2 * textMargin), option.rect.height()));
-    viewItemOption.rect = newRect;
-  }
+  // This basically changes the rectangle in which the check box is drawn.
+  const int textMargin = QApplication::style()->pixelMetric(QStyle::PM_FocusFrameHMargin) + 1;
+  QRect newRect = QStyle::alignedRect(option.direction, Qt::AlignCenter,
+				      QSize(option.decorationSize.width() +
+					    5,option.decorationSize.height()),
+				      QRect(option.rect.x() + textMargin, option.rect.y(),
+					    option.rect.width() -
+					    (2 * textMargin), option.rect.height()));
+  viewItemOption.rect = newRect;
   // Draw the check box using the new rectangle.
   QStyledItemDelegate::paint(painter, viewItemOption, index);
 }
