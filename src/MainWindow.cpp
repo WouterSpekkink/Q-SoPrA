@@ -687,6 +687,7 @@ void MainWindow::switchToNetworkGraphView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
+  ngw->getTypes();
   ngw->checkCongruency();
   stacked->setCurrentWidget(networkGraphWidget);
 }

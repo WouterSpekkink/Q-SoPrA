@@ -47,7 +47,8 @@ public:
 
   void resetTree();
   void checkCongruency();
-			  
+  void getTypes();
+			
 private slots:
   void toggleDetails();
   void toggleGraphicsControls();
@@ -95,7 +96,6 @@ private slots:
   void plotDirectedEdges(QString type, QColor color);
   void getUndirectedEdges();
   void plotUndirectedEdges(QString type, QColor color);
-  void getTypes();
 
   void colorByAttribute();
   void setNodeColor();
