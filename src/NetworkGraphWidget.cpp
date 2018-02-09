@@ -29,7 +29,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   graphicsWidget = new QWidget(this);
   legendWidget = new QWidget(this);
 
-  attributesTreeView = new DeselectableTreeView(infoWidget);
+  attributesTreeView = new DeselectableTreeViewEntities(infoWidget);
   attributesTreeView->setHeaderHidden(true);
   attributesTreeView->setDragEnabled(true);
   attributesTreeView->setAcceptDrops(true);
@@ -507,6 +507,12 @@ void NetworkGraphWidget::toggleLegend() {
 }
 
 void NetworkGraphWidget::retrieveData() {
+  valueField->blockSignals(true);
+  valueField->setText("");
+  valueField->setEnabled(false);
+  valueField->blockSignals(false);
+  valueButton->setEnabled(false);
+  attributesTreeView->clearSelection();
   if (currentData.size() > 0) {
     currentData.clear();
   }
@@ -2694,37 +2700,6 @@ void NetworkGraphWidget::exportNodes() {
 								       modes);
   settingsDialog->exec();
   
-  /*
-  // We let the user set the file name and location.
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
-    }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // Let us first create the file header.
-    fileOut << "Id" << ","
-	    << "Label" << ","
-	    << "Description" <<","
-	    << "Mode" << "\n";
-    // Then we iterate through all the nodes.  
-    QVectorIterator<NetworkNode*> it(nodeVector);
-    while (it.hasNext()) {
-      NetworkNode *node = it.next();
-      if (node->isVisible()) {
-	QString name = node->getName();
-	QString description = node->getDescription();
-	QString mode = node->getMode();
-	fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(name).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(mode).toStdString() << "\"" << "\n";
-      }
-    }
-    // And that should be it.
-    fileOut.close();
-    }*/
 }
 
 void NetworkGraphWidget::exportEdges() {

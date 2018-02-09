@@ -16,7 +16,7 @@
 #include <QHeaderView>
 #include <QStandardItemModel>
 #include <fstream>
-#include "DeselectableTreeView.h"
+#include "DeselectableTreeViewEntities.h"
 #include "NodeLabel.h"
 #include "GraphicsView.h"
 #include "NetworkNode.h"
@@ -147,7 +147,7 @@ private:
   QPointer<QWidget> legendWidget;
 
   QPointer<QStandardItemModel> attributesTree;
-  QPointer<DeselectableTreeView> attributesTreeView;
+  QPointer<DeselectableTreeViewEntities> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
   
   QPointer<QLabel> typeLabel;

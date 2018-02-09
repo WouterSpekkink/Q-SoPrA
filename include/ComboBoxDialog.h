@@ -17,26 +17,25 @@ class ComboBoxDialog : public QDialog {
   Q_OBJECT
   
 public:
-  ComboBoxDialog(QWidget *parent = 0);
+  ComboBoxDialog(QWidget *parent = 0, QVector<QString> contents = QVector<QString>());
   ~ComboBoxDialog() {};
 
-  QString getType();
+  QString getSelection();
   int getExitStatus();
 
 private slots:
-  void getTypes();
   void cancelAndClose();
   void saveAndClose();
 
 private:
-  QPointer<QLabel> typesLabel;
+  QPointer<QLabel> selectionLabel;
   
-  QPointer<QComboBox> typesComboBox;
+  QPointer<QComboBox> selectionComboBox;
 
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
   
-  QString chosenType;
+  QString selection;
 
   int exitStatus;
 };

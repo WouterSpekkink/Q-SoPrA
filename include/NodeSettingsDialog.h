@@ -14,6 +14,7 @@
 #include "SortFunctions.h"
 #include "ProgressBar.h"
 #include "AttributeSelectionDialog.h"
+#include "ComboBoxDialog.h"
 
 class NodeSettingsDialog : public QDialog {
   Q_OBJECT

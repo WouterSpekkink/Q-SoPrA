@@ -1,38 +1,32 @@
 #include "../include/ComboBoxDialog.h"
 
-ComboBoxDialog::ComboBoxDialog(QWidget *parent) : QDialog(parent) {
+ComboBoxDialog::ComboBoxDialog(QWidget *parent, QVector<QString> contents) : QDialog(parent) {
   exitStatus = 1;
 
-  typesLabel = new QLabel(tr("<b>Choose type:</b>"), this);
+  selectionLabel = new QLabel(tr("<b>Choose:</b>"), this);
 
-  typesComboBox = new QComboBox(this);
-  getTypes();
+  selectionComboBox = new QComboBox(this);
 
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
-  saveCloseButton = new QPushButton(tr("Save"), this);
+  saveCloseButton = new QPushButton(tr("Select"), this);
 
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
-  mainLayout->addWidget(typesLabel);
-  mainLayout->addWidget(typesComboBox);
+  mainLayout->addWidget(selectionLabel);
+  mainLayout->addWidget(selectionComboBox);
   QPointer<QHBoxLayout> optionsLayout = new QHBoxLayout;
   optionsLayout->addWidget(cancelCloseButton);
   optionsLayout->addWidget(saveCloseButton);
   mainLayout->addLayout(optionsLayout);
   setLayout(mainLayout);
-  setWindowTitle("Switch relationship type");
-}
 
-void ComboBoxDialog::getTypes() {
-  QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM relationship_types ORDER BY name ASC");
-  while (query->next()) {
-    QString current = query->value(0).toString();
-    typesComboBox->addItem(current);
+  QVectorIterator<QString> it(contents);
+  while (it.hasNext()) {
+    QString current = it.next();
+    selectionComboBox->addItem(current);
   }
-  delete query;
 }
 
 void ComboBoxDialog::cancelAndClose() {
@@ -41,13 +35,13 @@ void ComboBoxDialog::cancelAndClose() {
 }
 
 void ComboBoxDialog::saveAndClose() {
-  chosenType = typesComboBox->currentText();
-  if (chosenType == DEFAULT) {
+  selection = selectionComboBox->currentText();
+  if (selection == DEFAULT) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No type chosen.");
-    warningBox->setInformativeText("You have to choose a type to proceed.");
+    warningBox->setText("No selection made.");
+    warningBox->setInformativeText("You have to make a selection to proceed.");
     warningBox->exec();
     delete warningBox;
     return;
@@ -57,8 +51,8 @@ void ComboBoxDialog::saveAndClose() {
   }
 }
 
-QString ComboBoxDialog::getType() {
-  return chosenType;
+QString ComboBoxDialog::getSelection() {
+  return selection;
 }
 
 int ComboBoxDialog::getExitStatus() {

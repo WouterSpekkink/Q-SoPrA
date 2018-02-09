@@ -42,6 +42,8 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
   // Let's connect the signals now.
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
+  connect(removeAttributeButton, SIGNAL(clicked()), this, SLOT(removeAttribute()));
+  connect(exportCloseButton, SIGNAL(clicked()), this, SLOT(exportAndClose()));
   
   // And let's now create the layout
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -67,7 +69,39 @@ void NodeSettingsDialog::cancelAndClose() {
 }
 
 void NodeSettingsDialog::exportAndClose() {
-  // NEED TO CHANGE THIS TO ACTUALLY EXPORT SOMETHING
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // Let us first create the header
+    for (int i = 0; i != tableWidget->columnCount(); i++) {
+      QString currentHeader = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
+      fileOut << "\"" << doubleQuote(currentHeader).toStdString() << "\"";
+      if (i != tableWidget ->columnCount() - 1) {
+	fileOut << ",";
+      } else {
+	fileOut << "\n";
+      }
+    }
+    // Then we write the table contents.
+    for (int i = 0; i != tableWidget->rowCount(); i++) {
+      for (int j = 0; j != tableWidget->columnCount(); j++) {
+	QString currentCell = tableWidget->item(i, j)->data(Qt::DisplayRole).toString();
+	fileOut << "\"" << doubleQuote(currentCell).toStdString() << "\"";
+	if (j != tableWidget->columnCount() - 1) {
+	  fileOut << ",";
+	} else {
+	  fileOut << "\n";
+	}
+      }
+    }
+    // And then we are finished.
+    fileOut.close();
+  }
   this->close();
 }
 
@@ -90,7 +124,6 @@ void NodeSettingsDialog::addAttribute() {
       QString currentEntity = query->value(0).toString();
       entitiesVec.push_back(currentEntity);
       QString currentValue = query->value(1).toString();
-      qDebug() << currentValue;
       if (currentValue == "") {
 	currentValue = "1";
       }
@@ -111,9 +144,30 @@ void NodeSettingsDialog::addAttribute() {
       }
     }
   }
-  // TODO
 }
 
 void NodeSettingsDialog::removeAttribute() {
-  // TODO
+  // Only do this if we actually have attributes added.
+  if (tableWidget->columnCount() > 4) {
+    QVector<QString> attributes;
+    for (int i = 4; i != tableWidget->columnCount(); i++) {
+      QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
+      attributes.push_back(current);
+    }
+    QPointer<ComboBoxDialog> attributeDialog = new ComboBoxDialog(this, attributes);
+    attributeDialog->setWindowTitle("Select attribute to remove");
+    attributeDialog->exec();
+    if (attributeDialog->getExitStatus() == 0) {
+      QString attribute = attributeDialog->getSelection();
+      for (int i = 4; i != tableWidget->columnCount();) {
+	QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
+	if (current == attribute) {
+	  tableWidget->removeColumn(i);
+	  break;
+	} else {
+	  i++;
+	}
+      } 
+    }
+  }    
 }
