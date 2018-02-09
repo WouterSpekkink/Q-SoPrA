@@ -257,11 +257,18 @@ void RawRelationshipsTable::switchType() {
     QString type = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
     QString relationship = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
     QString incident = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
-    QPointer<ComboBoxDialog> comboBoxDialog = new ComboBoxDialog(this);
+    QVector<QString> relationshipTypes;
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT name FROM relationship_types ORDER BY name ASC");
+    while (query->next()) {
+      QString current = query->value(0).toString();
+      relationshipTypes.push_back(current);
+    }
+    QPointer<ComboBoxDialog> comboBoxDialog = new ComboBoxDialog(this, relationshipTypes);
+    comboBoxDialog->setWindowTitle("Switch relationship type");
     comboBoxDialog->exec();
     if (comboBoxDialog->getExitStatus() == 0) {
-      QString newType = comboBoxDialog->getType();
-      QSqlQuery *query = new QSqlQuery;
+      QString newType = comboBoxDialog->getSelection();
       query->prepare("UPDATE entity_relationships "
 		     "SET type = :newType "
 		     "WHERE type = :oldType AND name = :relationship");
@@ -288,6 +295,7 @@ void RawRelationshipsTable::switchType() {
       query->bindValue(":relationship", relationship);
       query->exec();
     }
+    delete query;
     delete comboBoxDialog;
     networkGraph->checkCongruency();
     relationshipsWidget->resetTree();

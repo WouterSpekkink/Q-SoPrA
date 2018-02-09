@@ -745,6 +745,7 @@ void MainWindow::switchToRawRelationshipsTableView() {
 void MainWindow::switchToIncidentsAttributesTableView() {
   // Still need to figure out what else needs to happen here.
   IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(11));
+  iat->attributesModel->select();
   iat->updateTable();
   stacked->setCurrentWidget(incidentsAttributesTableWidget);
 }
@@ -752,6 +753,7 @@ void MainWindow::switchToIncidentsAttributesTableView() {
 void MainWindow::switchToEntitiesAttributesTableView() {
   // Still need to figure out what else needs to happen here.
   EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
+  eat->attributesModel->select();
   eat->updateTable();
   stacked->setCurrentWidget(entitiesAttributesTableWidget);
 }

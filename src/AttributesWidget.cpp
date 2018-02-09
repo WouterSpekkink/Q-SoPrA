@@ -1228,6 +1228,12 @@ void AttributesWidget::getValue() {
 }
 
 void AttributesWidget::retrieveData() {
+  valueField->blockSignals(true);
+  valueField->setText("");
+  valueField->setEnabled(false);
+  valueField->blockSignals(false);
+  valueButton->setEnabled(false);
+  attributesTreeView->clearSelection();
   QSqlQueryModel *query = new QSqlQueryModel(this);
   query->setQuery("SELECT * FROM save_data");
   int order = 0;
@@ -1436,9 +1442,11 @@ void AttributesWidget::setButtons() {
       if (!empty) {
 	removeTextButton->setEnabled(true);
 	resetTextsButton->setEnabled(true);
+	valueField->setEnabled(true);
       } else {
 	removeTextButton->setEnabled(false);
 	resetTextsButton->setEnabled(false);
+	valueField->setEnabled(false);
       }
       assignAttributeButton->setEnabled(true);
       previousCodedButton->setEnabled(true);

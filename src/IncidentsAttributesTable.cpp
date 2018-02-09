@@ -180,10 +180,10 @@ void IncidentsAttributesTable::exportMatrix(bool valued) {
     // And we create a file outstream.  
     std::ofstream fileOut(fileName.toStdString().c_str());
     // We first need to write the header row.
-    QListIterator<int> it(incidentList);
+    QListIterator<QString> it(attributeList);
     while (it.hasNext()) {
-      int currentIncident = it.next();
-      fileOut << "," << currentIncident;
+      QString currentAttribute = it.next();
+      fileOut << "," << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
     }
     fileOut << "\n"; // we need a newline symbol at the end of the header.
     // Then we iterate through our lists and fetch values from the value map.
@@ -193,13 +193,13 @@ void IncidentsAttributesTable::exportMatrix(bool valued) {
     saveProgress->setModal(true);
     int counter = 1;
     saveProgress->show();
-    QListIterator<QString> it2(attributeList);
+    QListIterator<int> it2(incidentList);
     while (it2.hasNext()) {
-      QString currentAttribute = it2.next();
-      QListIterator<int> it3(incidentList);
-      fileOut << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
+      int currentIncident = it2.next();
+      QListIterator<QString> it3(attributeList);
+      fileOut << currentIncident;
       while (it3.hasNext()) {
-	int currentIncident = it3.next();
+	QString currentAttribute = it3.next();
 	QList<QVector<QString>> values = valueMap.values(currentIncident);
 	bool found = false;
 	for (int i = 0; i != values.size(); i++) {

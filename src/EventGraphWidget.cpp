@@ -567,6 +567,12 @@ void EventGraphWidget::showComments() {
 
 void EventGraphWidget::retrieveData() {
   setComment();
+  valueField->blockSignals(true);
+  valueField->setText("");
+  valueField->setEnabled(false);
+  valueField->blockSignals(false);
+  valueButton->setEnabled(false);
+  attributesTreeView->clearSelection();
   if (currentData.size() > 0) {
     currentData.clear();
   }
