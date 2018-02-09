@@ -36,6 +36,7 @@
 #include "MergeRelationshipsDialog.h"
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
+#include "NodeSettingsDialog.h"
 
 class NetworkGraphWidget : public QWidget {
   Q_OBJECT

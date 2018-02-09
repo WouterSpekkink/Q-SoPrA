@@ -174,10 +174,10 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
     // And we create a file outstream.  
     std::ofstream fileOut(fileName.toStdString().c_str());
     // We first need to write the header row.
-    QListIterator<QString> it(entityList);
+    QListIterator<QString> it(attributeList);
     while (it.hasNext()) {
-      QString currentEntity = it.next();
-      fileOut << "," << doubleQuote(currentEntity).toStdString();
+      QString currentAttribute = it.next();
+      fileOut << "," << doubleQuote(currentAttribute).toStdString();
     }
     fileOut << "\n"; // we need a newline symbol at the end of the header.
     // Then we iterate through our lists and fetch values from the value map.
@@ -187,13 +187,13 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
     saveProgress->setModal(true);
     int counter = 1;
     saveProgress->show();
-    QListIterator<QString> it2(attributeList);
+    QListIterator<QString> it2(entityList);
     while (it2.hasNext()) {
-      QString currentAttribute = it2.next();
-      QListIterator<QString> it3(entityList);
-      fileOut << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
+      QString currentEntity = it2.next();
+      QListIterator<QString> it3(attributeList);
+      fileOut << "\"" << doubleQuote(currentEntity).toStdString() << "\"";
       while (it3.hasNext()) {
-	QString currentEntity = it3.next();
+	QString currentAttribute = it3.next();
 	QList<QVector<QString>> values = valueMap.values(currentEntity);
 	bool found = false;
 	for (int i = 0; i != values.size(); i++) {

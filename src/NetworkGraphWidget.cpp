@@ -2671,6 +2671,30 @@ void NetworkGraphWidget::exportSvg() {
 }
 
 void NetworkGraphWidget::exportNodes() {
+  QVector<QString> entities;
+  QVector<QString> descriptions;
+  QVector<QString> modes;
+  
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while (it.hasNext()) {
+    NetworkNode *node = it.next();
+    if (node->isVisible()) {
+      QString entity = node->getName();
+      entities.push_back(entity);
+      QString description = node->getDescription();
+      descriptions.push_back(description);
+      QString mode = node->getMode();
+      modes.push_back(mode);
+    }
+  }
+  
+  QPointer<NodeSettingsDialog> settingsDialog = new NodeSettingsDialog(this,
+								       entities,
+								       descriptions,
+								       modes);
+  settingsDialog->exec();
+  
+  /*
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) {
@@ -2700,7 +2724,7 @@ void NetworkGraphWidget::exportNodes() {
     }
     // And that should be it.
     fileOut.close();
-  }
+    }*/
 }
 
 void NetworkGraphWidget::exportEdges() {
