@@ -6,6 +6,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QCheckBox>
 #include <QPointer>
 #include <QtSql>
 #include "Constants.h"
@@ -22,6 +23,7 @@ public:
 
   QString getAttribute();
   int getExitStatus();
+  bool getChecked();
 			    
 private slots:
   void setTree();
@@ -43,12 +45,15 @@ private:
   
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
+
+  QPointer<QCheckBox> includeValuesCheckBox; 
   
   QString chosenAttribute;
 
   QString type;
 
   int exitStatus;
+  bool checked;
 };
 
 #endif

@@ -31,7 +31,8 @@ private slots:
   void exportAndClose();
   void addAttribute();
   void removeAttribute();
-
+  void findChildren(QString father, QVector<QString> *children);
+  
 private:
   QPointer<QTableWidget> tableWidget;
   
@@ -39,7 +40,7 @@ private:
   QPointer<QPushButton> removeAttributeButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> exportCloseButton;
-
+  
   QVector<QString> entities;
   QVector<QString> descriptions;
   QVector<QString> modes;

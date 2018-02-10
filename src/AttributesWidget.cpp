@@ -1202,7 +1202,7 @@ void AttributesWidget::getValue() {
     int id = 0;
     id = query2->value(0).toInt();    
     query2->prepare("SELECT attribute, value FROM attributes_to_incidents "
-		    "WHERE incident = :id AND attribute =:att");
+		    "WHERE incident = :id AND attribute = :att");
     query2->bindValue(":id", id);
     query2->bindValue(":att", attribute);
     query2->exec();
@@ -1442,11 +1442,9 @@ void AttributesWidget::setButtons() {
       if (!empty) {
 	removeTextButton->setEnabled(true);
 	resetTextsButton->setEnabled(true);
-	valueField->setEnabled(true);
       } else {
 	removeTextButton->setEnabled(false);
 	resetTextsButton->setEnabled(false);
-	valueField->setEnabled(false);
       }
       assignAttributeButton->setEnabled(true);
       previousCodedButton->setEnabled(true);

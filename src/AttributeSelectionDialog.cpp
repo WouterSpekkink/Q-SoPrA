@@ -4,6 +4,7 @@ AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString subm
   type = submittedType;
   exitStatus = 1;
   chosenAttribute = DEFAULT;
+  checked = false;
 
   attributeLabel = new QLabel(tr("Choose attribute:"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -21,9 +22,11 @@ AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString subm
 
   attributesFilterField = new QLineEdit(this);
 
+  includeValuesCheckBox = new QCheckBox(tr("Include values"), this);
+  
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save"), this);
-  
+
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
@@ -39,6 +42,7 @@ AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString subm
   filterLayout->addWidget(attributesFilterLabel);
   filterLayout->addWidget(attributesFilterField);
   mainLayout->addLayout(filterLayout);
+  mainLayout->addWidget(includeValuesCheckBox);
   QPointer<QHBoxLayout> optionsLayout = new QHBoxLayout;
   optionsLayout->addWidget(cancelCloseButton);
   optionsLayout->addWidget(saveCloseButton);
@@ -149,6 +153,7 @@ void AttributeSelectionDialog::saveAndClose() {
     return;
   } else {
     exitStatus = 0;
+    checked = includeValuesCheckBox->isChecked();
     this->close();
   }
 }
@@ -161,3 +166,6 @@ int AttributeSelectionDialog::getExitStatus() {
   return exitStatus;
 }
 
+bool AttributeSelectionDialog::getChecked() {
+  return checked;
+}

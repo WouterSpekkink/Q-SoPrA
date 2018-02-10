@@ -39,6 +39,7 @@
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
 #include "ExportTransitionMatrixDialog.h"
+#include "EventNodeSettingsDialog.h"
 
 class AttributesWidget;
 

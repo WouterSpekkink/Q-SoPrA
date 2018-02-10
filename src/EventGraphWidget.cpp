@@ -4116,86 +4116,76 @@ void EventGraphWidget::exportNodes() {
   }
   // We finish this vector by sorting it.
   qSort(events.begin(), events.end(), componentsSort);
-  // We let the user set the file name and location.
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
-    }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // First we create the file headers
-    fileOut << "Id" << ","
-	    << "Label" << ","
-	    << "Description" << ","
-	    << "Comment" << ","
-	    << "Type" << ","
-	    << "Mode" << ","
-	    << "X" << ","
-	    << "Y" << "\n";
-    // And then we iterate through our events.
-    QVectorIterator<QGraphicsItem*> it3(events);
-    while (it3.hasNext()) {
-      QGraphicsItem *current = it3.next();
-      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
-      if (event) {
-	int id = event->getId();
-	QString label = event->getLabel()->toPlainText();
-	QString description = "";
-	QString comment = "";
-	QString mode = event->getMode();
-	QString xCoord = QString::number(event->scenePos().x());
-	QString yCoord = QString::number(event->scenePos().y());
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT description, comment FROM incidents "
+  QVectorIterator<QGraphicsItem*> it3(events);
+  QVector<QString> ids;
+  QVector<QString> labels;
+  QVector<QString> descriptions;
+  QVector<QString> comments;
+  QVector<QString> types;
+  QVector<QString> modes;
+  QVector<QString> xCoords;
+  QVector<QString> yCoords;
+  while (it3.hasNext()) {
+    QGraphicsItem *current = it3.next();
+    EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+    if (event) {
+      int id = event->getId();
+      QString label = event->getLabel()->toPlainText();
+      QString description = "";
+      QString comment = "";
+      QString mode = event->getMode();
+      QString xCoord = QString::number(event->scenePos().x());
+      QString yCoord = QString::number(event->scenePos().y());
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT description, comment FROM incidents "
 		       "WHERE id = :id");
-	query->bindValue(":id", id);
-	query->exec();
-	query->first();
-	if (!(query->isNull(0))) {
-	  description = query->value(0).toString();
-	  comment = query->value(1).toString();
-	}
-	delete query;
-	fileOut << "i" << id << ","
-		<< doubleQuote(label).toStdString() << ","
-		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(comment).toStdString() << "\"" << ","
-		<< "Incident" << ","
-		<< "\"" << doubleQuote(mode).toStdString() << "\"" << ","
-		<< xCoord.toStdString() << ","
-		<< yCoord.toStdString() << "\n";
-      } else if (macro) {
-	int id = macro->getId();
-	QString label = macro->getLabel()->toPlainText();
-	QString description = macro->getDescription();
-	QString comment = macro->getComment();
-	QString mode = macro->getMode();
-	QString xCoord = QString::number(macro->scenePos().x());
-	QString yCoord = QString::number(macro->scenePos().y());
-	QString identifier = "";
-	QString type = "";
-	if (macro->getConstraint() == PATHS) {
-	  identifier = "p";
-	  type = "Paths based";
-	} else if (macro->getConstraint() == SEMIPATHS) {
-	  identifier = "s";
-	  type = "Semi-paths based";
-	}
-	fileOut << identifier.toStdString() << id << ","
-		<< doubleQuote(label).toStdString() << ","
-		<< "\"" << doubleQuote(description).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(comment).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(type).toStdString() << "\"" << ","
-		<< "\"" << doubleQuote(mode).toStdString() << "\"" << ","
-		<< xCoord.toStdString() << ","
-		<< yCoord.toStdString() << "\n";
+      query->bindValue(":id", id);
+      query->exec();
+      query->first();
+      if (!(query->isNull(0))) {
+	description = query->value(0).toString();
+	comment = query->value(1).toString();
       }
+      delete query;
+      ids.push_back("i" + label);
+      labels.push_back(label);
+      descriptions.push_back(description);
+      comments.push_back(comment);
+      types.push_back(INCIDENT);
+      modes.push_back(mode);
+      xCoords.push_back(xCoord);
+      yCoords.push_back(yCoord);
+    } else if (macro) {
+      QString label = macro->getLabel()->toPlainText();
+      QString description = macro->getDescription();
+      QString comment = macro->getComment();
+      QString mode = macro->getMode();
+      QString xCoord = QString::number(macro->scenePos().x());
+      QString yCoord = QString::number(macro->scenePos().y());
+      QString identifier = "";
+      QString type = "";
+      if (macro->getConstraint() == PATHS) {
+	identifier = "p";
+	type = "Paths based";
+      } else if (macro->getConstraint() == SEMIPATHS) {
+	identifier = "s";
+	type = "Semi-paths based";
+      }
+      QString id = identifier + QString::number(macro->getId());
+      ids.push_back(id);
+      labels.push_back(label);
+      descriptions.push_back(description);
+      comments.push_back(comment);
+      types.push_back(type);
+      modes.push_back(mode);
+      xCoords.push_back(xCoord);
+      yCoords.push_back(yCoord);
     }
-    // And that should be it!
-    fileOut.close();
   }
+  QPointer<EventNodeSettingsDialog> settingsDialog = new EventNodeSettingsDialog(this, ids, labels, descriptions, comments,
+										 types, modes, xCoords, yCoords);
+  settingsDialog->exec();
 }
 
 void EventGraphWidget::exportEdges() {
