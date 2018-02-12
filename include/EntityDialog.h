@@ -18,6 +18,7 @@
 #include "AttributeTreeFilter.h"
 #include "AttributeDialog.h"
 #include "Constants.h"
+#include "MergeAttributesDialog.h"
 
 class EntityDialog : public QDialog {
   Q_OBJECT
@@ -32,20 +33,21 @@ public:
   void submitName(const QString &newName);
   void submitDescription(const QString &newDescription);
   void setNew();
-		      
-private slots:
+  void clearSelection();
+  void resetTree();
 
+private slots:
   void setValueButton();
   void setValue();
   void getValue();
   void setFilter(const QString &text);
   void expandTree();
   void collapseTree();
-  
   void assignAttribute();
   void unassignAttribute();
   void addAttribute();
   void editAttribute();
+  void mergeAttributes();
   void removeUnusedAttributes();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
@@ -54,8 +56,9 @@ private slots:
   void cancelAndClose();
   void saveAndClose();
   void fixTree();
+  void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
-  
+
 private:
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeViewEntities> attributesTreeView;
@@ -76,6 +79,7 @@ private:
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> editAttributeButton;
+  QPointer<QPushButton> mergeAttributesButton;
   QPointer<QPushButton> removeUnusedAttributesButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
@@ -96,6 +100,7 @@ private:
   int exitStatus;
 
   bool isNew;
+  bool fresh; // Qt's selection behaviour forced me to do this. 
 };
 
 #endif

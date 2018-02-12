@@ -57,9 +57,14 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   valueButton = new QPushButton("Store value", this);
   valueButton->setEnabled(false);
   assignAttributeButton = new QPushButton("Assign attribute", this);
+  assignAttributeButton->setEnabled(false);
   unassignAttributeButton = new QPushButton("Unassign attribute", this);
+  unassignAttributeButton->setEnabled(false);
   addAttributeButton = new QPushButton(tr("New attribute"), this);
   editAttributeButton = new QPushButton(tr("Edit attribute"), this);
+  editAttributeButton->setEnabled(false);
+  mergeAttributesButton = new QPushButton(tr("Merge with..."), this);
+  mergeAttributesButton->setEnabled(false);
   removeUnusedAttributesButton = new QPushButton(tr("Remove unused attributes"), this);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save entity"), this);
@@ -67,17 +72,23 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   collapseButton = new QPushButton("-", this);
   
   // Then we wire the signals of the dialog.
-  connect(attributesFilterField, SIGNAL(textChanged(const QString &)), this, SLOT(setFilter(const QString &)));
+  connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
+	  this, SLOT(setFilter(const QString &)));
   connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
+  connect(mergeAttributesButton, SIGNAL(clicked()), this, SLOT(mergeAttributes()));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(getValue()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
@@ -121,6 +132,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   QPointer<QHBoxLayout> attributeButtonLayout = new QHBoxLayout;
   attributeButtonLayout->addWidget(addAttributeButton);
   attributeButtonLayout->addWidget(editAttributeButton);
+  attributeButtonLayout->addWidget(mergeAttributesButton);
   attributeButtonLayout->addWidget(removeUnusedAttributesButton);
   attributeButtonLayout->setAlignment(Qt::AlignVCenter);
   rightLayout->addLayout(attributeButtonLayout);
@@ -137,6 +149,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   setLayout(mainLayout);
   setWindowTitle("Add /Edit Entity");
   setFixedHeight(sizeHint().height());
+  fresh = true;
 }
 
 void EntityDialog::setValueButton() {
@@ -148,13 +161,15 @@ void EntityDialog::setValue() {
     QSqlQuery *query = new QSqlQuery;
     QString attribute = attributesTreeView->currentIndex().data().toString();
     if (isNew) {
-      query->prepare("UPDATE attributes_to_entities SET value = :val WHERE attribute = :attribute AND new = :new");
+      query->prepare("UPDATE attributes_to_entities SET value = :val "
+		     "WHERE attribute = :attribute AND new = :new");
       query->bindValue(":val", valueField->text());
       query->bindValue(":attribute", attribute);
       query->bindValue(":new", 1);
       query->exec();
     } else {
-      query->prepare("UPDATE attributes_to_entities SET value = :val WHERE attribute = :attribute AND entity = :oldName");
+      query->prepare("UPDATE attributes_to_entities SET value = :val "
+		     "WHERE attribute = :attribute AND entity = :oldName");
       query->bindValue(":val", valueField->text());
       query->bindValue(":attribute", attribute);
       query->bindValue(":oldName", oldName);
@@ -190,7 +205,8 @@ void EntityDialog::getValue() {
       }
       valueButton->setEnabled(false);
     } else {
-      query->prepare("SELECT attribute, value FROM attributes_to_entities WHERE attribute =:att AND entity = :oldName");
+      query->prepare("SELECT attribute, value FROM attributes_to_entities "
+		     "WHERE attribute =:att AND entity = :oldName");
       query->bindValue(":att", attribute);
       query->bindValue(":oldName", oldName);
       query->exec();
@@ -229,7 +245,8 @@ void EntityDialog::assignAttribute() {
       assignedModel->select();
       int max = assignedModel->rowCount();
       bool empty = false;
-      query->prepare("SELECT attribute, new FROM attributes_to_entities WHERE attribute = :att AND new = 1");
+      query->prepare("SELECT attribute, new FROM attributes_to_entities "
+		     "WHERE attribute = :att AND new = 1");
       query->bindValue(":att", attribute);
       query->exec();
       query->first();
@@ -246,7 +263,8 @@ void EntityDialog::assignAttribute() {
       assignedModel->select();
       int max = assignedModel->rowCount();
       bool empty = false;
-      query->prepare("SELECT attribute, new FROM attributes_to_entities WHERE attribute = :att AND entity = :oldName");
+      query->prepare("SELECT attribute, new FROM attributes_to_entities "
+		     "WHERE attribute = :att AND entity = :oldName");
       query->bindValue(":att", attribute);
       query->bindValue(":oldName", oldName);
       query->exec();
@@ -261,6 +279,7 @@ void EntityDialog::assignAttribute() {
 	valueField->setEnabled(true);
       }
     }
+    setButtons();
     delete query;
   }
 }
@@ -273,13 +292,15 @@ void EntityDialog::unassignAttribute() {
     assignedModel->select();
     bool empty = false;
     if (isNew) {
-      query->prepare("SELECT attribute FROM attributes_to_entities WHERE attribute = :att AND new = 1");
+      query->prepare("SELECT attribute FROM attributes_to_entities "
+		     "WHERE attribute = :att AND new = 1");
       query->bindValue(":att", attribute);
       query->exec();
       query->first();
       empty = query->isNull(0);
       if (!empty) {
-	query->prepare("DELETE FROM attributes_to_entities WHERE attribute = :att AND new = 1");
+	query->prepare("DELETE FROM attributes_to_entities "
+		       "WHERE attribute = :att AND new = 1");
 	query->bindValue(":att", attribute);
 	query->exec();
 	resetFont(attributesTree);
@@ -296,14 +317,16 @@ void EntityDialog::unassignAttribute() {
 	valueButton->setEnabled(false);
       }
     } else {
-      query->prepare("SELECT attribute, entity FROM attributes_to_entities WHERE attribute = :att AND entity = :oldName");
+      query->prepare("SELECT attribute, entity FROM attributes_to_entities "
+		     "WHERE attribute = :att AND entity = :oldName");
       query->bindValue(":att", attribute);
       query->bindValue(":oldName", oldName);
       query->exec();
       query->first();
       empty = query->isNull(0);
       if (!empty) {
-	query->prepare("DELETE FROM attributes_to_entities WHERE attribute = :att AND entity = :oldName");
+	query->prepare("DELETE FROM attributes_to_entities "
+		       "WHERE attribute = :att AND entity = :oldName");
 	query->bindValue(":att", attribute);
 	query->bindValue(":oldName", oldName);
 	query->exec();
@@ -321,14 +344,16 @@ void EntityDialog::unassignAttribute() {
 	valueButton->setEnabled(false);
       }
     }
+    setButtons();
     delete query;
     delete query2;
   }
 }
 
 void EntityDialog::addAttribute() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
+  if (attributesTreeView->currentIndex().isValid() && !fresh) {
+    QString currentParent = treeFilter->
+      mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";
     QString description = "";
     attributeDialog = new AttributeDialog(this, ENTITY);
@@ -338,7 +363,8 @@ void EntityDialog::addAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
-      QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+      QStandardItem *father = attributesTree->
+	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
@@ -387,7 +413,7 @@ void EntityDialog::addAttribute() {
 }
 
 void EntityDialog::editAttribute() {
-    if (attributesTreeView->currentIndex().isValid()) {
+    if (attributesTreeView->currentIndex().isValid() && !fresh) {
     QString name = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT description FROM entity_attributes WHERE name = :name");
@@ -402,11 +428,13 @@ void EntityDialog::editAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       QString newName = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      QStandardItem *currentAttribute = attributesTree->
+	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);      
       currentAttribute->setToolTip(description);
-      query->prepare("UPDATE entity_attributes SET name = :newname, description = :newdescription WHERE name = :oldname");
+      query->prepare("UPDATE entity_attributes SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":newdescription", description);
       query->bindValue(":oldname", name);
@@ -415,7 +443,8 @@ void EntityDialog::editAttribute() {
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
-      query->prepare("UPDATE attributes_to_entities SET attribute = :newname WHERE attribute = :oldname");
+      query->prepare("UPDATE attributes_to_entities SET attribute = :newname "
+		     "WHERE attribute = :oldname");
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
@@ -427,6 +456,86 @@ void EntityDialog::editAttribute() {
   }
   attributesTree->sort(0, Qt::AscendingOrder);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+}
+
+void EntityDialog::mergeAttributes() {
+  if (attributesTreeView->currentIndex().isValid() && !fresh) {
+    QString origin = attributesTreeView->currentIndex().data().toString();
+    QPointer<MergeAttributesDialog> mergeDialog = new MergeAttributesDialog(this, origin, ENTITY);
+    mergeDialog->setWindowTitle("Select attribute to merge with");
+    mergeDialog->exec();
+    if (mergeDialog->getExitStatus() == 0) {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Merging attributes cannot be undone. "
+				     "Are you sure you want to proceed?");
+      if (warningBox->exec() == QMessageBox::Yes) {
+	QString partner = mergeDialog->getAttribute();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("UPDATE entity_attributes SET father = :new "
+		       "WHERE father = :old");
+	query->bindValue(":new", partner);
+	query->bindValue(":old", origin);
+	query->exec();
+	query->prepare("DELETE FROM entity_attributes WHERE name = :old");
+	query->bindValue(":old", origin);
+	query->exec();
+	query->prepare("UPDATE attributes_to_entities SET attribute = :new "
+		       "WHERE attribute = :old");
+	query->bindValue(":new", partner);
+	query->bindValue(":old", origin);
+	query->exec();
+	delete mergeDialog;
+	query->prepare("SELECT description FROM entity_attributes WHERE name = :name");
+	query->bindValue(":name", partner);
+	query->exec();
+	query->first();
+	QString description = query->value(0).toString();
+	attributeDialog = new AttributeDialog(this, ENTITY);
+	attributeDialog->submitName(partner);
+	attributeDialog->setDescription(description);
+	attributeDialog->exec();
+	if (attributeDialog->getExitStatus() == 0) {
+	  QString newName = attributeDialog->getName();
+	  description = attributeDialog->getDescription();
+	  QStandardItem *currentAttribute = attributesTree->
+	    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+	  currentAttribute->setData(newName);
+	  currentAttribute->setData(newName, Qt::DisplayRole);
+	  QString hint = breakString(description);
+	  currentAttribute->setToolTip(hint);
+	  query->prepare("UPDATE entity_attributes "
+			 "SET name = :newname, description = :newdescription "
+			 "WHERE name = :oldname");
+	  query->bindValue(":newname", newName);
+	  query->bindValue(":newdescription", description);
+	  query->bindValue(":oldname", partner);
+	  query->exec();
+	  query->prepare("UPDATE entity_attributes "
+			 "SET father = :newname "
+			 "WHERE father = :oldname");
+	  query->bindValue(":newname", newName);
+	  query->bindValue(":oldname", partner);
+	  query->exec();
+	  query->prepare("UPDATE attributes_to_entities "
+			 "SET attribute = :newname "
+			 "WHERE attribute = :oldname");
+	  query->bindValue(":newname", newName);
+	  query->bindValue(":oldname", partner);
+	  query->exec();
+	}
+	delete query;
+	delete attributeDialog;
+	attributesTree->sort(0, Qt::AscendingOrder);
+	attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+	resetTree();
+	fixTree();
+      }
+    }
+  }
 }
 
 void EntityDialog::removeUnusedAttributes() {
@@ -702,6 +811,53 @@ void EntityDialog::fixTree() {
   delete query;
 }
 
+void EntityDialog::setButtons() {
+  if (fresh) {
+    fresh = false;
+  }
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    if (isNew) {
+      bool empty = false;
+      query->prepare("SELECT attribute, new FROM attributes_to_entities "
+		     "WHERE attribute = :att AND new = 1");
+      query->bindValue(":att", currentAttribute);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	unassignAttributeButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+      }
+    } else {
+      bool empty = false;
+      query->prepare("SELECT attribute FROM attributes_to_entities "
+		     "WHERE attribute = :att AND entity = :oldName");
+      query->bindValue(":att", currentAttribute);
+      query->bindValue(":oldName", oldName);
+      query->exec();
+      query->first();
+      empty = query->isNull(0);
+      if (!empty) {
+	unassignAttributeButton->setEnabled(true);
+      } else {
+	unassignAttributeButton->setEnabled(false);
+      }
+    }
+    delete query;
+    assignAttributeButton->setEnabled(true);
+    editAttributeButton->setEnabled(true);
+    mergeAttributesButton->setEnabled(true);
+  } else {
+   assignAttributeButton->setEnabled(false);
+   editAttributeButton->setEnabled(false);
+   unassignAttributeButton->setEnabled(false);
+   mergeAttributesButton->setEnabled(false);
+  }
+}
+
 bool EntityDialog::eventFilter(QObject *object, QEvent *event) {
   if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
@@ -721,4 +877,7 @@ bool EntityDialog::eventFilter(QObject *object, QEvent *event) {
   return false;
 }
 
-
+void EntityDialog::resetTree() {
+  delete attributesTree;
+  setTree();
+}

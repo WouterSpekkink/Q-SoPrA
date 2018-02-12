@@ -11,6 +11,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   type = "";
   exitStatus = 1;
   entityEdited = 0;
+  fresh = true;
   
   sourceLabel = new QLabel(tr("Source filter:"), this);
   typeLabel = new QLabel("", this);
@@ -33,16 +34,21 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entityFilterField = new QLineEdit();
   newEntityButton = new QPushButton(tr("Define new entity"), this);
   editEntityButton = new QPushButton(tr("Edit highlighted entity"), this);
+  editEntityButton->setEnabled(false);
   editLeftAssignedEntityButton = new QPushButton(tr("Edit left assigned entity"), this);
+  editLeftAssignedEntityButton->setEnabled(false);
   editRightAssignedEntityButton = new QPushButton(tr("Edit right assigned entity"), this);
+  editRightAssignedEntityButton->setEnabled(false);
   removeEntitiesButton = new QPushButton(tr("Remove unused entities"), this);
-
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   resetButton = new QPushButton(tr("Reset"), this);
   saveCloseButton = new QPushButton(tr("Save relationship"), this);
   
   connect(entityFilterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(filterEntity(const QString &)));
+  connect(entitiesView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
   connect(assignLeftEntityButton, SIGNAL(clicked()), this, SLOT(assignLeftEntity()));
   connect(assignRightEntityButton, SIGNAL(clicked()), this, SLOT(assignRightEntity()));
   connect(newEntityButton, SIGNAL(clicked()), this, SLOT(addEntity()));
@@ -109,12 +115,14 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
 void RelationshipsDialog::submitLeftEntity(QString entity) {
   if (entity != selectedSourceLabel->text() && entity != selectedTargetLabel->text()) {
     selectedSourceLabel->setText(entity);
+    editLeftAssignedEntityButton->setEnabled(true);
   }
 }
 
 void RelationshipsDialog::submitRightEntity(QString entity) {
   if (entity != selectedSourceLabel->text() && entity != selectedTargetLabel->text()) {
     selectedTargetLabel->setText(entity);
+    editRightAssignedEntityButton->setEnabled(true);
   }
 }
 
@@ -143,6 +151,7 @@ void RelationshipsDialog::assignLeftEntity() {
   if (entitiesView->currentIndex().isValid()) {
     QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
     selectedSourceLabel->setText(selected);
+    editLeftAssignedEntityButton->setEnabled(true);
   }
   filterEntity(entityFilterField->text());
 }
@@ -151,6 +160,7 @@ void RelationshipsDialog::assignRightEntity() {
   if (entitiesView->currentIndex().isValid()) {
     QString selected = entitiesView->currentIndex().data(Qt::DisplayRole).toString();
     selectedTargetLabel->setText(selected);
+    editRightAssignedEntityButton->setEnabled(true);
   }
   filterEntity(entityFilterField->text());
 }
@@ -445,6 +455,17 @@ void RelationshipsDialog::saveAndClose() {
   delete query;
 }
 
+void RelationshipsDialog::setButtons() {
+  if (fresh) {
+    fresh = false;
+  }
+  if (entitiesView->currentIndex().isValid()) {
+    editEntityButton->setEnabled(true);
+  } else {
+    editEntityButton->setEnabled(false);
+  }
+}
+
 int RelationshipsDialog::getExitStatus() {
   return exitStatus;
 }
@@ -468,5 +489,7 @@ QString RelationshipsDialog::getRightEntity() {
 void RelationshipsDialog::reset() {
   selectedSourceLabel->setText(DEFAULT);
   selectedTargetLabel->setText(DEFAULT);
+  editLeftAssignedEntityButton->setEnabled(false);
+  editRightAssignedEntityButton->setEnabled(false);
 }
 

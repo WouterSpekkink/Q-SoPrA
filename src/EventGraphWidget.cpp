@@ -4314,9 +4314,17 @@ void EventGraphWidget::exportNodes() {
       yCoords.push_back(yCoord);
     }
   }
-  QPointer<EventNodeSettingsDialog> settingsDialog = new EventNodeSettingsDialog(this, ids, labels, descriptions, comments,
-										 types, modes, xCoords, yCoords);
+  QPointer<EventNodeSettingsDialog> settingsDialog = new EventNodeSettingsDialog(this,
+										 ids,
+										 labels,
+										 descriptions,
+										 comments,
+										 types,
+										 modes,
+										 xCoords,
+										 yCoords);
   settingsDialog->exec();
+  delete settingsDialog;
 }
 
 void EventGraphWidget::exportEdges() {

@@ -57,6 +57,7 @@ private slots:
   void editRightAssignedEntity();
   void removeEntities();
   void reset();
+  void setButtons();
   void cancelAndClose();
   void saveAndClose();
   
@@ -91,8 +92,11 @@ private:
   QString name;
   QString oldName;
   QString type;
+  
   int exitStatus;
   int entityEdited;
+
+  bool fresh;
 };
 
 #endif

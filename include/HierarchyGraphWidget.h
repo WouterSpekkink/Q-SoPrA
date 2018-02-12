@@ -35,6 +35,7 @@ class AttributesWidget;
 
 class HierarchyGraphWidget : public QDialog {
   Q_OBJECT
+  friend class MainWindow;
 
 public:
   HierarchyGraphWidget(QWidget *parent = 0);

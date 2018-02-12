@@ -239,6 +239,7 @@ void EventNodeSettingsDialog::addAttribute() {
     qApp->restoreOverrideCursor();
     qApp->processEvents(); 
   }
+  delete attributeSelectionDialog;
 }
   
 void EventNodeSettingsDialog::removeAttribute() {

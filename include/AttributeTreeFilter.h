@@ -7,6 +7,8 @@
 class AttributeTreeFilter : public QSortFilterProxyModel {
   Q_OBJECT
 
+  friend class EntityDialog;
+
 public:
   AttributeTreeFilter(QObject *parent=0);
   ~AttributeTreeFilter() {};

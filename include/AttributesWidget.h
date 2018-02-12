@@ -22,6 +22,7 @@
 #include "EventGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"
+#include "MergeAttributesDialog.h"
 
 class EventGraphWidget;
 
@@ -56,6 +57,7 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
+  void mergeAttributes();
   void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
   void assignAttribute();
@@ -133,6 +135,7 @@ private:
   QPointer<QPushButton> commentNextButton;
   QPointer<QPushButton> newAttributeButton;
   QPointer<QPushButton> editAttributeButton;
+  QPointer<QPushButton> mergeAttributesButton;
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;

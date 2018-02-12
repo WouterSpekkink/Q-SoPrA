@@ -625,6 +625,10 @@ void MainWindow::switchToRelationshipView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->setComment();
   stacked->setCurrentWidget(relationshipsWidget);
+  rw->relationshipsTreeView->clearSelection();
+  const QModelIndex index;
+  rw->relationshipsTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+  rw->setButtons();
 }
 
 void MainWindow::switchToLinkageView() {
@@ -670,10 +674,13 @@ void MainWindow::switchToEventGraphView() {
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   egw->getLinkageDetails();
   egw->checkCongruency();
-  const QModelIndex index;
   showMenus(true);
   menuBar->setEnabled(true);
   stacked->setCurrentWidget(eventGraphWidget);
+  egw->attributesTreeView->clearSelection();
+  const QModelIndex index;
+  egw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+  egw->setButtons();
 }
 
 void MainWindow::switchToNetworkGraphView() {
@@ -726,6 +733,10 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   menuBar->setEnabled(false);
   hgw->resetTree();
   stacked->setCurrentWidget(hierarchyGraphWidget);
+  hgw->attributesTreeView->clearSelection();
+  const QModelIndex index;
+  hgw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+  hgw->setButtons();
 }
 
 void MainWindow::switchToRawAttributesTableView() {

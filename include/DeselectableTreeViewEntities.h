@@ -17,7 +17,7 @@ public:
   void resetSelection();
 
 signals:
-  void selectionChanged();
+  void noneSelected();
 
 protected:
   void wheelEvent(QWheelEvent *event);
