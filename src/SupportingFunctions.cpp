@@ -84,7 +84,6 @@ QString removeChar(QString original, QChar chara) {
   Perhaps a cleaner solution would be to reimplement the find() function in a 
   subclassed version of QTextEdit.
 */
-
 QVector<QString> splitLines(QString original) {
   QVector<QString> result;
   QString temp = QString();
@@ -102,4 +101,21 @@ QVector<QString> splitLines(QString original) {
     result.push_back(temp);
   }
   return result;
+}
+
+/* 
+   I wrote this function specifically for the data widget.
+   I found that text with line breaks is concatenated in the data widget table,
+   which looks a bit ugly in my opinion. This function plays a part in fixing that.
+*/
+QString fixBreakLines(QString original) {
+  QString newString = QString();
+  for (QString::size_type i = 0; i != original.length(); i++) {
+    if (original[i] != '\n') {
+      newString.append(original[i]);
+    } else {
+      newString.append(' ');
+    }
+  }
+  return newString;
 }

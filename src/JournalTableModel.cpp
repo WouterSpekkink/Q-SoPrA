@@ -33,6 +33,11 @@ QVariant JournalTableModel::data(const QModelIndex &index, int role) const {
     const QString original = QSqlTableModel::data(index, Qt::DisplayRole).toString();
     QString toolTip = breakString(original); // breakString() breaks the text in smaller lines.
     return toolTip;
+    // I want to make sure that broken lines have a space between them.
+  } else if (role == Qt::DisplayRole) {
+    const QString original = QSqlTableModel::data(index, Qt::DisplayRole).toString();
+    QString shownText = fixBreakLines(original);
+    return shownText;
   } else {
     /* 
        In all other cases, we want the default behaviour of this function. 

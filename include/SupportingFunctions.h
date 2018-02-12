@@ -8,5 +8,6 @@ QString breakString(QString original);
 QString doubleQuote(QString original);
 QString removeChar(QString original, QChar chara);
 QVector<QString> splitLines(QString original);
+QString fixBreakLines(QString original);
 
 #endif 
