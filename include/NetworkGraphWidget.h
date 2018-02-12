@@ -78,9 +78,11 @@ private slots:
   
   void multimodeTransformation();
   void removeMode();
-  void setModeButton(QTableWidgetItem *item);
+  void setModeButtons(QTableWidgetItem *item);
   void disableModeButton();
   void restoreModeColors();
+  void moveModeUp();
+  void moveModeDown();
   
   void mergeRelationships();
   void setFilterButtons(QTableWidgetItem *item);
@@ -213,6 +215,8 @@ private:
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> restoreModeColorsButton;
+  QPointer<QPushButton> moveModeUpButton;
+  QPointer<QPushButton> moveModeDownButton;
   
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;

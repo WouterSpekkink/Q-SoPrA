@@ -159,6 +159,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   removeModeButton->setEnabled(false);
   restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
   exportTransitionMatrixButton = new QPushButton(tr("Export transitions"), legendWidget);
+  moveModeUpButton = new QPushButton(tr("Up"), legendWidget);
+  moveModeUpButton->setEnabled(false);
+  moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
+  moveModeDownButton->setEnabled(false);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
@@ -223,13 +227,15 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(eventListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
-	  this, SLOT(setModeButton(QTableWidgetItem *)));
+	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableModeButton()));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
+  connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
+  connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
@@ -336,6 +342,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
   legendLayout->addWidget(legendLabel);
   legendLayout->addWidget(eventListWidget);
+  QPointer<QHBoxLayout> modeButtonsLayout = new QHBoxLayout;
+  modeButtonsLayout->addWidget(moveModeUpButton);
+  modeButtonsLayout->addWidget(moveModeDownButton);
+  legendLayout->addLayout(modeButtonsLayout);
   legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
@@ -3652,12 +3662,23 @@ void EventGraphWidget::removeMode() {
   }
 }
 
-void EventGraphWidget::setModeButton(QTableWidgetItem *item) {
+void EventGraphWidget::setModeButtons(QTableWidgetItem *item) {
   QString text = item->data(Qt::DisplayRole).toString();
   if (text != "") {
     removeModeButton->setEnabled(true);
   } else {
     removeModeButton->setEnabled(false);
+  }
+  if (text != eventListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) {
+    moveModeUpButton->setEnabled(true);
+  } else {
+    moveModeUpButton->setEnabled(false);
+  }
+  if (text != eventListWidget->item(eventListWidget->rowCount() - 1, 0)
+      ->data(Qt::DisplayRole).toString()) {
+    moveModeDownButton->setEnabled(true);
+  } else {
+    moveModeDownButton->setEnabled(false);
   }
 }
 
@@ -3683,6 +3704,117 @@ void EventGraphWidget::restoreModeColors() {
 	macro->setColor(color);
       }
     }
+  }
+}
+
+void EventGraphWidget::moveModeUp() {
+  setChangeLabel();
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  if (text != eventListWidget->item(0,0)->data(Qt::DisplayRole).toString()) {
+    int currentRow = eventListWidget->row(eventListWidget->currentItem());
+    QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow,0);
+    QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+    int newRow = currentRow - 1;
+    QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
+    QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+    eventListWidget->setItem(newRow, 0, currentItem);
+    eventListWidget->item(newRow, 1)->setBackground(currentColor);
+    eventListWidget->setItem(currentRow, 0, otherItem);
+    eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+    for (int i = 0; i != eventListWidget->rowCount(); i++) {
+      QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      findChildren(currentMode, &attributeVector);
+      QVectorIterator<QString> it3(attributeVector);
+      while (it3.hasNext()) {
+	QString currentAttribute = it3.next();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM attributes_to_incidents "
+		       "WHERE attribute = :currentAttribute");
+	query->bindValue(":currentAttribute", currentAttribute);
+	query->exec();
+	while (query->next()) {
+	  int currentIncident = query->value(0).toInt();
+	  QVectorIterator<EventItem*> it4(eventVector);
+	  while (it4.hasNext()) {
+	    EventItem* currentEvent = it4.next();
+	    if (currentEvent->getId() == currentIncident) {
+	      currentEvent->setColor(color);
+	      currentEvent->setMode(currentMode);
+	    }
+	  }
+	}
+	delete query;
+	QVectorIterator<MacroEvent*> it5(macroVector);
+	while (it5.hasNext()) {
+	  MacroEvent *currentMacro = it5.next();
+	  QSet<QString> attributes = currentMacro->getAttributes();
+	  if (attributes.contains(currentAttribute)) {
+	    currentMacro->setColor(color);
+	    currentMacro->setMode(currentMode);
+	  }
+	}
+      }
+    }
+    restoreModeColors();
+  }
+}
+
+void EventGraphWidget::moveModeDown() {
+  setChangeLabel();
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  if (text != eventListWidget->item(eventListWidget->rowCount() - 1, 0)->
+      data(Qt::DisplayRole).toString()) {
+    int currentRow = eventListWidget->row(eventListWidget->currentItem());
+    QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow, 0);
+    QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+    int newRow = currentRow + 1;
+    QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
+    QColor otherColor = eventListWidget->item(newRow, 1)->background().color();;
+    eventListWidget->setItem(newRow, 0, currentItem);
+    eventListWidget->item(newRow, 1)->setBackground(currentColor);
+    eventListWidget->setItem(currentRow, 0, otherItem);
+    eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+    for (int i = 0; i != eventListWidget->rowCount(); i++) {
+      QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      findChildren(currentMode, &attributeVector);
+      QVectorIterator<QString> it3(attributeVector);
+      while (it3.hasNext()) {
+	QString currentAttribute = it3.next();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM attributes_to_incidents "
+		       "WHERE attribute = :currentAttribute");
+	query->bindValue(":currentAttribute", currentAttribute);
+	query->exec();
+	while (query->next()) {
+	  int currentIncident = query->value(0).toInt();
+	  QVectorIterator<EventItem*> it4(eventVector);
+	  while (it4.hasNext()) {
+	    EventItem* currentEvent = it4.next();
+	    if (currentEvent->getId() == currentIncident) {
+	      currentEvent->setColor(color);
+	      currentEvent->setMode(currentMode);
+	    }
+	  }
+	}
+	delete query;
+	QVectorIterator<MacroEvent*> it5(macroVector);
+	while (it5.hasNext()) {
+	  MacroEvent *currentMacro = it5.next();
+	  QSet<QString> attributes = currentMacro->getAttributes();
+	  if (attributes.contains(currentAttribute)) {
+	    currentMacro->setColor(color);
+	    currentMacro->setMode(currentMode);
+	  }
+	}
+      }
+    }
+    restoreModeColors();
   }
 }
 

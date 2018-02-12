@@ -63,9 +63,11 @@ private slots:
   void toggleGraphicsControls();
   void toggleLegend();
   void removeMode();
-  void setModeButton(QTableWidgetItem *item);
+  void setModeButtons(QTableWidgetItem *item);
   void disableModeButton();
   void restoreModeColors();
+  void moveModeUp();
+  void moveModeDown();
   void retrieveData();
   void showAttributes();
   void showComments();
@@ -141,7 +143,6 @@ private slots:
   void recolorLabels();
   void colorLineage();
   void exportTransitionMatrix();
-
   void findAncestors(QColor ancestor, QGraphicsItem *origin);
   void findDescendants(QColor descendant, QGraphicsItem *origin);
   
@@ -243,6 +244,8 @@ private:
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> restoreModeColorsButton;
   QPointer<QPushButton> exportTransitionMatrixButton;
+  QPointer<QPushButton> moveModeUpButton;
+  QPointer<QPushButton> moveModeDownButton;
   
   QPointer<DeselectableListWidget> eventListWidget;
   

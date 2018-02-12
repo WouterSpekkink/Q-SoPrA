@@ -131,6 +131,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   removeTypeButton = new QPushButton(tr("Remove"), legendWidget);
   removeTypeButton->setEnabled(false);
   restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  moveModeUpButton = new QPushButton(tr("Up"), this);
+  moveModeUpButton->setEnabled(false);
+  moveModeDownButton = new QPushButton(tr("Down"), this);
+  moveModeDownButton->setEnabled(false);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -208,7 +212,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(edgeListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableFilterButtons()));
   connect(nodeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
-	  this, SLOT(setModeButton(QTableWidgetItem *)));
+	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(nodeListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableModeButton()));
   connect(nodeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
@@ -227,6 +231,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
+  connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
+  connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -295,6 +301,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
   legendLayout->addWidget(nodeLegendLabel);
   legendLayout->addWidget(nodeListWidget);
+  QPointer<QHBoxLayout> modeButtonsLayout = new QHBoxLayout;
+  modeButtonsLayout->addWidget(moveModeUpButton);
+  modeButtonsLayout->addWidget(moveModeDownButton);
+  legendLayout->addLayout(modeButtonsLayout);
   legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(multimodeButton);
   legendLayout->addWidget(removeModeButton);
@@ -2029,12 +2039,23 @@ void NetworkGraphWidget::removeMode() {
   }
 }
 
-void NetworkGraphWidget::setModeButton(QTableWidgetItem *item) {
+void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item) {
   QString text = item->data(Qt::DisplayRole).toString();
   if (text != "") {
     removeModeButton->setEnabled(true);
   } else {
     removeModeButton->setEnabled(false);
+  }
+  if (text != nodeListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) {
+    moveModeUpButton->setEnabled(true);
+  } else {
+    moveModeUpButton->setEnabled(false);
+  }
+  if (text != nodeListWidget->item(nodeListWidget->rowCount() - 1, 0)
+      ->data(Qt::DisplayRole).toString()) {
+    moveModeDownButton->setEnabled(true);
+  } else {
+    moveModeDownButton->setEnabled(false);
   }
 }
 
@@ -2055,6 +2076,100 @@ void NetworkGraphWidget::restoreModeColors() {
     }
   }
 }
+
+void NetworkGraphWidget::moveModeUp() {
+  setChangeLabel();
+  QString text = nodeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  if (text != nodeListWidget->item(0,0)->data(Qt::DisplayRole).toString()) {
+    int currentRow = nodeListWidget->row(nodeListWidget->currentItem());
+    QTableWidgetItem *currentItem = nodeListWidget->takeItem(currentRow,0);
+    QColor currentColor = nodeListWidget->item(currentRow, 1)->background().color();
+    int newRow = currentRow - 1;
+    QTableWidgetItem *otherItem = nodeListWidget->takeItem(newRow, 0);
+    QColor otherColor = nodeListWidget->item(newRow, 1)->background().color();
+    nodeListWidget->setItem(newRow, 0, currentItem);
+    nodeListWidget->item(newRow, 1)->setBackground(currentColor);
+    nodeListWidget->setItem(currentRow, 0, otherItem);
+    nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
+    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
+      QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = nodeListWidget->item(i, 1)->background().color();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      findChildren(currentMode, &attributeVector);
+      QVectorIterator<QString> it3(attributeVector);
+      while (it3.hasNext()) {
+	QString currentAttribute = it3.next();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT entity FROM attributes_to_entities "
+		       "WHERE attribute = :currentAttribute");
+	query->bindValue(":currentAttribute", currentAttribute);
+	query->exec();
+	while (query->next()) {
+	  QString entity = query->value(0).toString();
+	  QVectorIterator<NetworkNode*> it4(nodeVector);
+	  while (it4.hasNext()) {
+	    NetworkNode* currentEntity = it4.next();
+	    if (currentEntity->getName() == entity) {
+	      currentEntity->setColor(color);
+	      currentEntity->setMode(currentMode);
+	    }
+	  }
+	}
+	delete query;
+      }
+    }
+    restoreModeColors();
+  }
+}
+
+void NetworkGraphWidget::moveModeDown() {
+  setChangeLabel();
+  QString text = nodeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  if (text != nodeListWidget->item(nodeListWidget->rowCount() - 1, 0)->
+      data(Qt::DisplayRole).toString()) {
+    int currentRow = nodeListWidget->row(nodeListWidget->currentItem());
+    QTableWidgetItem *currentItem = nodeListWidget->takeItem(currentRow, 0);
+    QColor currentColor = nodeListWidget->item(currentRow, 1)->background().color();
+    int newRow = currentRow + 1;
+    QTableWidgetItem *otherItem = nodeListWidget->takeItem(newRow, 0);
+    QColor otherColor = nodeListWidget->item(newRow, 1)->background().color();;
+    nodeListWidget->setItem(newRow, 0, currentItem);
+    nodeListWidget->item(newRow, 1)->setBackground(currentColor);
+    nodeListWidget->setItem(currentRow, 0, otherItem);
+    nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
+    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
+      QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = nodeListWidget->item(i, 1)->background().color();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      findChildren(currentMode, &attributeVector);
+      QVectorIterator<QString> it3(attributeVector);
+      while (it3.hasNext()) {
+	QString currentAttribute = it3.next();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT entity FROM attributes_to_entities "
+		       "WHERE attribute = :currentAttribute");
+	query->bindValue(":currentAttribute", currentAttribute);
+	query->exec();
+	while (query->next()) {
+	  QString entity = query->value(0).toString();
+	  QVectorIterator<NetworkNode*> it4(nodeVector);
+	  while (it4.hasNext()) {
+	    NetworkNode* currentEntity = it4.next();
+	    if (currentEntity->getName() == entity) {
+	      currentEntity->setColor(color);
+	      currentEntity->setMode(currentMode);
+	    }
+	  }
+	}
+	delete query;
+      }
+    }
+    restoreModeColors();
+  }
+}
+
 
 void NetworkGraphWidget::mergeRelationships() {
   QVector<QString> relVector;
