@@ -1,6 +1,5 @@
 #include "../include/EventGraphWidget.h"
 
-// Some sorting bools for qSort.
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedCoder = "";
   selectedCompare = "";
@@ -413,7 +412,7 @@ void EventGraphWidget::checkCongruency() {
       int id = query->value(0).toInt();
       temp.push_back(id);
     }
-    qSort(eventVector.begin(), eventVector.end(), originalLessThan);
+    std::sort(eventVector.begin(), eventVector.end(), originalLessThan);
     if (temp.size() != eventVector.size()) {
       incongruencyLabel->setText("Incongruency detected");
       return;
@@ -606,7 +605,7 @@ void EventGraphWidget::retrieveData() {
       }
     }
     if (currentData.size() > 0) {
-      qSort(currentData.begin(), currentData.end(), eventLessThan);   
+      std::sort(currentData.begin(), currentData.end(), eventLessThan);   
       vectorPos = 0;
       QString indexText = "(" + QString::number(vectorPos + 1) + "/"
 	+ QString::number(currentData.size()) + ")";
@@ -2241,7 +2240,7 @@ void EventGraphWidget::increaseDistance() {
   while (it2.hasNext()) {
     temp.push_back(it2.next());
   }
-  qSort(temp.begin(), temp.end(), eventLessThan);
+  std::sort(temp.begin(), temp.end(), eventLessThan);
   QVectorIterator<QGraphicsItem*> it3(temp);  
   int unit = 0;
   qreal last = -9999;
@@ -2295,7 +2294,7 @@ void EventGraphWidget::decreaseDistance() {
   while (it2.hasNext()) {
     temp.push_back(it2.next());
   }
-  qSort(temp.begin(), temp.end(), eventLessThan);
+  std::sort(temp.begin(), temp.end(), eventLessThan);
   QVectorIterator<QGraphicsItem*> it3(temp);  
   int unit = 0;
   qreal last = -9999;
@@ -3166,7 +3165,7 @@ void EventGraphWidget::seePlots() {
 	  }
 	}
       }
-      qSort(incidents.begin(), incidents.end(), eventLessThan);
+      std::sort(incidents.begin(), incidents.end(), eventLessThan);
       query2->prepare("SELECT attribute, value FROM saved_eg_plots_attributes_to_macro_events "
 		      "WHERE plot = :plot AND macro = :id");
       query2->bindValue(":plot", plot);
@@ -3292,7 +3291,7 @@ void EventGraphWidget::seePlots() {
 	}
       }
     }
-    qSort(macroVector.begin(), macroVector.end(), eventLessThan);
+    std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
     query->prepare("SELECT tail, head, tailmacro, headmacro, hidden "
 		   "FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot ");
@@ -3959,7 +3958,7 @@ void EventGraphWidget::exportTable() {
     }
   }
   // We finish this vector by sorting it.
-  qSort(events.begin(), events.end(), componentsSort);
+  std::sort(events.begin(), events.end(), componentsSort);
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) {
@@ -4115,7 +4114,7 @@ void EventGraphWidget::exportNodes() {
     }
   }
   // We finish this vector by sorting it.
-  qSort(events.begin(), events.end(), componentsSort);
+  std::sort(events.begin(), events.end(), componentsSort);
   QVectorIterator<QGraphicsItem*> it3(events);
   QVector<QString> ids;
   QVector<QString> labels;
@@ -4314,10 +4313,10 @@ void EventGraphWidget::colligateEvents(QString constraint) {
     while (maIt.hasNext()) {
       allEvents.push_back(maIt.next());
     }
-    qSort(allEvents.begin(), allEvents.end(), componentsSort);
+    std::sort(allEvents.begin(), allEvents.end(), componentsSort);
     
     QVector<EventItem*> tempVec;
-    qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
+    std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
     if (constraint == SEMIPATHS) {
       QVectorIterator<EventItem*> it2(tempIncidents);
       while (it2.hasNext()) {
@@ -4375,7 +4374,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
       tempIncidents.push_back(it5.peekNext());
       currentData.push_back(it5.next());
     }
-    qSort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
+    std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
     if (checkConstraints(tempIncidents, constraint)) {
       qreal lowestX = 0.0;
       qreal highestX = 0.0;
@@ -4421,7 +4420,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	QString description = textDialog->getText();
 	MacroEvent* current = new MacroEvent(width, description, originalPos,
 					     macroVector.size() + 1, constraint, tempIncidents);
-	qSort(macroVector.begin(), macroVector.end(), eventLessThan);
+	std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
 	current->setZValue(1);
 	int order = 1;
@@ -4834,7 +4833,7 @@ void EventGraphWidget::disaggregateEvent() {
 	components.push_back(current);
       }
     }
-    qSort(components.begin(), components.end(), componentsSort);
+    std::sort(components.begin(), components.end(), componentsSort);
     QVectorIterator<QGraphicsItem*> it4(components);
     int diff = 0;
     while (it4.hasNext()) {
@@ -4854,7 +4853,7 @@ void EventGraphWidget::disaggregateEvent() {
 	diff += distance + macro->getWidth() - 40;
       }
     }
-    qSort(eventVector.begin(), eventVector.end(), eventLessThan);
+    std::sort(eventVector.begin(), eventVector.end(), eventLessThan);
     QVectorIterator<EventItem*> it5(eventVector);
     EventItem* nextUp = NULL;
     while (it5.hasNext()) {
@@ -4888,7 +4887,7 @@ void EventGraphWidget::disaggregateEvent() {
 	  MacroEvent *item = it7.next();
 	  allEvents.push_back(item);
 	}
-	qSort(allEvents.begin(), allEvents.end(), componentsSort);
+	std::sort(allEvents.begin(), allEvents.end(), componentsSort);
 	QVectorIterator<QGraphicsItem*> it8(allEvents);
 	while (it8.hasNext()) {
 	  EventItem *event = qgraphicsitem_cast<EventItem*>(it8.peekNext());
@@ -5375,7 +5374,7 @@ void EventGraphWidget::normalizeDistance() {
     while (it2.hasNext()) {
       allEvents.push_back(it2.next());
     }
-    qSort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
+    std::sort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
     QGraphicsItem *current = currentData[0];
     QVectorIterator<QGraphicsItem*> it3(allEvents);
     QGraphicsItem *target = NULL;
@@ -5473,7 +5472,7 @@ void EventGraphWidget::closeGap() {
     while (it2.hasNext()) {
       allEvents.push_back(it2.next());
     }
-    qSort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
+    std::sort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
     QGraphicsItem *current = currentData[0];
     QGraphicsItem *target = NULL;
     QVectorIterator<QGraphicsItem*> it3(allEvents);
@@ -5566,7 +5565,7 @@ void EventGraphWidget::processArrowContextMenu(const QString &action) {
     acceptLinkage();
   } else if (action == REJECTLINKAGEACTION) {
     rejectLinkage();
-  } else if (action == IGNORE) {
+  } else if (action == IGNOREME) {
     ignoreLinkage();
   } else if (action == REMOVENORMALLINKAGE) {
     removeNormalLinkage();

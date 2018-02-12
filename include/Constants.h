@@ -2,6 +2,7 @@
 #define CONSTANTS_H
 
 #include <QString>
+
 extern QString NEW; 
 extern QString OLD;
 extern QString DIRECTED;
@@ -33,7 +34,7 @@ extern QString PARALLELACTION;
 extern QString NORMALIZEACTION;
 extern QString CLOSEGAPACTION;
 extern QString CHANGEDESCRIPTIONACTION;
-extern QString IGNORE;
+extern QString IGNOREME;
 extern QString REMOVENORMALLINKAGE;
 extern QString ENTITY;
 extern QString INCIDENT;

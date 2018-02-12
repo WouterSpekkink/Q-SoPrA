@@ -312,7 +312,7 @@ void HierarchyGraphWidget::retrieveData() {
       }
     }
     if (currentData.size() > 0) {
-      qSort(currentData.begin(), currentData.end(), eventLessThan);
+      std::sort(currentData.begin(), currentData.end(), eventLessThan);
       QGraphicsItem *temp = currentData[0];
       scene->clearSelection();
       temp->setSelected(true);
@@ -609,8 +609,8 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       partners.push_back(event);
     }
   }
-  qSort(currentLayer.begin(), currentLayer.end(), componentsSort);
-  qSort(partners.begin(), partners.end(), componentsSort);
+  std::sort(currentLayer.begin(), currentLayer.end(), componentsSort);
+  std::sort(partners.begin(), partners.end(), componentsSort);
   int layerSize = currentLayer.size();
   qreal width = 120 * layerSize;
   qreal startX = 0 - width / 2 - 60;
@@ -791,8 +791,8 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
       }
     }
   }
-  qSort(currentLayer.begin(), currentLayer.end(), componentsSort);
-  qSort(partners.begin(), partners.end(), componentsSort);
+  std::sort(currentLayer.begin(), currentLayer.end(), componentsSort);
+  std::sort(partners.begin(), partners.end(), componentsSort);
   QVector<MacroEvent*> newLayer;
   QVector<MacroEvent*> partnerLayer;
   int layerSize = currentLayer.size();

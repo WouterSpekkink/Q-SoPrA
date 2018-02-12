@@ -479,7 +479,7 @@ void OccurrenceGraphWidget::changeModeColor(QTableWidgetItem *item) {
 }
 
 void OccurrenceGraphWidget::groupOccurrences() {
-  qSort(presentAttributes.begin(), presentAttributes.end(), stringSort);
+  std::sort(presentAttributes.begin(), presentAttributes.end(), stringSort);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);
   while (it.hasNext()) {
     OccurrenceItem *current = it.next();
@@ -527,7 +527,7 @@ void OccurrenceGraphWidget::groupOccurrences() {
 	candidate->getLabel()->hide();
       }
     }
-    qSort(temp.begin(), temp.end(), attributeLessThan);
+    std::sort(temp.begin(), temp.end(), attributeLessThan);
     QVectorIterator<OccurrenceItem*> it6(temp);
     qreal x = temp.first()->scenePos().x();
     qreal startY = temp.first()->scenePos().y();
@@ -549,7 +549,7 @@ void OccurrenceGraphWidget::groupOccurrences() {
 void OccurrenceGraphWidget::wireLinkages() {
   qDeleteAll(edgeVector);
   edgeVector.clear();
-  qSort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
+  std::sort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);
   while (it.hasNext()) {
     OccurrenceItem *tempSource = it.next();
@@ -809,7 +809,7 @@ void OccurrenceGraphWidget::setBackgroundColor() {
 }
 
 void OccurrenceGraphWidget::increaseDistance() {
-  qSort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
+  std::sort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);  
   int unit = 0;
   qreal last = -9999;
@@ -834,7 +834,7 @@ void OccurrenceGraphWidget::increaseDistance() {
 }
 
 void OccurrenceGraphWidget::decreaseDistance() {
-  qSort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
+  std::sort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
   QVectorIterator<OccurrenceItem*> it(occurrenceVector);  
   int unit = 0;
   qreal last = -9999;

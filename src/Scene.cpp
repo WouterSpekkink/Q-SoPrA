@@ -432,7 +432,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     } else if (arrow->getColor() == QColor(Qt::darkGreen)) {
       menu.addAction(REMOVELINKAGEACTION);
       menu.addAction(KEEPLINKAGEACTION);
-      menu.addAction(IGNORE);      
+      menu.addAction(IGNOREME);      
     } else if (arrow->getColor() == QColor(Qt::black)) {
       menu.addAction(REMOVENORMALLINKAGE);
     }

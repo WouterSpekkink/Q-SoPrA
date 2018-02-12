@@ -436,7 +436,7 @@ void NetworkGraphWidget::checkCongruency() {
       }
       delete query2;
     }
-    qSort(nodeVector.begin(), nodeVector.end(), nameLessThan);
+    std::sort(nodeVector.begin(), nodeVector.end(), nameLessThan);
     if (tempNames.size() != nodeVector.size()) {
       incongruencyLabel->setText("Incongruency detected");
       return;
@@ -532,7 +532,7 @@ void NetworkGraphWidget::retrieveData() {
       }
     }
     if (currentData.size() > 0) {
-      qSort(currentData.begin(), currentData.end(), nodeLessThan);
+      std::sort(currentData.begin(), currentData.end(), nodeLessThan);
     
       vectorPos = 0;
       NetworkNode *currentNode = currentData.at(vectorPos);
@@ -1448,7 +1448,7 @@ void NetworkGraphWidget::circularLayout() {
       visible.push_back(current);
     }
   }
-  qSort(visible.begin(), visible.end(), modeSort);
+  std::sort(visible.begin(), visible.end(), modeSort);
   QVectorIterator<NetworkNode*> it2(visible);  
   int count = 1;
   while (it2.hasNext()) {
