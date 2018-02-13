@@ -171,7 +171,7 @@ void MultimodeDialog::setModeOne(const QString &name) {
 	include.push_back(undirected->getType());;
       }
     }
-    qSort(include);
+    std::sort(include.begin(), include.end(), stringSort);
     QSet<QString> includeSet = QSet<QString>::fromList(include);
     QSet<QString>::iterator it3;
     for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) {
@@ -224,7 +224,7 @@ void MultimodeDialog::setModeTwo(const QString &name) {
 	include.push_back(undirected->getType());;
       }
     }
-    qSort(include);
+    std::sort(include.begin(), include.end(), stringSort);
     QSet<QString> includeSet = QSet<QString>::fromList(include);
     QSet<QString>::iterator it3;
     for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) {

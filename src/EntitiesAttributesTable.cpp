@@ -162,9 +162,9 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
   QList<QString> attributeList = attributeSet.toList();
   QList<QString> entityList = entitySet.toList();
   // Let's sort the attribute list alphabetically.
-  qSort(attributeList.begin(), attributeList.end(), stringSort);
+  std::sort(attributeList.begin(), attributeList.end(), stringSort);
   // And let's sort the entity list alphabetically.
-  qSort(entityList.begin(), entityList.end(), stringSort);
+  std::sort(entityList.begin(), entityList.end(), stringSort);
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) {

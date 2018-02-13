@@ -168,9 +168,9 @@ void IncidentsAttributesTable::exportMatrix(bool valued) {
   QList<QString> attributeList = attributeSet.toList();
   QList<int> incidentList = incidentSet.toList();
   // Let's sort the attribute list alphabetically.
-  qSort(attributeList.begin(), attributeList.end(), stringSort);
+  std::sort(attributeList.begin(), attributeList.end(), stringSort);
   // And let's sort the incident list numerically.
-  qSort(incidentList.begin(), incidentList.end(), intLessThan);
+  std::sort(incidentList.begin(), incidentList.end(), intLessThan);
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) {

@@ -14,6 +14,7 @@
 #include "DirectedEdge.h"
 #include "UndirectedEdge.h"
 #include "SupportingFunctions.h"
+#include "SortFunctions.h"
 
 class MultimodeDialog : public QDialog {
   Q_OBJECT
