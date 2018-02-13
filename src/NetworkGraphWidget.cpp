@@ -1116,12 +1116,12 @@ void NetworkGraphWidget::getDirectedEdges() {
       int order = query3->value(0).toInt();
       if (minOrder == 0) {
 	minOrder = order;
-      } else if (incident < minOrder) {
+      } else if (order < minOrder) {
 	minOrder = order;
       }
       if (maxOrder == 0) {
 	maxOrder = order;
-      } else if (incident > maxOrder) {
+      } else if (order > maxOrder) {
 	maxOrder = order;
       }
       delete query3;
@@ -1185,12 +1185,12 @@ void NetworkGraphWidget::getUndirectedEdges() {
       int order = query3->value(0).toInt();
       if (minOrder == 0) {
 	minOrder = order;
-      } else if (incident < minOrder) {
+      } else if (order < minOrder) {
 	minOrder = order;
       }
       if (maxOrder == 0) {
 	maxOrder = order;
-      } else if (incident > maxOrder) {
+      } else if (order > maxOrder) {
 	maxOrder = order;
       }
       delete query3;
@@ -3475,12 +3475,12 @@ void NetworkGraphWidget::seePlots() {
       int order = query2->value(0).toInt();
       if (minOrder == 0) {
 	minOrder = order;
-      } else if (incident < minOrder) {
+      } else if (order < minOrder) {
 	minOrder = order;
       }
       if (maxOrder == 0) {
 	maxOrder = order;
-      } else if (incident > maxOrder) {
+      } else if (order > maxOrder) {
 	maxOrder = order;
       }
       delete query2;
