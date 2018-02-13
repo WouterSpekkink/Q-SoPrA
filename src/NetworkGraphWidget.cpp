@@ -519,8 +519,8 @@ void NetworkGraphWidget::toggleLegend() {
 void NetworkGraphWidget::retrieveData() {
   valueField->blockSignals(true);
   valueField->setText("");
-  valueField->setEnabled(false);
   valueField->blockSignals(false);
+  valueField->setEnabled(false);
   valueButton->setEnabled(false);
   attributesTreeView->clearSelection();
   if (currentData.size() > 0) {
@@ -826,6 +826,9 @@ void NetworkGraphWidget::setValue() {
 
 void NetworkGraphWidget::getValue() {
   if (attributesTreeView->currentIndex().isValid()) {
+    valueField->blockSignals(true);
+    valueField->setText("");
+    valueField->blockSignals(false);
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT attribute, value "
