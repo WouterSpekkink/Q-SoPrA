@@ -229,7 +229,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(eventListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(noneSelected()),
-	  this, SLOT(disableModeButton()));
+	  this, SLOT(disableModeButtons()));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
@@ -1771,9 +1771,10 @@ void EventGraphWidget::newAttribute() {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("INSERT INTO incident_attributes "
 		     "(name, description, father) "
-		     "VALUES (:name, :description, 'NONE')");
+		     "VALUES (:name, :description, :none)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
+      query->bindValue(":none", "NONE");
       query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
@@ -3682,11 +3683,50 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item) {
   }
 }
 
-void EventGraphWidget::disableModeButton() {
+void EventGraphWidget::disableModeButtons() {
   removeModeButton->setEnabled(false);
+  moveModeUpButton->setEnabled(false);
+  moveModeDownButton->setEnabled(false);
 }
 
 void EventGraphWidget::restoreModeColors() {
+  for (int i = 0; i != eventListWidget->rowCount(); i++) {
+    QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(currentMode);
+    findChildren(currentMode, &attributeVector);
+    QVectorIterator<QString> it3(attributeVector);
+    while (it3.hasNext()) {
+      QString currentAttribute = it3.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	int currentIncident = query->value(0).toInt();
+	QVectorIterator<EventItem*> it4(eventVector);
+	while (it4.hasNext()) {
+	  EventItem* currentEvent = it4.next();
+	  if (currentEvent->getId() == currentIncident) {
+	    currentEvent->setColor(color);
+	    currentEvent->setMode(currentMode);
+	  }
+	}
+      }
+      delete query;
+      QVectorIterator<MacroEvent*> it5(macroVector);
+      while (it5.hasNext()) {
+	MacroEvent *currentMacro = it5.next();
+	QSet<QString> attributes = currentMacro->getAttributes();
+	if (attributes.contains(currentAttribute)) {
+	  currentMacro->setColor(color);
+	  currentMacro->setMode(currentMode);
+	}
+      }
+    }
+  }
   for (int i = 0; i < eventListWidget->rowCount(); i++) {
     QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
     QColor color = eventListWidget->item(i, 1)->background().color();
@@ -3721,43 +3761,6 @@ void EventGraphWidget::moveModeUp() {
     eventListWidget->item(newRow, 1)->setBackground(currentColor);
     eventListWidget->setItem(currentRow, 0, otherItem);
     eventListWidget->item(currentRow, 1)->setBackground(otherColor);
-    for (int i = 0; i != eventListWidget->rowCount(); i++) {
-      QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-      QColor color = eventListWidget->item(i, 1)->background().color();
-      QVector<QString> attributeVector;
-      attributeVector.push_back(currentMode);
-      findChildren(currentMode, &attributeVector);
-      QVectorIterator<QString> it3(attributeVector);
-      while (it3.hasNext()) {
-	QString currentAttribute = it3.next();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM attributes_to_incidents "
-		       "WHERE attribute = :currentAttribute");
-	query->bindValue(":currentAttribute", currentAttribute);
-	query->exec();
-	while (query->next()) {
-	  int currentIncident = query->value(0).toInt();
-	  QVectorIterator<EventItem*> it4(eventVector);
-	  while (it4.hasNext()) {
-	    EventItem* currentEvent = it4.next();
-	    if (currentEvent->getId() == currentIncident) {
-	      currentEvent->setColor(color);
-	      currentEvent->setMode(currentMode);
-	    }
-	  }
-	}
-	delete query;
-	QVectorIterator<MacroEvent*> it5(macroVector);
-	while (it5.hasNext()) {
-	  MacroEvent *currentMacro = it5.next();
-	  QSet<QString> attributes = currentMacro->getAttributes();
-	  if (attributes.contains(currentAttribute)) {
-	    currentMacro->setColor(color);
-	    currentMacro->setMode(currentMode);
-	  }
-	}
-      }
-    }
     restoreModeColors();
   }
 }
@@ -3777,43 +3780,6 @@ void EventGraphWidget::moveModeDown() {
     eventListWidget->item(newRow, 1)->setBackground(currentColor);
     eventListWidget->setItem(currentRow, 0, otherItem);
     eventListWidget->item(currentRow, 1)->setBackground(otherColor);
-    for (int i = 0; i != eventListWidget->rowCount(); i++) {
-      QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-      QColor color = eventListWidget->item(i, 1)->background().color();
-      QVector<QString> attributeVector;
-      attributeVector.push_back(currentMode);
-      findChildren(currentMode, &attributeVector);
-      QVectorIterator<QString> it3(attributeVector);
-      while (it3.hasNext()) {
-	QString currentAttribute = it3.next();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM attributes_to_incidents "
-		       "WHERE attribute = :currentAttribute");
-	query->bindValue(":currentAttribute", currentAttribute);
-	query->exec();
-	while (query->next()) {
-	  int currentIncident = query->value(0).toInt();
-	  QVectorIterator<EventItem*> it4(eventVector);
-	  while (it4.hasNext()) {
-	    EventItem* currentEvent = it4.next();
-	    if (currentEvent->getId() == currentIncident) {
-	      currentEvent->setColor(color);
-	      currentEvent->setMode(currentMode);
-	    }
-	  }
-	}
-	delete query;
-	QVectorIterator<MacroEvent*> it5(macroVector);
-	while (it5.hasNext()) {
-	  MacroEvent *currentMacro = it5.next();
-	  QSet<QString> attributes = currentMacro->getAttributes();
-	  if (attributes.contains(currentAttribute)) {
-	    currentMacro->setColor(color);
-	    currentMacro->setMode(currentMode);
-	  }
-	}
-      }
-    }
     restoreModeColors();
   }
 }
@@ -4694,8 +4660,8 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	      warningBox->addButton(QMessageBox::Ok);
 	      warningBox->setIcon(QMessageBox::Warning);
 	      warningBox->setText("<b>Constraints not met.</b>");
-	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					     "that were set for colligation.");
+	      warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
+					     "that were set for abstraction.");
 	      warningBox->exec();
 	      delete warningBox;
 	      return false;
@@ -4786,8 +4752,8 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 		warningBox->addButton(QMessageBox::Ok);
 		warningBox->setIcon(QMessageBox::Warning);
 		warningBox->setText("<b>Constraints not met.</b>");
-		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					       "that were set for colligation.");
+		warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
+					       "that were set for abstraction.");
 		warningBox->exec();
 		delete warningBox;
 		return false;

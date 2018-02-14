@@ -1048,9 +1048,10 @@ void HierarchyGraphWidget::newAttribute() {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("INSERT INTO incident_attributes "
 		     "(name, description, father) "
-		     "VALUES (:name, :description, 'NONE')");
+		     "VALUES (:name, :description, :none)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
+      query->bindValue(":none", "NONE");
       query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);

@@ -214,7 +214,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(nodeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(nodeListWidget, SIGNAL(noneSelected()),
-	  this, SLOT(disableModeButton()));
+	  this, SLOT(disableModeButtons()));
   connect(nodeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(setFilteredButton, SIGNAL(clicked()), this, SLOT(activateFilter()));
@@ -954,14 +954,15 @@ void NetworkGraphWidget::addAttribute() {
     QString description = "";
     QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, ENTITY);
     attributeDialog->exec();
-    
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      query->prepare("INSERT INTO entity_attributes (name, description, father) "
-		     "VALUES (:name, :description, 'NONE'");
+      query->prepare("INSERT INTO entity_attributes "
+		     "(name, description, father) "
+		     "VALUES (:name, :description, :father)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
+      query->bindValue(":father", "NONE");
       query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
@@ -1055,7 +1056,7 @@ void NetworkGraphWidget::getTypes() {
   typeComboBox->clear();
   typeComboBox->addItem(DEFAULT);
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM relationship_types");
+  query->exec("SELECT name FROM relationship_types ORDER BY name ASC");
   while (query->next()) {
     QString currentType = query->value(0).toString();
     typeComboBox->addItem(currentType);
@@ -1241,7 +1242,7 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
   while (it.hasNext()) {
     DirectedEdge* currentEdge = it.next();
     if (currentEdge->getType() == type) {
-      QListIterator<QGraphicsItem*> it2(scene->items());
+      /*QListIterator<QGraphicsItem*> it2(scene->items());
       while (it2.hasNext()) {
 	DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it2.peekNext());
 	UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it2.peekNext());
@@ -1249,20 +1250,20 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
 	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
 	  if (current->startItem() == currentEdge->startItem() &&
 	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = current->getHeight() + 60;
+	    int newHeight = currentEdge->getHeight() + 60;
 	    currentEdge->setHeight(newHeight);
 	  }
 	} else if (undirected) {
 	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
 	  if (current->startItem() == currentEdge->startItem() &&
 	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = current->getHeight() + 60;
+	    int newHeight = currentEdge->getHeight() + 60;
 	    currentEdge->setHeight(newHeight);
 	  }
 	} else {
 	  it2.next();
 	}
-      }
+	}*/
       currentEdge->setColor(color);
       currentEdge->show();
       currentEdge->startItem()->show();
@@ -1277,6 +1278,7 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
       scene->addItem(currentEdge);
     }
   }
+  processHeights();
 }
 
 void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
@@ -1292,14 +1294,14 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
 	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
 	  if (current->startItem() == currentEdge->startItem() &&
 	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = current->getHeight() + 60;
+	    int newHeight = currentEdge->getHeight() + 60;
 	    currentEdge->setHeight(newHeight);
 	  }
 	} else if (undirected) {
 	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
 	  if (current->startItem() == currentEdge->startItem() &&
 	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = current->getHeight() + 60;
+	    int newHeight = currentEdge->getHeight() + 60;
 	    currentEdge->setHeight(newHeight);
 	  }
 	} else {
@@ -2062,11 +2064,41 @@ void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item) {
   }
 }
 
-void NetworkGraphWidget::disableModeButton() {
+void NetworkGraphWidget::disableModeButtons() {
   removeModeButton->setEnabled(false);
+  moveModeUpButton->setEnabled(false);
+  moveModeDownButton->setEnabled(false);
 }
 
 void NetworkGraphWidget::restoreModeColors() {
+  for (int i = 0; i != nodeListWidget->rowCount(); i++) {
+    QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+    QColor color = nodeListWidget->item(i, 1)->background().color();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(currentMode);
+    findChildren(currentMode, &attributeVector);
+    QVectorIterator<QString> it3(attributeVector);
+    while (it3.hasNext()) {
+      QString currentAttribute = it3.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT entity FROM attributes_to_entities "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	QString entity = query->value(0).toString();
+	QVectorIterator<NetworkNode*> it4(nodeVector);
+	while (it4.hasNext()) {
+	  NetworkNode* currentEntity = it4.next();
+	  if (currentEntity->getName() == entity) {
+	    currentEntity->setColor(color);
+	    currentEntity->setMode(currentMode);
+	  }
+	}
+      }
+      delete query;
+    }
+  }
   for (int i = 0; i < nodeListWidget->rowCount(); i++) {
     QString mode = nodeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
     QColor color = nodeListWidget->item(i, 1)->background().color();
@@ -2094,34 +2126,6 @@ void NetworkGraphWidget::moveModeUp() {
     nodeListWidget->item(newRow, 1)->setBackground(currentColor);
     nodeListWidget->setItem(currentRow, 0, otherItem);
     nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
-    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
-      QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-      QColor color = nodeListWidget->item(i, 1)->background().color();
-      QVector<QString> attributeVector;
-      attributeVector.push_back(currentMode);
-      findChildren(currentMode, &attributeVector);
-      QVectorIterator<QString> it3(attributeVector);
-      while (it3.hasNext()) {
-	QString currentAttribute = it3.next();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT entity FROM attributes_to_entities "
-		       "WHERE attribute = :currentAttribute");
-	query->bindValue(":currentAttribute", currentAttribute);
-	query->exec();
-	while (query->next()) {
-	  QString entity = query->value(0).toString();
-	  QVectorIterator<NetworkNode*> it4(nodeVector);
-	  while (it4.hasNext()) {
-	    NetworkNode* currentEntity = it4.next();
-	    if (currentEntity->getName() == entity) {
-	      currentEntity->setColor(color);
-	      currentEntity->setMode(currentMode);
-	    }
-	  }
-	}
-	delete query;
-      }
-    }
     restoreModeColors();
   }
 }
@@ -2141,34 +2145,6 @@ void NetworkGraphWidget::moveModeDown() {
     nodeListWidget->item(newRow, 1)->setBackground(currentColor);
     nodeListWidget->setItem(currentRow, 0, otherItem);
     nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
-    for (int i = 0; i != nodeListWidget->rowCount(); i++) {
-      QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-      QColor color = nodeListWidget->item(i, 1)->background().color();
-      QVector<QString> attributeVector;
-      attributeVector.push_back(currentMode);
-      findChildren(currentMode, &attributeVector);
-      QVectorIterator<QString> it3(attributeVector);
-      while (it3.hasNext()) {
-	QString currentAttribute = it3.next();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT entity FROM attributes_to_entities "
-		       "WHERE attribute = :currentAttribute");
-	query->bindValue(":currentAttribute", currentAttribute);
-	query->exec();
-	while (query->next()) {
-	  QString entity = query->value(0).toString();
-	  QVectorIterator<NetworkNode*> it4(nodeVector);
-	  while (it4.hasNext()) {
-	    NetworkNode* currentEntity = it4.next();
-	    if (currentEntity->getName() == entity) {
-	      currentEntity->setColor(color);
-	      currentEntity->setMode(currentMode);
-	    }
-	  }
-	}
-	delete query;
-      }
-    }
     restoreModeColors();
   }
 }
@@ -3658,6 +3634,7 @@ void NetworkGraphWidget::setVisibility() {
       currentUndirected->hide();
     }
   }
+  processHeights();
   QVectorIterator<NetworkNodeLabel*> it4(labelVector);
   while (it4.hasNext()) {
     NetworkNodeLabel *label = it4.next();
@@ -3673,6 +3650,53 @@ void NetworkGraphWidget::setVisibility() {
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
+}
+
+void NetworkGraphWidget::processHeights() {
+  QList<QGraphicsItem*> edgeList;
+  for (QVector<DirectedEdge*>::size_type i = 0; i != directedVector.length(); i++) {
+    if (directedVector[i]->isVisible()) {
+      directedVector[i]->setHeight(20);
+      edgeList.push_back(directedVector[i]);
+    }
+  }
+  for (QVector<UndirectedEdge*>::size_type i = 0; i != undirectedVector.length(); i++) {
+    if (undirectedVector[i]->isVisible()) {
+      undirectedVector[i]->setHeight(20);
+      edgeList.push_back(undirectedVector[i]);
+    }
+  }
+  for (QList<QGraphicsItem*>::size_type i = 0; i != edgeList.length(); i++) {
+    DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(edgeList[i]);
+    UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(edgeList[i]);
+    if (i != edgeList.length() - 1) {
+      for (QList<QGraphicsItem*>::size_type j = i + 1; j != edgeList.length(); j++) {
+	DirectedEdge *secondDirected = qgraphicsitem_cast<DirectedEdge*>(edgeList[j]);
+	UndirectedEdge *secondUndirected = qgraphicsitem_cast<UndirectedEdge*>(edgeList[j]);
+	if (directed && secondDirected) {
+	  if (secondDirected->startItem() == directed->startItem() &&
+	      secondDirected->endItem() == directed->endItem()) {
+	    directed->setHeight(directed->getHeight() + 60);
+	  }
+	} else if (directed && secondUndirected) {
+	  if (secondUndirected->startItem() == directed->startItem() &&
+	      secondUndirected->endItem() == directed->endItem()) {
+	    directed->setHeight(directed->getHeight() + 60);
+	  }
+	} else if (undirected && secondDirected) {
+	  if (secondDirected->startItem() == undirected->startItem() &&
+	      secondDirected->endItem() == undirected->endItem()) {
+	    undirected->setHeight(undirected->getHeight() + 60);
+	  }
+	} else if (undirected && secondUndirected) {
+	  if (secondUndirected->startItem() == undirected->startItem() &&
+	      secondUndirected->endItem() == undirected->endItem()) {
+	    undirected->setHeight(undirected->getHeight() + 60);
+	  }
+	}
+      }
+    }
+  }
 }
 
 void NetworkGraphWidget::cleanUp() {

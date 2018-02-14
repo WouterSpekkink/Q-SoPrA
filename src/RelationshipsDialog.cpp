@@ -434,7 +434,21 @@ void RelationshipsDialog::saveAndClose() {
     delete errorBox;
     return;
   }
-  name = selectedSourceLabel->text() + tailLabel->text() + headLabel->text() + selectedTargetLabel->text();
+  name = selectedSourceLabel->text() +
+    tailLabel->text() +
+    headLabel->text() +
+    selectedTargetLabel->text();
+  /* 
+     If we have an undirected relationship, we should also consider whether the opposite
+     version of it already exists. 
+  */
+  QString reverseName = "";
+  if (tailLabel->text() == UNDIRECTEDTAIL) {
+    reverseName = selectedTargetLabel->text() +
+      tailLabel->text() +
+      headLabel->text() +
+      selectedSourceLabel->text();
+  }
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, type FROM entity_relationships WHERE name = :name AND type = :type");
   query->bindValue(":name", name);
@@ -442,10 +456,32 @@ void RelationshipsDialog::saveAndClose() {
   query->exec();
   query->first();
   if (query->isNull(0) || name == oldName) {
-    exitStatus = 0;
-    this->close();
+    if (reverseName != "") {
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT name, type FROM entity_relationships "
+		      "WHERE name = :name AND type = :type");
+      query2->bindValue(":name", reverseName);
+      query2->bindValue(":type", typeLabel->text());
+      query2->exec();
+      query2->first();
+      if (query2->isNull(0) || reverseName == oldName) {
+	exitStatus = 0;
+	this->close();
+      } else {
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	errorBox->setInformativeText("An identical relationship already exists, "
+				     "where the currently selected source and target are reversed.");
+	errorBox->exec();
+	delete errorBox;
+	return;
+      }
+    } else {
+      exitStatus = 0;
+      this->close();
+    }
   } else {
     QPointer<QMessageBox> errorBox = new QMessageBox(this);
+    errorBox->setText(tr("<b>Relationship already exists</b>"));
     errorBox->setText(tr("<b>Relationship already exists</b>"));
     errorBox->setInformativeText("An identical relationship already exists.");
     errorBox->exec();

@@ -43,7 +43,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailTimeStampLabel = new QLabel(tr("<b>Timing:</b>"), this);
   tailSourceLabel = new QLabel(tr("<b>Source:</b>"), this);
   tailDescriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
-  tailRawLabel = new QLabel(tr("<b>Raw</b>"), this);
+  tailRawLabel = new QLabel(tr("<b>Raw:</b>"), this);
   tailCommentLabel = new QLabel(tr("<b>Comments:</b>"), this);
   tailDescriptionFilterLabel = new QLabel(tr("<i>Search descriptions:</i>"), this);
   tailRawFilterLabel = new QLabel(tr("<i>Search raw texts:</i>"), this);
@@ -553,7 +553,7 @@ void LinkagesWidget::addLinkageType() {
     QString question = linkageTypeDialog->getQuestion();
     QString direction = linkageTypeDialog->getDirection();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("INSERT INTO linkage_types (name, description, question, direction, tail, head) "
+    query->prepare("INSERT INTO linkage_types (name, description, question, direction) "
 		   "VALUES (:name, :description, :question, :direction)");
     query->bindValue(":name", name);
     query->bindValue(":description", description);

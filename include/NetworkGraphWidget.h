@@ -79,7 +79,7 @@ private slots:
   void multimodeTransformation();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
-  void disableModeButton();
+  void disableModeButtons();
   void restoreModeColors();
   void moveModeUp();
   void moveModeDown();
@@ -92,6 +92,7 @@ private slots:
   void hideType();
   void showType();
   void setVisibility();
+  void processHeights();
   
   void getEntities();
   void plotEntities();
