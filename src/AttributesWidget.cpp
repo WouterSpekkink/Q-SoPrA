@@ -1711,6 +1711,19 @@ void AttributesWidget::finalBusiness() {
   setComment();
 }
 
+void AttributesWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void AttributesWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
+}
+
+void AttributesWidget::resetTree() {
+  delete attributesTree;
+  setTree();
+}
+
 bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
   if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
@@ -1728,17 +1741,4 @@ bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
     }
   }
   return false;
-}
-
-void AttributesWidget::setEventGraph(EventGraphWidget *egw) {
-  eventGraph = egw;
-}
-
-void AttributesWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
-  occurrenceGraph = ogw;
-}
-
-void AttributesWidget::resetTree() {
-  delete attributesTree;
-  setTree();
 }

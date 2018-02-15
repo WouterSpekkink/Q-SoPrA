@@ -58,7 +58,7 @@ void DeselectableTreeViewEntities::dropEvent(QDropEvent *event) {
     targetName = "NONE";
   }
   if (targetName == childName) {
-    return;
+    targetName = "NONE";
   }
   QSqlQuery* query = new QSqlQuery;  
   query->prepare("UPDATE entity_attributes SET father = :father WHERE name = :child");
