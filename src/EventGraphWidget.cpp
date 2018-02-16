@@ -2459,7 +2459,6 @@ void EventGraphWidget::compare() {
 void EventGraphWidget::getCompareEdges(QString coder, QString type) {
   qDeleteAll(compareVector);
   compareVector.clear();
-
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM linkages "
 		 "WHERE coder = :coder AND type = :type");
@@ -2638,6 +2637,12 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":coder", selectedCoder);
       query->exec();
     }
+    QSqlDatabase::database().transaction();
+    query->prepare("INSERT INTO saved_eg_plots_event_items "
+		   "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
+		   "dislodged, mode, red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
+		   ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden)");
     QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, eventVector.size());
     saveProgress->setWindowTitle("Saving event items");
     saveProgress->setAttribute(Qt::WA_DeleteOnClose);
@@ -2668,11 +2673,6 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentItem->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_eg_plots_event_items "
-		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
-		     "dislodged, mode, red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
-		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", incident);
       query->bindValue(":order", order);
@@ -2701,6 +2701,11 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_event_labels "
+		   "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
+		   ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<NodeLabel*> it2(nodeLabelVector);
     while (it2.hasNext()) {
       NodeLabel *currentLabel = it2.next();
@@ -2718,11 +2723,6 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentLabel->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_eg_plots_event_labels "
-		     "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
-		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", id);
       query->bindValue(":label", text);
@@ -2748,6 +2748,9 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_edges "
+		   "(plot, tail, head, tailmacro, headmacro, hidden) "
+		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :hidden)");
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
       Arrow *currentEdge = it3.next();
@@ -2775,9 +2778,6 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentEdge->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_eg_plots_edges "
-		     "(plot, tail, head, tailmacro, headmacro, hidden) "
-		     "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
@@ -2797,6 +2797,21 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_incidents_to_macro_events "
+		   "(plot, incident, macro) "
+		   "VALUES (:plot, :incident, :macro)");
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("INSERT INTO saved_eg_plots_attributes_to_macro_events "
+		    "(plot, attribute, macro, value) "
+		    "VALUES(:plot, :attribute, :macro, :value)");
+    QSqlQuery *query3 = new QSqlQuery;
+    query3->prepare("INSERT INTO saved_eg_plots_macro_events "
+		   "(plot, eventid, ch_order, colligation, description, comment, width, mode, "
+		   "curxpos, curypos, orixpos, oriypos, dislodged, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :eventid, :ch_order, :colligation, :description, :comment, "
+		   ":width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
+		   ":red, :green, :blue, :alpha, :hidden)");;
     QVectorIterator<MacroEvent*> it4(macroVector);
     while (it4.hasNext()) {
       MacroEvent *currentMacro = it4.next();
@@ -2804,9 +2819,6 @@ void EventGraphWidget::saveCurrentPlot() {
       QVectorIterator<EventItem*> tit(incidents);
       while (tit.hasNext()) {
 	EventItem* currentIncident = tit.next();
-	query->prepare("INSERT INTO saved_eg_plots_incidents_to_macro_events "
-		       "(plot, incident, macro) "
-		       "VALUES (:plot, :incident, :macro)");
 	query->bindValue(":plot", name);
 	query->bindValue(":incident", currentIncident->getId());
 	query->bindValue(":macro", currentMacro->getId());
@@ -2818,14 +2830,11 @@ void EventGraphWidget::saveCurrentPlot() {
       for (tit2 = attributes.begin(); tit2 != attributes.end(); tit2++) {
 	QString attribute = *tit2;
 	QString value = values.value(attribute);
-	query->prepare("INSERT INTO saved_eg_plots_attributes_to_macro_events "
-		       "(plot, attribute, macro, value) "
-		       "VALUES(:plot, :attribute, :macro, :value)");
-	query->bindValue(":plot", name);
-	query->bindValue(":attribute", attribute);
-	query->bindValue(":macro", currentMacro->getId());
-	query->bindValue(":value", value);
-	query->exec();
+	query2->bindValue(":plot", name);
+	query2->bindValue(":attribute", attribute);
+	query2->bindValue(":macro", currentMacro->getId());
+	query2->bindValue(":value", value);
+	query2->exec();
       }
       QString description = currentMacro->getDescription();
       QString comment = currentMacro->getComment();
@@ -2848,36 +2857,31 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentMacro->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_eg_plots_macro_events "
-		     "(plot, eventid, ch_order, colligation, description, comment, width, mode, "
-		     "curxpos, curypos, orixpos, oriypos, dislodged, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :eventid, :ch_order, :colligation, :description, :comment, "
-		     ":width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
-		     ":red, :green, :blue, :alpha, :hidden)");;
-      query->bindValue(":plot", name);
-      query->bindValue(":eventid", currentMacro->getId());
-      query->bindValue(":ch_order", currentMacro->getOrder());
-      query->bindValue(":colligation", currentMacro->getConstraint());
-      query->bindValue(":description", description);
-      query->bindValue(":comment", comment);
-      query->bindValue(":width", width);
-      query->bindValue(":mode", mode);
-      query->bindValue(":curxpos", currentX);
-      query->bindValue(":curypos", currentY);
-      query->bindValue(":orixpos", originalX);
-      query->bindValue(":oriypos", originalY);
-      query->bindValue(":dislodged", dislodged);
-      query->bindValue(":red", red);
-      query->bindValue(":green", green);
-      query->bindValue(":blue", blue);
-      query->bindValue(":alpha", alpha);
-      query->bindValue(":hidden", hidden);
-      query->exec();
+      query3->bindValue(":plot", name);
+      query3->bindValue(":eventid", currentMacro->getId());
+      query3->bindValue(":ch_order", currentMacro->getOrder());
+      query3->bindValue(":colligation", currentMacro->getConstraint());
+      query3->bindValue(":description", description);
+      query3->bindValue(":comment", comment);
+      query3->bindValue(":width", width);
+      query3->bindValue(":mode", mode);
+      query3->bindValue(":curxpos", currentX);
+      query3->bindValue(":curypos", currentY);
+      query3->bindValue(":orixpos", originalX);
+      query3->bindValue(":oriypos", originalY);
+      query3->bindValue(":dislodged", dislodged);
+      query3->bindValue(":red", red);
+      query3->bindValue(":green", green);
+      query3->bindValue(":blue", blue);
+      query3->bindValue(":alpha", alpha);
+      query3->bindValue(":hidden", hidden);
+      query3->exec();
       counter++;
       saveProgress->setProgress(counter);
       qApp->processEvents();
     }
+    delete query2;
+    delete query3;
     saveProgress->close();
     delete saveProgress;
     saveProgress = new ProgressBar(0, 1, eventVector.size());
@@ -2886,13 +2890,13 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_embedded_incidents "
+		   "(plot, incident, macro) "
+		   "VALUES (:plot, :incident, :macro)");
     QVectorIterator<EventItem*> it5(eventVector);
     while (it5.hasNext()) {
       EventItem *currentEvent = it5.next();
       if (currentEvent->getMacroEvent() != NULL) {
-	query->prepare("INSERT INTO saved_eg_plots_embedded_incidents "
-		       "(plot, incident, macro) "
-		       "VALUES (:plot, :incident, :macro)");
 	query->bindValue(":plot", name);
 	query->bindValue(":incident", currentEvent->getId());
 	query->bindValue(":macro", currentEvent->getMacroEvent()->getId());
@@ -2910,14 +2914,14 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_macros_to_macros "
+		   "(plot, son, father) "
+		   "VALUES (:plot, :son, :father)");
     QVectorIterator<MacroEvent*> it6(macroVector);
     while (it6.hasNext()) {
       MacroEvent *currentMacro = it6.next();
       MacroEvent *currentFather = currentMacro->getMacroEvent(); 
       if (currentMacro->getMacroEvent() != NULL) {
-	query->prepare("INSERT INTO saved_eg_plots_macros_to_macros "
-		       "(plot, son, father) "
-		       "VALUES (:plot, :son, :father)");
 	query->bindValue(":plot", name);
 	query->bindValue(":son", currentMacro->getId());
 	query->bindValue(":father", currentFather->getId());
@@ -2935,6 +2939,11 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_macro_labels "
+		   "(plot, eventid, label, curxpos, curypos, xoffset, yoffset, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :eventid, :label, :curxpos, :curypos, :xoffset, :yoffset, "
+		   ":red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<MacroLabel*> it7(macroLabelVector);
     while (it7.hasNext()) {
       MacroLabel *currentLabel = it7.next();
@@ -2952,11 +2961,6 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentLabel->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_eg_plots_macro_labels "
-		     "(plot, eventid, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :eventid, :label, :curxpos, :curypos, :xoffset, :yoffset, "
-		     ":red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":eventid", id);
       query->bindValue(":label", text);
@@ -2982,6 +2986,9 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_legend (plot, name, tip, "
+		   "red, green, blue, alpha) "
+		   "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
     for (int i = 0; i != eventListWidget->rowCount(); i++) {
       QTableWidgetItem *item = eventListWidget->item(i, 0);
       QString title = item->data(Qt::DisplayRole).toString();
@@ -2991,9 +2998,6 @@ void EventGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
-      query->prepare("INSERT INTO saved_eg_plots_legend (plot, name, tip, "
-		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
       query->bindValue(":plot", name);
       query->bindValue(":name", title);
       query->bindValue(":tip", tip);
@@ -3012,6 +3016,7 @@ void EventGraphWidget::saveCurrentPlot() {
     changeLabel->setText("");
     delete saveProgress;
     delete query;
+    QSqlDatabase::database().commit();
   }
   delete saveDialog;
 }

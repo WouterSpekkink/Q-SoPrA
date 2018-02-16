@@ -50,6 +50,8 @@ void WelcomeDialog::newDatabase() {
       errorBox->exec();
       return;
     } else {
+      esd->db->exec("PRAGMA synchronous=OFF");
+      esd->db->exec("PRAGMA journal_mode=MEMORY");
       QSqlQuery *query = new QSqlQuery;
       qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE incidents "
@@ -417,6 +419,8 @@ void WelcomeDialog::openDatabase() {
 	 Let's make sure that we create all tables that are not yet present.
 	 For example, this could be the case after updates of the program. 
       */
+      esd->db->exec("PRAGMA synchronous=OFF");
+      esd->db->exec("PRAGMA journal_mode=MEMORY");
       QSqlQuery *query = new QSqlQuery;
       qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE IF NOT EXISTS incidents "

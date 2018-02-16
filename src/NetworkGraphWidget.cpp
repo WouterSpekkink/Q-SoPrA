@@ -2923,6 +2923,12 @@ void NetworkGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     int counter = 1;
     saveProgress->show();
+    QSqlDatabase::database().transaction();
+    query->prepare("INSERT INTO saved_ng_plots_network_nodes "
+		   "(plot, entity, description, mode, curxpos, curypos, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
+		   ":red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<NetworkNode*> it(nodeVector);
     while (it.hasNext()) {
       NetworkNode *current = it.next();
@@ -2939,11 +2945,6 @@ void NetworkGraphWidget::saveCurrentPlot() {
       if (current->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_ng_plots_network_nodes "
-		     "(plot, entity, description, mode, curxpos, curypos, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
-		     ":red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":entity", entity);
       query->bindValue(":description", description);
@@ -2968,6 +2969,11 @@ void NetworkGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_ng_plots_node_labels "
+		   "(plot, entity, curxpos, curypos, xoffset, yoffset, fontsize, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :entity, :curxpos, :curypos, :xoffset, :yoffset, :fontsize, "
+		   ":red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<NetworkNodeLabel*> it2(labelVector);
     while (it2.hasNext()) {
       NetworkNodeLabel *current = it2.next();
@@ -2985,11 +2991,6 @@ void NetworkGraphWidget::saveCurrentPlot() {
       if (current->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_ng_plots_node_labels "
-		     "(plot, entity, curxpos, curypos, xoffset, yoffset, fontsize, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :entity, :curxpos, :curypos, :xoffset, :yoffset, :fontsize, "
-		     ":red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":entity", entity);
       query->bindValue(":curxpos", x);
@@ -3015,6 +3016,9 @@ void NetworkGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, name, tip, "
+		   "red, green, blue, alpha) "
+		   "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
     for (int i = 0; i != nodeListWidget->rowCount(); i++) {
       QTableWidgetItem *item = nodeListWidget->item(i, 0);
       QString title = item->data(Qt::DisplayRole).toString();
@@ -3024,9 +3028,6 @@ void NetworkGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
-      query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, name, tip, "
-		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
       query->bindValue(":plot", name);
       query->bindValue(":name", title);
       query->bindValue(":tip", tip);
@@ -3047,6 +3048,9 @@ void NetworkGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_ng_plots_edgelegend (plot, name, tip, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
     for (int i = 0; i != edgeListWidget->rowCount(); i++) {
       QTableWidgetItem *item = edgeListWidget->item(i, 0);
       QString title = item->data(Qt::DisplayRole).toString();
@@ -3060,9 +3064,6 @@ void NetworkGraphWidget::saveCurrentPlot() {
       if (edgeListWidget->item(i, 0)->background() == QColor(Qt::gray)) {
 	hidden = 1;
       }
-      query->prepare("INSERT INTO saved_ng_plots_edgelegend (plot, name, tip, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":name", title);
       query->bindValue(":tip", tip);
@@ -3084,6 +3085,11 @@ void NetworkGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_ng_plots_directed "
+		   "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
+		   ":masshidden, :red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<DirectedEdge*> it3(directedVector);
     while (it3.hasNext()) {
       DirectedEdge *current = it3.next();
@@ -3109,11 +3115,6 @@ void NetworkGraphWidget::saveCurrentPlot() {
       if (current->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_ng_plots_directed "
-		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
-		     ":masshidden, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
@@ -3141,6 +3142,11 @@ void NetworkGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_ng_plots_undirected "
+		   "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
+		   ":masshidden, :red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<UndirectedEdge*> it4(undirectedVector);
     while (it4.hasNext()) {
       UndirectedEdge *current = it4.next();
@@ -3166,11 +3172,6 @@ void NetworkGraphWidget::saveCurrentPlot() {
       if (current->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_ng_plots_undirected "
-		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
-		     ":masshidden, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
@@ -3194,6 +3195,7 @@ void NetworkGraphWidget::saveCurrentPlot() {
     changeLabel->setText("");
     delete saveProgress;
     delete query;
+    QSqlDatabase::database().commit();
   }
   delete saveDialog;
 }		      

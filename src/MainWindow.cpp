@@ -381,6 +381,16 @@ void MainWindow::importFromCsv() {
   */
   int order = dw->incidentsModel->rowCount() + 1;
   std::vector<std::vector <std::string> >::iterator it;
+  // For efficiency, we'll do this as a transaction.
+  QSqlDatabase::database().transaction(); 
+  // We create and prepare the QSqlQuery object to make the process more efficient.
+  QSqlQuery *query = new QSqlQuery; 
+  query->prepare("INSERT INTO incidents "
+		 "(ch_order, timestamp, description, raw, comment, "
+		 "source, mark) "
+		 "VALUES "
+		 "(:order, :timestamp, :description, :raw, :comment, "
+		 ":source, :mark)");
   for (it = data.begin(); it != data.end(); it++) {
     // We create all the necessary variables and write them to the table.
     std::vector<std::string> currentRow = *it;
@@ -389,13 +399,6 @@ void MainWindow::importFromCsv() {
     QString raw = QString::fromStdString(currentRow[2]);
     QString comment = QString::fromStdString(currentRow[3]);
     QString source = QString::fromStdString(currentRow[4]);
-    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    query->prepare("INSERT INTO incidents "
-		   "(ch_order, timestamp, description, raw, comment, "
-		   "source, mark) "
-		   "VALUES "
-		   "(:order, :timestamp, :description, :raw, :comment, "
-		   ":source, :mark)");
     query->bindValue(":order", order);
     query->bindValue(":timestamp", timeStamp);
     query->bindValue(":description", description);
@@ -407,8 +410,9 @@ void MainWindow::importFromCsv() {
     order++; // Make sure that we increment the order variable.
     loadProgress->setProgress(order); // Set progress and report
     qApp->processEvents(); // Make sure that the progress is visible
-    delete query; // Memory management
   }
+  delete query; // Memory management
+  QSqlDatabase::database().commit(); // Commit our transaction. 
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
   // The imported data won't be visible unless we run the following lines.

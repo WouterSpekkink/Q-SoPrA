@@ -194,7 +194,13 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 void OccurrenceGraphWidget::checkCongruency() {
   qApp->setOverrideCursor(Qt::WaitCursor);
   if (occurrenceVector.size() > 0) {
+    QSqlDatabase::database().transaction();
     QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+		   "WHERE attribute = :attribute AND incident = :incident");
+    QSqlQuery *query2 = new QSqlQuery;
+    query2->prepare("SELECT ch_order FROM incidents "
+		    "WHERE id = :incident");
     QVectorIterator<OccurrenceItem*> it(occurrenceVector);
     while (it.hasNext()) {
       OccurrenceItem* current = it.next();
@@ -209,8 +215,6 @@ void OccurrenceGraphWidget::checkCongruency() {
 	bool found = false;
 	while (it2.hasNext()) {
 	  QString currentAttribute = it2.next();
-	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			 "WHERE attribute = :attribute AND incident = :incident");
 	  query->bindValue(":attribute", currentAttribute);
 	  query->bindValue(":incident", id);
 	  query->exec();
@@ -225,17 +229,15 @@ void OccurrenceGraphWidget::checkCongruency() {
 	  qApp->processEvents();
 	  return;
 	}
-	query->prepare("SELECT ch_order FROM incidents "
-		       "WHERE id = :incident");
-	query->bindValue(":incident", id);
-	query->exec();
-	query->first();
-	if (query->isNull(0)) {
+	query2->bindValue(":incident", id);
+	query2->exec();
+	query2->first();
+	if (query2->isNull(0)) {
 	  incongruencyLabel->setText("Incongruency detected");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
 	  return;
-	} else if (query->value(0).toInt() != order) {
+	} else if (query2->value(0).toInt() != order) {
 	  incongruencyLabel->setText("Incongruency detected");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
@@ -243,10 +245,10 @@ void OccurrenceGraphWidget::checkCongruency() {
 	}
       }
     }
+    query->prepare("SELECT incident FROM attributes_to_incident "
+		   "WHERE attribute = :attribute");
     for (int i = 0; i != attributeListWidget->rowCount(); i++) {
       QString text = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-      query->prepare("SELECT incident FROM attributes_to_incident "
-		     "WHERE attribute = :attribute");
       query->bindValue(":attribute", text);
       query->exec();
       while (query->next()) {
@@ -271,6 +273,7 @@ void OccurrenceGraphWidget::checkCongruency() {
     }
     delete query;
     incongruencyLabel->setText("");
+    QSqlDatabase::database().commit();
   }
   qApp->restoreOverrideCursor();
   qApp->processEvents();
@@ -317,16 +320,17 @@ void OccurrenceGraphWidget::addAttribute() {
       findChildren(attribute, &attributeVector);
       QVectorIterator<QString> it(attributeVector);
       QVector<int> orders;
+      QSqlDatabase::database().transaction();
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
       while (it.hasNext()) {
 	QString currentAttribute = it.next();
-	query->prepare("SELECT incident FROM attributes_to_incidents "
-		       "WHERE attribute = :currentAttribute");
 	query->bindValue(":currentAttribute", currentAttribute);
 	query->exec();
 	while (query->next()) {
 	  int currentIncident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
 	  query2->bindValue(":id", currentIncident);
 	  query2->exec();
 	  query2->first();
@@ -334,7 +338,6 @@ void OccurrenceGraphWidget::addAttribute() {
 	  QString incidentDescription = query2->value(1).toString();
 	  if (!orders.contains(order)) {
 	    orders.push_back(order);
-	    delete query2;
 	    QPointF position = QPointF((order * distance), 0);
 	    OccurrenceItem *newOccurrence = new OccurrenceItem(40, incidentDescription, position,
 							       currentIncident, order, attribute);
@@ -382,6 +385,8 @@ void OccurrenceGraphWidget::addAttribute() {
 		   Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
       }
       delete query;
+      delete query2;
+      QSqlDatabase::database().commit();
       groupOccurrences();
       wireLinkages();
     }
@@ -436,11 +441,12 @@ void OccurrenceGraphWidget::removeMode() {
       i++;
     }
   }
-  groupOccurrences();
-  wireLinkages();
-  if (presentAttributes.size() == 0) {
+  if (presentAttributes.size() > 0) {
+    groupOccurrences();
+  } else if (presentAttributes.size() == 0) {
     savePlotButton->setEnabled(false);
   }
+  wireLinkages();
   removeModeButton->setEnabled(false);
 }
 
@@ -1091,7 +1097,12 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     int counter = 1;
     saveProgress->show();
-
+    QSqlDatabase::database().transaction();
+    query->prepare("INSERT INTO saved_og_plots_occurrence_items "
+		   "(plot, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
+		   "oriypos, red, green, blue, alpha, hidden, perm) "
+		   "VALUES (:plot, :incident, :order, :attribute, :width, :curxpos, :curypos, "
+		   ":orixpos, :oriypos, :red, :green, :blue, :alpha, :hidden, :perm)");
     QVectorIterator<OccurrenceItem*> it(occurrenceVector);
     while (it.hasNext()) {
       OccurrenceItem *currentItem = it.next();
@@ -1116,11 +1127,6 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       if (currentItem->isPermHidden()) {
 	perm = 1;
       }
-      query->prepare("INSERT INTO saved_og_plots_occurrence_items "
-		     "(plot, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
-		     "oriypos, red, green, blue, alpha, hidden, perm) "
-		     "VALUES (:plot, :incident, :order, :attribute, :width, :curxpos, :curypos, "
-		     ":orixpos, :oriypos, :red, :green, :blue, :alpha, :hidden, :perm)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", incident);
       query->bindValue(":order", order);
@@ -1149,6 +1155,11 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_og_plots_occurrence_labels "
+		   "(plot, incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :incident, :attribute, :label, :curxpos, :curypos, "
+		   ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<OccurrenceLabel*> it2(labelVector);
     while (it2.hasNext()) {
       OccurrenceLabel *currentLabel = it2.next();
@@ -1167,11 +1178,6 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       if (currentLabel->isVisible()) {
 	hidden = 0;
       }
-      query->prepare("INSERT INTO saved_og_plots_occurrence_labels "
-		     "(plot, incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :incident, :attribute, :label, :curxpos, :curypos, "
-		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden)");
       query->bindValue(":plot", name);
       query->bindValue(":incident", id);
       query->bindValue(":attribute", attribute);
@@ -1199,6 +1205,9 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
     saveProgress->setModal(true);
     counter = 1;
     saveProgress->show();
+    query->prepare("INSERT INTO saved_og_plots_legend (plot, name, tip, "
+		   "red, green, blue, alpha) "
+		   "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
     for (int i = 0; i != attributeListWidget->rowCount(); i++) {
       QTableWidgetItem *item = attributeListWidget->item(i, 0);
       QString title = item->data(Qt::DisplayRole).toString();
@@ -1208,9 +1217,6 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
-      query->prepare("INSERT INTO saved_og_plots_legend (plot, name, tip, "
-		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
       query->bindValue(":plot", name);
       query->bindValue(":name", title);
       query->bindValue(":tip", tip);
@@ -1229,6 +1235,7 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
     changeLabel->setText("");
     delete saveProgress;
     delete query;
+    QSqlDatabase::database().commit();
   }
   delete saveDialog;
 }
