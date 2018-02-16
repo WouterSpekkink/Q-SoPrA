@@ -938,18 +938,16 @@ void RelationshipsWidget::editRelationship() {
 	query->bindValue(":type", currentType);
 	query->bindValue(":oldName", currentRelationship);
 	query->exec();
-	query->exec("SELECT relationships_record FROM save_data");
-	query->first();
 	query->prepare("UPDATE relationships_to_incidents "
-			"SET relationship = :newName "
-			"WHERE name = :oldName AND type = :type");
+		       "SET relationship = :newName "
+		       "WHERE relationship = :oldName AND type = :type");
 	query->bindValue(":newName", name);
 	query->bindValue(":oldName", currentRelationship);
 	query->bindValue(":type", currentType);
 	query->exec();
 	query->prepare("UPDATE relationships_to_incidents_sources "
 			"SET relationship = :newName "
-			"WHERE name = :oldName AND type = :type");
+			"WHERE relationship = :oldName AND type = :type");
 	query->bindValue(":newName", name);
 	query->bindValue(":oldName", currentRelationship);
 	query->bindValue(":type", currentType);
