@@ -6,8 +6,9 @@
 
 const qreal Pi = 3.14;
 
-UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
-			       QString submittedName, QGraphicsItem *parent)
+UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem,
+			       QString submittedType, QString submittedName,
+			       QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
   start = startItem;
   end = endItem;

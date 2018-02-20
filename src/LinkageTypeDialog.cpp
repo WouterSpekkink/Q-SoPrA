@@ -8,13 +8,13 @@ LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent) {
   direction = PAST;
   exitStatus = 1;
 
-  nameLabel = new QLabel(tr("Name:"), this);
-  descriptionLabel = new QLabel(tr("Description:"), this);
-  questionLabel = new QLabel(tr("Question:"), this);
+  nameLabel = new QLabel(tr("<b>Name:</b>"), this);
+  descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
+  questionLabel = new QLabel(tr("<b>Question:</b>"), this);
   questionLabel->setToolTip(breakString("Formulate a question that needs to be answered "
 					"with 'yes' for a linkage between a given pair of "
 					"incidents to exist"));
-  directionLabel = new QLabel(tr("Linkage direction:"), this);
+  directionLabel = new QLabel(tr("<b>Linkage direction:</b>"), this);
   pastButton = new QPushButton(PAST, this);
   pastButton->setCheckable(true);
   pastButton->setChecked(true);

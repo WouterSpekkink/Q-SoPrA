@@ -7,12 +7,12 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   description = "";
   exitStatus = 1;
     
-  nameLabel = new QLabel(tr("Label:"), this);
+  nameLabel = new QLabel(tr("<b>Label:</b>"), this);
   nameField = new QLineEdit();
 
-  descriptionLabel = new QLabel(tr("Description:"), this);
+  descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
   descriptionField = new QTextEdit();
-  directednessLabel = new QLabel(tr("Directedness:"), this);
+  directednessLabel = new QLabel(tr("<b>Directedness:</b>"), this);
   directedButton = new QPushButton(tr("Directed"), this);
   directedButton->setCheckable(true);
   undirectedButton = new QPushButton(tr("Undirected"), this);
@@ -35,10 +35,8 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   nameLayout->addWidget(nameLabel);
   nameLayout->addWidget(nameField);
   mainLayout->addLayout(nameLayout);
-  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(descriptionLabel);
-  descriptionLayout->addWidget(descriptionField);
-  mainLayout->addLayout(descriptionLayout);
+  mainLayout->addWidget(descriptionLabel);
+  mainLayout->addWidget(descriptionField);
   QPointer<QHBoxLayout> directednessLayout = new QHBoxLayout;
   directednessLayout->addWidget(directednessLabel);
   directednessLayout->addWidget(directedButton);
@@ -58,6 +56,7 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   setLayout(mainLayout);
   setWindowTitle("Add / Edit Relationship Type");
   setFixedHeight(sizeHint().height());
+  setMinimumWidth(400);
   // This finishes the constructor.
 }
 

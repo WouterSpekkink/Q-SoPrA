@@ -49,7 +49,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   descriptionFilterLabel = new QLabel("<i>Search descriptions:</i>", this);
   rawFilterLabel = new QLabel("<i>Search raw texts:</i>", this);
   commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
-  relationshipCommentLabel = new QLabel("<b>Set comment</b>", this);
+  relationshipCommentLabel = new QLabel("<b>Comment:</b>", this);
   relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>", this);
 
   timeStampField = new QLineEdit(this);
@@ -309,7 +309,8 @@ void RelationshipsWidget::retrieveData() {
     incidentsModel->fetchMore();
   int total = incidentsModel->rowCount();
 
-  QString indexText = "<b>Incident (" + QString::number(order) + " / " + QString::number(total) + ")<b>";
+  QString indexText = "<b>Incident (" + QString::number(order)
+    + " / " + QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
@@ -516,13 +517,17 @@ void RelationshipsWidget::setCommentButton() {
 
 void RelationshipsWidget::submitRelationshipComment() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentName = currentItem->data(Qt::DisplayRole).toString();
+      QString currentType = currentItem->parent()->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("UPDATE entity_relationships SET comment = :comment WHERE name = :name");
+      query->prepare("UPDATE entity_relationships SET comment = :comment "
+		     "WHERE name = :name AND type = :type");
       query->bindValue(":comment", relationshipCommentField->text());
       query->bindValue(":name", currentName);
+      query->bindValue(":type", currentType);
       query->exec();
       delete query;
     }
@@ -532,13 +537,17 @@ void RelationshipsWidget::submitRelationshipComment() {
 
 void RelationshipsWidget::getComment() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       relationshipCommentField->setEnabled(true);
       QString currentName = currentItem->data(Qt::DisplayRole).toString();
+      QString currentType = currentItem->parent()->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT comment FROM entity_relationships WHERE name = :name");
+      query->prepare("SELECT comment FROM entity_relationships "
+		     "WHERE name = :name AND type = :type");
       query->bindValue(":name", currentName);
+      query->bindValue(":type", currentType);
       query->exec();
       query->first();
       QString comment = query->value(0).toString();

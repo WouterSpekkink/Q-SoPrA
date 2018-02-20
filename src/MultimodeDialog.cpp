@@ -14,22 +14,22 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   directedness = DIRECTED;
   exitStatus = 1;
   
-  modeOneLabel = new QLabel(tr("Mode one:"), this);
+  modeOneLabel = new QLabel(tr("<b>Mode one:</b>"), this);
   modeOneLabel->setToolTip(breakString("The new relationship "
 				       "will be created between nodes of this mode."));
-  modeTwoLabel = new QLabel(tr("Mode two:"), this);
+  modeTwoLabel = new QLabel(tr("<b>Mode two:</b>"), this);
   modeTwoLabel->setToolTip(breakString("Nodes of this mode will "
 				       "be used to determine which nodes of mode "
 				       "one should be related."));
-  relationshipOneLabel = new QLabel(tr("Relationship ego:"), this);
+  relationshipOneLabel = new QLabel(tr("<b>Relationship ego:</b>"), this);
   relationshipOneLabel->setToolTip(breakString("What relationship does the ego (mode one) "
 					       "have to nodes of mode two?"));
-  relationshipTwoLabel = new QLabel(tr("Relationship alter:"), this);
+  relationshipTwoLabel = new QLabel(tr("<b>Relationship alter:</b>"), this);
   relationshipTwoLabel->setToolTip(breakString("What relationship does the alter (mode one) "
 					       "have to nodes of mode two?"));
-  nameLabel = new QLabel(tr("New relationship:"), this);
-  descriptionLabel = new QLabel(tr("Description:"), this);
-  directednessLabel = new QLabel(tr("Directedness:"), this);
+  nameLabel = new QLabel(tr("<b>New relationship:</b>"), this);
+  descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
+  directednessLabel = new QLabel(tr("<b>Directedness:</b>"), this);
   
   nameField = new QLineEdit();
 

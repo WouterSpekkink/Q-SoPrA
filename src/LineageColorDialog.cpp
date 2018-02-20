@@ -7,7 +7,7 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) {
   descendantColor = QColor(0, 75, 255);
   unrelatedColor = QColor(255, 255, 255);
   
-  lineageLabel = new QLabel(tr("Choose lineage colors:"), this);
+  lineageLabel = new QLabel(tr("<b>Choose lineage colors:</b>"), this);
 
   originButton = new QPushButton(tr("Choose origin color"), this);
   QPixmap pixmapOne(originButton->width(), originButton->height());

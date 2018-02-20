@@ -4,7 +4,7 @@ SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent) {
   text = "";
   subText = "";
   exitStatus = 1;
-  textLabel = new QLabel(tr("Text:"), this);
+  textLabel = new QLabel(tr("<b>Text:</b>"), this);
   textField = new QLineEdit(this);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save"), this);

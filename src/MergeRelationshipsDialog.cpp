@@ -15,9 +15,9 @@ MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
   directedness = "";
   exitStatus = 1;  
 
-  relationshipsLabel = new QLabel(tr("Relationships:"), this);
-  nameLabel = new QLabel(tr("Merged relationship name:"), this);
-  descriptionLabel = new QLabel(tr("Merged relationship description:"), this);
+  relationshipsLabel = new QLabel(tr("<b>Relationships:</b>"), this);
+  nameLabel = new QLabel(tr("<b>Merged relationship name:</b>"), this);
+  descriptionLabel = new QLabel(tr("<b>Merged relationship description:</b>"), this);
   
   nameField = new QLineEdit();
 

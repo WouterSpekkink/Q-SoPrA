@@ -7,7 +7,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   chosenTextColor = QColor(Qt::black);
   chosenAttribute = DEFAULT;
 
-  attributeLabel = new QLabel(tr("Choose attribute:"), this);
+  attributeLabel = new QLabel(tr("<b>Choose attribute:</b>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
 
   attributesTreeView = new DeselectableTreeView(this);

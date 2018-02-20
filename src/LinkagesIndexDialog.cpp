@@ -4,8 +4,8 @@ LinkagesIndexDialog::LinkagesIndexDialog(QWidget *parent, int size, const QStrin
   max =  1;
   submittedSize = size - 1;
   submittedDirection = direction;
-  tailIndexLabel = new QLabel(tr("Tail index:"), this);
-  headIndexLabel = new QLabel(tr("Head index:"), this);
+  tailIndexLabel = new QLabel(tr("<b>Tail index:</b>"), this);
+  headIndexLabel = new QLabel(tr("<b>Head index:</b>"), this);
   tailIndexText = "";
   headIndexText = "";
   if (submittedDirection == PAST) {

@@ -12,11 +12,11 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
   }
   
   titleLabel = new QLabel("<h1>Set incident details<h1>", this);
-  timeStampLabel = new QLabel("Timing:", this);
-  descriptionLabel = new QLabel("Description:", this);
-  rawLabel = new QLabel("Raw text:", this);
-  commentLabel = new QLabel("Comments:", this);
-  sourceLabel = new QLabel("Source:", this);
+  timeStampLabel = new QLabel("<b>Timing:</b>", this);
+  descriptionLabel = new QLabel("<b>Description:</b>", this);
+  rawLabel = new QLabel("<b>Raw text:</b>", this);
+  commentLabel = new QLabel("<b>Comments:</b>", this);
+  sourceLabel = new QLabel("<b>Source:</b>", this);
   
   timeStampField = new QLineEdit(this);
   descriptionField = new QTextEdit(this);

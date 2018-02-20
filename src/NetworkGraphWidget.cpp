@@ -2020,6 +2020,7 @@ void NetworkGraphWidget::multimodeTransformation() {
     edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
       setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags()
 	       ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+    setVisibility();
   }
 }
 
@@ -2220,13 +2221,14 @@ void NetworkGraphWidget::mergeRelationships() {
 	  if (first != second) {
 	    if (first->startItem() == second->startItem() &&
 		first->endItem() == second->endItem() &&
-		first->getType() == CREATED &&
-		second->getType() == CREATED) {
+		first->getName() == CREATED &&
+		second->getName() == CREATED) {
 	      found = true;
 	    }
 	  }
 	}
 	if (found) {
+	  scene->removeItem(first);
 	  directedVector.removeOne(first);
 	}
       }
@@ -2254,8 +2256,8 @@ void NetworkGraphWidget::mergeRelationships() {
 	  if (first != second) {
 	    if (first->startItem() == second->startItem() &&
 		first->endItem() == second->endItem() &&
-		first->getType() == CREATED &&
-		second->getType() == CREATED) {
+		first->getName() == CREATED &&
+		second->getName() == CREATED) {
 	      found = true;
 	    }
 	  }
@@ -2291,6 +2293,7 @@ void NetworkGraphWidget::mergeRelationships() {
 	i++;
       }
     }
+    setVisibility();
   }
 }
 

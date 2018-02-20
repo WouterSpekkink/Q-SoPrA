@@ -5,7 +5,7 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDi
   exitStatus = 1;
   type = submittedType;
 
-  titleLabel = new QLabel(tr("Select plot:"), this);
+  titleLabel = new QLabel(tr("<b>Select plot:</b>"), this);
 
   plotsComboBox = new QComboBox(this);
   plotsComboBox->addItem(DEFAULT);

@@ -13,7 +13,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entityEdited = 0;
   fresh = true;
   
-  sourceLabel = new QLabel(tr("Source filter:"), this);
+  sourceLabel = new QLabel(tr("<b>Source filter:</b>"), this);
   typeLabel = new QLabel("", this);
   entitiesTable = new EntityTableModel(this);
   entitiesTable->setTable("entities");
@@ -28,8 +28,8 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entitiesView->setModelColumn(1);
   entitiesView->setEditTriggers(QAbstractItemView::NoEditTriggers);
     
-  assignLeftEntityButton = new QPushButton("use selected", this);
-  assignRightEntityButton = new QPushButton("use selected", this);
+  assignLeftEntityButton = new QPushButton("use as source", this);
+  assignRightEntityButton = new QPushButton("use as target", this);
   
   entityFilterField = new QLineEdit();
   newEntityButton = new QPushButton(tr("Define new entity"), this);
