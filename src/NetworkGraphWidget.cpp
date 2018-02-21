@@ -2228,7 +2228,9 @@ void NetworkGraphWidget::mergeRelationships() {
 	  }
 	}
 	if (found) {
-	  scene->removeItem(first);
+	  if (scene->items().contains(first)) {
+	    scene->removeItem(first);
+	  }
 	  directedVector.removeOne(first);
 	}
       }
@@ -2263,7 +2265,9 @@ void NetworkGraphWidget::mergeRelationships() {
 	  }
 	}
 	if (found) {
-	  scene->removeItem(first);
+	  if (scene->items().contains(first)) {
+	    scene->removeItem(first);
+	  }
 	  undirectedVector.removeOne(first);
 	}
       }
