@@ -3550,7 +3550,13 @@ void NetworkGraphWidget::processUpperRange(int value) {
 }
 
 void NetworkGraphWidget::setVisibility() {
- QVectorIterator<NetworkNode*> it(nodeVector);
+  QSqlDatabase::database().transaction(); 
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT incident FROM relationships_to_incidents "
+		 "WHERE relationship = :relationship AND type = :type");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+  QVectorIterator<NetworkNode*> it(nodeVector);
   while (it.hasNext()) {
     NetworkNode* currentNode = it.next();
     currentNode->hide();
@@ -3567,16 +3573,11 @@ void NetworkGraphWidget::setVisibility() {
       } else if (currentDirected->isMassHidden()) {
 	show = false;
       } else if (currentDirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
 	query->bindValue(":relationship", relationship);
 	query->bindValue(":type", type);
 	query->exec();
 	while (query->next()) {
 	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
 	  query2->bindValue(":incident", incident);
 	  query2->exec();
 	  query2->first();
@@ -3584,9 +3585,7 @@ void NetworkGraphWidget::setVisibility() {
 	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
 	    show = true;
 	  }
-	  delete query2;
 	}
-	delete query;
       } else {
 	show = true;
       }
@@ -3599,6 +3598,11 @@ void NetworkGraphWidget::setVisibility() {
       currentDirected->hide();
     }
   }
+  QSqlDatabase::database().commit();
+  QSqlDatabase::database().transaction();
+  query->prepare("SELECT incident FROM relationships_to_incidents "
+		 "WHERE relationship = :relationship AND type = :type");
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
   QVectorIterator<UndirectedEdge*> it3(undirectedVector);
   while (it3.hasNext()) {
     bool show = false;
@@ -3611,16 +3615,11 @@ void NetworkGraphWidget::setVisibility() {
       } else if (currentUndirected->isMassHidden()) {
 	show = false;
       } else if (currentUndirected->isFiltered()) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM relationships_to_incidents "
-		       "WHERE relationship = :relationship AND type = :type");
 	query->bindValue(":relationship", relationship);
 	query->bindValue(":type", type);
 	query->exec();
 	while (query->next()) {
 	  int incident = query->value(0).toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
 	  query2->bindValue(":incident", incident);
 	  query2->exec();
 	  query2->first();
@@ -3628,9 +3627,7 @@ void NetworkGraphWidget::setVisibility() {
 	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) {
 	    show = true;
 	  }
-	  delete query2;
 	}
-	delete query;
       } else {
 	show = true;
       }
@@ -3643,6 +3640,7 @@ void NetworkGraphWidget::setVisibility() {
       currentUndirected->hide();
     }
   }
+  QSqlDatabase::database().commit(); 
   processHeights();
   QVectorIterator<NetworkNodeLabel*> it4(labelVector);
   while (it4.hasNext()) {
@@ -3653,6 +3651,8 @@ void NetworkGraphWidget::setVisibility() {
       label->hide();
     }
   }
+  delete query;
+  delete query2;
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
