@@ -1387,7 +1387,7 @@ void NetworkGraphWidget::simpleLayout() {
 	      qreal secondYDiff = secondPoint.y() - midPoint.y();
 	      second->setPos(second->scenePos().x() + secondXDiff,
 			     second->scenePos().y() + secondYDiff);
-	      second->getLabel()->setNewPos(first->scenePos());
+	      second->getLabel()->setNewPos(second->scenePos());
 	    }
 	  }
 	}
@@ -1441,7 +1441,7 @@ void NetworkGraphWidget::simpleLayout() {
 	      qreal secondYDiff = secondPoint.y() - midPoint.y();
 	      second->setPos(second->scenePos().x() + secondXDiff,
 			     second->scenePos().y() + secondYDiff);
-	      second->getLabel()->setNewPos(first->scenePos());
+	      second->getLabel()->setNewPos(second->scenePos());
 	    }
 	  }
 	}
