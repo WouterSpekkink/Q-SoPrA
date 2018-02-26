@@ -696,9 +696,6 @@ void OccurrenceGraphWidget::getEvents() {
 	  while (macro->getMacroEvent() != NULL) {
 	    macro = macro->getMacroEvent();
 	  }
-	  qDebug() << macro->getId();
-	  qDebug() << macro->getDescription();
-	  qDebug() << macro->getOrder();
 	  QPointF position = QPointF(macro->scenePos().x(), 0);
 	  // I am setting macro id's to negatives to distinguish them from the incident ids.
 	  OccurrenceItem *newOccurrence = new OccurrenceItem(40, macro->getDescription(),
@@ -718,7 +715,6 @@ void OccurrenceGraphWidget::getEvents() {
 	    type = "S";
 	  }
 	  QString text = type + QString::number(macro->getId()) + " - " + currentAttribute;
-	  qDebug() << text;
 	  label->setPlainText(text);
 	  label->setDefaultTextColor(Qt::black);
 	  label->setTextWidth(label->boundingRect().width());

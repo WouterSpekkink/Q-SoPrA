@@ -650,7 +650,6 @@ void AttributesWidget::changeFilter(const QString &text) {
 }
 
 void AttributesWidget::newAttribute() {
-  qDebug() << attributesTreeView->currentIndex();
   if (attributesTreeView->currentIndex().isValid()) {
     QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";

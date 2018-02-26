@@ -2531,9 +2531,7 @@ void LinkagesWidget::setLink() {
   } else if (codingType == ASSISTED && selectedDirection == FUTURE) {
     std::vector<int> ignore;
     if (tailIndex != 1) {
-      qDebug() << "THIS";
       findFuturePaths(&ignore, tailIndex);
-      qDebug() << "AND THIS";
       std::vector<int>::iterator it;
       for (int i = tailIndex - 1; i != 0; i--) {
 	bool found = false;
