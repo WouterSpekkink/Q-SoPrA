@@ -323,7 +323,6 @@ void DataWidget::duplicateRow() {
     recordDialog->initialize();
     recordDialog->exec();
     if (recordDialog->getExitStatus() == 0) {
-      QSqlQuery *query = new QSqlQuery;
       query->prepare("UPDATE incidents SET ch_order = ch_order + 1 "
 		     "WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentOrder);
