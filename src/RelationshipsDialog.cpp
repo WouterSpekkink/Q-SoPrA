@@ -13,7 +13,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entityEdited = 0;
   fresh = true;
   
-  sourceLabel = new QLabel(tr("<b>Source filter:</b>"), this);
+  filterLabel = new QLabel(tr("<b>Filter:</b>"), this);
   typeLabel = new QLabel("", this);
   entitiesTable = new EntityTableModel(this);
   entitiesTable->setTable("entities");
@@ -62,7 +62,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> labelLayout = new QHBoxLayout;
-  labelLayout->addWidget(sourceLabel);
+  labelLayout->addWidget(filterLabel);
   labelLayout->addWidget(entityFilterField);
   mainLayout->addLayout(labelLayout);
   QPointer<QHBoxLayout> listsLayout = new QHBoxLayout;
@@ -330,7 +330,8 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
     }
     delete query;
   }
-}  
+}
+
 void RelationshipsDialog::editLeftAssignedEntity() {
   if (selectedSourceLabel->text() != DEFAULT) {
     QString selected = selectedSourceLabel->text();

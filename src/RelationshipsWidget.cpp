@@ -92,6 +92,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   newTypeButton = new QPushButton("Add relationship type", this);
   editTypeButton = new QPushButton("Edit relationship type", this);
   editTypeButton->setEnabled(false);
+  entitiesOverviewButton = new QPushButton("Entities overview", this);
   newRelationshipButton = new QPushButton("Add relationship", this);
   newRelationshipButton->setEnabled(false);
   editRelationshipButton = new QPushButton("Edit relationship", this);
@@ -137,6 +138,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(submitRelationshipComment()));
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
+  connect(entitiesOverviewButton, SIGNAL(clicked()), this, SLOT(entitiesOverview()));
   connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
   connect(assignRelationshipButton, SIGNAL(clicked()), this, SLOT(assignRelationship()));
   connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
@@ -271,6 +273,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(newTypeButton);
   rightButtonBottomLayout->addWidget(editTypeButton);
+  rightButtonBottomLayout->addWidget(entitiesOverviewButton);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
 
@@ -652,6 +655,19 @@ void RelationshipsWidget::editType() {
     relationshipsTree->sort(0, Qt::AscendingOrder);
     relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
   }
+}
+
+void RelationshipsWidget::entitiesOverview() {
+  QPointer<EditEntityDialog> entityDialog = new EditEntityDialog(this);
+  entityDialog->exec();
+  if (entityDialog->getEntityEdited() == 1) {
+    delete relationshipsTree;
+    setTree();
+    relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+    retrieveData();
+    networkGraph->checkCongruency();
+  }
+  delete entityDialog;
 }
 
 void RelationshipsWidget::assignRelationship() {

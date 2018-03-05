@@ -21,6 +21,7 @@
 #include "AttributeIndexDialog.h"
 #include "NetworkGraphWidget.h"
 #include "SupportingFunctions.h"
+#include "EditEntityDialog.h"
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
@@ -61,6 +62,7 @@ private slots:
   void getComment();
   void newType();
   void editType();
+  void entitiesOverview();
   void newRelationship();
   void editRelationship();
   void removeUnusedRelationships();
@@ -136,6 +138,7 @@ private:
   QPointer<QPushButton> submitRelationshipCommentButton;
   QPointer<QPushButton> newTypeButton;
   QPointer<QPushButton> editTypeButton;
+  QPointer<QPushButton> entitiesOverviewButton;
   QPointer<QPushButton> newRelationshipButton;
   QPointer<QPushButton> editRelationshipButton;
   QPointer<QPushButton> removeUnusedRelationshipsButton;
