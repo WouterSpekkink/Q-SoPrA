@@ -14,7 +14,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   view = new GraphicsView(scene);
   view->setDragMode(QGraphicsView::RubberBandDrag);
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
-  view->viewport()->installEventFilter(this);
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -76,6 +75,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
+  
+  view->viewport()->installEventFilter(this);
   
   // connections
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));

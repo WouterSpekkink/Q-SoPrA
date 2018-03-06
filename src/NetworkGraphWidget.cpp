@@ -23,7 +23,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
   view->setRenderHint(QPainter::Antialiasing);
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
-  view->viewport()->installEventFilter(this);
 
   infoWidget = new QWidget(this);
   graphicsWidget = new QWidget(this);
@@ -42,7 +41,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  attributesTreeView->installEventFilter(this);
   
   typeLabel = new QLabel(tr("Select type"), this);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
@@ -167,6 +165,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   edgeListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   edgeListWidget->setStyleSheet("QTableView {gridline-color: black}");
   edgeListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  
+  view->viewport()->installEventFilter(this);
+  attributesTreeView->installEventFilter(this);
   
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(setFilter(const QString &)));

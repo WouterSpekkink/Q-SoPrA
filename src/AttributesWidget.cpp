@@ -34,7 +34,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  attributesTreeView->installEventFilter(this);
 
   indexLabel = new QLabel("<b>Incident ( / )</b>", this);
   markLabel = new QLabel("", this);
@@ -60,7 +59,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   rawField = new QTextEdit(this);
   rawField->setReadOnly(true);
   commentField = new QTextEdit(this);
-  commentField->installEventFilter(this);
   descriptionFilterField = new QLineEdit(this);
   rawFilterField = new QLineEdit(this);
   commentFilterField = new QLineEdit(this);
@@ -104,6 +102,10 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   removeTextButton->setEnabled(false);
   resetTextsButton = new QPushButton("Reset texts", this);
   resetTextsButton->setEnabled(false);
+
+  attributesTreeView->installEventFilter(this);
+  rawField->viewport()->installEventFilter(this);
+  commentField->installEventFilter(this);
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -881,9 +883,8 @@ void AttributesWidget::mergeAttributes() {
   }
 }
 
-void AttributesWidget::sourceAttributeText(const QString &attribute, const int &incident) {
+void AttributesWidget::selectText() {
   if (rawField->textCursor().selectedText().trimmed() != "") {
-    QSqlQuery *query = new QSqlQuery;
     int end = 0;
     int begin = 0;
     QTextCursor selectCursor = rawField->textCursor();
@@ -897,8 +898,7 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
     selectCursor.setPosition(begin);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
-    while (rawField->textCursor().selectedText()[0].isSpace() ||
-	   rawField->textCursor().selectedText()[0].isPunct()) {
+    while (rawField->textCursor().selectedText()[0].isSpace()) {
       begin++;
       selectCursor.setPosition(begin);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);
@@ -914,9 +914,17 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-    selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    if (!rawField->toPlainText()[end].isPunct()) {
+      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    }
     rawField->setTextCursor(selectCursor);
+  }
+}
+
+void AttributesWidget::sourceAttributeText(const QString &attribute, const int &incident) {
+  if (rawField->textCursor().selectedText().trimmed() != "") {
     QString sourceText = rawField->textCursor().selectedText().trimmed();
+    QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
 		   "WHERE attribute = :att AND inc = :incident AND source_text = :text");
     query->bindValue("att", attribute);
@@ -935,7 +943,7 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
     delete query;
   }
 }
-
+  
 void AttributesWidget::highlightText() {
   QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) {
@@ -1146,24 +1154,6 @@ void AttributesWidget::removeText() {
     id = query->value(0).toInt();
     QString attribute = attributesTreeView->currentIndex().data().toString();
     if (rawField->textCursor().selectedText().trimmed() != "") {
-      QSqlQuery *query = new QSqlQuery;
-      int end = 0;
-      int begin = 0;
-      QTextCursor selectCursor = rawField->textCursor();
-      if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
-	begin = rawField->textCursor().position();
-	end = rawField->textCursor().anchor();
-      } else {
-	begin = rawField->textCursor().anchor();
-	end = rawField->textCursor().position();
-      }
-      begin++;
-      end--;
-      selectCursor.setPosition(begin);
-      selectCursor.movePosition(QTextCursor::StartOfWord);
-      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-      rawField->setTextCursor(selectCursor);
       QString sourceText = rawField->textCursor().selectedText().trimmed();
       query->prepare("DELETE FROM attributes_to_incidents_sources "
 		     "WHERE attribute = :att AND incident = :inc AND source_text = :text");
@@ -1726,6 +1716,8 @@ void AttributesWidget::resetTree() {
 bool AttributesWidget::eventFilter(QObject *object, QEvent *event) {
   if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
     fixTree();
+  } else if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    selectText();
   } else if (event->type() == QEvent::Wheel) {
     QWheelEvent *wheelEvent = (QWheelEvent*) event;
     QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);

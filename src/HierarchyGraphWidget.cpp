@@ -6,7 +6,6 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   
   scene = new Scene(this);
   view = new BandlessGraphicsView(scene);
-  view->viewport()->installEventFilter(this);
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -35,7 +34,6 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  attributesTreeView->installEventFilter(this);
 
   timeStampLabel = new QLabel("<b>Timing:</b>", infoWidget);
   sourceLabel = new QLabel("<b>Source:</b>", infoWidget);
@@ -56,7 +54,6 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   rawField = new QTextEdit(infoWidget);
   rawField->setReadOnly(true);
   commentField = new QTextEdit(commentWidget);
-  commentField->installEventFilter(commentWidget);
   attributesFilterField = new QLineEdit(attWidget);
   valueField = new QLineEdit(attWidget);
   valueField->setEnabled(false);
@@ -91,6 +88,11 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   exitButton->setStyleSheet("QPushButton {color: blue; font-weight: bold}");
   valueButton = new QPushButton(tr("Store value"), attWidget);
   valueButton->setEnabled(false);
+
+  rawField->viewport()->installEventFilter(infoWidget);
+  view->viewport()->installEventFilter(this);
+  attributesTreeView->installEventFilter(this);
+  commentField->installEventFilter(commentWidget);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
@@ -1294,9 +1296,8 @@ void HierarchyGraphWidget::removeText() {
   }
 }
 
-void HierarchyGraphWidget::sourceAttributeText(const QString &attribute, const int &incident) {
+void HierarchyGraphWidget::selectText() {
   if (rawField->textCursor().selectedText().trimmed() != "") {
-    QSqlQuery *query = new QSqlQuery;
     int end = 0;
     int begin = 0;
     QTextCursor selectCursor = rawField->textCursor();
@@ -1310,8 +1311,7 @@ void HierarchyGraphWidget::sourceAttributeText(const QString &attribute, const i
     selectCursor.setPosition(begin);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
-    while (rawField->textCursor().selectedText()[0].isSpace() ||
-	   rawField->textCursor().selectedText()[0].isPunct()) {
+    while (rawField->textCursor().selectedText()[0].isSpace()) {
       begin++;
       selectCursor.setPosition(begin);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);
@@ -1327,9 +1327,18 @@ void HierarchyGraphWidget::sourceAttributeText(const QString &attribute, const i
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-    selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    if (!rawField->toPlainText()[end].isPunct()) {
+      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    }
     rawField->setTextCursor(selectCursor);
+  }
+}
+				       
+
+void HierarchyGraphWidget::sourceAttributeText(const QString &attribute, const int &incident) {
+  if (rawField->textCursor().selectedText().trimmed() != "") {
     QString sourceText = rawField->textCursor().selectedText().trimmed();
+    QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
 		   "WHERE attribute = :att AND inc = :incident AND source_text = :text");
     query->bindValue("att", attribute);
@@ -1616,8 +1625,22 @@ void HierarchyGraphWidget::switchBack() {
   emit goToEventGraph();
 }
 
+void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
+}
+
+void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void HierarchyGraphWidget::finalBusiness() {
+  cleanUp();
+}
+
 bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) {
-  if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
+  if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    selectText();
+  } else if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
     QMouseEvent *mouseEvent = (QMouseEvent*) event;
     if (mouseEvent->button() == Qt::LeftButton) {
       retrieveData();
@@ -1639,16 +1662,4 @@ bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) {
     }
   }
   return false;
-}
-
-void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) {
-  attributesWidget = aw;
-}
-
-void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) {
-  eventGraph = egw;
-}
-
-void HierarchyGraphWidget::finalBusiness() {
-  cleanUp();
 }

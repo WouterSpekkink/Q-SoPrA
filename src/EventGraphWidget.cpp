@@ -17,7 +17,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   view = new GraphicsView(scene);
   view->setDragMode(QGraphicsView::RubberBandDrag);
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
-  view->viewport()->installEventFilter(this);
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -47,7 +46,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   setTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  attributesTreeView->installEventFilter(this);
 
   coderLabel = new QLabel(tr("Choose coder:"), this);
   typeLabel = new QLabel(tr("Choose linkage:"), this);
@@ -98,7 +96,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   rawField = new QTextEdit(infoWidget);
   rawField->setReadOnly(true);
   commentField = new QTextEdit(commentWidget);
-  commentField->installEventFilter(commentWidget);
   attributesFilterField = new QLineEdit(attWidget);
   valueField = new QLineEdit(attWidget);
   valueField->setEnabled(false);
@@ -163,6 +160,11 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   moveModeUpButton->setEnabled(false);
   moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
   moveModeDownButton->setEnabled(false);
+  
+  view->viewport()->installEventFilter(this);
+  attributesTreeView->installEventFilter(this);
+  rawField->viewport()->installEventFilter(infoWidget);
+  commentField->installEventFilter(commentWidget);
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
@@ -1400,9 +1402,8 @@ void EventGraphWidget::unassignAttribute() {
   occurrenceGraph->checkCongruency();
 }
 
-void EventGraphWidget::sourceAttributeText(const QString &attribute, const int &incident) {
+void EventGraphWidget::selectText() {
   if (rawField->textCursor().selectedText().trimmed() != "") {
-    QSqlQuery *query = new QSqlQuery;
     int end = 0;
     int begin = 0;
     QTextCursor selectCursor = rawField->textCursor();
@@ -1416,8 +1417,7 @@ void EventGraphWidget::sourceAttributeText(const QString &attribute, const int &
     selectCursor.setPosition(begin);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
-    while (rawField->textCursor().selectedText()[0].isSpace() ||
-	   rawField->textCursor().selectedText()[0].isPunct()) {
+    while (rawField->textCursor().selectedText()[0].isSpace()) {
       begin++;
       selectCursor.setPosition(begin);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);
@@ -1433,9 +1433,17 @@ void EventGraphWidget::sourceAttributeText(const QString &attribute, const int &
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-    selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    if (!rawField->toPlainText()[end].isPunct()) {
+      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    }
     rawField->setTextCursor(selectCursor);
+  }
+}
+
+void EventGraphWidget::sourceAttributeText(const QString &attribute, const int &incident) {
+  if (rawField->textCursor().selectedText().trimmed() != "") {
     QString sourceText = rawField->textCursor().selectedText().trimmed();
+    QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
 		   "WHERE attribute = :att AND inc = :incident AND source_text = :text");
     query->bindValue("att", attribute);
@@ -6087,31 +6095,6 @@ void EventGraphWidget::findFuturePaths(QSet<int> *pMark, int currentIncident) {
   }
 }
 
-bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) {
-  if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
-    QMouseEvent *mouseEvent = (QMouseEvent*) event;
-    if (mouseEvent->button() == Qt::LeftButton) {
-      retrieveData();
-      setButtons();
-    }
-  } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
-    fixTree();
-  } else if (event->type() == QEvent::Wheel) {
-    QWheelEvent *wheelEvent = (QWheelEvent*) event;
-    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
-    if (textEdit) {
-      if(wheelEvent->modifiers() & Qt::ControlModifier) {
-        if (wheelEvent->angleDelta().y() > 0) {
-	  textEdit->zoomIn(1);
-	} else if (wheelEvent->angleDelta().y() < 0) {
-	  textEdit->zoomOut(1);
-	}
-      }
-    }
-  }
-  return false;
-}
-
 QVector<MacroEvent*> EventGraphWidget::getMacros() {
   return macroVector;
 }
@@ -6136,4 +6119,31 @@ void EventGraphWidget::resetTree() {
 void EventGraphWidget::finalBusiness() {
   setComment();
   cleanUp();
+}
+
+bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) {
+  if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    selectText();
+  } else if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    QMouseEvent *mouseEvent = (QMouseEvent*) event;
+    if (mouseEvent->button() == Qt::LeftButton) {
+      retrieveData();
+      setButtons();
+    }
+  } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
+    fixTree();
+  } else if (event->type() == QEvent::Wheel) {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit) {
+      if(wheelEvent->modifiers() & Qt::ControlModifier) {
+	if (wheelEvent->angleDelta().y() > 0) {
+	  textEdit->zoomIn(1);
+	} else if (wheelEvent->angleDelta().y() < 0) {
+	  textEdit->zoomOut(1);
+	}
+      }
+    }
+  }
+  return false;
 }

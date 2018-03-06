@@ -29,7 +29,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   relationshipsTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   relationshipsTreeView->header()->setStretchLastSection(false);
   relationshipsTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-  relationshipsTreeView->installEventFilter(this);
 
   treeFilter = new RelationshipTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -61,7 +60,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   rawField = new QTextEdit(this);
   rawField->setReadOnly(true);
   commentField = new QTextEdit(this);
-  commentField->installEventFilter(this);
   descriptionFilterField = new QLineEdit(this);
   rawFilterField = new QLineEdit(this);
   commentFilterField = new QLineEdit(this);
@@ -108,6 +106,10 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   removeTextButton->setEnabled(false);
   resetTextsButton = new QPushButton("Reset texts", this);
   resetTextsButton->setEnabled(false);
+  
+  relationshipsTreeView->installEventFilter(this);
+  rawField->viewport()->installEventFilter(this);
+  commentField->installEventFilter(this);
   
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
@@ -368,11 +370,8 @@ void RelationshipsWidget::retrieveData() {
   }
 }
 
-void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
-						 const QString &type,
-						 const int &incident) {
+void RelationshipsWidget::selectText() {
   if (rawField->textCursor().selectedText().trimmed() != "") {
-    QSqlQuery *query = new QSqlQuery;
     int end = 0;
     int begin = 0;
     QTextCursor selectCursor = rawField->textCursor();
@@ -386,8 +385,7 @@ void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
     selectCursor.setPosition(begin);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
     rawField->setTextCursor(selectCursor);
-    while (rawField->textCursor().selectedText()[0].isSpace() ||
-	   rawField->textCursor().selectedText()[0].isPunct()) {
+    while (rawField->textCursor().selectedText()[0].isSpace()) {
       begin++;
       selectCursor.setPosition(begin);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);
@@ -403,9 +401,19 @@ void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
     selectCursor.setPosition(begin);
     selectCursor.movePosition(QTextCursor::StartOfWord);
     selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-    selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    if (!rawField->toPlainText()[end].isPunct()) {
+      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+    }
     rawField->setTextCursor(selectCursor);
+  }
+}
+
+void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
+						 const QString &type,
+						 const int &incident) {
+  if (rawField->textCursor().selectedText().trimmed() != "") {
     QString sourceText = rawField->textCursor().selectedText().trimmed();
+    QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT relationship FROM relationships_to_incidents_sources "
 		   "WHERE relationship = :relationship AND type = :type AND "
 		   "incident = :incident AND source_text = :text)");
@@ -432,7 +440,8 @@ void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
 void RelationshipsWidget::highlightText() {
   QTextCursor currentPos =  rawField->textCursor();
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentRelationship = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     QString currentName = relationshipsTreeView->currentIndex().data().toString();
     if (currentRelationship->parent()) {
       QStandardItem *typeItem = currentRelationship->parent();
@@ -1641,13 +1650,10 @@ void RelationshipsWidget::resetTree() {
   setTree();
 }
 
-/*
-  The event filter originally captures only mousewheel events,
-  but I am keeping the function generalised in order to keep 
-  flexibility for possible future events that I want to filter out.
- */
 bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event) {
-  if (event->type() == QEvent::Wheel) {
+  if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) {
+    selectText();
+  } else if (event->type() == QEvent::Wheel) {
     QWheelEvent *wheelEvent = (QWheelEvent*) event;
     QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
     QTreeView *treeView = qobject_cast<QTreeView*>(object);

@@ -27,7 +27,6 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   
   logField = new QTextEdit(this);
   logField->setEnabled(false);
-  logField->installEventFilter(this);
   
   addEntryButton = new QPushButton(tr("New entry"), this);
   saveChangesButton = new QPushButton(tr("Save changes"), this);
@@ -35,6 +34,8 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) {
   removeEntryButton = new QPushButton(tr("Remove selected entry"), this);
   removeEntryButton->setEnabled(false);
   exportJournalButton = new QPushButton(tr("Export"), this);
+
+  logField->installEventFilter(this);
   
   connect(logField, SIGNAL(textChanged()), this, SLOT(setButtons()));
   connect(addEntryButton, SIGNAL(clicked()), this, SLOT(addEntry()));

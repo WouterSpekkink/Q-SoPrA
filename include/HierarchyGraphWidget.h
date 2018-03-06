@@ -66,6 +66,7 @@ private slots:
   void editAttribute();
   void removeUnusedAttributes();
   void changeFilter(const QString &text);
+  void selectText();
   void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
   void removeText();

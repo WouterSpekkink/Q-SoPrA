@@ -88,15 +88,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailRawField = new QTextEdit(this);
   tailRawField->setReadOnly(true);
   tailCommentField = new QTextEdit(this);
-  tailCommentField->installEventFilter(this);
   headDescriptionField = new QTextEdit(this);
   headDescriptionField->setReadOnly(true);
   headRawField = new QTextEdit(this);
   headRawField->setReadOnly(true);
   headCommentField = new QTextEdit(this);
-  headCommentField->installEventFilter(this);
   linkageCommentField = new QTextEdit(this);
-  linkageCommentField->installEventFilter(this);
 
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -152,9 +149,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   setLinkButton->setEnabled(false);
   unsetLinkButton =new QPushButton(tr("Not linked"), this);
   unsetLinkButton->setEnabled(false);
-  
-  setButtons(false);
 
+  linkageCommentField->installEventFilter(this);
+  headCommentField->installEventFilter(this);
+  tailCommentField->installEventFilter(this);
+  setButtons(false);
+  
   connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
   connect(createCoderButton, SIGNAL(clicked()), this, SLOT(addCoder()));
   connect(editCoderButton, SIGNAL(clicked()), this, SLOT(editCoder()));

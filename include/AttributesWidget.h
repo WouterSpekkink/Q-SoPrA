@@ -58,6 +58,7 @@ private slots:
   void newAttribute();
   void editAttribute();
   void mergeAttributes();
+  void selectText();
   void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
   void assignAttribute();
