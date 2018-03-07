@@ -82,9 +82,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   valueButton = new QPushButton(tr("Store value"), infoWidget);
   valueButton->setEnabled(false);
   assignAttributeButton = new QPushButton(tr("Assign attribute"), infoWidget);
+  assignAttributeButton->setEnabled(false);
   unassignAttributeButton = new QPushButton(tr("Unassign attribute"), infoWidget);
+  unassignAttributeButton->setEnabled(false);
   addAttributeButton = new QPushButton(tr("New attribute"), infoWidget);
   editAttributeButton = new QPushButton(tr("Edit attribute"), infoWidget);
+  editAttributeButton->setEnabled(false);
   removeUnusedAttributesButton = new QPushButton(tr("Remove unused"), infoWidget);
   toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   toggleLegendButton->setCheckable(true);
@@ -174,6 +177,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(getValue()));
+  connect(attributesTreeView->selectionModel(),
+	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+	  this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
@@ -881,6 +888,7 @@ void NetworkGraphWidget::assignAttribute() {
       boldSelected(attributesTree, attribute, selectedEntityName);
       valueField->setEnabled(true);
     }
+    setButtons();
     delete query;
   }
 }
@@ -920,12 +928,14 @@ void NetworkGraphWidget::unassignAttribute() {
     }
     delete query;
     delete query2;
+    setButtons();
   }
 }
 
 void NetworkGraphWidget::addAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
+    QString currentParent = treeFilter->mapToSource(attributesTreeView->
+						    currentIndex()).data().toString();
     QString name = "";
     QString description = "";
     QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, ENTITY);
@@ -936,12 +946,13 @@ void NetworkGraphWidget::addAttribute() {
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
       attribute->setToolTip(description);
-      QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+      QStandardItem *father = attributesTree->
+	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);      
       query->prepare("INSERT INTO entity_attributes (name, description, father) "
-		     "VALUES (:name, :description, :father");
+		     "VALUES (:name, :description, :father)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
       query->bindValue(":father", currentParent);
@@ -958,8 +969,7 @@ void NetworkGraphWidget::addAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      query->prepare("INSERT INTO entity_attributes "
-		     "(name, description, father) "
+      query->prepare("INSERT INTO entity_attributes (name, description, father) "
 		     "VALUES (:name, :description, :father)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
@@ -3709,6 +3719,34 @@ void NetworkGraphWidget::processHeights() {
   }
 }
 
+void NetworkGraphWidget::setButtons() {
+  if (attributesTreeView->currentIndex().isValid()) {
+    QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+    QSqlQuery *query = new QSqlQuery;
+    bool empty = false;
+    query->prepare("SELECT attribute, entity FROM "
+		   "attributes_to_entities "
+		   "WHERE attribute = :att AND entity = :ent  ");
+    query->bindValue(":att", currentAttribute);
+    query->bindValue(":ent", selectedEntityName);
+    query->exec();
+    query->first();
+    empty = query->isNull(0);
+    if (!empty) {
+      unassignAttributeButton->setEnabled(true);
+      assignAttributeButton->setEnabled(false);
+    } else {
+      unassignAttributeButton->setEnabled(false);
+      assignAttributeButton->setEnabled(true);
+    }
+    editAttributeButton->setEnabled(true);
+  } else {
+    editAttributeButton->setEnabled(false);
+    assignAttributeButton->setEnabled(false);
+    unassignAttributeButton->setEnabled(false);
+  }
+}
+
 void NetworkGraphWidget::cleanUp() {
   qDeleteAll(directedVector);
   directedVector.clear();
@@ -3734,6 +3772,7 @@ void NetworkGraphWidget::cleanUp() {
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) {
   if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
     retrieveData();
+    setButtons();
     if (massMove) {
       massMove = false;
     }

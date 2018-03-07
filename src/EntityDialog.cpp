@@ -12,14 +12,6 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) {
   incidentsModel->setTable("incidents");
   incidentsModel->select();
 
-  attributesModel = new QSqlTableModel(this);
-  attributesModel->setTable("entity_attributes");
-  attributesModel->select();
-
-  assignedModel = new QSqlTableModel(this);
-  assignedModel->setTable("attributes_to_entities");
-  assignedModel->select();
-
   attributesTreeView = new DeselectableTreeViewEntities(this);
   attributesTreeView->setHeaderHidden(true);
   attributesTreeView->setDragEnabled(true);
@@ -242,8 +234,6 @@ void EntityDialog::assignAttribute() {
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     if (isNew) {
-      assignedModel->select();
-      int max = assignedModel->rowCount();
       bool empty = false;
       query->prepare("SELECT attribute, new FROM attributes_to_entities "
 		     "WHERE attribute = :att AND new = 1");
@@ -252,16 +242,17 @@ void EntityDialog::assignAttribute() {
       query->first();
       empty = query->isNull(0);
       if (empty) {
-	assignedModel->insertRow(max);
-	assignedModel->setData(assignedModel->index(max, 1), attribute);
-	assignedModel->setData(assignedModel->index(max, 4), 1);
-	assignedModel->submitAll();
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("INSERT INTO attributes_to_entities (attribute, new) "
+			"VALUES (:attribute, :new)");
+	query2->bindValue(":attribute", attribute);
+	query2->bindValue(":new", 1);
+	query2->exec();
+	delete query2;	
         boldSelected(attributesTree, attribute);
 	valueField->setEnabled(true);
       }
     } else {
-      assignedModel->select();
-      int max = assignedModel->rowCount();
       bool empty = false;
       query->prepare("SELECT attribute, new FROM attributes_to_entities "
 		     "WHERE attribute = :att AND entity = :oldName");
@@ -271,10 +262,12 @@ void EntityDialog::assignAttribute() {
       query->first();
       empty = query->isNull(0);
       if (empty) {
-	assignedModel->insertRow(max);
-	assignedModel->setData(assignedModel->index(max, 1), attribute);
-	assignedModel->setData(assignedModel->index(max, 2), oldName);
-	assignedModel->submitAll();
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("INSERT INTO attributes_to_entities (attribute, entity) "
+			"VALUES (:attribute, :entity)");
+	query2->bindValue(":attribute", attribute);
+	query2->bindValue(":entity", oldName);
+	query2->exec();
 	boldSelected(attributesTree, attribute);
 	valueField->setEnabled(true);
       }
@@ -289,7 +282,6 @@ void EntityDialog::unassignAttribute() {
     QSqlQuery *query = new QSqlQuery;
     QSqlQuery *query2 = new QSqlQuery;
     QString attribute = attributesTreeView->currentIndex().data().toString();
-    assignedModel->select();
     bool empty = false;
     if (isNew) {
       query->prepare("SELECT attribute FROM attributes_to_entities "
@@ -368,15 +360,14 @@ void EntityDialog::addAttribute() {
       father->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
-
-      attributesModel->select();
-      int newIndex = attributesModel->rowCount();
-
-      attributesModel->insertRow(newIndex);
-      attributesModel->setData(attributesModel->index(newIndex, 1), name);
-      attributesModel->setData(attributesModel->index(newIndex, 2), description);
-      attributesModel->setData(attributesModel->index(newIndex, 3), currentParent);
-      attributesModel->submitAll();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO entity_attributes (name, description, father) "
+		     "VALUES (:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":currentParent", currentParent);
+      query->exec();
+      delete query;
       RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
       rw->networkGraph->resetTree();
     }
@@ -386,19 +377,17 @@ void EntityDialog::addAttribute() {
     QString description = "";
     attributeDialog = new AttributeDialog(this, ENTITY);
     attributeDialog->exec();
-    
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
       description = attributeDialog->getDescription();
-    
-      int newIndex = attributesModel->rowCount();
-      
-      attributesModel->insertRow(newIndex);
-      
-      attributesModel->setData(attributesModel->index(newIndex, 1), name);
-      attributesModel->setData(attributesModel->index(newIndex, 2), description);
-      attributesModel->setData(attributesModel->index(newIndex, 3), "NONE");
-      attributesModel->submitAll();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO entity_attributes (name, description, father) "
+		     "VALUES (:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", "NONE");
+      query->exec();
+      delete query;
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
       attribute->setToolTip(description);

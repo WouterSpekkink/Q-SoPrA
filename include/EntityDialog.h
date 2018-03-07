@@ -63,8 +63,6 @@ private:
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeViewEntities> attributesTreeView;
   QPointer<QSqlTableModel> incidentsModel;
-  QPointer<QSqlTableModel> attributesModel;
-  QPointer<QSqlTableModel> assignedModel;
   QPointer<AttributeTreeFilter> treeFilter;
   QPointer<AttributeDialog> attributeDialog;
   

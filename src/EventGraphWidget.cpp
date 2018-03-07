@@ -215,6 +215,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(changeFilter(const QString &)));
   connect(previousEventButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));

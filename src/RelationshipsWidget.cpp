@@ -187,7 +187,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   descriptionLayoutRight->addWidget(descriptionPreviousButton);
   descriptionPreviousButton->setMaximumWidth(descriptionPreviousButton->sizeHint().width());
   descriptionLayoutRight->addWidget(descriptionFilterField);
-  descriptionFilterField->setFixedWidth(250);
+  //  descriptionFilterField->setFixedWidth(250);
   descriptionLayoutRight->addWidget(descriptionNextButton);
   descriptionNextButton->setMaximumWidth(descriptionNextButton->sizeHint().width());
   descriptionLayout->addLayout(descriptionLayoutRight);
@@ -203,7 +203,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   rawLayoutRight->addWidget(rawPreviousButton);
   rawPreviousButton->setMaximumWidth(rawPreviousButton->sizeHint().width());
   rawLayoutRight->addWidget(rawFilterField);
-  rawFilterField->setFixedWidth(250);
+  //  rawFilterField->setFixedWidth(250);
   rawLayoutRight->addWidget(rawNextButton);
   rawNextButton->setMaximumWidth(rawNextButton->sizeHint().width());
   rawLayout->addLayout(rawLayoutRight);
@@ -219,7 +219,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   commentLayoutRight->addWidget(commentPreviousButton);
   commentPreviousButton->setMaximumWidth(commentPreviousButton->sizeHint().width());
   commentLayoutRight->addWidget(commentFilterField);
-  commentFilterField->setFixedWidth(250);
+  // commentFilterField->setFixedWidth(250);
   commentLayoutRight->addWidget(commentNextButton);
   commentNextButton->setMaximumWidth(commentNextButton->sizeHint().width());
   commentLayout->addLayout(commentLayoutRight);
@@ -279,6 +279,19 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
 
+  // I want to set the size of some widgets based on the availabe screen width
+  QRect rect = QApplication::desktop()->screenGeometry();
+  int width = rect.width();
+  if (width <= 1280) {
+    descriptionFilterField->setMaximumWidth(90);
+    rawFilterField->setMaximumWidth(90);
+    commentFilterField->setMaximumWidth(90);
+  } else {
+    descriptionFilterField->setMaximumWidth(200);
+    rawFilterField->setMaximumWidth(200);
+    commentFilterField->setMaximumWidth(200);
+  }
+  
   setLayout(mainLayout);
 }
 
@@ -898,6 +911,7 @@ void RelationshipsWidget::newRelationship() {
       query->first();
       QString directedness = query->value(0).toString();
       QString description = query->value(1).toString();
+      QString hint = breakString(directedness + " - " + description);
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
@@ -908,6 +922,8 @@ void RelationshipsWidget::newRelationship() {
 	QString leftEntity = relationshipsDialog->getLeftEntity();
 	QString rightEntity = relationshipsDialog->getRightEntity();
 	QStandardItem *newItem = new QStandardItem(name);
+	newItem->setEditable(false);
+	newItem->setToolTip(hint);
 	currentItem->appendRow(newItem);
 	query->prepare("INSERT INTO entity_relationships (name, source, target, type)"
 		       "VALUES (:name, :source, :target, :type)");

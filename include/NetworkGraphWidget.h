@@ -135,6 +135,7 @@ private slots:
   void addRelationshipType();
   void removeRelationshipType();
   void cleanUp();
+  void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
   
 private:

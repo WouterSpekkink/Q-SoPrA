@@ -112,6 +112,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons())); 
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
   	  this, SLOT(changeFilter(const QString &)));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
