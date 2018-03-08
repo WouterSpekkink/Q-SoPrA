@@ -1253,28 +1253,6 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
   while (it.hasNext()) {
     DirectedEdge* currentEdge = it.next();
     if (currentEdge->getType() == type) {
-      /*QListIterator<QGraphicsItem*> it2(scene->items());
-      while (it2.hasNext()) {
-	DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it2.peekNext());
-	UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it2.peekNext());
-	if (directed) {
-	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
-	  if (current->startItem() == currentEdge->startItem() &&
-	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = currentEdge->getHeight() + 60;
-	    currentEdge->setHeight(newHeight);
-	  }
-	} else if (undirected) {
-	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
-	  if (current->startItem() == currentEdge->startItem() &&
-	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = currentEdge->getHeight() + 60;
-	    currentEdge->setHeight(newHeight);
-	  }
-	} else {
-	  it2.next();
-	}
-	}*/
       currentEdge->setColor(color);
       currentEdge->show();
       currentEdge->startItem()->show();
@@ -1297,28 +1275,6 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
   while (it.hasNext()) {
     UndirectedEdge* currentEdge = it.next();
     if (currentEdge->getType() == type) {
-      QListIterator<QGraphicsItem*> it2(scene->items());
-      while (it2.hasNext()) {
-	DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it2.peekNext());
-	UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it2.peekNext());
-	if (directed) {
-	  DirectedEdge *current = qgraphicsitem_cast<DirectedEdge*>(it2.next());
-	  if (current->startItem() == currentEdge->startItem() &&
-	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = currentEdge->getHeight() + 60;
-	    currentEdge->setHeight(newHeight);
-	  }
-	} else if (undirected) {
-	  UndirectedEdge *current = qgraphicsitem_cast<UndirectedEdge*>(it2.next());
-	  if (current->startItem() == currentEdge->startItem() &&
-	      current->endItem() == currentEdge->endItem()) {
-	    int newHeight = currentEdge->getHeight() + 60;
-	    currentEdge->setHeight(newHeight);
-	  }
-	} else {
-	  it2.next();
-	}
-      }
       currentEdge->setColor(color);
       currentEdge->show();
       currentEdge->startItem()->show();
@@ -1333,6 +1289,7 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
       scene->addItem(currentEdge);
     }
   }
+  processHeights();
 }
 
 void NetworkGraphWidget::simpleLayout() {
