@@ -365,7 +365,7 @@ void EntityDialog::addAttribute() {
 		     "VALUES (:name, :description, :father)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
-      query->bindValue(":currentParent", currentParent);
+      query->bindValue(":father", currentParent);
       query->exec();
       delete query;
       RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
