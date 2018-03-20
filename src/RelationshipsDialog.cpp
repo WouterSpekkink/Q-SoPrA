@@ -186,6 +186,8 @@ void RelationshipsDialog::addEntity() {
     entitiesTable->submitAll();
   }
   delete entityDialog;
+  entitiesTable->select();
+  filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
 }
 
@@ -210,6 +212,7 @@ void RelationshipsDialog::editEntity() {
     delete query;
     delete entityDialog;
     entitiesTable->select();
+    filterEntity(entityFilterField->text());
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
@@ -358,6 +361,7 @@ void RelationshipsDialog::editLeftAssignedEntity() {
     delete entityDialog;
     filterEntity(entityFilterField->text());
     entitiesTable->select();
+    filterEntity(entityFilterField->text());
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
@@ -408,9 +412,10 @@ void RelationshipsDialog::removeEntities() {
     query2->exec();
   }
   reset();
-  entitiesTable->select();
   delete query;  
   delete query2;
+  entitiesTable->select();
+  filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
 }
 
