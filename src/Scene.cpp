@@ -334,7 +334,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
   MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
   MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
-
+  NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
   if (nodeLabel) {
     incident = nodeLabel->getNode();
   }
@@ -438,6 +438,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit ArrowContextMenuAction(action->text());
+    }
+  } else if (node) {
+    clearSelection();
+    node->setSelected(true);
+    QMenu menu;
+    menu.addAction(HIDENODE);
+    if (QAction *action = menu.exec(event->screenPos())) {
+      emit NetworkNodeContextMenuAction(action->text());
     }
   }
 }

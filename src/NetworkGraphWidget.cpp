@@ -237,6 +237,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
+  connect(scene, SIGNAL(NetworkNodeContextMenuAction(const QString &)),
+	  this, SLOT(processNetworkNodeContextMenu(const QString &)));
+
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
@@ -399,6 +402,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 
   getTypes();
 
+  disableFilterButtons();
   infoWidget->hide();
   graphicsWidget->hide();
   legendWidget->hide();
@@ -1527,7 +1531,6 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
       qreal newX = pos.x();
       qreal yDiff = newY - currentY;
       qreal xDiff = newX - currentX;
-
       QVectorIterator<NetworkNode*> it2(currentData);
       while (it2.hasNext()) {
 	NetworkNode *current = it2.next();
@@ -1573,6 +1576,42 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
 	    }
 	  }
 	}
+      }
+    }
+  }
+}
+
+void NetworkGraphWidget::processNetworkNodeContextMenu(const QString action) {
+  if (action == HIDENODE) {
+    hideCurrentNode();
+  }
+}
+
+void NetworkGraphWidget::hideCurrentNode() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      NetworkNode *currentNode = qgraphicsitem_cast<NetworkNode*>(it.peekNext());
+      if (currentNode) {
+	NetworkNode *selectedNode = qgraphicsitem_cast<NetworkNode*>(it.next());
+	QVectorIterator<DirectedEdge*> it2(directedVector);
+	while (it2.hasNext()) {
+	  DirectedEdge *currentDirected = it2.next();
+	  if (currentDirected->startItem() == selectedNode ||
+	      currentDirected->endItem() == selectedNode) {
+	    currentDirected->hide();
+	  }
+	}
+	QVectorIterator<UndirectedEdge*> it3(undirectedVector);
+	while (it3.hasNext()) {
+	  UndirectedEdge *currentUndirected = it3.next();
+	  if (currentUndirected->startItem() == selectedNode ||
+	      currentUndirected->endItem() == selectedNode) {
+	    currentUndirected->hide();
+	  }
+	}
+	selectedNode->hide();
+	selectedNode->getLabel()->hide();
       }
     }
   }

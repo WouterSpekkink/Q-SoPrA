@@ -41,4 +41,4 @@ QString CREATED = "Created";
 QString EVENTGRAPH = "Event graph";
 QString NETWORKGRAPH = "Network graph";
 QString OCCURRENCEGRAPH = "Occurrence graph";
-
+QString HIDENODE = "Temporarily hide this node";

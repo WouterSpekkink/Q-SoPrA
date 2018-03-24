@@ -43,6 +43,7 @@ extern QString CREATED;
 extern QString EVENTGRAPH;
 extern QString NETWORKGRAPH;
 extern QString OCCURRENCEGRAPH;
+extern QString HIDENODE;
 
 #endif
 

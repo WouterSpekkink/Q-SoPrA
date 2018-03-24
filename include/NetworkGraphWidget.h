@@ -129,7 +129,10 @@ private slots:
   void expandLayout();
   void contractLayout();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
- 
+
+  void processNetworkNodeContextMenu(const QString action);
+  void hideCurrentNode();
+  
   void setPlotButton();
   void plotNewGraph();
   void addRelationshipType();
