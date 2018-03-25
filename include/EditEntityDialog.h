@@ -46,6 +46,7 @@ private slots:
   void updateAfterEdit(const QString name, const QString description, const QString oldName);
   void removeEntities();
   void setButtons();
+  void updateTable();
   void closeThis();
   
 private:

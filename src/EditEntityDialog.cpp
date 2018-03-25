@@ -10,6 +10,7 @@ EditEntityDialog::EditEntityDialog(QWidget *parent) : QDialog(parent) {
   entitiesTable->setTable("entities");
   entitiesTable->setSort(1, Qt::AscendingOrder);
   entitiesTable->select();
+  updateTable();
   entitiesFilter = new EntitiesFilter(this);
   entitiesFilter->setSourceModel(entitiesTable);
   entitiesFilter->setFilterKeyColumn(1);
@@ -81,6 +82,7 @@ void EditEntityDialog::addEntity() {
     QString name = entityDialog->getName();
     QString description = entityDialog->getDescription();
     entitiesTable->select();
+    updateTable();
     int max = entitiesTable->rowCount();
     entitiesTable->insertRow(max);
     entitiesTable->setData(entitiesTable->index(max, 1), name);
@@ -112,6 +114,7 @@ void EditEntityDialog::editEntity() {
     delete query;
     delete entityDialog;
     entitiesTable->select();
+    updateTable();
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
 }
@@ -250,6 +253,7 @@ void EditEntityDialog::removeEntities() {
     query2->exec();
   }
   entitiesTable->select();
+  updateTable();
   delete query;  
   delete query2;
   entitiesFilter->sort(1, Qt::AscendingOrder);
@@ -267,6 +271,12 @@ void EditEntityDialog::setButtons() {
     editEntityButton->setEnabled(true);
   } else {
     editEntityButton->setEnabled(false);
+  }
+}
+
+void EditEntityDialog::updateTable() {
+  while (entitiesTable->canFetchMore()) {
+    entitiesTable->fetchMore();
   }
 }
 

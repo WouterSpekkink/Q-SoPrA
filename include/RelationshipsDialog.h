@@ -57,6 +57,7 @@ private slots:
   void editRightAssignedEntity();
   void removeEntities();
   void reset();
+  void updateTable();
   void setButtons();
   void cancelAndClose();
   void saveAndClose();

@@ -19,6 +19,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) {
   entitiesTable->setTable("entities");
   entitiesTable->setSort(1, Qt::AscendingOrder);
   entitiesTable->select();
+  updateTable();
   entitiesFilter = new EntitiesFilter(this);
   entitiesFilter->setSourceModel(entitiesTable);
   entitiesFilter->setFilterKeyColumn(1);
@@ -179,6 +180,7 @@ void RelationshipsDialog::addEntity() {
     QString name = entityDialog->getName();
     QString description = entityDialog->getDescription();
     entitiesTable->select();
+    updateTable();
     int max = entitiesTable->rowCount();
     entitiesTable->insertRow(max);
     entitiesTable->setData(entitiesTable->index(max, 1), name);
@@ -187,6 +189,7 @@ void RelationshipsDialog::addEntity() {
   }
   delete entityDialog;
   entitiesTable->select();
+  updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
 }
@@ -212,6 +215,7 @@ void RelationshipsDialog::editEntity() {
     delete query;
     delete entityDialog;
     entitiesTable->select();
+    updateTable();
     filterEntity(entityFilterField->text());
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
@@ -361,6 +365,7 @@ void RelationshipsDialog::editLeftAssignedEntity() {
     delete entityDialog;
     filterEntity(entityFilterField->text());
     entitiesTable->select();
+    updateTable();
     filterEntity(entityFilterField->text());
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
@@ -391,6 +396,7 @@ void RelationshipsDialog::editRightAssignedEntity() {
     delete query;
     delete entityDialog;
     entitiesTable->select();
+    updateTable();
     filterEntity(entityFilterField->text());
     entitiesFilter->sort(1, Qt::AscendingOrder);
   }
@@ -415,6 +421,7 @@ void RelationshipsDialog::removeEntities() {
   delete query;  
   delete query2;
   entitiesTable->select();
+  updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
 }
@@ -534,5 +541,11 @@ void RelationshipsDialog::reset() {
   selectedTargetLabel->setText(DEFAULT);
   editLeftAssignedEntityButton->setEnabled(false);
   editRightAssignedEntityButton->setEnabled(false);
+}
+
+void RelationshipsDialog::updateTable() {
+  while (entitiesTable->canFetchMore()) {
+    entitiesTable->fetchMore();
+  }
 }
 
