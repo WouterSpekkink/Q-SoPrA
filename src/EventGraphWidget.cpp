@@ -1903,10 +1903,20 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
     int tail = query->value(0).toInt();
     int head = query->value(1).toInt();
     QSqlQuery *query2 =  new QSqlQuery;
+    query2->prepare("SELECT ch_order from incidents WHERE id = :id");
+    query2->bindValue(":id", tail);
+    query2->exec();
+    query2->first();
+    int tailOrder = query2->value(0).toInt();
+    query2->prepare("SELECT ch_order from incidents WHERE id = :id");
+    query2->bindValue(":id", head);
+    query2->exec();
+    query2->first();
+    int headOrder = query2->value(0).toInt();
     query2->prepare("SELECT comment, coder FROM linkage_comments "
 		    "WHERE tail = :tail AND head = :head AND type = :type");
-    query2->bindValue(":tail", tail);
-    query2->bindValue(":head", head);
+    query2->bindValue(":tail", tailOrder);
+    query2->bindValue(":head", headOrder);
     query2->bindValue(":type", type);
     query2->exec();
     query2->first();
