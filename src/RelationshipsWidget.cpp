@@ -980,13 +980,13 @@ void RelationshipsWidget::editRelationship() {
 	QString leftEntity = relationshipsDialog->getLeftEntity();
 	QString rightEntity = relationshipsDialog->getRightEntity();
 	query->prepare("UPDATE entity_relationships "
-		       "SET name = :name, source = :leftEntity, target = :rightEntity, type = :type "
-		       "WHERE name = :oldName");
+		       "SET name = :name, source = :leftEntity, target = :rightEntity "
+		       "WHERE name = :oldName AND type = :type");
 	query->bindValue(":name", name);
 	query->bindValue(":leftEntity", leftEntity);
 	query->bindValue(":rightEntity", rightEntity);
-	query->bindValue(":type", currentType);
 	query->bindValue(":oldName", currentRelationship);
+	query->bindValue(":type", currentType);
 	query->exec();
 	query->prepare("UPDATE relationships_to_incidents "
 		       "SET relationship = :newName "

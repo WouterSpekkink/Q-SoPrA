@@ -496,7 +496,6 @@ void RelationshipsDialog::saveAndClose() {
   } else {
     QPointer<QMessageBox> errorBox = new QMessageBox(this);
     errorBox->setText(tr("<b>Relationship already exists</b>"));
-    errorBox->setText(tr("<b>Relationship already exists</b>"));
     errorBox->setInformativeText("An identical relationship already exists.");
     errorBox->exec();
     delete errorBox;

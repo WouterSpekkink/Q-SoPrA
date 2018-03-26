@@ -1297,6 +1297,7 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
 }
 
 void NetworkGraphWidget::simpleLayout() {
+  qApp->setOverrideCursor(Qt::WaitCursor);
   QVectorIterator<NetworkNode*> it(nodeVector);
   while (it.hasNext()) {
     NetworkNode* currentNode = it.next();
@@ -1423,6 +1424,8 @@ void NetworkGraphWidget::simpleLayout() {
     }
   }
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+  qApp->restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void NetworkGraphWidget::circularLayout() {
@@ -1613,6 +1616,33 @@ void NetworkGraphWidget::hideCurrentNode() {
 	selectedNode->hide();
 	selectedNode->getLabel()->hide();
       }
+    }
+  }
+  QVectorIterator<NetworkNode*> it2(nodeVector);
+  while (it2.hasNext()) {
+    NetworkNode *currentNode = it2.next();
+    bool connected = false;
+    QVectorIterator<DirectedEdge*> it3(directedVector);
+    while (it3.hasNext()) {
+      DirectedEdge *currentDirected = it3.next();
+      if (currentDirected->isVisible() &&
+	  (currentDirected->startItem() == currentNode ||
+	   currentDirected->endItem() == currentNode)) {
+	connected = true;
+      }
+    }
+    QVectorIterator<UndirectedEdge*> it4(undirectedVector);
+    while (it4.hasNext()) {
+      UndirectedEdge *currentUndirected = it4.next();
+      if (currentUndirected->isVisible() &&
+	  (currentUndirected->startItem() == currentNode ||
+	   currentUndirected->endItem() == currentNode)) {
+	connected = true;
+      }
+    }
+    if (!connected) {
+      currentNode->hide();
+      currentNode->getLabel()->hide();
     }
   }
 }
