@@ -425,7 +425,7 @@ void EventGraphWidget::checkCongruency() {
       int id = query->value(0).toInt();
       temp.push_back(id);
     }
-    std::sort(eventVector.begin(), eventVector.end(), originalLessThan);
+    std::sort(eventVector.begin(), eventVector.end(), componentsSort);
     if (temp.size() != eventVector.size()) {
       incongruencyLabel->setText("Incongruency detected");
       return;
@@ -437,53 +437,45 @@ void EventGraphWidget::checkCongruency() {
 	return;
       }
     }
-    int originalCount = 0;
-    QVectorIterator<Arrow*> it(edgeVector);
-    while (it.hasNext()) {
-      Arrow *current = it.next();
-      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
-      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
-      if (startEvent && endEvent) {
-	originalCount++;
-      }
-    }
-    query->prepare("SELECT COUNT(*) FROM linkages "
-		   "WHERE type = :type AND coder = :coder");
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
-    query->exec();
-    query->first();
-    if (query->value(0).toInt() != originalCount) {
-	incongruencyLabel->setText("Incongruency detected");
-	return;
-    }
     query->prepare("SELECT tail, head FROM linkages "
 		   "WHERE type = :type AND coder = :coder");
     query->bindValue(":type", selectedType);
     query->bindValue(":coder", selectedCoder);
     query->exec();
     while (query->next()) {
-      bool found = false;
-      int tail = query->value(0).toInt();
-      int head = query->value(1).toInt();
-      QVectorIterator<Arrow*> it2(edgeVector);
-      while (it2.hasNext()) {
-	Arrow* current = it2.next();
-	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
-	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
-	if (startEvent && endEvent) {
-	  int currentTail = startEvent->getId();
-	  int currentHead = endEvent->getId();
-	  if (currentTail == tail && currentHead == head) {
-	    found = true;
+      int tailId = query->value(0).toInt();
+      int headId = query->value(0).toInt();
+      bool tailVisible = false;
+      bool headVisible = false;
+      QVectorIterator<EventItem*> it(eventVector);
+      while (it.hasNext()) {
+	EventItem *currentEvent = it.next();
+	if (currentEvent->isVisible()) {
+	  if (currentEvent->getId() == tailId) {
+	    tailVisible = true;
+	  } else if (currentEvent->getId() == headId) {
+	    headVisible = true;
 	  }
 	}
       }
-      if (!found) {
-	incongruencyLabel->setText("Incongruency detected");
-	return;
+      if (tailVisible && headVisible) {
+	QVectorIterator<Arrow*> it(edgeVector);
+	bool found = false;
+	while (it.hasNext()) {
+	  Arrow *current = it.next();
+	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
+	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
+	  if (startEvent->getId() == tailId &&
+	      endEvent->getId() == headId) {
+	    found = true;
+	  }
+	}
+	if (!found) {
+	  incongruencyLabel->setText("Incongruency detected");
+	  return;
+	}
       }
-    }
+    }   
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
       Arrow* current = it3.next();
@@ -514,6 +506,7 @@ void EventGraphWidget::checkCongruency() {
     delete query;
     incongruencyLabel->setText("");
   }
+    
 }
   
 void EventGraphWidget::setCommentBool() {
