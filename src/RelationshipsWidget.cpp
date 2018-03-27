@@ -824,30 +824,13 @@ void RelationshipsWidget::removeText() {
     query->first();
     int id = 0;
     id = query->value(0).toInt();
-    QString attribute = relationshipsTreeView->currentIndex().data().toString();
+    QString relationship = relationshipsTreeView->currentIndex().data().toString();
     if (rawField->textCursor().selectedText().trimmed() != "") {
-      QSqlQuery *query = new QSqlQuery;
-      int end = 0;
-      int begin = 0;
-      QTextCursor selectCursor = rawField->textCursor();
-      if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
-	begin = rawField->textCursor().position();
-	end = rawField->textCursor().anchor();
-      } else {
-	begin = rawField->textCursor().anchor();
-	end = rawField->textCursor().position();
-      }
-      begin++;
-      end--;
-      selectCursor.setPosition(begin);
-      selectCursor.movePosition(QTextCursor::StartOfWord);
-      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-      rawField->setTextCursor(selectCursor);
       QString sourceText = rawField->textCursor().selectedText().trimmed();
+      QSqlQuery *query = new QSqlQuery;
       query->prepare("DELETE FROM relationships_to_incidents_sources "
-		     "WHERE attribute = :att AND incident = :inc AND source_text = :text");
-      query->bindValue(":att", attribute);
+		     "WHERE relationship = :rel AND incident = :inc AND source_text = :text");
+      query->bindValue(":rel", relationship);
       query->bindValue(":inc", id);
       query->bindValue(":text", sourceText);
       query->exec();
@@ -865,7 +848,8 @@ void RelationshipsWidget::resetTexts() {
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
-    warningBox->setInformativeText("Resetting source texts cannot be undone. Are you sure you want to proceed?");
+    warningBox->setInformativeText("Resetting source texts cannot be undone. "
+				   "Are you sure you want to proceed?");
     if (warningBox->exec() == QMessageBox::Yes) {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
@@ -880,7 +864,8 @@ void RelationshipsWidget::resetTexts() {
       if (!(query->isNull(0))) {
 	id = query->value(0).toInt();
 	QString relationship = relationshipsTreeView->currentIndex().data().toString();
-	QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+	QStandardItem *currentItem = relationshipsTree->
+	  itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	QStandardItem *typeItem = currentItem->parent();
 	QString currentType = typeItem->data(Qt::DisplayRole).toString();
 	query->prepare("DELETE FROM relationships_to_incidents_sources "

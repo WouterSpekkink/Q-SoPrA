@@ -1264,25 +1264,8 @@ void HierarchyGraphWidget::removeText() {
     if (attributesTreeView->currentIndex().isValid()) {
       QString attribute = attributesTreeView->currentIndex().data().toString();
       if (rawField->textCursor().selectedText().trimmed() != "") {
-	QSqlQuery *query = new QSqlQuery;
-	int end = 0;
-	int begin = 0;
-	QTextCursor selectCursor = rawField->textCursor();
-	if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
-	  begin = rawField->textCursor().position();
-	  end = rawField->textCursor().anchor();
-	} else {
-	  begin = rawField->textCursor().anchor();
-	  end = rawField->textCursor().position();
-	}
-	begin++;
-	end--;
-	selectCursor.setPosition(begin);
-	selectCursor.movePosition(QTextCursor::StartOfWord);
-	selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-	selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-	rawField->setTextCursor(selectCursor);
 	QString sourceText = rawField->textCursor().selectedText().trimmed();
+	QSqlQuery *query = new QSqlQuery;
 	query->prepare("DELETE FROM attributes_to_incidents_sources "
 		       "WHERE attribute = :att AND incident = :inc AND source_text = :text");
 	query->bindValue(":att", attribute);
