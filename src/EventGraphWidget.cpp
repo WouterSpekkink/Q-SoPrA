@@ -5605,7 +5605,7 @@ void EventGraphWidget::closeGap() {
       } else if (targetMacro) {
 	width = targetMacro->getWidth();
       }
-      if (current->scenePos().x() - target->scenePos().x() > distance) {
+      if (current->scenePos().x() - target->scenePos().x() + width > distance) {
 	qreal oldX = current->scenePos().x();
 	current->setPos(target->scenePos().x() + distance + width - 40, current->scenePos().y());
 	qreal newX = current->scenePos().x();
