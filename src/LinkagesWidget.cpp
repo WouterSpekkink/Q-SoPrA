@@ -2384,7 +2384,6 @@ void LinkagesWidget::setLinkageComment() {
   }
 }
 
-
 void LinkagesWidget::pause(int time) {
 #ifdef __linux__ 
   std::chrono::milliseconds timespan(time); 
@@ -2445,8 +2444,10 @@ void LinkagesWidget::setLink() {
     query->bindValue(":type", selectedType);
     query->bindValue(":coder", selectedCoder);
     query->exec();
-  } 
+  }
   linkageFeedbackLabel->setText("LINKED");
+  linkageFeedbackLabel->adjustSize();
+  linkageFeedbackLabel->repaint();
   qApp->processEvents();
   eventGraph->checkCongruency();
   if (codingType == ASSISTED && selectedDirection == PAST) {
@@ -2643,7 +2644,11 @@ void LinkagesWidget::unsetLink() {
     query->exec();
   }
   linkageFeedbackLabel->setText("");
+  linkageFeedbackLabel->adjustSize();
+  linkageFeedbackLabel->repaint();
+  qApp->processEvents();
   eventGraph->checkCongruency();
+  qApp->processEvents();
   if (codingType == ASSISTED && selectedDirection == PAST) {
     std::vector<int> ignore;
     if (headIndex != 1) {
@@ -2666,7 +2671,6 @@ void LinkagesWidget::unsetLink() {
 	    query->bindValue(":coder", selectedCoder);
 	    query->bindValue(":type", selectedType);
 	    query->exec();
-	    pause(500);
 	    retrieveData();
 	    return;
 	  } else {
@@ -2681,7 +2685,6 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":coder", selectedCoder);
 	      query->bindValue(":type", selectedType);
 	      query->exec();
-	      pause(500);
 	      retrieveData();
 	      return; 
 	    }
@@ -2699,7 +2702,6 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":coder", selectedCoder);
 	      query->bindValue(":type", selectedType);
 	      query->exec();
-	      pause(500);
 	      retrieveData();
 	      return; 
 	    }
@@ -2718,7 +2720,6 @@ void LinkagesWidget::unsetLink() {
 	query->bindValue(":coder", selectedCoder);
 	query->bindValue(":type", selectedType);
 	query->exec();
-	pause(500);
 	retrieveData();
 	return; 
       }
@@ -2744,7 +2745,6 @@ void LinkagesWidget::unsetLink() {
 	  query->bindValue(":coder", selectedCoder);
 	  query->bindValue(":type", selectedType);
 	  query->exec();
-	  pause(500);
 	  retrieveData();
 	  return;
 	} else {
@@ -2760,7 +2760,6 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":coder", selectedCoder);
 	      query->bindValue(":type", selectedType);
 	      query->exec();
-	      pause(500);
 	      retrieveData();
 	      return;
 	    }
@@ -2778,7 +2777,6 @@ void LinkagesWidget::unsetLink() {
       query->bindValue(":coder", selectedCoder);
       query->bindValue(":type", selectedType);
       query->exec();
-      pause(500);
       retrieveData();
       return;
     }
