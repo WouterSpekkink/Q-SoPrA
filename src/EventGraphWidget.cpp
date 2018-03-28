@@ -5149,54 +5149,31 @@ void EventGraphWidget::disaggregateEvent() {
 	components.push_back(current);
       }
     }
-    QVector<QGraphicsItem*> allEvents;
-    QVectorIterator<EventItem*> it4(eventVector);
-    while (it4.hasNext()) {
-      EventItem *item = it4.next();
-      allEvents.push_back(item);
-    }
-    QVectorIterator<MacroEvent*> it5(macroVector);
-    while (it5.hasNext()) {
-      MacroEvent *item = it5.next();
-      allEvents.push_back(item);
-    }
-    std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-    QVectorIterator<QGraphicsItem*> it6(allEvents);
+    std::sort(components.begin(), components.end(), componentsSort);
+    QVectorIterator<QGraphicsItem*> it4(components);
     int diff = 0;
-    while (it6.hasNext()) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it6.peekNext());
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it6.peekNext());
+    while (it4.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it4.peekNext());
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it4.peekNext());
       if (event) {
-	event = qgraphicsitem_cast<EventItem*>(it6.next());
-	if (components.contains(event)) {
-	  event->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
-	  event->setOriginalPos(event->scenePos());
-	  event->getLabel()->setNewPos(event->scenePos());
-	  diff += distance + event->getWidth() - 40;
-	} else if (event->scenePos().x() > selectedMacro->scenePos().x() &&
-		   event->scenePos().x() < selectedMacro->scenePos().x() +
-		   selectedMacro->getWidth()) {
-	  diff += distance + event->getWidth() - 40;
-	}
+	event = qgraphicsitem_cast<EventItem*>(it4.next());
+	event->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
+	event->setOriginalPos(event->scenePos());
+	event->getLabel()->setNewPos(event->scenePos());
+	diff += distance + event->getWidth() - 40;
       } else if (macro) {
-	macro = qgraphicsitem_cast<MacroEvent*>(it6.next());
-	if (components.contains(macro)) {
-	  macro->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
-	  macro->setOriginalPos(macro->scenePos());
-	  macro->getLabel()->setNewPos(macro->scenePos());
-	  diff += distance + macro->getWidth() - 40;
-	} else if (macro->scenePos().x() > selectedMacro->scenePos().x() &&
-		   macro->scenePos().x() + macro->getWidth() < selectedMacro->scenePos().x() +
-		   selectedMacro->getWidth()) {
-	  diff += distance + macro->getWidth() - 40;
-	}
+	macro = qgraphicsitem_cast<MacroEvent*>(it4.next());
+	macro->setPos(selectedMacro->scenePos() + QPointF(diff, 0));
+	macro->setOriginalPos(macro->scenePos());
+	macro->getLabel()->setNewPos(macro->scenePos());
+	diff += distance + macro->getWidth() - 40;
       }
     }
     std::sort(eventVector.begin(), eventVector.end(), eventLessThan);
-    QVectorIterator<EventItem*> it7(eventVector);
+    QVectorIterator<EventItem*> it5(eventVector);
     EventItem* nextUp = NULL;
-    while (it7.hasNext()) {
-      EventItem* current = it7.next();
+    while (it5.hasNext()) {
+      EventItem* current = it5.next();
       if (current->scenePos().x() > selectedMacro->scenePos().x() + selectedMacro->getWidth()) {
 	if (!components.contains(current)) {
 	  nextUp = current;
@@ -5214,25 +5191,25 @@ void EventGraphWidget::disaggregateEvent() {
 	dist = nextUp->scenePos().x() - macro->scenePos().x() - macro->getWidth() + 40;
       }
       QPointF currentPos = nextUp->scenePos();
-      allEvents.clear();
+      QVector<QGraphicsItem*> allEvents;
       if (dist < distance) {
-	QVectorIterator<EventItem*> it8(eventVector);
-	while (it8.hasNext()) {
-	  EventItem *item = it8.next();
+	QVectorIterator<EventItem*> it6(eventVector);
+	while (it6.hasNext()) {
+	  EventItem *item = it6.next();
 	  allEvents.push_back(item);
 	}
-	QVectorIterator<MacroEvent*> it9(macroVector);
-	while (it9.hasNext()) {
-	  MacroEvent *item = it9.next();
+	QVectorIterator<MacroEvent*> it7(macroVector);
+	while (it7.hasNext()) {
+	  MacroEvent *item = it7.next();
 	  allEvents.push_back(item);
 	}
 	std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-	QVectorIterator<QGraphicsItem*> it10(allEvents);
-	while (it10.hasNext()) {
-	  EventItem *event = qgraphicsitem_cast<EventItem*>(it10.peekNext());
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it10.peekNext());
+	QVectorIterator<QGraphicsItem*> it8(allEvents);
+	while (it8.hasNext()) {
+	  EventItem *event = qgraphicsitem_cast<EventItem*>(it8.peekNext());
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it8.peekNext());
 	  if (event) {
-	    event = qgraphicsitem_cast<EventItem*>(it10.next());
+	    event = qgraphicsitem_cast<EventItem*>(it8.next());
 	    if (event->scenePos().x() >= currentPos.x()) {
 	      if (!components.contains(event)) {
 		event->setPos(event->scenePos().x() + distance - dist, event->scenePos().y());
@@ -5241,7 +5218,7 @@ void EventGraphWidget::disaggregateEvent() {
 	      }
 	    }
 	  } else if (macro) {
-	    macro = qgraphicsitem_cast<MacroEvent*>(it10.next());
+	    macro = qgraphicsitem_cast<MacroEvent*>(it8.next());
 	    if (macro->scenePos().x() >= currentPos.x()) {
 	      if (!components.contains(macro)) {
 		macro->setPos(macro->scenePos().x() + distance - dist, macro->scenePos().y());
@@ -5258,21 +5235,21 @@ void EventGraphWidget::disaggregateEvent() {
     scene->removeItem(selectedMacro);
     macroVector.removeOne(selectedMacro);
     selectedMacro = NULL;
-    QVector<Arrow*>::iterator it11;
-    for (it11 = edgeVector.begin(); it11 != edgeVector.end();) {
-      Arrow *current = *it11;
+    QVector<Arrow*>::iterator it9;
+    for (it9 = edgeVector.begin(); it9 != edgeVector.end();) {
+      Arrow *current = *it9;
       if (!scene->items().contains(current->startItem()) ||
 	  !scene->items().contains(current->endItem())) {
 	scene->removeItem(current);
 	edgeVector.removeOne(current);
 	current->hide(); // deleting causes a crash.
        } else {
-	it11++;
+	it9++;
       }
     }
-    QVectorIterator<MacroEvent*> it12(macroVector);
-    while (it12.hasNext()) {
-      MacroEvent *macro = it12.next();
+    QVectorIterator<MacroEvent*> it10(macroVector);
+    while (it10.hasNext()) {
+      MacroEvent *macro = it10.next();
       QVector<EventItem*> currentIncidents = macro->getIncidents();
       rewireLinkages(macro, currentIncidents);
     }
