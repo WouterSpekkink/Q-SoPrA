@@ -40,6 +40,7 @@
 #include "SupportingFunctions.h"
 #include "ExportTransitionMatrixDialog.h"
 #include "EventNodeSettingsDialog.h"
+#include "SimpleAttributeSelectionDialog.h"
 
 class AttributesWidget;
 
