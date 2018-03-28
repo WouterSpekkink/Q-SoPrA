@@ -345,8 +345,12 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     QMenu menu;
     QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
     menu.addAction(action1);
+    QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
+    menu.addAction(action12);    
     QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
     menu.addAction(action2);
+    QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
+    menu.addAction(action13);
     QAction *action3 = new QAction(MAKEMACROACTION, this);
     menu.addAction(action3);
     QAction *action4= new QAction(RECOLOREVENTSACTION, this);
@@ -372,6 +376,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     }
     if (selectedItems().size() == 1) {
       action1->setEnabled(false);
+      action12->setEnabled(false);
+      action13->setEnabled(false);
       action2->setEnabled(false);
       action8->setEnabled(false);
     }
@@ -383,8 +389,12 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     QMenu menu;
     QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
     menu.addAction(action1);
+    QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
+    menu.addAction(action12);
     QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
     menu.addAction(action2);
+    QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
+    menu.addAction(action13);
     QAction *action3 = new QAction(DISAGGREGATEACTION, this);
     menu.addAction(action3);
     QAction *action4 = new QAction(RECOLOREVENTSACTION, this);
@@ -414,6 +424,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     if (selectedItems().size() == 1) {
       action1->setEnabled(false);
       action2->setEnabled(false);
+      action12->setEnabled(false);
+      action13->setEnabled(false);
       action8->setEnabled(false);
     }
     if (QAction *action = menu.exec(event->screenPos())) {
