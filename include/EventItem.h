@@ -42,6 +42,8 @@ public:
   QString getMode() const;
   bool isCopy();
   void setCopy(bool status);
+  void setDistAncestor(qreal dist);
+  qreal getDistAncestor();
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -60,7 +62,7 @@ private:
   int order;
   QString mode;
   bool copy;
-  
+  qreal distAncestor;
 };
 
 #endif

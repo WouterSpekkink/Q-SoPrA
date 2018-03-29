@@ -274,7 +274,7 @@ private:
   QString selectedType;
   MacroEvent *selectedMacro;
   
-  int distance;
+  qreal distance;
   int vectorPos;
   int selectedIncident;
 
