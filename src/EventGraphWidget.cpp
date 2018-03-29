@@ -2634,9 +2634,9 @@ void EventGraphWidget::saveCurrentPlot() {
     }
     QSqlDatabase::database().transaction();
     query->prepare("INSERT INTO saved_eg_plots_event_items "
-		   "(plot, incident, ch_order, width, distanc, curxpos, curypos, orixpos, oriypos, "
+		   "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		   "dislodged, mode, red, green, blue, alpha, hidden) "
-		   "VALUES (:plot, :incident, :order, :width, :distanc, :curxpos, :curypos, :orixpos, "
+		   "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
 		   ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden)");
     QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, eventVector.size());
     saveProgress->setWindowTitle("Saving event items");
@@ -2654,7 +2654,6 @@ void EventGraphWidget::saveCurrentPlot() {
       int incident = currentItem->getId();
       int order = currentItem->getOrder();
       int width = currentItem->getWidth();
-      qreal distanc = currentItem->getDistAncestor();
       int dislodged = 0;
       QString mode = currentItem->getMode();
       QColor color = currentItem->getColor();
@@ -2673,7 +2672,6 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":incident", incident);
       query->bindValue(":order", order);
       query->bindValue(":width", width);
-      query->bindValue(":distanc", distanc);
       query->bindValue(":curxpos", currentX);
       query->bindValue(":curypos", currentY);
       query->bindValue(":orixpos", originalX);
@@ -2803,11 +2801,11 @@ void EventGraphWidget::saveCurrentPlot() {
 		    "VALUES(:plot, :attribute, :macro, :value)");
     QSqlQuery *query3 = new QSqlQuery;
     query3->prepare("INSERT INTO saved_eg_plots_macro_events "
-		   "(plot, eventid, ch_order, colligation, description, comment, width, distanc, "
+		   "(plot, eventid, ch_order, colligation, description, comment, width, "
 		    "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
 		   "red, green, blue, alpha, hidden) "
 		   "VALUES (:plot, :eventid, :ch_order, :colligation, :description, :comment, "
-		   ":width, :distanc, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
+		   ":width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
 		   ":red, :green, :blue, :alpha, :hidden)");;
     QVectorIterator<MacroEvent*> it4(macroVector);
     while (it4.hasNext()) {
@@ -2836,7 +2834,6 @@ void EventGraphWidget::saveCurrentPlot() {
       QString description = currentMacro->getDescription();
       QString comment = currentMacro->getComment();
       int width = currentMacro->getWidth();
-      qreal distanc = currentMacro->getDistAncestor();
       QString mode = currentMacro->getMode();
       qreal currentX = currentMacro->pos().x();
       qreal currentY = currentMacro->pos().y();
@@ -2862,7 +2859,6 @@ void EventGraphWidget::saveCurrentPlot() {
       query3->bindValue(":description", description);
       query3->bindValue(":comment", comment);
       query3->bindValue(":width", width);
-      query3->bindValue(":distanc", distanc);
       query3->bindValue(":mode", mode);
       query3->bindValue(":curxpos", currentX);
       query3->bindValue(":curypos", currentY);
@@ -3042,7 +3038,7 @@ void EventGraphWidget::seePlots() {
     coderComboBox->setCurrentIndex(index);
     index = typeComboBox->findText(type);
     typeComboBox->setCurrentIndex(index);
-    query->prepare("SELECT incident, ch_order, width, distanc, curxpos, curypos, orixpos, oriypos, "
+    query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		   "dislodged, mode, red, green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_event_items "
 		   "WHERE plot = :plot ");
@@ -3052,18 +3048,17 @@ void EventGraphWidget::seePlots() {
       int id = query->value(0).toInt();
       int order = query->value(1).toInt();
       int width = query->value(2).toInt();
-      qreal distanc = query->value(3).toReal();
-      qreal currentX = query->value(4).toReal();
-      qreal currentY = query->value(5).toReal();
-      qreal originalX = query->value(6).toReal();
-      qreal originalY = query->value(7).toReal();
-      int dislodged = query->value(8).toInt();
-      QString mode = query->value(9).toString();
-      int red = query->value(10).toInt();
-      int green = query->value(11).toInt();
-      int blue = query->value(12).toInt();
-      int alpha = query->value(13).toInt();
-      int hidden = query->value(14).toInt();
+      qreal currentX = query->value(3).toReal();
+      qreal currentY = query->value(4).toReal();
+      qreal originalX = query->value(5).toReal();
+      qreal originalY = query->value(6).toReal();
+      int dislodged = query->value(7).toInt();
+      QString mode = query->value(8).toString();
+      int red = query->value(9).toInt();
+      int green = query->value(10).toInt();
+      int blue = query->value(11).toInt();
+      int alpha = query->value(12).toInt();
+      int hidden = query->value(13).toInt();
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT description FROM incidents WHERE id = :id");
       query2->bindValue(":id", id);
@@ -3079,7 +3074,6 @@ void EventGraphWidget::seePlots() {
       QPointF currentPos = QPointF(currentX, currentY);
       QPointF originalPos = QPointF(originalX, originalY);
       EventItem *currentItem = new EventItem(width, toolTip, originalPos, id, order);
-      currentItem->setDistAncestor(distanc);
       currentItem->setPos(currentPos);
       currentItem->setColor(QColor(red, green, blue, alpha));
       currentItem->setZValue(1);
@@ -3137,7 +3131,7 @@ void EventGraphWidget::seePlots() {
 	}
       }
     }
-    query->prepare("SELECT eventid, ch_order, colligation, description, comment, width, distanc, mode, "
+    query->prepare("SELECT eventid, ch_order, colligation, description, comment, width, mode, "
 		   "curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_macro_events "
 		   "WHERE plot = :plot ");
@@ -3150,18 +3144,17 @@ void EventGraphWidget::seePlots() {
       QString description = query->value(3).toString();
       QString comment = query->value(4).toString();
       int width = query->value(5).toInt();
-      qreal distanc = query->value(6).toReal();
-      QString mode = query->value(7).toString();
-      qreal currentX = query->value(8).toReal();
-      qreal currentY = query->value(9).toReal();
-      qreal originalX = query->value(10).toReal();
-      qreal originalY = query->value(11).toReal();
-      int dislodged = query->value(12).toInt();
-      int red = query->value(13).toInt();
-      int green = query->value(14).toInt();
-      int blue = query->value(15).toInt();
-      int alpha = query->value(16).toInt();
-      int hidden = query->value(17).toInt();
+      QString mode = query->value(6).toString();
+      qreal currentX = query->value(7).toReal();
+      qreal currentY = query->value(8).toReal();
+      qreal originalX = query->value(9).toReal();
+      qreal originalY = query->value(10).toReal();
+      int dislodged = query->value(11).toInt();
+      int red = query->value(12).toInt();
+      int green = query->value(13).toInt();
+      int blue = query->value(14).toInt();
+      int alpha = query->value(15).toInt();
+      int hidden = query->value(16).toInt();
       QPointF currentPos = QPointF(currentX, currentY);
       QPointF originalPos = QPointF(originalX, originalY);
       QColor color = QColor(red, green, blue, alpha);
@@ -3200,7 +3193,6 @@ void EventGraphWidget::seePlots() {
       delete query2;
       MacroEvent* newMacro = new MacroEvent(width, description, originalPos, id,
 					    constraint, incidents);
-      newMacro->setDistAncestor(distanc);
       QVectorIterator<EventItem*> it(incidents);
       while (it.hasNext()) {
 	EventItem *currentEvent = it.next();
@@ -4699,8 +4691,6 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  }
 	  current->setOrder(order);
 	}
-	qreal lastX = 0.0;
-	bool firstHad = false;
 	QVectorIterator<QGraphicsItem*> it3(currentData);
 	while (it3.hasNext()) {
 	  EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
@@ -4730,24 +4720,10 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 		delete query;
 	      }
 	      if (hasAttribute) {
-		if (!firstHad) {
-		  item->setDistAncestor(0.0);
-		  firstHad = true;
-		} else {
-		  item->setDistAncestor(item->scenePos().x() - lastX);
-		}
-		lastX = item->scenePos().x();
 		item->setMacroEvent(current);
 		item->hide();
 	      }
 	    } else {
-	      if (!firstHad) {
-		item->setDistAncestor(0.0);
-		firstHad = true;
-	      } else {
-		item->setDistAncestor(item->scenePos().x() - lastX);
-	      }
-	      lastX = item->scenePos().x();
 	      item->setMacroEvent(current);
 	      item->hide();
 	    }
@@ -4798,13 +4774,6 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	      }
 	    }
 	    if (checkpoint) {
-	      if (!firstHad) {
-		item->setDistAncestor(0.0);
-		firstHad = true;
-	      } else {
-		item->setDistAncestor(item->scenePos().x() - lastX);
-	      }
-	      lastX = item->scenePos().x();
 	      item->setMacroEvent(current);
 	      item->hide();
 	    }
@@ -5174,18 +5143,17 @@ void EventGraphWidget::disaggregateEvent() {
   std::sort(components.begin(), components.end(), componentsSort);
   QVectorIterator<QGraphicsItem*> it3(components);
   qreal xPos = selectedMacro->scenePos().x();
+  qreal firstPos = components.first()->scenePos().x();
   while (it3.hasNext()) {
     QGraphicsItem *current = it3.next();
     EventItem *event = qgraphicsitem_cast<EventItem*>(current);
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
     const qreal yPos = selectedMacro->scenePos().y();
     if (event) {
-      event->setPos(xPos + event->getDistAncestor(), yPos);
-      xPos = event->scenePos().x();
+      event->setPos(xPos + event->scenePos().x() - firstPos, yPos);
       event->getLabel()->setNewPos(event->scenePos());
     } else if (macro) {
-      macro->setPos(xPos + macro->getDistAncestor(), yPos);
-      xPos = macro->scenePos().x();
+      macro->setPos(xPos + macro->scenePos().x() - firstPos, yPos);
       macro->getLabel()->setNewPos(macro->scenePos());
     }
   }

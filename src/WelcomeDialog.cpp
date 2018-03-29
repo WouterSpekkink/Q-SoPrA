@@ -167,7 +167,6 @@ void WelcomeDialog::newDatabase() {
 		  "incident integer, "
 		  "ch_order integer, "
 		  "width integer, "
-		  "distanc real, "
 		  "curxpos real, " // Current x position (scenePos)
 		  "curypos real, " // Current y position (scenePos)
 		  "orixpos real, " // Original x position
@@ -210,7 +209,6 @@ void WelcomeDialog::newDatabase() {
 		  "description text, "
 		  "comment text, "
 		  "width integer, "
-		  "distanc real, "
 		  "mode text, "
 		  "curxpos real, "
 		  "curypos real, "
@@ -542,7 +540,6 @@ void WelcomeDialog::openDatabase() {
 		  "incident integer , "
 		  "ch_order integer, "
 		  "width integer, "
-		  "distanc real, "
 		  "curxpos real, "
 		  "curypos real, "
 		  "orixpos real, "
@@ -585,7 +582,6 @@ void WelcomeDialog::openDatabase() {
 		  "description text, "
 		  "comment text, "
 		  "width integer, "
-		  "distanc real, "
 		  "mode text, "
 		  "curxpos real, "
 		  "curypos real, "

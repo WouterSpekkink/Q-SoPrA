@@ -31,7 +31,6 @@ MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF origi
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   copy = false;
-  distAncestor = 0;
 }
 
 QRectF MacroEvent::boundingRect() const {
@@ -282,12 +281,4 @@ bool MacroEvent::isCopy() {
 
 void MacroEvent::setCopy(bool status) {
   copy = status;
-}
-
-void MacroEvent::setDistAncestor(qreal dist) {
-  distAncestor = dist;
-}
-
-qreal MacroEvent::getDistAncestor() {
-  return distAncestor;
 }

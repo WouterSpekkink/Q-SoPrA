@@ -26,7 +26,6 @@ EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, in
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   copy = false;
-  distAncestor = 0;
 }
 
 QRectF EventItem::boundingRect() const {
@@ -208,12 +207,4 @@ bool EventItem::isCopy() {
 
 void EventItem::setCopy(bool status) {
   copy = status;
-}
-
-void EventItem::setDistAncestor(qreal dist) {
-  distAncestor = dist;
-}
-
-qreal EventItem::getDistAncestor() {
-  return distAncestor;
 }

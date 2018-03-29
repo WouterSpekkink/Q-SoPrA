@@ -60,8 +60,6 @@ public:
   QString getConstraint() const;
   bool isCopy();
   void setCopy(bool status);
-  void setDistAncestor(qreal dist);
-  qreal getDistAncestor();
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
@@ -86,7 +84,6 @@ private:
   QString mode;
   QString constraint;
   bool copy;
-  qreal distAncestor;
 };
 
 #endif
