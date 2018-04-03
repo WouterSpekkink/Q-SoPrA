@@ -132,6 +132,7 @@ private slots:
 
   void processNetworkNodeContextMenu(const QString action);
   void hideCurrentNode();
+  void setNodePersistence(bool status);
   
   void setPlotButton();
   void plotNewGraph();

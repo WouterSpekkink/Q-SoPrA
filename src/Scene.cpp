@@ -455,7 +455,19 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     clearSelection();
     node->setSelected(true);
     QMenu menu;
-    menu.addAction(HIDENODE);
+    QAction *action1 = new QAction(HIDENODE, this);
+    menu.addAction(action1);
+    QAction *action2 = new QAction(SETPERSISTENT, this);
+    menu.addAction(action2);
+    QAction *action3 = new QAction(UNSETPERSISTENT, this);
+    menu.addAction(action3);
+    if (node->isPersistent()) {
+      action2->setEnabled(false);
+      action3->setEnabled(true);
+    } else {
+      action2->setEnabled(true);
+      action3->setEnabled(false);
+    }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit NetworkNodeContextMenuAction(action->text());
     }

@@ -1587,6 +1587,10 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
 void NetworkGraphWidget::processNetworkNodeContextMenu(const QString action) {
   if (action == HIDENODE) {
     hideCurrentNode();
+  } else if (action == SETPERSISTENT) {
+    setNodePersistence(true);
+  } else if (action == UNSETPERSISTENT) {
+    setNodePersistence(false);
   }
 }
 
@@ -1645,6 +1649,20 @@ void NetworkGraphWidget::hideCurrentNode() {
       currentNode->getLabel()->hide();
     }
   }
+}
+
+void NetworkGraphWidget::setNodePersistence(bool state) {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      NetworkNode *currentNode = qgraphicsitem_cast<NetworkNode*>(it.peekNext());
+      if (currentNode) {
+	NetworkNode *selectedNode = qgraphicsitem_cast<NetworkNode*>(it.next());
+	selectedNode->setPersistent(state);
+      }
+    }
+  }
+  setVisibility();
 }
 
 void NetworkGraphWidget::colorByAttribute() {
@@ -2970,9 +2988,9 @@ void NetworkGraphWidget::saveCurrentPlot() {
     QSqlDatabase::database().transaction();
     query->prepare("INSERT INTO saved_ng_plots_network_nodes "
 		   "(plot, entity, description, mode, curxpos, curypos, "
-		   "red, green, blue, alpha, hidden) "
+		   "red, green, blue, alpha, hidden, persistent) "
 		   "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
-		   ":red, :green, :blue, :alpha, :hidden)");
+		   ":red, :green, :blue, :alpha, :hidden, :persistent)");
     QVectorIterator<NetworkNode*> it(nodeVector);
     while (it.hasNext()) {
       NetworkNode *current = it.next();
@@ -2986,8 +3004,12 @@ void NetworkGraphWidget::saveCurrentPlot() {
       int blue = current->getColor().blue();
       int alpha = current->getColor().alpha();
       int hidden = 1;
+      int persistent = 0;
       if (current->isVisible()) {
 	hidden = 0;
+      }
+      if (current->isPersistent()) {
+	persistent = 1;
       }
       query->bindValue(":plot", name);
       query->bindValue(":entity", entity);
@@ -3000,6 +3022,7 @@ void NetworkGraphWidget::saveCurrentPlot() {
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
       query->bindValue(":hidden", hidden);
+      query->bindValue(":persistent", persistent);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -3254,7 +3277,7 @@ void NetworkGraphWidget::seePlots() {
     QString plot = savedPlotsDialog->getSelectedPlot();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT entity, description, mode, curxpos, curypos, "
-		   "red, green, blue, alpha, hidden "
+		   "red, green, blue, alpha, hidden, persistent "
 		   "FROM saved_ng_plots_network_nodes "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -3270,6 +3293,7 @@ void NetworkGraphWidget::seePlots() {
       int blue = query->value(7).toInt();
       int alpha = query->value(8).toInt();
       int hidden = query->value(9).toInt();
+      int persistent = query->value(10).toInt();
       QPointF currentPos = QPointF(currentX, currentY);
       NetworkNode *node = new NetworkNode(entity, description);
       node->setColor(QColor(red, green, blue, alpha));
@@ -3281,6 +3305,11 @@ void NetworkGraphWidget::seePlots() {
 	node->hide();
       } else {
 	node->show();
+      }
+      if (persistent == 1) {
+	node->setPersistent(true);
+      } else {
+	node->setPersistent(false);
       }
       nodeVector.push_back(node);
     }
@@ -3597,6 +3626,9 @@ void NetworkGraphWidget::setVisibility() {
   while (it.hasNext()) {
     NetworkNode* currentNode = it.next();
     currentNode->hide();
+    if (currentNode->isPersistent()) {
+      currentNode->show();
+    }
   }
   QVectorIterator<DirectedEdge*> it2(directedVector);
   while (it2.hasNext()) {

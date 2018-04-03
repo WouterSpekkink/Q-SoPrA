@@ -48,6 +48,8 @@ extern QString EVENTGRAPH;
 extern QString NETWORKGRAPH;
 extern QString OCCURRENCEGRAPH;
 extern QString HIDENODE;
+extern QString SETPERSISTENT;
+extern QString UNSETPERSISTENT;
 
 #endif
 

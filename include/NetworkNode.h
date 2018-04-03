@@ -22,7 +22,9 @@ public:
   void setMode(const QString &submittedMode);
   QString getMode() const;
   void move(QPointF newPos);
-
+  bool isPersistent();
+  void setPersistent(bool state);
+  
   void setLabel(NetworkNodeLabel *newLabel);
   NetworkNodeLabel* getLabel();
   
@@ -44,6 +46,8 @@ private:
   QString name;
   QString description;
   QString mode;
+
+  bool persistent;
 };
 
 #endif

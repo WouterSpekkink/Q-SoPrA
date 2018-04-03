@@ -24,6 +24,7 @@ NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : 
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+  persistent = false;
 }
 
 /*
@@ -190,3 +191,12 @@ QColor NetworkNode::getColor() {
 void NetworkNode::setSelectionColor(const QColor &subColor) {
   selectionColor = subColor;
 }
+
+bool NetworkNode::isPersistent() {
+  return persistent; 
+}
+
+void NetworkNode::setPersistent(bool state) {
+  persistent = state;
+}
+

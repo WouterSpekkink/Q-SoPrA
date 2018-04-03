@@ -279,7 +279,8 @@ void WelcomeDialog::newDatabase() {
 		  "green integer, "
 		  "blue integer, "
 		  "alpha integer, "
-		  "hidden integer)");
+		  "hidden integer, "
+		  "persistent integer)");
       query->exec("CREATE TABLE saved_ng_plots_node_labels "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -652,7 +653,8 @@ void WelcomeDialog::openDatabase() {
 		  "green integer, "
 		  "blue integer, "
 		  "alpha integer, "
-		  "hidden integer)");
+		  "hidden integer, "
+		  "peristent integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_node_labels "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
