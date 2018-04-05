@@ -209,6 +209,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processEventItemContextMenu(const QString &)));
   connect(scene, SIGNAL(ArrowContextMenuAction(const QString &)),
 	  this, SLOT(processArrowContextMenu(const QString &)));
+  connect(view, SIGNAL(EventGraphContextMenuAction(const QString &)),
+	  this, SLOT(processEventGraphContextMenu(const QString &)));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -5947,6 +5949,21 @@ void EventGraphWidget::removeNormalLinkage() {
       }
     }
   }
+}
+
+void EventGraphWidget::processEventGraphContextMenu(const QString &action) {
+  if (action == ADDDOUBLEARROW) {
+    addLineObject();
+  }
+}
+
+void EventGraphWidget::addLineObject() {
+  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+  LineObject *newLineObject = new LineObject(QPointF(mousePos.x() - 100, mousePos.y()),
+					     QPointF(mousePos.x() + 100, mousePos.y()));
+  lineVector.push_back(newLineObject);
+  scene->addItem(newLineObject);
+  newLineObject->setZValue(3);
 }
 
 void EventGraphWidget::ignoreLinkage() {

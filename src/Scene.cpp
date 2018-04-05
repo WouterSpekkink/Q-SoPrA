@@ -2,12 +2,15 @@
 #include "../include/NodeLabel.h"
 #include "../include/MacroLabel.h"
 #include "../include/OccurrenceLabel.h"
+#include "../include/LineObject.h"
+#include <math.h>
 #include <QtCore>
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOnEvent = false;
   resizeOnMacro = false;
   moveOn = false;
+  lineMoveOn = false;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -175,6 +178,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 									    QTransform()));
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
 										   QTransform()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -197,10 +201,14 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       this->clearSelection();
       occurrence->setSelected(true);
       selectedOccurrence = occurrence;
+    } else if (line) {
+      this->clearSelection();
+      selectedLine = line;
+      lineMoveOn = true;
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
-    selectedNode  = NULL;
+    selectedNode = NULL;
     QGraphicsScene::mousePressEvent(event);
   }
 }
@@ -209,13 +217,15 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   resizeOnEvent = false;
   resizeOnMacro = false;
   moveOn = false;
+  lineMoveOn = false;
   QListIterator<QGraphicsItem*> it(this->items());
   while (it.hasNext()) {
     QGraphicsItem *current = it.next();
     EventItem *incident = qgraphicsitem_cast<EventItem*>(current);
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);
-    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);    
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);
+    LineObject *line = qgraphicsitem_cast<LineObject*>(current);
     if (incident) {
       incident->setCursor(Qt::OpenHandCursor);
     } else if (macro) {
@@ -224,12 +234,15 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
       networkNode->setCursor(Qt::OpenHandCursor);
     } else if (occurrence) {
       occurrence->setCursor(Qt::OpenHandCursor);
+    } else if (line) {
+      line->setCursor(Qt::OpenHandCursor);
     }
   }
   selectedEvent = NULL;
   selectedMacro = NULL;
   selectedNode = NULL;
   selectedOccurrence = NULL;
+  selectedLine = NULL;
   QGraphicsScene::mouseReleaseEvent(event);
 }
   
@@ -306,6 +319,36 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
       }
     }
     lastMousePos = event->scenePos();
+  } else if (lineMoveOn) {
+    lastMousePos = event->scenePos();
+    QPointF start = selectedLine->getStartPos();
+    QPointF end = selectedLine->getEndPos();
+    qreal distStart = sqrt(pow((lastMousePos.x() - start.x()), 2) +
+			   pow((lastMousePos.y() - start.y()), 2));
+    qreal distEnd = sqrt(pow((lastMousePos.x() - end.x()), 2) +
+			   pow((lastMousePos.y() - end.y()), 2));
+    if (distStart < distEnd) {
+      if (event->modifiers() & Qt::ControlModifier) {
+	if (abs((lastMousePos.y() - end.y()) / (lastMousePos.x() - end.x())) < 1) {
+	  selectedLine->setStartPos(lastMousePos.x(), end.y());
+	} else {
+	  selectedLine->setStartPos(end.x(), lastMousePos.y());
+	}
+      } else {
+	selectedLine->setStartPos(lastMousePos);
+      }
+    } else {
+      if (event->modifiers() & Qt::ControlModifier) {
+	if (abs((lastMousePos.y() - start.y()) / (lastMousePos.x() - start.x())) < 1) {
+	  selectedLine->setEndPos(lastMousePos.x(), start.y());
+	} else {
+	  selectedLine->setEndPos(start.x(), lastMousePos.y());
+	}
+      } else {
+	selectedLine->setEndPos(lastMousePos);
+      }
+    }
+    
   } else {
     if (selectedItems().size() > 1 && moveOn) {
       if (selectedEvent) {

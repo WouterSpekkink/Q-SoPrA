@@ -5,6 +5,7 @@
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/OccurrenceLabel.h"
+#include "../include/EventGraphWidget.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -23,8 +24,25 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     this->setDragMode(QGraphicsView::NoDrag);
     QGraphicsView::mousePressEvent(event);
   } else if (event->modifiers() & Qt::ControlModifier) {
-    this->setDragMode(QGraphicsView::NoDrag);
-    QGraphicsView::mousePressEvent(event);
+    if (event->button() == Qt::RightButton) {
+      /* 
+	 We only want to add the context menu below for the event graph widget.
+	 I could of course expand the conditionals here to also add context menu actions
+	 to other widgets.
+      */
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(parent());
+      if (egw && egw->getEventItems().size() > 0) {
+	QMenu menu;
+	QAction *action1 = new QAction(ADDDOUBLEARROW, this);
+	menu.addAction(action1);
+	if (QAction *action = menu.exec(event->globalPos())) {
+	  emit EventGraphContextMenuAction(action->text());
+	}
+      }
+    } else {
+      this->setDragMode(QGraphicsView::NoDrag);
+      QGraphicsView::mousePressEvent(event);
+    }
   } else if (event->button() == Qt::RightButton) {
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));

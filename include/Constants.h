@@ -50,6 +50,7 @@ extern QString OCCURRENCEGRAPH;
 extern QString HIDENODE;
 extern QString SETPERSISTENT;
 extern QString UNSETPERSISTENT;
+extern QString ADDDOUBLEARROW;
 
 #endif
 

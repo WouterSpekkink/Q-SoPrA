@@ -74,7 +74,6 @@ void UndirectedEdge::calc() {
   oLine.setLength(oLine.length() - 18);
   sLine = QLineF(midPoint, tempStart);
   sLine.setLength(sLine.length() - 18);
-
   
   double angle = ::acos(oLine.dx() / oLine.length());
   if (oLine.dy() >= 0)
@@ -82,7 +81,6 @@ void UndirectedEdge::calc() {
   double angle2 = ::acos(sLine.dx() / sLine.length());
   if (sLine.dy() >= 0)
     angle2 = (Pi * 2) - angle2;
-
   
   qreal arrowSize = 10;
   

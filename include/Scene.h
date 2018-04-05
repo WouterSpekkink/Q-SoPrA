@@ -11,6 +11,7 @@
 #include <QMenu>
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
+#include "../include/LineObject.h"
 
 class Scene : public QGraphicsScene {
   Q_OBJECT
@@ -31,7 +32,6 @@ signals:
   void posDecreased(MacroEvent *);
   void moveItems(QGraphicsItem *, QPointF);
   void moveLine(QGraphicsItem *, QPointF);
-  
   void relevantChange();
   void EventItemContextMenuAction(const QString&);
   void ArrowContextMenuAction(const QString&);
@@ -47,11 +47,13 @@ protected:
   bool resizeOnEvent;
   bool resizeOnMacro;
   bool moveOn;
+  bool lineMoveOn;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;
   NetworkNode *selectedNode;
   OccurrenceItem *selectedOccurrence;
+  LineObject *selectedLine;
 };
 
 #endif 

@@ -41,6 +41,7 @@
 #include "ExportTransitionMatrixDialog.h"
 #include "EventNodeSettingsDialog.h"
 #include "SimpleAttributeSelectionDialog.h"
+#include "LineObject.h"
 
 class AttributesWidget;
 
@@ -147,7 +148,6 @@ private slots:
   void exportTransitionMatrix();
   void findAncestors(QColor ancestor, QGraphicsItem *origin);
   void findDescendants(QColor descendant, QGraphicsItem *origin);
-  
   void settleEvent();
   void makeParallel();
   void normalizeDistance();
@@ -160,6 +160,8 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
+  void processEventGraphContextMenu(const QString &action);
+  void addLineObject();
   void findPastPaths(QSet<int> *mark, int currentIncident);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
   void findFuturePaths(QSet<int> *mark, int currentIncident);
@@ -167,7 +169,7 @@ private slots:
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void finalBusiness();
-
+  
 signals:
   void seeHierarchy(MacroEvent *);
   
@@ -186,6 +188,7 @@ private:
   QVector<Arrow*> compareVector;
   QVector<NodeLabel*> nodeLabelVector;
   QVector<MacroLabel*> macroLabelVector;
+  QVector<LineObject*> lineVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
   

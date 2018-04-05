@@ -48,3 +48,4 @@ QString OCCURRENCEGRAPH = "Occurrence graph";
 QString HIDENODE = "Temporarily hide this node";
 QString SETPERSISTENT = "Make node persistent";
 QString UNSETPERSISTENT = "Reset node persistence";
+QString ADDDOUBLEARROW = "Add double arrow";
