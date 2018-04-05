@@ -209,6 +209,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processEventItemContextMenu(const QString &)));
   connect(scene, SIGNAL(ArrowContextMenuAction(const QString &)),
 	  this, SLOT(processArrowContextMenu(const QString &)));
+  connect(scene, SIGNAL(LineContextMenuAction(const QString &)),
+	  this, SLOT(processLineContextMenu(const QString &)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &)));
   connect(attributesTreeView->selectionModel(),
@@ -2003,6 +2005,8 @@ void EventGraphWidget::cleanUp() {
   compareVector.clear();
   qDeleteAll(edgeVector);
   edgeVector.clear();
+  qDeleteAll(lineVector);
+  lineVector.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
   selectedType = "";
@@ -2625,6 +2629,11 @@ void EventGraphWidget::saveCurrentPlot() {
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
+      // saved_eg_plots_lines
+      query->prepare("DELETE FROM saved_eg_plots_lines "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
       query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
@@ -2929,7 +2938,7 @@ void EventGraphWidget::saveCurrentPlot() {
       qApp->processEvents();
     }
     saveProgress->close();
-    delete saveProgress;
+    delete saveProgress;    
     saveProgress = new ProgressBar(0, 1, macroLabelVector.size());
     saveProgress->setWindowTitle("Saving macro labels");
     saveProgress->setAttribute(Qt::WA_DeleteOnClose);
@@ -3009,9 +3018,45 @@ void EventGraphWidget::saveCurrentPlot() {
     }
     saveProgress->close();
     delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, lineVector.size());
+    saveProgress->setWindowTitle("Saving double arrows");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_lines "
+		   "(plot, startx, starty, endx, endy, red, green, blue, alpha) "
+		   "VALUES (:plot, :startx, :starty, :endx, :endy, :red, :green, :blue, :alpha)");
+    QVectorIterator<LineObject*> it8(lineVector);
+    while (it8.hasNext()) {
+      LineObject *currentLine = it8.next();
+      qreal startx = currentLine->getStartPos().x();
+      qreal starty = currentLine->getStartPos().y();
+      qreal endx = currentLine->getEndPos().x();
+      qreal endy = currentLine->getEndPos().y();
+      QColor color = currentLine->getColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      query->bindValue(":plot", name);
+      query->bindValue(":startx", startx);
+      query->bindValue(":starty", starty);
+      query->bindValue(":endx", endx);
+      query->bindValue(":endy", endy);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
     plotLabel->setText(name);
     changeLabel->setText("");
-    delete saveProgress;
     delete query;
     QSqlDatabase::database().commit();
   }
@@ -3441,6 +3486,27 @@ void EventGraphWidget::seePlots() {
 	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
     }
+    query->prepare("SELECT startx, starty, endx, endy, red, green, blue, alpha "
+		   "FROM saved_eg_plots_lines "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      qreal startx = query->value(0).toReal();
+      qreal starty = query->value(1).toReal();
+      qreal endx = query->value(2).toReal();
+      qreal endy = query->value(3).toReal();
+      int red = query->value(4).toInt();
+      int green = query->value(5).toInt();
+      int blue = query->value(6).toInt();
+      int alpha = query->value(7).toInt();
+      QColor color = QColor(red, green, blue, alpha);
+      LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
+      lineVector.push_back(newLine);
+      newLine->setZValue(3);
+      newLine->setColor(color);
+      scene->addItem(newLine);
+    }
     distance = 70;
     plotLabel->setText(plot);
     changeLabel->setText("");
@@ -3504,6 +3570,11 @@ void EventGraphWidget::seePlots() {
     query->exec();
     // saved_eg_plots_macros_to_macros 
     query->prepare("DELETE FROM saved_eg_plots_macros_to_macros "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_lines
+    query->prepare("DELETE FROM saved_eg_plots_lines "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
@@ -5964,6 +6035,39 @@ void EventGraphWidget::addLineObject() {
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(3);
+}
+
+void EventGraphWidget::processLineContextMenu(const QString &action) {
+  if (action == CHANGELINECOLOR) {
+    changeLineColor();
+  } else if (action == DELETELINE) {
+    deleteLine();
+  }
+}
+
+void EventGraphWidget::changeLineColor() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	line->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void EventGraphWidget::deleteLine() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      lineVector.removeOne(line);
+      scene->removeItem(line);
+    }
+  }
 }
 
 void EventGraphWidget::ignoreLinkage() {

@@ -52,6 +52,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -61,7 +62,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (occurrenceLabel) {
       occurrence = occurrenceLabel->getOccurrence();
     }
-    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel) {
+    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel && !line) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -78,6 +79,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       occurrence->setSelected(true);
     } else if (networkNode) {
       networkNode->setSelected(true);
+    } else if (line) {
+      line->setSelected(true);
     }
   } else {
     pan = false;

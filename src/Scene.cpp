@@ -348,7 +348,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	selectedLine->setEndPos(lastMousePos);
       }
     }
-    
+    emit relevantChange();
   } else {
     if (selectedItems().size() > 1 && moveOn) {
       if (selectedEvent) {
@@ -378,6 +378,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
   MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
   NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
+  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
   if (nodeLabel) {
     incident = nodeLabel->getNode();
   }
@@ -513,6 +514,17 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit NetworkNodeContextMenuAction(action->text());
+    }
+  } else if (line) {
+    clearSelection();
+    line->setSelected(true);
+    QMenu menu;
+    QAction *action1 = new QAction(CHANGELINECOLOR, this);
+    menu.addAction(action1);
+    QAction *action2 = new QAction(DELETELINE, this);
+    menu.addAction(action2);
+    if (QAction *action = menu.exec(event->screenPos())) {
+      emit LineContextMenuAction(action->text());
     }
   }
 }

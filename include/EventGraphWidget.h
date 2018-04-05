@@ -162,6 +162,9 @@ private slots:
   void removeNormalLinkage();
   void processEventGraphContextMenu(const QString &action);
   void addLineObject();
+  void processLineContextMenu(const QString &action);
+  void changeLineColor();
+  void deleteLine();
   void findPastPaths(QSet<int> *mark, int currentIncident);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
   void findFuturePaths(QSet<int> *mark, int currentIncident);

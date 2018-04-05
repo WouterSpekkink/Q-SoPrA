@@ -264,6 +264,17 @@ void WelcomeDialog::newDatabase() {
 		  "blue integer, "
 		  "green integer, "
 		  "alpha integer)");
+      query->exec("CREATE TABLE saved_eg_plots_lines "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "plot text, "
+		  "startx real, "
+		  "starty real, "
+		  "endx real, "
+		  "endy real, "
+		  "red integer, "
+		  "green integer, "
+		  "blue integer, "
+		  "alpha integer)");
       query->exec("CREATE TABLE saved_ng_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
@@ -637,6 +648,17 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "blue integer, "
 		  "green integer, "
+		  "alpha integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_lines "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "plot text, "
+		  "startx real, "
+		  "starty real, "
+		  "endx real, "
+		  "endy real, "
+		  "red integer, "
+		  "green integer, "
+		  "blue integer, "
 		  "alpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "

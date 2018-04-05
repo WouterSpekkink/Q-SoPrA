@@ -51,6 +51,8 @@ extern QString HIDENODE;
 extern QString SETPERSISTENT;
 extern QString UNSETPERSISTENT;
 extern QString ADDDOUBLEARROW;
+extern QString CHANGELINECOLOR;
+extern QString DELETELINE;
 
 #endif
 

@@ -7,8 +7,8 @@ class LineObject : public QGraphicsLineItem {
 
 public: 
   LineObject(QPointF subStartPos = QPointF(0, 0),
-	QPointF subEndPos = QPointF(0, 10),
-	QGraphicsItem *parent = 0);
+	     QPointF subEndPos = QPointF(0, 10),
+	     QGraphicsItem *parent = 0);
   ~LineObject() {};
 
   QRectF boundingRect() const override;

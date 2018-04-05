@@ -36,6 +36,7 @@ signals:
   void EventItemContextMenuAction(const QString&);
   void ArrowContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
+  void LineContextMenuAction(const QString&);
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;
