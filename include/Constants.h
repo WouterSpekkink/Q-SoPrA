@@ -52,6 +52,7 @@ extern QString SETPERSISTENT;
 extern QString UNSETPERSISTENT;
 extern QString ADDDOUBLEARROW;
 extern QString ADDTEXT;
+extern QString ADDELLIPSE;
 extern QString CHANGELINECOLOR;
 extern QString DELETELINE;
 extern QString CHANGETEXT;

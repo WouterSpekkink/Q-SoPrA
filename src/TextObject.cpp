@@ -7,3 +7,7 @@ TextObject::TextObject(const QString &text,
   setFlag(QGraphicsTextItem::ItemIsMovable, true);
   setFlag(QGraphicsTextItem::ItemIsSelectable, true);
 }
+
+int TextObject::type() const {
+  return Type;
+}

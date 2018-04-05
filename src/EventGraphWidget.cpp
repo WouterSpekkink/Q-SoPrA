@@ -2015,6 +2015,8 @@ void EventGraphWidget::cleanUp() {
   lineVector.clear();
   qDeleteAll(textVector);
   textVector.clear();
+  qDeleteAll(ellipseVector);
+  ellipseVector.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
   selectedType = "";
@@ -6112,6 +6114,8 @@ void EventGraphWidget::processEventGraphContextMenu(const QString &action) {
     addLineObject();
   } else if (action == ADDTEXT) {
     addTextObject();
+  } else if (action == ADDELLIPSE) {
+    addEllipseObject();
   }
 }
 
@@ -6140,6 +6144,15 @@ void EventGraphWidget::addTextObject() {
     newText->adjustSize();
   }
   delete textDialog;
+}
+
+void EventGraphWidget::addEllipseObject() {
+  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+  EllipseObject *newEllipse = new EllipseObject();
+  ellipseVector.push_back(newEllipse);
+  scene->addItem(newEllipse);
+  newEllipse->setZValue(3);
+  newEllipse->setPos(mousePos);
 }
 
 void EventGraphWidget::processLineContextMenu(const QString &action) {

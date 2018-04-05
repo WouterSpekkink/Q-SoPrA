@@ -12,6 +12,8 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOnMacro = false;
   moveOn = false;
   lineMoveOn = false;
+  manipulateEllipse = false;
+  moveEllipse = false;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -145,6 +147,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
 								    QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+								       QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -185,6 +189,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	  selectedEvent = NULL;
 	}
       }
+    } else if (ellipse) {
+      selectedEllipse = ellipse;
+      moveEllipse = true;
     }
     return;
   } else {
@@ -199,6 +206,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
 										   QTransform()));
     LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(), QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -225,6 +233,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       this->clearSelection();
       selectedLine = line;
       lineMoveOn = true;
+    } else if (ellipse) {
+      this->clearSelection();
+      selectedEllipse = ellipse;
+      manipulateEllipse = true;
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
@@ -238,6 +250,8 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   resizeOnMacro = false;
   moveOn = false;
   lineMoveOn = false;
+  manipulateEllipse = false;
+  moveEllipse = false;
   QListIterator<QGraphicsItem*> it(this->items());
   while (it.hasNext()) {
     QGraphicsItem *current = it.next();
@@ -246,6 +260,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);
     LineObject *line = qgraphicsitem_cast<LineObject*>(current);
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(current);
     if (incident) {
       incident->setCursor(Qt::OpenHandCursor);
     } else if (macro) {
@@ -256,6 +271,8 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
       occurrence->setCursor(Qt::OpenHandCursor);
     } else if (line) {
       line->setCursor(Qt::OpenHandCursor);
+    } else if (ellipse) {
+      ellipse->setCursor(Qt::OpenHandCursor);
     }
   }
   selectedEvent = NULL;
@@ -263,6 +280,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   selectedNode = NULL;
   selectedOccurrence = NULL;
   selectedLine = NULL;
+  selectedEllipse = NULL;
   QGraphicsScene::mouseReleaseEvent(event);
 }
   
@@ -368,6 +386,34 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	selectedLine->setEndPos(lastMousePos);
       }
     }
+    emit relevantChange();
+  } else if (manipulateEllipse) {
+    lastMousePos = event->scenePos();
+    QPointF topLeft = selectedEllipse->mapToScene(selectedEllipse->topLeft());
+    QPointF topRight = selectedEllipse->mapToScene(selectedEllipse->topRight());
+    QPointF bottomLeft = selectedEllipse->mapToScene(selectedEllipse->bottomLeft());
+    QPointF bottomRight = selectedEllipse->mapToScene(selectedEllipse->bottomRight());
+    qreal distTopLeft = sqrt(pow((lastMousePos.x() - topLeft.x()), 2) +
+			     pow((lastMousePos.y() - topLeft.y()), 2));
+    qreal distTopRight = sqrt(pow((lastMousePos.x() - topRight.x()), 2) +
+			      pow((lastMousePos.y() - topRight.y()), 2));
+    qreal distBottomLeft = sqrt(pow((lastMousePos.x() - bottomLeft.x()), 2) +
+				pow((lastMousePos.y() - bottomLeft.y()), 2));
+    qreal distBottomRight = sqrt(pow((lastMousePos.x() - bottomRight.x()), 2) +
+				 pow((lastMousePos.y() - bottomRight.y()), 2));
+    qreal minimum = std::min({distTopLeft, distTopRight, distBottomLeft, distBottomRight});
+    if (minimum == distTopLeft) {
+      selectedEllipse->setTopLeft(selectedEllipse->mapFromScene(lastMousePos));
+    } else if (minimum == distTopRight) {
+      selectedEllipse->setTopRight(selectedEllipse->mapFromScene(lastMousePos));
+    } else if (minimum == distBottomLeft) {
+      selectedEllipse->setBottomLeft(selectedEllipse->mapFromScene(lastMousePos));
+    } else if (minimum == distBottomRight) {
+      selectedEllipse->setBottomRight(selectedEllipse->mapFromScene(lastMousePos));
+    }
+    emit relevantChange();
+  } else if (moveEllipse) {
+    selectedEllipse->moveCenter(selectedEllipse->mapFromScene(event->scenePos()));
     emit relevantChange();
   } else {
     if (selectedItems().size() > 1 && moveOn) {
