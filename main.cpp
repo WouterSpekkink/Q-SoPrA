@@ -6,7 +6,7 @@
 int main(int argc, char *argv[]) {
   QApplication QSoPrA(argc, argv);
 
-  QString version = QString("0.8.5.10");
+  QString version = QString("0.8.6.0");
   QSoPrA.setApplicationVersion(version);
 
   EventSequenceDatabase *esd = new EventSequenceDatabase;

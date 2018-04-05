@@ -12,6 +12,7 @@
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/LineObject.h"
+#include "../include/TextObject.h"
 
 class Scene : public QGraphicsScene {
   Q_OBJECT
@@ -37,6 +38,11 @@ signals:
   void ArrowContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
   void LineContextMenuAction(const QString&);
+  void TextContextMenuAction(const QString&);
+  void increaseTextSize(TextObject *);
+  void decreaseTextSize(TextObject *);
+  void increaseTextWidth(TextObject *);
+  void decreaseTextWidth(TextObject *);
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;

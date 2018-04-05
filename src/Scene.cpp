@@ -3,6 +3,7 @@
 #include "../include/MacroLabel.h"
 #include "../include/OccurrenceLabel.h"
 #include "../include/LineObject.h"
+#include "../include/TextObject.h"
 #include <math.h>
 #include <QtCore>
 
@@ -32,6 +33,8 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
 							       QTransform()));
   MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(wheelEvent->scenePos(),
 								 QTransform()));
+  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(wheelEvent->scenePos(),
+							    QTransform()));
   if (nodeLabel) {
     incident = nodeLabel->getNode();
   }
@@ -59,6 +62,23 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
 	macro->setWidth(macro->getWidth() - 1);
 	emit widthDecreased(macro);
       } 
+    }
+    emit relevantChange();
+    wheelEvent->accept();
+  } else if (text) {
+    if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      if (wheelEvent->delta() > 0) {
+	emit increaseTextSize(text);
+      } else if (wheelEvent->delta() < 0) {
+	emit decreaseTextSize(text);
+      }
+    }
+    if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+      if (wheelEvent->delta() > 0) {
+	emit increaseTextWidth(text);
+      } else if (wheelEvent->delta() < 0) {
+	emit decreaseTextWidth(text);
+      }
     }
     emit relevantChange();
     wheelEvent->accept();
@@ -379,6 +399,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
   NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
   LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
+  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(), QTransform()));
   if (nodeLabel) {
     incident = nodeLabel->getNode();
   }
@@ -525,6 +546,19 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action2);
     if (QAction *action = menu.exec(event->screenPos())) {
       emit LineContextMenuAction(action->text());
+    }
+  } else if (text) {
+    clearSelection();
+    text->setSelected(true);
+    QMenu menu;
+    QAction *action1 = new QAction(CHANGETEXT, this);
+    menu.addAction(action1);
+    QAction *action2 = new QAction(CHANGETEXTCOLOR, this);
+    menu.addAction(action2);
+    QAction *action3 = new QAction(DELETETEXT, this);
+    menu.addAction(action3);
+    if (QAction *action = menu.exec(event->screenPos())) {
+      emit TextContextMenuAction(action->text());
     }
   }
 }

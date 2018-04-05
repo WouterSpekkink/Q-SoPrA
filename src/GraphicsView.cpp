@@ -34,7 +34,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       if (egw && egw->getEventItems().size() > 0) {
 	QMenu menu;
 	QAction *action1 = new QAction(ADDDOUBLEARROW, this);
+	QAction *action2 = new QAction(ADDTEXT, this);
 	menu.addAction(action1);
+	menu.addAction(action2);
 	if (QAction *action = menu.exec(event->globalPos())) {
 	  emit EventGraphContextMenuAction(action->text());
 	}
@@ -53,6 +55,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
     LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
+    TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
+    
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -62,7 +66,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (occurrenceLabel) {
       occurrence = occurrenceLabel->getOccurrence();
     }
-    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel && !line) {
+    if (!incident && !macro && !arrow && !networkNode &&
+	!occurrence && !occurrenceLabel && !line && !text) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -81,6 +86,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       networkNode->setSelected(true);
     } else if (line) {
       line->setSelected(true);
+    } else if (text) {
+      text->setSelected(true);
     }
   } else {
     pan = false;
@@ -135,12 +142,26 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event) {
 
 void GraphicsView::wheelEvent(QWheelEvent* event) {
   if (event->modifiers() & Qt::ControlModifier) {
-    this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    double scaleFactor = 1.15;
-    if (event->delta() > 0) {
-      this->scale(scaleFactor, scaleFactor);
-    } else {
-      this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+    event->ignore();
+    QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
+    wheelEvent.setWidget(viewport());
+    wheelEvent.setScenePos(mapToScene(event->pos()));
+    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setButtons(event->buttons());
+    wheelEvent.setModifiers(event->modifiers());
+    wheelEvent.setDelta(event->delta());
+    wheelEvent.setOrientation(event->orientation());
+    wheelEvent.setAccepted(false);
+    qApp->sendEvent(this->scene(), &wheelEvent);
+    event->setAccepted(wheelEvent.isAccepted());
+    if (!(event->isAccepted())) {
+      this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+      double scaleFactor = 1.15;
+      if (event->delta() > 0) {
+	this->scale(scaleFactor, scaleFactor);
+      } else {
+	this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+      }
     }
   } else if (event->modifiers() & Qt::ShiftModifier) {
     event->ignore();

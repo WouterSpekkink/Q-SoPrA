@@ -42,6 +42,7 @@
 #include "EventNodeSettingsDialog.h"
 #include "SimpleAttributeSelectionDialog.h"
 #include "LineObject.h"
+#include "TextObject.h"
 
 class AttributesWidget;
 
@@ -162,9 +163,18 @@ private slots:
   void removeNormalLinkage();
   void processEventGraphContextMenu(const QString &action);
   void addLineObject();
+  void addTextObject();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void deleteLine();
+  void processTextContextMenu(const QString &action);
+  void changeText();
+  void changeTextColor();
+  void deleteText();
+  void increaseTextSize(TextObject *);
+  void decreaseTextSize(TextObject *);
+  void increaseTextWidth(TextObject *);
+  void decreaseTextWidth(TextObject *);
   void findPastPaths(QSet<int> *mark, int currentIncident);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
   void findFuturePaths(QSet<int> *mark, int currentIncident);
@@ -192,6 +202,7 @@ private:
   QVector<NodeLabel*> nodeLabelVector;
   QVector<MacroLabel*> macroLabelVector;
   QVector<LineObject*> lineVector;
+  QVector<TextObject*> textVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
   

@@ -198,6 +198,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(widthDecreased(EventItem*)), this, SLOT(decreaseWidth(EventItem*)));
   connect(scene, SIGNAL(widthIncreased(MacroEvent*)), this, SLOT(increaseWidth(MacroEvent*)));
   connect(scene, SIGNAL(widthDecreased(MacroEvent*)), this, SLOT(decreaseWidth(MacroEvent*)));
+  connect(scene, SIGNAL(increaseTextSize(TextObject*)), this, SLOT(increaseTextSize(TextObject*)));
+  connect(scene, SIGNAL(decreaseTextSize(TextObject*)), this, SLOT(decreaseTextSize(TextObject*)));
+  connect(scene, SIGNAL(increaseTextWidth(TextObject*)), this, SLOT(increaseTextWidth(TextObject*)));
+  connect(scene, SIGNAL(decreaseTextWidth(TextObject*)), this, SLOT(decreaseTextWidth(TextObject*)));
   connect(scene, SIGNAL(posIncreased(EventItem*)), this, SLOT(increasePos(EventItem*)));
   connect(scene, SIGNAL(posDecreased(EventItem*)), this, SLOT(decreasePos(EventItem*)));
   connect(scene, SIGNAL(posIncreased(MacroEvent*)), this, SLOT(increasePos(MacroEvent*)));
@@ -211,6 +215,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processArrowContextMenu(const QString &)));
   connect(scene, SIGNAL(LineContextMenuAction(const QString &)),
 	  this, SLOT(processLineContextMenu(const QString &)));
+  connect(scene, SIGNAL(TextContextMenuAction(const QString &)),
+	  this, SLOT(processTextContextMenu(const QString &)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &)));
   connect(attributesTreeView->selectionModel(),
@@ -2007,6 +2013,8 @@ void EventGraphWidget::cleanUp() {
   edgeVector.clear();
   qDeleteAll(lineVector);
   lineVector.clear();
+  qDeleteAll(textVector);
+  textVector.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
   selectedType = "";
@@ -2634,6 +2642,12 @@ void EventGraphWidget::saveCurrentPlot() {
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
+      // saved_eg_plots_texts
+      query->prepare("DELETE FROM saved_eg_plots_texts "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
+
     } else {
       // Insert new data into saved_eg_plots and then write data.
       query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
@@ -3055,8 +3069,47 @@ void EventGraphWidget::saveCurrentPlot() {
     }
     saveProgress->close();
     delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, textVector.size());
+    saveProgress->setWindowTitle("Saving text items");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_texts "
+		   "(plot, desc, xpos, ypos, width, size, red, green, blue, alpha) "
+		   "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :red, :green, :blue, :alpha)");
+    QVectorIterator<TextObject*> it9(textVector);
+    while (it9.hasNext()) {
+      TextObject *currentText = it9.next();
+      QString desc = currentText->toPlainText();
+      qreal xpos = currentText->scenePos().x();
+      qreal ypos = currentText->scenePos().y();
+      int width = currentText->textWidth();
+      int size = currentText->font().pointSize();
+      QColor color = currentText->defaultTextColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      query->bindValue(":plot", name);
+      query->bindValue(":desc", desc);
+      query->bindValue(":xpos", xpos);
+      query->bindValue(":ypos", ypos);
+      query->bindValue(":width", width);
+      query->bindValue(":size", size);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
     plotLabel->setText(name);
     changeLabel->setText("");
+    delete saveProgress;
     delete query;
     QSqlDatabase::database().commit();
   }
@@ -3507,6 +3560,33 @@ void EventGraphWidget::seePlots() {
       newLine->setColor(color);
       scene->addItem(newLine);
     }
+    query->prepare("SELECT desc, xpos, ypos, width, size, red, green, blue, alpha "
+		   "FROM saved_eg_plots_texts "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      QString desc = query->value(0).toString();
+      qreal xpos = query->value(1).toReal();
+      qreal ypos = query->value(2).toReal();
+      int width = query->value(3).toInt();
+      int size = query->value(4).toInt();
+      int red = query->value(5).toInt();
+      int green = query->value(6).toInt();
+      int blue = query->value(7).toInt();
+      int alpha = query->value(8).toInt();
+      QColor color = QColor(red, green, blue, alpha);
+      TextObject *newText = new TextObject(desc);
+      textVector.push_back(newText);
+      newText->setZValue(4);
+      newText->setDefaultTextColor(color);
+      newText->setTextWidth(width);
+      QFont font = newText->font();
+      font.setPointSize(size);
+      newText->setFont(font);
+      newText->setPos(xpos, ypos);
+      scene->addItem(newText);
+    }
     distance = 70;
     plotLabel->setText(plot);
     changeLabel->setText("");
@@ -3575,6 +3655,11 @@ void EventGraphWidget::seePlots() {
     query->exec();
     // saved_eg_plots_lines
     query->prepare("DELETE FROM saved_eg_plots_lines "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_texts
+    query->prepare("DELETE FROM saved_eg_plots_texts "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
@@ -6025,6 +6110,8 @@ void EventGraphWidget::removeNormalLinkage() {
 void EventGraphWidget::processEventGraphContextMenu(const QString &action) {
   if (action == ADDDOUBLEARROW) {
     addLineObject();
+  } else if (action == ADDTEXT) {
+    addTextObject();
   }
 }
 
@@ -6035,6 +6122,24 @@ void EventGraphWidget::addLineObject() {
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(3);
+}
+
+void EventGraphWidget::addTextObject() {
+  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+  textDialog->setWindowTitle("Set text");
+  textDialog->setLabel("Free text:");
+  textDialog->exec();
+  if (textDialog->getExitStatus() == 0) {
+    QString text = textDialog->getText();
+    TextObject *newText = new TextObject(text);
+    textVector.push_back(newText);
+    scene->addItem(newText);
+    newText->setPos(mousePos);
+    newText->setZValue(4);
+    newText->adjustSize();
+  }
+  delete textDialog;
 }
 
 void EventGraphWidget::processLineContextMenu(const QString &action) {
@@ -6064,10 +6169,97 @@ void EventGraphWidget::deleteLine() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
-      lineVector.removeOne(line);
       scene->removeItem(line);
+      lineVector.removeOne(line);
     }
   }
+}
+
+void EventGraphWidget::processTextContextMenu(const QString &action) {
+  if (action == CHANGETEXT) {
+    changeText();
+  } else if (action == CHANGETEXTCOLOR) {
+    changeTextColor();
+  } else if (action == DELETETEXT) {
+    deleteText();
+  }
+}
+
+void EventGraphWidget::changeText() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      QString oldText = text->toPlainText();
+      QPointer<LargeTextDialog> textDialog= new LargeTextDialog(this);
+      textDialog->setWindowTitle("Edit text");
+      textDialog->setLabel("Edit free text:");
+      textDialog->submitText(oldText);
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString newText = textDialog->getText();
+	text->setPlainText(newText);
+      }
+      delete textDialog;
+    }
+  }
+}
+
+void EventGraphWidget::changeTextColor() {
+ if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	text->setDefaultTextColor(color);
+      }
+      delete colorDialog;
+    }
+ }
+}
+
+void EventGraphWidget::deleteText() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      scene->removeItem(text);
+      textVector.removeOne(text);
+    }
+  }
+}
+
+
+void EventGraphWidget::increaseTextSize(TextObject *text) {
+  QFont font = text->font();
+  int size = font.pointSize();
+  if (size <= 39) {
+    size++;
+    font.setPointSize(size);
+    text->setFont(font);
+  }
+}
+
+void EventGraphWidget::decreaseTextSize(TextObject *text) {
+  QFont font = text->font();
+  int size = font.pointSize();
+  if (size >= 9) {
+    size--;
+    font.setPointSize(size);
+    text->setFont(font);
+  }
+}
+
+void EventGraphWidget::increaseTextWidth(TextObject *text) {
+  int width = text->textWidth();
+  width = width + 10;
+  text->setTextWidth(width);
+}
+
+void EventGraphWidget::decreaseTextWidth(TextObject *text) {
+  int width = text->textWidth();
+  width = width - 10;
+  text->setTextWidth(width);
 }
 
 void EventGraphWidget::ignoreLinkage() {

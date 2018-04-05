@@ -121,6 +121,7 @@ SOURCES       = main.cpp \
 		src/SimpleTextDialog.cpp \
 		src/SortFunctions.cpp \
 		src/SupportingFunctions.cpp \
+		src/TextObject.cpp \
 		src/UndirectedEdge.cpp \
 		src/WelcomeDialog.cpp \
 		src/ZoomableListView.cpp \
@@ -253,6 +254,7 @@ OBJECTS       = main.o \
 		SimpleTextDialog.o \
 		SortFunctions.o \
 		SupportingFunctions.o \
+		TextObject.o \
 		UndirectedEdge.o \
 		WelcomeDialog.o \
 		ZoomableListView.o \
@@ -565,6 +567,7 @@ DIST          = /opt/Qt/5.9.4/gcc_64/mkspecs/features/spec_pre.prf \
 		include/SimpleTextDialog.h \
 		include/SortFunctions.h \
 		include/SupportingFunctions.h \
+		include/TextObject.h \
 		include/UndirectedEdge.h \
 		include/WelcomeDialog.h \
 		include/ZoomableListView.h \
@@ -639,6 +642,7 @@ DIST          = /opt/Qt/5.9.4/gcc_64/mkspecs/features/spec_pre.prf \
 		src/SimpleTextDialog.cpp \
 		src/SortFunctions.cpp \
 		src/SupportingFunctions.cpp \
+		src/TextObject.cpp \
 		src/UndirectedEdge.cpp \
 		src/WelcomeDialog.cpp \
 		src/ZoomableListView.cpp \
@@ -1042,8 +1046,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RelationalTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RelationalTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RelationalTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RelationalTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -2983,6 +2987,7 @@ moc_AttributesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -3057,7 +3062,7 @@ moc_AttributesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/AttributesWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -4285,6 +4290,7 @@ moc_DataWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -4366,7 +4372,7 @@ moc_DataWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/DataWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -7320,6 +7326,7 @@ moc_EventGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -7361,7 +7368,7 @@ moc_EventGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
 		include/ComboBoxDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/MainWindow.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDesktopWidget \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMainWindow \
@@ -9959,6 +9966,7 @@ moc_HierarchyGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -10048,7 +10056,7 @@ moc_HierarchyGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/HierarchyGraphWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -12302,6 +12310,7 @@ moc_LinkagesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -12384,7 +12393,7 @@ moc_LinkagesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/LinkagesWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -13187,6 +13196,7 @@ moc_MainWindow.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -13263,7 +13273,7 @@ moc_MainWindow.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/MainWindow.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -15838,6 +15848,7 @@ moc_NetworkGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -16874,6 +16885,7 @@ moc_OccurrenceGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -16964,7 +16976,7 @@ moc_OccurrenceGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/OccurrenceGraphWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -17589,6 +17601,7 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -17670,7 +17683,7 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/RawAttributesTable.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -18213,6 +18226,7 @@ moc_RawRelationshipsTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButto
 		include/OccurrenceItem.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -19808,6 +19822,7 @@ moc_RelationshipsWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/OccurrenceItem.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -20609,6 +20624,7 @@ moc_Scene.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsScene \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		include/LineObject.h \
 		include/Scene.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -22435,6 +22451,7 @@ main.o: main.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -22471,7 +22488,7 @@ main.o: main.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/RelationshipsWidget.h \
@@ -22643,7 +22660,8 @@ Arrow.o: src/Arrow.cpp include/Arrow.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenu.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		include/LineObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Arrow.o src/Arrow.cpp
 
 AttributeColorDialog.o: src/AttributeColorDialog.cpp include/AttributeColorDialog.h \
@@ -24544,6 +24562,7 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -24568,7 +24587,7 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
 		include/ComboBoxDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/MainWindow.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDesktopWidget \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMainWindow \
@@ -25014,6 +25033,7 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenu.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		include/LineObject.h \
 		include/NodeLabel.h \
 		include/MacroLabel.h \
 		include/OccurrenceLabel.h
@@ -26175,6 +26195,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -26255,7 +26276,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h
+		include/TextObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DataWidget.o src/DataWidget.cpp
 
 DeselectableListWidget.o: src/DeselectableListWidget.cpp include/DeselectableListWidget.h \
@@ -28693,6 +28714,7 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/OccurrenceItem.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -29468,6 +29490,7 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -29557,7 +29580,7 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h
+		include/TextObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventGraphWidget.o src/EventGraphWidget.cpp
 
 EventItem.o: src/EventItem.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
@@ -30025,6 +30048,7 @@ EventItem.o: src/EventItem.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsView \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/NodeLabel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsTextItem
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventItem.o src/EventItem.cpp
@@ -32074,6 +32098,7 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenu.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		include/LineObject.h \
 		include/NodeLabel.h \
 		include/MacroLabel.h \
 		include/OccurrenceLabel.h \
@@ -32364,7 +32389,7 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h
+		include/TextObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GraphicsView.o src/GraphicsView.cpp
 
 HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidget.h \
@@ -32870,6 +32895,7 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -32957,7 +32983,7 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/BandlessGraphicsView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HierarchyGraphWidget.o src/HierarchyGraphWidget.cpp
 
@@ -35333,6 +35359,7 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -35414,7 +35441,7 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h
+		include/TextObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinkagesWidget.o src/LinkagesWidget.cpp
 
 LinkageTypeDialog.o: src/LinkageTypeDialog.cpp include/LinkageTypeDialog.h \
@@ -36162,6 +36189,7 @@ MacroEvent.o: src/MacroEvent.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidget
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsView \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/MacroLabel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsTextItem
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MacroEvent.o src/MacroEvent.cpp
@@ -36903,6 +36931,7 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -36939,7 +36968,7 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h \
+		include/TextObject.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
@@ -39541,6 +39570,7 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -40032,6 +40062,7 @@ NetworkNode.o: src/NetworkNode.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidg
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsView \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/NetworkNodeLabel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsTextItem \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneMouseEvent
@@ -40283,7 +40314,8 @@ NetworkNodeLabel.o: src/NetworkNodeLabel.cpp include/NetworkNodeLabel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenu.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		include/LineObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkNodeLabel.o src/NetworkNodeLabel.cpp
 
 NodeLabel.o: src/NodeLabel.cpp include/NodeLabel.h \
@@ -41510,6 +41542,7 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/Constants.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
@@ -41599,7 +41632,7 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h
+		include/TextObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OccurrenceGraphWidget.o src/OccurrenceGraphWidget.cpp
 
 OccurrenceItem.o: src/OccurrenceItem.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
@@ -42067,6 +42100,7 @@ OccurrenceItem.o: src/OccurrenceItem.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsView \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/OccurrenceLabel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsTextItem
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OccurrenceItem.o src/OccurrenceItem.cpp
@@ -42915,6 +42949,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/NetworkNode.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -42995,7 +43030,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/LineObject.h
+		include/TextObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RawAttributesTable.o src/RawAttributesTable.cpp
 
 RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsTable.h \
@@ -43536,6 +43571,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/OccurrenceItem.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -45122,6 +45158,7 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/OccurrenceItem.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsSceneWheelEvent \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMenu \
+		include/LineObject.h \
 		include/ProgressBar.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QProgressBar \
 		include/SavedPlotsDialog.h \
@@ -45915,6 +45952,7 @@ Scene.o: src/Scene.cpp include/Scene.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		include/LineObject.h \
 		include/NodeLabel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsTextItem \
 		include/MacroLabel.h \
@@ -46939,6 +46977,94 @@ SupportingFunctions.o: src/SupportingFunctions.cpp include/SupportingFunctions.h
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringmatcher.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpoint.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SupportingFunctions.o src/SupportingFunctions.cpp
+
+TextObject.o: src/TextObject.cpp include/TextObject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsTextItem \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcore-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemdetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocessordetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcompilerdetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypeinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsysinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlogging.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qflags.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasicatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qgenericatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_msvc.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobalstatic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmutex.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnumeric.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversiontagging.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtgui-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnamespace.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstring.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qchar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrefcount.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringbuilder.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qalgorithms.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhashfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpair.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraylist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregexp.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringmatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetatype.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvarlengtharray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontainerfwd.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariant.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdebug.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhash.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextstream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiodevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlocale.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qshareddata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvector.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpoint.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qset.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontiguouscache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrect.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmargins.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsize.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainterpath.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpolygon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qregion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatastream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qline.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcolor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgb.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgba64.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixelformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtransform.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o TextObject.o src/TextObject.cpp
 
 UndirectedEdge.o: src/UndirectedEdge.cpp include/UndirectedEdge.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QGraphicsLineItem \
