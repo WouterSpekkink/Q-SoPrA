@@ -50,6 +50,7 @@ QString SETPERSISTENT = "Make node persistent";
 QString UNSETPERSISTENT = "Reset node persistence";
 QString ADDDOUBLEARROW = "Add double arrow";
 QString ADDTEXT = "Add free text";
+QString ADDELLIPSE = "Add ellipse";
 QString CHANGELINECOLOR = "Change color";
 QString DELETELINE = "Delete line";
 QString CHANGETEXT = "Edit text";

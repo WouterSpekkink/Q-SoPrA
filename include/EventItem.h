@@ -20,6 +20,7 @@ public:
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
+  QColor getColor();
   void setColor(const QColor &subColor); 
   void setSelectionColor(const QColor &subColor);
   int getCorrection();
@@ -33,15 +34,15 @@ public:
   void setDislodged(bool state);
   void setLabel(NodeLabel *submittedLabel);
   NodeLabel* getLabel();
-  QColor getColor();
-  enum {Type = UserType + 1};
-  int type() const;
   void setMacroEvent(MacroEvent* submittedEvent);
   MacroEvent* getMacroEvent();
   void setMode(const QString submittedMode);
   QString getMode() const;
   bool isCopy();
   void setCopy(bool status);
+
+  enum {Type = UserType + 1};
+  int type() const;
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

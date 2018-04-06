@@ -9,7 +9,10 @@ public:
   TextObject(const QString &text = QString(),
 	     QGraphicsTextItem *parent = 0);
   ~TextObject() {};
- 
+
+  enum {Type = UserType + 12};
+  int type() const;
+  
 };
 
 #endif

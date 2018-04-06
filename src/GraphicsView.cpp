@@ -35,8 +35,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
 	QMenu menu;
 	QAction *action1 = new QAction(ADDDOUBLEARROW, this);
 	QAction *action2 = new QAction(ADDTEXT, this);
+	QAction *action3 = new QAction(ADDELLIPSE, this);
 	menu.addAction(action1);
 	menu.addAction(action2);
+	menu.addAction(action3);
 	if (QAction *action = menu.exec(event->globalPos())) {
 	  emit EventGraphContextMenuAction(action->text());
 	}

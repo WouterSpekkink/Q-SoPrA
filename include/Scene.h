@@ -13,6 +13,7 @@
 #include "../include/OccurrenceItem.h"
 #include "../include/LineObject.h"
 #include "../include/TextObject.h"
+#include "../include/EllipseObject.h"
 
 class Scene : public QGraphicsScene {
   Q_OBJECT
@@ -55,12 +56,15 @@ protected:
   bool resizeOnMacro;
   bool moveOn;
   bool lineMoveOn;
+  bool manipulateEllipse;
+  bool moveEllipse;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;
   NetworkNode *selectedNode;
   OccurrenceItem *selectedOccurrence;
   LineObject *selectedLine;
+  EllipseObject *selectedEllipse;
 };
 
 #endif 

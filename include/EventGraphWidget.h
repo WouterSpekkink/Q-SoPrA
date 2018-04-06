@@ -43,6 +43,7 @@
 #include "SimpleAttributeSelectionDialog.h"
 #include "LineObject.h"
 #include "TextObject.h"
+#include "EllipseObject.h"
 
 class AttributesWidget;
 
@@ -164,6 +165,7 @@ private slots:
   void processEventGraphContextMenu(const QString &action);
   void addLineObject();
   void addTextObject();
+  void addEllipseObject();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void deleteLine();
@@ -203,6 +205,7 @@ private:
   QVector<MacroLabel*> macroLabelVector;
   QVector<LineObject*> lineVector;
   QVector<TextObject*> textVector;
+  QVector<EllipseObject*> ellipseVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
   
