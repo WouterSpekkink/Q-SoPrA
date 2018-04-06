@@ -4,10 +4,9 @@
 EllipseObject::EllipseObject() {
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
-  rotation = 0;
   setCursor(Qt::OpenHandCursor);
-  setFlag(QGraphicsTextItem::ItemIsMovable, false);
-  setFlag(QGraphicsTextItem::ItemIsSelectable, true);
+  setFlag(QGraphicsItem::ItemIsMovable, false);
+  setFlag(QGraphicsItem::ItemIsSelectable, true);
 }
 
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -16,8 +15,7 @@ void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
   painter->drawEllipse(drawRect);
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-    QRectF myRect = drawRect.adjusted(-10, -10, 10, 10);
-    painter->drawEllipse(myRect);
+    painter->drawPath(shape());
     update();
   }
 }
@@ -36,6 +34,7 @@ qreal EllipseObject::getLeft() {
 
 void EllipseObject::setLeft(qreal newLeft) {
   drawRect.setLeft(newLeft);
+  drawRect = drawRect.normalized();
 }
 
 qreal EllipseObject::getRight() {
@@ -44,6 +43,7 @@ qreal EllipseObject::getRight() {
 
 void EllipseObject::setRight(qreal newRight) {
   drawRect.setRight(newRight);
+  drawRect = drawRect.normalized();
 }
 
 qreal EllipseObject::getTop() {
@@ -52,6 +52,7 @@ qreal EllipseObject::getTop() {
 
 void EllipseObject::setTop(qreal newTop) {
   drawRect.setTop(newTop);
+  drawRect = drawRect.normalized();
 }
 
 qreal EllipseObject::getBottom() {
@@ -60,6 +61,7 @@ qreal EllipseObject::getBottom() {
 
 void EllipseObject::setBottom(qreal newBottom) {
   drawRect.setBottom(newBottom);
+  drawRect = drawRect.normalized();
 }
 
 QPointF EllipseObject::topLeft() {
@@ -80,40 +82,47 @@ QPointF EllipseObject::bottomRight() {
 
 void EllipseObject::setTopLeft(QPointF topLeft) {
   drawRect.setTopLeft(topLeft);
+  drawRect = drawRect.normalized();
 }
 
 void EllipseObject::setTopRight(QPointF topRight) {
   drawRect.setTopRight(topRight);
+  drawRect = drawRect.normalized();
 }
 
 void EllipseObject::setBottomLeft(QPointF bottomLeft) {
   drawRect.setBottomLeft(bottomLeft);
+  drawRect = drawRect.normalized();
 }
 
 void EllipseObject::setBottomRight(QPointF bottomRight) {
   drawRect.setBottomRight(bottomRight);
+  drawRect = drawRect.normalized();
 }
 
 QPointF EllipseObject::getCenter() {
-  return drawRect.center();
+  return boundingRect().center();
 }
 
 void EllipseObject::moveCenter(QPointF newCenter) {
   drawRect.moveCenter(newCenter);
+  drawRect = drawRect.normalized();
 }
 
-qreal EllipseObject::getRotation() {
-  return rotation;
-}
+void EllipseObject::setRotationValue(qreal rotation) {
+  QTransform transform;
+  QPointF center = drawRect.center();
+  QPointF oldC = mapToScene(drawRect.center());
+  
+  transform.translate(center.x(), center.y());
+  transform.rotate(rotation);
+  transform.translate(-center.x(), -center.y());
+  setTransform(transform);
+  drawRect = drawRect.normalized();
 
-void EllipseObject::setRotation(qreal newRotation) {
-  rotation = newRotation;
-  QTransform transf = QTransform();
-  QPointF center = boundingRect().center();
-  transf.translate(center.x(), center.y());
-  transf.rotate(rotation);
-  transf.translate(-center.x(), -center.y());
-  setTransform(transf);
+  QPointF newC = mapToScene(drawRect.center());
+  QPointF offset = oldC - newC;
+  moveBy(offset.x(), offset.y());
 }
 
 QRectF EllipseObject::boundingRect() const {
@@ -123,10 +132,9 @@ QRectF EllipseObject::boundingRect() const {
 
 QPainterPath EllipseObject::shape() const {
   QPainterPath path;
-  QRectF myRect = drawRect.adjusted(-10, -10, 10, 10);
-  path.addEllipse(myRect);
+  QRectF myRect = drawRect.adjusted(-1, -1, 1, 1);
+  path.addRect(myRect);
   return path;
-  
 }
 
 int EllipseObject::type() const {

@@ -402,9 +402,17 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   } else if (manipulateEllipse) {
     lastMousePos = event->scenePos();
     QPointF topLeft = selectedEllipse->mapToScene(selectedEllipse->topLeft());
-    QPointF topRight = selectedEllipse->mapToScene(selectedEllipse->topRight());
     QPointF bottomLeft = selectedEllipse->mapToScene(selectedEllipse->bottomLeft());
+    QPointF topRight = selectedEllipse->mapToScene(selectedEllipse->topRight());
     QPointF bottomRight = selectedEllipse->mapToScene(selectedEllipse->bottomRight());
+    QPointF left = selectedEllipse->mapToScene(QPointF(selectedEllipse->getLeft(),
+						       selectedEllipse->getCenter().y()));
+    QPointF right = selectedEllipse->mapToScene(QPointF(selectedEllipse->getRight(),
+							selectedEllipse->getCenter().y()));
+    QPointF top = selectedEllipse->mapToScene(QPointF(selectedEllipse->getCenter().x(),
+						      selectedEllipse->getTop()));
+    QPointF bottom = selectedEllipse->mapToScene(QPointF(selectedEllipse->getCenter().x(),
+							 selectedEllipse->getBottom()));
     qreal distTopLeft = sqrt(pow((lastMousePos.x() - topLeft.x()), 2) +
 			     pow((lastMousePos.y() - topLeft.y()), 2));
     qreal distTopRight = sqrt(pow((lastMousePos.x() - topRight.x()), 2) +
@@ -413,7 +421,16 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 				pow((lastMousePos.y() - bottomLeft.y()), 2));
     qreal distBottomRight = sqrt(pow((lastMousePos.x() - bottomRight.x()), 2) +
 				 pow((lastMousePos.y() - bottomRight.y()), 2));
-    qreal minimum = std::min({distTopLeft, distTopRight, distBottomLeft, distBottomRight});
+    qreal distLeft = sqrt(pow((lastMousePos.x() - left.x()), 2) +
+			  pow((lastMousePos.y() - left.y()), 2));
+    qreal distRight = sqrt(pow((lastMousePos.x() - right.x()), 2) +
+			   pow((lastMousePos.y() - right.y()), 2));
+    qreal distTop = sqrt(pow((lastMousePos.x() - top.x()), 2) +
+			 pow((lastMousePos.y() - top.y()), 2));
+    qreal distBottom = sqrt(pow((lastMousePos.x() - bottom.x()), 2) +
+			    pow((lastMousePos.y() - bottom.y()), 2));
+    qreal minimum = std::min({distTopLeft, distTopRight, distBottomLeft, distBottomRight,
+	  distLeft, distRight, distTop, distBottom});
     if (minimum == distTopLeft) {
       selectedEllipse->setTopLeft(selectedEllipse->mapFromScene(lastMousePos));
     } else if (minimum == distTopRight) {
@@ -422,6 +439,14 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
       selectedEllipse->setBottomLeft(selectedEllipse->mapFromScene(lastMousePos));
     } else if (minimum == distBottomRight) {
       selectedEllipse->setBottomRight(selectedEllipse->mapFromScene(lastMousePos));
+    } else if (minimum == distLeft) {
+      selectedEllipse->setLeft(selectedEllipse->mapFromScene(lastMousePos).x());
+    } else if (minimum == distRight) {
+      selectedEllipse->setRight(selectedEllipse->mapFromScene(lastMousePos).x());
+    } else if (minimum == distTop) {
+      selectedEllipse->setTop(selectedEllipse->mapFromScene(lastMousePos).y());
+    } else if (minimum == distBottom) {
+      selectedEllipse->setBottom(selectedEllipse->mapFromScene(lastMousePos).y());
     }
     emit relevantChange();
   } else if (moveEllipse) {
@@ -434,7 +459,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     qreal dX = lastMousePos.x() - center.x();
     qreal angle = atan2(dY, dX);
     angle = qRadiansToDegrees(angle);
-    selectedEllipse->setRotation(angle);
+    selectedEllipse->setRotationValue(angle);
     emit relevantChange();
   } else {
     if (selectedItems().size() > 1 && moveOn) {

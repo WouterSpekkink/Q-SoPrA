@@ -35,8 +35,7 @@ public:
   void setBottomRight(QPointF bottomRight);
   QPointF getCenter();
   void moveCenter(QPointF newCenter);
-  qreal getRotation();
-  void setRotation(qreal newRotation);
+  void setRotationValue(qreal rotation);
 
   QPainterPath shape() const override;
   
@@ -46,7 +45,6 @@ public:
 private:
   QRectF drawRect;
   QColor color;
-  qreal rotation;
 };
 
 #endif
