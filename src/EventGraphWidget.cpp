@@ -217,6 +217,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processLineContextMenu(const QString &)));
   connect(scene, SIGNAL(TextContextMenuAction(const QString &)),
 	  this, SLOT(processTextContextMenu(const QString &)));
+  connect(scene, SIGNAL(EllipseContextMenuAction(const QString &)),
+	  this, SLOT(processEllipseContextMenu(const QString &)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &)));
   connect(attributesTreeView->selectionModel(),
@@ -6242,7 +6244,6 @@ void EventGraphWidget::deleteText() {
   }
 }
 
-
 void EventGraphWidget::increaseTextSize(TextObject *text) {
   QFont font = text->font();
   int size = font.pointSize();
@@ -6273,6 +6274,39 @@ void EventGraphWidget::decreaseTextWidth(TextObject *text) {
   int width = text->textWidth();
   width = width - 10;
   text->setTextWidth(width);
+}
+
+void EventGraphWidget::processEllipseContextMenu(const QString &action) {
+  if (action == CHANGEELLIPSECOLOR) {
+    changeEllipseColor();
+  } else if (action == DELETEELLIPSE) {
+    deleteEllipse();
+  }
+}
+
+void EventGraphWidget::changeEllipseColor() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	ellipse->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void EventGraphWidget::deleteEllipse() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      scene->removeItem(ellipse);
+      ellipseVector.removeOne(ellipse);
+    }
+  }  
 }
 
 void EventGraphWidget::ignoreLinkage() {

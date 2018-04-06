@@ -58,6 +58,8 @@ extern QString DELETELINE;
 extern QString CHANGETEXT;
 extern QString CHANGETEXTCOLOR;
 extern QString DELETETEXT;
+extern QString CHANGEELLIPSECOLOR;
+extern QString DELETEELLIPSE;
 extern qreal Pi;
 
 #endif

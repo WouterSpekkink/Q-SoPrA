@@ -27,9 +27,16 @@ QRectF LineObject::boundingRect() const {
 }
 
 QPainterPath LineObject::shape() const {
-  QPainterPath path = QGraphicsLineItem::shape();
-  path.addPolygon(arrowHead);
-  return path;
+  static const qreal clickTolerance = 10;
+  QPointF vec = endPos - startPos;
+  vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
+  QPointF orthogonal(vec.y(), -vec.x());
+  QPainterPath result(startPos - vec + orthogonal);
+  result.lineTo(startPos - vec - orthogonal);
+  result.lineTo(endPos + vec - orthogonal);
+  result.lineTo(endPos + vec + orthogonal);
+  result.closeSubpath();
+  return result;
 }
 
 void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {

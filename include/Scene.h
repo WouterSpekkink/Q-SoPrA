@@ -40,6 +40,7 @@ signals:
   void NetworkNodeContextMenuAction(const QString&);
   void LineContextMenuAction(const QString&);
   void TextContextMenuAction(const QString&);
+  void EllipseContextMenuAction(const QString&);
   void increaseTextSize(TextObject *);
   void decreaseTextSize(TextObject *);
   void increaseTextWidth(TextObject *);

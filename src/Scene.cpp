@@ -492,6 +492,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
   NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
   LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
   TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(), QTransform()));
+  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(), QTransform()));
   if (nodeLabel) {
     incident = nodeLabel->getNode();
   }
@@ -651,6 +652,17 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action3);
     if (QAction *action = menu.exec(event->screenPos())) {
       emit TextContextMenuAction(action->text());
+    }
+  } else if (ellipse) {
+    clearSelection();
+    ellipse->setSelected(true);
+    QMenu menu;
+    QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
+    menu.addAction(action1);
+    QAction *action2 = new QAction(DELETEELLIPSE, this);
+    menu.addAction(action2);
+    if (QAction *action = menu.exec(event->screenPos())) {
+      emit EllipseContextMenuAction(action->text());
     }
   }
 }

@@ -177,6 +177,9 @@ private slots:
   void decreaseTextSize(TextObject *);
   void increaseTextWidth(TextObject *);
   void decreaseTextWidth(TextObject *);
+  void processEllipseContextMenu(const QString &action);
+  void changeEllipseColor();
+  void deleteEllipse();
   void findPastPaths(QSet<int> *mark, int currentIncident);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
   void findFuturePaths(QSet<int> *mark, int currentIncident);

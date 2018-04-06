@@ -56,4 +56,6 @@ QString DELETELINE = "Delete line";
 QString CHANGETEXT = "Edit text";
 QString CHANGETEXTCOLOR = "Change text color";
 QString DELETETEXT = "Delete text";
+QString CHANGEELLIPSECOLOR = "Change ellipse color";
+QString DELETEELLIPSE = "Delete ellipse";
 qreal Pi = 3.14;

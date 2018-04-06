@@ -4,6 +4,7 @@
 EllipseObject::EllipseObject() {
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
+  rotation = 0;
   setCursor(Qt::OpenHandCursor);
   setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -109,7 +110,12 @@ void EllipseObject::moveCenter(QPointF newCenter) {
   drawRect = drawRect.normalized();
 }
 
-void EllipseObject::setRotationValue(qreal rotation) {
+qreal EllipseObject::getRotationValue() {
+  return rotation;
+}
+
+void EllipseObject::setRotationValue(qreal newRotation) {
+  rotation = newRotation;
   QTransform transform;
   QPointF center = drawRect.center();
   QPointF oldC = mapToScene(drawRect.center());
