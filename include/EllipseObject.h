@@ -33,7 +33,12 @@ public:
   void setTopRight(QPointF topRight);
   void setBottomLeft(QPointF bottomLeft);
   void setBottomRight(QPointF bottomRight);
+  QPointF getCenter();
   void moveCenter(QPointF newCenter);
+  qreal getRotation();
+  void setRotation(qreal newRotation);
+
+  QPainterPath shape() const override;
   
   enum {Type = UserType + 13};
   int type() const;
@@ -41,6 +46,7 @@ public:
 private:
   QRectF drawRect;
   QColor color;
+  qreal rotation;
 };
 
 #endif

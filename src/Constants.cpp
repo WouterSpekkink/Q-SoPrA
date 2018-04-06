@@ -56,3 +56,4 @@ QString DELETELINE = "Delete line";
 QString CHANGETEXT = "Edit text";
 QString CHANGETEXTCOLOR = "Change text color";
 QString DELETETEXT = "Delete text";
+qreal Pi = 3.14;

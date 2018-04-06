@@ -7,6 +7,8 @@
 #include <math.h>
 #include <QtCore>
 
+
+
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOnEvent = false;
   resizeOnMacro = false;
@@ -14,6 +16,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   lineMoveOn = false;
   manipulateEllipse = false;
   moveEllipse = false;
+  rotateEllipse = false;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -99,6 +102,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 								       QTransform()));
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
 									    QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+								       QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -134,6 +139,11 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       occurrence->setSelected(true);
       selectedOccurrence = occurrence;
       moveOn = true;
+    } else if (ellipse) {
+      this->clearSelection();
+      ellipse->setSelected(true);
+      selectedEllipse = ellipse;
+      rotateEllipse = true;
     } else {
       this->clearSelection();
       selectedMacro = NULL;
@@ -206,7 +216,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
 										   QTransform()));
     LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(), QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+								       QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -252,6 +263,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   lineMoveOn = false;
   manipulateEllipse = false;
   moveEllipse = false;
+  rotateEllipse = false;
   QListIterator<QGraphicsItem*> it(this->items());
   while (it.hasNext()) {
     QGraphicsItem *current = it.next();
@@ -414,6 +426,15 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit relevantChange();
   } else if (moveEllipse) {
     selectedEllipse->moveCenter(selectedEllipse->mapFromScene(event->scenePos()));
+    emit relevantChange();
+  } else if (rotateEllipse) {
+    lastMousePos = event->scenePos();
+    QPointF center = selectedEllipse->mapToScene(selectedEllipse->getCenter());
+    qreal dY = lastMousePos.y() - center.y();
+    qreal dX = lastMousePos.x() - center.x();
+    qreal angle = atan2(dY, dX);
+    angle = qRadiansToDegrees(angle);
+    selectedEllipse->setRotation(angle);
     emit relevantChange();
   } else {
     if (selectedItems().size() > 1 && moveOn) {

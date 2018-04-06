@@ -61,7 +61,7 @@
 #include "../include/Scene.h"
 
 
-const qreal Pi = 3.14;
+
 
 Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, QString subCoder,
 	     QGraphicsItem *parent)

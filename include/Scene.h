@@ -58,6 +58,7 @@ protected:
   bool lineMoveOn;
   bool manipulateEllipse;
   bool moveEllipse;
+  bool rotateEllipse;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;

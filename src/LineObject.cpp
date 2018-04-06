@@ -4,8 +4,6 @@
 #include <QPainter>
 #include "../include/Scene.h"
 
-const qreal Pi = 3.14;
-
 LineObject::LineObject(QPointF subStartPos,
 		       QPointF subEndPos,
 		       QGraphicsItem *parent)
