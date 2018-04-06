@@ -31,14 +31,7 @@ QRectF DirectedEdge::boundingRect() const {
     .adjusted(-extra, -extra, extra, extra);
 }
 
-QPainterPath DirectedEdge::shape() const {
-  QPainterPath path = QGraphicsLineItem::shape();
-  path.addPolygon(arrowHead);
-  return path;
-}
-
 void DirectedEdge::calc() {
-  prepareGeometryChange();
   // Let us first calculate the distance between our two points.
   qreal xDiff = end->pos().x() - start->pos().x();
   qreal yDiff = end->pos().y() - start->pos().y();
@@ -81,6 +74,7 @@ void DirectedEdge::calc() {
     cos(angle + Pi / 3) * arrowSize);
   arrowP2 = oLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
   cos(angle + Pi - Pi / 3) * arrowSize);
+  prepareGeometryChange();
 }
 
 void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -89,6 +83,10 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   painter->setPen(myPen);
   painter->setBrush(color);
   calc();
+
+  QPainterPath path = QGraphicsLineItem::shape();
+  path.addPolygon(arrowHead);
+  painter->drawPath(path);
   
   arrowHead.clear();
   arrowHead << oLine.p2() << arrowP1 << arrowP2;

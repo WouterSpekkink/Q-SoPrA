@@ -32,15 +32,7 @@ QRectF UndirectedEdge::boundingRect() const {
     .adjusted(-extra, -extra, extra, extra);
 }
 
-QPainterPath UndirectedEdge::shape() const {
-  QPainterPath path = QGraphicsLineItem::shape();
-  path.addPolygon(arrowHead);
-  path.addPolygon(arrowHead2);
-  return path;
-}
-
 void UndirectedEdge::calc() {
-  prepareGeometryChange();
   // Let us first calculate the distance between our two points.
   qreal xDiff = end->pos().x() - start->pos().x();
   qreal yDiff = end->pos().y() - start->pos().y();
@@ -91,7 +83,8 @@ void UndirectedEdge::calc() {
   arrowP3 = sLine.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
 				 cos(angle2 + Pi / 3) * arrowSize);
   arrowP4 = sLine.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
-				 cos(angle2 + Pi - Pi / 3) * arrowSize);  
+				 cos(angle2 + Pi - Pi / 3) * arrowSize);
+  prepareGeometryChange();
 }
 
 void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {

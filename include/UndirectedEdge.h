@@ -14,7 +14,6 @@ public:
   ~UndirectedEdge() {};
 
   QRectF boundingRect() const override;
-  QPainterPath shape() const override;
   void setColor(const QColor &subColor);
   QColor getColor();
   NetworkNode *startItem() const; 

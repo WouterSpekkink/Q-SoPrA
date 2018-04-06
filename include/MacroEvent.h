@@ -45,8 +45,6 @@ public:
   MacroEvent* getMacroEvent();
   void setOrder(int submittedOrder);
   int getOrder();
-  enum {Type = UserType + 8};
-  int type() const;
   void insertAttribute(QString attribute);
   void removeAttribute(QString attribute);
   void setAttributes(QSet<QString> submittedAttributes);
@@ -60,6 +58,11 @@ public:
   QString getConstraint() const;
   bool isCopy();
   void setCopy(bool status);
+
+  QPainterPath shape() const override;
+  
+  enum {Type = UserType + 8};
+  int type() const;
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;

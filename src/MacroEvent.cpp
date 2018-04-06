@@ -37,6 +37,11 @@ QRectF MacroEvent::boundingRect() const {
   return QRectF(-26, -26, width + 12, 52);
 }
 
+QPainterPath MacroEvent::shape() const {
+  QPainterPath path;
+  path.addEllipse(boundingRect());
+  return path;
+}
 
 void MacroEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
   Q_UNUSED(option);
@@ -48,7 +53,7 @@ void MacroEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option
   if (isSelected()) {
     painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
     painter->setBrush(QBrush(Qt::transparent));
-    painter->drawEllipse(-24, -24, width + 8, 48);
+    painter->drawPath(shape());
     update();
   } else {
     selectionColor = QColor(Qt::black);

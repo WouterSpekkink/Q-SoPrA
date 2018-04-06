@@ -41,6 +41,8 @@ public:
   bool isCopy();
   void setCopy(bool status);
 
+  QPainterPath shape() const override;
+  
   enum {Type = UserType + 1};
   int type() const;
   
