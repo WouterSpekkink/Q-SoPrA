@@ -37,6 +37,10 @@ public:
   void moveCenter(QPointF newCenter);
   qreal getRotationValue();
   void setRotationValue(qreal newRotation);
+  int getPenWidth();
+  void setPenWidth(int width);
+  int getPenStyle();
+  void setPenStyle(int style);
 
   QPainterPath shape() const override;
   
@@ -47,6 +51,8 @@ private:
   QRectF drawRect;
   QColor color;
   qreal rotation;
+  int penWidth;
+  int penStyle;
 };
 
 #endif

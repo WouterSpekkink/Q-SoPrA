@@ -5,6 +5,8 @@ RectObject::RectObject() {
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
   rotation = 0;
+  penWidth = 1;
+  penStyle = 1;
   setCursor(Qt::OpenHandCursor);
   setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -12,7 +14,7 @@ RectObject::RectObject() {
 
 void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
-  painter->setPen(QPen(color, 1));
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
   painter->drawRect(drawRect);
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
@@ -143,6 +145,23 @@ QPainterPath RectObject::shape() const {
   path.addRect(myRect);
   return path;
 }
+
+int RectObject::getPenWidth() {
+  return penWidth;
+}
+
+void RectObject::setPenWidth(int width) {
+  penWidth = width;
+}
+
+int RectObject::getPenStyle() {
+  return penStyle;
+}
+
+void RectObject::setPenStyle(int style) {
+  penStyle = style;
+}
+
 
 int RectObject::type() const {
   return Type;

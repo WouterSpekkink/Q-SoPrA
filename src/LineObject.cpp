@@ -12,11 +12,13 @@ LineObject::LineObject(QPointF subStartPos,
   endPos = subEndPos;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   color = Qt::black;
-  setPen(QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  //setPen(QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   setCursor(Qt::OpenHandCursor);
   arrow1On = false;
-  arrow2On = false;  
+  arrow2On = false;
+  penWidth = 1;
+  penStyle = 1;
 }
 
 QRectF LineObject::boundingRect() const {
@@ -43,10 +45,7 @@ QPainterPath LineObject::shape() const {
 
 void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   calculate();
-  QPen myPen = pen();
-  myPen.setColor(color);
-  painter->setPen(myPen);
-  painter->setBrush(color);
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
 
   arrowHead.clear();
   arrowHead << tempLine1.p2() << arrowP1 << tempLine1.p2() << arrowP2;
@@ -59,7 +58,8 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   if (arrow1On) {
     painter->drawPolyline(arrowHead);
   }
-  painter->strokePath(myPath, QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  painter->strokePath(myPath, QPen(color, penWidth, Qt::PenStyle(penStyle),
+				   Qt::RoundCap, Qt::RoundJoin));
   if (arrow2On) {
     painter->drawPolyline(arrowHead2);
   }
@@ -137,6 +137,22 @@ bool LineObject::arrow2() {
 
 void LineObject::setArrow2(bool status) {
   arrow2On = status;
+}
+
+int LineObject::getPenWidth() {
+  return penWidth;
+}
+
+void LineObject::setPenWidth(int width) {
+  penWidth = width;
+}
+
+int LineObject::getPenStyle() {
+  return penStyle;
+}
+
+void LineObject::setPenStyle(int style) {
+  penStyle = style;
 }
 
 int LineObject::type() const {

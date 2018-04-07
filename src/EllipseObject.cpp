@@ -5,6 +5,8 @@ EllipseObject::EllipseObject() {
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
   rotation = 0;
+  penWidth = 1;
+  penStyle = 1;
   setCursor(Qt::OpenHandCursor);
   setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -12,7 +14,7 @@ EllipseObject::EllipseObject() {
 
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
-  painter->setPen(QPen(color, 1));
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
   painter->drawEllipse(drawRect);
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
@@ -141,6 +143,22 @@ QPainterPath EllipseObject::shape() const {
   QRectF myRect = drawRect.adjusted(-1, -1, 1, 1);
   path.addRect(myRect);
   return path;
+}
+
+int EllipseObject::getPenWidth() {
+  return penWidth;
+}
+
+void EllipseObject::setPenWidth(int width) {
+  penWidth = width;
+}
+
+int EllipseObject::getPenStyle() {
+  return penStyle;
+}
+
+void EllipseObject::setPenStyle(int style) {
+  penStyle = style;
 }
 
 int EllipseObject::type() const {

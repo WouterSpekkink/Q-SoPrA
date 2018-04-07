@@ -40,6 +40,12 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
 								 QTransform()));
   TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(wheelEvent->scenePos(),
 							    QTransform()));
+  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(wheelEvent->scenePos(),
+								     QTransform()));
+  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(wheelEvent->scenePos(),
+								  QTransform()));
+  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(wheelEvent->scenePos(),
+							       QTransform()));
   if (nodeLabel) {
     incident = nodeLabel->getNode();
   }
@@ -87,7 +93,88 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     }
     emit relevantChange();
     wheelEvent->accept();
-  } else {
+  } else if (ellipse) {
+    if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      if (wheelEvent->delta() > 0) {
+	if (ellipse->getPenWidth() < 20) {
+	  ellipse->setPenWidth(ellipse->getPenWidth() + 1);
+	}
+      } else if (wheelEvent->delta() < 0) {
+	if (ellipse->getPenWidth() > 1) {
+	  ellipse->setPenWidth(ellipse->getPenWidth() - 1);
+	}
+      }
+    } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+      if (wheelEvent->delta() > 0) {
+	if (ellipse->getPenStyle() < 5) {
+	  ellipse->setPenStyle(ellipse->getPenStyle() + 1);
+	} else {
+	  ellipse->setPenStyle(1);
+	}
+      } else if (wheelEvent->delta() < 0) {
+	if (ellipse->getPenStyle() > 1) {
+	  ellipse->setPenStyle(ellipse->getPenStyle() - 1);
+	} else {
+	  ellipse->setPenStyle(5);
+	}
+      }
+    }
+    wheelEvent->accept();
+  } else if (line) {
+    if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      if (wheelEvent->delta() > 0) {
+	if (line->getPenWidth() < 7) {
+	  line->setPenWidth(line->getPenWidth() + 1);
+	}
+      } else if (wheelEvent->delta() < 0) {
+	if (line->getPenWidth() > 1) {
+	  line->setPenWidth(line->getPenWidth() - 1);
+	}
+      }
+    } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+      if (wheelEvent->delta() > 0) {
+	if (line->getPenStyle() < 5) {
+	  line->setPenStyle(line->getPenStyle() + 1);
+	} else {
+	  line->setPenStyle(1);
+	}
+      } else if (wheelEvent->delta() < 0) {
+	if (line->getPenStyle() > 1) {
+	  line->setPenStyle(line->getPenStyle() - 1);
+	} else {
+	  line->setPenStyle(5);
+	}
+      }
+    }
+    wheelEvent->accept();
+  } else if (rect) {
+    if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      if (wheelEvent->delta() > 0) {
+	if (rect->getPenWidth() < 20) {
+	  rect->setPenWidth(rect->getPenWidth() + 1);
+	}
+      } else if (wheelEvent->delta() < 0) {
+	if (rect->getPenWidth() > 1) {
+	  rect->setPenWidth(rect->getPenWidth() - 1);
+	}
+      }
+    } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+      if (wheelEvent->delta() > 0) {
+	if (rect->getPenStyle() < 5) {
+	  rect->setPenStyle(rect->getPenStyle() + 1);
+	} else {
+	  rect->setPenStyle(1);
+	}
+      } else if (wheelEvent->delta() < 0) {
+	if (rect->getPenStyle() > 1) {
+	  rect->setPenStyle(rect->getPenStyle() - 1);
+	} else {
+	  rect->setPenStyle(5);
+	}
+      }
+    }
+    wheelEvent->accept();
+   } else {
     wheelEvent->ignore();
   }
 }

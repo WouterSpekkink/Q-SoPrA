@@ -3056,9 +3056,10 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_lines "
-		   "(plot, startx, starty, endx, endy, arone, artwo, red, green, blue, alpha) "
+		   "(plot, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
+		   "red, green, blue, alpha) "
 		   "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
-		   ":red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
     QVectorIterator<LineObject*> it8(lineVector);
     while (it8.hasNext()) {
       LineObject *currentLine = it8.next();
@@ -3075,6 +3076,8 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentLine->arrow2()) {
 	artwo = 1;
       }
+      int penwidth = currentLine->getPenWidth();
+      int penstyle = currentLine->getPenStyle();
       int red = color.red();
       int green = color.green();
       int blue = color.blue();
@@ -3086,6 +3089,8 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":endy", endy);
       query->bindValue(":arone", arone);
       query->bindValue(":artwo", artwo);
+      query->bindValue(":penwidth", penwidth);
+      query->bindValue(":penstyle", penstyle);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3148,10 +3153,10 @@ void EventGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_eg_plots_ellipses "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "red, green, blue, alpha) "
+		   "penwidth, penstyle, red, green, blue, alpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
     QVectorIterator<EllipseObject*> it10(ellipseVector);
     while (it10.hasNext()) {
       EllipseObject *ellipse = it10.next();
@@ -3166,6 +3171,8 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal bottomrightx = ellipse->bottomRight().x();
       qreal bottomrighty = ellipse->bottomRight().y();
       qreal rotation = ellipse->getRotationValue();
+      int penwidth = ellipse->getPenWidth();
+      int penstyle = ellipse->getPenStyle();
       QColor color = ellipse->getColor();
       int red = color.red();
       int green = color.green();
@@ -3183,6 +3190,8 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":bottomrightx", bottomrightx);
       query->bindValue(":bottomrighty", bottomrighty);
       query->bindValue(":rotation", rotation);
+      query->bindValue(":penwidth", penwidth);
+      query->bindValue(":penstyle", penstyle);      
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3203,10 +3212,10 @@ void EventGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_eg_plots_rects "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "red, green, blue, alpha) "
+		   "penwidth, penstyle, red, green, blue, alpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
     QVectorIterator<RectObject*> it11(rectVector);
     while (it11.hasNext()) {
       RectObject *rect = it11.next();
@@ -3221,6 +3230,8 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal bottomrightx = rect->bottomRight().x();
       qreal bottomrighty = rect->bottomRight().y();
       qreal rotation = rect->getRotationValue();
+      int penwidth = rect->getPenWidth();
+      int penstyle = rect->getPenStyle();
       QColor color = rect->getColor();
       int red = color.red();
       int green = color.green();
@@ -3238,6 +3249,8 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":bottomrightx", bottomrightx);
       query->bindValue(":bottomrighty", bottomrighty);
       query->bindValue(":rotation", rotation);
+      query->bindValue(":penwidth", penwidth);
+      query->bindValue(":penstyle", penstyle);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3680,7 +3693,8 @@ void EventGraphWidget::seePlots() {
 	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
     }
-    query->prepare("SELECT startx, starty, endx, endy, arone, artwo, red, green, blue, alpha "
+    query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
+		   "red, green, blue, alpha "
 		   "FROM saved_eg_plots_lines "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -3692,10 +3706,12 @@ void EventGraphWidget::seePlots() {
       qreal endy = query->value(3).toReal();
       int arone = query->value(4).toInt();
       int artwo = query->value(5).toInt();
-      int red = query->value(6).toInt();
-      int green = query->value(7).toInt();
-      int blue = query->value(8).toInt();
-      int alpha = query->value(9).toInt();
+      int penwidth = query->value(6).toInt();
+      int penstyle = query->value(7).toInt();
+      int red = query->value(8).toInt();
+      int green = query->value(9).toInt();
+      int blue = query->value(10).toInt();
+      int alpha = query->value(11).toInt();
       QColor color = QColor(red, green, blue, alpha);
       LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
       lineVector.push_back(newLine);
@@ -3707,6 +3723,8 @@ void EventGraphWidget::seePlots() {
       if (artwo == 1) {
 	newLine->setArrow2(true);
       }
+      newLine->setPenWidth(penwidth);
+      newLine->setPenStyle(penstyle);
       scene->addItem(newLine);
     }
     query->prepare("SELECT desc, xpos, ypos, width, size, rotation, red, green, blue, alpha "
@@ -3740,7 +3758,7 @@ void EventGraphWidget::seePlots() {
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "red, green, blue, alpha "
+		   "penwidth, penstyle, red, green, blue, alpha "
 		   "FROM saved_eg_plots_ellipses "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -3757,10 +3775,12 @@ void EventGraphWidget::seePlots() {
       qreal bottomrightx = query->value(8).toReal();
       qreal bottomrighty = query->value(9).toReal();
       qreal rotation = query->value(10).toReal();
-      int red = query->value(11).toInt();
-      int green = query->value(12).toInt();
-      int blue = query->value(13).toInt();
-      int alpha = query->value(14).toInt();
+      int penwidth = query->value(11).toInt();
+      int penstyle = query->value(12).toInt();
+      int red = query->value(13).toInt();
+      int green = query->value(14).toInt();
+      int blue = query->value(15).toInt();
+      int alpha = query->value(16).toInt();
       QColor color = QColor(red, green, blue, alpha);
       EllipseObject *newEllipse = new EllipseObject();
       ellipseVector.push_back(newEllipse);
@@ -3772,11 +3792,13 @@ void EventGraphWidget::seePlots() {
       newEllipse->moveCenter(newEllipse->mapToScene(QPointF(xpos, ypos)));
       newEllipse->setRotationValue(rotation);
       newEllipse->setColor(color);
+      newEllipse->setPenWidth(penwidth);
+      newEllipse->setPenStyle(penstyle);
       newEllipse->setZValue(3);
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "red, green, blue, alpha "
+		   "penwidth, penstyle, red, green, blue, alpha "
 		   "FROM saved_eg_plots_rects "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -3793,10 +3815,12 @@ void EventGraphWidget::seePlots() {
       qreal bottomrightx = query->value(8).toReal();
       qreal bottomrighty = query->value(9).toReal();
       qreal rotation = query->value(10).toReal();
-      int red = query->value(11).toInt();
-      int green = query->value(12).toInt();
-      int blue = query->value(13).toInt();
-      int alpha = query->value(14).toInt();
+      int penwidth = query->value(11).toInt();
+      int penstyle = query->value(12).toInt();
+      int red = query->value(13).toInt();
+      int green = query->value(14).toInt();
+      int blue = query->value(15).toInt();
+      int alpha = query->value(16).toInt();
       QColor color = QColor(red, green, blue, alpha);
       RectObject *newRect = new RectObject();
       rectVector.push_back(newRect);
@@ -3808,6 +3832,8 @@ void EventGraphWidget::seePlots() {
       newRect->moveCenter(newRect->mapToScene(QPointF(xpos, ypos)));
       newRect->setRotationValue(rotation);
       newRect->setColor(color);
+      newRect->setPenWidth(penwidth);
+      newRect->setPenStyle(penstyle);
       newRect->setZValue(3);
     }
     distance = 70;

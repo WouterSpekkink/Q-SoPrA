@@ -25,6 +25,10 @@ public:
   void setArrow1(bool status);
   bool arrow2();
   void setArrow2(bool status);  
+  int getPenWidth();
+  void setPenWidth(int width);
+  int getPenStyle();
+  void setPenStyle(int style);
   
   enum {Type = UserType + 11};
   int type() const;
@@ -47,6 +51,8 @@ private:
   QPointF arrowP4;
   bool arrow1On;
   bool arrow2On;
+  int penWidth;
+  int penStyle;
   
 };
 
