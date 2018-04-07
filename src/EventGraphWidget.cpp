@@ -2651,7 +2651,11 @@ void EventGraphWidget::saveCurrentPlot() {
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
-
+      // saved_eg_plots_ellipses
+      query->prepare("DELETE FROM saved_eg_plots_ellipses "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
       query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
@@ -3111,10 +3115,65 @@ void EventGraphWidget::saveCurrentPlot() {
       qApp->processEvents();
     }
     saveProgress->close();
-    plotLabel->setText(name);
-    changeLabel->setText("");
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, ellipseVector.size());
+    saveProgress->setWindowTitle("Saving ellipses");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_ellipses "
+		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
+		   "red, green, blue, alpha) "
+		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
+		   ":red, :green, :blue, :alpha)");
+    QVectorIterator<EllipseObject*> it10(ellipseVector);
+    while (it10.hasNext()) {
+      EllipseObject *ellipse = it10.next();
+      qreal xpos = ellipse->mapToScene(ellipse->getCenter()).x();
+      qreal ypos = ellipse->mapToScene(ellipse->getCenter()).y();
+      qreal topleftx = ellipse->topLeft().x();
+      qreal toplefty = ellipse->topLeft().y();
+      qreal toprightx = ellipse->topRight().x();
+      qreal toprighty = ellipse->topRight().y();
+      qreal bottomleftx = ellipse->bottomLeft().x();
+      qreal bottomlefty = ellipse->bottomLeft().y();
+      qreal bottomrightx = ellipse->bottomRight().x();
+      qreal bottomrighty = ellipse->bottomRight().y();
+      qreal rotation = ellipse->getRotationValue();
+      QColor color = ellipse->getColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      query->bindValue(":plot", name);
+      query->bindValue(":xpos", xpos);
+      query->bindValue(":ypos", ypos);
+      query->bindValue(":topleftx", topleftx);
+      query->bindValue(":toplefty", toplefty);
+      query->bindValue(":toprightx", toprightx);
+      query->bindValue(":toprighty", toprighty);
+      query->bindValue(":bottomleftx", bottomleftx);
+      query->bindValue(":bottomlefty", bottomlefty);
+      query->bindValue(":bottomrightx", bottomrightx);
+      query->bindValue(":bottomrighty", bottomrighty);
+      query->bindValue(":rotation", rotation);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
     delete saveProgress;
     delete query;
+    plotLabel->setText(name);
+    changeLabel->setText("");
     QSqlDatabase::database().commit();
   }
   delete saveDialog;
@@ -3591,6 +3650,42 @@ void EventGraphWidget::seePlots() {
       newText->setPos(xpos, ypos);
       scene->addItem(newText);
     }
+    query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
+		   "red, green, blue, alpha "
+		   "FROM saved_eg_plots_ellipses "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      qreal xpos = query->value(0).toReal();
+      qreal ypos = query->value(1).toReal();
+      qreal topleftx = query->value(2).toReal();
+      qreal toplefty = query->value(3).toReal();
+      qreal toprightx = query->value(4).toReal();
+      qreal toprighty = query->value(5).toReal();
+      qreal bottomleftx = query->value(6).toReal();
+      qreal bottomlefty = query->value(7).toReal();
+      qreal bottomrightx = query->value(8).toReal();
+      qreal bottomrighty = query->value(9).toReal();
+      qreal rotation = query->value(10).toReal();
+      int red = query->value(11).toInt();
+      int green = query->value(12).toInt();
+      int blue = query->value(13).toInt();
+      int alpha = query->value(14).toInt();
+      QColor color = QColor(red, green, blue, alpha);
+      EllipseObject *newEllipse = new EllipseObject();
+      ellipseVector.push_back(newEllipse);
+      scene->addItem(newEllipse);
+      newEllipse->setTopLeft(QPointF(topleftx, toplefty));
+      newEllipse->setTopRight(QPointF(toprightx, toprighty));
+      newEllipse->setBottomLeft(QPointF(bottomleftx, bottomlefty));
+      newEllipse->setBottomRight(QPointF(bottomrightx, bottomrighty));
+      newEllipse->moveCenter(newEllipse->mapToScene(QPointF(xpos, ypos)));
+      newEllipse->setRotationValue(rotation);
+      newEllipse->setColor(color);
+
+    }
     distance = 70;
     plotLabel->setText(plot);
     changeLabel->setText("");
@@ -3664,6 +3759,11 @@ void EventGraphWidget::seePlots() {
     query->exec();
     // saved_eg_plots_texts
     query->prepare("DELETE FROM saved_eg_plots_texts "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_ellipses
+    query->prepare("DELETE FROM saved_eg_plots_ellipses "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();

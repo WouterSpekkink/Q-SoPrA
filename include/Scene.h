@@ -57,6 +57,7 @@ protected:
   bool resizeOnMacro;
   bool moveOn;
   bool lineMoveOn;
+  bool moveLineObject;
   bool manipulateEllipse;
   bool moveEllipse;
   bool rotateEllipse;

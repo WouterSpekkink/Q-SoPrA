@@ -14,6 +14,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOnMacro = false;
   moveOn = false;
   lineMoveOn = false;
+  moveLineObject = false;
   manipulateEllipse = false;
   moveEllipse = false;
   rotateEllipse = false;
@@ -157,6 +158,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
 								    QTransform()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
+							      QTransform()));
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
 								       QTransform()));
     if (nodeLabel) {
@@ -199,6 +202,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	  selectedEvent = NULL;
 	}
       }
+    } else if (line) {
+      selectedLine = line;
+      moveLineObject = true;
     } else if (ellipse) {
       selectedEllipse = ellipse;
       moveEllipse = true;
@@ -261,6 +267,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   resizeOnMacro = false;
   moveOn = false;
   lineMoveOn = false;
+  moveLineObject = false;
   manipulateEllipse = false;
   moveEllipse = false;
   rotateEllipse = false;
@@ -399,6 +406,9 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
       }
     }
     emit relevantChange();
+  } else if (moveLineObject) {
+    // To Do
+    
   } else if (manipulateEllipse) {
     lastMousePos = event->scenePos();
     QPointF topLeft = selectedEllipse->mapToScene(selectedEllipse->topLeft());
