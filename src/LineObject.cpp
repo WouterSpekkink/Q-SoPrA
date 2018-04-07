@@ -1,0 +1,162 @@
+#include "../include/LineObject.h"
+#include <math.h>
+#include <QPen>
+#include <QPainter>
+#include "../include/Scene.h"
+
+LineObject::LineObject(QPointF subStartPos,
+		       QPointF subEndPos,
+		       QGraphicsItem *parent)
+  : QGraphicsLineItem(parent) {
+  startPos = subStartPos;
+  endPos = subEndPos;
+  setFlag(QGraphicsItem::ItemIsSelectable, true);
+  color = Qt::black;
+  //setPen(QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
+  setCursor(Qt::OpenHandCursor);
+  arrow1On = false;
+  arrow2On = false;
+  penWidth = 1;
+  penStyle = 1;
+}
+
+QRectF LineObject::boundingRect() const {
+  qreal extra = (pen().width() + 20) / 2.0;
+  
+  return QRectF(startPos, QSizeF(endPos.x() - startPos.x(),
+				 endPos.y() - startPos.y()))
+    .normalized()
+    .adjusted(-extra, -extra, extra, extra);
+}
+
+QPainterPath LineObject::shape() const {
+  static const qreal clickTolerance = 10;
+  QPointF vec = endPos - startPos;
+  vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
+  QPointF orthogonal(vec.y(), -vec.x());
+  QPainterPath result(startPos - vec + orthogonal);
+  result.lineTo(startPos - vec - orthogonal);
+  result.lineTo(endPos + vec - orthogonal);
+  result.lineTo(endPos + vec + orthogonal);
+  result.closeSubpath();
+  return result;
+}
+
+void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+  calculate();
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
+
+  arrowHead.clear();
+  arrowHead << tempLine1.p2() << arrowP1 << tempLine1.p2() << arrowP2;
+  arrowHead2.clear();
+  arrowHead2 << tempLine2.p2() << arrowP3 << tempLine2.p2() << arrowP4;
+    
+  QPainterPath myPath;
+  myPath.moveTo(tempLine2.p2());
+  myPath.lineTo(tempLine1.p2());
+  if (arrow1On) {
+    painter->drawPolyline(arrowHead);
+  }
+  painter->strokePath(myPath, QPen(color, penWidth, Qt::PenStyle(penStyle),
+				   Qt::RoundCap, Qt::RoundJoin));
+  if (arrow2On) {
+    painter->drawPolyline(arrowHead2);
+  }
+}
+
+void LineObject::calculate() {
+  prepareGeometryChange();
+  qreal arrowSize = 20;
+  QLineF newLine = QLineF(startPos, endPos);
+  setLine(newLine);
+  tempLine1 = QLineF(startPos, endPos);
+  tempLine2 = QLineF(endPos, startPos);
+  double angle = ::acos(tempLine1.dx() / tempLine1.length());
+  if (tempLine1.dy() >= 0)
+    angle = (Pi * 2) - angle;
+  double angle2 = ::acos(tempLine2.dx() / tempLine2.length());
+  if (tempLine2.dy() >= 0)
+    angle2 = (Pi * 2) - angle2;
+  arrowP1 = tempLine1.p2() - QPointF(sin(angle + Pi / 3) * arrowSize,
+				     cos(angle + Pi / 3) * arrowSize);
+  arrowP2 = tempLine1.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
+				     cos(angle + Pi - Pi / 3) * arrowSize);
+
+  
+  arrowP3 = tempLine2.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
+				     cos(angle2 + Pi / 3) * arrowSize);
+  arrowP4 = tempLine2.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
+				     cos(angle2 + Pi - Pi / 3) * arrowSize);  
+  prepareGeometryChange();
+}
+
+void LineObject::setColor(const QColor &subColor) {
+  color = subColor;
+}
+
+QColor LineObject::getColor() {
+  return color;
+}
+
+QPointF LineObject::getStartPos() {
+  return startPos;
+}
+
+QPointF LineObject::getEndPos() {
+  return endPos;
+}
+
+void LineObject::setStartPos(QPointF subPoint) {
+  startPos = subPoint;
+}
+
+void LineObject::setEndPos(QPointF subPoint) {
+  endPos = subPoint;
+}
+
+void LineObject::setStartPos(qreal x, qreal y) {
+  startPos = QPointF(x, y);
+}
+
+void LineObject::setEndPos(qreal x, qreal y) {
+  endPos = QPointF(x, y);
+}
+
+bool LineObject::arrow1() {
+  return arrow1On;
+}
+
+void LineObject::setArrow1(bool status) {
+  arrow1On = status;
+}
+
+bool LineObject::arrow2() {
+  return arrow2On;
+}
+
+void LineObject::setArrow2(bool status) {
+  arrow2On = status;
+}
+
+int LineObject::getPenWidth() {
+  return penWidth;
+}
+
+void LineObject::setPenWidth(int width) {
+  penWidth = width;
+}
+
+int LineObject::getPenStyle() {
+  return penStyle;
+}
+
+void LineObject::setPenStyle(int style) {
+  penStyle = style;
+}
+
+int LineObject::type() const {
+  return Type;
+}
+
+

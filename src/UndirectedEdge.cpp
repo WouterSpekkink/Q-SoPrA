@@ -32,15 +32,7 @@ QRectF UndirectedEdge::boundingRect() const {
     .adjusted(-extra, -extra, extra, extra);
 }
 
-QPainterPath UndirectedEdge::shape() const {
-  QPainterPath path = QGraphicsLineItem::shape();
-  path.addPolygon(arrowHead);
-  path.addPolygon(arrowHead2);
-  return path;
-}
-
 void UndirectedEdge::calc() {
-  prepareGeometryChange();
   // Let us first calculate the distance between our two points.
   qreal xDiff = end->pos().x() - start->pos().x();
   qreal yDiff = end->pos().y() - start->pos().y();
@@ -74,7 +66,6 @@ void UndirectedEdge::calc() {
   oLine.setLength(oLine.length() - 18);
   sLine = QLineF(midPoint, tempStart);
   sLine.setLength(sLine.length() - 18);
-
   
   double angle = ::acos(oLine.dx() / oLine.length());
   if (oLine.dy() >= 0)
@@ -82,7 +73,6 @@ void UndirectedEdge::calc() {
   double angle2 = ::acos(sLine.dx() / sLine.length());
   if (sLine.dy() >= 0)
     angle2 = (Pi * 2) - angle2;
-
   
   qreal arrowSize = 10;
   
@@ -93,7 +83,8 @@ void UndirectedEdge::calc() {
   arrowP3 = sLine.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
 				 cos(angle2 + Pi / 3) * arrowSize);
   arrowP4 = sLine.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
-				 cos(angle2 + Pi - Pi / 3) * arrowSize);  
+				 cos(angle2 + Pi - Pi / 3) * arrowSize);
+  prepareGeometryChange();
 }
 
 void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {

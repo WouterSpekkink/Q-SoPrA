@@ -5,6 +5,7 @@
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/OccurrenceLabel.h"
+#include "../include/EventGraphWidget.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -23,8 +24,35 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     this->setDragMode(QGraphicsView::NoDrag);
     QGraphicsView::mousePressEvent(event);
   } else if (event->modifiers() & Qt::ControlModifier) {
-    this->setDragMode(QGraphicsView::NoDrag);
-    QGraphicsView::mousePressEvent(event);
+    if (event->button() == Qt::RightButton) {
+      /* 
+	 We only want to add the context menu below for the event graph widget.
+	 I could of course expand the conditionals here to also add context menu actions
+	 to other widgets.
+      */
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(parent());
+      if (egw && egw->getEventItems().size() > 0) {
+	QMenu menu;
+	QAction *action1 = new QAction(ADDLINE, this);
+	QAction *action2 = new QAction(ADDSINGLEARROW, this);
+	QAction *action3 = new QAction(ADDDOUBLEARROW, this);
+	QAction *action4 = new QAction(ADDTEXT, this);
+ 	QAction *action5 = new QAction(ADDELLIPSE, this);
+	QAction *action6 = new QAction(ADDRECT, this);
+	menu.addAction(action1);
+	menu.addAction(action2);
+	menu.addAction(action3);
+	menu.addAction(action4);
+	menu.addAction(action5);
+	menu.addAction(action6);
+	if (QAction *action = menu.exec(event->globalPos())) {
+	  emit EventGraphContextMenuAction(action->text());
+	}
+      }
+    } else {
+      this->setDragMode(QGraphicsView::NoDrag);
+      QGraphicsView::mousePressEvent(event);
+    }
   } else if (event->button() == Qt::RightButton) {
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
@@ -34,6 +62,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
+    TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -43,7 +75,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (occurrenceLabel) {
       occurrence = occurrenceLabel->getOccurrence();
     }
-    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel) {
+    if (!incident && !macro && !arrow && !networkNode && !occurrence &&
+	!occurrenceLabel && !line && !text && !ellipse && !rect) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -60,6 +93,14 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       occurrence->setSelected(true);
     } else if (networkNode) {
       networkNode->setSelected(true);
+    } else if (line) {
+      line->setSelected(true);
+    } else if (text) {
+      text->setSelected(true);
+    } else if (ellipse) {
+      ellipse->setSelected(true);
+    } else if (rect) {
+      rect->setSelected(true);
     }
   } else {
     pan = false;
@@ -114,12 +155,26 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event) {
 
 void GraphicsView::wheelEvent(QWheelEvent* event) {
   if (event->modifiers() & Qt::ControlModifier) {
-    this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    double scaleFactor = 1.15;
-    if (event->delta() > 0) {
-      this->scale(scaleFactor, scaleFactor);
-    } else {
-      this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+    event->ignore();
+    QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
+    wheelEvent.setWidget(viewport());
+    wheelEvent.setScenePos(mapToScene(event->pos()));
+    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setButtons(event->buttons());
+    wheelEvent.setModifiers(event->modifiers());
+    wheelEvent.setDelta(event->delta());
+    wheelEvent.setOrientation(event->orientation());
+    wheelEvent.setAccepted(false);
+    qApp->sendEvent(this->scene(), &wheelEvent);
+    event->setAccepted(wheelEvent.isAccepted());
+    if (!(event->isAccepted())) {
+      this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+      double scaleFactor = 1.15;
+      if (event->delta() > 0) {
+	this->scale(scaleFactor, scaleFactor);
+      } else {
+	this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+      }
     }
   } else if (event->modifiers() & Qt::ShiftModifier) {
     event->ignore();

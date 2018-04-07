@@ -41,6 +41,10 @@
 #include "ExportTransitionMatrixDialog.h"
 #include "EventNodeSettingsDialog.h"
 #include "SimpleAttributeSelectionDialog.h"
+#include "LineObject.h"
+#include "TextObject.h"
+#include "EllipseObject.h"
+#include "RectObject.h"
 
 class AttributesWidget;
 
@@ -147,7 +151,6 @@ private slots:
   void exportTransitionMatrix();
   void findAncestors(QColor ancestor, QGraphicsItem *origin);
   void findDescendants(QColor descendant, QGraphicsItem *origin);
-  
   void settleEvent();
   void makeParallel();
   void normalizeDistance();
@@ -160,6 +163,30 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
+  void processEventGraphContextMenu(const QString &action);
+  void addLineObject(bool arrow1, bool arrow2);
+  void addTextObject();
+  void addEllipseObject();
+  void addRectObject();
+  void processLineContextMenu(const QString &action);
+  void changeLineColor();
+  void toggleArrow1();
+  void toggleArrow2();
+  void deleteLine();
+  void processTextContextMenu(const QString &action);
+  void changeText();
+  void changeTextColor();
+  void deleteText();
+  void increaseTextSize(TextObject *);
+  void decreaseTextSize(TextObject *);
+  void increaseTextWidth(TextObject *);
+  void decreaseTextWidth(TextObject *);
+  void processEllipseContextMenu(const QString &action);
+  void changeEllipseColor();
+  void deleteEllipse();
+  void processRectContextMenu(const QString &action);
+  void changeRectColor();
+  void deleteRect();
   void findPastPaths(QSet<int> *mark, int currentIncident);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
   void findFuturePaths(QSet<int> *mark, int currentIncident);
@@ -167,7 +194,7 @@ private slots:
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void finalBusiness();
-
+  
 signals:
   void seeHierarchy(MacroEvent *);
   
@@ -186,6 +213,10 @@ private:
   QVector<Arrow*> compareVector;
   QVector<NodeLabel*> nodeLabelVector;
   QVector<MacroLabel*> macroLabelVector;
+  QVector<LineObject*> lineVector;
+  QVector<TextObject*> textVector;
+  QVector<EllipseObject*> ellipseVector;
+  QVector<RectObject*> rectVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
   

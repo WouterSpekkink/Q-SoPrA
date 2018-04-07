@@ -12,10 +12,14 @@
 
 
 class GraphicsView : public QGraphicsView {
+  Q_OBJECT
   
 public:
   GraphicsView(QGraphicsScene *scene);
   qreal panSpeed;
+
+signals:
+  void EventGraphContextMenuAction(const QString&);
   
 protected:
   void resizeEvent(QResizeEvent *) override;
@@ -23,7 +27,7 @@ protected:
   void mouseMoveEvent(QMouseEvent *event);
   void mouseReleaseEvent(QMouseEvent *event);
   void wheelEvent(QWheelEvent *event);
-
+    
 private:
   bool pan;
   qreal scaleFact;

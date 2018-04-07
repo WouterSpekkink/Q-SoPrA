@@ -32,6 +32,11 @@ QRectF EventItem::boundingRect() const {
   return QRectF(-26, -26, width + 12, 52);
 }
 
+QPainterPath EventItem::shape() const {
+  QPainterPath path;
+  path.addEllipse(boundingRect());
+  return path;
+}
 
 void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
   Q_UNUSED(option);
@@ -43,7 +48,7 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   if (isSelected()) {
     painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
     painter->setBrush(QBrush(Qt::transparent));
-    painter->drawEllipse(-24, -24, width + 8, 48);
+    painter->drawPath(shape());
     update();
   } else {
     selectionColor = QColor(Qt::black);

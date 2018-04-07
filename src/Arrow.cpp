@@ -60,9 +60,6 @@
 #include <QPainter>
 #include "../include/Scene.h"
 
-
-const qreal Pi = 3.14;
-
 Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, QString subCoder,
 	     QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
@@ -87,9 +84,18 @@ QRectF Arrow::boundingRect() const {
 }
 
 QPainterPath Arrow::shape() const {
-  QPainterPath path = QGraphicsLineItem::shape();
-  path.addPolygon(arrowHead);
-  return path;
+  static const qreal clickTolerance = 8;
+  QPointF vec = end->pos() - start->pos();
+  vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
+  QPointF orthogonal(vec.y(), -vec.x());
+
+  QPainterPath result(start->pos() - vec + orthogonal);
+  result.lineTo(start->pos() - vec - orthogonal);
+  result.lineTo(end->pos() + vec - orthogonal);
+  result.lineTo(end->pos() + vec + orthogonal);
+  result.closeSubpath();
+
+  return result;
 }
 
 void Arrow::updatePosition() {
@@ -110,12 +116,9 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   painter->drawPolygon(arrowHead);
   painter->drawLine(line());
   if (isSelected()) {
-    painter->setPen(QPen(color, 1, Qt::DashLine));
-    QLineF myLine = line();
-    myLine.translate(0, 4.0);
-    painter->drawLine(myLine);
-    myLine.translate(0,-8.0);
-    painter->drawLine(myLine);
+    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+    painter->setBrush(Qt::transparent);
+    painter->drawPath(shape());
   }
 }
 
