@@ -21,6 +21,10 @@ public:
   void setEndPos(QPointF subPoint);
   void setStartPos(qreal x, qreal y);
   void setEndPos(qreal x, qreal y);
+  bool arrow1();
+  void setArrow1(bool status);
+  bool arrow2();
+  void setArrow2(bool status);  
   
   enum {Type = UserType + 11};
   int type() const;
@@ -41,6 +45,9 @@ private:
   QPointF arrowP2;
   QPointF arrowP3;
   QPointF arrowP4;
+  bool arrow1On;
+  bool arrow2On;
+  
 };
 
 #endif

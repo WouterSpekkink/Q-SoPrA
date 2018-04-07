@@ -10,10 +10,14 @@
 #include <QGraphicsView>
 #include <QMenu>
 #include "../include/NetworkNode.h"
+#include "../include/NodeLabel.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/LineObject.h"
 #include "../include/TextObject.h"
 #include "../include/EllipseObject.h"
+#include "../include/MacroLabel.h"
+#include "../include/OccurrenceLabel.h"
+#include "../include/RectObject.h"
 
 class Scene : public QGraphicsScene {
   Q_OBJECT
@@ -41,6 +45,7 @@ signals:
   void LineContextMenuAction(const QString&);
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);
+  void RectContextMenuAction(const QString&);
   void increaseTextSize(TextObject *);
   void decreaseTextSize(TextObject *);
   void increaseTextWidth(TextObject *);
@@ -60,7 +65,11 @@ protected:
   bool moveLineObject;
   bool manipulateEllipse;
   bool moveEllipse;
+  bool manipulateRect;
   bool rotateEllipse;
+  bool moveRect;
+  bool rotateRect;
+  bool rotateText;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;
@@ -68,6 +77,8 @@ protected:
   OccurrenceItem *selectedOccurrence;
   LineObject *selectedLine;
   EllipseObject *selectedEllipse;
+  RectObject *selectedRect;
+  TextObject *selectedText;
 };
 
 #endif 

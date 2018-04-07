@@ -44,6 +44,7 @@
 #include "LineObject.h"
 #include "TextObject.h"
 #include "EllipseObject.h"
+#include "RectObject.h"
 
 class AttributesWidget;
 
@@ -163,11 +164,14 @@ private slots:
   void ignoreLinkage();
   void removeNormalLinkage();
   void processEventGraphContextMenu(const QString &action);
-  void addLineObject();
+  void addLineObject(bool arrow1, bool arrow2);
   void addTextObject();
   void addEllipseObject();
+  void addRectObject();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
+  void toggleArrow1();
+  void toggleArrow2();
   void deleteLine();
   void processTextContextMenu(const QString &action);
   void changeText();
@@ -180,6 +184,9 @@ private slots:
   void processEllipseContextMenu(const QString &action);
   void changeEllipseColor();
   void deleteEllipse();
+  void processRectContextMenu(const QString &action);
+  void changeRectColor();
+  void deleteRect();
   void findPastPaths(QSet<int> *mark, int currentIncident);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems);
   void findFuturePaths(QSet<int> *mark, int currentIncident);
@@ -209,6 +216,7 @@ private:
   QVector<LineObject*> lineVector;
   QVector<TextObject*> textVector;
   QVector<EllipseObject*> ellipseVector;
+  QVector<RectObject*> rectVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
   

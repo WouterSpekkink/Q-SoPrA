@@ -10,9 +10,15 @@ public:
 	     QGraphicsTextItem *parent = 0);
   ~TextObject() {};
 
+  qreal getRotationValue();
+  void setRotationValue(qreal newRotation);
+  QPointF getCenter();
+  
   enum {Type = UserType + 12};
   int type() const;
-  
+
+private:
+  qreal rotation;
 };
 
 #endif

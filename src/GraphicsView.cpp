@@ -33,12 +33,18 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(parent());
       if (egw && egw->getEventItems().size() > 0) {
 	QMenu menu;
-	QAction *action1 = new QAction(ADDDOUBLEARROW, this);
-	QAction *action2 = new QAction(ADDTEXT, this);
-	QAction *action3 = new QAction(ADDELLIPSE, this);
+	QAction *action1 = new QAction(ADDLINE, this);
+	QAction *action2 = new QAction(ADDSINGLEARROW, this);
+	QAction *action3 = new QAction(ADDDOUBLEARROW, this);
+	QAction *action4 = new QAction(ADDTEXT, this);
+ 	QAction *action5 = new QAction(ADDELLIPSE, this);
+	QAction *action6 = new QAction(ADDRECT, this);
 	menu.addAction(action1);
 	menu.addAction(action2);
 	menu.addAction(action3);
+	menu.addAction(action4);
+	menu.addAction(action5);
+	menu.addAction(action6);
 	if (QAction *action = menu.exec(event->globalPos())) {
 	  emit EventGraphContextMenuAction(action->text());
 	}
@@ -59,6 +65,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
     TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -68,8 +75,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (occurrenceLabel) {
       occurrence = occurrenceLabel->getOccurrence();
     }
-    if (!incident && !macro && !arrow && !networkNode &&
-	!occurrence && !occurrenceLabel && !line && !text && !ellipse) {
+    if (!incident && !macro && !arrow && !networkNode && !occurrence &&
+	!occurrenceLabel && !line && !text && !ellipse && !rect) {
       pan = true;
       setCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -92,6 +99,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
       text->setSelected(true);
     } else if (ellipse) {
       ellipse->setSelected(true);
+    } else if (rect) {
+      rect->setSelected(true);
     }
   } else {
     pan = false;

@@ -109,6 +109,7 @@ SOURCES       = main.cpp \
 		src/RawAttributesTable.cpp \
 		src/RawRelationshipsTable.cpp \
 		src/RecordDialog.cpp \
+		src/RectObject.cpp \
 		src/RelationalTable.cpp \
 		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
@@ -243,6 +244,7 @@ OBJECTS       = main.o \
 		RawAttributesTable.o \
 		RawRelationshipsTable.o \
 		RecordDialog.o \
+		RectObject.o \
 		RelationalTable.o \
 		RelationshipsDialog.o \
 		RelationshipsWidget.o \
@@ -440,6 +442,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/RawAttributesTable.h \
 		include/RawRelationshipsTable.h \
 		include/RecordDialog.h \
+		include/RectObject.h \
 		include/RelationalTable.h \
 		include/RelationshipsDialog.h \
 		include/RelationshipsWidget.h \
@@ -516,6 +519,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/RawAttributesTable.cpp \
 		src/RawRelationshipsTable.cpp \
 		src/RecordDialog.cpp \
+		src/RectObject.cpp \
 		src/RelationalTable.cpp \
 		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
@@ -696,8 +700,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RelationalTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RelationalTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -770,10 +774,12 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/MainWindow.h \
@@ -783,7 +789,6 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -863,12 +868,14 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -876,7 +883,6 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/MainWindow.h \
 		include/DataWidget.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -1011,12 +1017,14 @@ moc_EventGraphWidget.cpp: include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -1025,7 +1033,6 @@ moc_EventGraphWidget.cpp: include/NodeLabel.h \
 		include/DeselectableListWidget.h \
 		include/LineageColorDialog.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/SortFunctions.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
@@ -1134,12 +1141,14 @@ moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -1151,7 +1160,6 @@ moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -1256,12 +1264,14 @@ moc_LinkagesWidget.cpp: include/Constants.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -1273,7 +1283,6 @@ moc_LinkagesWidget.cpp: include/Constants.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -1344,12 +1353,14 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -1384,7 +1395,6 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/JournalTableModel.h \
 		include/CheckBoxDelegate.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
@@ -1466,6 +1476,9 @@ moc_NetworkGraphWidget.cpp: include/DeselectableTreeViewEntities.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -1513,9 +1526,12 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceLabel.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
@@ -1525,8 +1541,6 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceLabel.h \
 		include/AttributeDialog.h \
 		include/DeselectableListWidget.h \
 		include/EventGraphWidget.h \
-		include/NodeLabel.h \
-		include/MacroLabel.h \
 		include/AttributesWidget.h \
 		include/AttributeIndexDialog.h \
 		include/MainWindow.h \
@@ -1603,12 +1617,14 @@ moc_RawAttributesTable.cpp: include/RelationalTable.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeIndexDialog.h \
@@ -1618,7 +1634,6 @@ moc_RawAttributesTable.cpp: include/RelationalTable.h \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -1697,6 +1712,9 @@ moc_RawRelationshipsTable.cpp: include/RelationalTable.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -1770,6 +1788,9 @@ moc_RelationshipsWidget.cpp: include/AttributeDialog.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -1808,9 +1829,13 @@ moc_Scene.cpp: include/EventItem.h \
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/Scene.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/Scene.h -o moc_Scene.cpp
@@ -1876,18 +1901,19 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/AttributeIndexDialog.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/MergeAttributesDialog.h \
@@ -1940,9 +1966,13 @@ Arrow.o: src/Arrow.cpp include/Arrow.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
-		include/EllipseObject.h
+		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Arrow.o src/Arrow.cpp
 
 AttributeColorDialog.o: src/AttributeColorDialog.cpp include/AttributeColorDialog.h \
@@ -1986,15 +2016,16 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/DeselectableListWidget.h \
 		include/LineageColorDialog.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/SortFunctions.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
@@ -2056,12 +2087,13 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
-		include/NodeLabel.h \
 		include/MacroLabel.h \
-		include/OccurrenceLabel.h
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BandlessGraphicsView.o src/BandlessGraphicsView.cpp
 
 CheckBoxDelegate.o: src/CheckBoxDelegate.cpp include/CheckBoxDelegate.h
@@ -2095,12 +2127,14 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -2135,7 +2169,6 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/JournalTableModel.h \
 		include/CheckBoxDelegate.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
@@ -2242,6 +2275,9 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -2276,12 +2312,14 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -2293,7 +2331,6 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -2346,10 +2383,13 @@ EventItem.o: src/EventItem.cpp include/EventItem.h \
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
-		include/NodeLabel.h
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventItem.o src/EventItem.cpp
 
 EventNodeSettingsDialog.o: src/EventNodeSettingsDialog.cpp include/EventNodeSettingsDialog.h \
@@ -2395,12 +2435,13 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
-		include/NodeLabel.h \
 		include/MacroLabel.h \
 		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/EventGraphWidget.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
@@ -2478,12 +2519,14 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -2495,7 +2538,6 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -2579,8 +2621,12 @@ LineObject.o: src/LineObject.cpp include/LineObject.h \
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/TextObject.h \
-		include/EllipseObject.h
+		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LineObject.o src/LineObject.cpp
 
 LinkagesIndexDialog.o: src/LinkagesIndexDialog.cpp include/LinkagesIndexDialog.h \
@@ -2605,12 +2651,14 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
@@ -2622,7 +2670,6 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/EventTableModel.h \
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -2677,10 +2724,13 @@ MacroEvent.o: src/MacroEvent.cpp include/MacroEvent.h \
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
-		include/MacroLabel.h
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MacroEvent.o src/MacroEvent.cpp
 
 MacroLabel.o: src/MacroLabel.cpp include/MacroLabel.h \
@@ -2709,18 +2759,19 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeDialog.h \
 		include/AttributeIndexDialog.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/MergeAttributesDialog.h \
@@ -2824,6 +2875,9 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -2849,9 +2903,13 @@ NetworkNode.o: src/NetworkNode.cpp include/NetworkNode.h \
 		include/MacroEvent.h \
 		include/OccurrenceItem.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/NetworkNodeLabel.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkNode.o src/NetworkNode.cpp
 
@@ -2864,9 +2922,13 @@ NetworkNodeLabel.o: src/NetworkNodeLabel.cpp include/NetworkNodeLabel.h \
 		include/MacroEvent.h \
 		include/OccurrenceItem.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
-		include/EllipseObject.h
+		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkNodeLabel.o src/NetworkNodeLabel.cpp
 
 NodeLabel.o: src/NodeLabel.cpp include/NodeLabel.h \
@@ -2901,9 +2963,12 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
@@ -2913,8 +2978,6 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/AttributeDialog.h \
 		include/DeselectableListWidget.h \
 		include/EventGraphWidget.h \
-		include/NodeLabel.h \
-		include/MacroLabel.h \
 		include/AttributesWidget.h \
 		include/AttributeIndexDialog.h \
 		include/MainWindow.h \
@@ -2974,10 +3037,13 @@ OccurrenceItem.o: src/OccurrenceItem.cpp include/OccurrenceItem.h \
 		include/MacroEvent.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
-		include/OccurrenceLabel.h
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OccurrenceItem.o src/OccurrenceItem.cpp
 
 OccurrenceLabel.o: src/OccurrenceLabel.cpp include/OccurrenceLabel.h \
@@ -3007,12 +3073,14 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/AttributeColorDialog.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
-		include/MacroLabel.h \
 		include/LargeTextDialog.h \
 		include/AttributesWidget.h \
 		include/AttributeIndexDialog.h \
@@ -3022,7 +3090,6 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
-		include/OccurrenceLabel.h \
 		include/DeselectableListWidget.h \
 		include/SortFunctions.h \
 		include/CheckBoxDelegate.h \
@@ -3099,6 +3166,9 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -3117,6 +3187,9 @@ RecordDialog.o: src/RecordDialog.cpp include/RecordDialog.h \
 		include/EventSequenceDatabase.h \
 		include/Constants.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RecordDialog.o src/RecordDialog.cpp
+
+RectObject.o: src/RectObject.cpp include/RectObject.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RectObject.o src/RectObject.cpp
 
 RelationalTable.o: src/RelationalTable.cpp include/RelationalTable.h \
 		include/SupportingFunctions.h
@@ -3167,6 +3240,9 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
+		include/MacroLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
 		include/ProgressBar.h \
 		include/SavedPlotsDialog.h \
 		include/NetworkNodeLabel.h \
@@ -3201,12 +3277,13 @@ Scene.o: src/Scene.cpp include/Scene.h \
 		include/OccurrenceItem.h \
 		include/NetworkNode.h \
 		include/Constants.h \
+		include/NodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
-		include/NodeLabel.h \
 		include/MacroLabel.h \
-		include/OccurrenceLabel.h
+		include/OccurrenceLabel.h \
+		include/RectObject.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Scene.o src/Scene.cpp
 
 SimpleAttributeSelectionDialog.o: src/SimpleAttributeSelectionDialog.cpp include/SimpleAttributeSelectionDialog.h \

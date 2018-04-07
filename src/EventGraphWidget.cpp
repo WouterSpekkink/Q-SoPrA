@@ -219,6 +219,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processTextContextMenu(const QString &)));
   connect(scene, SIGNAL(EllipseContextMenuAction(const QString &)),
 	  this, SLOT(processEllipseContextMenu(const QString &)));
+  connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
+	  this, SLOT(processRectContextMenu(const QString &)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &)));
   connect(attributesTreeView->selectionModel(),
@@ -2019,6 +2021,8 @@ void EventGraphWidget::cleanUp() {
   textVector.clear();
   qDeleteAll(ellipseVector);
   ellipseVector.clear();
+  qDeleteAll(rectVector);
+  rectVector.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
   selectedType = "";
@@ -2656,6 +2660,11 @@ void EventGraphWidget::saveCurrentPlot() {
 		     "WHERE plot = :plot");
       query->bindValue(":plot", name);
       query->exec();
+      // saved_eg_plots_rects
+      query->prepare("DELETE FROM saved_eg_plots_rects "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", name);
+      query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
       query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
@@ -3047,8 +3056,9 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_lines "
-		   "(plot, startx, starty, endx, endy, red, green, blue, alpha) "
-		   "VALUES (:plot, :startx, :starty, :endx, :endy, :red, :green, :blue, :alpha)");
+		   "(plot, startx, starty, endx, endy, arone, artwo, red, green, blue, alpha) "
+		   "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
+		   ":red, :green, :blue, :alpha)");
     QVectorIterator<LineObject*> it8(lineVector);
     while (it8.hasNext()) {
       LineObject *currentLine = it8.next();
@@ -3057,6 +3067,14 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal endx = currentLine->getEndPos().x();
       qreal endy = currentLine->getEndPos().y();
       QColor color = currentLine->getColor();
+      int arone = 0;
+      int artwo = 0;
+      if (currentLine->arrow1()) {
+	arone = 1;
+      }
+      if (currentLine->arrow2()) {
+	artwo = 1;
+      }
       int red = color.red();
       int green = color.green();
       int blue = color.blue();
@@ -3066,6 +3084,8 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":starty", starty);
       query->bindValue(":endx", endx);
       query->bindValue(":endy", endy);
+      query->bindValue(":arone", arone);
+      query->bindValue(":artwo", artwo);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3084,8 +3104,9 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_texts "
-		   "(plot, desc, xpos, ypos, width, size, red, green, blue, alpha) "
-		   "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :red, :green, :blue, :alpha)");
+		   "(plot, desc, xpos, ypos, width, size, rotation, red, green, blue, alpha) "
+		   "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
+		   ":red, :green, :blue, :alpha)");
     QVectorIterator<TextObject*> it9(textVector);
     while (it9.hasNext()) {
       TextObject *currentText = it9.next();
@@ -3094,6 +3115,7 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal ypos = currentText->scenePos().y();
       int width = currentText->textWidth();
       int size = currentText->font().pointSize();
+      qreal rotation = currentText->getRotationValue();
       QColor color = currentText->defaultTextColor();
       int red = color.red();
       int green = color.green();
@@ -3105,6 +3127,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":ypos", ypos);
       query->bindValue(":width", width);
       query->bindValue(":size", size);
+      query->bindValue(":rotation", rotation);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3144,6 +3167,61 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal bottomrighty = ellipse->bottomRight().y();
       qreal rotation = ellipse->getRotationValue();
       QColor color = ellipse->getColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
+      query->bindValue(":plot", name);
+      query->bindValue(":xpos", xpos);
+      query->bindValue(":ypos", ypos);
+      query->bindValue(":topleftx", topleftx);
+      query->bindValue(":toplefty", toplefty);
+      query->bindValue(":toprightx", toprightx);
+      query->bindValue(":toprighty", toprighty);
+      query->bindValue(":bottomleftx", bottomleftx);
+      query->bindValue(":bottomlefty", bottomlefty);
+      query->bindValue(":bottomrightx", bottomrightx);
+      query->bindValue(":bottomrighty", bottomrighty);
+      query->bindValue(":rotation", rotation);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
+      query->exec();
+      counter++;
+      saveProgress->setProgress(counter);
+      qApp->processEvents();
+    }
+    saveProgress->close();
+    delete saveProgress;
+    saveProgress = new ProgressBar(0, 1, rectVector.size());
+    saveProgress->setWindowTitle("Saving rectangles");
+    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+    saveProgress->setModal(true);
+    counter = 1;
+    saveProgress->show();
+    query->prepare("INSERT INTO saved_eg_plots_rects "
+		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
+		   "red, green, blue, alpha) "
+		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
+		   ":red, :green, :blue, :alpha)");
+    QVectorIterator<RectObject*> it11(rectVector);
+    while (it11.hasNext()) {
+      RectObject *rect = it11.next();
+      qreal xpos = rect->mapToScene(rect->getCenter()).x();
+      qreal ypos = rect->mapToScene(rect->getCenter()).y();
+      qreal topleftx = rect->topLeft().x();
+      qreal toplefty = rect->topLeft().y();
+      qreal toprightx = rect->topRight().x();
+      qreal toprighty = rect->topRight().y();
+      qreal bottomleftx = rect->bottomLeft().x();
+      qreal bottomlefty = rect->bottomLeft().y();
+      qreal bottomrightx = rect->bottomRight().x();
+      qreal bottomrighty = rect->bottomRight().y();
+      qreal rotation = rect->getRotationValue();
+      QColor color = rect->getColor();
       int red = color.red();
       int green = color.green();
       int blue = color.blue();
@@ -3602,7 +3680,7 @@ void EventGraphWidget::seePlots() {
 	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
     }
-    query->prepare("SELECT startx, starty, endx, endy, red, green, blue, alpha "
+    query->prepare("SELECT startx, starty, endx, endy, arone, artwo, red, green, blue, alpha "
 		   "FROM saved_eg_plots_lines "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -3612,18 +3690,26 @@ void EventGraphWidget::seePlots() {
       qreal starty = query->value(1).toReal();
       qreal endx = query->value(2).toReal();
       qreal endy = query->value(3).toReal();
-      int red = query->value(4).toInt();
-      int green = query->value(5).toInt();
-      int blue = query->value(6).toInt();
-      int alpha = query->value(7).toInt();
+      int arone = query->value(4).toInt();
+      int artwo = query->value(5).toInt();
+      int red = query->value(6).toInt();
+      int green = query->value(7).toInt();
+      int blue = query->value(8).toInt();
+      int alpha = query->value(9).toInt();
       QColor color = QColor(red, green, blue, alpha);
       LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
       lineVector.push_back(newLine);
       newLine->setZValue(3);
       newLine->setColor(color);
+      if (arone == 1) {
+	newLine->setArrow1(true);
+      }
+      if (artwo == 1) {
+	newLine->setArrow2(true);
+      }
       scene->addItem(newLine);
     }
-    query->prepare("SELECT desc, xpos, ypos, width, size, red, green, blue, alpha "
+    query->prepare("SELECT desc, xpos, ypos, width, size, rotation, red, green, blue, alpha "
 		   "FROM saved_eg_plots_texts "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -3634,10 +3720,11 @@ void EventGraphWidget::seePlots() {
       qreal ypos = query->value(2).toReal();
       int width = query->value(3).toInt();
       int size = query->value(4).toInt();
-      int red = query->value(5).toInt();
-      int green = query->value(6).toInt();
-      int blue = query->value(7).toInt();
-      int alpha = query->value(8).toInt();
+      qreal rotation = query->value(5).toReal();
+      int red = query->value(6).toInt();
+      int green = query->value(7).toInt();
+      int blue = query->value(8).toInt();
+      int alpha = query->value(9).toInt();
       QColor color = QColor(red, green, blue, alpha);
       TextObject *newText = new TextObject(desc);
       textVector.push_back(newText);
@@ -3648,6 +3735,7 @@ void EventGraphWidget::seePlots() {
       font.setPointSize(size);
       newText->setFont(font);
       newText->setPos(xpos, ypos);
+      newText->setRotationValue(rotation);
       scene->addItem(newText);
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
@@ -3684,7 +3772,43 @@ void EventGraphWidget::seePlots() {
       newEllipse->moveCenter(newEllipse->mapToScene(QPointF(xpos, ypos)));
       newEllipse->setRotationValue(rotation);
       newEllipse->setColor(color);
-
+      newEllipse->setZValue(3);
+    }
+    query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
+		   "red, green, blue, alpha "
+		   "FROM saved_eg_plots_rects "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    while (query->next()) {
+      qreal xpos = query->value(0).toReal();
+      qreal ypos = query->value(1).toReal();
+      qreal topleftx = query->value(2).toReal();
+      qreal toplefty = query->value(3).toReal();
+      qreal toprightx = query->value(4).toReal();
+      qreal toprighty = query->value(5).toReal();
+      qreal bottomleftx = query->value(6).toReal();
+      qreal bottomlefty = query->value(7).toReal();
+      qreal bottomrightx = query->value(8).toReal();
+      qreal bottomrighty = query->value(9).toReal();
+      qreal rotation = query->value(10).toReal();
+      int red = query->value(11).toInt();
+      int green = query->value(12).toInt();
+      int blue = query->value(13).toInt();
+      int alpha = query->value(14).toInt();
+      QColor color = QColor(red, green, blue, alpha);
+      RectObject *newRect = new RectObject();
+      rectVector.push_back(newRect);
+      scene->addItem(newRect);
+      newRect->setTopLeft(QPointF(topleftx, toplefty));
+      newRect->setTopRight(QPointF(toprightx, toprighty));
+      newRect->setBottomLeft(QPointF(bottomleftx, bottomlefty));
+      newRect->setBottomRight(QPointF(bottomrightx, bottomrighty));
+      newRect->moveCenter(newRect->mapToScene(QPointF(xpos, ypos)));
+      newRect->setRotationValue(rotation);
+      newRect->setColor(color);
+      newRect->setZValue(3);
     }
     distance = 70;
     plotLabel->setText(plot);
@@ -3764,6 +3888,11 @@ void EventGraphWidget::seePlots() {
     query->exec();
     // saved_eg_plots_ellipses
     query->prepare("DELETE FROM saved_eg_plots_ellipses "
+		   "WHERE plot = :plot");
+    query->bindValue(":plot", plot);
+    query->exec();
+    // saved_eg_plots_rects
+    query->prepare("DELETE FROM saved_eg_plots_rects "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
@@ -6212,19 +6341,31 @@ void EventGraphWidget::removeNormalLinkage() {
 }
 
 void EventGraphWidget::processEventGraphContextMenu(const QString &action) {
-  if (action == ADDDOUBLEARROW) {
-    addLineObject();
+  if (action == ADDLINE) {
+    addLineObject(false, false);
+  } else if (action == ADDSINGLEARROW) {
+    addLineObject(true, false);
+  } else if (action == ADDDOUBLEARROW) {
+    addLineObject(true, true);
   } else if (action == ADDTEXT) {
     addTextObject();
   } else if (action == ADDELLIPSE) {
     addEllipseObject();
+  } else if (action == ADDRECT) {
+    addRectObject();
   }
 }
 
-void EventGraphWidget::addLineObject() {
+void EventGraphWidget::addLineObject(bool arrow1, bool arrow2) {
   QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
   LineObject *newLineObject = new LineObject(QPointF(mousePos.x() - 100, mousePos.y()),
 					     QPointF(mousePos.x() + 100, mousePos.y()));
+  if (arrow1) {
+    newLineObject->setArrow1(true);
+  }
+  if (arrow2) {
+    newLineObject->setArrow2(true);
+  }
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(3);
@@ -6257,9 +6398,22 @@ void EventGraphWidget::addEllipseObject() {
   newEllipse->setPos(mousePos);
 }
 
+void EventGraphWidget::addRectObject() {
+  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+  RectObject *newRect = new RectObject();
+  rectVector.push_back(newRect);
+  scene->addItem(newRect);
+  newRect->setZValue(3);
+  newRect->setPos(mousePos);
+}
+
 void EventGraphWidget::processLineContextMenu(const QString &action) {
   if (action == CHANGELINECOLOR) {
     changeLineColor();
+  } else if (action == TOGGLEARROW1) {
+    toggleArrow1();
+  } else if (action == TOGGLEARROW2) {
+    toggleArrow2();
   } else if (action == DELETELINE) {
     deleteLine();
   }
@@ -6276,6 +6430,24 @@ void EventGraphWidget::changeLineColor() {
 	line->setColor(color);
       }
       delete colorDialog;
+    }
+  }
+}
+
+void EventGraphWidget::toggleArrow1() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      line->setArrow1(!line->arrow1());
+    }
+  }
+}
+
+void EventGraphWidget::toggleArrow2() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      line->setArrow2(!line->arrow2());
     }
   }
 }
@@ -6405,6 +6577,39 @@ void EventGraphWidget::deleteEllipse() {
     if (ellipse) {
       scene->removeItem(ellipse);
       ellipseVector.removeOne(ellipse);
+    }
+  }  
+}
+
+void EventGraphWidget::processRectContextMenu(const QString &action) {
+  if (action == CHANGERECTCOLOR) {
+    changeRectColor();
+  } else if (action == DELETERECT) {
+    deleteRect();
+  }
+}
+
+void EventGraphWidget::changeRectColor() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	rect->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void EventGraphWidget::deleteRect() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      scene->removeItem(rect);
+      rectVector.removeOne(rect);
     }
   }  
 }

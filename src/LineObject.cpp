@@ -15,6 +15,8 @@ LineObject::LineObject(QPointF subStartPos,
   setPen(QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   setCursor(Qt::OpenHandCursor);
+  arrow1On = false;
+  arrow2On = false;  
 }
 
 QRectF LineObject::boundingRect() const {
@@ -48,16 +50,19 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
   arrowHead.clear();
   arrowHead << tempLine1.p2() << arrowP1 << tempLine1.p2() << arrowP2;
-  
   arrowHead2.clear();
   arrowHead2 << tempLine2.p2() << arrowP3 << tempLine2.p2() << arrowP4;
-  
+    
   QPainterPath myPath;
   myPath.moveTo(tempLine2.p2());
   myPath.lineTo(tempLine1.p2());
-  painter->drawPolyline(arrowHead);
+  if (arrow1On) {
+    painter->drawPolyline(arrowHead);
+  }
   painter->strokePath(myPath, QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  painter->drawPolyline(arrowHead2);
+  if (arrow2On) {
+    painter->drawPolyline(arrowHead2);
+  }
 }
 
 void LineObject::calculate() {
@@ -116,6 +121,22 @@ void LineObject::setStartPos(qreal x, qreal y) {
 
 void LineObject::setEndPos(qreal x, qreal y) {
   endPos = QPointF(x, y);
+}
+
+bool LineObject::arrow1() {
+  return arrow1On;
+}
+
+void LineObject::setArrow1(bool status) {
+  arrow1On = status;
+}
+
+bool LineObject::arrow2() {
+  return arrow2On;
+}
+
+void LineObject::setArrow2(bool status) {
+  arrow2On = status;
 }
 
 int LineObject::type() const {

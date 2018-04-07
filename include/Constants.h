@@ -50,16 +50,23 @@ extern QString OCCURRENCEGRAPH;
 extern QString HIDENODE;
 extern QString SETPERSISTENT;
 extern QString UNSETPERSISTENT;
+extern QString ADDLINE;
+extern QString ADDSINGLEARROW;
 extern QString ADDDOUBLEARROW;
 extern QString ADDTEXT;
 extern QString ADDELLIPSE;
+extern QString ADDRECT;
 extern QString CHANGELINECOLOR;
+extern QString TOGGLEARROW1;
+extern QString TOGGLEARROW2;
 extern QString DELETELINE;
 extern QString CHANGETEXT;
 extern QString CHANGETEXTCOLOR;
 extern QString DELETETEXT;
 extern QString CHANGEELLIPSECOLOR;
 extern QString DELETEELLIPSE;
+extern QString CHANGERECTCOLOR;
+extern QString DELETERECT;
 extern qreal Pi;
 
 #endif
