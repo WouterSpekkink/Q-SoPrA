@@ -309,14 +309,17 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       clearSelection();
       selectedLine = line;
       moveLineObject = true;
+      lastMousePos = event->scenePos();
     } else if (ellipse) {
       clearSelection();
       selectedEllipse = ellipse;
       moveEllipse = true;
+      lastMousePos = event->scenePos();
     } else if (rect) {
       clearSelection();
       selectedRect = rect;
       moveRect = true;
+      lastMousePos = event->scenePos();
     }
     return;
   } else {
@@ -500,6 +503,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
     lastMousePos = event->scenePos();
   } else if (lineMoveOn) {
+    emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF start = selectedLine->getStartPos();
     QPointF end = selectedLine->getEndPos();
@@ -530,9 +534,17 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
     emit relevantChange();
   } else if (moveLineObject) {
-    // To Do
-    
+    emit relevantChange();
+    QPointF newPos = selectedLine->mapFromScene(event->scenePos());
+    qreal newXDiff = newPos.x() - lastMousePos.x();
+    qreal newYDiff = newPos.y() - lastMousePos.y();
+    selectedLine->setStartPos(selectedLine->mapToScene(selectedLine->getStartPos() +
+						       QPointF(newXDiff, newYDiff)));
+    selectedLine->setEndPos(selectedLine->mapToScene(selectedLine->getEndPos() +
+						     QPointF(newXDiff, newYDiff)));
+    lastMousePos = event->scenePos();
   } else if (manipulateEllipse) {
+    emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF topLeft = selectedEllipse->mapToScene(selectedEllipse->topLeft());
     QPointF bottomLeft = selectedEllipse->mapToScene(selectedEllipse->bottomLeft());
@@ -581,15 +593,20 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     } else if (minimum == distBottom) {
       selectedEllipse->setBottom(selectedEllipse->mapFromScene(lastMousePos).y());
     }
-    emit relevantChange();
   } else if (moveEllipse) {
-    selectedEllipse->moveCenter(selectedEllipse->mapFromScene(event->scenePos()));
     emit relevantChange();
+    QPointF newPos = selectedEllipse->mapFromScene(event->scenePos());
+    qreal newXDiff = newPos.x() - lastMousePos.x();
+    qreal newYDiff = newPos.y() - lastMousePos.y();
+    selectedEllipse->moveCenter(selectedEllipse->mapToScene(selectedEllipse->getCenter()) +
+				QPointF(newXDiff, newYDiff));
+    lastMousePos = event->scenePos();
   } else if (rotateEllipse) {
+    emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF center = selectedEllipse->mapToScene(selectedEllipse->getCenter());
-    qreal dY = lastMousePos.y() - center.y();
-    qreal dX = lastMousePos.x() - center.x();
+    qreal dY = center.y() - lastMousePos.y();
+    qreal dX = center.x() - lastMousePos.x();
     qreal angle = atan2(dY, dX);
     angle = qRadiansToDegrees(angle);
     selectedEllipse->setRotationValue(angle);
@@ -643,20 +660,25 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     } else if (minimum == distBottom) {
       selectedRect->setBottom(selectedRect->mapFromScene(lastMousePos).y());
     }
-    emit relevantChange();
   } else if (moveRect) {
-    selectedRect->moveCenter(selectedRect->mapFromScene(event->scenePos()));
     emit relevantChange();
+    QPointF newPos = selectedRect->mapFromScene(event->scenePos());
+    qreal newXDiff = newPos.x() - lastMousePos.x();
+    qreal newYDiff = newPos.y() - lastMousePos.y();
+    selectedRect->moveCenter(selectedRect->mapToScene(selectedRect->getCenter()) +
+				QPointF(newXDiff, newYDiff));
+    lastMousePos = event->scenePos();
   } else if (rotateRect) {
+    emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF center = selectedRect->mapToScene(selectedRect->getCenter());
-    qreal dY = lastMousePos.y() - center.y();
-    qreal dX = lastMousePos.x() - center.x();
+    qreal dY = center.y() - lastMousePos.y();
+    qreal dX = center.x() - lastMousePos.x();
     qreal angle = atan2(dY, dX);
     angle = qRadiansToDegrees(angle);
     selectedRect->setRotationValue(angle);
-    emit relevantChange();
   } else if (rotateText) {
+    emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF center = selectedText->mapToScene(selectedText->getCenter());
     qreal dY = center.y() - lastMousePos.y();
@@ -668,18 +690,23 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   } else {
     if (selectedItems().size() > 1 && moveOn) {
       if (selectedEvent) {
+	emit relevantChange();
  	emit moveItems(selectedEvent, event->scenePos());
       } else if (selectedMacro) {
+	emit relevantChange();
 	emit moveItems(selectedMacro, event->scenePos());
       } else if (selectedNode) {
+	emit relevantChange();
 	emit moveItems(selectedNode, event->scenePos());
       } else {
 	moveOn = false;
       }
     } else {
       if (selectedOccurrence && moveOn) {
+	emit relevantChange();
 	emit moveLine(selectedOccurrence, event->scenePos());
       } else if (selectedOccurrence && !moveOn) {
+	emit relevantChange();
 	emit moveItems(selectedOccurrence, event->scenePos());
       }
     }
