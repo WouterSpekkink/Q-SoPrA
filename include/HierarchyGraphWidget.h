@@ -43,6 +43,8 @@ public:
   void setOrigin(MacroEvent *submittedOrigin);
   void setEvents(QVector<EventItem*> submittedEvents);
   void setMacros(QVector<MacroEvent*> submittedMacros);
+  void setEdges(QVector<Arrow*> submittedEvents);
+  void getEdges();
   void cleanUp();
   void setAttributesWidget(AttributesWidget *aw);
   void setEventGraph(EventGraphWidget *egw);
@@ -71,6 +73,8 @@ private slots:
   void highlightText();
   void removeText();
   void resetTexts();
+  void toggleLinkages();
+  void toggleHierarchy();
   
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
@@ -134,16 +138,21 @@ private:
   QPointer<QPushButton> resetTextsButton;
   QPointer<QPushButton> exitButton;
   QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> toggleLinkagesButton;
+  QPointer<QPushButton> toggleHierarchyButton;
 
   QPointer<DeselectableListWidget> eventListWidget;
   
   MacroEvent *origin;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
-
+  QVector<Arrow*> edgeVector;
+  
   MacroEvent *selectedMacro;
   int selectedIncident;
   bool commentBool;
+  bool showLinkages;
+  bool showHierarchy;
 };
 
 #endif

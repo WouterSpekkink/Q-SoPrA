@@ -79,6 +79,7 @@ public:
   bool isCopy();
   void setCopy(bool status);
   void updatePosition();
+  QString getType();
   
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;

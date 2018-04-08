@@ -58,6 +58,7 @@ public:
 
   QVector<MacroEvent*> getMacros();
   QVector<EventItem*> getEventItems();
+  QVector<Arrow*> getEdges();
   void resetTree();
   void checkCongruency();
 

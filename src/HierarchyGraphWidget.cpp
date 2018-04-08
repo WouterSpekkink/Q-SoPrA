@@ -3,6 +3,8 @@
 HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {  
   selectedMacro = NULL;
   selectedIncident = 0;
+  showLinkages = false;
+  showHierarchy = true;
   
   scene = new Scene(this);
   view = new BandlessGraphicsView(scene);
@@ -73,6 +75,11 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   toggleDetailsButton->setCheckable(true);
   toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   toggleLegendButton->setCheckable(true);
+  toggleHierarchyButton = new QPushButton(tr("Toggle linkages"), this);
+  toggleHierarchyButton->setCheckable(true);
+  toggleHierarchyButton->setChecked(true);
+  toggleLinkagesButton = new QPushButton(tr("Toggle hierarchy"), this);
+  toggleLinkagesButton->setCheckable(true);
   assignAttributeButton = new QPushButton(tr("Assign attribute"), attWidget);
   unassignAttributeButton = new QPushButton(tr("Unassign attribute"), attWidget);
   addAttributeButton = new QPushButton(tr("New attribute"), attWidget);
@@ -96,6 +103,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
+  connect(toggleHierarchyButton, SIGNAL(clicked()), this, SLOT(toggleHierarchy()));
+  connect(toggleLinkagesButton, SIGNAL(clicked()), this, SLOT(toggleLinkages()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
@@ -209,6 +218,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
   drawOptionsRightLayout->addWidget(exportSvgButton);
+  drawOptionsRightLayout->addWidget(toggleHierarchyButton);
+  drawOptionsRightLayout->addWidget(toggleLinkagesButton);
   drawOptionsRightLayout->addWidget(exitButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);
@@ -564,6 +575,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newEvent->setMode(event->getMode());
       newEvent->setColor(event->getColor());
       newEvent->setPos(newEvent->getOriginalPos());
+      newEvent->setZValue(1);
       bool found = false;
       if (newEvent->getMode() != "") {
 	for (int i = 0; i < eventListWidget->rowCount(); i++) {
@@ -744,6 +756,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  newEvent->setMode(event->getMode());
 	  newEvent->setColor(event->getColor());
 	  newEvent->setPos(newEvent->getOriginalPos());
+	  newEvent->setZValue(1);
 	  bool found = false;
 	  if (newEvent->getMode() != "") {
 	    QSqlQuery *query = new QSqlQuery;
@@ -829,6 +842,52 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
   }
 }
 
+void HierarchyGraphWidget::getEdges() {
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *arrow = it.next();
+    QGraphicsItem *source = NULL;
+    QGraphicsItem *target = NULL;
+    EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
+    EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
+    MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(arrow->startItem());
+    MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+    QListIterator<QGraphicsItem*> it2(scene->items());
+    while (it2.hasNext()) {
+      QGraphicsItem *item = it2.next();
+      EventItem *event = qgraphicsitem_cast<EventItem*>(item);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(item);
+      if (startEvent && event) {
+	if (startEvent->getId() == event->getId()) {
+	  source = event;
+	}
+      }
+      if (endEvent && event) {
+	if (endEvent->getId() == event->getId()) {
+	  target = event;
+	}
+      }
+      if (startMacro && macro) {
+	if (startMacro->getId() == macro->getId()) {
+	  source = macro;
+	}
+      }
+      if (endMacro && macro) {
+	if (endMacro->getId() == macro->getId()) {
+	  target = macro;
+	}
+      }
+    }
+    if (source != NULL && target != NULL) {
+      Arrow *newArrow = new Arrow(source, target, "Linkages", "", 0);
+      newArrow->setColor(QColor(169, 169, 169, 255));
+      newArrow->setCopy(true);
+      scene->addItem(newArrow);
+      newArrow->hide();
+    }
+  }
+}
+
 void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
   if (item->column() == 1) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -856,6 +915,52 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
 	} else {
 	  it.next();
 	}
+      }
+    }
+  }
+}
+
+void HierarchyGraphWidget::toggleLinkages() {
+  showLinkages = !showLinkages;
+  if (showLinkages) {
+    QListIterator<QGraphicsItem*> it(scene->items());
+    while (it.hasNext()) {
+      QGraphicsItem *item = it.next();
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
+      if (arrow && arrow->getType() == "Linkages") {
+	arrow->show();
+      }
+    }
+  } else {
+    QListIterator<QGraphicsItem*> it(scene->items());
+    while (it.hasNext()) {
+      QGraphicsItem *item = it.next();
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
+      if (arrow && arrow->getType() == "Linkages") {
+	arrow->hide();
+      }
+    }
+  }
+}
+
+void HierarchyGraphWidget::toggleHierarchy() {
+  showHierarchy = !showHierarchy;
+  if (showHierarchy) {
+    QListIterator<QGraphicsItem*> it(scene->items());
+    while (it.hasNext()) {
+      QGraphicsItem *item = it.next();
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
+      if (arrow && arrow->getType() == "Hierarchy") {
+	arrow->show();
+      }
+    }
+  } else {
+    QListIterator<QGraphicsItem*> it(scene->items());
+    while (it.hasNext()) {
+      QGraphicsItem *item = it.next();
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
+      if (arrow && arrow->getType() == "Hierarchy") {
+	arrow->hide();
       }
     }
   }
@@ -1382,6 +1487,10 @@ void HierarchyGraphWidget::setEvents(QVector<EventItem*> submittedEvents) {
 
 void HierarchyGraphWidget::setMacros(QVector<MacroEvent*> submittedMacros) {
   macroVector = submittedMacros;
+}
+
+void HierarchyGraphWidget::setEdges(QVector<Arrow*> submittedEdges) {
+  edgeVector = submittedEdges;
 }
 
 void HierarchyGraphWidget::setTree() {

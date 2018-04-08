@@ -6974,6 +6974,10 @@ QVector<EventItem*> EventGraphWidget::getEventItems() {
   return eventVector;
 }
 
+QVector<Arrow*> EventGraphWidget::getEdges() {
+  return edgeVector;
+}
+
 void EventGraphWidget::setAttributesWidget(AttributesWidget *aw) {
   attributesWidget = aw;
 }

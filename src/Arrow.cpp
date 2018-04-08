@@ -285,3 +285,6 @@ void Arrow::setCopy(bool status) {
   copy = status;
 }
 
+QString Arrow::getType() {
+  return typeInd;
+}
