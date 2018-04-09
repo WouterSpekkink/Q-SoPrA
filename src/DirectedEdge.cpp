@@ -84,10 +84,6 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   painter->setBrush(color);
   calc();
 
-  QPainterPath path = QGraphicsLineItem::shape();
-  path.addPolygon(arrowHead);
-  painter->drawPath(path);
-  
   arrowHead.clear();
   arrowHead << oLine.p2() << arrowP1 << arrowP2;
 
