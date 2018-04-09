@@ -47,6 +47,11 @@ public:
   enum {Type = UserType + 14};
   int type() const;
 
+  QPolygonF getValidArea();
+  
+protected:
+  void mousePressEvent(QGraphicsSceneMouseEvent *event);
+
 private:
   QRectF drawRect;
   QColor color;

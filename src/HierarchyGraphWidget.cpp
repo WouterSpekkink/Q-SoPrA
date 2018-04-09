@@ -75,10 +75,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   toggleDetailsButton->setCheckable(true);
   toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   toggleLegendButton->setCheckable(true);
-  toggleHierarchyButton = new QPushButton(tr("Toggle linkages"), this);
+  toggleHierarchyButton = new QPushButton(tr("Toggle hierarchy"), this);
   toggleHierarchyButton->setCheckable(true);
   toggleHierarchyButton->setChecked(true);
-  toggleLinkagesButton = new QPushButton(tr("Toggle hierarchy"), this);
+  toggleLinkagesButton = new QPushButton(tr("Toggle linkages"), this);
   toggleLinkagesButton->setCheckable(true);
   assignAttributeButton = new QPushButton(tr("Assign attribute"), attWidget);
   unassignAttributeButton = new QPushButton(tr("Unassign attribute"), attWidget);

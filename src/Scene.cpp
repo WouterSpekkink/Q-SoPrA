@@ -236,15 +236,19 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       selectedText = text;
       rotateText = true;
     } else if (ellipse) {
-      clearSelection();
-      ellipse->setSelected(true);
-      selectedEllipse = ellipse;
-      rotateEllipse = true;
+      if (!ellipse->getValidArea().contains(event->scenePos())) {
+	clearSelection();
+	ellipse->setSelected(true);
+	selectedEllipse = ellipse;
+	rotateEllipse = true;
+      }
     } else if (rect) {
-      clearSelection();
-      rect->setSelected(true);
-      selectedRect = rect;
-      rotateRect = true;
+      if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
+	clearSelection();
+	rect->setSelected(true);
+	selectedRect = rect;
+	rotateRect = true;
+      }
     } else {
       clearSelection();
       selectedMacro = NULL;
@@ -312,14 +316,20 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       lastMousePos = event->scenePos();
     } else if (ellipse) {
       clearSelection();
-      selectedEllipse = ellipse;
-      moveEllipse = true;
-      lastMousePos = event->scenePos();
+      if (!ellipse->getValidArea().contains(event->scenePos())) {
+	selectedEllipse = ellipse;
+	ellipse->setSelected(true);
+	moveEllipse = true;
+	lastMousePos = event->scenePos();
+      }
     } else if (rect) {
-      clearSelection();
-      selectedRect = rect;
-      moveRect = true;
-      lastMousePos = event->scenePos();
+      if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
+	clearSelection();
+	selectedRect = rect;
+	rect->setSelected(true);
+	moveRect = true;
+	lastMousePos = event->scenePos();
+      }
     }
     return;
   } else {
@@ -365,13 +375,19 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       selectedLine = line;
       lineMoveOn = true;
     } else if (ellipse) {
-      clearSelection();
-      selectedEllipse = ellipse;
-      manipulateEllipse = true;
+      if (!ellipse->getValidArea().contains(event->scenePos())) {
+	clearSelection();
+	selectedEllipse = ellipse;
+	ellipse->setSelected(true);
+	manipulateEllipse = true;
+      }
     } else if (rect) {
-      clearSelection();
-      selectedRect = rect;
-      manipulateRect = true;
+      if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
+	clearSelection();
+	rect->setSelected(true);
+	selectedRect = rect;
+	manipulateRect = true;
+      }
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
@@ -595,12 +611,14 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
   } else if (moveEllipse) {
     emit relevantChange();
-    QPointF newPos = selectedEllipse->mapFromScene(event->scenePos());
+    selectedEllipse->resetTransform();
+    QPointF newPos = event->scenePos();
     qreal newXDiff = newPos.x() - lastMousePos.x();
     qreal newYDiff = newPos.y() - lastMousePos.y();
     selectedEllipse->moveCenter(selectedEllipse->mapToScene(selectedEllipse->getCenter()) +
-				QPointF(newXDiff, newYDiff));
+				selectedEllipse->mapFromScene(QPointF(newXDiff, newYDiff)));
     lastMousePos = event->scenePos();
+    selectedEllipse->setRotationValue(selectedEllipse->getRotationValue());
   } else if (rotateEllipse) {
     emit relevantChange();
     lastMousePos = event->scenePos();
@@ -662,12 +680,14 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     }
   } else if (moveRect) {
     emit relevantChange();
-    QPointF newPos = selectedRect->mapFromScene(event->scenePos());
+    selectedRect->resetTransform();
+    QPointF newPos = event->scenePos();
     qreal newXDiff = newPos.x() - lastMousePos.x();
     qreal newYDiff = newPos.y() - lastMousePos.y();
     selectedRect->moveCenter(selectedRect->mapToScene(selectedRect->getCenter()) +
-				QPointF(newXDiff, newYDiff));
+			     selectedRect->mapFromScene(QPointF(newXDiff, newYDiff)));
     lastMousePos = event->scenePos();
+    selectedRect->setRotationValue(selectedRect->getRotationValue());
   } else if (rotateRect) {
     emit relevantChange();
     lastMousePos = event->scenePos();

@@ -164,3 +164,22 @@ void EllipseObject::setPenStyle(int style) {
 int EllipseObject::type() const {
   return Type;
 }
+
+QPainterPath EllipseObject::getValidArea() {
+  QPainterPath path;
+  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
+  path.addEllipse(myRect);
+  return(mapToScene(path));
+}
+
+void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+  QPainterPath path;
+  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
+  path.addEllipse(myRect);
+  if (mapToScene(path).contains(event->scenePos())) {
+    event->ignore();
+  } else {
+    event->accept();
+  }
+}
+

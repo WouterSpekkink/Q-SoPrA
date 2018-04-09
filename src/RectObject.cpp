@@ -16,6 +16,7 @@ void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   prepareGeometryChange();
   painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
   painter->drawRect(drawRect);
+
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
     painter->drawLine(topLeft(), bottomRight());
@@ -166,3 +167,18 @@ void RectObject::setPenStyle(int style) {
 int RectObject::type() const {
   return Type;
 }
+
+QPolygonF RectObject::getValidArea() {
+  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
+  return(mapToScene(myRect));
+}
+
+void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
+  if (mapToScene(myRect).containsPoint(event->scenePos(), Qt::OddEvenFill)) {
+    event->ignore();
+  } else {
+    event->accept();
+  }
+}
+
