@@ -194,14 +194,11 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(exportNodesButton, SIGNAL(clicked()), this, SLOT(exportNodes()));
   connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
+  connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(widthIncreased(EventItem*)), this, SLOT(increaseWidth(EventItem*)));
   connect(scene, SIGNAL(widthDecreased(EventItem*)), this, SLOT(decreaseWidth(EventItem*)));
   connect(scene, SIGNAL(widthIncreased(MacroEvent*)), this, SLOT(increaseWidth(MacroEvent*)));
   connect(scene, SIGNAL(widthDecreased(MacroEvent*)), this, SLOT(decreaseWidth(MacroEvent*)));
-  connect(scene, SIGNAL(increaseTextSize(TextObject*)), this, SLOT(increaseTextSize(TextObject*)));
-  connect(scene, SIGNAL(decreaseTextSize(TextObject*)), this, SLOT(decreaseTextSize(TextObject*)));
-  connect(scene, SIGNAL(increaseTextWidth(TextObject*)), this, SLOT(increaseTextWidth(TextObject*)));
-  connect(scene, SIGNAL(decreaseTextWidth(TextObject*)), this, SLOT(decreaseTextWidth(TextObject*)));
   connect(scene, SIGNAL(posIncreased(EventItem*)), this, SLOT(increasePos(EventItem*)));
   connect(scene, SIGNAL(posDecreased(EventItem*)), this, SLOT(decreasePos(EventItem*)));
   connect(scene, SIGNAL(posIncreased(MacroEvent*)), this, SLOT(increasePos(MacroEvent*)));
@@ -6540,38 +6537,6 @@ void EventGraphWidget::deleteText() {
       textVector.removeOne(text);
     }
   }
-}
-
-void EventGraphWidget::increaseTextSize(TextObject *text) {
-  QFont font = text->font();
-  int size = font.pointSize();
-  if (size <= 39) {
-    size++;
-    font.setPointSize(size);
-    text->setFont(font);
-  }
-}
-
-void EventGraphWidget::decreaseTextSize(TextObject *text) {
-  QFont font = text->font();
-  int size = font.pointSize();
-  if (size >= 9) {
-    size--;
-    font.setPointSize(size);
-    text->setFont(font);
-  }
-}
-
-void EventGraphWidget::increaseTextWidth(TextObject *text) {
-  int width = text->textWidth();
-  width = width + 10;
-  text->setTextWidth(width);
-}
-
-void EventGraphWidget::decreaseTextWidth(TextObject *text) {
-  int width = text->textWidth();
-  width = width - 10;
-  text->setTextWidth(width);
 }
 
 void EventGraphWidget::processEllipseContextMenu(const QString &action) {

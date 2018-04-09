@@ -53,6 +53,9 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     macro = macroLabel->getMacroEvent();
   }
   if (incident && !incident->isCopy()) {
+    clearSelection();
+    incident->setSelected(true);
+    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (wheelEvent->delta() > 0 && incident->getWidth() < 1000) {
 	incident->setWidth(incident->getWidth() + 1);
@@ -65,6 +68,9 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     emit relevantChange();
     wheelEvent->accept();
   } else if (macro && !macro->isCopy()) {
+    clearSelection();
+    macro->setSelected(true);
+    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (wheelEvent->delta() > 0 && macro->getWidth() < 1000) {
 	macro->setWidth(macro->getWidth() + 1);
@@ -77,23 +83,45 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     emit relevantChange();
     wheelEvent->accept();
   } else if (text) {
+    clearSelection();
+    text->setSelected(true);
+    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ControlModifier) {
       if (wheelEvent->delta() > 0) {
-	emit increaseTextSize(text);
+	QFont font = text->font();
+	int size = font.pointSize();
+	if (size <= 39) {
+	  size++;
+	  font.setPointSize(size);
+	  text->setFont(font);
+	}
       } else if (wheelEvent->delta() < 0) {
-	emit decreaseTextSize(text);
+	QFont font = text->font();
+	int size = font.pointSize();
+	if (size >= 9) {
+	  size--;
+	  font.setPointSize(size);
+	  text->setFont(font);
+	}
       }
     }
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (wheelEvent->delta() > 0) {
-	emit increaseTextWidth(text);
+	  int width = text->textWidth();
+	  width = width + 10;
+	  text->setTextWidth(width);
       } else if (wheelEvent->delta() < 0) {
-	emit decreaseTextWidth(text);
+	int width = text->textWidth();
+	width = width - 10;
+	text->setTextWidth(width);
       }
     }
     emit relevantChange();
     wheelEvent->accept();
   } else if (ellipse) {
+    clearSelection();
+    ellipse->setSelected(true);
+    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ControlModifier) {
       if (wheelEvent->delta() > 0) {
 	if (ellipse->getPenWidth() < 20) {
@@ -121,6 +149,9 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     }
     wheelEvent->accept();
   } else if (line) {
+    clearSelection();
+    line->setSelected(true);
+    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ControlModifier) {
       if (wheelEvent->delta() > 0) {
 	if (line->getPenWidth() < 7) {
@@ -148,6 +179,9 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     }
     wheelEvent->accept();
   } else if (rect) {
+    clearSelection();
+    rect->setSelected(true);
+    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ControlModifier) {
       if (wheelEvent->delta() > 0) {
 	if (rect->getPenWidth() < 20) {
@@ -181,10 +215,14 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
   if (event->modifiers() & Qt::ControlModifier) {
-    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
-    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
-    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
-    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
+								QTransform()));
+    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								 QTransform()));
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
+							       QTransform()));
+    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+								    QTransform()));
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
 								       QTransform()));
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
@@ -207,6 +245,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	incident->setSelected(true);
 	selectedEvent = incident;
       } else {
+	emit resetItemSelection();
 	incident->setSelected(true);
 	selectedEvent = incident;
 	moveOn = true;
@@ -217,6 +256,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	macro->setSelected(true);
 	selectedMacro = macro;
       } else {
+	emit resetItemSelection();
 	macro->setSelected(true);
 	selectedMacro = macro;
 	moveOn = true;
@@ -233,12 +273,14 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else if (text) {
       clearSelection();
       text->setSelected(true);
+      emit resetItemSelection();
       selectedText = text;
       rotateText = true;
     } else if (ellipse) {
       if (!ellipse->getValidArea().contains(event->scenePos())) {
 	clearSelection();
 	ellipse->setSelected(true);
+	emit resetItemSelection();
 	selectedEllipse = ellipse;
 	rotateEllipse = true;
       }
@@ -246,11 +288,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
 	clearSelection();
 	rect->setSelected(true);
+	emit resetItemSelection();
 	selectedRect = rect;
 	rotateRect = true;
       }
     } else {
       clearSelection();
+      emit resetItemSelection();
       selectedMacro = NULL;
       selectedEvent = NULL;
       selectedNode = NULL;
@@ -258,9 +302,12 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       selectedRect = NULL;
     }
   } else if (event->modifiers() & Qt::ShiftModifier) {
-    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
-    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
-    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
+								QTransform()));
+    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								 QTransform()));
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
+							       QTransform()));
     MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
 								    QTransform()));
     LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
@@ -276,6 +323,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       macro = macroLabel->getMacroEvent();
     }
     if (incident) {
+      emit resetItemSelection();
       if (event->modifiers() & Qt::AltModifier) {
 	if (incident->isCopy()) {
 	  incident->setPos(incident->getOriginalPos());
@@ -293,6 +341,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	}
       }
     } else if (macro) {
+      emit resetItemSelection();
       if (event->modifiers() & Qt::AltModifier) {
 	if (macro->isCopy()) {
 	  macro->setPos(macro->getOriginalPos());
@@ -312,6 +361,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else if (line) {
       clearSelection();
       selectedLine = line;
+      line->setSelected(true);
+      emit resetItemSelection();
       moveLineObject = true;
       lastMousePos = event->scenePos();
     } else if (ellipse) {
@@ -319,6 +370,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       if (!ellipse->getValidArea().contains(event->scenePos())) {
 	selectedEllipse = ellipse;
 	ellipse->setSelected(true);
+	emit resetItemSelection();
 	moveEllipse = true;
 	lastMousePos = event->scenePos();
       }
@@ -327,23 +379,29 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	clearSelection();
 	selectedRect = rect;
 	rect->setSelected(true);
+	emit resetItemSelection();
 	moveRect = true;
 	lastMousePos = event->scenePos();
       }
     }
     return;
   } else {
-    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
-    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
-    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
-    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
+								QTransform()));
+    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								 QTransform()));
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
+							       QTransform()));
+    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+								    QTransform()));
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
 								       QTransform()));
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
 									    QTransform()));
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
 										   QTransform()));
-    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
+							      QTransform()));
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
 								       QTransform()));
     RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
@@ -360,9 +418,11 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     if (incident) {
       clearSelection();
       incident->setSelected(true);
+      emit resetItemSelection();
     } else if (macro) {
       clearSelection();
       macro->setSelected(true);
+      emit resetItemSelection();
     } else if (networkNode) {
       clearSelection();
       networkNode->setSelected(true);
@@ -373,18 +433,21 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     } else if (line) {
       clearSelection();
       selectedLine = line;
+      emit resetItemSelection();
       lineMoveOn = true;
     } else if (ellipse) {
       if (!ellipse->getValidArea().contains(event->scenePos())) {
 	clearSelection();
 	selectedEllipse = ellipse;
 	ellipse->setSelected(true);
+	emit resetItemSelection();
 	manipulateEllipse = true;
       }
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
 	clearSelection();
 	rect->setSelected(true);
+	emit resetItemSelection();
 	selectedRect = rect;
 	manipulateRect = true;
       }
@@ -392,6 +455,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     selectedEvent = NULL;
     selectedMacro = NULL;
     selectedNode = NULL;
+    emit resetItemSelection();
     QGraphicsScene::mousePressEvent(event);
   }
 }
@@ -893,7 +957,6 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action3);
     QAction *action4 = new QAction(DELETELINE, this);
     menu.addAction(action4);
-
     if (QAction *action = menu.exec(event->screenPos())) {
       emit LineContextMenuAction(action->text());
     }
@@ -932,7 +995,6 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     if (QAction *action = menu.exec(event->screenPos())) {
       emit RectContextMenuAction(action->text());
     }
-
   }
 }
 

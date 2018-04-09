@@ -39,6 +39,7 @@ signals:
   void moveItems(QGraphicsItem *, QPointF);
   void moveLine(QGraphicsItem *, QPointF);
   void relevantChange();
+  void resetItemSelection();
   void EventItemContextMenuAction(const QString&);
   void ArrowContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
@@ -46,10 +47,6 @@ signals:
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);
   void RectContextMenuAction(const QString&);
-  void increaseTextSize(TextObject *);
-  void decreaseTextSize(TextObject *);
-  void increaseTextWidth(TextObject *);
-  void decreaseTextWidth(TextObject *);
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;
