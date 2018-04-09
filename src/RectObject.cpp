@@ -7,9 +7,9 @@ RectObject::RectObject() {
   rotation = 0;
   penWidth = 1;
   penStyle = 1;
-  setCursor(Qt::OpenHandCursor);
   setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
+  setAcceptHoverEvents(true);
 }
 
 void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -179,6 +179,25 @@ void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     event->ignore();
   } else {
     event->accept();
+    QApplication::setOverrideCursor(Qt::ClosedHandCursor);
   }
 }
 
+void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::restoreOverrideCursor();
+}
+
+void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+  QPainterPath path;
+  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
+  path.addRect(myRect);
+  if (mapToScene(path).contains(event->scenePos())) {
+    QApplication::restoreOverrideCursor();
+  } else {
+    QApplication::setOverrideCursor(Qt::OpenHandCursor);
+  }
+}
+
+void RectObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+  QApplication::restoreOverrideCursor();
+}

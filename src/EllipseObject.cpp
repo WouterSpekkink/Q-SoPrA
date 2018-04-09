@@ -7,9 +7,9 @@ EllipseObject::EllipseObject() {
   rotation = 0;
   penWidth = 1;
   penStyle = 1;
-  setCursor(Qt::OpenHandCursor);
   setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
+  setAcceptHoverEvents(true);
 }
 
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -180,6 +180,26 @@ void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
     event->ignore();
   } else {
     event->accept();
+    QApplication::setOverrideCursor(Qt::ClosedHandCursor);
   }
+}
+
+void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::restoreOverrideCursor();
+}
+
+void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
+  QPainterPath path;
+  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
+  path.addEllipse(myRect);
+  if (mapToScene(path).contains(event->scenePos())) {
+    QApplication::restoreOverrideCursor();
+  } else {
+    QApplication::setOverrideCursor(Qt::OpenHandCursor);
+  }
+}
+
+void EllipseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+  QApplication::restoreOverrideCursor();
 }
 

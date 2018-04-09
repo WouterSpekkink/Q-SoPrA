@@ -12,13 +12,12 @@ LineObject::LineObject(QPointF subStartPos,
   endPos = subEndPos;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   color = Qt::black;
-  //setPen(QPen(color, 3, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  setCursor(Qt::OpenHandCursor);
   arrow1On = false;
   arrow2On = false;
   penWidth = 1;
   penStyle = 1;
+  setAcceptHoverEvents(true);
 }
 
 QRectF LineObject::boundingRect() const {
@@ -48,9 +47,9 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   painter->setPen(QPen(color, penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
 
   arrowHead.clear();
-  arrowHead << tempLine1.p2() << arrowP1 << tempLine1.p2() << arrowP2;
+  arrowHead <<  arrowP1 << tempLine1.p2() << arrowP2;
   arrowHead2.clear();
-  arrowHead2 << tempLine2.p2() << arrowP3 << tempLine2.p2() << arrowP4;
+  arrowHead2 << arrowP3 << tempLine2.p2() << arrowP4;
     
   QPainterPath myPath;
   myPath.moveTo(tempLine2.p2());
@@ -159,4 +158,20 @@ int LineObject::type() const {
   return Type;
 }
 
+void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+}
+
+void LineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::restoreOverrideCursor();
+}
+
+void LineObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+  QApplication::setOverrideCursor(Qt::OpenHandCursor);
+}
+
+void LineObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+}
 

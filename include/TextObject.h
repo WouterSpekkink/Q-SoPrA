@@ -2,6 +2,7 @@
 #define TEXTOBJECT_H
 
 #include <QGraphicsTextItem>
+#include <QApplication>
 
 class TextObject : public QGraphicsTextItem {
 
@@ -17,6 +18,10 @@ public:
   enum {Type = UserType + 12};
   int type() const;
 
+protected:
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
+  
 private:
   qreal rotation;
 };

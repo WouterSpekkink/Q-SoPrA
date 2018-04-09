@@ -36,6 +36,10 @@ public:
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
   void calculate();
+  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
+  virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
   
 private:
   QPointF startPos;

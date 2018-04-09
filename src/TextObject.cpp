@@ -7,6 +7,7 @@ TextObject::TextObject(const QString &text,
   setFlag(QGraphicsTextItem::ItemIsMovable, true);
   setFlag(QGraphicsTextItem::ItemIsSelectable, true);
   rotation = 0;
+  setAcceptHoverEvents(true);
 }
 
 qreal TextObject::getRotationValue() {
@@ -35,4 +36,13 @@ QPointF TextObject::getCenter() {
 
 int TextObject::type() const {
   return Type;
+}
+
+void TextObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+  QApplication::restoreOverrideCursor();
+  QGraphicsTextItem::mouseReleaseEvent(event);
+}
+
+void TextObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+  setCursor(Qt::OpenHandCursor);
 }

@@ -276,6 +276,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       emit resetItemSelection();
       selectedText = text;
       rotateText = true;
+      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
     } else if (ellipse) {
       if (!ellipse->getValidArea().contains(event->scenePos())) {
 	clearSelection();
@@ -283,6 +284,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	emit resetItemSelection();
 	selectedEllipse = ellipse;
 	rotateEllipse = true;
+	QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
       }
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
@@ -291,6 +293,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	emit resetItemSelection();
 	selectedRect = rect;
 	rotateRect = true;
+	QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
       }
     } else {
       clearSelection();
@@ -365,6 +368,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       emit resetItemSelection();
       moveLineObject = true;
       lastMousePos = event->scenePos();
+      QApplication::setOverrideCursor(Qt::SizeAllCursor);
     } else if (ellipse) {
       clearSelection();
       if (!ellipse->getValidArea().contains(event->scenePos())) {
@@ -373,6 +377,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	emit resetItemSelection();
 	moveEllipse = true;
 	lastMousePos = event->scenePos();
+	QApplication::setOverrideCursor(Qt::SizeAllCursor);
       }
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
@@ -382,6 +387,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	emit resetItemSelection();
 	moveRect = true;
 	lastMousePos = event->scenePos();
+	QApplication::setOverrideCursor(Qt::SizeAllCursor);
       }
     }
     return;
@@ -406,6 +412,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 								       QTransform()));
     RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
 							      QTransform()));
+    TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
+							      QTransform()));
+	
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -451,6 +460,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	selectedRect = rect;
 	manipulateRect = true;
       }
+    } else if (text) {
+      QApplication::setOverrideCursor(Qt::SizeAllCursor);
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
@@ -473,6 +484,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   moveRect = false;
   rotateRect = false;
   rotateText = false;
+  QApplication::restoreOverrideCursor();
   QListIterator<QGraphicsItem*> it(this->items());
   while (it.hasNext()) {
     QGraphicsItem *current = it.next();
@@ -480,9 +492,6 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);
-    TextObject *text = qgraphicsitem_cast<TextObject*>(current);
-    LineObject *line = qgraphicsitem_cast<LineObject*>(current);
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(current);
     if (incident) {
       incident->setCursor(Qt::OpenHandCursor);
     } else if (macro) {
@@ -491,12 +500,6 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
       networkNode->setCursor(Qt::OpenHandCursor);
     } else if (occurrence) {
       occurrence->setCursor(Qt::OpenHandCursor);
-    } else if (text) {
-      text->setCursor(Qt::OpenHandCursor);
-    } else if (line) {
-      line->setCursor(Qt::OpenHandCursor);
-    } else if (ellipse) {
-      ellipse->setCursor(Qt::OpenHandCursor);
     }
   }
   selectedEvent = NULL;
@@ -794,6 +797,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	emit moveItems(selectedOccurrence, event->scenePos());
       }
     }
+    QApplication::restoreOverrideCursor();
     QGraphicsScene::mouseMoveEvent(event);
   }
 }

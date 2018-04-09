@@ -51,7 +51,10 @@ public:
   
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event);
-
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+  virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
+  
 private:
   QRectF drawRect;
   QColor color;

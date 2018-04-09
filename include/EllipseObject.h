@@ -50,8 +50,10 @@ public:
   QPainterPath getValidArea();
   
 protected:
-  void mousePressEvent(QGraphicsSceneMouseEvent *event);
-
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+  void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+  virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
   
 private:
   QRectF drawRect;
