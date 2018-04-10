@@ -17,6 +17,7 @@ class GraphicsView : public QGraphicsView {
 public:
   GraphicsView(QGraphicsScene *scene);
   qreal panSpeed;
+  bool isPanning();
 
 signals:
   void EventGraphContextMenuAction(const QString&);

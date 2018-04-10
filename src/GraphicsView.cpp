@@ -78,7 +78,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
     if (!incident && !macro && !arrow && !networkNode && !occurrence &&
 	!occurrenceLabel && !line && !text && !ellipse && !rect) {
       pan = true;
-      setCursor(Qt::ClosedHandCursor);
+      QApplication::setOverrideCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
       return;
     } else if (incident) {
@@ -110,9 +110,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
 
 void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
   pan = false;
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
   this->setDragMode(QGraphicsView::RubberBandDrag);
   if (event->button() == Qt::RightButton) {
-    setCursor(Qt::ArrowCursor);
     lastMousePos = event->pos();
     return;
   } else {
@@ -199,3 +200,6 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
   }
 }
    
+bool GraphicsView::isPanning() {
+  return pan;
+}

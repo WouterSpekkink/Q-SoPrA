@@ -1,4 +1,5 @@
 #include "../include/Scene.h"
+#include "../include/GraphicsView.h"
 #include <math.h>
 #include <QtCore>
 
@@ -277,6 +278,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       selectedText = text;
       rotateText = true;
       QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+      qApp->processEvents();
     } else if (ellipse) {
       if (!ellipse->getValidArea().contains(event->scenePos())) {
 	clearSelection();
@@ -285,6 +287,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	selectedEllipse = ellipse;
 	rotateEllipse = true;
 	QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	qApp->processEvents();
       }
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
@@ -294,6 +297,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	selectedRect = rect;
 	rotateRect = true;
 	QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	qApp->processEvents();
       }
     } else {
       clearSelection();
@@ -369,6 +373,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       moveLineObject = true;
       lastMousePos = event->scenePos();
       QApplication::setOverrideCursor(Qt::SizeAllCursor);
+      qApp->processEvents();
     } else if (ellipse) {
       clearSelection();
       if (!ellipse->getValidArea().contains(event->scenePos())) {
@@ -378,6 +383,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	moveEllipse = true;
 	lastMousePos = event->scenePos();
 	QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	qApp->processEvents();
       }
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
@@ -388,6 +394,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	moveRect = true;
 	lastMousePos = event->scenePos();
 	QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	qApp->processEvents();
       }
     }
     return;
@@ -462,6 +469,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       }
     } else if (text) {
       QApplication::setOverrideCursor(Qt::SizeAllCursor);
+      qApp->processEvents();
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
@@ -691,8 +699,8 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF center = selectedEllipse->mapToScene(selectedEllipse->getCenter());
-    qreal dY = center.y() - lastMousePos.y();
-    qreal dX = center.x() - lastMousePos.x();
+    qreal dY = lastMousePos.y() - center.y();
+    qreal dX = lastMousePos.x() - center.x();
     qreal angle = atan2(dY, dX);
     angle = qRadiansToDegrees(angle);
     selectedEllipse->setRotationValue(angle);
@@ -760,8 +768,8 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit relevantChange();
     lastMousePos = event->scenePos();
     QPointF center = selectedRect->mapToScene(selectedRect->getCenter());
-    qreal dY = center.y() - lastMousePos.y();
-    qreal dX = center.x() - lastMousePos.x();
+    qreal dY = lastMousePos.y() - center.y();
+    qreal dX = lastMousePos.x() - center.x();
     qreal angle = atan2(dY, dX);
     angle = qRadiansToDegrees(angle);
     selectedRect->setRotationValue(angle);
@@ -798,8 +806,11 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	emit moveItems(selectedOccurrence, event->scenePos());
       }
     }
-    QApplication::restoreOverrideCursor();
-    QGraphicsScene::mouseMoveEvent(event);
+    if (!qobject_cast<GraphicsView*>(views()[0])->isPanning()) {
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
+      QGraphicsScene::mouseMoveEvent(event);
+    }
   }
 }
 
