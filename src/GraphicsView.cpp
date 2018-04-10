@@ -123,14 +123,11 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *event) {
 void GraphicsView::mouseMoveEvent(QMouseEvent *event) {
   if (pan) {
     QPointF mouseDelta = mapToScene(event->pos()) - mapToScene(lastMousePos);
-    
     mouseDelta *= scaleFact;
     mouseDelta *= panSpeed;
-    
     setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     QPoint newCenter(VIEW_WIDTH / 2 - mouseDelta.x(),  VIEW_HEIGHT / 2 - mouseDelta.y());
     centerOn(mapToScene(newCenter));
-    lastMousePos = event->pos();
     setTransformationAnchor(QGraphicsView::AnchorViewCenter);
     Scene *scene = qobject_cast<Scene*>(this->scene());
     QRectF currentRect = scene->itemsBoundingRect();
@@ -140,6 +137,7 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event) {
     currentRect.setHeight(currentRect.height() + 100);
     this->scene()->setSceneRect(currentRect);
     update();
+    lastMousePos = event->pos();
     return;
   } else {
     Scene *scene = qobject_cast<Scene*>(this->scene());

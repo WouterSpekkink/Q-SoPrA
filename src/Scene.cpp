@@ -485,6 +485,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   rotateRect = false;
   rotateText = false;
   QApplication::restoreOverrideCursor();
+  qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
   while (it.hasNext()) {
     QGraphicsItem *current = it.next();

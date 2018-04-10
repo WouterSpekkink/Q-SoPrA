@@ -186,6 +186,7 @@ void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::restoreOverrideCursor();
+  QApplication::processEvents();
 }
 
 void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
@@ -194,6 +195,7 @@ void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
   path.addEllipse(myRect);
   if (mapToScene(path).contains(event->scenePos())) {
     QApplication::restoreOverrideCursor();
+    QApplication::processEvents();
   } else {
     QApplication::setOverrideCursor(Qt::OpenHandCursor);
   }
@@ -201,5 +203,6 @@ void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
 
 void EllipseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
   QApplication::restoreOverrideCursor();
+  QApplication::processEvents();
 }
 

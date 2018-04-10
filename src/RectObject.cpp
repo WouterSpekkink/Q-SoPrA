@@ -185,6 +185,7 @@ void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::restoreOverrideCursor();
+  QApplication::processEvents();
 }
 
 void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
@@ -193,6 +194,7 @@ void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
   path.addRect(myRect);
   if (mapToScene(path).contains(event->scenePos())) {
     QApplication::restoreOverrideCursor();
+    QApplication::processEvents();
   } else {
     QApplication::setOverrideCursor(Qt::OpenHandCursor);
   }
@@ -200,4 +202,5 @@ void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
 
 void RectObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
   QApplication::restoreOverrideCursor();
+  QApplication::processEvents();
 }

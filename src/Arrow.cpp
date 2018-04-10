@@ -75,24 +75,27 @@ Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, 
 }
 
 QRectF Arrow::boundingRect() const {
-  qreal extra = (pen().width() + 20) / 2.0;
+   qreal extra = (pen().width() + 20) / 2.0;
   
   return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
 				     end->pos().y() - start->pos().y()))
     .normalized()
     .adjusted(-extra, -extra, extra, extra);
+
 }
 
 QPainterPath Arrow::shape() const {
   static const qreal clickTolerance = 8;
-  QPointF vec = end->pos() - start->pos();
+  QLineF myLine = line();
+  myLine.setLength(myLine.length() + 20);
+  QPointF vec = myLine.p2() - myLine.p1();
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());
 
-  QPainterPath result(start->pos() - vec + orthogonal);
-  result.lineTo(start->pos() - vec - orthogonal);
-  result.lineTo(end->pos() + vec - orthogonal);
-  result.lineTo(end->pos() + vec + orthogonal);
+  QPainterPath result(myLine.p1() - vec + orthogonal);
+  result.lineTo(myLine.p1() - vec - orthogonal);
+  result.lineTo(myLine.p2() + vec - orthogonal);
+  result.lineTo(myLine.p2() + vec + orthogonal);
   result.closeSubpath();
 
   return result;

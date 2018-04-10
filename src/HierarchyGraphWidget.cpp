@@ -879,11 +879,35 @@ void HierarchyGraphWidget::getEdges() {
       }
     }
     if (source != NULL && target != NULL) {
-      Arrow *newArrow = new Arrow(source, target, "Linkages", "", 0);
-      newArrow->setColor(QColor(169, 169, 169, 255));
-      newArrow->setCopy(true);
-      scene->addItem(newArrow);
-      newArrow->hide();
+      bool valid = false;
+      EventItem *eventSource = qgraphicsitem_cast<EventItem*>(source);
+      EventItem *eventTarget = qgraphicsitem_cast<EventItem*>(target);
+      MacroEvent *macroSource = qgraphicsitem_cast<MacroEvent*>(source);
+      MacroEvent *macroTarget = qgraphicsitem_cast<MacroEvent*>(target);
+      if (eventSource && eventTarget) {
+	if (eventSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) {
+	  valid = true;
+	}
+      } else if (eventSource && macroTarget) {
+	if (eventSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) {
+	  valid = true;
+	}
+      } else if (macroSource && eventTarget) {
+	if (macroSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) {
+	  valid = true;
+	}
+      } else if (macroSource && macroTarget) {
+	if (macroSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) {
+	  valid = true;
+	}
+      }
+      if (valid) {
+	Arrow *newArrow = new Arrow(source, target, "Linkages", "", 0);
+	newArrow->setColor(QColor(169, 169, 169, 255));
+	newArrow->setCopy(true);
+	scene->addItem(newArrow);
+	newArrow->hide();
+      }
     }
   }
 }
