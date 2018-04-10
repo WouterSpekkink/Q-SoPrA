@@ -806,11 +806,13 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 	emit moveItems(selectedOccurrence, event->scenePos());
       }
     }
-    if (!qobject_cast<GraphicsView*>(views()[0])->isPanning()) {
-      QApplication::restoreOverrideCursor();
-      // qApp->processEvents();
-      QGraphicsScene::mouseMoveEvent(event);
+    GraphicsView *view = qobject_cast<GraphicsView*>(views()[0]);
+    if (view) {
+      if (!view->isPanning()) {
+	QApplication::restoreOverrideCursor();
+      }
     }
+    QGraphicsScene::mouseMoveEvent(event);
   }
 }
 

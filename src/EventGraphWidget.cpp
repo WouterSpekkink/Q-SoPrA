@@ -4911,6 +4911,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
     QVector<EventItem*> tempVec;
     std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
     if (constraint == SEMIPATHS || constraint == SEMIPATHSATT) {
+      QApplication::setOverrideCursor(Qt::WaitCursor);
       QVector<QGraphicsItem*> allEvents;
       QVectorIterator<EventItem*> evIt(eventVector);
       while (evIt.hasNext()) {
@@ -4927,7 +4928,9 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	QSet<int> markOne;
 	QSet<int> tempOne;
 	tempOne.insert(first->getId());
-	findUndirectedPaths(&markOne, &tempOne);
+	int lowerLimit = tempIncidents.first()->getOrder();
+	int upperLimit = tempIncidents.last()->getOrder();
+	findUndirectedPaths(&markOne, &tempOne, lowerLimit, upperLimit);
 	QVectorIterator<EventItem*> it3(tempIncidents);
 	while (it3.hasNext()) {
 	  EventItem *second = it3.next();
@@ -4935,7 +4938,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	    QSet<int> markTwo;
 	    QSet<int> tempTwo;
 	    tempTwo.insert(second->getId());
-	    findUndirectedPaths(&markTwo, &tempTwo);
+	    findUndirectedPaths(&markTwo, &tempTwo, lowerLimit, upperLimit);
 	    markOne.unite(markTwo);
 	    QVectorIterator<QGraphicsItem*> it4(allEvents);
 	    while (it4.hasNext()) {
@@ -5026,6 +5029,8 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  }
 	}
       }
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
     }
     QVectorIterator<EventItem*> it5(tempVec);
     while (it5.hasNext()) {
@@ -5250,7 +5255,6 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
       incidentId.push_back(event->getId());
     }
   }
-
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
   query->bindValue(":type", selectedType);
@@ -5258,7 +5262,6 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
   query->first();
   QString direction = query->value(0).toString();
   QVectorIterator<EventItem*> dit(incidents);
-
   QSet<int> markOne;
   while (dit.hasNext()) {
     EventItem *departure = dit.next();
@@ -5268,7 +5271,9 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
     } else if (constraint == SEMIPATHS) {
       QSet<int> items;
       items.insert(departure->getId());
-      findUndirectedPaths(&markOne, &items);
+      int lowerLimit = incidents.first()->getOrder();
+      int upperLimit = incidents.last()->getOrder();
+      findUndirectedPaths(&markOne, &items, lowerLimit, upperLimit);
     }
     QVectorIterator<EventItem*> cit(incidents);
     while (cit.hasNext()) {
@@ -6276,28 +6281,55 @@ void EventGraphWidget::addLinkage() {
   EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[1]);
   if (eventOne && eventTwo) {
     QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT direction FROM linkage_types WHERE name = :selectedType");
+    query->bindValue(":selectedType", selectedType);
+    query->exec();
+    query->first();
+    QString direction = query->value(0).toString();
     int idOne = eventOne->getId();
     int idTwo = eventTwo->getId();
     query->prepare("INSERT INTO linkages (tail, head, type, coder) "
 		   "VALUES (:tail, :head, :type, :coder)");
     if (eventOne->getOrder() < eventTwo->getOrder()) {
-      query->bindValue(":tail", idTwo);
-      query->bindValue(":head", idOne);
-      query->bindValue(":type", selectedType);
-      query->bindValue(":coder", selectedCoder);
-      query->exec();      
-      Arrow *newArrow = new Arrow(eventTwo, eventOne, selectedType, selectedCoder);
-      edgeVector.push_back(newArrow);
-      scene->addItem(newArrow);
+      if (direction == PAST) {
+	query->bindValue(":tail", idTwo);
+	query->bindValue(":head", idOne);
+	query->bindValue(":type", selectedType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();      
+	Arrow *newArrow = new Arrow(eventTwo, eventOne, selectedType, selectedCoder);
+	edgeVector.push_back(newArrow);
+	scene->addItem(newArrow);
+      } else if (direction == FUTURE) {
+	query->bindValue(":tail", idOne);
+	query->bindValue(":head", idTwo);
+	query->bindValue(":type", selectedType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();      
+	Arrow *newArrow = new Arrow(eventOne, eventTwo, selectedType, selectedCoder);
+	edgeVector.push_back(newArrow);
+	scene->addItem(newArrow);
+      }
     } else {
-      query->bindValue(":tail", idOne);
-      query->bindValue(":head", idTwo);
-      query->bindValue(":type", selectedType);
-      query->bindValue(":coder", selectedCoder);
-      query->exec();      
-      Arrow *newArrow = new Arrow(eventOne, eventTwo, selectedType, selectedCoder);
-      edgeVector.push_back(newArrow);
-      scene->addItem(newArrow);
+      if (direction == PAST) {
+	query->bindValue(":tail", idOne);
+	query->bindValue(":head", idTwo);
+	query->bindValue(":type", selectedType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();      
+	Arrow *newArrow = new Arrow(eventOne, eventTwo, selectedType, selectedCoder);
+	edgeVector.push_back(newArrow);
+	scene->addItem(newArrow);
+      } else if (direction == FUTURE) {
+	query->bindValue(":tail", idTwo);
+	query->bindValue(":head", idOne);
+	query->bindValue(":type", selectedType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();      
+	Arrow *newArrow = new Arrow(eventTwo, eventOne, selectedType, selectedCoder);
+	edgeVector.push_back(newArrow);
+	scene->addItem(newArrow);
+      }
     }
     delete query;
   }
@@ -6904,7 +6936,8 @@ void EventGraphWidget::findPastPaths(QSet<int> *pMark, int currentIncident) {
   }
 }
 
-void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submittedItems) {
+void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submittedItems,
+					   int lowerLimit, int upperLimit) {
   QSet<int> temp = *submittedItems;
   QSetIterator<int> it(temp);
   while (it.hasNext()) {
@@ -6918,9 +6951,16 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
     query->bindValue(":coder", selectedCoder);
     query->exec();
     while (query->next()) {
-      int currentHead = 0;
-      currentHead = query->value(0).toInt();
-      submittedItems->insert(currentHead);
+      int currentHead = query->value(0).toInt();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
+      query2->bindValue(":head", currentHead);
+      query2->exec();
+      query2->first();
+      int order = query2->value(0).toInt();
+      if (order >= lowerLimit && order <= upperLimit) {
+	submittedItems->insert(currentHead);
+      }
     }
     query->prepare("SELECT tail FROM linkages "
 		   "WHERE head = :head AND type = :type AND coder = :coder");
@@ -6929,13 +6969,20 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
     query->bindValue(":coder", selectedCoder);
     query->exec();
     while (query->next()) {
-      int currentTail = 0;
-      currentTail = query->value(0).toInt();
-      submittedItems->insert(currentTail);
+      int currentTail = query->value(0).toInt();
+            QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");
+      query2->bindValue(":tail", currentTail);
+      query2->exec();
+      query2->first();
+      int order = query2->value(0).toInt();
+      if (order >= lowerLimit && order <= upperLimit) {
+	submittedItems->insert(currentTail);
+      }
     }
   }
   if (submittedItems->size() > temp.size()) {
-    findUndirectedPaths(pMark, submittedItems);
+    findUndirectedPaths(pMark, submittedItems, lowerLimit, upperLimit);
   } else {
     return;
   }
