@@ -157,6 +157,7 @@ private slots:
   void normalizeDistance();
   void closeGap();
   void changeEventDescription();
+  void addLinkage();
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();

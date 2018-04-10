@@ -857,6 +857,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action9);
     QAction *action10 = new QAction(CLOSEGAPACTION, this);
     menu.addAction(action10);
+    QAction *action14 = new QAction(ADDLINKAGE, this);
+    menu.addAction(action14);
     if (selectedItems().size() > 1) {
       action3->setEnabled(false);
       action6->setEnabled(false);
@@ -870,6 +872,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       action13->setEnabled(false);
       action2->setEnabled(false);
       action8->setEnabled(false);
+    }
+    action14->setEnabled(false);
+    if (selectedItems().size() == 2) {
+      EventItem *eventOne = qgraphicsitem_cast<EventItem*>(selectedItems()[0]);
+      EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(selectedItems()[1]);
+      if (eventOne && eventTwo) {
+	action14->setEnabled(true);
+      }
     }
     if (QAction *action = menu.exec(event->screenPos())) {
       emit EventItemContextMenuAction(action->text());

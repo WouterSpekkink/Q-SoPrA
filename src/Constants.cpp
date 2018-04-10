@@ -65,4 +65,5 @@ QString CHANGEELLIPSECOLOR = "Change ellipse color";
 QString DELETEELLIPSE = "Delete ellipse";
 QString CHANGERECTCOLOR = "Change rectangle color";
 QString DELETERECT = "Delete rectangle";
+QString ADDLINKAGE = "Add linkage between incidents";
 qreal Pi = 3.14;

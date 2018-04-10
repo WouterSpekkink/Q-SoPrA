@@ -67,6 +67,7 @@ extern QString CHANGEELLIPSECOLOR;
 extern QString DELETEELLIPSE;
 extern QString CHANGERECTCOLOR;
 extern QString DELETERECT;
+extern QString ADDLINKAGE;
 extern qreal Pi;
 
 #endif

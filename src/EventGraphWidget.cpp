@@ -4806,6 +4806,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     closeGap();
   } else if (action == CHANGEDESCRIPTIONACTION) {
     changeEventDescription();
+  } else if (action == ADDLINKAGE) {
+    addLinkage();
   }
 }
 
@@ -6267,6 +6269,38 @@ void EventGraphWidget::changeEventDescription() {
     selectedMacro->setDescription(description);
   }
   delete textDialog;
+}
+
+void EventGraphWidget::addLinkage() {
+  EventItem *eventOne = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[0]);
+  EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[1]);
+  if (eventOne && eventTwo) {
+    QSqlQuery *query = new QSqlQuery;
+    int idOne = eventOne->getId();
+    int idTwo = eventTwo->getId();
+    query->prepare("INSERT INTO linkages (tail, head, type, coder) "
+		   "VALUES (:tail, :head, :type, :coder)");
+    if (eventOne->getOrder() < eventTwo->getOrder()) {
+      query->bindValue(":tail", idTwo);
+      query->bindValue(":head", idOne);
+      query->bindValue(":type", selectedType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();      
+      Arrow *newArrow = new Arrow(eventTwo, eventOne, selectedType, selectedCoder);
+      edgeVector.push_back(newArrow);
+      scene->addItem(newArrow);
+    } else {
+      query->bindValue(":tail", idOne);
+      query->bindValue(":head", idTwo);
+      query->bindValue(":type", selectedType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();      
+      Arrow *newArrow = new Arrow(eventOne, eventTwo, selectedType, selectedCoder);
+      edgeVector.push_back(newArrow);
+      scene->addItem(newArrow);
+    }
+    delete query;
+  }
 }
 
 void EventGraphWidget::processArrowContextMenu(const QString &action) {
