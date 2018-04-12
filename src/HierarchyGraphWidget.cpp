@@ -476,12 +476,19 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 	       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
   }
-  if (newOrigin->getConstraint() == PATHS) {
+  if (newOrigin->getConstraint() == PATHS ||
+      newOrigin->getConstraint() == PATHSATT) {
     QString label = "P-" + QString::number(newOrigin->getId());
     macroLabel->setPlainText(label);
     macroLabel->setTextWidth(macroLabel->boundingRect().width());
-  } else if (newOrigin->getConstraint() == SEMIPATHS) {
+  } else if (newOrigin->getConstraint() == SEMIPATHS ||
+	     newOrigin->getConstraint() == SEMIPATHSATT) {
     QString label = "S-" + QString::number(newOrigin->getId());
+    macroLabel->setPlainText(label);
+    macroLabel->setTextWidth(macroLabel->boundingRect().width());
+  } else if (newOrigin->getConstraint() == NOCONSTRAINT ||
+	     newOrigin->getConstraint() == NOCONSTRAINTATT) {
+    QString label = "N-" + QString::number(newOrigin->getId());
     macroLabel->setPlainText(label);
     macroLabel->setTextWidth(macroLabel->boundingRect().width());
   }
@@ -544,12 +551,19 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       }
       MacroLabel *newMacroLabel = new MacroLabel(newMacro);
       newMacro->setLabel(newMacroLabel);
-      if (newMacro->getConstraint() == PATHS) {
+      if (newMacro->getConstraint() == PATHS ||
+	  newMacro->getConstraint() == PATHSATT) {
 	QString label = "P-" + QString::number(newMacro->getId());
 	newMacroLabel->setPlainText(label);
 	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-      } else if (newMacro->getConstraint() == SEMIPATHS) {
+      } else if (newMacro->getConstraint() == SEMIPATHS ||
+		 newMacro->getConstraint() == SEMIPATHSATT) {
 	QString label = "S-" + QString::number(newMacro->getId());
+	newMacroLabel->setPlainText(label);
+	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+      } else if (newMacro->getConstraint() == NOCONSTRAINT ||
+		 newMacro->getConstraint() == NOCONSTRAINTATT) {
+	QString label = "N-" + QString::number(newMacro->getId());
 	newMacroLabel->setPlainText(label);
 	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
       }
@@ -713,12 +727,19 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	}
 	MacroLabel *newMacroLabel = new MacroLabel(newMacro);
 	newMacro->setLabel(newMacroLabel);
-	if (newMacro->getConstraint() == PATHS) {
+	if (newMacro->getConstraint() == PATHS ||
+	    newMacro->getConstraint() == PATHSATT) {
 	  QString label = "P-" + QString::number(newMacro->getId());
 	  newMacroLabel->setPlainText(label);
 	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-	} else if (newMacro->getConstraint() == SEMIPATHS) {
+	} else if (newMacro->getConstraint() == SEMIPATHS ||
+		   newMacro->getConstraint() == SEMIPATHSATT) {
 	  QString label = "S-" + QString::number(newMacro->getId());
+	  newMacroLabel->setPlainText(label);
+	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	} else if (newMacro->getConstraint() == NOCONSTRAINT ||
+		   newMacro->getConstraint() == NOCONSTRAINTATT) {
+	  QString label = "N-" + QString::number(newMacro->getId());
 	  newMacroLabel->setPlainText(label);
 	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
 	}

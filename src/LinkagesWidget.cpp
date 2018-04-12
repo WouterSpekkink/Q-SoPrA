@@ -617,7 +617,9 @@ void LinkagesWidget::removeLinkageType() {
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
-    warningBox->setInformativeText("This will remove the linkage type and all its linkages. This action cannot be undone. Are you sure you want to remove this linkage type?");
+    warningBox->setInformativeText("This will remove the linkage type and all its linkages. "
+				   "This action cannot be undone. Are you sure you want to  "
+				   "remove this linkage type?");
     if (warningBox->exec() == QMessageBox::Yes) {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("DELETE FROM linkage_types WHERE name = :name");
@@ -626,7 +628,7 @@ void LinkagesWidget::removeLinkageType() {
       query->prepare("DELETE FROM linkages WHERE type = :name");
       query->bindValue(":name", typeComboBox->currentText());
       query->exec();
-      query->prepare("DELETE FROM coders_to_linkages WHERE type = :name");
+      query->prepare("DELETE FROM coders_to_linkage_types WHERE type = :name");
       query->bindValue(":name", typeComboBox->currentText());
       query->exec();
       query->prepare("DELETE FROM linkage_comments WHERE type = :name");

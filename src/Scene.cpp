@@ -843,6 +843,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     menu.addAction(action2);
     QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
     menu.addAction(action13);
+    QAction *action15 = new QAction(COLLIGATEFREEACTION, this);
+    menu.addAction(action15);
+    QAction *action16 = new QAction(COLLIGATEFREEACTIONATT, this);
+    menu.addAction(action16);
     QAction *action3 = new QAction(MAKEMACROACTION, this);
     menu.addAction(action3);
     QAction *action4= new QAction(RECOLOREVENTSACTION, this);

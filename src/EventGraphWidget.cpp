@@ -4786,6 +4786,10 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     colligateEvents(SEMIPATHS);
   } else if (action == COLLIGATESEMIPATHSACTIONATT) {
     colligateEvents(SEMIPATHSATT);
+  } else if (action == COLLIGATEFREEACTION) {
+    colligateEvents(NOCONSTRAINT);
+  } else if (action == COLLIGATEFREEACTIONATT) {
+    colligateEvents(NOCONSTRAINTATT);
   } else if (action == DISAGGREGATEACTION) {
     disaggregateEvent();
   } else if (action == MAKEMACROACTION) {
@@ -4814,7 +4818,7 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
 void EventGraphWidget::colligateEvents(QString constraint) {
   if (currentData.size() > 0) {
     QString attribute = "";
-    if (constraint == PATHSATT || constraint == SEMIPATHSATT) {
+    if (constraint == PATHSATT || constraint == SEMIPATHSATT || constraint  == NOCONSTRAINTATT) {
       QPointer<SimpleAttributeSelectionDialog> attributeSelection =
 	new SimpleAttributeSelectionDialog(this, INCIDENT);
       attributeSelection->exec();
@@ -4843,7 +4847,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	    QSqlQuery *query = new QSqlQuery;
 	    int id = currentEvent->getId();
 	    query->prepare("SELECT incident FROM attributes_to_incidents "
-			  "WHERE attribute = :attribute AND incident = :id");
+			   "WHERE attribute = :attribute AND incident = :id");
 	    query->bindValue(":attribute", currentAttribute);
 	    query->bindValue(":id", id);
 	    query->exec();
@@ -5212,6 +5216,10 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  QString label = "S-" + QString::number(current->getId());
 	  macroLabel->setPlainText(label);
 	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
+	} else if (constraint == NOCONSTRAINT || constraint == NOCONSTRAINTATT) {
+	  QString label = "N-" + QString::number(current->getId());
+	  macroLabel->setPlainText(label);
+	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
 	}
 	qreal xOffset = (current->getWidth() / 2) - 20;
 	macroLabel->setOffset(QPointF(xOffset,0));
@@ -5243,6 +5251,9 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 }
 
 bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString constraint) {
+  if (constraint == NOCONSTRAINT || constraint == NOCONSTRAINTATT) {
+    return true;
+  }
   /* 
      Check whether colligating these events breaks constrains set for colligation
      First we check internal consistency.
