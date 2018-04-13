@@ -5651,23 +5651,23 @@ void EventGraphWidget::disaggregateEvent() {
     }
   }
   /* 
-     Then we adapt to the new situation by cleaning up the macro that
+`     Then we adapt to the new situation by cleaning up the macro that
      we have disaggregated, by rewiring linkages, and so on.
   */
-  scene->removeItem(selectedMacro->getLabel());
+  delete selectedMacro->getLabel();
   macroLabelVector.removeOne(selectedMacro->getLabel());
-  scene->removeItem(selectedMacro);
+  selectedMacro->setLabel(NULL);
+  delete selectedMacro;
   macroVector.removeOne(selectedMacro);
   selectedMacro = NULL;
-  QVector<Arrow*>::iterator it8;
+   QVector<Arrow*>::iterator it8;
   for (it8 = edgeVector.begin(); it8 != edgeVector.end();) {
     Arrow *current = *it8;
     if (!scene->items().contains(current->startItem()) ||
 	!scene->items().contains(current->endItem())) {
       delete current;
       edgeVector.removeOne(current);
-      //current->hide(); // deleting causes a crash.
-    } else {
+     } else {
       it8++;
     }
   }
@@ -6383,9 +6383,7 @@ void EventGraphWidget::removeLinkage() {
 	query->exec();
 	delete query;
 	delete currentEdge;
-	// If the edge is not between eventItems, then it does not exist in the linkages table.
 	edgeVector.removeOne(currentEdge);
-	//scene->removeItem(currentEdge);
       } else {
 	it.next();
       }
@@ -6554,7 +6552,7 @@ void EventGraphWidget::deleteLine() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
-      scene->removeItem(line);
+      delete line;
       lineVector.removeOne(line);
     }
   }
@@ -6608,7 +6606,7 @@ void EventGraphWidget::deleteText() {
   if (scene->selectedItems().size() == 1) {
     TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
     if (text) {
-      scene->removeItem(text);
+      delete text;
       textVector.removeOne(text);
     }
   }
@@ -6641,7 +6639,7 @@ void EventGraphWidget::deleteEllipse() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
-      scene->removeItem(ellipse);
+      delete ellipse;
       ellipseVector.removeOne(ellipse);
     }
   }  
@@ -6674,7 +6672,7 @@ void EventGraphWidget::deleteRect() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
-      scene->removeItem(rect);
+      delete rect;
       rectVector.removeOne(rect);
     }
   }  
@@ -6909,11 +6907,8 @@ void EventGraphWidget::rejectLinkage() {
       NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
       if (arrow && !(event) && !(text)) {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	scene->removeItem(currentEdge);
+	delete currentEdge;
 	compareVector.removeOne(currentEdge);
-	if (currentEdge) {
-	  delete currentEdge;
-	}
       } else {
 	it.next();
       }

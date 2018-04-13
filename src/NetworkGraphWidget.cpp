@@ -2262,7 +2262,8 @@ void NetworkGraphWidget::mergeRelationships() {
 						       name, CREATED);
 	  newDirected->setColor(color);
 	  directedVector.push_back(newDirected);
-	  scene->removeItem(directed);
+	  delete directed;
+	  directedVector.removeOne(directed);
 	  scene->addItem(newDirected);
 	}
       }
@@ -2283,9 +2284,7 @@ void NetworkGraphWidget::mergeRelationships() {
 	  }
 	}
 	if (found) {
-	  if (scene->items().contains(first)) {
-	    scene->removeItem(first);
-	  }
+	  delete first;
 	  directedVector.removeOne(first);
 	}
       }
@@ -2299,7 +2298,8 @@ void NetworkGraphWidget::mergeRelationships() {
 							     name, CREATED);
 	  newUndirected->setColor(color);
 	  undirectedVector.push_back(newUndirected);
-	  scene->removeItem(undirected);
+	  delete undirected;
+	  undirectedVector.removeOne(undirected);
 	  scene->addItem(newUndirected);
 	}
       }
@@ -2320,9 +2320,7 @@ void NetworkGraphWidget::mergeRelationships() {
 	  }
 	}
 	if (found) {
-	  if (scene->items().contains(first)) {
-	    scene->removeItem(first);
-	  }
+	  delete first;
 	  undirectedVector.removeOne(first);
 	}
       }
@@ -2739,16 +2737,16 @@ void NetworkGraphWidget::removeRelationshipType() {
   while (it.hasNext()) {
     DirectedEdge *directed = it.next();
     if (directed->getType() == text) {
-      directed->hide();
-      scene->removeItem(directed);
+      delete directed;
+      directedVector.removeOne(directed);
     }
   }
   QVectorIterator<UndirectedEdge*> it2(undirectedVector);
   while (it2.hasNext()) {
     UndirectedEdge *undirected = it2.next();
     if (undirected->getType() == text) {
-      undirected->hide();
-      scene->removeItem(undirected);
+      delete undirected;
+      undirectedVector.removeOne(undirected);
     }
   }
   for (int i = 0; i != edgeListWidget->rowCount();) {

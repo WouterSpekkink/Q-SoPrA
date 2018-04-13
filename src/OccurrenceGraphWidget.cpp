@@ -425,9 +425,10 @@ void OccurrenceGraphWidget::removeMode() {
        it != occurrenceVector.end();) {
     OccurrenceItem *current = *it;
     if (current->getAttribute() == text) {
-      scene->removeItem(current->getLabel());
+      delete current->getLabel();
+      current->setLabel(NULL);
       labelVector.removeOne(current->getLabel());
-      scene->removeItem(current);
+      delete current;
       occurrenceVector.removeOne(current);
       presentAttributes.removeOne(text);
     } else {
@@ -599,26 +600,25 @@ void OccurrenceGraphWidget::reset() {
   QVector<OccurrenceItem*>::iterator it;
   for (it = occurrenceVector.begin(); it != occurrenceVector.end();) {
     OccurrenceItem *current = *it;
-    current->hide();
-    current->getLabel()->hide();
     if (current->getId() < 0) {
-      scene->removeItem(current->getLabel());
-      scene->removeItem(current);
+      delete current->getLabel();
       labelVector.removeOne(current->getLabel());
+      current->setLabel(NULL);
+      delete current;
       occurrenceVector.removeOne(current);
     } else {
       current->setPos(QPointF((current->getOrder() * distance), 0));
-      current->setPermHidden(false); // We reset this here.
+      current->setPermHidden(false); // We reset this here.2
       QString text = QString::number(current->getOrder()) + " - " + current->getAttribute();
       QColor textColor = current->getLabel()->defaultTextColor();
-      scene->removeItem(current->getLabel());
+      delete current->getLabel();
       labelVector.removeOne(current->getLabel());
       OccurrenceLabel *newLabel = new OccurrenceLabel(current);
       newLabel->setPlainText(text);
-      newLabel->setTextWidth(current->getLabel()->boundingRect().width());
       newLabel->setDefaultTextColor(textColor);
       current->show();
       current->setLabel(newLabel);
+      newLabel->setTextWidth(current->getLabel()->boundingRect().width());
       current->getLabel()->show();
       current->getLabel()->setNewPos(current->scenePos());
       scene->addItem(current->getLabel());
@@ -653,7 +653,7 @@ void OccurrenceGraphWidget::getEvents() {
 	    QString text = type + QString::number(macro->getId()) + " - " +
 	      occurrence->getAttribute();
 	    QColor textColor = occurrence->getLabel()->defaultTextColor();
-	    scene->removeItem(occurrence->getLabel());
+	    delete occurrence->getLabel();
 	    labelVector.removeOne(occurrence->getLabel());
 	    OccurrenceLabel *newLabel = new OccurrenceLabel(occurrence);
 	    newLabel->setPlainText(text);
