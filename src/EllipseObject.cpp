@@ -15,10 +15,15 @@ EllipseObject::EllipseObject() {
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
   painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
-  painter->drawEllipse(drawRect);
+  QPainterPath path;
+  path.addEllipse(drawRect);
+  painter->strokePath(path, QPen(color, penWidth, Qt::PenStyle(penStyle)));
   if (isSelected()) {
+    QRectF selectRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-    painter->drawPath(shape());
+    QPainterPath outline;
+    outline.addRect(selectRect);
+    painter->drawPath(outline);
     update();
   }
 }
@@ -140,9 +145,14 @@ QRectF EllipseObject::boundingRect() const {
 
 QPainterPath EllipseObject::shape() const {
   QPainterPath path;
-  QRectF myRect = drawRect.adjusted(-1, -1, 1, 1);
+  QPainterPathStroker stroker;
+  stroker.setWidth(penWidth + 5);
+  QRectF myRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
+  QRectF myRectTwo = drawRect.adjusted(1, 1, -1, -1);
   path.addRect(myRect);
-  return path;
+  path.addEllipse(myRectTwo);
+  path.setFillRule(Qt::OddEvenFill); 
+  return stroker.createStroke(path);
 }
 
 int EllipseObject::getPenWidth() {
@@ -163,13 +173,6 @@ void EllipseObject::setPenStyle(int style) {
 
 int EllipseObject::type() const {
   return Type;
-}
-
-QPainterPath EllipseObject::getValidArea() {
-  QPainterPath path;
-  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
-  path.addEllipse(myRect);
-  return(mapToScene(path));
 }
 
 void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {

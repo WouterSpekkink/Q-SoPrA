@@ -280,15 +280,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
       qApp->processEvents();
     } else if (ellipse) {
-      if (!ellipse->getValidArea().contains(event->scenePos())) {
-	clearSelection();
-	ellipse->setSelected(true);
-	emit resetItemSelection();
-	selectedEllipse = ellipse;
-	rotateEllipse = true;
-	QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
-	qApp->processEvents();
-      }
+      clearSelection();
+      ellipse->setSelected(true);
+      emit resetItemSelection();
+      selectedEllipse = ellipse;
+      rotateEllipse = true;
+      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+      qApp->processEvents();
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
 	clearSelection();
@@ -376,15 +374,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       qApp->processEvents();
     } else if (ellipse) {
       clearSelection();
-      if (!ellipse->getValidArea().contains(event->scenePos())) {
-	selectedEllipse = ellipse;
-	ellipse->setSelected(true);
-	emit resetItemSelection();
-	moveEllipse = true;
-	lastMousePos = event->scenePos();
-	QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	qApp->processEvents();
-      }
+      selectedEllipse = ellipse;
+      ellipse->setSelected(true);
+      emit resetItemSelection();
+      moveEllipse = true;
+      lastMousePos = event->scenePos();
+      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+      qApp->processEvents();
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
 	clearSelection();
@@ -452,13 +448,11 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       emit resetItemSelection();
       lineMoveOn = true;
     } else if (ellipse) {
-      if (!ellipse->getValidArea().contains(event->scenePos())) {
-	clearSelection();
-	selectedEllipse = ellipse;
-	ellipse->setSelected(true);
-	emit resetItemSelection();
-	manipulateEllipse = true;
-      }
+      clearSelection();
+      selectedEllipse = ellipse;
+      ellipse->setSelected(true);
+      emit resetItemSelection();
+      manipulateEllipse = true;
     } else if (rect) {
       if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
 	clearSelection();

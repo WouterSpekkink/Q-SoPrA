@@ -47,8 +47,6 @@ public:
   enum {Type = UserType + 13};
   int type() const;
 
-  QPainterPath getValidArea();
-  
 protected:
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
