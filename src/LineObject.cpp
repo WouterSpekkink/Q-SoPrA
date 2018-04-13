@@ -173,7 +173,6 @@ void LineObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
 
 void LineObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
   qApp->processEvents();
 }
 

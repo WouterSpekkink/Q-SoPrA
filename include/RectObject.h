@@ -47,12 +47,10 @@ public:
   enum {Type = UserType + 14};
   int type() const;
 
-  QPolygonF getValidArea();
-  
 protected:
-  void mousePressEvent(QGraphicsSceneMouseEvent *event);
+  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
-  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
   
 private:

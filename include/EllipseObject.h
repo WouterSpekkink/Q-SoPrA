@@ -48,9 +48,9 @@ public:
   int type() const;
 
 protected:
-  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
-  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *event) override;
+  virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
   
 private:

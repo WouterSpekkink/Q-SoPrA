@@ -7,16 +7,15 @@ RectObject::RectObject() {
   rotation = 0;
   penWidth = 1;
   penStyle = 1;
-  setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   setAcceptHoverEvents(true);
 }
 
 void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
-  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
-  painter->drawRect(drawRect);
-
+  QPainterPath path;
+  path.addRect(drawRect);
+  painter->strokePath(path, QPen(color, penWidth, Qt::PenStyle(penStyle)));
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
     painter->drawLine(topLeft(), bottomRight());
@@ -142,9 +141,10 @@ QRectF RectObject::boundingRect() const {
 
 QPainterPath RectObject::shape() const {
   QPainterPath path;
-  QRectF myRect = drawRect.adjusted(-1, -1, 1, 1);
-  path.addRect(myRect);
-  return path;
+  QPainterPathStroker stroker;
+  stroker.setWidth(penWidth + 5);
+  path.addRect(drawRect);
+  return stroker.createStroke(path);
 }
 
 int RectObject::getPenWidth() {
@@ -168,19 +168,8 @@ int RectObject::type() const {
   return Type;
 }
 
-QPolygonF RectObject::getValidArea() {
-  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
-  return(mapToScene(myRect));
-}
-
-void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
-  if (mapToScene(myRect).containsPoint(event->scenePos(), Qt::OddEvenFill)) {
-    event->ignore();
-  } else {
-    event->accept();
-    QApplication::setOverrideCursor(Qt::ClosedHandCursor);
-  }
+void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
 void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
@@ -188,16 +177,8 @@ void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::processEvents();
 }
 
-void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-  QPainterPath path;
-  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
-  path.addRect(myRect);
-  if (mapToScene(path).contains(event->scenePos())) {
-    QApplication::restoreOverrideCursor();
-    QApplication::processEvents();
-  } else {
-    QApplication::setOverrideCursor(Qt::OpenHandCursor);
-  }
+void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+  QApplication::setOverrideCursor(Qt::OpenHandCursor);
 }
 
 void RectObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {

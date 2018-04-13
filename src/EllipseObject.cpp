@@ -7,14 +7,12 @@ EllipseObject::EllipseObject() {
   rotation = 0;
   penWidth = 1;
   penStyle = 1;
-  setFlag(QGraphicsItem::ItemIsMovable, false);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   setAcceptHoverEvents(true);
 }
 
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
-  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
   QPainterPath path;
   path.addEllipse(drawRect);
   painter->strokePath(path, QPen(color, penWidth, Qt::PenStyle(penStyle)));
@@ -175,16 +173,8 @@ int EllipseObject::type() const {
   return Type;
 }
 
-void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-  QPainterPath path;
-  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
-  path.addEllipse(myRect);
-  if (mapToScene(path).contains(event->scenePos())) {
-    event->ignore();
-  } else {
-    event->accept();
-    QApplication::setOverrideCursor(Qt::ClosedHandCursor);
-  }
+void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
 void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
@@ -192,16 +182,8 @@ void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::processEvents();
 }
 
-void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
-  QPainterPath path;
-  QRectF myRect = drawRect.adjusted(10, 10, -10, -10);
-  path.addEllipse(myRect);
-  if (mapToScene(path).contains(event->scenePos())) {
-    QApplication::restoreOverrideCursor();
-    QApplication::processEvents();
-  } else {
-    QApplication::setOverrideCursor(Qt::OpenHandCursor);
-  }
+void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+  QApplication::setOverrideCursor(Qt::OpenHandCursor);
 }
 
 void EllipseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {

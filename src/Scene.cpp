@@ -288,15 +288,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
       qApp->processEvents();
     } else if (rect) {
-      if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
-	clearSelection();
-	rect->setSelected(true);
-	emit resetItemSelection();
-	selectedRect = rect;
-	rotateRect = true;
-	QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
-	qApp->processEvents();
-      }
+      clearSelection();
+      rect->setSelected(true);
+      emit resetItemSelection();
+      selectedRect = rect;
+      rotateRect = true;
+      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+      qApp->processEvents();
     } else {
       clearSelection();
       emit resetItemSelection();
@@ -382,16 +380,14 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       QApplication::setOverrideCursor(Qt::SizeAllCursor);
       qApp->processEvents();
     } else if (rect) {
-      if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
-	clearSelection();
-	selectedRect = rect;
-	rect->setSelected(true);
-	emit resetItemSelection();
-	moveRect = true;
-	lastMousePos = event->scenePos();
-	QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	qApp->processEvents();
-      }
+      clearSelection();
+      selectedRect = rect;
+      rect->setSelected(true);
+      emit resetItemSelection();
+      moveRect = true;
+      lastMousePos = event->scenePos();
+      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+      qApp->processEvents();
     }
     return;
   } else {
@@ -454,13 +450,11 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       emit resetItemSelection();
       manipulateEllipse = true;
     } else if (rect) {
-      if (!rect->getValidArea().containsPoint(event->scenePos(), Qt::OddEvenFill)) {
-	clearSelection();
-	rect->setSelected(true);
-	emit resetItemSelection();
-	selectedRect = rect;
-	manipulateRect = true;
-      }
+      clearSelection();
+      rect->setSelected(true);
+      emit resetItemSelection();
+      selectedRect = rect;
+      manipulateRect = true;
     } else if (text) {
       QApplication::setOverrideCursor(Qt::SizeAllCursor);
       qApp->processEvents();
