@@ -769,18 +769,18 @@ void LinkagesWidget::retrieveData() {
   QString headIndexText = "";
   if (selectedDirection == PAST) {
     tailIndexText = "<b>Tail (" + QString::number(tailIndex - 1) +
-      " / " + QString::number(total - 1) + ")<b>";
+      " / " + QString::number(total - 1) + ") - Incident: " + QString::number(tailIndex) + "<b>";
     int headShown = tailIndex - headIndex;
     int totalShown = tailIndex - 1;
     headIndexText = "<b>Head (" + QString::number(headShown) +
-      " / " + QString::number(totalShown) + ")<b>";
+      " / " + QString::number(totalShown) + ") - Incident: " + QString::number(headIndex) + "<b>";
   } else if (selectedDirection == FUTURE) {
     tailIndexText = "<b>Tail (" + QString::number(tailIndex) +
-      " / " + QString::number(total - 1) + ")<b>";
+      " / " + QString::number(total - 1) + ") - Incident: " + QString::number(tailIndex) + "<b>";
     int headShown = headIndex - tailIndex;
     int totalShown = total - tailIndex;
     headIndexText = "<b>Head (" + QString::number(headShown) +
-      " / " + QString::number(totalShown) + ")<b>";
+      " / " + QString::number(totalShown) + ") - Incident: "+ QString::number(headIndex) + "<b>";
   }
   tailIndexLabel->setText(tailIndexText);
   headIndexLabel->setText(headIndexText);
@@ -2447,9 +2447,11 @@ void LinkagesWidget::setLink() {
     query->bindValue(":coder", selectedCoder);
     query->exec();
   }
-  linkageFeedbackLabel->setText("LINKED");
-  linkageFeedbackLabel->adjustSize();
-  linkageFeedbackLabel->repaint();
+  if (linkageFeedbackLabel->text() != "LINKED") {
+    linkageFeedbackLabel->setText("LINKED");
+    linkageFeedbackLabel->adjustSize();
+    linkageFeedbackLabel->repaint();
+  }
   qApp->processEvents();
   eventGraph->checkCongruency();
   if (codingType == ASSISTED && selectedDirection == PAST) {

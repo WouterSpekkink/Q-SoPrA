@@ -1999,7 +1999,7 @@ void EventGraphWidget::addLabels() {
 
 void EventGraphWidget::cleanUp() {
   scene->clearSelection();
-  currentData.clear();
+  currentData.clear(); // Contents will be deleted below
   qDeleteAll(macroVector);
   macroVector.clear();
   qDeleteAll(macroLabelVector);
@@ -5664,9 +5664,9 @@ void EventGraphWidget::disaggregateEvent() {
     Arrow *current = *it8;
     if (!scene->items().contains(current->startItem()) ||
 	!scene->items().contains(current->endItem())) {
-      scene->removeItem(current);
+      delete current;
       edgeVector.removeOne(current);
-      current->hide(); // deleting causes a crash.
+      //current->hide(); // deleting causes a crash.
     } else {
       it8++;
     }
@@ -6382,12 +6382,10 @@ void EventGraphWidget::removeLinkage() {
 	query->bindValue(":type", selectedType);
 	query->exec();
 	delete query;
+	delete currentEdge;
 	// If the edge is not between eventItems, then it does not exist in the linkages table.
-	scene->removeItem(currentEdge);
 	edgeVector.removeOne(currentEdge);
-	if (currentEdge) {
-	  //	  delete currentEdge;
-	}
+	//scene->removeItem(currentEdge);
       } else {
 	it.next();
       }
@@ -6426,8 +6424,8 @@ void EventGraphWidget::removeNormalLinkage() {
 	    query->exec();
 	    delete query;
 	  }
-	  scene->removeItem(currentEdge);
 	  edgeVector.removeOne(currentEdge);
+	  delete currentEdge;
 	  delete warningBox;
 	} else {
 	  delete warningBox;
