@@ -127,6 +127,16 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
+  connect(scene, SIGNAL(LineContextMenuAction(const QString &)),
+	  this, SLOT(processLineContextMenu(const QString &)));
+  connect(scene, SIGNAL(TextContextMenuAction(const QString &)),
+	  this, SLOT(processTextContextMenu(const QString &)));
+  connect(scene, SIGNAL(EllipseContextMenuAction(const QString &)),
+	  this, SLOT(processEllipseContextMenu(const QString &)));
+  connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
+	  this, SLOT(processRectContextMenu(const QString &)));
+  connect(view, SIGNAL(HierarchyGraphContextMenuAction(const QString &, const QPoint&)),
+	  this, SLOT(processHierarchyGraphContextMenu(const QString &, const QPoint&)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   connect(exitButton, SIGNAL(clicked()), this, SLOT(switchBack()));
   
@@ -965,6 +975,246 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
   }
 }
 
+void HierarchyGraphWidget::processHierarchyGraphContextMenu(const QString &action, const QPoint &pos) {
+  if (action == ADDLINE) {
+    addLineObject(false, false, view->mapToScene(pos));
+  } else if (action == ADDSINGLEARROW) {
+    addLineObject(true, false, view->mapToScene(pos));
+  } else if (action == ADDDOUBLEARROW) {
+    addLineObject(true, true, view->mapToScene(pos));
+  } else if (action == ADDTEXT) {
+    addTextObject(view->mapToScene(pos));
+  } else if (action == ADDELLIPSE) {
+    addEllipseObject(view->mapToScene(pos));
+  } else if (action == ADDRECT) {
+    addRectObject(view->mapToScene(pos));
+  }
+}
+
+void HierarchyGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF &pos) {
+  LineObject *newLineObject = new LineObject(QPointF(pos.x() - 100, pos.y()),
+					     QPointF(pos.x() + 100, pos.y()));
+  if (arrow1) {
+    newLineObject->setArrow1(true);
+  }
+  if (arrow2) {
+    newLineObject->setArrow2(true);
+  }
+  lineVector.push_back(newLineObject);
+  scene->addItem(newLineObject);
+  newLineObject->setZValue(3);
+}
+
+void HierarchyGraphWidget::addTextObject(const QPointF &pos) {
+  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+  textDialog->setWindowTitle("Set text");
+  textDialog->setLabel("Free text:");
+  textDialog->exec();
+  if (textDialog->getExitStatus() == 0) {
+    QString text = textDialog->getText();
+    TextObject *newText = new TextObject(text);
+    textVector.push_back(newText);
+    scene->addItem(newText);
+    newText->setPos(pos);
+    newText->setZValue(4);
+    newText->adjustSize();
+  }
+  delete textDialog;
+}
+
+void HierarchyGraphWidget::addEllipseObject(const QPointF &pos) {
+  EllipseObject *newEllipse = new EllipseObject();
+  ellipseVector.push_back(newEllipse);
+  scene->addItem(newEllipse);
+  newEllipse->setZValue(3);
+  newEllipse->setPos(pos);
+  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+}
+
+void HierarchyGraphWidget::addRectObject(const QPointF &pos) {
+  RectObject *newRect = new RectObject();
+  rectVector.push_back(newRect);
+  scene->addItem(newRect);
+  newRect->setZValue(3);
+  newRect->setPos(pos);
+  newRect->moveCenter(newRect->mapFromScene(pos));
+}
+
+void HierarchyGraphWidget::processLineContextMenu(const QString &action) {
+  if (action == CHANGELINECOLOR) {
+    changeLineColor();
+  } else if (action == TOGGLEARROW1) {
+    toggleArrow1();
+  } else if (action == TOGGLEARROW2) {
+    toggleArrow2();
+  } else if (action == DELETELINE) {
+    deleteLine();
+  }
+}
+
+void HierarchyGraphWidget::changeLineColor() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	line->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::toggleArrow1() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      line->setArrow1(!line->arrow1());
+    }
+  }
+}
+
+void HierarchyGraphWidget::toggleArrow2() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      line->setArrow2(!line->arrow2());
+    }
+  }
+}
+
+void HierarchyGraphWidget::deleteLine() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      delete line;
+      lineVector.removeOne(line);
+    }
+  }
+}
+
+void HierarchyGraphWidget::processTextContextMenu(const QString &action) {
+  if (action == CHANGETEXT) {
+    changeText();
+  } else if (action == CHANGETEXTCOLOR) {
+    changeTextColor();
+  } else if (action == DELETETEXT) {
+    deleteText();
+  }
+}
+
+void HierarchyGraphWidget::changeText() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      QString oldText = text->toPlainText();
+      QPointer<LargeTextDialog> textDialog= new LargeTextDialog(this);
+      textDialog->setWindowTitle("Edit text");
+      textDialog->setLabel("Edit free text:");
+      textDialog->submitText(oldText);
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString newText = textDialog->getText();
+	text->setPlainText(newText);
+      }
+      delete textDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::changeTextColor() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	text->setDefaultTextColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::deleteText() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      delete text;
+      textVector.removeOne(text);
+    }
+  }
+}
+
+void HierarchyGraphWidget::processEllipseContextMenu(const QString &action) {
+  if (action == CHANGEELLIPSECOLOR) {
+    changeEllipseColor();
+  } else if (action == DELETEELLIPSE) {
+    deleteEllipse();
+  }
+}
+
+void HierarchyGraphWidget::changeEllipseColor() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	ellipse->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::deleteEllipse() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      delete ellipse;
+      ellipseVector.removeOne(ellipse);
+    }
+  }  
+}
+
+void HierarchyGraphWidget::processRectContextMenu(const QString &action) {
+  if (action == CHANGERECTCOLOR) {
+    changeRectColor();
+  } else if (action == DELETERECT) {
+    deleteRect();
+  }
+}
+
+void HierarchyGraphWidget::changeRectColor() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	rect->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::deleteRect() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      delete rect;
+      rectVector.removeOne(rect);
+    }
+  }  
+}
+
 void HierarchyGraphWidget::toggleLinkages() {
   showLinkages = !showLinkages;
   if (showLinkages) {
@@ -1750,10 +2000,17 @@ void HierarchyGraphWidget::cleanUp() {
   if (group != NULL) {
     scene->destroyItemGroup(group);
   }
-  scene->clear();
   currentData.clear();
   selectedMacro = NULL;
   selectedIncident = 0;
+  qDeleteAll(lineVector);
+  lineVector.clear();
+  qDeleteAll(textVector);
+  textVector.clear();
+  qDeleteAll(ellipseVector);
+  ellipseVector.clear();
+  qDeleteAll(rectVector);
+  rectVector.clear();
   retrieveData();
   eventListWidget->setRowCount(0);
 }

@@ -165,11 +165,11 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
-  void processEventGraphContextMenu(const QString &action);
-  void addLineObject(bool arrow1, bool arrow2);
-  void addTextObject();
-  void addEllipseObject();
-  void addRectObject();
+  void processEventGraphContextMenu(const QString &action, const QPoint &pos);
+  void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
+  void addTextObject(const QPointF &pos);
+  void addEllipseObject(const QPointF &pos);
+  void addRectObject(const QPointF &pos);
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void toggleArrow1();

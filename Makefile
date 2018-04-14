@@ -131,6 +131,7 @@ SOURCES       = main.cpp \
 		moc_AttributeSelectionDialog.cpp \
 		moc_AttributesWidget.cpp \
 		moc_AttributeTreeFilter.cpp \
+		moc_BandlessGraphicsView.cpp \
 		moc_CheckBoxDelegate.cpp \
 		moc_ComboBoxDialog.cpp \
 		moc_DataWidget.cpp \
@@ -267,6 +268,7 @@ OBJECTS       = main.o \
 		moc_AttributeSelectionDialog.o \
 		moc_AttributesWidget.o \
 		moc_AttributeTreeFilter.o \
+		moc_BandlessGraphicsView.o \
 		moc_CheckBoxDelegate.o \
 		moc_ComboBoxDialog.o \
 		moc_DataWidget.o \
@@ -727,9 +729,9 @@ benchmark: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 moc_AttributeColorDialog.cpp: include/Constants.h \
 		include/DeselectableTreeView.h \
 		include/AttributeTreeFilter.h \
@@ -838,6 +840,11 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 moc_AttributeTreeFilter.cpp: include/AttributeTreeFilter.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/AttributeTreeFilter.h -o moc_AttributeTreeFilter.cpp
+
+moc_BandlessGraphicsView.cpp: include/SimpleTextDialog.h \
+		include/BandlessGraphicsView.h \
+		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/BandlessGraphicsView.h -o moc_BandlessGraphicsView.cpp
 
 moc_CheckBoxDelegate.cpp: include/CheckBoxDelegate.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
@@ -1494,6 +1501,7 @@ moc_NetworkGraphWidget.cpp: include/DeselectableTreeViewEntities.h \
 		include/ZoomableTableView.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h \
 		include/NetworkGraphWidget.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/NetworkGraphWidget.h -o moc_NetworkGraphWidget.cpp
@@ -1726,6 +1734,7 @@ moc_RawRelationshipsTable.cpp: include/RelationalTable.h \
 		include/NodeSettingsDialog.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h \
 		include/EditEntityDialog.h \
 		include/RawRelationshipsTable.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
@@ -1803,6 +1812,7 @@ moc_RelationshipsWidget.cpp: include/AttributeDialog.h \
 		include/ZoomableTableView.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h \
 		include/EditEntityDialog.h \
 		include/RelationshipsWidget.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
@@ -2093,7 +2103,66 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/EllipseObject.h \
 		include/MacroLabel.h \
 		include/OccurrenceLabel.h \
-		include/RectObject.h
+		include/RectObject.h \
+		include/HierarchyGraphWidget.h \
+		include/EventGraphWidget.h \
+		include/GraphicsView.h \
+		include/ProgressBar.h \
+		include/SavedPlotsDialog.h \
+		include/AttributeColorDialog.h \
+		include/DeselectableTreeView.h \
+		include/AttributeTreeFilter.h \
+		include/LargeTextDialog.h \
+		include/AttributesWidget.h \
+		include/AttributeDialog.h \
+		include/AttributeIndexDialog.h \
+		include/MainWindow.h \
+		include/EventSequenceDatabase.h \
+		include/DataWidget.h \
+		include/RecordDialog.h \
+		include/EventTableModel.h \
+		include/ZoomableTableView.h \
+		include/OccurrenceGraphWidget.h \
+		include/DeselectableListWidget.h \
+		include/SortFunctions.h \
+		include/CheckBoxDelegate.h \
+		include/RelationshipsWidget.h \
+		include/RelationshipTypeDialog.h \
+		include/RelationshipTreeFilter.h \
+		include/RelationshipsDialog.h \
+		include/EntitiesFilter.h \
+		include/EntityTableModel.h \
+		include/EntityDialog.h \
+		include/DeselectableTreeViewEntities.h \
+		include/MergeAttributesDialog.h \
+		include/ZoomableListView.h \
+		include/NetworkGraphWidget.h \
+		include/DirectedEdge.h \
+		include/UndirectedEdge.h \
+		include/NetworkNodeLabel.h \
+		include/MultimodeDialog.h \
+		include/MergeRelationshipsDialog.h \
+		include/NodeSettingsDialog.h \
+		include/AttributeSelectionDialog.h \
+		include/ComboBoxDialog.h \
+		include/EditEntityDialog.h \
+		include/LinkagesWidget.h \
+		include/LinkageTypeDialog.h \
+		include/LinkagesIndexDialog.h \
+		include/JournalWidget.h \
+		include/JournalTableModel.h \
+		include/RawAttributesTable.h \
+		include/RelationalTable.h \
+		include/RawRelationshipsTable.h \
+		include/IncidentsAttributesTable.h \
+		include/EntitiesAttributesTable.h \
+		include/MissingAttributesTable.h \
+		include/EventQueryModel.h \
+		include/MissingRelationshipsTable.h \
+		include/LineageColorDialog.h \
+		include/ExportTransitionMatrixDialog.h \
+		include/EventNodeSettingsDialog.h \
+		include/SimpleAttributeSelectionDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BandlessGraphicsView.o src/BandlessGraphicsView.cpp
 
 CheckBoxDelegate.o: src/CheckBoxDelegate.cpp include/CheckBoxDelegate.h
@@ -2290,6 +2359,7 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/ZoomableTableView.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h \
 		include/EditEntityDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EntityDialog.o src/EntityDialog.cpp
 
@@ -2892,7 +2962,8 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 		include/NodeSettingsDialog.h \
 		include/ZoomableTableView.h \
 		include/AttributeSelectionDialog.h \
-		include/ComboBoxDialog.h
+		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o NetworkGraphWidget.o src/NetworkGraphWidget.cpp
 
 NetworkNode.o: src/NetworkNode.cpp include/NetworkNode.h \
@@ -3180,6 +3251,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/NodeSettingsDialog.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h \
 		include/EditEntityDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RawRelationshipsTable.o src/RawRelationshipsTable.cpp
 
@@ -3255,6 +3327,7 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/ZoomableTableView.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
+		include/LargeTextDialog.h \
 		include/EditEntityDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipsWidget.o src/RelationshipsWidget.cpp
 
@@ -3344,6 +3417,9 @@ moc_AttributesWidget.o: moc_AttributesWidget.cpp
 
 moc_AttributeTreeFilter.o: moc_AttributeTreeFilter.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_AttributeTreeFilter.o moc_AttributeTreeFilter.cpp
+
+moc_BandlessGraphicsView.o: moc_BandlessGraphicsView.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_BandlessGraphicsView.o moc_BandlessGraphicsView.cpp
 
 moc_CheckBoxDelegate.o: moc_CheckBoxDelegate.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_CheckBoxDelegate.o moc_CheckBoxDelegate.cpp

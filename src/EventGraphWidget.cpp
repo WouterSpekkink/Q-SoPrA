@@ -218,8 +218,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processEllipseContextMenu(const QString &)));
   connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
 	  this, SLOT(processRectContextMenu(const QString &)));
-  connect(view, SIGNAL(EventGraphContextMenuAction(const QString &)),
-	  this, SLOT(processEventGraphContextMenu(const QString &)));
+  connect(view, SIGNAL(EventGraphContextMenuAction(const QString &, const QPoint &)),
+	  this, SLOT(processEventGraphContextMenu(const QString &, const QPoint &)));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -3047,7 +3047,7 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->close();
     delete saveProgress;
     saveProgress = new ProgressBar(0, 1, lineVector.size());
-    saveProgress->setWindowTitle("Saving double arrows");
+    saveProgress->setWindowTitle("Saving line objects");
     saveProgress->setAttribute(Qt::WA_DeleteOnClose);
     saveProgress->setModal(true);
     counter = 1;
@@ -6436,26 +6436,25 @@ void EventGraphWidget::removeNormalLinkage() {
   }
 }
 
-void EventGraphWidget::processEventGraphContextMenu(const QString &action) {
+void EventGraphWidget::processEventGraphContextMenu(const QString &action, const QPoint &pos) {
   if (action == ADDLINE) {
-    addLineObject(false, false);
+    addLineObject(false, false, view->mapToScene(pos));
   } else if (action == ADDSINGLEARROW) {
-    addLineObject(true, false);
+    addLineObject(true, false, view->mapToScene(pos));
   } else if (action == ADDDOUBLEARROW) {
-    addLineObject(true, true);
+    addLineObject(true, true, view->mapToScene(pos));
   } else if (action == ADDTEXT) {
-    addTextObject();
+    addTextObject(view->mapToScene(pos));
   } else if (action == ADDELLIPSE) {
-    addEllipseObject();
+    addEllipseObject(view->mapToScene(pos));
   } else if (action == ADDRECT) {
-    addRectObject();
+    addRectObject(view->mapToScene(pos));
   }
 }
 
-void EventGraphWidget::addLineObject(bool arrow1, bool arrow2) {
-  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
-  LineObject *newLineObject = new LineObject(QPointF(mousePos.x() - 100, mousePos.y()),
-					     QPointF(mousePos.x() + 100, mousePos.y()));
+void EventGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF &pos) {
+  LineObject *newLineObject = new LineObject(QPointF(pos.x() - 100, pos.y()),
+					     QPointF(pos.x() + 100, pos.y()));
   if (arrow1) {
     newLineObject->setArrow1(true);
   }
@@ -6467,8 +6466,7 @@ void EventGraphWidget::addLineObject(bool arrow1, bool arrow2) {
   newLineObject->setZValue(3);
 }
 
-void EventGraphWidget::addTextObject() {
-  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+void EventGraphWidget::addTextObject(const QPointF &pos) {
   QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
   textDialog->setWindowTitle("Set text");
   textDialog->setLabel("Free text:");
@@ -6478,29 +6476,29 @@ void EventGraphWidget::addTextObject() {
     TextObject *newText = new TextObject(text);
     textVector.push_back(newText);
     scene->addItem(newText);
-    newText->setPos(mousePos);
+    newText->setPos(pos);
     newText->setZValue(4);
     newText->adjustSize();
   }
   delete textDialog;
 }
 
-void EventGraphWidget::addEllipseObject() {
-  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+void EventGraphWidget::addEllipseObject(const QPointF &pos) {
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
   newEllipse->setZValue(3);
-  newEllipse->setPos(mousePos);
+  newEllipse->setPos(pos);
+  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
 
-void EventGraphWidget::addRectObject() {
-  QPointF mousePos = view->mapToScene(view->mapFromGlobal(QCursor::pos()));
+void EventGraphWidget::addRectObject(const QPointF &pos) {
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
   newRect->setZValue(3);
-  newRect->setPos(mousePos);
+  newRect->setPos(pos);
+  newRect->moveCenter(newRect->mapFromScene(pos));
 }
 
 void EventGraphWidget::processLineContextMenu(const QString &action) {

@@ -12,10 +12,15 @@
 
 
 class BandlessGraphicsView : public QGraphicsView {
+  Q_OBJECT
   
 public:
   BandlessGraphicsView(QGraphicsScene *scene);
   qreal panSpeed;
+  bool isPanning();
+  
+signals:
+  void HierarchyGraphContextMenuAction(const QString&, const QPoint&);
   
 protected:
   void resizeEvent(QResizeEvent *) override;

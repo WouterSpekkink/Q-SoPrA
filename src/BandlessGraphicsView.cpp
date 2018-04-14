@@ -5,6 +5,7 @@
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/OccurrenceLabel.h"
+#include "../include/HierarchyGraphWidget.h"
 
 #define VIEW_CENTER viewport()->rect().center()
 #define VIEW_WIDTH viewport()->rect().width()
@@ -22,8 +23,30 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
   if (event->modifiers() & Qt::ShiftModifier) {
     QGraphicsView::mousePressEvent(event);
   } else if (event->modifiers() & Qt::ControlModifier) {
+    if (event->button() == Qt::RightButton) {
+      HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(parent());
+      QPoint mousePos = mapFromGlobal(event->globalPos());
+      if (hgw) {
+	QMenu menu;
+	QAction *action1 = new QAction(ADDLINE, this);
+	QAction *action2 = new QAction(ADDSINGLEARROW, this);
+	QAction *action3 = new QAction(ADDDOUBLEARROW, this);
+	QAction *action4 = new QAction(ADDTEXT, this);
+ 	QAction *action5 = new QAction(ADDELLIPSE, this);
+	QAction *action6 = new QAction(ADDRECT, this);
+	menu.addAction(action1);
+	menu.addAction(action2);
+	menu.addAction(action3);
+	menu.addAction(action4);
+	menu.addAction(action5);
+	menu.addAction(action6);
+	if (QAction *action = menu.exec(event->globalPos())) {
+	  emit HierarchyGraphContextMenuAction(action->text(), mousePos);
+	}
+      }
+    }
     QGraphicsView::mousePressEvent(event);
-  } else if (event->button() == Qt::RightButton) {
+  } else if (event->button() == Qt::RightButton) { 
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
     Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
@@ -43,7 +66,7 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
     }
     if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel) {
       pan = true;
-      setCursor(Qt::ClosedHandCursor);
+      QApplication::setOverrideCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
       return;
     } else if (incident) {
@@ -67,8 +90,9 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
 
 void BandlessGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
   pan = false;
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
   if (event->button() == Qt::RightButton) {
-    setCursor(Qt::ArrowCursor);
     lastMousePos = event->pos();
     return;
   } else {
@@ -143,3 +167,6 @@ void BandlessGraphicsView::wheelEvent(QWheelEvent* event) {
   }
 }
    
+bool BandlessGraphicsView::isPanning() {
+  return pan;
+}

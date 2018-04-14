@@ -30,6 +30,11 @@
 #include "AttributeDialog.h"
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
+#include "LargeTextDialog.h"
+#include "LineObject.h"
+#include "EllipseObject.h"
+#include "RectObject.h"
+#include "TextObject.h"
 
 class AttributesWidget;
 
@@ -75,6 +80,27 @@ private slots:
   void resetTexts();
   void toggleLinkages();
   void toggleHierarchy();
+
+  void processHierarchyGraphContextMenu(const QString &action, const QPoint &pos);
+  void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
+  void addTextObject(const QPointF &pos);
+  void addEllipseObject(const QPointF &pos);
+  void addRectObject(const QPointF &pos);
+  void processLineContextMenu(const QString &action);
+  void changeLineColor();
+  void toggleArrow1();
+  void toggleArrow2();
+  void deleteLine();
+  void processTextContextMenu(const QString &action);
+  void changeText();
+  void changeTextColor();
+  void deleteText();
+  void processEllipseContextMenu(const QString &action);
+  void changeEllipseColor();
+  void deleteEllipse();
+  void processRectContextMenu(const QString &action);
+  void changeRectColor();
+  void deleteRect();
   
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
@@ -99,6 +125,11 @@ private:
   QVector<QGraphicsItem*> currentData;
   AttributesWidget *attributesWidget;
   EventGraphWidget *eventGraph;
+
+  QVector<LineObject*> lineVector;
+  QVector<TextObject*> textVector;
+  QVector<EllipseObject*> ellipseVector;
+  QVector<RectObject*> rectVector;
   
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> attWidget;

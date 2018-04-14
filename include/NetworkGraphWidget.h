@@ -37,6 +37,11 @@
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
 #include "NodeSettingsDialog.h"
+#include "LargeTextDialog.h"
+#include "LineObject.h"
+#include "EllipseObject.h"
+#include "RectObject.h"
+#include "TextObject.h"
 
 class NetworkGraphWidget : public QWidget {
   Q_OBJECT
@@ -49,7 +54,8 @@ public:
   void resetTree();
   void checkCongruency();
   void getTypes();
-			
+  bool typesPresent();
+		 
 private slots:
   void toggleDetails();
   void toggleGraphicsControls();
@@ -130,10 +136,31 @@ private slots:
   void contractLayout();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
 
-  void processNetworkNodeContextMenu(const QString action);
+  void processNetworkNodeContextMenu(const QString &action);
   void hideCurrentNode();
   void setNodePersistence(bool status);
-  
+
+  void processNetworkGraphContextMenu(const QString &action, const QPoint &pos);
+  void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
+  void addTextObject(const QPointF &pos);
+  void addEllipseObject(const QPointF &pos);
+  void addRectObject(const QPointF &pos);
+  void processLineContextMenu(const QString &action);
+  void changeLineColor();
+  void toggleArrow1();
+  void toggleArrow2();
+  void deleteLine();
+  void processTextContextMenu(const QString &action);
+  void changeText();
+  void changeTextColor();
+  void deleteText();
+  void processEllipseContextMenu(const QString &action);
+  void changeEllipseColor();
+  void deleteEllipse();
+  void processRectContextMenu(const QString &action);
+  void changeRectColor();
+  void deleteRect();
+
   void setPlotButton();
   void plotNewGraph();
   void addRelationshipType();
@@ -150,6 +177,10 @@ private:
   QVector<DirectedEdge*> directedVector;
   QVector<UndirectedEdge*> undirectedVector;
   QVector<NetworkNodeLabel*> labelVector;
+  QVector<LineObject*> lineVector;
+  QVector<TextObject*> textVector;
+  QVector<EllipseObject*> ellipseVector;
+  QVector<RectObject*> rectVector;
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> graphicsWidget;
   QPointer<QWidget> legendWidget;

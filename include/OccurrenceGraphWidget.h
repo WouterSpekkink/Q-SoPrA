@@ -33,6 +33,11 @@
 #include "EventItem.h"
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
+#include "LargeTextDialog.h"
+#include "LineObject.h"
+#include "EllipseObject.h"
+#include "RectObject.h"
+#include "TextObject.h"
 
 class EventGraphWidget;
 
@@ -46,6 +51,7 @@ public:
 
   void setEventGraph(EventGraphWidget *egw);			     
   void checkCongruency();
+  bool attributesPresent();
 			
 private slots:
   void toggleLegend();
@@ -79,6 +85,27 @@ private slots:
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void processMoveLine(QGraphicsItem *item, QPointF pos);
   
+  void processOccurrenceGraphContextMenu(const QString &action, const QPoint &pos);
+  void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
+  void addTextObject(const QPointF &pos);
+  void addEllipseObject(const QPointF &pos);
+  void addRectObject(const QPointF &pos);
+  void processLineContextMenu(const QString &action);
+  void changeLineColor();
+  void toggleArrow1();
+  void toggleArrow2();
+  void deleteLine();
+  void processTextContextMenu(const QString &action);
+  void changeText();
+  void changeTextColor();
+  void deleteText();
+  void processEllipseContextMenu(const QString &action);
+  void changeEllipseColor();
+  void deleteEllipse();
+  void processRectContextMenu(const QString &action);
+  void changeRectColor();
+  void deleteRect();
+
   void saveCurrentPlot();
   void seePlots();
   
@@ -93,6 +120,10 @@ private:
   QVector<OccurrenceItem*> occurrenceVector;
   QVector<Arrow*> edgeVector;
   QVector<OccurrenceLabel*> labelVector;
+  QVector<LineObject*> lineVector;
+  QVector<TextObject*> textVector;
+  QVector<EllipseObject*> ellipseVector;
+  QVector<RectObject*> rectVector;
   EventGraphWidget *eventGraph;
 
   QPointer<QLabel> legendLabel;

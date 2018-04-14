@@ -1,5 +1,6 @@
 #include "../include/Scene.h"
 #include "../include/GraphicsView.h"
+#include "../include/BandlessGraphicsView.h"
 #include <math.h>
 #include <QtCore>
 
@@ -27,7 +28,7 @@ QRectF Scene::itemsBoundingRect() const {
     if (item->isVisible()) {
       boundingRect |= item->sceneBoundingRect();
     }
-  return boundingRect;
+  return boundingRect.adjusted(-500, -500, 500, 500);
 }
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
@@ -795,8 +796,13 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
       }
     }
     GraphicsView *view = qobject_cast<GraphicsView*>(views()[0]);
+    BandlessGraphicsView *bandless = qobject_cast<BandlessGraphicsView*>(views()[0]);
     if (view) {
       if (!view->isPanning()) {
+	QApplication::restoreOverrideCursor();
+      }
+    } else if (bandless) {
+      if (!bandless->isPanning()) {
 	QApplication::restoreOverrideCursor();
       }
     }
@@ -805,215 +811,217 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
-  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
-  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
-  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
-  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
-  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
-  NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
-  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
-  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(), QTransform()));
-  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(), QTransform()));
-  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(), QTransform()));
-  if (nodeLabel) {
-    incident = nodeLabel->getNode();
-  }
-  if (macroLabel) {
-    macro = macroLabel->getMacroEvent();
-  }
-  if (incident && !incident->isCopy()) {
-    QMenu menu;
-    QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
-    menu.addAction(action1);
-    QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
-    menu.addAction(action12);    
-    QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
-    menu.addAction(action2);
-    QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
-    menu.addAction(action13);
-    QAction *action15 = new QAction(COLLIGATEFREEACTION, this);
-    menu.addAction(action15);
-    QAction *action16 = new QAction(COLLIGATEFREEACTIONATT, this);
-    menu.addAction(action16);
-    QAction *action3 = new QAction(MAKEMACROACTION, this);
-    menu.addAction(action3);
-    QAction *action4= new QAction(RECOLOREVENTSACTION, this);
-    menu.addAction(action4);
-    QAction *action5 = new QAction(RECOLORLABELSACTION, this);
-    menu.addAction(action5);
-    QAction *action6 = new QAction(COLORLINEAGEACTION, this);
-    menu.addAction(action6);
-    QAction *action7 = new QAction(SETTLEACTION, this);
-    menu.addAction(action7);
-    QAction *action8 = new QAction(PARALLELACTION, this);
-    menu.addAction(action8);
-    QAction *action9 = new QAction(NORMALIZEACTION, this);
-    menu.addAction(action9);
-    QAction *action10 = new QAction(CLOSEGAPACTION, this);
-    menu.addAction(action10);
-    QAction *action14 = new QAction(ADDLINKAGE, this);
-    menu.addAction(action14);
-    if (selectedItems().size() > 1) {
-      action3->setEnabled(false);
-      action6->setEnabled(false);
-      action7->setEnabled(false);
-      action9->setEnabled(false);
-      action10->setEnabled(false);
+  if (!(event->modifiers() & Qt::ControlModifier)) {
+    EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
+    NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
+    MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
+    NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
+    TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(), QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(), QTransform()));
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(), QTransform()));
+    if (nodeLabel) {
+      incident = nodeLabel->getNode();
     }
-    if (selectedItems().size() == 1) {
-      action1->setEnabled(false);
-      action12->setEnabled(false);
-      action13->setEnabled(false);
-      action2->setEnabled(false);
-      action8->setEnabled(false);
+    if (macroLabel) {
+      macro = macroLabel->getMacroEvent();
     }
-    action14->setEnabled(false);
-    if (selectedItems().size() == 2) {
-      EventItem *eventOne = qgraphicsitem_cast<EventItem*>(selectedItems()[0]);
-      EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(selectedItems()[1]);
-      if (eventOne && eventTwo) {
-	action14->setEnabled(true);
+    if (incident && !incident->isCopy()) {
+      QMenu menu;
+      QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
+      menu.addAction(action1);
+      QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
+      menu.addAction(action12);    
+      QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
+      menu.addAction(action2);
+      QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
+      menu.addAction(action13);
+      QAction *action15 = new QAction(COLLIGATEFREEACTION, this);
+      menu.addAction(action15);
+      QAction *action16 = new QAction(COLLIGATEFREEACTIONATT, this);
+      menu.addAction(action16);
+      QAction *action3 = new QAction(MAKEMACROACTION, this);
+      menu.addAction(action3);
+      QAction *action4= new QAction(RECOLOREVENTSACTION, this);
+      menu.addAction(action4);
+      QAction *action5 = new QAction(RECOLORLABELSACTION, this);
+      menu.addAction(action5);
+      QAction *action6 = new QAction(COLORLINEAGEACTION, this);
+      menu.addAction(action6);
+      QAction *action7 = new QAction(SETTLEACTION, this);
+      menu.addAction(action7);
+      QAction *action8 = new QAction(PARALLELACTION, this);
+      menu.addAction(action8);
+      QAction *action9 = new QAction(NORMALIZEACTION, this);
+      menu.addAction(action9);
+      QAction *action10 = new QAction(CLOSEGAPACTION, this);
+      menu.addAction(action10);
+      QAction *action14 = new QAction(ADDLINKAGE, this);
+      menu.addAction(action14);
+      if (selectedItems().size() > 1) {
+	action3->setEnabled(false);
+	action6->setEnabled(false);
+	action7->setEnabled(false);
+	action9->setEnabled(false);
+	action10->setEnabled(false);
       }
-    }
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit EventItemContextMenuAction(action->text());
-    }
-    // And then we'll capture some action, and send a signal to the main widget.
-  } else if (macro && !macro->isCopy()) {
-    QMenu menu;
-    QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
-    menu.addAction(action1);
-    QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
-    menu.addAction(action12);
-    QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
-    menu.addAction(action2);
-    QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
-    menu.addAction(action13);
-    QAction *action3 = new QAction(DISAGGREGATEACTION, this);
-    menu.addAction(action3);
-    QAction *action4 = new QAction(RECOLOREVENTSACTION, this);
-    menu.addAction(action4);
-    QAction *action5 = new QAction(RECOLORLABELSACTION, this);
-    menu.addAction(action5);
-    QAction *action6 = new QAction(COLORLINEAGEACTION, this);
-    menu.addAction(action6);
-    QAction *action7 = new QAction(SETTLEACTION, this);
-    menu.addAction(action7);
-    QAction *action8 = new QAction(PARALLELACTION, this);
-    menu.addAction(action8);
-    QAction *action9 = new QAction(NORMALIZEACTION, this);
-    menu.addAction(action9);
-    QAction *action10 = new QAction(CLOSEGAPACTION, this);
-    menu.addAction(action10);
-    QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
-    menu.addAction(action11);
-    if (selectedItems().size() > 1) {
-      action3->setEnabled(false);
-      action6->setEnabled(false);
-      action7->setEnabled(false);
-      action9->setEnabled(false);
-      action10->setEnabled(false);
-      action11->setEnabled(false);
-    }
-    if (selectedItems().size() == 1) {
-      action1->setEnabled(false);
-      action2->setEnabled(false);
-      action12->setEnabled(false);
-      action13->setEnabled(false);
-      action8->setEnabled(false);
-    }
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit EventItemContextMenuAction(action->text());
-    }
-  } else if (arrow && !arrow->isCopy()) {
-    clearSelection();
-    arrow->setSelected(true);
-    QMenu menu;
-    if (arrow->getColor() == QColor(Qt::darkMagenta)) {
-      menu.addAction(REMOVELINKAGEACTION);
-      menu.addAction(KEEPLINKAGEACTION);
-    } else if (arrow->getColor() == QColor(Qt::darkRed)) {
-      menu.addAction(ACCEPTLINKAGEACTION);
-      menu.addAction(REJECTLINKAGEACTION);
-    } else if (arrow->getColor() == QColor(Qt::darkGreen)) {
-      menu.addAction(REMOVELINKAGEACTION);
-      menu.addAction(KEEPLINKAGEACTION);
-      menu.addAction(IGNOREME);      
-    } else if (arrow->getColor() == QColor(Qt::black)) {
-      menu.addAction(REMOVENORMALLINKAGE);
-    }
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit ArrowContextMenuAction(action->text());
-    }
-  } else if (node) {
-    clearSelection();
-    node->setSelected(true);
-    QMenu menu;
-    QAction *action1 = new QAction(HIDENODE, this);
-    menu.addAction(action1);
-    QAction *action2 = new QAction(SETPERSISTENT, this);
-    menu.addAction(action2);
-    QAction *action3 = new QAction(UNSETPERSISTENT, this);
-    menu.addAction(action3);
-    if (node->isPersistent()) {
-      action2->setEnabled(false);
-      action3->setEnabled(true);
-    } else {
-      action2->setEnabled(true);
-      action3->setEnabled(false);
-    }
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit NetworkNodeContextMenuAction(action->text());
-    }
-  } else if (line) {
-    clearSelection();
-    line->setSelected(true);
-    QMenu menu;
-    QAction *action1 = new QAction(CHANGELINECOLOR, this);
-    menu.addAction(action1);
-    QAction *action2 = new QAction(TOGGLEARROW1, this);
-    menu.addAction(action2);
-    QAction *action3 = new QAction(TOGGLEARROW2, this);
-    menu.addAction(action3);
-    QAction *action4 = new QAction(DELETELINE, this);
-    menu.addAction(action4);
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit LineContextMenuAction(action->text());
-    }
-  } else if (text) {
-    clearSelection();
-    text->setSelected(true);
-    QMenu menu;
-    QAction *action1 = new QAction(CHANGETEXT, this);
-    menu.addAction(action1);
-    QAction *action2 = new QAction(CHANGETEXTCOLOR, this);
-    menu.addAction(action2);
-    QAction *action3 = new QAction(DELETETEXT, this);
-    menu.addAction(action3);
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit TextContextMenuAction(action->text());
-    }
-  } else if (ellipse) {
-    clearSelection();
-    ellipse->setSelected(true);
-    QMenu menu;
-    QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
-    menu.addAction(action1);
-    QAction *action2 = new QAction(DELETEELLIPSE, this);
-    menu.addAction(action2);
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit EllipseContextMenuAction(action->text());
-    }
-  } else if (rect) {
-    clearSelection();
-    rect->setSelected(true);
-    QMenu menu;
-    QAction *action1 = new QAction(CHANGERECTCOLOR, this);
-    menu.addAction(action1);
-    QAction *action2 = new QAction(DELETERECT, this);
-    menu.addAction(action2);
-    if (QAction *action = menu.exec(event->screenPos())) {
-      emit RectContextMenuAction(action->text());
+      if (selectedItems().size() == 1) {
+	action1->setEnabled(false);
+	action12->setEnabled(false);
+	action13->setEnabled(false);
+	action2->setEnabled(false);
+	action8->setEnabled(false);
+      }
+      action14->setEnabled(false);
+      if (selectedItems().size() == 2) {
+	EventItem *eventOne = qgraphicsitem_cast<EventItem*>(selectedItems()[0]);
+	EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(selectedItems()[1]);
+	if (eventOne && eventTwo) {
+	  action14->setEnabled(true);
+	}
+      }
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit EventItemContextMenuAction(action->text());
+      }
+      // And then we'll capture some action, and send a signal to the main widget.
+    } else if (macro && !macro->isCopy()) {
+      QMenu menu;
+      QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
+      menu.addAction(action1);
+      QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
+      menu.addAction(action12);
+      QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
+      menu.addAction(action2);
+      QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
+      menu.addAction(action13);
+      QAction *action3 = new QAction(DISAGGREGATEACTION, this);
+      menu.addAction(action3);
+      QAction *action4 = new QAction(RECOLOREVENTSACTION, this);
+      menu.addAction(action4);
+      QAction *action5 = new QAction(RECOLORLABELSACTION, this);
+      menu.addAction(action5);
+      QAction *action6 = new QAction(COLORLINEAGEACTION, this);
+      menu.addAction(action6);
+      QAction *action7 = new QAction(SETTLEACTION, this);
+      menu.addAction(action7);
+      QAction *action8 = new QAction(PARALLELACTION, this);
+      menu.addAction(action8);
+      QAction *action9 = new QAction(NORMALIZEACTION, this);
+      menu.addAction(action9);
+      QAction *action10 = new QAction(CLOSEGAPACTION, this);
+      menu.addAction(action10);
+      QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
+      menu.addAction(action11);
+      if (selectedItems().size() > 1) {
+	action3->setEnabled(false);
+	action6->setEnabled(false);
+	action7->setEnabled(false);
+	action9->setEnabled(false);
+	action10->setEnabled(false);
+	action11->setEnabled(false);
+      }
+      if (selectedItems().size() == 1) {
+	action1->setEnabled(false);
+	action2->setEnabled(false);
+	action12->setEnabled(false);
+	action13->setEnabled(false);
+	action8->setEnabled(false);
+      }
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit EventItemContextMenuAction(action->text());
+      }
+    } else if (arrow && !arrow->isCopy()) {
+      clearSelection();
+      arrow->setSelected(true);
+      QMenu menu;
+      if (arrow->getColor() == QColor(Qt::darkMagenta)) {
+	menu.addAction(REMOVELINKAGEACTION);
+	menu.addAction(KEEPLINKAGEACTION);
+      } else if (arrow->getColor() == QColor(Qt::darkRed)) {
+	menu.addAction(ACCEPTLINKAGEACTION);
+	menu.addAction(REJECTLINKAGEACTION);
+      } else if (arrow->getColor() == QColor(Qt::darkGreen)) {
+	menu.addAction(REMOVELINKAGEACTION);
+	menu.addAction(KEEPLINKAGEACTION);
+	menu.addAction(IGNOREME);      
+      } else if (arrow->getColor() == QColor(Qt::black)) {
+	menu.addAction(REMOVENORMALLINKAGE);
+      }
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit ArrowContextMenuAction(action->text());
+      }
+    } else if (node) {
+      clearSelection();
+      node->setSelected(true);
+      QMenu menu;
+      QAction *action1 = new QAction(HIDENODE, this);
+      menu.addAction(action1);
+      QAction *action2 = new QAction(SETPERSISTENT, this);
+      menu.addAction(action2);
+      QAction *action3 = new QAction(UNSETPERSISTENT, this);
+      menu.addAction(action3);
+      if (node->isPersistent()) {
+	action2->setEnabled(false);
+	action3->setEnabled(true);
+      } else {
+	action2->setEnabled(true);
+	action3->setEnabled(false);
+      }
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit NetworkNodeContextMenuAction(action->text());
+      }
+    } else if (line) {
+      clearSelection();
+      line->setSelected(true);
+      QMenu menu;
+      QAction *action1 = new QAction(CHANGELINECOLOR, this);
+      menu.addAction(action1);
+      QAction *action2 = new QAction(TOGGLEARROW1, this);
+      menu.addAction(action2);
+      QAction *action3 = new QAction(TOGGLEARROW2, this);
+      menu.addAction(action3);
+      QAction *action4 = new QAction(DELETELINE, this);
+      menu.addAction(action4);
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit LineContextMenuAction(action->text());
+      }
+    } else if (text) {
+      clearSelection();
+      text->setSelected(true);
+      QMenu menu;
+      QAction *action1 = new QAction(CHANGETEXT, this);
+      menu.addAction(action1);
+      QAction *action2 = new QAction(CHANGETEXTCOLOR, this);
+      menu.addAction(action2);
+      QAction *action3 = new QAction(DELETETEXT, this);
+      menu.addAction(action3);
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit TextContextMenuAction(action->text());
+      }
+    } else if (ellipse) {
+      clearSelection();
+      ellipse->setSelected(true);
+      QMenu menu;
+      QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
+      menu.addAction(action1);
+      QAction *action2 = new QAction(DELETEELLIPSE, this);
+      menu.addAction(action2);
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit EllipseContextMenuAction(action->text());
+      }
+    } else if (rect) {
+      clearSelection();
+      rect->setSelected(true);
+      QMenu menu;
+      QAction *action1 = new QAction(CHANGERECTCOLOR, this);
+      menu.addAction(action1);
+      QAction *action2 = new QAction(DELETERECT, this);
+      menu.addAction(action2);
+      if (QAction *action = menu.exec(event->screenPos())) {
+	emit RectContextMenuAction(action->text());
+      }
     }
   }
 }
