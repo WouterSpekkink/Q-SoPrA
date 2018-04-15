@@ -144,7 +144,7 @@ QRectF EllipseObject::boundingRect() const {
 QPainterPath EllipseObject::shape() const {
   QPainterPath path;
   QPainterPathStroker stroker;
-  stroker.setWidth(penWidth + 5);
+  stroker.setWidth(penWidth + 15);
   QRectF myRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
   QRectF myRectTwo = drawRect.adjusted(1, 1, -1, -1);
   path.addRect(myRect);

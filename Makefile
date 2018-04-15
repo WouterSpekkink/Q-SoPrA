@@ -3358,7 +3358,8 @@ Scene.o: src/Scene.cpp include/Scene.h \
 		include/OccurrenceLabel.h \
 		include/RectObject.h \
 		include/GraphicsView.h \
-		include/SimpleTextDialog.h
+		include/SimpleTextDialog.h \
+		include/BandlessGraphicsView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Scene.o src/Scene.cpp
 
 SimpleAttributeSelectionDialog.o: src/SimpleAttributeSelectionDialog.cpp include/SimpleAttributeSelectionDialog.h \

@@ -142,7 +142,7 @@ QRectF RectObject::boundingRect() const {
 QPainterPath RectObject::shape() const {
   QPainterPath path;
   QPainterPathStroker stroker;
-  stroker.setWidth(penWidth + 5);
+  stroker.setWidth(penWidth + 15);
   path.addRect(drawRect);
   return stroker.createStroke(path);
 }

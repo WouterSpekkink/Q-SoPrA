@@ -655,8 +655,23 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 			 pow((lastMousePos.y() - top.y()), 2));
     qreal distBottom = sqrt(pow((lastMousePos.x() - bottom.x()), 2) +
 			    pow((lastMousePos.y() - bottom.y()), 2));
-    qreal minimum = std::min({distTopLeft, distTopRight, distBottomLeft, distBottomRight,
-	  distLeft, distRight, distTop, distBottom});
+    QVector<qreal> temp;
+    temp.push_back(distTopLeft);
+    temp.push_back(distTopRight);
+    temp.push_back(distBottomLeft);
+    temp.push_back(distBottomRight);
+    temp.push_back(distLeft);
+    temp.push_back(distRight);
+    temp.push_back(distTop);
+    temp.push_back(distBottom);
+    qreal minimum = -1.0;
+    QVectorIterator<qreal> it(temp);
+    while (it.hasNext()) {
+      qreal current = it.next();
+      if (minimum == -1 || current < minimum) {
+	minimum = current;
+      }
+    }
     if (minimum == distTopLeft) {
       selectedEllipse->setTopLeft(selectedEllipse->mapFromScene(lastMousePos));
     } else if (minimum == distTopRight) {
@@ -724,8 +739,23 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
 			 pow((lastMousePos.y() - top.y()), 2));
     qreal distBottom = sqrt(pow((lastMousePos.x() - bottom.x()), 2) +
 			    pow((lastMousePos.y() - bottom.y()), 2));
-    qreal minimum = std::min({distTopLeft, distTopRight, distBottomLeft, distBottomRight,
-	  distLeft, distRight, distTop, distBottom});
+    QVector<qreal> temp;
+    temp.push_back(distTopLeft);
+    temp.push_back(distTopRight);
+    temp.push_back(distBottomLeft);
+    temp.push_back(distBottomRight);
+    temp.push_back(distLeft);
+    temp.push_back(distRight);
+    temp.push_back(distTop);
+    temp.push_back(distBottom);
+    qreal minimum = -1.0;
+    QVectorIterator<qreal> it(temp);
+    while (it.hasNext()) {
+      qreal current = it.next();
+      if (minimum == -1 || current < minimum) {
+	minimum = current;
+      }
+    }
     if (minimum == distTopLeft) {
       selectedRect->setTopLeft(selectedRect->mapFromScene(lastMousePos));
     } else if (minimum == distTopRight) {
