@@ -78,7 +78,6 @@ public:
   int type() const;
   bool isCopy();
   void setCopy(bool status);
-  void updatePosition();
   QString getType();
   
 protected:
