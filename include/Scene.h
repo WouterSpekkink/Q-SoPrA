@@ -28,14 +28,8 @@ public:
   OccurrenceItem* getSelectedOccurrence();
 
 signals:
-  void widthIncreased(EventItem *);
-  void widthDecreased(EventItem *);
-  void posIncreased(EventItem *);
-  void posDecreased(EventItem *);
-  void widthIncreased(MacroEvent *);
-  void widthDecreased(MacroEvent *);
-  void posIncreased(MacroEvent *);
-  void posDecreased(MacroEvent *);
+  void posChanged(EventItem *, qreal &dist);
+  void posChanged(MacroEvent *, qreal &dist);
   void moveItems(QGraphicsItem *, QPointF);
   void moveLine(QGraphicsItem *, QPointF);
   void relevantChange();

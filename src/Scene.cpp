@@ -55,35 +55,43 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
     macro = macroLabel->getMacroEvent();
   }
   if (incident && !incident->isCopy()) {
-    clearSelection();
-    incident->setSelected(true);
-    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+      clearSelection();
+      incident->setSelected(true);
+      emit resetItemSelection();
       if (wheelEvent->delta() > 0 && incident->getWidth() < 1000) {
-	incident->setWidth(incident->getWidth() + 1);
-	emit widthIncreased(incident);
+	incident->setWidth(incident->getWidth() + 5);
+	QPointF original = incident->scenePos();
+	incident->getLabel()->setNewPos(original, 2.5);
       } else if (wheelEvent->delta() < 0 && incident->getWidth() > 40) {
-	incident->setWidth(incident->getWidth() - 1);
-	emit widthDecreased(incident);
-      } 
+	incident->setWidth(incident->getWidth() - 5);
+	QPointF original = incident->scenePos();
+	incident->getLabel()->setNewPos(original, -2.5);
+      }
+      emit relevantChange();
+      wheelEvent->accept();
+    } else if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      wheelEvent->ignore();
     }
-    emit relevantChange();
-    wheelEvent->accept();
   } else if (macro && !macro->isCopy()) {
-    clearSelection();
-    macro->setSelected(true);
-    emit resetItemSelection();
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+      clearSelection();
+      macro->setSelected(true);
+      emit resetItemSelection();
       if (wheelEvent->delta() > 0 && macro->getWidth() < 1000) {
-	macro->setWidth(macro->getWidth() + 1);
-	emit widthIncreased(macro);
+	macro->setWidth(macro->getWidth() + 5);
+	QPointF original = macro->scenePos();
+	macro->getLabel()->setNewPos(original, 2.5);
       } else if (wheelEvent->delta() < 0 && macro->getWidth() > 40) {
-	macro->setWidth(macro->getWidth() - 1);
-	emit widthDecreased(macro);
-      } 
+	macro->setWidth(macro->getWidth() - 5);
+	QPointF original = macro->scenePos();
+	macro->getLabel()->setNewPos(original, -2.5);
+      }
+      emit relevantChange();
+      wheelEvent->accept();
+    } else if (wheelEvent->modifiers() & Qt::ControlModifier) {
+      wheelEvent->ignore();
     }
-    emit relevantChange();
-    wheelEvent->accept();
   } else if (text) {
     clearSelection();
     text->setSelected(true);
@@ -513,75 +521,19 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   if (resizeOnEvent) {
     emit relevantChange();
-    if (event->scenePos().x() - lastMousePos.x() > 0) {
-      int currentX = selectedEvent->scenePos().x();
-      int currentY = selectedEvent->scenePos().y();
-      qreal oldX = selectedEvent->getOriginalPos().x();
-      if (oldX != currentX && selectedEvent->isDislodged() == false) {
-	currentX++;
-	selectedEvent->setPos(currentX, currentY);
-	emit posIncreased(selectedEvent);
-	selectedEvent->setDislodged(true);
-      } else if (oldX == currentX && selectedEvent->isDislodged() == true) {
-	selectedEvent->setPos(oldX, currentY);
-      } else {
-	currentX++;
-	selectedEvent->setPos(currentX, currentY);
-	emit posIncreased(selectedEvent);
-      }
-    } else if (event->scenePos().x() - lastMousePos.x() < 0) {
-      int currentX = selectedEvent->scenePos().x();
-      int currentY = selectedEvent->scenePos().y();
-      qreal oldX = selectedEvent->getOriginalPos().x();
-      if (oldX != currentX && selectedEvent->isDislodged() == false) {
-	currentX--;
-	selectedEvent->setPos(currentX, currentY);
-	emit posDecreased(selectedEvent);
-	selectedEvent->setDislodged(true);
-      } else if (oldX == currentX && selectedEvent->isDislodged() == true) {
-	selectedEvent->setPos(oldX, currentY);
-      } else {
-	currentX--;
-	selectedEvent->setPos(currentX, currentY);
-	emit posDecreased(selectedEvent);
-      }
-    }
+    qreal dist = event->scenePos().x() - lastMousePos.x();
+    int currentY = selectedEvent->scenePos().y();
+    selectedEvent->setPos(event->scenePos().x(), currentY);
+    emit posChanged(selectedEvent, dist);
+    selectedEvent->setDislodged(true);
     lastMousePos = event->scenePos();
   } else if (resizeOnMacro) {
     emit relevantChange();
-    if (event->scenePos().x() - lastMousePos.x() > 0) {
-      int currentX = selectedMacro->scenePos().x();
-      int currentY = selectedMacro->scenePos().y();
-      qreal oldX = selectedMacro->getOriginalPos().x();
-      if (oldX != currentX && selectedMacro->isDislodged() == false) {
-	currentX++;
-	selectedMacro->setPos(currentX, currentY);
-	emit posIncreased(selectedMacro);
-	selectedMacro->setDislodged(true);
-      } else if (oldX == currentX && selectedMacro->isDislodged() == true) {
-	selectedMacro->setPos(oldX, currentY);
-      } else {
-	currentX++;
-	selectedMacro->setPos(currentX, currentY);
-	emit posIncreased(selectedMacro);
-      }
-    } else if (event->scenePos().x() - lastMousePos.x() < 0) {
-      int currentX = selectedMacro->scenePos().x();
-      int currentY = selectedMacro->scenePos().y();
-      qreal oldX = selectedMacro->getOriginalPos().x();
-      if (oldX != currentX && selectedMacro->isDislodged() == false) {
-	currentX--;
-	selectedMacro->setPos(currentX, currentY);
-	emit posDecreased(selectedMacro);
-	selectedMacro->setDislodged(true);
-      } else if (oldX == currentX && selectedMacro->isDislodged() == true) {
-	selectedMacro->setPos(oldX, currentY);
-      } else {
-	currentX--;
-	selectedMacro->setPos(currentX, currentY);
-	emit posDecreased(selectedMacro);
-      }
-    }
+    qreal dist = event->scenePos().x() - lastMousePos.x();
+    int currentY = selectedMacro->scenePos().y();
+    selectedMacro->setPos(event->scenePos().x(), currentY);
+    emit posChanged(selectedMacro, dist);
+    selectedMacro->setDislodged(true);
     lastMousePos = event->scenePos();
   } else if (lineMoveOn) {
     emit relevantChange();

@@ -105,14 +105,8 @@ private slots:
   void getLabels();
   void addLabels();
   void cleanUp();	     
-  void increaseWidth(EventItem *item);
-  void decreaseWidth(EventItem *item);
-  void increasePos(EventItem *item);
-  void decreasePos(EventItem *item);
-  void increaseWidth(MacroEvent *item);
-  void decreaseWidth(MacroEvent *item);
-  void increasePos(MacroEvent *item);
-  void decreasePos(MacroEvent *item);
+  void changePos(EventItem *item, qreal &dist);
+  void changePos(MacroEvent *item, qreal &dist);
   void increaseDistance();
   void decreaseDistance();
   void processMoveItems(QGraphicsItem *item, QPointF pos);

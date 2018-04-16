@@ -605,6 +605,14 @@ void LinkagesWidget::editLinkageType() {
       int current = typeComboBox->currentIndex();
       typeComboBox->setItemText(current, name);
       typeComboBox->setItemData(current, description, Qt::ToolTipRole);
+      QString label  = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
+      linkageTypeFeedbackLabel->setText(label);
+      QString toolTip = breakString(description);
+      linkageTypeFeedbackLabel->setToolTip(toolTip);
+      linkageQuestionFeedbackLabel->setText(question);
+      linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
+						     sizeHint().height());
+      
     }
     delete linkageTypeDialog;
   }
@@ -733,7 +741,8 @@ void LinkagesWidget::setLinkageType() {
     QString toolTip = breakString(description);
     linkageTypeFeedbackLabel->setToolTip(toolTip);
     linkageQuestionFeedbackLabel->setText(question);
-    linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->sizeHint().height());
+    linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
+						   sizeHint().height());
     retrieveData();
     delete query;
     setButtons(true);
