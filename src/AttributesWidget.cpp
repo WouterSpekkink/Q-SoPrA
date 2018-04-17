@@ -1660,6 +1660,7 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
 	  } else {
 	    currentAttribute->setFont(font3);
 	  }
+	  delete query;
         }
       }
     }

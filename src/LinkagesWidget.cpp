@@ -613,6 +613,8 @@ void LinkagesWidget::editLinkageType() {
       linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
 						     sizeHint().height());
       
+    } else {
+      delete query;
     }
     delete linkageTypeDialog;
   }
@@ -727,6 +729,7 @@ void LinkagesWidget::setLinkageType() {
 	query2->bindValue(":head", 2);
       }
       query2->exec();
+      delete query2;
     }
     QString coderText = "<i>" + selectedCoder + "</i>";
     coderFeedbackLabel->setText(coderText);
@@ -763,6 +766,7 @@ void LinkagesWidget::retrieveData() {
     tailIndex = query->value(0).toInt();
     headIndex = query->value(1).toInt();
   } else {
+    delete query;
     return;
   }
   query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
@@ -930,6 +934,7 @@ void LinkagesWidget::checkManualButton() {
     setLinkButton->setEnabled(true);
     unsetLinkButton->setEnabled(false);
   }
+  delete query;
 }
 
 void LinkagesWidget::checkAssistedButton() {
@@ -2000,7 +2005,6 @@ void LinkagesWidget::jumpTo() {
     delete query;
   }
   delete indexDialog;
-
 }
 
 void LinkagesWidget::previousHead() {
@@ -2487,6 +2491,7 @@ void LinkagesWidget::setLink() {
 	    query->exec();
 	    pause(500);
 	    retrieveData();
+	    delete query;
 	    return;
 	  } else {
 	    if (tailIndex != incidentsModel->rowCount()) {
@@ -2502,6 +2507,7 @@ void LinkagesWidget::setLink() {
 	      query->exec();
 	      pause(500);
 	      retrieveData();
+	      delete query;
 	      return; 
 	    }
 	  }
@@ -2520,6 +2526,7 @@ void LinkagesWidget::setLink() {
 	      query->exec();
 	      pause(500);
 	      retrieveData();
+	      delete query;
 	      return; 
 	    }
 	  }
@@ -2539,6 +2546,7 @@ void LinkagesWidget::setLink() {
 	query->exec();
 	pause(500);
 	retrieveData();
+	delete query;
 	return; 
       }
     }
@@ -2565,6 +2573,7 @@ void LinkagesWidget::setLink() {
 	  query->exec();
 	  pause(500);
 	  retrieveData();
+	  delete query;
 	  return;
 	} else {
 	  if (i == 1) {
@@ -2581,6 +2590,7 @@ void LinkagesWidget::setLink() {
 	      query->exec();
 	      pause(500);
 	      retrieveData();
+	      delete query;
 	      return;
 	    }
 	  }
@@ -2599,9 +2609,11 @@ void LinkagesWidget::setLink() {
       query->exec();
       pause(500);
       retrieveData();
+      delete query;
       return;
     }
   }
+  delete query;
 }
 
 void LinkagesWidget::unsetLink() {
@@ -2685,6 +2697,7 @@ void LinkagesWidget::unsetLink() {
 	    query->bindValue(":type", selectedType);
 	    query->exec();
 	    retrieveData();
+	    delete query;
 	    return;
 	  } else {
 	    if (tailIndex != incidentsModel->rowCount()) {
@@ -2699,6 +2712,7 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":type", selectedType);
 	      query->exec();
 	      retrieveData();
+	      delete query;
 	      return; 
 	    }
 	  }
@@ -2716,6 +2730,7 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":type", selectedType);
 	      query->exec();
 	      retrieveData();
+	      delete query;
 	      return; 
 	    }
 	  }
@@ -2734,6 +2749,7 @@ void LinkagesWidget::unsetLink() {
 	query->bindValue(":type", selectedType);
 	query->exec();
 	retrieveData();
+	delete query;
 	return; 
       }
     }
@@ -2759,6 +2775,7 @@ void LinkagesWidget::unsetLink() {
 	  query->bindValue(":type", selectedType);
 	  query->exec();
 	  retrieveData();
+	  delete query;
 	  return;
 	} else {
 	  if (i == 1) {
@@ -2774,6 +2791,7 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":type", selectedType);
 	      query->exec();
 	      retrieveData();
+	      delete query;
 	      return;
 	    }
 	  }
@@ -2791,9 +2809,11 @@ void LinkagesWidget::unsetLink() {
       query->bindValue(":type", selectedType);
       query->exec();
       retrieveData();
+      delete query;
       return;
     }
   }
+  delete query;
 }
 
 void LinkagesWidget::findPastPaths(std::vector<int> *pIgnore, int currentIncident) {

@@ -15,10 +15,13 @@ QVariant EventTableModel::data(const QModelIndex &index, int role) const {
       int mark = query->value(0).toInt();
       // Return the appropriate check state based on the state of mar.
       if (mark == 1) {
+	delete query;
 	return Qt::Checked;
       } else if (mark == 0) {
+	delete query;
 	return Qt::Unchecked;
       }
+      delete query;
     } else {
       /*
 	We return an empty variant in all other cases. This is to prevent, for example,

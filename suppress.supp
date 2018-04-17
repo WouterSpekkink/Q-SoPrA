@@ -1,0 +1,4426 @@
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QStringC1EPK5QChari
+   fun:_ZNK7QString3midEii
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QStringC1EPK5QChari
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_alloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_list_prepend
+   fun:_dbus_list_append
+   fun:dbus_parse_address
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:_XlcResolveLocaleName
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrSetAdd
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uprv_strdup_56
+   fun:_ZN6icu_566LocaleaSERKS0_
+   fun:_ZN6icu_566LocaleC1ERKS0_
+   fun:_ZNK6icu_5614LocaleCacheKeyINS_19CollationCacheEntryEE5cloneEv
+   fun:_ZNK6icu_5612UnifiedCache7_putNewERKNS_12CacheKeyBaseEPKNS_12SharedObjectE10UErrorCodeRS7_
+   fun:_ZNK6icu_5612UnifiedCache5_pollERKNS_12CacheKeyBaseERPKNS_12SharedObjectER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader14loadFromBundleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrCopyFilename
+   fun:FcStrSetAddFilename
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XrmInternalStringToQuark
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorGetDefaultSize
+   fun:XcursorLibraryLoadCursor
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   fun:_ZN14QWindowPrivate11applyCursorEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:strdup
+   fun:FcValueSave
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_dbus_credentials_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrCopyFilename
+   fun:FcStrSetAddFilename
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcFontSetCreate
+   fun:FcConfigBuildFonts
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_string_append
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcStrSetCreate
+   fun:FcConfigCreate
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN9QHashData12allocateNodeEi
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_list_prepend
+   fun:_dbus_list_append
+   fun:dbus_parse_address
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:_ZNK14QFactoryLoader8instanceEi
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcDirCacheLoad
+   fun:FcDirCacheRead
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigBuildFonts
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   fun:_dbus_mem_pool_new
+   fun:_dbus_hash_table_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QStringC1EPK5QChari
+   fun:_ZNK7QString3midEii
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   fun:g_realloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_ptr_array_add
+   fun:g_main_context_check
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+   fun:_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE
+   fun:_ZN7QDialog4execEv
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwm
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+   fun:_ZN6QFrame5eventEP6QEvent
+   fun:_ZN17QAbstractItemView13viewportEventEP6QEvent
+   fun:_ZN23QCoreApplicationPrivate29sendThroughObjectEventFiltersEP7QObjectP6QEvent
+   fun:_ZN19QApplicationPrivate13notify_helperEP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_set_data
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8LocaleConverters
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:UDataMemory_createNewInstance_56
+   fun:_ZL20doLoadFromCommonDataaPKcS0_S0_S0_S0_S0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCodeS8_
+   fun:_ZL12doOpenChoicePKcS0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCode
+   fun:res_load_56
+   fun:_ZL16insertRootBundleRP18UResourceDataEntryP10UErrorCode.part.3
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+   fun:_ZN6QFrame5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   fun:_dbus_message_loader_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_alloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_list_prepend
+   fun:_dbus_list_append
+   fun:_dbus_validate_signature_with_reason
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_validate_body_with_reason
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_message_loader_queue_messages
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:dbus_connection_add_filter
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcConfigAddRule
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:XInitThreads
+   fun:_ZN15QXcbIntegrationC1ERK11QStringListRiPPc
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/platforms/libqxcb.so
+   fun:_ZN27QPlatformIntegrationFactory6createERK7QStringRK11QStringListRiPPcS2_
+   fun:_ZN22QGuiApplicationPrivate25createPlatformIntegrationEv
+   fun:_ZN22QGuiApplicationPrivate21createEventDispatcherEv
+   fun:_ZN23QCoreApplicationPrivate4initEv
+   fun:_ZN22QGuiApplicationPrivate4initEv
+   fun:_ZN19QApplicationPrivate4initEv
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uhash_open_56
+   fun:_ZL20udata_findCachedDataPKc
+   fun:_ZL20doLoadFromCommonDataaPKcS0_S0_S0_S0_S0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCodeS8_
+   fun:_ZL12doOpenChoicePKcS0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCode
+   fun:res_load_56
+   fun:_ZL17findFirstExistingPKcPcPaS2_S2_P10UErrorCode
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_message_new_error
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcFontSetAdd
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_set_data
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrSetAddFilename
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigBuildFonts
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_thread_self
+   fun:g_main_context_acquire
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   fun:_ZNK15QXcbIntegration21createEventDispatcherEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_dbus_strdup
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwm
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   fun:_ZNK15QXcbIntegration21createEventDispatcherEv
+   fun:_ZN22QGuiApplicationPrivate21createEventDispatcherEv
+   fun:_ZN23QCoreApplicationPrivate4initEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:realloc
+   fun:_dbus_message_loader_get_unix_fds
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:*
+   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_string_append
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN9QHashData12allocateNodeEi
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5613Norm2AllModes14createInstanceEPNS_15Normalizer2ImplER10UErrorCode
+   fun:_ZN6icu_5613Norm2AllModes14getNFCInstanceER10UErrorCode
+   fun:_ZN6icu_5618Normalizer2Factory10getNFCImplER10UErrorCode
+   fun:_ZN6icu_5618CollationTailoring15ensureOwnedDataER10UErrorCode
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   fun:_dbus_mem_pool_alloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_hash_table_insert_int
+   fun:dbus_connection_send_with_reply
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_type_writer_write_basic
+   fun:dbus_message_iter_append_basic
+   fun:dbus_message_new_error
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_type_writer_recurse
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_message_new_method_call
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZNK15QDBusConnection9asyncCallERK12QDBusMessagei
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN10QSqlRecordC1Ev
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrSetAddFilename
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:utrie2_openFromSerialized_56
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_alloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_do_work
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:FcStrSetAdd
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcGetDefaultLangs
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcFontSetList
+   fun:FcFontList
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcFontSetList
+   fun:FcFontList
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN9QTextLine13layout_helperEi
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:UDataMemory_createNewInstance_56
+   fun:_ZL20doLoadFromCommonDataaPKcS0_S0_S0_S0_S0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCodeS8_
+   fun:_ZL12doOpenChoicePKcS0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_dbus_credentials_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znam
+   fun:_ZN9QHashData6rehashEi
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   fun:_ZN9QHashData13detach_helperEPFvPNS_4NodeEPvEPFvS1_Eii
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_message_new_method_call
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZNK15QDBusConnection9asyncCallERK12QDBusMessagei
+   fun:_ZN22QDBusAbstractInterface25asyncCallWithArgumentListERK7QStringRK5QListI8QVariantE
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
+   fun:_ZN22QGuiApplicationPrivate20_q_updateFocusObjectEP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN11QMetaObject8activateEP7QObjectiiPPv
+   fun:_ZN7QWindow18focusObjectChangedEP7QObject
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uhash_open_56
+   fun:_ZN6icu_5612UnifiedCacheC1ER10UErrorCode
+   fun:_ZN6icu_5612UnifiedCache11getInstanceER10UErrorCode
+   fun:_ZN6icu_5615CollationLoaderC1EPKNS_19CollationCacheEntryERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:UDataMemory_createNewInstance_56
+   fun:_ZL20doLoadFromCommonDataaPKcS0_S0_S0_S0_S0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCodeS8_
+   fun:_ZL12doOpenChoicePKcS0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCode
+   fun:_ZL13initAliasDataR10UErrorCode
+   fun:ucnv_getStandardName_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:_ZN10QTextCodec14codecForLocaleEv
+   fun:_ZN7QString20fromLocal8Bit_helperEPKci
+   fun:_ZNK23QCoreApplicationPrivate7appNameEv
+   fun:_ZN23QCoreApplicationPrivate4initEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN9QListData11detach_growEPii
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_message_loader_queue_messages
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN11QMetaObject8activateEP7QObjectiiPPv
+   fun:_ZN15QSocketNotifier9activatedEiNS_14QPrivateSignalE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcAddCharSet
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:open_path
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_type_writer_recurse
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_message_new_method_call
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZNK15QDBusConnection9asyncCallERK12QDBusMessagei
+   fun:_ZN22QDBusAbstractInterface25asyncCallWithArgumentListERK7QStringRK5QListI8QVariantE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5618CollationTailoring15ensureOwnedDataER10UErrorCode
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:g_malloc0
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/x86_64-linux-gnu/ld-2.27.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrSetAdd
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcGetDefaultLangs
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcFontSetList
+   fun:FcFontList
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN9QHashData13detach_helperEPFvPNS_4NodeEPvEPFvS1_Eii
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_dl_load_cache_lookup
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_message_loader_queue_messages
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN11QMetaObject8activateEP7QObjectiiPPv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:decompose_rpath
+   fun:cache_rpath
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynaEm
+   fun:locale_init
+   fun:_ZN6icu_566Locale14getLocaleCacheEv
+   fun:_ZN6icu_566Locale9getLocaleEi
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN7QWindow8setTitleERK7QString
+   fun:_ZN14QWidgetPrivate21setWindowTitle_helperERK7QString
+   fun:_ZN14QWidgetPrivate24setWindowModified_helperEv
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+   fun:_ZN7QWidget6createEybb
+   fun:_ZN7QWidget10setVisibleEb
+   fun:_ZN7QDialog10setVisibleEb
+   fun:_ZN7QDialog4execEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_memdup
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_source_attach
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   fun:_ZNK15QXcbIntegration21createEventDispatcherEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   fun:_ZN9QSqlFieldC1ERK7QStringN8QVariant4TypeE
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uprv_strdup_56
+   fun:_ZL16insertRootBundleRP18UResourceDataEntryP10UErrorCode.part.3
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dlerror_run
+   fun:dlsym
+   obj:/usr/lib/x86_64-linux-gnu/libGLdispatch.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLdispatch.so.0.0.0
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/x86_64-linux-gnu/ld-2.27.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_strdup
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_dl_load_cache_lookup
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_hash_table_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_private_get
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+   fun:_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE
+   fun:_ZN7QThread4execEv
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcAddCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:FcStrSetAdd
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/x86_64-linux-gnu/ld-2.27.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_strdup
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN9QListData11detach_growEPii
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XrmInternalStringToQuark
+   fun:_XlcGetCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_type_writer_recurse
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_header_set_field_basic
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_message_iter_append_basic
+   fun:dbus_message_append_args_valist
+   fun:dbus_message_append_args
+   fun:dbus_bus_remove_match
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:malloc
+   fun:_ZN9QHashData12allocateNodeEi
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_strdup
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_private_get
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/x86_64-linux-gnu/ld-2.27.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZNK6icu_5614LocaleCacheKeyINS_19CollationCacheEntryEE5cloneEv
+   fun:_ZNK6icu_5612UnifiedCache7_putNewERKNS_12CacheKeyBaseEPKNS_12SharedObjectE10UErrorCodeRS7_
+   fun:_ZNK6icu_5612UnifiedCache5_pollERKNS_12CacheKeyBaseERPKNS_12SharedObjectER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcConfigCreate
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcDefaultSubstitute
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN9QTextLine13layout_helperEi
+   fun:_ZN9QTextLine12setLineWidthEd
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN9QSqlErrorC1ERK7QStringS2_NS_9ErrorTypeES2_
+   fun:_ZN23QSqlCachedResultPrivateC1EP16QSqlCachedResultPK10QSqlDriver
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slist_append
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_credentials_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:_ZN6icu_5610UnicodeSet6freezeEv
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XrmGetStringDatabase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:XGetDefault
+   fun:_XcursorGetDisplayInfo
+   fun:XcursorGetDefaultSize
+   fun:XcursorLibraryLoadCursor
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   fun:_ZN14QWindowPrivate11applyCursorEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znam
+   fun:_ZN9QHashData6rehashEi
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZL17findFirstExistingPKcPcPaS2_S2_P10UErrorCode
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uhash_open_56
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5615CollationLoader14makeCacheEntryERKNS_6LocaleEPKNS_19CollationCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader18loadFromCollationsER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader14loadFromBundleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcConfigAddRule
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcPatternCreate
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcFontSetCreate
+   fun:FcConfigCreate
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:_ZN8QLibrary4loadEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_check_map_versions
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:/usr/lib/x86_64-linux-gnu/libGLX.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX.so.0.0.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:FcStrSetAdd
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZL16insertRootBundleRP18UResourceDataEntryP10UErrorCode.part.3
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:UDataMemory_createNewInstance_56
+   fun:_ZL20doLoadFromCommonDataaPKcS0_S0_S0_S0_S0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCodeS8_
+   fun:_ZL12doOpenChoicePKcS0_S0_PFaPvS0_S0_PK9UDataInfoES1_P10UErrorCode
+   fun:res_load_56
+   fun:_ZL17findFirstExistingPKcPcPaS2_S2_P10UErrorCode
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_message_loader_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   fun:_dbus_hash_table_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uprv_getDefaultLocaleID_56
+   fun:_ZN6icu_5627locale_set_default_internalEPKcR10UErrorCode
+   fun:_ZN6icu_566Locale10getDefaultEv
+   fun:_ZN6icu_566Locale4initEPKca
+   fun:_ZN6icu_566LocaleC1Ev
+   fun:locale_init
+   fun:_ZN6icu_566Locale14getLocaleCacheEv
+   fun:_ZN6icu_566Locale9getLocaleEi
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_dl_map_object
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcCreateDefaultCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+   fun:_ZN6QFrame5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:FcStrSetAdd
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   fun:_ZN9QSqlErrorC1ERK7QStringS2_NS_9ErrorTypeES2_
+   fun:_ZN23QSqlCachedResultPrivateC1EP16QSqlCachedResultPK10QSqlDriver
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+   fun:_ZN7QWidget6createEybb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_threads_init
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_get_local_machine_uuid_encoded
+   fun:dbus_try_get_local_machine_id
+   fun:dbus_get_local_machine_id
+   fun:_ZN15QDBusConnection14localMachineIdEv
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/platforminputcontexts/libibusplatforminputcontextplugin.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcConfigAddRule
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcCreateDefaultCharSet
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN9QSqlFieldC1ERK7QStringN8QVariant4TypeE
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcStrSetCreate
+   fun:FcGetDefaultLangs
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcFontSetList
+   fun:FcFontList
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+   fun:_ZNK12QFontPrivate15engineForScriptEi
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_private_get
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_read
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   fun:_ZN10QArrayData19reallocateUnalignedEPS_mm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QString11reallocDataEjb
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QStringC1EiN2Qt14InitializationE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:_ZN7QString15fromUtf8_helperEPKci
+   fun:_ZN7QString16fromAscii_helperEPKci
+   fun:_ZN7QStringC1EPKc
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:realloc
+   fun:_dbus_message_loader_get_unix_fds
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XrmInternalStringToQuark
+   fun:_XlcGetLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:g_malloc0
+   fun:g_hash_table_new_full
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/x86_64-linux-gnu/ld-2.27.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dl_close_worker.part.0
+   fun:_dl_close_worker
+   fun:_dl_close
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlclose
+   obj:/usr/lib/x86_64-linux-gnu/libGLX.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX.so.0.0.0
+   obj:/usr/lib/x86_64-linux-gnu/libGLX.so.0.0.0
+   fun:_dl_fini
+   fun:__run_exit_handlers
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_alloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_hash_table_insert_int
+   fun:dbus_connection_send_with_reply
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrSetAdd
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   fun:_ZN9QSqlQueryC1EP10QSqlResult
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+   fun:_ZN6QFrame5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_ptr_array_sized_new
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UVector5_initEiR10UErrorCode
+   fun:_ZN6icu_567UVectorC1EPFvPvEPFa8UElementS4_EiR10UErrorCode
+   fun:_ZN6icu_5610UnicodeSet15allocateStringsER10UErrorCode
+   fun:_ZN6icu_5610UnicodeSetC1EPKtiNS0_14ESerializationER10UErrorCode
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_credentials_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_client_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_private_get
+   fun:g_thread_self
+   fun:g_main_context_acquire
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZNK6icu_5614LocaleCacheKeyINS_19CollationCacheEntryEE5cloneEv
+   fun:_ZNK6icu_5612UnifiedCache7_putNewERKNS_12CacheKeyBaseEPKNS_12SharedObjectE10UErrorCodeRS7_
+   fun:_ZNK6icu_5612UnifiedCache5_pollERKNS_12CacheKeyBaseERPKNS_12SharedObjectER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znam
+   fun:_ZN9QHashData6rehashEi
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+   fun:_ZN7QWidget5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcStrSetAddFilename
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:_Znwm
+   fun:_ZN15QtSharedPointer20ExternalRefCountData9getAndRefEPK7QObject
+   fun:_ZN23QSqlCachedResultPrivateC1EP16QSqlCachedResultPK10QSqlDriver
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZNK12QSqlDatabase4execERK7QString
+   fun:_ZN13WelcomeDialog12openDatabaseEv
+   fun:_ZN13WelcomeDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv
+   fun:_ZN11QMetaObject8activateEP7QObjectiiPPv
+   fun:_ZN15QAbstractButton7clickedEb
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uhash_open_56
+   fun:_ZN6icu_5627locale_set_default_internalEPKcR10UErrorCode
+   fun:_ZN6icu_566Locale10getDefaultEv
+   fun:_ZN6icu_566Locale4initEPKca
+   fun:_ZN6icu_566LocaleC1Ev
+   fun:locale_init
+   fun:_ZN6icu_566Locale14getLocaleCacheEv
+   fun:_ZN6icu_566Locale9getLocaleEi
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   fun:_dbus_string_copy_data
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:_Znwm
+   fun:_ZN10QSqlRecordC1Ev
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Sql.so.5.9.4
+   fun:_ZN9QSqlQueryC1ERK7QString12QSqlDatabase
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5618CollationTailoringC1EPKNS_17CollationSettingsE
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcAddUtf8Converters
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XlcCreateDefaultCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:FcStrSetAdd
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:FcFontSetAdd
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigBuildFonts
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5XcbQpa.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Gui.so.5.9.4
+   fun:_ZN13QFontDatabase8findFontERK8QFontDefi
+   fun:_ZN13QFontDatabase4loadEPK12QFontPrivatei
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+   fun:_ZN7QWidget6createEybb
+   fun:_ZN7QWidget10setVisibleEb
+   fun:_ZN7QDialog10setVisibleEb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5610UnicodeSet6freezeEv
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dl_new_object
+   fun:_dl_map_object_from_fd
+   fun:_dl_map_object
+   fun:openaux
+   fun:_dl_catch_exception
+   fun:_dl_map_object_deps
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_register_shutdown_func
+   fun:dbus_message_unref
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_read
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_new
+   fun:_dbus_hash_table_new
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+   fun:_ZN14QWindowPrivate6createEby
+   fun:_ZN14QWidgetPrivate10create_sysEybb
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_slice_alloc0
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+   fun:_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE
+   fun:_ZN7QDialog4execEv
+   fun:main
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QStringC1EiN2Qt14InitializationE
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:_ZN7QString15fromUtf8_helperEPKci
+   fun:_ZN7QString16fromAscii_helperEPKci
+   fun:_ZN7QStringC1EPKc
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XlcCreateLocaleDataBase
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_string_copy_data
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:uprv_strdup_56
+   fun:_ZL17findFirstExistingPKcPcPaS2_S2_P10UErrorCode
+   fun:_ZL9entryOpenPKcS0_12UResOpenTypeP10UErrorCode
+   fun:ures_openNoDefault_56
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5610UnicodeSet15allocateStringsER10UErrorCode
+   fun:_ZN6icu_5610UnicodeSetC1EPKtiNS0_14ESerializationER10UErrorCode
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XrmInternalStringToQuark
+   fun:_XlcGetCharSet
+   fun:_XlcAddCT
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_hash_table_insert_int
+   fun:dbus_connection_send_with_reply
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:g_malloc0
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:strdup
+   fun:FcStrSetAdd
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:g_malloc0
+   fun:g_hash_table_new_full
+   fun:g_main_context_new
+   fun:g_main_context_default
+   fun:g_main_context_push_thread_default
+   fun:_ZN27QEventDispatcherGlibPrivateC1EP13_GMainContext
+   fun:_ZN20QEventDispatcherGlibC1EP7QObject
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:start_thread
+   fun:clone
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   fun:g_slice_alloc
+   fun:g_hash_table_new_full
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:call_init
+   fun:_dl_init
+   obj:/lib/x86_64-linux-gnu/ld-2.27.so
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_dbus_register_shutdown_func
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_message_loader_queue_messages
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN11QMetaObject8activateEP7QObjectiiPPv
+   fun:_ZN15QSocketNotifier9activatedEiNS_14QPrivateSignalE
+   fun:_ZN15QSocketNotifier5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_dbus_mem_pool_alloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_hash_table_insert_int
+   fun:dbus_connection_send_with_reply
+   fun:dbus_connection_send_with_reply_and_block
+   fun:dbus_bus_register
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:FcConfigAddRule
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   obj:/lib/x86_64-linux-gnu/libexpat.so.1.6.7
+   fun:XML_ParseBuffer
+   obj:/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.10.1
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+   fun:FcConfigParseAndLoad
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:g_malloc
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+   fun:_ZN10QEventLoop4execE6QFlagsINS_17ProcessEventsFlagEE
+   fun:_ZN7QDialog4execEv
+   fun:_ZN11QFileDialog14getOpenFileUrlEP7QWidgetRK7QStringRK4QUrlS4_PS2_6QFlagsINS_6OptionEERK11QStringList
+   fun:_ZN11QFileDialog15getOpenFileNameEP7QWidgetRK7QStringS4_S4_PS2_6QFlagsINS_6OptionEE
+   fun:_ZN13WelcomeDialog12openDatabaseEv
+   fun:_ZN13WelcomeDialog18qt_static_metacallEP7QObjectN11QMetaObject4CallEiPPv
+   fun:_ZN11QMetaObject8activateEP7QObjectiiPPv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5612UnifiedCache11getInstanceER10UErrorCode
+   fun:_ZN6icu_5615CollationLoaderC1EPKNS_19CollationCacheEntryERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+   fun:ucol_open_56
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN16QFileSystemModel4sortEiN2Qt9SortOrderE
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+   obj:/lib/x86_64-linux-gnu/libglib-2.0.so.0.5600.0
+   fun:g_main_context_iteration
+   fun:_ZN20QEventDispatcherGlib13processEventsE6QFlagsIN10QEventLoop17ProcessEventsFlagEE
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5627locale_set_default_internalEPKcR10UErrorCode
+   fun:_ZN6icu_566Locale10getDefaultEv
+   fun:_ZN6icu_566Locale4initEPKca
+   fun:_ZN6icu_566LocaleC1Ev
+   fun:locale_init
+   fun:_ZN6icu_566Locale14getLocaleCacheEv
+   fun:_ZN6icu_566Locale9getLocaleEi
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZN6icu_5613Norm2AllModes17createNFCInstanceER10UErrorCode
+   fun:_ZN6icu_5613Norm2AllModes14getNFCInstanceER10UErrorCode
+   fun:_ZN6icu_5618Normalizer2Factory10getNFCImplER10UErrorCode
+   fun:_ZN6icu_5618CollationTailoring15ensureOwnedDataER10UErrorCode
+   fun:_ZN6icu_5619CollationDataReader4readEPKNS_18CollationTailoringEPKhiRS1_R10UErrorCode
+   fun:_ZN6icu_5613CollationRoot4loadER10UErrorCode
+   fun:_ZN6icu_5613CollationRoot17getRootCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13loadTailoringERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator12makeInstanceERKNS_6LocaleER10UErrorCode
+   fun:_ZN6icu_568Collator14createInstanceERKNS_6LocaleER10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:add_to_global
+   fun:dl_open_worker
+   fun:_dl_catch_exception
+   fun:_dl_open
+   fun:dlopen_doit
+   fun:_dl_catch_exception
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlopen@@GLIBC_2.2.5
+   obj:*
+   obj:*
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN10QArrayData8allocateEmmm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QStringC1EPK5QChari
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   obj:/opt/Qt/5.9.4/gcc_64/plugins/sqldrivers/libqsqlite.so
+   fun:_ZN9QSqlQuery4execEv
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:realloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   fun:_dbus_auth_do_work
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:calloc
+   fun:_XlcCreateDefaultCharSet
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+   fun:_ZNK15QXcbIntegration20createPlatformWindowEP7QWindow
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_XlcSetConverter
+   fun:_XlcInitCTInfo
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   obj:/usr/lib/x86_64-linux-gnu/libX11.so.6.3.0
+   fun:_XlcCreateLC
+   fun:_XlcUtf8Loader
+   fun:_XOpenLC
+   fun:_XlcCurrentLC
+   fun:XmbTextListToTextProperty
+   fun:_ZN10QXcbWindow14setWindowTitleERK7QString
+   fun:_ZN10QXcbWindow6createEv
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: indirect
+   fun:malloc
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/lib/x86_64-linux-gnu/libdbus-1.so.3.19.4
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5DBus.so.5.9.4
+   fun:_ZN7QObject5eventEP6QEvent
+   fun:_ZN16QCoreApplication15notifyInternal2EP7QObjectP6QEvent
+   fun:_ZN23QCoreApplicationPrivate16sendPostedEventsEP7QObjectiP11QThreadData
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Core.so.5.9.4
+   fun:g_main_context_dispatch
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:malloc
+   fun:_ZN6icu_567UMemorynwEm
+   fun:_ZNK6icu_5614LocaleCacheKeyINS_19CollationCacheEntryEE5cloneEv
+   fun:_ZNK6icu_5612UnifiedCache7_putNewERKNS_12CacheKeyBaseEPKNS_12SharedObjectE10UErrorCodeRS7_
+   fun:_ZNK6icu_5612UnifiedCache5_pollERKNS_12CacheKeyBaseERPKNS_12SharedObjectER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader14loadFromBundleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+   fun:_ZN6icu_5615CollationLoader13getCacheEntryER10UErrorCode
+   fun:_ZN6icu_5615CollationLoader14loadFromLocaleER10UErrorCode
+   fun:_ZNK6icu_5612UnifiedCache4_getERKNS_12CacheKeyBaseERPKNS_12SharedObjectEPKvR10UErrorCode
+}
+{
+   <insert_a_suppression_name_here>
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   fun:realloc
+   fun:_ZN10QArrayData19reallocateUnalignedEPS_mm6QFlagsINS_16AllocationOptionEE
+   fun:_ZN7QString11reallocDataEjb
+   fun:_ZN17QSqlResultPrivate24namedToPositionalBindingERK7QString
+   fun:_ZN10QSqlResult11savePrepareERK7QString
+   fun:_ZN9QSqlQuery7prepareERK7QString
+   fun:_ZNK15EventTableModel4dataERK11QModelIndexi
+   fun:_ZNK19QStyledItemDelegate15initStyleOptionEP20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK19QStyledItemDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   fun:_ZNK16CheckBoxDelegate5paintEP8QPainterRK20QStyleOptionViewItemRK11QModelIndex
+   obj:/opt/Qt/5.9.4/gcc_64/lib/libQt5Widgets.so.5.9.4
+   fun:_ZN10QTableView10paintEventEP11QPaintEvent
+}

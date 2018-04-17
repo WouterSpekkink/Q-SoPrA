@@ -608,7 +608,7 @@ void EventGraphWidget::retrieveData() {
 	if (currentMacro->isVisible()) {
 	  currentData.push_back(currentMacro);
 	}
-      } else if (arrow && scene->selectedItems().size() > 0) {
+      } else if (arrow && scene->selectedItems().size() > 1) {
 	scene->blockSignals(true);
 	arrow->setSelected(false);
 	scene->blockSignals(false);
@@ -661,15 +661,16 @@ void EventGraphWidget::retrieveData() {
 	  commentField->setText(comment);
 	  sourceField->setText(source);
 	  resetFont(attributesTree);
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT attribute FROM attributes_to_incidents "
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT attribute FROM attributes_to_incidents "
 			 "WHERE incident = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  while (query->next()) {
-	    QString attribute = query->value(0).toString();
+	  query2->bindValue(":id", id);
+	  query2->exec();
+	  while (query2->next()) {
+	    QString attribute = query2->value(0).toString();
 	    boldSelected(attributesTree, attribute, id, INCIDENT);
 	  }
+	  delete query2;
 	}
 	delete query;
       } else if (currentMacro) {
@@ -1264,6 +1265,7 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 	    } else {
 	      currentAttribute->setFont(font3);
 	    }
+	    delete query;
 	  } else if (type == MACRO) {
 	    QSet<QString> attributes = selectedMacro->getAttributes();
 	    QSet<QString>::iterator it;
@@ -1929,7 +1931,9 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	  qreal newTargetHeight = sourceHeight + qrand() % 150 - 75;
 	  int targetOrder = tempTarget->getOriginalPos().x();
 	  tempTarget->setPos(QPointF(targetOrder, newTargetHeight));
-	  Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
+	  Arrow *currentEdge = new Arrow(type, coder);
+	  currentEdge->setStartItem(tempSource);
+	  currentEdge->setEndItem(tempTarget);
 	  currentEdge->setToolTip(toolTip);
 	  edgeVector.push_back(currentEdge);
 	  break;
@@ -1938,7 +1942,9 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	  qreal newSourceHeight = targetHeight + qrand() % 150 - 75;
 	  int sourceOrder = tempSource->getOriginalPos().x();
 	  tempSource->setPos(QPointF(sourceOrder, newSourceHeight));
-	  Arrow *currentEdge = new Arrow(tempSource, tempTarget, type, coder);
+	  Arrow *currentEdge = new Arrow(type, coder);
+	  currentEdge->setStartItem(tempSource);
+	  currentEdge->setEndItem(tempTarget);
 	  currentEdge->setToolTip(toolTip);
 	  edgeVector.push_back(currentEdge);
 	  break;
@@ -2347,7 +2353,9 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 	  }
 	}
 	if (sameFound == false) {
-	  Arrow *compareEdge = new Arrow(tempSource, tempTarget, type, coder);
+	  Arrow *compareEdge = new Arrow(type, coder);
+	  compareEdge->setStartItem(tempSource);
+	  compareEdge->setEndItem(tempTarget);
 	  compareEdge->setColor(Qt::darkRed);
 	  compareVector.push_back(compareEdge);
 	  compareEdge->setToolTip(toolTip);
@@ -3478,7 +3486,9 @@ void EventGraphWidget::seePlots() {
 	}
       }
       if (tempSource != NULL && tempTarget != NULL) {
-	Arrow *currentEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
+	Arrow *currentEdge = new Arrow(selectedType, selectedCoder);
+	currentEdge->setStartItem(tempSource);
+	currentEdge->setEndItem(tempTarget);
 	currentEdge->setToolTip(toolTip);
 	edgeVector.push_back(currentEdge);
 	scene->addItem(currentEdge);
@@ -3746,6 +3756,7 @@ void EventGraphWidget::seePlots() {
     delete query;
     seePlots();
   }
+  delete savedPlotsDialog;
 }
 
 void EventGraphWidget::setChangeLabel() {
@@ -4180,12 +4191,14 @@ void EventGraphWidget::setVisibility() {
   QVectorIterator<Arrow*> it3(edgeVector);
   while (it3.hasNext()) {
     Arrow *currentEdge = it3.next();
-    QGraphicsItem *tail = currentEdge->startItem();
-    QGraphicsItem *head = currentEdge->endItem();
-    if (tail->isVisible() && head->isVisible()) {
-      currentEdge->show();
-    } else {
-      currentEdge->hide();
+    if (currentEdge) {
+      QGraphicsItem *tail = currentEdge->startItem();
+      QGraphicsItem *head = currentEdge->endItem();
+      if (tail->isVisible() && head->isVisible()) {
+      	currentEdge->setVisible(true);
+      } else {
+	currentEdge->setVisible(false);
+      }
     }
   }
   QVectorIterator<NodeLabel*> it4(nodeLabelVector);
@@ -5039,6 +5052,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 					     "that were set for abstraction.");
 	      warningBox->exec();
 	      delete warningBox;
+	      delete query;
 	      return false;
 	    }
 	  } else if (direction == FUTURE) {
@@ -5051,6 +5065,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 					     "that were set for colligation.");
 	      warningBox->exec();
 	      delete warningBox;
+	      delete query;
 	      return false;
 	    }
 	  }
@@ -5064,6 +5079,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 					   "that were set for colligation.");
 	    warningBox->exec();
 	    delete warningBox;
+	    delete query;
 	    return false;
 	  }
 	}
@@ -5098,6 +5114,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 					     "that were set for colligation.");
 	      warningBox->exec();
 	      delete warningBox;
+	      delete query;
 	      return false;
 	    }
 	  }
@@ -5131,6 +5148,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 					       "that were set for abstraction.");
 		warningBox->exec();
 		delete warningBox;
+		delete query;
 		return false;
 	      }
 	    }
@@ -5139,6 +5157,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
       }
     }
   }
+  delete query;
   return true;
 }
 
@@ -5210,7 +5229,9 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      }
 	    }
 	    if (!found) {
-	      Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
+	      Arrow *newEdge = new Arrow(selectedType, selectedCoder);
+	      newEdge->setStartItem(tempSource);
+	      newEdge->setEndItem(tempTarget);
 	      edgeVector.push_back(newEdge);
 	      scene->addItem(newEdge);
 	    }
@@ -5267,7 +5288,9 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      }
 	    }
 	    if (!found) {
-	      Arrow *newEdge = new Arrow(tempSource, tempTarget, selectedType, selectedCoder);
+	      Arrow *newEdge = new Arrow(selectedType, selectedCoder);
+	      newEdge->setStartItem(tempSource);
+	      newEdge->setEndItem(tempTarget);
 	      edgeVector.push_back(newEdge);
 	      scene->addItem(newEdge);
 	    }
@@ -5387,19 +5410,13 @@ void EventGraphWidget::disaggregateEvent() {
      Then we adapt to the new situation by cleaning up the macro that
      we have disaggregated, by rewiring linkages, and so on.
   */
-  scene->removeItem(selectedMacro->getLabel());
-  macroLabelVector.removeOne(selectedMacro->getLabel());
-  scene->removeItem(selectedMacro);
-  macroVector.removeOne(selectedMacro);
-  selectedMacro = NULL;
   QVector<Arrow*>::iterator it8;
   for (it8 = edgeVector.begin(); it8 != edgeVector.end();) {
     Arrow *current = *it8;
-    if (!scene->items().contains(current->startItem()) ||
-	!scene->items().contains(current->endItem())) {
-      scene->removeItem(current);
+    if(current->startItem() == selectedMacro ||
+       current->endItem() == selectedMacro) {
+      delete current;
       edgeVector.removeOne(current);
-      current->hide(); // deleting causes a crash.
     } else {
       it8++;
     }
@@ -5407,9 +5424,18 @@ void EventGraphWidget::disaggregateEvent() {
   QVectorIterator<MacroEvent*> it9(macroVector);
   while (it9.hasNext()) {
     MacroEvent *macro = it9.next();
-    QVector<EventItem*> currentIncidents = macro->getIncidents();
-    rewireLinkages(macro, currentIncidents);
+    if (macro != selectedMacro) {
+      QVector<EventItem*> currentIncidents = macro->getIncidents();
+      rewireLinkages(macro, currentIncidents);
+    }
   }
+  scene->removeItem(selectedMacro->getLabel());
+  scene->removeItem(selectedMacro);
+  delete selectedMacro->getLabel();
+  macroLabelVector.removeOne(selectedMacro->getLabel());
+  delete selectedMacro;
+  macroVector.removeOne(selectedMacro);
+  selectedMacro = NULL;
   setVisibility();
 }
   
@@ -6045,7 +6071,9 @@ void EventGraphWidget::addLinkage() {
 	query->bindValue(":type", selectedType);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(eventTwo, eventOne, selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	newArrow->setStartItem(eventTwo);
+	newArrow->setEndItem(eventOne);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       } else if (direction == FUTURE) {
@@ -6054,7 +6082,9 @@ void EventGraphWidget::addLinkage() {
 	query->bindValue(":type", selectedType);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(eventOne, eventTwo, selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	newArrow->setStartItem(eventOne);
+	newArrow->setEndItem(eventTwo);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       }
@@ -6065,7 +6095,9 @@ void EventGraphWidget::addLinkage() {
 	query->bindValue(":type", selectedType);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(eventOne, eventTwo, selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	newArrow->setStartItem(eventOne);
+	newArrow->setEndItem(eventTwo);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       } else if (direction == FUTURE) {
@@ -6074,7 +6106,9 @@ void EventGraphWidget::addLinkage() {
 	query->bindValue(":type", selectedType);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(eventTwo, eventOne, selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	newArrow->setStartItem(eventTwo);
+	newArrow->setEndItem(eventOne);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       }
@@ -6700,6 +6734,7 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
       if (order >= lowerLimit && order <= upperLimit) {
 	submittedItems->insert(currentHead);
       }
+      delete query2;
     }
     query->prepare("SELECT tail FROM linkages "
 		   "WHERE head = :head AND type = :type AND coder = :coder");
@@ -6718,7 +6753,9 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
       if (order >= lowerLimit && order <= upperLimit) {
 	submittedItems->insert(currentTail);
       }
+      delete query2;
     }
+    delete query;
   }
   if (submittedItems->size() > temp.size()) {
     findUndirectedPaths(pMark, submittedItems, lowerLimit, upperLimit);

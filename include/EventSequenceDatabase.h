@@ -14,14 +14,12 @@ class EventSequenceDatabase : public QObject {
 
 public:
   EventSequenceDatabase();
-  ~EventSequenceDatabase() {
-    delete db;
-  };
+  ~EventSequenceDatabase() {};
 
   void openDB(const QString &name);
   
 private:
-  QSqlDatabase *db;
+  QSqlDatabase db;
   
 };
 

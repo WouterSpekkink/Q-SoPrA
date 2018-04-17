@@ -168,6 +168,7 @@ private slots:
   void cleanUp();
   void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
+  void finalBusiness();
   
 private:
   QPointer<Scene> scene;

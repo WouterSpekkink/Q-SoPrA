@@ -238,6 +238,8 @@ void OccurrenceGraphWidget::checkCongruency() {
 	  incongruencyLabel->setText("Incongruency detected");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
+	  delete query;
+	  delete query2;
 	  return;
 	}
 	query2->bindValue(":incident", id);
@@ -247,11 +249,15 @@ void OccurrenceGraphWidget::checkCongruency() {
 	  incongruencyLabel->setText("Incongruency detected");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
+	  delete query;
+	  delete query2;
 	  return;
 	} else if (query2->value(0).toInt() != order) {
 	  incongruencyLabel->setText("Incongruency detected");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
+	  delete query;
+	  delete query2;
 	  return;
 	}
       }
@@ -278,11 +284,14 @@ void OccurrenceGraphWidget::checkCongruency() {
 	  incongruencyLabel->setText("Incongruency detected");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
+	  delete query;
+	  delete query2;
 	  return;
 	}
       }
     }
     delete query;
+    delete query2;
     incongruencyLabel->setText("");
     QSqlDatabase::database().commit();
   }
@@ -594,7 +603,9 @@ void OccurrenceGraphWidget::wireLinkages() {
 	}
       }
       if (tempTarget != NULL) {
-	Arrow *newArrow = new Arrow(tempSource, tempTarget, tempSource->getAttribute(), "");
+	Arrow *newArrow = new Arrow(tempSource->getAttribute(), "");
+	newArrow->setStartItem(tempSource);
+	newArrow->setEndItem(tempTarget);
 	newArrow->setCopy(true);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);

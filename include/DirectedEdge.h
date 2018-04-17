@@ -9,8 +9,9 @@ class DirectedEdge : public QGraphicsLineItem {
 
 public:
 
-  DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
-	       QString submittedName, QGraphicsItem *parent = 0);
+  DirectedEdge(NetworkNode *startItem = NULL, NetworkNode *endItem = NULL,
+	       QString submittedType = QString(), QString submittedName = QString(),
+	       QGraphicsItem *parent = 0);
   ~DirectedEdge() {};
 
   QRectF boundingRect() const override;

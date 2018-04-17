@@ -8,8 +8,14 @@
   in real applications.
 */
 
-EventItem::EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId, int subOrder)
-  : color(255, 255, 255) {
+EventItem::EventItem(int subWidth,
+		     QString toolTip,
+		     QPointF originalPosition,
+		     int subId,
+		     int subOrder,
+		     QGraphicsItem *parent)
+  : QGraphicsItem(parent) {
+  color = QColor(255, 255, 255);
   width = subWidth;
   setToolTip(toolTip);
   originalPos = originalPosition;

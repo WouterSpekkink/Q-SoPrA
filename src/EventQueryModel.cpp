@@ -15,8 +15,10 @@ QVariant EventQueryModel::data(const QModelIndex &index, int role) const {
       query->first();
       int mark = query->value(0).toInt();
       if (mark == 1) {
+	delete query;
 	return Qt::Checked;
       } else if (mark == 0) {
+	delete query;
 	return Qt::Unchecked;
       }
     } else {

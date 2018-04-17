@@ -243,11 +243,20 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 								       QTransform()));
     RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
 							      QTransform()));
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(),
+						     QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
     if (macroLabel) {
       macro = macroLabel->getMacroEvent();
+    }
+    if (arrow) {
+      clearSelection();
+      arrow->setSelected(true);
+      if (!arrow->isCopy()) {
+	emit resetItemSelection();
+      }
     }
     if (incident) {
       if (incident->isCopy()) {

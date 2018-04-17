@@ -63,9 +63,8 @@
 class Arrow : public QGraphicsLineItem {
 
 public: 
-  Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem,
-	QString subType, QString subCoder, QGraphicsItem *parent = 0);
-  ~Arrow() {};
+  Arrow(QString subType, QString subCoder, QGraphicsItem *parent = 0);
+  ~Arrow() {prepareGeometryChange();};
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
@@ -79,6 +78,9 @@ public:
   bool isCopy();
   void setCopy(bool status);
   QString getType();
+
+  void setStartItem(QGraphicsItem *subStart);
+  void setEndItem(QGraphicsItem *subEnd);
   
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;

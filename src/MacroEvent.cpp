@@ -8,9 +8,15 @@
   in real applications.
 */
 
-MacroEvent::MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
-		       QString submittedConstraint, QVector<EventItem*> submittedIncidents)
-  : color(255, 255, 255) {
+MacroEvent::MacroEvent(int subWidth,
+		       QString submittedDescription,
+		       QPointF originalPosition,
+		       int subId,
+		       QString submittedConstraint,
+		       QVector<EventItem*> submittedIncidents,
+		       QGraphicsItem *parent)
+  : QGraphicsItem(parent) {
+  color = QColor(255, 255, 255);
   width = subWidth;
   description = submittedDescription;
   QString tip = breakString(description);

@@ -60,11 +60,8 @@
 #include <QPainter>
 #include "../include/Scene.h"
 
-Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, QString subCoder,
-	     QGraphicsItem *parent)
+Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) {
-  start = startItem;
-  end = endItem;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   color = Qt::black;
   setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -75,13 +72,11 @@ Arrow::Arrow(QGraphicsItem *startItem, QGraphicsItem *endItem, QString subType, 
 }
 
 QRectF Arrow::boundingRect() const {
-   qreal extra = (pen().width() + 20) / 2.0;
-  
+  qreal extra = (pen().width() + 20) / 2.0;
   return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
 				     end->pos().y() - start->pos().y()))
     .normalized()
     .adjusted(-extra, -extra, extra, extra);
-
 }
 
 QPainterPath Arrow::shape() const {
@@ -289,3 +284,10 @@ QString Arrow::getType() {
   return typeInd;
 }
 
+void Arrow::setStartItem(QGraphicsItem *subStart) {
+  start = subStart;
+}
+
+void Arrow::setEndItem(QGraphicsItem *subEnd) {
+  end = subEnd;
+}

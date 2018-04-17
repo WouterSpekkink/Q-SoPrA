@@ -16,7 +16,12 @@ class MacroEvent;
 class EventItem : public QGraphicsItem {
 
 public:
-  EventItem(int subWidth, QString toolTip, QPointF originalPosition, int subId, int subOrder);
+  EventItem(int subWidth = 40,
+	    QString toolTip = QString(),
+	    QPointF originalPosition = QPointF(),
+	    int subId = -1,
+	    int subOrder = -1,
+	    QGraphicsItem *parent = 0);
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;

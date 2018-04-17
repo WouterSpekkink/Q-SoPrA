@@ -9,8 +9,9 @@ class UndirectedEdge : public QGraphicsLineItem {
 
 public:
 
-  UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
-		 QString submittedName, QGraphicsItem *parent = 0);
+  UndirectedEdge(NetworkNode *startItem = NULL,
+		 NetworkNode *endItem = NULL, QString submittedType = QString(),
+		 QString submittedName = QString(), QGraphicsItem *parent = 0);
   ~UndirectedEdge() {};
 
   QRectF boundingRect() const override;

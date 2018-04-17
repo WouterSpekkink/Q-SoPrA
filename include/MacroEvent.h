@@ -17,8 +17,13 @@ class EventItem;
 class MacroEvent : public QGraphicsItem {
 
 public:
-  MacroEvent(int subWidth, QString submittedDescription, QPointF originalPosition, int subId,
-	     QString submittedConstraint, QVector<EventItem*> submittedIncidents);
+  MacroEvent(int subWidth = 40,
+	     QString submittedDescription = QString(),
+	     QPointF originalPosition = QPointF(),
+	     int subId = -1,
+	     QString submittedConstraint = QString(),
+	     QVector<EventItem*> submittedIncidents = QVector<EventItem*>(),
+	     QGraphicsItem *parent = 0);
 
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;

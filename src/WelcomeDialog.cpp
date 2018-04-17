@@ -42,7 +42,7 @@ void WelcomeDialog::newDatabase() {
     }
 
     esd->openDB(dbName);
-    bool ok = esd->db->open();
+    bool ok = esd->db.open();
     if (!ok) {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
       errorBox->setText(tr("<b>ERROR</b>"));
@@ -50,8 +50,8 @@ void WelcomeDialog::newDatabase() {
       errorBox->exec();
       return;
     } else {
-      esd->db->exec("PRAGMA synchronous=OFF");
-      esd->db->exec("PRAGMA journal_mode=MEMORY");
+      esd->db.exec("PRAGMA synchronous=OFF");
+      esd->db.exec("PRAGMA journal_mode=MEMORY");
       QSqlQuery *query = new QSqlQuery;
       qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE incidents "
@@ -611,7 +611,7 @@ void WelcomeDialog::openDatabase() {
   QString dbName = QFileDialog::getOpenFileName(this, tr("Select database"),"", tr("db files (*.db)"));
   if (!dbName.trimmed().isEmpty()) {
     esd->openDB(dbName);
-    bool ok = esd->db->open();
+    bool ok = esd->db.open();
     if (!ok) {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
       errorBox->setText(tr("<b>ERROR</b>"));
@@ -624,8 +624,8 @@ void WelcomeDialog::openDatabase() {
 	 Let's make sure that we create all tables that are not yet present.
 	 For example, this could be the case after updates of the program. 
       */
-      esd->db->exec("PRAGMA synchronous=OFF");
-      esd->db->exec("PRAGMA journal_mode=MEMORY");
+      esd->db.exec("PRAGMA synchronous=OFF");
+      esd->db.exec("PRAGMA journal_mode=MEMORY");
       QSqlQuery *query = new QSqlQuery;
       qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
       query->exec("CREATE TABLE IF NOT EXISTS incidents "

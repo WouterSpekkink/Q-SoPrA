@@ -254,6 +254,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
+  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
@@ -696,6 +697,7 @@ void NetworkGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 	  } else {
 	    currentAttribute->setFont(font3);
 	  }
+	  delete query;
         }
       }
     }
@@ -1179,7 +1181,7 @@ void NetworkGraphWidget::getDirectedEdges() {
 	  tempTarget = currentNode;
 	}
 	if (tempSource != NULL && tempTarget != NULL) {
-	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, type, name);
+	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, type, name, 0);
 	  currentEdge->setComment(comment);
 	  currentEdge->hide();
 	  directedVector.push_back(currentEdge);
@@ -1236,7 +1238,7 @@ void NetworkGraphWidget::getUndirectedEdges() {
       QString name = query2->value(0).toString();
       QString source = query2->value(1).toString();
       QString target = query2->value(2).toString();
-      
+      QString comment = query2->value(3).toString();
       QVectorIterator<NetworkNode*> it(nodeVector);
       NetworkNode *tempSource = NULL;
       NetworkNode *tempTarget = NULL;
@@ -1250,10 +1252,11 @@ void NetworkGraphWidget::getUndirectedEdges() {
 	if (tempSource != NULL && tempTarget != NULL) {
 	  UndirectedEdge *currentEdge;
 	  if (tempSource->getName() < tempTarget->getName()) {
-	    currentEdge = new UndirectedEdge(tempSource, tempTarget, type, name);
+	    currentEdge = new UndirectedEdge(tempSource, tempTarget, type, name, 0);
 	  } else {
-	    currentEdge = new UndirectedEdge(tempTarget, tempSource, type, name);
+	    currentEdge = new UndirectedEdge(tempTarget, tempSource, type, name, 0);
 	  }
+	  currentEdge->setComment(comment);
 	  currentEdge->hide();
 	  undirectedVector.push_back(currentEdge);
 	  break;
@@ -2071,7 +2074,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  second->endItem()->isVisible()) {
 		if (directedness == DIRECTED) {
 		  DirectedEdge *newEdge = new DirectedEdge(first->startItem(), second->startItem(),
-						       name, CREATED);
+							   name, CREATED, 0);
 		  bool found = false;
 		  QVectorIterator<DirectedEdge*> it3(directedVector);
 		  while (it3.hasNext()) {
@@ -2091,11 +2094,11 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  if (first->startItem()->getName() < second->startItem()->getName()) {
 		    newEdge = new UndirectedEdge(first->startItem(),
 						 second->startItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  } else {
 		    newEdge = new UndirectedEdge(second->startItem(),
 						 first->startItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  }
 		  bool found = false;
 		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
@@ -2112,6 +2115,8 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    undirectedVector.push_back(newEdge);
+		  } else {
+		    delete newEdge;
 		  }
 		}
 	      }
@@ -2133,7 +2138,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  second->endItem()->isVisible()) {
 		if (directedness == DIRECTED) {
 		  DirectedEdge *newEdge = new DirectedEdge(first->endItem(), second->endItem(),
-						   name, CREATED);
+							   name, CREATED, 0);
 		  bool found = false;
 		  QVectorIterator<DirectedEdge*> it3(directedVector);
 		  while (it3.hasNext()) {
@@ -2147,17 +2152,19 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    directedVector.push_back(newEdge);
-		  }
+		  } else {
+		    delete newEdge;
+		  } 
 		} else if (directedness == UNDIRECTED) {
 		  UndirectedEdge *newEdge;
 		  if (first->endItem()->getName() < second->endItem()->getName()) {
 		    newEdge = new UndirectedEdge(first->endItem(),
 						 second->endItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  } else {
 		    newEdge = new UndirectedEdge(second->endItem(),
 						 first->endItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  }
 		  bool found = false;
 		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
@@ -2174,6 +2181,8 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    undirectedVector.push_back(newEdge);
+		  } else {
+		    delete newEdge;
 		  }
 		}
 	      }
@@ -2202,7 +2211,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  second->endItem()->isVisible()) {
 		if (directedness == DIRECTED) {
 		  DirectedEdge *newEdge = new DirectedEdge(first->startItem(), second->startItem(),
-						   name, CREATED);
+							   name, CREATED, 0);
 		  bool found = false;
 		  QVectorIterator<DirectedEdge*> it3(directedVector);
 		  while (it3.hasNext()) {
@@ -2216,17 +2225,19 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    directedVector.push_back(newEdge);
-		  }
+		  } else {
+		    delete newEdge;
+		  } 
 		} else if (directedness == UNDIRECTED) {
 		  UndirectedEdge *newEdge;
 		  if (first->startItem()->getName() < second->startItem()->getName()) {
 		    newEdge = new UndirectedEdge(first->startItem(),
 						 second->startItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  } else {
 		    newEdge = new UndirectedEdge(second->startItem(),
 						 first->startItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  }
 		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
 		  bool found = false;
@@ -2243,6 +2254,8 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    undirectedVector.push_back(newEdge);
+		  } else {
+		    delete newEdge;
 		  }
 		}
 	      }
@@ -2264,7 +2277,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  second->endItem()->isVisible()) {
 		if (directedness == DIRECTED) {
 		  DirectedEdge *newEdge = new DirectedEdge(first->endItem(), second->endItem(),
-						   name, CREATED);
+							   name, CREATED, 0);
 		  bool found = false;
 		  QVectorIterator<DirectedEdge*> it3(directedVector);
 		  while (it3.hasNext()) {
@@ -2278,17 +2291,19 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    directedVector.push_back(newEdge);
+		  } else {
+		    delete newEdge;
 		  }
 		} else if (directedness == UNDIRECTED) {
 		  UndirectedEdge *newEdge;
 		  if (first->endItem()->getName() < second->endItem()->getName()) {
 		    newEdge = new UndirectedEdge(first->endItem(),
 						 second->endItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  } else {
 		    newEdge = new UndirectedEdge(second->endItem(),
 						 first->endItem(),
-						 name, CREATED);
+						 name, CREATED, 0);
 		  }
 		  bool found = false;
 		  QVectorIterator<UndirectedEdge*> it3(undirectedVector);
@@ -2305,6 +2320,8 @@ void NetworkGraphWidget::multimodeTransformation() {
 		  }
 		  if (!found) {
 		    undirectedVector.push_back(newEdge);
+		  } else {
+		    delete newEdge;
 		  }
 		}
 	      }
@@ -2512,7 +2529,7 @@ void NetworkGraphWidget::mergeRelationships() {
 	DirectedEdge* directed = it.next();
 	if (types.contains(directed->getType())) {
 	  DirectedEdge *newDirected = new DirectedEdge(directed->startItem(), directed->endItem(),
-						       name, CREATED);
+						       name, CREATED, 0);
 	  newDirected->setColor(color);
 	  directedVector.push_back(newDirected);
 	  delete directed;
@@ -2548,7 +2565,7 @@ void NetworkGraphWidget::mergeRelationships() {
 	if (types.contains(undirected->getType())) {
 	  UndirectedEdge *newUndirected = new UndirectedEdge(undirected->startItem(),
 							     undirected->endItem(),
-							     name, CREATED);
+							     name, CREATED, 0);
 	  newUndirected->setColor(color);
 	  undirectedVector.push_back(newUndirected);
 	  delete undirected;
@@ -3925,7 +3942,7 @@ void NetworkGraphWidget::seePlots() {
 	}
 	if (tempSource != NULL && tempTarget != NULL) {
 	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget,
-							type, name);
+						       type, name, 0);
 	  currentEdge->setComment(comment);
 	  currentEdge->setHeight(height);
 	  if (filtered == 1) {
@@ -3980,7 +3997,7 @@ void NetworkGraphWidget::seePlots() {
 	}
 	if (tempSource != NULL && tempTarget != NULL) {
 	  UndirectedEdge *currentEdge = new UndirectedEdge(tempSource, tempTarget,
-							    type, name);
+							   type, name, 0);
 	  currentEdge->setComment(comment);
 	  currentEdge->setHeight(height);
 	  if (filtered == 0) {
@@ -4445,6 +4462,7 @@ void NetworkGraphWidget::setButtons() {
       assignAttributeButton->setEnabled(true);
     }
     editAttributeButton->setEnabled(true);
+    delete query;
   } else {
     editAttributeButton->setEnabled(false);
     assignAttributeButton->setEnabled(false);
@@ -4480,6 +4498,10 @@ void NetworkGraphWidget::cleanUp() {
   nameField->clear();
   descriptionField->clear();
   resetFont(attributesTree);
+}
+
+void NetworkGraphWidget::finalBusiness() {
+  cleanUp();
 }
 
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) {

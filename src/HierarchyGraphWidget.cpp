@@ -485,6 +485,8 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
     eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
       setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 	       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  } else {
+    delete item;
   }
   if (newOrigin->getConstraint() == PATHS ||
       newOrigin->getConstraint() == PATHSATT) {
@@ -583,7 +585,9 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newMacroLabel->setZValue(2);
       newMacroLabel->setDefaultTextColor(Qt::black);
       currentLayer.push_back(newMacro);
-      Arrow *newArrow = new Arrow(newMacro, newOrigin, "Hierarchy", "", 0);
+      Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+      newArrow->setStartItem(newMacro);
+      newArrow->setEndItem(newOrigin);
       newArrow->setCopy(true);
       scene->addItem(newArrow);
       partners.push_back(macro);
@@ -642,7 +646,9 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       text->setZValue(2);
       text->setDefaultTextColor(Qt::black);
       currentLayer.push_back(newEvent);
-      Arrow *newArrow = new Arrow(newEvent, newOrigin, "Hierarchy", "", 0);
+      Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+      newArrow->setStartItem(newEvent);
+      newArrow->setEndItem(newOrigin);
       newArrow->setCopy(true);
       scene->addItem(newArrow);
       partners.push_back(event);
@@ -760,7 +766,9 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	newMacroLabel->setDefaultTextColor(Qt::black);
 	currentLayer.push_back(newMacro);
 	partners.push_back(macro);
-	Arrow *newArrow = new Arrow(newMacro, partLayer[it] , "Hierarchy", "", 0);
+	Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+	newArrow->setStartItem(newMacro);
+	newArrow->setEndItem(partLayer[it]);
 	newArrow->setCopy(true);
 	scene->addItem(newArrow);
       }
@@ -831,7 +839,9 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  text->setDefaultTextColor(Qt::black);
 	  currentLayer.push_back(newEvent);
 	  partners.push_back(event);
-	  Arrow *newArrow = new Arrow(newEvent, partLayer[it], "Hierarchy", "", 0);
+	  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+	  newArrow->setStartItem(newEvent);
+	  newArrow->setEndItem(partLayer[it]);
 	  newArrow->setCopy(true);
 	  scene->addItem(newArrow);
 	}
@@ -933,7 +943,9 @@ void HierarchyGraphWidget::getEdges() {
 	}
       }
       if (valid) {
-	Arrow *newArrow = new Arrow(source, target, "Linkages", "", 0);
+	Arrow *newArrow = new Arrow("Linkages", "", 0);
+	newArrow->setStartItem(source);
+	newArrow->setEndItem(target);
 	newArrow->setColor(QColor(169, 169, 169, 255));
 	newArrow->setCopy(true);
 	scene->addItem(newArrow);
