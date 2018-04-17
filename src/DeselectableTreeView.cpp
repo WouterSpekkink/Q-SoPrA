@@ -64,6 +64,7 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
   query->bindValue(":father", targetName);
   query->bindValue(":child", childName);
   query->exec();
+  delete query;
   QTreeView::dropEvent(event);
   this->setSortingEnabled(true);
   this->model()->sort(0, Qt::AscendingOrder);
