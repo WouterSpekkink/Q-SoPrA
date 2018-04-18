@@ -1965,63 +1965,38 @@ void EventGraphWidget::plotEdges() {
 }
 
 void EventGraphWidget::layoutGraph() {
-  QVectorIterator<EventItem*> it(eventVector);
-  while (it.hasNext()) {
-    EventItem *incident = it.next();
-    int id = incident->getId();
-    int currentOrder = incident->getOrder();
-    QSqlQuery *query = new QSqlQuery;
-    // Let us first find the directedness of the current linkage type.
-    query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-    query->bindValue(":type", selectedType);
-    query->exec();
-    query->first();
-    QString selectedDirection = query->value(0).toString();
-    /*
-      Let us now find the first ancestors/descendant of the current incident.
-      We will base the position of the current incident on the position of that incident.
-      We don't actually have to do things very differently for the different 
-      directions of the edges. We just need to change the format of the query;
-    */
-    if (selectedDirection == PAST) {
-      query->prepare("SELECT head FROM linkages "
-		     "WHERE tail = :incident AND type = :type AND coder = :coder");
-    } else if (selectedDirection == FUTURE) {
-      query->prepare("SELECT tail FROM linkages "
-		     "WHERE head = :incident AND type = :type AND coder = :coder");
-    }
-    
-    query->bindValue(":incident", id);
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
-    query->exec();
-    query->first();
-    if (!query->isNull(0)) {
-      // In this case there is an ancestor, so we can proceed.
-      int partnerId = query->value(0).toInt();
-      query->prepare("SELECT ch_order from incidents WHERE id = :id");
-      query->bindValue(":id", partnerId);
-      query->exec();
-      query->first();
-      int partnerOrder = query->value(0).toInt();
-      int diff = currentOrder - partnerOrder;
-      // Let's find the event item that represents our partner.
-      QVectorIterator<EventItem*> it2(eventVector);
-      EventItem *partner = NULL;
-      while (it2.hasNext()) {
-	EventItem *candidate = it2.next();
-	if (candidate->getId() == partnerId) {
-	  partner = candidate;
+  QVector<EventItem*>::iterator it4;
+  for (it4 = eventVector.begin(); it4 != eventVector.end(); it4++) {
+    EventItem *current = *it4;
+    QVector<EventItem*>::iterator it5;
+    QVector<EventItem*> partners;
+    for (it5 = it4 + 1; it5 != eventVector.end(); it5++) {
+      EventItem *second = *it5;
+      QVectorIterator<Arrow*> it6(edgeVector);
+      while (it6.hasNext()) {
+	Arrow *edge = it6.next();
+	// Basically we just ask whether the current events are linked.
+	if ((edge->startItem() == current &&
+	     edge->endItem() == second) ||
+	    (edge->endItem() == current &&
+	     edge->startItem() == second)) {
+	  partners.push_back(second);
 	}
       }
-      if (partner != NULL) {
-	// partner being NULL should actually not be possible, unless something is wrong.
-	qreal partnerHeight = partner->scenePos().y();
-	qreal currentHeight = partnerHeight + (pow(-1, currentOrder) * diff * (qrand() % 30));
-	incident->setPos(QPointF(incident->scenePos().x(), currentHeight));
+    }
+    qreal originHeight = current->scenePos().y();
+    std::sort(partners.begin(), partners.end(), eventLessThan);
+    int partnerCount = partners.size();
+    QVectorIterator<EventItem*> it7(partners);
+    while (it7.hasNext()) {
+      EventItem *currentPartner = it7.next();
+      qreal partnerHeight = originHeight;
+      if (partners.size() > 1) {
+	partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
       }
-    } // If we do not find an ancestor, we can just keep the randomly assigned position.
-    delete query;
+      currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
+      partnerCount--;
+    }
   }
 }
 
@@ -2063,6 +2038,8 @@ void EventGraphWidget::addLabels() {
 void EventGraphWidget::cleanUp() {
   scene->clearSelection();
   currentData.clear(); // Contents will be deleted below
+  qDeleteAll(edgeVector);
+  edgeVector.clear();
   qDeleteAll(macroVector);
   macroVector.clear();
   qDeleteAll(macroLabelVector);
@@ -2073,8 +2050,6 @@ void EventGraphWidget::cleanUp() {
   nodeLabelVector.clear();
   qDeleteAll(compareVector);
   compareVector.clear();
-  qDeleteAll(edgeVector);
-  edgeVector.clear();
   qDeleteAll(lineVector);
   lineVector.clear();
   qDeleteAll(textVector);
