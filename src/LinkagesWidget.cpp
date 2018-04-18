@@ -37,7 +37,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   settingsLabel = new QLabel(tr("<h2>Settings:</h2>"), this);
   selectCoderLabel = new QLabel(tr("<b>Select coder:</b>"), this);
   selectTypeLabel =  new QLabel(tr("<b>Select linkage type:</b>"), this);
-  tailIndexLabel = new QLabel(tr("<b>Tail ( / )<b>"), this);
+  tailIndexLabel = new QLabel(tr("<b>Tail ( / ) - Incident:</b>"), this);
   tailMarkedLabel = new QLabel("");
   tailMarkedLabel->setStyleSheet("QLabel {color: red}");
   tailTimeStampLabel = new QLabel(tr("<b>Timing:</b>"), this);
@@ -48,7 +48,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) {
   tailDescriptionFilterLabel = new QLabel(tr("<i>Search descriptions:</i>"), this);
   tailRawFilterLabel = new QLabel(tr("<i>Search raw texts:</i>"), this);
   tailCommentFilterLabel = new QLabel(tr("<i>Search comments:</i>"), this);
-  headIndexLabel = new QLabel(tr("<b>Head ( / )</b>"), this);
+  headIndexLabel = new QLabel(tr("<b>Head ( / ) - Incident:</b>"), this);
   headMarkedLabel = new QLabel("");
   headMarkedLabel->setStyleSheet("QLabel {color: red}");
   headTimeStampLabel = new QLabel(tr("<b>Timing:</b>"), this);
@@ -647,6 +647,34 @@ void LinkagesWidget::removeLinkageType() {
 
       delete query;
       typeComboBox->removeItem(typeComboBox->currentIndex());
+
+      tailIndexLabel->setText("<b>Tail ( / ) - Incident:</b>");
+      headIndexLabel->setText("<b>Head ( / ) - Incident:</b>");
+      tailTimeStampField->setText("");
+      tailSourceField->setText("");
+      tailDescriptionField->setText("");
+      tailRawField->setText("");
+      tailCommentField->blockSignals(true);
+      tailCommentField->setText("");
+      tailCommentField->blockSignals(false);
+      headTimeStampField->setText("");
+      headSourceField->setText("");
+      headDescriptionField->setText("");
+      headRawField->setText("");
+      headCommentField->blockSignals(true);
+      headCommentField->setText("");
+      headCommentField->blockSignals(false);
+      tailMarkedLabel->setText("");
+      headMarkedLabel->setText("");
+      linkageFeedbackLabel->setText("");
+      setLinkButton->setEnabled(false);
+      unsetLinkButton->setEnabled(false);
+      linkageCommentField->blockSignals(true);
+      linkageCommentField->setText("");
+      linkageCommentField->blockSignals(false);
+      selectedType = "";
+      selectedDirection = "";
+      selectedCoder = "";
     }
     delete warningBox;
   }

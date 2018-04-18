@@ -823,15 +823,15 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
       menu.addAction(action1);
-      QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
+      QAction *action12 = new QAction(COLLIGATEPATHSATTACTION, this);
       menu.addAction(action12);    
       QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
       menu.addAction(action2);
-      QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
+      QAction *action13 = new QAction(COLLIGATESEMIPATHSATTACTION, this);
       menu.addAction(action13);
       QAction *action15 = new QAction(COLLIGATEFREEACTION, this);
       menu.addAction(action15);
-      QAction *action16 = new QAction(COLLIGATEFREEACTIONATT, this);
+      QAction *action16 = new QAction(COLLIGATEFREEATTACTION, this);
       menu.addAction(action16);
       QAction *action3 = new QAction(MAKEMACROACTION, this);
       menu.addAction(action3);
@@ -849,14 +849,17 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action9);
       QAction *action10 = new QAction(CLOSEGAPACTION, this);
       menu.addAction(action10);
-      QAction *action14 = new QAction(ADDLINKAGE, this);
+      QAction *action14 = new QAction(ADDLINKAGEACTION, this);
       menu.addAction(action14);
+      QAction *action17 = new QAction(SELECTFOLLOWERSACTION, this);
+      menu.addAction(action17);
       if (selectedItems().size() > 1) {
 	action3->setEnabled(false);
 	action6->setEnabled(false);
 	action7->setEnabled(false);
 	action9->setEnabled(false);
 	action10->setEnabled(false);
+	action17->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);
@@ -881,11 +884,11 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
       menu.addAction(action1);
-      QAction *action12 = new QAction(COLLIGATEPATHSACTIONATT, this);
+      QAction *action12 = new QAction(COLLIGATEPATHSATTACTION, this);
       menu.addAction(action12);
       QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
       menu.addAction(action2);
-      QAction *action13 = new QAction(COLLIGATESEMIPATHSACTIONATT, this);
+      QAction *action13 = new QAction(COLLIGATESEMIPATHSATTACTION, this);
       menu.addAction(action13);
       QAction *action3 = new QAction(DISAGGREGATEACTION, this);
       menu.addAction(action3);
@@ -905,6 +908,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action10);
       QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
       menu.addAction(action11);
+      QAction *action14 = new QAction(SELECTFOLLOWERSACTION, this);
+      menu.addAction(action14);
       if (selectedItems().size() > 1) {
 	action3->setEnabled(false);
 	action6->setEnabled(false);
@@ -912,6 +917,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	action9->setEnabled(false);
 	action10->setEnabled(false);
 	action11->setEnabled(false);
+	action14->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);

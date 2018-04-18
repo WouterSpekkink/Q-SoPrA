@@ -7,6 +7,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedMacro = NULL;
   selectedIncident = 0;
   commentBool = false;
+  edgeColor = QColor(Qt::black);
   
   distance = 0;
   vectorPos = 0;
@@ -135,6 +136,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
+  edgeColorButton = new QPushButton(tr("Set edge color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   valueButton = new QPushButton(tr("Store value"), attWidget);
@@ -187,6 +189,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
   connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
   connect(eventColorButton, SIGNAL(clicked()), this, SLOT(setEventColor()));
+  connect(edgeColorButton, SIGNAL(clicked()), this, SLOT(setEdgeColor()));
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
@@ -368,6 +371,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
+  graphicsControlsLayout->addWidget(edgeColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
   QPointer<QFrame> sepLine = new QFrame();
@@ -2414,10 +2418,10 @@ void EventGraphWidget::plotCompareEdges() {
   QVectorIterator<Arrow*> it2(edgeVector);
   while (it2.hasNext()) {
     Arrow *currentEdge = it2.next();
-    if (currentEdge->getColor() == QColor(Qt::black)) {
+    if (currentEdge->getColor() == edgeColor) {
       currentEdge->setColor(Qt::darkMagenta);
     } else {
-      currentEdge->setColor(Qt::black);
+      currentEdge->setColor(edgeColor);
     }
   }
 }
@@ -2533,11 +2537,16 @@ void EventGraphWidget::saveCurrentPlot() {
       query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
-      query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder) "
-		     "VALUES (:name, :linkage, :coder)");
+      query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder, "
+		     "edgered, edgegreen, edgeblue, edgealpha) "
+		     "VALUES (:name, :linkage, :coder, :red, :green, :blue, :alpha)");
       query->bindValue(":name", name);
       query->bindValue(":linkage", selectedType);
       query->bindValue(":coder", selectedCoder);
+      query->bindValue(":red", edgeColor.red());
+      query->bindValue(":green", edgeColor.green());
+      query->bindValue(":blue", edgeColor.blue());
+      query->bindValue(":alpha", edgeColor.alpha());
       query->exec();
     }
     QSqlDatabase::database().transaction();
@@ -2652,11 +2661,18 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_edges "
-		   "(plot, tail, head, tailmacro, headmacro, hidden) "
-		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :hidden)");
+		   "(plot, tail, head, tailmacro, headmacro, "
+		   "red, green, blue, alpha, hidden) "
+		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, "
+		   ":red, :green, :blue, :alpha, :hidden)");
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
       Arrow *currentEdge = it3.next();
+      QColor color = currentEdge->getColor();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      int alpha = color.alpha();
       EventItem *eventTail = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
       EventItem *eventHead = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
       MacroEvent *macroTail = qgraphicsitem_cast<MacroEvent*>(currentEdge->startItem());
@@ -2686,6 +2702,10 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":head", head);
       query->bindValue(":tmacro", mTail);
       query->bindValue(":hmacro", mHead);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
+      query->bindValue(":alpha", alpha);
       query->bindValue(":hidden", hidden);
       query->exec();
       counter++;
@@ -3145,13 +3165,19 @@ void EventGraphWidget::seePlots() {
     scene->clear();
     QString plot = savedPlotsDialog->getSelectedPlot();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT linkage, coder FROM saved_eg_plots "
+    query->prepare("SELECT linkage, coder, edgered, edgegreen, edgeblue, edgealpha "
+		   "FROM saved_eg_plots "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
     query->first();
     QString type = query->value(0).toString();
     QString coder = query->value(1).toString();
+    int red = query->value(2).toInt();
+    int green = query->value(3).toInt();
+    int blue = query->value(4).toInt();
+    int alpha = query->value(5).toInt();
+    edgeColor = QColor(red, green, blue, alpha);
     selectedType = type;
     selectedCoder = coder;
     int index = coderComboBox->findText(coder);
@@ -3423,7 +3449,7 @@ void EventGraphWidget::seePlots() {
       }
     }
     std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
-    query->prepare("SELECT tail, head, tailmacro, headmacro, hidden "
+    query->prepare("SELECT tail, head, tailmacro, headmacro, red, green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -3433,7 +3459,12 @@ void EventGraphWidget::seePlots() {
       int head = query->value(1).toInt();
       int tM = query->value(2).toInt();
       int hM = query->value(3).toInt();
-      int hidden = query->value(4).toInt();
+      int red = query->value(4).toInt();
+      int green = query->value(5).toInt();
+      int blue = query->value(6).toInt();
+      int alpha = query->value(7).toInt();
+      int hidden = query->value(8).toInt();
+      QColor color = QColor(red, green, blue, alpha);
       bool tailMacro = false;
       bool headMacro = false;
       if (tM == 1) {
@@ -3527,6 +3558,7 @@ void EventGraphWidget::seePlots() {
 	currentEdge->setStartItem(tempSource);
 	currentEdge->setEndItem(tempTarget);
 	currentEdge->setToolTip(toolTip);
+	currentEdge->setColor(color);
 	edgeVector.push_back(currentEdge);
 	scene->addItem(currentEdge);
 	if (hidden == 1) {
@@ -4097,6 +4129,20 @@ void EventGraphWidget::setEventColor() {
   delete colorDialog;
 }
 
+void EventGraphWidget::setEdgeColor() {
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  if (colorDialog->exec()) {
+    edgeColor = colorDialog->selectedColor();
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *currentArrow = it.next();
+      currentArrow->setColor(edgeColor);
+    }
+  }
+  delete colorDialog;
+}
+
 void EventGraphWidget::setLabelColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
@@ -4632,15 +4678,15 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
   retrieveData();
   if (action == COLLIGATEPATHSACTION) {
     colligateEvents(PATHS);
-  } else if (action == COLLIGATEPATHSACTIONATT) {
+  } else if (action == COLLIGATEPATHSATTACTION) {
     colligateEvents(PATHSATT);
   } else if (action == COLLIGATESEMIPATHSACTION) {
     colligateEvents(SEMIPATHS);
-  } else if (action == COLLIGATESEMIPATHSACTIONATT) {
+  } else if (action == COLLIGATESEMIPATHSATTACTION) {
     colligateEvents(SEMIPATHSATT);
   } else if (action == COLLIGATEFREEACTION) {
     colligateEvents(NOCONSTRAINT);
-  } else if (action == COLLIGATEFREEACTIONATT) {
+  } else if (action == COLLIGATEFREEATTACTION) {
     colligateEvents(NOCONSTRAINTATT);
   } else if (action == DISAGGREGATEACTION) {
     disaggregateEvent();
@@ -4662,8 +4708,10 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     closeGap();
   } else if (action == CHANGEDESCRIPTIONACTION) {
     changeEventDescription();
-  } else if (action == ADDLINKAGE) {
+  } else if (action == ADDLINKAGEACTION) {
     addLinkage();
+  } else if (action == SELECTFOLLOWERSACTION) {
+    selectFollowers();
   }
 }
 
@@ -5584,7 +5632,7 @@ void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
       }
     }
   } else if (direction == FUTURE) {
- QVectorIterator<Arrow*> it(edgeVector);
+    QVectorIterator<Arrow*> it(edgeVector);
     while (it.hasNext()) {
       Arrow *edge = it.next();
       if (edge->endItem() == origin) {
@@ -5599,6 +5647,7 @@ void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
       }
     }
   }
+  delete query;
 }
 
 
@@ -5640,6 +5689,7 @@ void EventGraphWidget::findDescendants(QColor descendant, QGraphicsItem *origin)
       }
     }
   }
+  delete query;
 }
 
 void EventGraphWidget::exportTransitionMatrix() {
@@ -6154,6 +6204,56 @@ void EventGraphWidget::addLinkage() {
   }
 }
 
+void EventGraphWidget::selectFollowers() {
+  QGraphicsItem *origin = scene->selectedItems()[0];
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+  query->bindValue(":type", selectedType);
+  query->exec();
+  query->first();
+  QString direction = query->value(0).toString();
+  if (direction == PAST) {
+    selectAncestors(origin);
+  } else if (direction == FUTURE) {
+    selectDescendants(origin);
+  }
+  delete query;
+}
+
+void EventGraphWidget::selectAncestors(QGraphicsItem *origin) {
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *edge = it.next();
+    if (edge->endItem() == origin) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(edge->startItem());
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+      if (event) {
+	event->setSelected(true);
+      } else if (macro) {
+	macro->setSelected(true);
+      }
+      selectAncestors(edge->startItem());
+    }
+  }
+}
+
+void EventGraphWidget::selectDescendants(QGraphicsItem *origin) {
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *edge = it.next();
+    if (edge->startItem() == origin) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(edge->endItem());
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+      if (event) {
+	event->setSelected(true);
+      } else if (macro) {
+	macro->setSelected(true);
+      }
+      selectDescendants(edge->endItem());
+    }
+  }
+}
+
 void EventGraphWidget::processArrowContextMenu(const QString &action) {
   if (action == REMOVELINKAGEACTION) {
     removeLinkage();
@@ -6493,7 +6593,7 @@ void EventGraphWidget::ignoreLinkage() {
       NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
       if (arrow && !(event) && !(text)) {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	currentEdge->setColor(Qt::black);
+	currentEdge->setColor(edgeColor);
       } else {
 	it.next();
       }
@@ -6510,7 +6610,7 @@ void EventGraphWidget::keepLinkage() {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());
 	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
 	int tail = startEvent->getId();
-	currentEdge->setColor(Qt::black);
+	currentEdge->setColor(edgeColor);
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
 	query->bindValue(":type", selectedType);
@@ -6609,7 +6709,7 @@ void EventGraphWidget::acceptLinkage() {
 	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
 	int tail = startEvent->getId();
 	int head = endEvent->getId();
-	currentEdge->setColor(Qt::black);
+	currentEdge->setColor(edgeColor);
 	edgeVector.push_back(currentEdge);
 	compareVector.removeOne(currentEdge);
 	QSqlQuery *query =  new QSqlQuery;

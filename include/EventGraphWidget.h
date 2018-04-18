@@ -133,6 +133,7 @@ private slots:
   void colorByAttribute();
   void findChildren(QString father, QVector<QString> *children);
   void setEventColor();
+  void setEdgeColor();
   void setLabelColor();
   void setBackgroundColor();
   void changeModeColor(QTableWidgetItem *item);
@@ -153,6 +154,9 @@ private slots:
   void closeGap();
   void changeEventDescription();
   void addLinkage();
+  void selectFollowers();
+  void selectAncestors(QGraphicsItem *origin);
+  void selectDescendants(QGraphicsItem *origin);
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();
@@ -255,6 +259,7 @@ private:
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> eventColorButton;
+  QPointer<QPushButton> edgeColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> seeComponentsButton;
@@ -298,6 +303,7 @@ private:
   QString selectedCompare;
   QString selectedType;
   MacroEvent *selectedMacro;
+  QColor edgeColor;
   
   qreal distance;
   int vectorPos;
