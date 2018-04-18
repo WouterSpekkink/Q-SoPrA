@@ -2495,6 +2495,7 @@ void LinkagesWidget::setLink() {
   }
   qApp->processEvents();
   eventGraph->checkCongruency();
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   if (codingType == ASSISTED && selectedDirection == PAST) {
     std::vector<int> ignore;
     if (headIndex != 1) {
@@ -2520,6 +2521,8 @@ void LinkagesWidget::setLink() {
 	    pause(500);
 	    retrieveData();
 	    delete query;
+	    QApplication::restoreOverrideCursor();
+	    qApp->processEvents();
 	    return;
 	  } else {
 	    if (tailIndex != incidentsModel->rowCount()) {
@@ -2536,6 +2539,8 @@ void LinkagesWidget::setLink() {
 	      pause(500);
 	      retrieveData();
 	      delete query;
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
 	      return; 
 	    }
 	  }
@@ -2554,6 +2559,8 @@ void LinkagesWidget::setLink() {
 	      query->exec();
 	      pause(500);
 	      retrieveData();
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
 	      delete query;
 	      return; 
 	    }
@@ -2574,6 +2581,8 @@ void LinkagesWidget::setLink() {
 	query->exec();
 	pause(500);
 	retrieveData();
+	QApplication::restoreOverrideCursor();
+	qApp->processEvents();
 	delete query;
 	return; 
       }
@@ -2602,6 +2611,8 @@ void LinkagesWidget::setLink() {
 	  pause(500);
 	  retrieveData();
 	  delete query;
+	  QApplication::restoreOverrideCursor();
+	  qApp->processEvents();
 	  return;
 	} else {
 	  if (i == 1) {
@@ -2619,6 +2630,8 @@ void LinkagesWidget::setLink() {
 	      pause(500);
 	      retrieveData();
 	      delete query;
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
 	      return;
 	    }
 	  }
@@ -2638,9 +2651,13 @@ void LinkagesWidget::setLink() {
       pause(500);
       retrieveData();
       delete query;
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
       return;
     }
   }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
   delete query;
 }
 
@@ -2701,7 +2718,7 @@ void LinkagesWidget::unsetLink() {
   linkageFeedbackLabel->repaint();
   qApp->processEvents();
   eventGraph->checkCongruency();
-  qApp->processEvents();
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   if (codingType == ASSISTED && selectedDirection == PAST) {
     std::vector<int> ignore;
     if (headIndex != 1) {
@@ -2726,6 +2743,8 @@ void LinkagesWidget::unsetLink() {
 	    query->exec();
 	    retrieveData();
 	    delete query;
+	    QApplication::restoreOverrideCursor();
+	    qApp->processEvents();
 	    return;
 	  } else {
 	    if (tailIndex != incidentsModel->rowCount()) {
@@ -2740,6 +2759,8 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":type", selectedType);
 	      query->exec();
 	      retrieveData();
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
 	      delete query;
 	      return; 
 	    }
@@ -2758,6 +2779,8 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":type", selectedType);
 	      query->exec();
 	      retrieveData();
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
 	      delete query;
 	      return; 
 	    }
@@ -2777,6 +2800,8 @@ void LinkagesWidget::unsetLink() {
 	query->bindValue(":type", selectedType);
 	query->exec();
 	retrieveData();
+	QApplication::restoreOverrideCursor();
+	qApp->processEvents();
 	delete query;
 	return; 
       }
@@ -2803,6 +2828,8 @@ void LinkagesWidget::unsetLink() {
 	  query->bindValue(":type", selectedType);
 	  query->exec();
 	  retrieveData();
+	  QApplication::restoreOverrideCursor();
+	  qApp->processEvents();
 	  delete query;
 	  return;
 	} else {
@@ -2819,6 +2846,8 @@ void LinkagesWidget::unsetLink() {
 	      query->bindValue(":type", selectedType);
 	      query->exec();
 	      retrieveData();
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
 	      delete query;
 	      return;
 	    }
@@ -2837,10 +2866,14 @@ void LinkagesWidget::unsetLink() {
       query->bindValue(":type", selectedType);
       query->exec();
       retrieveData();
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
       delete query;
       return;
     }
   }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
   delete query;
 }
 

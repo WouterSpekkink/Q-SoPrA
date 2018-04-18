@@ -59,7 +59,7 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
       clearSelection();
       incident->setSelected(true);
       emit resetItemSelection();
-      if (wheelEvent->delta() > 0 && incident->getWidth() < 1000) {
+      if (wheelEvent->delta() > 0) {
 	incident->setWidth(incident->getWidth() + 5);
 	QPointF original = incident->scenePos();
 	incident->getLabel()->setNewPos(original, 2.5);
