@@ -1858,7 +1858,7 @@ void EventGraphWidget::getEvents() {
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = breakString(query->value(1).toString());
-    qreal vertical = qrand() % 1000 - 500;
+    qreal vertical = qrand() % 3000 - 1500;
     QPointF position = QPointF((order * distance), vertical);
     EventItem *currentItem = new EventItem(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
@@ -1927,10 +1927,10 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
       }
       if (tempSource != NULL && tempTarget != NULL) {
 	if (tempSource->getOrder() < tempTarget->getOrder()) {
-	  qreal sourceHeight = tempSource->scenePos().y();
-	  qreal newTargetHeight = sourceHeight + qrand() % 150 - 75;
-	  int targetOrder = tempTarget->getOriginalPos().x();
-	  tempTarget->setPos(QPointF(targetOrder, newTargetHeight));
+	  //qreal sourceHeight = tempSource->scenePos().y();
+	  //qreal newTargetHeight = sourceHeight + qrand() % 150 - 75;
+	  //int targetOrder = tempTarget->getOriginalPos().x();
+	  //tempTarget->setPos(QPointF(targetOrder, newTargetHeight));
 	  Arrow *currentEdge = new Arrow(type, coder);
 	  currentEdge->setStartItem(tempSource);
 	  currentEdge->setEndItem(tempTarget);
@@ -1938,10 +1938,10 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	  edgeVector.push_back(currentEdge);
 	  break;
 	} else if (tempSource->getOrder() > tempTarget->getOrder()) {
-	  qreal targetHeight = tempTarget->scenePos().y();
-	  qreal newSourceHeight = targetHeight + qrand() % 150 - 75;
-	  int sourceOrder = tempSource->getOriginalPos().x();
-	  tempSource->setPos(QPointF(sourceOrder, newSourceHeight));
+	  //qreal targetHeight = tempTarget->scenePos().y();
+	  //qreal newSourceHeight = targetHeight + qrand() % 150 - 75;
+	  //int sourceOrder = tempSource->getOriginalPos().x();
+	  //tempSource->setPos(QPointF(sourceOrder, newSourceHeight));
 	  Arrow *currentEdge = new Arrow(type, coder);
 	  currentEdge->setStartItem(tempSource);
 	  currentEdge->setEndItem(tempTarget);
@@ -1961,6 +1961,67 @@ void EventGraphWidget::plotEdges() {
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
+  }
+}
+
+void EventGraphWidget::layoutGraph() {
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *incident = it.next();
+    int id = incident->getId();
+    int currentOrder = incident->getOrder();
+    QSqlQuery *query = new QSqlQuery;
+    // Let us first find the directedness of the current linkage type.
+    query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+    query->bindValue(":type", selectedType);
+    query->exec();
+    query->first();
+    QString selectedDirection = query->value(0).toString();
+    /*
+      Let us now find the first ancestors/descendant of the current incident.
+      We will base the position of the current incident on the position of that incident.
+      We don't actually have to do things very differently for the different 
+      directions of the edges. We just need to change the format of the query;
+    */
+    if (selectedDirection == PAST) {
+      query->prepare("SELECT head FROM linkages "
+		     "WHERE tail = :incident AND type = :type AND coder = :coder");
+    } else if (selectedDirection == FUTURE) {
+      query->prepare("SELECT tail FROM linkages "
+		     "WHERE head = :incident AND type = :type AND coder = :coder");
+    }
+    
+    query->bindValue(":incident", id);
+    query->bindValue(":type", selectedType);
+    query->bindValue(":coder", selectedCoder);
+    query->exec();
+    query->first();
+    if (!query->isNull(0)) {
+      // In this case there is an ancestor, so we can proceed.
+      int partnerId = query->value(0).toInt();
+      query->prepare("SELECT ch_order from incidents WHERE id = :id");
+      query->bindValue(":id", partnerId);
+      query->exec();
+      query->first();
+      int partnerOrder = query->value(0).toInt();
+      int diff = currentOrder - partnerOrder;
+      // Let's find the event item that represents our partner.
+      QVectorIterator<EventItem*> it2(eventVector);
+      EventItem *partner = NULL;
+      while (it2.hasNext()) {
+	EventItem *candidate = it2.next();
+	if (candidate->getId() == partnerId) {
+	  partner = candidate;
+	}
+      }
+      if (partner != NULL) {
+	// partner being NULL should actually not be possible, unless something is wrong.
+	qreal partnerHeight = partner->scenePos().y();
+	qreal currentHeight = partnerHeight + (pow(-1, currentOrder) * diff * (qrand() % 30));
+	incident->setPos(QPointF(incident->scenePos().x(), currentHeight));
+      }
+    } // If we do not find an ancestor, we can just keep the randomly assigned position.
+    delete query;
   }
 }
 
@@ -2276,6 +2337,7 @@ void EventGraphWidget::plotGraph() {
   plotEvents(); // Should allow for range to be set here.
   getEdges(selectedCoder, selectedType);
   plotEdges();
+  layoutGraph();
   getLabels();
   addLabels();
   compareComboBox->setCurrentIndex(0);

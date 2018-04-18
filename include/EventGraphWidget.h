@@ -102,6 +102,7 @@ private slots:
   void plotEvents();
   void getEdges(QString coder, QString type);
   void plotEdges();
+  void layoutGraph();
   void getLabels();
   void addLabels();
   void cleanUp();	     
