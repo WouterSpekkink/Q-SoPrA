@@ -5709,6 +5709,15 @@ void EventGraphWidget::exportTransitionMatrix() {
     QVector<int> transitionsRow;
     // We need to iterate through the list widget twice.
     qApp->setOverrideCursor(Qt::WaitCursor);
+    if (eventListWidget->rowCount() == 0) {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<b>No modes assigned</b>");
+      warningBox->setInformativeText("This function only works after you assigned modes.");
+      warningBox->exec();
+      delete warningBox;
+    }
     for (int i = 0; i != eventListWidget->rowCount(); i++) {
       // We initialise the transitions count here.
       int transitions = 0;
@@ -5717,48 +5726,58 @@ void EventGraphWidget::exportTransitionMatrix() {
       QVector<int> currentRow; // Current row of our new matrix.
       names.push_back(rowMode); // fill the vector of names.
       // Let's first count the number of times an event with this mode occurs.
+      QVectorIterator<Arrow*> arrowIt(edgeVector);
       int occurrence = 0;
-      QVectorIterator<EventItem*> eventIt(eventVector);
-      while (eventIt.hasNext()) {
-	EventItem *event = eventIt.next();
-	if (event->isVisible()) {
-	  if (isMode) {
-	    if (event->getMode() == rowMode) {
+      while (arrowIt.hasNext()) {
+	Arrow *currentArrow = arrowIt.next();
+	EventItem *eventStart = qgraphicsitem_cast<EventItem*>(currentArrow->startItem());
+	MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(currentArrow->startItem());
+	if (isMode) {
+	  if (eventStart) {
+	    if (eventStart->getMode() == rowMode) {
 	      occurrence++;
 	    }
-	  } else if (!isMode) {
-	    int id = event->getId();
-	    QVector<QString> attributeVector;
-	    attributeVector.push_back(rowMode);
-	    findChildren(rowMode, &attributeVector);
+	  } else if (macroStart) {
+	    if (macroStart->getMode() == rowMode) {
+	      occurrence++;
+	    }
+	  }
+	} else if (!isMode) {
+	  QVector<QString> attributeVector;
+	  attributeVector.push_back(rowMode);
+	  findChildren(rowMode, &attributeVector);
+	  if (eventStart) {
+	    bool found = false;
 	    QVectorIterator<QString> attIt(attributeVector);
 	    while (attIt.hasNext()) {
 	      QString attribute = attIt.next();
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT attribute FROM attributes_to_incidents "
-			     "WHERE attribute = :attribute AND incident = :id");
-	      query->bindValue(":attribute", attribute);
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      if (!query->isNull(0)) {
-		occurrence++;
+	      int id = eventStart->getId();
+	      if (eventStart) {
+		QSqlQuery *query = new QSqlQuery;
+		query->prepare("SELECT attribute FROM attributes_to_incidents "
+			       "WHERE attribute = :attribute AND incident = :id");
+		query->bindValue(":attribute", attribute);
+		query->bindValue(":id", id);
+		query->exec();
+		query->first();
+		if (!query->isNull(0)) {
+		  found = true;
+		}
 	      }
-	      delete query;
 	    }
-	  }
-	}
-      }
-      QVectorIterator<MacroEvent*> macroIt(macroVector);
-      while (macroIt.hasNext()) {
-	MacroEvent *macro = macroIt.next();
-	if (macro->isVisible()) {
-	  if (isMode) {
-	    if (macro->getMode() == rowMode) {
+	    if (found) {
 	      occurrence++;
 	    }
-	  } else if (!isMode) {
-	    if (macro->getAttributes().contains(rowMode)) {
+	  } else if (macroStart) {
+	    bool found = false;
+	    QVectorIterator<QString> attIt(attributeVector);
+	    while (attIt.hasNext()) {
+	      QString attribute = attIt.next();
+	      if (macroStart->getAttributes().contains(attribute)) {
+		found = true;
+	      }
+	    }
+	    if (found) {
 	      occurrence++;
 	    }
 	  }
