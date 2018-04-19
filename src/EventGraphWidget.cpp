@@ -4080,6 +4080,9 @@ void EventGraphWidget::moveModeUp() {
     eventListWidget->setItem(currentRow, 0, otherItem);
     eventListWidget->item(currentRow, 1)->setBackground(otherColor);
     restoreModeColors();
+    QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
+    eventListWidget->setCurrentIndex(newIndex);
+    setModeButtons(eventListWidget->currentItem());
   }
 }
 
@@ -4099,6 +4102,9 @@ void EventGraphWidget::moveModeDown() {
     eventListWidget->setItem(currentRow, 0, otherItem);
     eventListWidget->item(currentRow, 1)->setBackground(otherColor);
     restoreModeColors();
+    QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
+    eventListWidget->setCurrentIndex(newIndex);
+    setModeButtons(eventListWidget->currentItem());
   }
 }
 

@@ -2453,6 +2453,9 @@ void NetworkGraphWidget::moveModeUp() {
     nodeListWidget->setItem(currentRow, 0, otherItem);
     nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
     restoreModeColors();
+    QModelIndex newIndex = nodeListWidget->model()->index(newRow, 0);
+    nodeListWidget->setCurrentIndex(newIndex);
+    setModeButtons(nodeListWidget->currentItem()); 
   }
 }
 
@@ -2472,6 +2475,9 @@ void NetworkGraphWidget::moveModeDown() {
     nodeListWidget->setItem(currentRow, 0, otherItem);
     nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
     restoreModeColors();
+    QModelIndex newIndex = nodeListWidget->model()->index(newRow, 0);
+    nodeListWidget->setCurrentIndex(newIndex);
+    setModeButtons(nodeListWidget->currentItem());
   }
 }
 
