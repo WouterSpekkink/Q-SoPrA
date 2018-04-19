@@ -2497,9 +2497,10 @@ void LinkagesWidget::setLink() {
   eventGraph->checkCongruency();
   QApplication::setOverrideCursor(Qt::WaitCursor);
   if (codingType == ASSISTED && selectedDirection == PAST) {
-    QVector<int> ignore;
+    QSet<int> ignore;
+    QSet<int> done;
     if (headIndex != 1) {
-      findPastPaths(&ignore, tailIndex);
+      findPastPaths(&ignore, &done, tailIndex);
       for (int i = headIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2585,9 +2586,10 @@ void LinkagesWidget::setLink() {
       }
     }
   } else if (codingType == ASSISTED && selectedDirection == FUTURE) {
-    QVector<int> ignore;
+    QSet<int> ignore;
+    QSet<int> done;
     if (tailIndex != 1) {
-      findFuturePaths(&ignore, tailIndex);
+      findFuturePaths(&ignore, &done, tailIndex);
       for (int i = tailIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2714,9 +2716,10 @@ void LinkagesWidget::unsetLink() {
   eventGraph->checkCongruency();
   QApplication::setOverrideCursor(Qt::WaitCursor);
   if (codingType == ASSISTED && selectedDirection == PAST) {
-    QVector<int> ignore;
+    QSet<int> ignore;
+    QSet<int> done;
     if (headIndex != 1) {
-      findPastPaths(&ignore, tailIndex);
+      findPastPaths(&ignore, &done, tailIndex);
       for (int i = headIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2798,9 +2801,10 @@ void LinkagesWidget::unsetLink() {
       }
     }
   } else if (codingType == ASSISTED && selectedDirection == FUTURE) {
-    QVector<int> ignore;
+    QSet<int> ignore;
+    QSet<int> done;
     if (tailIndex != 1) {
-      findFuturePaths(&ignore, headIndex);
+      findFuturePaths(&ignore, &done, headIndex);
       for (int i = tailIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2865,7 +2869,7 @@ void LinkagesWidget::unsetLink() {
   delete query;
 }
 
-void LinkagesWidget::findPastPaths(QVector<int> *pIgnore, int currentIncident) {
+void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, QSet<int> *pDone, int currentIncident) {
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT id FROM incidents WHERE ch_order = :current");
@@ -2880,7 +2884,7 @@ void LinkagesWidget::findPastPaths(QVector<int> *pIgnore, int currentIncident) {
   query->bindValue(":type", selectedType);
   query->bindValue(":coder", selectedCoder);
   query->exec();
-  std::vector<int> results;
+  QSet<int> results;
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :current");
   while (query->next()) {
@@ -2889,22 +2893,25 @@ void LinkagesWidget::findPastPaths(QVector<int> *pIgnore, int currentIncident) {
     query2->bindValue(":current", currentHead);
     query2->exec();
     query2->first();
-    int newIndex = 0;
-    newIndex = query2->value(0).toInt();
-    results.push_back(newIndex);
+    int newIndex = query2->value(0).toInt();
+    if (!pDone->contains(newIndex)) {
+      results.insert(newIndex);
+    }
   }
   delete query2;
   delete query;
   QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) {
-    pIgnore->push_back(*it);
-    findPastPaths(pIgnore, *it);
+  QList<int> tempList = results.toList();
+  std::sort(tempList.begin(), tempList.end());
+  QList<int>::iterator it;
+  for (it = tempList.begin(); it != tempList.end(); it++) {
+    pIgnore->insert(*it);
+    pDone->insert(*it);
+    findPastPaths(pIgnore, pDone, *it);
   }
 }
 
-void LinkagesWidget::findFuturePaths(QVector<int> *pIgnore, int currentIncident) {
+void LinkagesWidget::findFuturePaths(QSet<int> *pIgnore, QSet<int> *pDone, int currentIncident) {
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT id FROM incidents WHERE ch_order = :current");
@@ -2919,7 +2926,7 @@ void LinkagesWidget::findFuturePaths(QVector<int> *pIgnore, int currentIncident)
   query->bindValue(":type", selectedType);
   query->bindValue(":coder", selectedCoder);
   query->exec();
-  std::vector<int> results;
+  QSet<int> results;
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :current");
   while (query->next()) {
@@ -2928,18 +2935,21 @@ void LinkagesWidget::findFuturePaths(QVector<int> *pIgnore, int currentIncident)
     query2->bindValue(":current", currentTail);
     query2->exec();
     query2->first();
-    int newIndex = 0;
-    newIndex = query2->value(0).toInt();
-    results.push_back(newIndex);
+    int newIndex = query2->value(0).toInt();
+    if (!pDone->contains(newIndex)) {
+      results.insert(newIndex);
+    }
   }
   delete query;
   delete query2;
   QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) {
-    pIgnore->push_back(*it);
-    findFuturePaths(pIgnore, *it);
+  QList<int> tempList = results.toList();
+  std::sort(tempList.begin(), tempList.end());
+  QList<int>::iterator it;
+  for (it = tempList.begin(); it != tempList.end(); it++) {
+    pIgnore->insert(*it);
+    pDone->insert(*it);
+    findFuturePaths(pIgnore, pDone, *it);
   }
 }
 
