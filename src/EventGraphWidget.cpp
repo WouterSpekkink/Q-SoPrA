@@ -4834,9 +4834,9 @@ void EventGraphWidget::colligateEvents(QString constraint) {
       EventItem *first = tempIncidents.first();
       EventItem *last = tempIncidents.last();
       QSet<int> markOne;
-      findFuturePaths(&markOne, first->getId());
+      findFuturePaths(&markOne, first->getId(), last->getOrder());
       QSet<int> markTwo;
-      findPastPaths(&markTwo, last->getId());
+      findPastPaths(&markTwo, last->getId(), first->getOrder());
       QVectorIterator<QGraphicsItem*> it4(allEvents);
       while (it4.hasNext()) {
 	QGraphicsItem *temp = it4.next();
@@ -5119,7 +5119,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
     EventItem *departure = dit.next();
     // First we check the internal consistency;
     if (constraint == PATHS) {
-      findPastPaths(&markOne, departure->getId());
+      findPastPaths(&markOne, departure->getId(), incidents.first()->getOrder());
     } else if (constraint == SEMIPATHS) {
       QSet<int> items;
       items.insert(departure->getId());
@@ -5197,7 +5197,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	QSet<int> markTwo;
 	int currentTail = query->value(0).toInt();
 	if (!(incidentId.contains(currentTail))) {
-	  findPastPaths(&markTwo, currentTail);
+	  findPastPaths(&markTwo, currentTail, incidents.first()->getOrder());
 	  QVectorIterator<EventItem*> kit(incidents);
 	  while (kit.hasNext()) {
 	    EventItem *current = kit.next();
@@ -5236,7 +5236,13 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	    EventItem *current = lit.next();
 	    if (current != departure) {
 	      QSet<int> markTwo;
-	      findPastPaths(&markTwo, current->getId());
+	      QSqlQuery *query2 = new QSqlQuery;
+	      query2->prepare("SELECT ch_order FROM incidents WHERE id = :currentHead");
+	      query2->bindValue(":currentHead", currentHead);
+	      query2->exec();
+	      query2->first();
+	      int headOrder = query2->value(0).toInt();
+	      findPastPaths(&markTwo, current->getId(), headOrder);
 	      bool found = false;
 	      if (markTwo.contains(currentHead)) {
 		found = true;
@@ -6660,11 +6666,11 @@ void EventGraphWidget::keepLinkage() {
 	QSet<int> markOne;
 	QSet<int> markTwo;
 	if (direction == PAST) {
-	  findPastPaths(&markOne, tail);
-	  findFuturePaths(&markTwo, tail);
+	  findPastPaths(&markOne, tail, 1);
+	  findFuturePaths(&markTwo, tail, eventVector.size());
 	} else if (direction == FUTURE) {
-	  findFuturePaths(&markOne, tail);
-	  findPastPaths(&markTwo, tail);
+	  findFuturePaths(&markOne, tail, eventVector.size());
+	  findPastPaths(&markTwo, tail, 1);
 	}
 	QSetIterator<int> it2(markOne);
 	bool found = false;
@@ -6772,11 +6778,11 @@ void EventGraphWidget::acceptLinkage() {
 	QSet<int> markOne;
 	QSet<int> markTwo;
 	if (direction == PAST) {
-	  findPastPaths(&markOne, tail);
-	  findFuturePaths(&markTwo, tail);
+	  findPastPaths(&markOne, tail, 1);
+	  findFuturePaths(&markTwo, tail, eventVector.size());
 	} else if (direction == FUTURE) {
-	  findFuturePaths(&markOne, tail);
-	  findPastPaths(&markTwo, tail);
+	  findFuturePaths(&markOne, tail, eventVector.size());
+	  findPastPaths(&markTwo, tail, 1);
 	}
 	QSetIterator<int> it2(markOne);
 	bool found = false;
@@ -6871,29 +6877,37 @@ void EventGraphWidget::rejectLinkage() {
   }
 }
 
-void EventGraphWidget::findPastPaths(QSet<int> *pMark, int currentIncident) {
+void EventGraphWidget::findPastPaths(QSet<int> *pMark, int currentIncident, int lowerLimit) {
   int currentTail = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head FROM linkages "
 		 "WHERE tail = :tail AND type = :type AND coder = :coder");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
   query->bindValue(":tail", currentTail);
   query->bindValue(":type", selectedType);
   query->bindValue(":coder", selectedCoder);
   query->exec();
   std::vector<int> results;
   while (query->next()) {
-    int currentHead = 0;
-    currentHead = query->value(0).toInt();
-    results.push_back(currentHead);
+    int currentHead = query->value(0).toInt();
+    query2->bindValue(":head", currentHead);
+    query2->exec();
+    query2->first();
+    int order = query2->value(0).toInt();
+    if (order >= lowerLimit) {
+      results.push_back(currentHead);
+    }
   }
   delete query;
+  delete query2;
   QSqlDatabase::database().commit();
   std::sort(results.begin(), results.end());
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findPastPaths(pMark, *it);
+    findPastPaths(pMark, *it, lowerLimit);
   }
 }
 
@@ -6933,12 +6947,12 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
     query3->bindValue(":type", selectedType);
     query3->bindValue(":coder", selectedCoder);
     query3->exec();
-    while (query->next()) {
-      int currentTail = query->value(0).toInt();
+    while (query3->next()) {
+      int currentTail = query3->value(0).toInt();
       query4->bindValue(":tail", currentTail);
       query4->exec();
       query4->first();
-      int order = query2->value(0).toInt();
+      int order = query4->value(0).toInt();
       if (order >= lowerLimit && order <= upperLimit) {
 	submittedItems->insert(currentTail);
       }
@@ -6956,29 +6970,37 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
   }
 }
 
-void EventGraphWidget::findFuturePaths(QSet<int> *pMark, int currentIncident) {
+void EventGraphWidget::findFuturePaths(QSet<int> *pMark, int currentIncident, int upperLimit) {
   int currentHead = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail FROM linkages "
 		 "WHERE head = :head AND type = :type AND coder = :coder");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
   query->bindValue(":head", currentHead);
   query->bindValue(":type", selectedType);
   query->bindValue(":coder", selectedCoder);
   query->exec();
   std::vector<int> results;
   while (query->next()) {
-    int currentTail = 0;
-    currentTail = query->value(0).toInt();
-    results.push_back(currentTail);
+    int currentTail = query->value(0).toInt();
+    query2->bindValue(":tail", currentTail);
+    query2->exec();
+    query2->first();
+    int order = query2->value(0).toInt();
+    if (order <=  upperLimit) {
+      results.push_back(currentTail);
+    }
   }
   delete query;
+  delete query2;
   QSqlDatabase::database().commit();
   std::sort(results.begin(), results.end());
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findFuturePaths(pMark, *it);
+    findFuturePaths(pMark, *it, upperLimit);
   }
 }
 

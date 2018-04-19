@@ -184,10 +184,10 @@ private slots:
   void processRectContextMenu(const QString &action);
   void changeRectColor();
   void deleteRect();
-  void findPastPaths(QSet<int> *mark, int currentIncident);
+  void findPastPaths(QSet<int> *mark, int currentIncident, int lowerLimit);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems,
 			   int lowerLimit, int upperLimit);
-  void findFuturePaths(QSet<int> *mark, int currentIncident);
+  void findFuturePaths(QSet<int> *mark, int currentIncident, int upperLimit);
   bool eventFilter(QObject *object, QEvent *event);
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
