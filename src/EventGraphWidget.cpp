@@ -4834,9 +4834,21 @@ void EventGraphWidget::colligateEvents(QString constraint) {
       EventItem *first = tempIncidents.first();
       EventItem *last = tempIncidents.last();
       QSet<int> markOne;
-      findFuturePaths(&markOne, first->getId(), last->getOrder());
       QSet<int> markTwo;
-      findPastPaths(&markTwo, last->getId(), first->getOrder());
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
+      query->bindValue(":name", selectedType);
+      query->exec();
+      query->first();
+      QString direction = query->value(0).toString();
+      delete query;
+      if (direction == PAST) {
+	findTailsUpperBound(&markOne, first->getId(), last->getOrder());
+	findHeadsLowerBound(&markTwo, last->getId(), first->getOrder());
+      } else if (direction == FUTURE) {
+	findTailsLowerBound(&markOne, first->getId(), first->getOrder());
+	findHeadsUpperBound(&markTwo, last->getId(), last->getOrder());
+      }
       QVectorIterator<QGraphicsItem*> it4(allEvents);
       while (it4.hasNext()) {
 	QGraphicsItem *temp = it4.next();
@@ -5119,7 +5131,11 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
     EventItem *departure = dit.next();
     // First we check the internal consistency;
     if (constraint == PATHS) {
-      findPastPaths(&markOne, departure->getId(), incidents.first()->getOrder());
+      if (direction == PAST) {
+	findHeadsLowerBound(&markOne, departure->getId(), incidents.first()->getOrder());
+      } else if (direction == FUTURE) {
+	findHeadsUpperBound(&markOne, departure->getId(), incidents.last()->getOrder());
+      }
     } else if (constraint == SEMIPATHS) {
       QSet<int> items;
       items.insert(departure->getId());
@@ -5197,7 +5213,11 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	QSet<int> markTwo;
 	int currentTail = query->value(0).toInt();
 	if (!(incidentId.contains(currentTail))) {
-	  findPastPaths(&markTwo, currentTail, incidents.first()->getOrder());
+	  if (direction == PAST) {
+	    findHeadsLowerBound(&markTwo, currentTail, incidents.first()->getOrder());
+	  } else if (direction ==  FUTURE) {
+	    findHeadsUpperBound(&markTwo, currentTail, incidents.last()->getOrder());
+	  }
 	  QVectorIterator<EventItem*> kit(incidents);
 	  while (kit.hasNext()) {
 	    EventItem *current = kit.next();
@@ -5241,8 +5261,12 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	      query2->bindValue(":currentHead", currentHead);
 	      query2->exec();
 	      query2->first();
-	      int headOrder = query2->value(0).toInt();
-	      findPastPaths(&markTwo, current->getId(), headOrder);
+		int headOrder = query2->value(0).toInt();
+	      if (direction == PAST) {
+		findHeadsLowerBound(&markTwo, current->getId(), headOrder);
+	      } else if (direction == FUTURE) {
+		findHeadsUpperBound(&markTwo, current->getId(), headOrder);
+	      }
 	      bool found = false;
 	      if (markTwo.contains(currentHead)) {
 		found = true;
@@ -6666,11 +6690,11 @@ void EventGraphWidget::keepLinkage() {
 	QSet<int> markOne;
 	QSet<int> markTwo;
 	if (direction == PAST) {
-	  findPastPaths(&markOne, tail, 1);
-	  findFuturePaths(&markTwo, tail, eventVector.size());
+	  findHeadsLowerBound(&markOne, tail, 1);
+	  findTailsUpperBound(&markTwo, tail, eventVector.size());
 	} else if (direction == FUTURE) {
-	  findFuturePaths(&markOne, tail, eventVector.size());
-	  findPastPaths(&markTwo, tail, 1);
+	  findTailsLowerBound(&markOne, tail, 1);
+	  findHeadsUpperBound(&markTwo, tail, eventVector.size());
 	}
 	QSetIterator<int> it2(markOne);
 	bool found = false;
@@ -6778,11 +6802,11 @@ void EventGraphWidget::acceptLinkage() {
 	QSet<int> markOne;
 	QSet<int> markTwo;
 	if (direction == PAST) {
-	  findPastPaths(&markOne, tail, 1);
-	  findFuturePaths(&markTwo, tail, eventVector.size());
+	  findHeadsLowerBound(&markOne, tail, 1);
+	  findTailsUpperBound(&markTwo, tail, eventVector.size());
 	} else if (direction == FUTURE) {
-	  findFuturePaths(&markOne, tail, eventVector.size());
-	  findPastPaths(&markTwo, tail, 1);
+	  findTailsLowerBound(&markOne, tail, 1);
+	  findHeadsUpperBound(&markTwo, tail, eventVector.size());
 	}
 	QSetIterator<int> it2(markOne);
 	bool found = false;
@@ -6877,7 +6901,7 @@ void EventGraphWidget::rejectLinkage() {
   }
 }
 
-void EventGraphWidget::findPastPaths(QSet<int> *pMark, int currentIncident, int lowerLimit) {
+void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident, int lowerLimit) {
   int currentTail = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
@@ -6907,7 +6931,41 @@ void EventGraphWidget::findPastPaths(QSet<int> *pMark, int currentIncident, int 
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findPastPaths(pMark, *it, lowerLimit);
+    findHeadsLowerBound(pMark, *it, lowerLimit);
+  }
+}
+
+void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident, int upperLimit) {
+  int currentTail = currentIncident;
+  QSqlDatabase::database().transaction();
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT head FROM linkages "
+		 "WHERE tail = :tail AND type = :type AND coder = :coder");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
+  query->bindValue(":tail", currentTail);
+  query->bindValue(":type", selectedType);
+  query->bindValue(":coder", selectedCoder);
+  query->exec();
+  std::vector<int> results;
+  while (query->next()) {
+    int currentHead = query->value(0).toInt();
+    query2->bindValue(":head", currentHead);
+    query2->exec();
+    query2->first();
+    int order = query2->value(0).toInt();
+    if (order <= upperLimit) {
+      results.push_back(currentHead);
+    }
+  }
+  delete query;
+  delete query2;
+  QSqlDatabase::database().commit();
+  std::sort(results.begin(), results.end());
+  std::vector<int>::iterator it;
+  for (it = results.begin(); it != results.end(); it++) {
+    pMark->insert(*it);
+    findHeadsUpperBound(pMark, *it, upperLimit);
   }
 }
 
@@ -6970,7 +7028,7 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
   }
 }
 
-void EventGraphWidget::findFuturePaths(QSet<int> *pMark, int currentIncident, int upperLimit) {
+void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident, int upperLimit) {
   int currentHead = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
@@ -7000,7 +7058,41 @@ void EventGraphWidget::findFuturePaths(QSet<int> *pMark, int currentIncident, in
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findFuturePaths(pMark, *it, upperLimit);
+    findTailsUpperBound(pMark, *it, upperLimit);
+  }
+}
+
+void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident, int lowerLimit) {
+  int currentHead = currentIncident;
+  QSqlDatabase::database().transaction();
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT tail FROM linkages "
+		 "WHERE head = :head AND type = :type AND coder = :coder");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
+  query->bindValue(":head", currentHead);
+  query->bindValue(":type", selectedType);
+  query->bindValue(":coder", selectedCoder);
+  query->exec();
+  std::vector<int> results;
+  while (query->next()) {
+    int currentTail = query->value(0).toInt();
+    query2->bindValue(":tail", currentTail);
+    query2->exec();
+    query2->first();
+    int order = query2->value(0).toInt();
+    if (order >=  lowerLimit) {
+      results.push_back(currentTail);
+    }
+  }
+  delete query;
+  delete query2;
+  QSqlDatabase::database().commit();
+  std::sort(results.begin(), results.end());
+  std::vector<int>::iterator it;
+  for (it = results.begin(); it != results.end(); it++) {
+    pMark->insert(*it);
+    findTailsLowerBound(pMark, *it, lowerLimit);
   }
 }
 
