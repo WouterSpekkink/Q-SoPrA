@@ -56,39 +56,41 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
   }
   if (incident && !incident->isCopy()) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      clearSelection();
-      incident->setSelected(true);
-      emit resetItemSelection();
-      if (wheelEvent->delta() > 0) {
-	incident->setWidth(incident->getWidth() + 5);
-	QPointF original = incident->scenePos();
-	incident->getLabel()->setNewPos(original, 2.5);
-      } else if (wheelEvent->delta() < 0 && incident->getWidth() > 40) {
-	incident->setWidth(incident->getWidth() - 5);
-	QPointF original = incident->scenePos();
-	incident->getLabel()->setNewPos(original, -2.5);
+      if (incident->isSelected()) {
+	if (wheelEvent->delta() > 0) {
+	  incident->setWidth(incident->getWidth() + 5);
+	  QPointF original = incident->scenePos();
+	  incident->getLabel()->setNewPos(original, 2.5);
+	} else if (wheelEvent->delta() < 0 && incident->getWidth() > 40) {
+	  incident->setWidth(incident->getWidth() - 5);
+	  QPointF original = incident->scenePos();
+	  incident->getLabel()->setNewPos(original, -2.5);
+	}
+	emit relevantChange();
+	wheelEvent->accept();
+      } else {
+	wheelEvent->ignore();
       }
-      emit relevantChange();
-      wheelEvent->accept();
     } else if (wheelEvent->modifiers() & Qt::ControlModifier) {
       wheelEvent->ignore();
     }
   } else if (macro && !macro->isCopy()) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      clearSelection();
-      macro->setSelected(true);
-      emit resetItemSelection();
-      if (wheelEvent->delta() > 0 && macro->getWidth() < 1000) {
-	macro->setWidth(macro->getWidth() + 5);
-	QPointF original = macro->scenePos();
-	macro->getLabel()->setNewPos(original, 2.5);
-      } else if (wheelEvent->delta() < 0 && macro->getWidth() > 40) {
-	macro->setWidth(macro->getWidth() - 5);
-	QPointF original = macro->scenePos();
-	macro->getLabel()->setNewPos(original, -2.5);
+      if (macro->isSelected()) {
+	if (wheelEvent->delta() > 0 && macro->getWidth() < 1000) {
+	  macro->setWidth(macro->getWidth() + 5);
+	  QPointF original = macro->scenePos();
+	  macro->getLabel()->setNewPos(original, 2.5);
+	} else if (wheelEvent->delta() < 0 && macro->getWidth() > 40) {
+	  macro->setWidth(macro->getWidth() - 5);
+	  QPointF original = macro->scenePos();
+	  macro->getLabel()->setNewPos(original, -2.5);
+	}
+	emit relevantChange();
+	wheelEvent->accept();
+      } else {
+	wheelEvent->ignore();
       }
-      emit relevantChange();
-      wheelEvent->accept();
     } else if (wheelEvent->modifiers() & Qt::ControlModifier) {
       wheelEvent->ignore();
     }
