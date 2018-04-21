@@ -522,7 +522,9 @@ void LinkagesWidget::removeCoder() {
     warningBox->addButton(QMessageBox::No);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
-    warningBox->setInformativeText("This will remove the coder and all linkages (s)he created. This action cannot be undone. Are you sure you want to remove this coder?");
+    warningBox->setInformativeText("This will remove the coder and all linkages "
+				   "(s)he created. This action cannot be undone. "
+				   "Are you sure you want to remove this coder?");
     if (warningBox->exec() == QMessageBox::Yes) {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("DELETE FROM coders WHERE name = :name");
@@ -2498,9 +2500,8 @@ void LinkagesWidget::setLink() {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   if (codingType == ASSISTED && selectedDirection == PAST) {
     QSet<int> ignore;
-    QSet<int> done;
     if (headIndex != 1) {
-      findPastPaths(&ignore, &done, tailIndex);
+      findPastPaths(&ignore, tailIndex);
       for (int i = headIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2587,9 +2588,8 @@ void LinkagesWidget::setLink() {
     }
   } else if (codingType == ASSISTED && selectedDirection == FUTURE) {
     QSet<int> ignore;
-    QSet<int> done;
     if (tailIndex != 1) {
-      findFuturePaths(&ignore, &done, tailIndex);
+      findFuturePaths(&ignore, tailIndex);
       for (int i = tailIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2717,9 +2717,8 @@ void LinkagesWidget::unsetLink() {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   if (codingType == ASSISTED && selectedDirection == PAST) {
     QSet<int> ignore;
-    QSet<int> done;
     if (headIndex != 1) {
-      findPastPaths(&ignore, &done, tailIndex);
+      findPastPaths(&ignore, tailIndex);
       for (int i = headIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2802,9 +2801,8 @@ void LinkagesWidget::unsetLink() {
     }
   } else if (codingType == ASSISTED && selectedDirection == FUTURE) {
     QSet<int> ignore;
-    QSet<int> done;
     if (tailIndex != 1) {
-      findFuturePaths(&ignore, &done, headIndex);
+      findFuturePaths(&ignore, headIndex);
       for (int i = tailIndex - 1; i != 0; i--) {
 	bool found = false;
 	if (ignore.contains(i)) {
@@ -2869,7 +2867,7 @@ void LinkagesWidget::unsetLink() {
   delete query;
 }
 
-void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, QSet<int> *pDone, int currentIncident) {
+void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, int currentIncident) {
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT id FROM incidents WHERE ch_order = :current");
@@ -2894,7 +2892,7 @@ void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, QSet<int> *pDone, int cur
     query2->exec();
     query2->first();
     int newIndex = query2->value(0).toInt();
-    if (!pDone->contains(newIndex)) {
+    if (!pIgnore->contains(newIndex)) {
       results.insert(newIndex);
     }
   }
@@ -2906,12 +2904,11 @@ void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, QSet<int> *pDone, int cur
   QList<int>::iterator it;
   for (it = tempList.begin(); it != tempList.end(); it++) {
     pIgnore->insert(*it);
-    pDone->insert(*it);
-    findPastPaths(pIgnore, pDone, *it);
+    findPastPaths(pIgnore, *it);
   }
 }
 
-void LinkagesWidget::findFuturePaths(QSet<int> *pIgnore, QSet<int> *pDone, int currentIncident) {
+void LinkagesWidget::findFuturePaths(QSet<int> *pIgnore, int currentIncident) {
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT id FROM incidents WHERE ch_order = :current");
@@ -2936,7 +2933,7 @@ void LinkagesWidget::findFuturePaths(QSet<int> *pIgnore, QSet<int> *pDone, int c
     query2->exec();
     query2->first();
     int newIndex = query2->value(0).toInt();
-    if (!pDone->contains(newIndex)) {
+    if (!pIgnore->contains(newIndex)) {
       results.insert(newIndex);
     }
   }
@@ -2948,8 +2945,7 @@ void LinkagesWidget::findFuturePaths(QSet<int> *pIgnore, QSet<int> *pDone, int c
   QList<int>::iterator it;
   for (it = tempList.begin(); it != tempList.end(); it++) {
     pIgnore->insert(*it);
-    pDone->insert(*it);
-    findFuturePaths(pIgnore, pDone, *it);
+    findFuturePaths(pIgnore, *it);
   }
 }
 

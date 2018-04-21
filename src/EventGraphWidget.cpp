@@ -6920,7 +6920,7 @@ void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident
     query2->exec();
     query2->first();
     int order = query2->value(0).toInt();
-    if (order >= lowerLimit) {
+    if (order >= lowerLimit && !pMark->contains(currentHead)) {
       results.push_back(currentHead);
     }
   }
@@ -6954,7 +6954,7 @@ void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident
     query2->exec();
     query2->first();
     int order = query2->value(0).toInt();
-    if (order <= upperLimit) {
+    if (order <= upperLimit && !pMark->contains(currentHead)) {
       results.push_back(currentHead);
     }
   }
@@ -7011,7 +7011,7 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
       query4->exec();
       query4->first();
       int order = query4->value(0).toInt();
-      if (order >= lowerLimit && order <= upperLimit) {
+      if (order >= lowerLimit && order <= upperLimit && !pMark->contains(currentTail)) {
 	submittedItems->insert(currentTail);
       }
     }
@@ -7047,7 +7047,7 @@ void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident
     query2->exec();
     query2->first();
     int order = query2->value(0).toInt();
-    if (order <=  upperLimit) {
+    if (order <=  upperLimit && !pMark->contains(currentHead)) {
       results.push_back(currentTail);
     }
   }
@@ -7081,7 +7081,7 @@ void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident
     query2->exec();
     query2->first();
     int order = query2->value(0).toInt();
-    if (order >=  lowerLimit) {
+    if (order >=  lowerLimit && !pMark->contains(currentHead)) {
       results.push_back(currentTail);
     }
   }

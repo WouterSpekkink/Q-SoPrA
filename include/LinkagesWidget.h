@@ -87,8 +87,8 @@ private slots:
   void pause(int time);
   void setLink();
   void unsetLink();
-  void findPastPaths(QSet<int> *pIgnore, QSet<int> *pDone, int currentIncident);
-  void findFuturePaths(QSet<int> *pIgnore, QSet<int> *pDone, int currentIncident);
+  void findPastPaths(QSet<int> *pIgnore, int currentIncident);
+  void findFuturePaths(QSet<int> *pIgnore, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void setEventGraph(EventGraphWidget *egw);
   void finalBusiness();
