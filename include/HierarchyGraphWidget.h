@@ -104,6 +104,7 @@ private slots:
   
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void fixTree();
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 

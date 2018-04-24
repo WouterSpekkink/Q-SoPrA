@@ -19,6 +19,8 @@
 #include "RelationshipsWidget.h"
 #include "ComboBoxDialog.h"
 
+class RelationshipsWidget;
+
 class RawRelationshipsTable : public QWidget {
   Q_OBJECT
 

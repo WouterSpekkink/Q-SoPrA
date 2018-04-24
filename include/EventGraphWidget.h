@@ -79,6 +79,7 @@ private slots:
   void showComments();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
 		    QString type = "", QModelIndex parent = QModelIndex());
@@ -131,7 +132,7 @@ private slots:
   void exportNodes();
   void exportEdges();
   void colorByAttribute();
-  void findChildren(QString father, QVector<QString> *children);
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void setEventColor();
   void setEdgeColor();
   void setLabelColor();

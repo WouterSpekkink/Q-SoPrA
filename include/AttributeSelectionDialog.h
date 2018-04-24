@@ -24,10 +24,12 @@ public:
   QString getAttribute();
   int getExitStatus();
   bool getChecked();
+  bool isEntity();
 			    
 private slots:
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void changeFilter(const QString &text);
   void setAttribute();
   void cancelAndClose();
@@ -54,6 +56,7 @@ private:
 
   int exitStatus;
   bool checked;
+  bool entity;
 };
 
 #endif

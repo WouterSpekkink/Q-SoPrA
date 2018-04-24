@@ -901,6 +901,8 @@ void RelationshipsWidget::newRelationship() {
       QString description = query->value(1).toString();
       QString hint = breakString(directedness + " - " + description);
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
+      relationshipsDialog->setEventGraph(eventGraph);
+      relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
       relationshipsDialog->submitDirectedness(directedness);
@@ -956,6 +958,8 @@ void RelationshipsWidget::editRelationship() {
       QString leftEntity = query->value(0).toString();
       QString rightEntity = query->value(1).toString();
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
+      relationshipsDialog->setEventGraph(eventGraph);
+      relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
       relationshipsDialog->submitDirectedness(directedness);
@@ -1650,6 +1654,14 @@ void RelationshipsWidget::finalBusiness() {
 
 void RelationshipsWidget::setNetworkGraph(NetworkGraphWidget *ngw) {
   networkGraph = ngw;
+}
+
+void RelationshipsWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void RelationshipsWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
 }
 
 void RelationshipsWidget::resetTree() {

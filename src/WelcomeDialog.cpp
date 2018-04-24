@@ -115,7 +115,8 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE entities "
 		  "(id integer, "
 		  "name text, "
-		  "description text)");
+		  "description text, "
+		  "father text)");
       query->exec("CREATE TABLE journal "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "time text, "
@@ -697,7 +698,8 @@ void WelcomeDialog::openDatabase() {
       query->exec("CREATE TABLE IF NOT EXISTS entities "
 		  "(id integer, "
 		  "name text, "
-		  "description text)");
+		  "description text, "
+		  "father text)");
       query->exec("CREATE TABLE IF NOT EXISTS journal "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "time text, "

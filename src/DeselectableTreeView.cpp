@@ -43,7 +43,16 @@ void DeselectableTreeView::wheelEvent(QWheelEvent *event) {
 void DeselectableTreeView::dropEvent(QDropEvent *event) {
   this->setSortingEnabled(false);
   QModelIndex targetIndex = indexAt(event->pos());
-  QString childName = this->selectionModel()->currentIndex().data().toString();
+  QString childName = selectionModel()->currentIndex().data().toString();
+  bool entity = false;
+  QModelIndex tempIndex = selectionModel()->currentIndex();
+  while (tempIndex.parent().isValid()) {
+    tempIndex = tempIndex.parent();
+  }
+  QString topName = tempIndex.data().toString();
+  if (topName == "Entities") {
+    entity = true;
+  }
   QString targetName = "";
   if (this->dropIndicatorPosition() == QAbstractItemView::OnItem) {
     targetName = this->model()->data(targetIndex).toString();
@@ -52,23 +61,47 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
     targetName = this->model()->data(targetIndex.parent()).toString();
     if (targetName == "") {
       targetName = "NONE";
+    } else if (targetName == "Entities") {
+      targetName = "NONE";
+    } else if (this->dropIndicatorPosition() == QAbstractItemView::OnViewport) {
+      targetName = "NONE";
     }
-  } else if (this->dropIndicatorPosition() == QAbstractItemView::OnViewport) {
-    targetName = "NONE";
+    if (targetName == childName) {
+      targetName = "NONE";
+    }
   }
-  if (targetName == childName) {
-    targetName = "NONE";
+  if (entity) {
+    QModelIndex fatherIndex = targetIndex;
+    while (fatherIndex.parent().isValid()) {
+      fatherIndex = fatherIndex.parent();
+    }
+    QString topName = fatherIndex.data().toString();
+    if (topName != "Entities") {
+      event->ignore();
+    } else {
+      QSqlQuery* query = new QSqlQuery;  
+      query->prepare("UPDATE entities SET father = :father WHERE name = :child");
+      query->bindValue(":father", targetName);
+      query->bindValue(":child", childName);
+      query->exec();
+      delete query;
+      QTreeView::dropEvent(event);
+      this->setSortingEnabled(true);
+      this->model()->sort(0, Qt::AscendingOrder);
+      this->sortByColumn(0, Qt::AscendingOrder);
+    }
+  } else {
+    QSqlQuery* query = new QSqlQuery;  
+    query->prepare("UPDATE incident_attributes SET father = :father WHERE name = :child");
+    query->bindValue(":father", targetName);
+    query->bindValue(":child", childName);
+    query->exec();
+    delete query;
+    QTreeView::dropEvent(event);
+    this->setSortingEnabled(true);
+    this->model()->sort(0, Qt::AscendingOrder);
+    this->sortByColumn(0, Qt::AscendingOrder);
   }
-  QSqlQuery* query = new QSqlQuery;  
-  query->prepare("UPDATE incident_attributes SET father = :father WHERE name = :child");
-  query->bindValue(":father", targetName);
-  query->bindValue(":child", childName);
-  query->exec();
-  delete query;
-  QTreeView::dropEvent(event);
-  this->setSortingEnabled(true);
-  this->model()->sort(0, Qt::AscendingOrder);
-  this->sortByColumn(0, Qt::AscendingOrder);
 }
 
 void DeselectableTreeView::resetSelection() {

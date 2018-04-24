@@ -81,15 +81,20 @@ void EditEntityDialog::addEntity() {
   if (entityDialog->getExitStatus() == 0) {
     QString name = entityDialog->getName();
     QString description = entityDialog->getDescription();
-    entitiesTable->select();
-    updateTable();
-    int max = entitiesTable->rowCount();
-    entitiesTable->insertRow(max);
-    entitiesTable->setData(entitiesTable->index(max, 1), name);
-    entitiesTable->setData(entitiesTable->index(max, 2), description);
-    entitiesTable->submitAll();
+    QString father = "NONE";
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("INSERT INTO entities (name, description, father) "
+		   "VALUES (:name, :description, :father)");
+    query->bindValue(":name", name);
+    query->bindValue(":description", description);
+    query->bindValue(":father", father);
+    query->exec();
+    delete query;
   }
   delete entityDialog;
+  entitiesTable->select();
+  updateTable();
+  filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
 }
 

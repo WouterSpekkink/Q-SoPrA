@@ -179,13 +179,15 @@ void RelationshipsDialog::addEntity() {
   if (entityDialog->getExitStatus() == 0) {
     QString name = entityDialog->getName();
     QString description = entityDialog->getDescription();
-    entitiesTable->select();
-    updateTable();
-    int max = entitiesTable->rowCount();
-    entitiesTable->insertRow(max);
-    entitiesTable->setData(entitiesTable->index(max, 1), name);
-    entitiesTable->setData(entitiesTable->index(max, 2), description);
-    entitiesTable->submitAll();
+    QString father = "NONE";
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("INSERT INTO entities (name, description, father) "
+		   "VALUES (:name, :description, :father)");
+    query->bindValue(":name", name);
+    query->bindValue(":description", description);
+    query->bindValue(":father", father);
+    query->exec();
+    delete query;
   }
   delete entityDialog;
   entitiesTable->select();
@@ -405,21 +407,51 @@ void RelationshipsDialog::editRightAssignedEntity() {
 void RelationshipsDialog::removeEntities() {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
-  query->exec("SELECT name FROM entities EXCEPT SELECT source "
-	      "FROM entity_relationships EXCEPT SELECT target "
-	      "FROM entity_relationships");
-  while (query->next()) {
-    QString current = query->value(0).toString();
-    query2->prepare("DELETE FROM entities WHERE name = :current");
-    query2->bindValue(":current", current);
-    query2->exec();
-    query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-    query2->bindValue(":current", current);
-    query2->exec();
+  bool unfinished = true;
+  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QSet<QString> takenAttributes;
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent* current = it.next();
+    QSet<QString> attributes = current->getAttributes();
+    QSet<QString>::iterator it2;
+    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+      takenAttributes.insert(*it2);
+    }
+  }
+  while (unfinished) {
+    query->exec("SELECT name FROM entities "
+		"EXCEPT SELECT source FROM entity_relationships "
+		"EXCEPT SELECT target FROM entity_relationships "
+		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT father FROM entities");
+    QSet<QString> temp;
+    while (query->next()) {
+      QString current = query->value(0).toString();			   
+      temp.insert(current);
+    }
+    QSet<QString>::iterator it3;
+    bool found = false;
+    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
+      if (!takenAttributes.contains(*it3)) {
+	found = true;
+	query2->prepare("DELETE FROM entities WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+      }
+    }
+    if (!found) {
+      unfinished = false;
+    }
   }
   reset();
   delete query;  
   delete query2;
+  eventGraph->resetTree();
+  occurrenceGraph->checkCongruency();
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());
@@ -548,3 +580,10 @@ void RelationshipsDialog::updateTable() {
   }
 }
 
+void RelationshipsDialog::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void RelationshipsDialog::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
+}

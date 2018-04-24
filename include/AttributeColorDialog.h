@@ -25,11 +25,13 @@ public:
   QColor getColor();
   QColor getTextColor();
   QString getAttribute();
+  bool isEntity();
   int getExitStatus();
 			    
 private slots:
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void changeFilter(const QString &text);
   void setColor();
   void setTextColor();
@@ -59,6 +61,7 @@ private:
   QString chosenAttribute;
 
   QString type;
+  bool entity;
 
   int exitStatus;
 };

@@ -694,6 +694,21 @@ void EntityDialog::saveAndClose() {
     delete warningBox;
     return;
   }
+  query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
+  query->bindValue(":name", name);
+  query->exec();
+  query->first();
+  empty = query->isNull(0);
+  if (!empty) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Attribute name.");
+    warningBox->setInformativeText("Incident attributes and entities cannot share names.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
   if (isNew) {
     query->prepare("UPDATE attributes_to_entities SET entity = :entity, new = 0 WHERE new = 1");
     query->bindValue(":entity", name);

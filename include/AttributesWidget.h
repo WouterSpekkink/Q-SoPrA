@@ -69,11 +69,12 @@ private slots:
   void setTree();
   void expandTree();
   void collapseTree();
-  void findChildren(QString father, QVector<QString> *children);
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void previousCoded();
   void nextCoded();
   void setButtons();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();
@@ -86,7 +87,6 @@ private slots:
   void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
   
 private:
-  QPointer<AttributeDialog> attributeDialog;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> attributesModel;
   QPointer<QSqlTableModel> assignedModel;

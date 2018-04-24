@@ -20,6 +20,8 @@
 #include "RelationshipsDialog.h"
 #include "AttributeIndexDialog.h"
 #include "NetworkGraphWidget.h"
+#include "EventGraphWidget.h"
+#include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"
 #include "EditEntityDialog.h"
 
@@ -84,6 +86,8 @@ private slots:
   void finalBusiness();
   bool eventFilter(QObject *object, QEvent *event);
   void setNetworkGraph(NetworkGraphWidget *ngw);
+  void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
   
 private:
   QPointer<QSqlTableModel> incidentsModel;
@@ -95,6 +99,8 @@ private:
   QPointer<RelationshipTypeDialog> typeDialog;
   QPointer<RelationshipTreeFilter> treeFilter;
   NetworkGraphWidget *networkGraph;
+  EventGraphWidget *eventGraph;
+  OccurrenceGraphWidget *occurrenceGraph;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

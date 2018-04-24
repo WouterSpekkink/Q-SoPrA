@@ -120,6 +120,33 @@ void AttributeDialog::saveAndClose() {
     delete warningBox;
     return;
   }
+  if (type == INCIDENT) {
+    query->prepare("SELECT name FROM entities WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+  }
+  empty = query->isNull(0);
+  if (!empty) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Entity name.");
+    warningBox->setInformativeText("Attributes and entities cannot share names.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
+  if (!empty && name == "Entities") {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Cannot use this name.");
+    warningBox->setInformativeText("This name has been reserved entities.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
   exitStatus = 0;
   delete query;
   this->close();
