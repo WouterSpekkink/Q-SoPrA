@@ -57,7 +57,6 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
-  void mergeAttributes();
   void selectText();
   void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
@@ -75,9 +74,12 @@ private slots:
   void setButtons();
   void buildHierarchy(QStandardItem *top, QString name);
   void buildEntities(QStandardItem *top, QString name);
-  void entitiesContextMenu(const QPoint &);
+  void treeContextMenu(const QPoint &);
   void autoAssignAll();
   void autoAssignEntityAt(QModelIndex &index);
+  void unassignAllEntities();
+  void unassignAllAttribute(QModelIndex &index);
+  void mergeAttributes(QModelIndex &index);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();
@@ -139,7 +141,6 @@ private:
   QPointer<QPushButton> commentNextButton;
   QPointer<QPushButton> newAttributeButton;
   QPointer<QPushButton> editAttributeButton;
-  QPointer<QPushButton> mergeAttributesButton;
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;

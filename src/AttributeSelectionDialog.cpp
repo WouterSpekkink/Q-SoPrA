@@ -83,7 +83,7 @@ void AttributeSelectionDialog::setTree() {
       buildHierarchy(father, name);
     }
     // And then we will also fetch the entities.
-    QStandardItem *entities = new QStandardItem("Entities");
+    QStandardItem *entities = new QStandardItem(ENTITIES);
     QString entitiesHint = breakString("You can also assign entities that you have created "
 				       "in the relationships widget as attributes.");
     entities->setToolTip(entitiesHint);
@@ -181,7 +181,7 @@ void AttributeSelectionDialog::setAttribute() {
   while (currentIndex.parent().isValid()) {
     currentIndex = currentIndex.parent();
   }
-  if (currentIndex.data().toString() == "Entities") {
+  if (currentIndex.data().toString() == ENTITIES) {
     entity = true;
   }
 }

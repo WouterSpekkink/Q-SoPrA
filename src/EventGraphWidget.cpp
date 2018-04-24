@@ -1195,7 +1195,7 @@ void EventGraphWidget::setTree() {
     buildHierarchy(father, name);
   }
   // And then we will also fetch the entities.
-  QStandardItem *entities = new QStandardItem("Entities");
+  QStandardItem *entities = new QStandardItem(ENTITIES);
   QString entitiesHint = breakString("You can also assign entities that you have created "
 				     "in the relationships widget as attributes.");
   entities->setToolTip(entitiesHint);
@@ -1274,7 +1274,7 @@ void EventGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
     font2.setItalic(true);
     font2.setBold(false);
     font2.setUnderline(false);
-    if (currentName != "Entities") {
+    if (currentName != ENTITIES) {
       currentAttribute->setFont(font);
     } else {
       currentAttribute->setFont(font2);
@@ -1303,7 +1303,7 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
     QFont font5;
     font5.setItalic(true);
     font5.setUnderline(true);
-    if (name != "Entities") {
+    if (name != ENTITIES) {
       if (name == currentName) {
 	if (currentAttribute->font().underline()) {
 	  currentAttribute->setFont(font3);
@@ -1314,7 +1314,7 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 	  while (currentAttribute->parent()) {
 	    currentAttribute = currentAttribute->parent();
 	    QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
-	    if (parentName != "Entities") {
+	    if (parentName != ENTITIES) {
 	      if (type == INCIDENT) {
 		QSqlQuery *query = new QSqlQuery;
 		query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
@@ -1619,7 +1619,7 @@ void EventGraphWidget::setButtons() {
 	removeTextButton->setEnabled(false);
 	resetTextsButton->setEnabled(false);
       }
-      if (currentAttribute != "Entities") {
+      if (currentAttribute != ENTITIES) {
 	assignAttributeButton->setEnabled(true);
 	editAttributeButton->setEnabled(true);
       } else {
@@ -1637,7 +1637,7 @@ void EventGraphWidget::setButtons() {
       }
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
-      if (currentAttribute != "Entities") {
+      if (currentAttribute != ENTITIES) {
 	assignAttributeButton->setEnabled(true);
 	editAttributeButton->setEnabled(true);
       } else {
@@ -1849,7 +1849,7 @@ void EventGraphWidget::newAttribute() {
       tempIndex = tempIndex.parent();
     }
     QString top = tempIndex.data().toString();
-    if (top == "Entities") {
+    if (top == ENTITIES) {
         EntityDialog *entityDialog = new EntityDialog(this);
 	entityDialog->setNew();
 	entityDialog->exec();
@@ -1865,7 +1865,7 @@ void EventGraphWidget::newAttribute() {
 	  attribute->setToolTip(hint);
 	  attribute->setEditable(false);
 	  QString fatherName = currentParent;
-	  if (fatherName == "Entities") {
+	  if (fatherName == ENTITIES) {
 	    fatherName = "NONE";
 	  }
 	  QSqlQuery *query = new QSqlQuery;
@@ -1937,13 +1937,13 @@ void EventGraphWidget::newAttribute() {
 void EventGraphWidget::editAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString name = attributesTreeView->currentIndex().data().toString();
-    if (name != "Entities") {
+    if (name != ENTITIES) {
       QModelIndex tempIndex = attributesTreeView->currentIndex();
       while (tempIndex.parent().isValid()) {
 	tempIndex = tempIndex.parent();
       }
       QString top = tempIndex.data().toString();
-      if (top == "Entities") {
+      if (top == ENTITIES) {
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT description FROM entities WHERE name = :name");
 	query->bindValue(":name", name);

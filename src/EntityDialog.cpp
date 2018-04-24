@@ -677,6 +677,16 @@ void EntityDialog::saveAndClose() {
     delete warningBox;
     return;
   }
+  if (name == ENTITIES) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Invalid name.");
+    warningBox->setInformativeText("You cannot use this name for an entity.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM entities WHERE name = :name");
