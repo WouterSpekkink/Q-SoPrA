@@ -91,16 +91,25 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
       this->sortByColumn(0, Qt::AscendingOrder);
     }
   } else {
-    QSqlQuery* query = new QSqlQuery;  
-    query->prepare("UPDATE incident_attributes SET father = :father WHERE name = :child");
-    query->bindValue(":father", targetName);
-    query->bindValue(":child", childName);
-    query->exec();
-    delete query;
-    QTreeView::dropEvent(event);
-    this->setSortingEnabled(true);
-    this->model()->sort(0, Qt::AscendingOrder);
-    this->sortByColumn(0, Qt::AscendingOrder);
+    QModelIndex fatherIndex = targetIndex;
+    while (fatherIndex.parent().isValid()) {
+      fatherIndex = fatherIndex.parent();
+    }
+    QString topName = fatherIndex.data().toString();
+    if (topName == "Entities") {
+      event->ignore();
+    } else {
+      QSqlQuery* query = new QSqlQuery;  
+      query->prepare("UPDATE incident_attributes SET father = :father WHERE name = :child");
+      query->bindValue(":father", targetName);
+      query->bindValue(":child", childName);
+      query->exec();
+      delete query;
+      QTreeView::dropEvent(event);
+      this->setSortingEnabled(true);
+      this->model()->sort(0, Qt::AscendingOrder);
+      this->sortByColumn(0, Qt::AscendingOrder);
+    }    
   }
 }
 

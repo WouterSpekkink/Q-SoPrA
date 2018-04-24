@@ -1658,6 +1658,7 @@ void HierarchyGraphWidget::removeUnusedAttributes() {
 		"EXCEPT SELECT target FROM entity_relationships "
 		"EXCEPT SELECT attribute FROM attributes_to_incidents "
 		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
 		"EXCEPT SELECT father FROM entities");
     QSet<QString> temp;
     while (query->next()) {
