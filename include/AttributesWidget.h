@@ -75,6 +75,9 @@ private slots:
   void setButtons();
   void buildHierarchy(QStandardItem *top, QString name);
   void buildEntities(QStandardItem *top, QString name);
+  void entitiesContextMenu(const QPoint &);
+  void autoAssignAll();
+  void autoAssignEntityAt(QModelIndex &index);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();

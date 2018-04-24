@@ -106,7 +106,9 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   attributesTreeView->installEventFilter(this);
   rawField->viewport()->installEventFilter(this);
   commentField->installEventFilter(this);
-  
+
+  attributesTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+ 
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -148,6 +150,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
   connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(customContextMenuRequested(QPoint)),
+	  this, SLOT(entitiesContextMenu(QPoint)));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
@@ -1356,6 +1360,12 @@ void AttributesWidget::removeUnusedAttributes() {
 	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
 	query2->bindValue(":current", *it3);
 	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
       }
     }
     if (!found) {
@@ -1788,6 +1798,248 @@ void AttributesWidget::buildEntities(QStandardItem *top, QString name) {
     child->setEditable(false);
     children++;
     buildEntities(child, childName);
+  }
+  delete query;
+}
+
+void AttributesWidget::entitiesContextMenu(const QPoint &pos) {
+  QPoint globalPos = attributesTreeView->mapToGlobal(pos);
+  QModelIndex targetIndex = attributesTreeView->indexAt(pos);
+  QString selected = targetIndex.data().toString();
+  if (selected == "Entities") {
+    QMenu menu;
+    QAction *action1 = new QAction(AUTOASSIGNALLACTION, this);
+    menu.addAction(action1);
+    if (QAction *action = menu.exec(globalPos)) {
+      if (action->text() == AUTOASSIGNALLACTION) {
+	autoAssignAll();
+      }
+    }
+  } else {
+    QModelIndex tempIndex = attributesTreeView->selectionModel()->currentIndex();
+    while (tempIndex.parent().isValid()) {
+      tempIndex = tempIndex.parent();
+    }
+    QString topName = tempIndex.data().toString();
+    if (topName == "Entities") {
+      QMenu menu;
+      QAction *action1 = new QAction(AUTOASSIGNSPECIFICACTION, this);
+      menu.addAction(action1);
+      if (QAction *action = menu.exec(globalPos)) {
+	if (action->text() == AUTOASSIGNSPECIFICACTION) {
+	  autoAssignEntityAt(targetIndex);
+	}
+      }
+    } else {
+      return;
+    }
+  }
+}
+
+void AttributesWidget::autoAssignAll() {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM relationship_types");
+  QVector<QString> relationships;
+  while (query->next()) {
+    QString relationship = query->value(0).toString();
+    relationships.push_back(relationship);
+  }
+  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, relationships);
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) {
+    QString selectedRelationship = comboDialog->getSelection();
+    QVector<QString> entities;
+    query->exec("SELECT name FROM entities");
+    while (query->next()) {
+      QString currentEntity = query->value(0).toString();
+      entities.push_back(currentEntity);
+    }
+    QVectorIterator<QString> it(entities);
+    while (it.hasNext()) {
+      QString selected = it.next();
+      QVector<QString> valid;
+      query->prepare("SELECT name FROM entity_relationships "
+		     "WHERE type = :type AND source = :entity");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":entity", selected);
+      query->exec();
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	valid.push_back(current);
+      }
+      query->prepare("SELECT name FROM entity_relationships "
+		     "WHERE type = :type AND target = :entity");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":entity", selected);
+      query->exec();
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	valid.push_back(current);
+      }
+      QVectorIterator<QString> it2(valid);
+      while (it2.hasNext()) {
+	QString current = it2.next();
+	query->prepare("SELECT incident FROM relationships_to_incidents "
+		       "WHERE type = :type AND relationship = :name");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":name", current);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			  "WHERE attribute = :attribute AND incident = :incident");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  bool found = false;
+	  if (!query2->isNull(0)) {
+	    found = true;
+	  }
+	  if (!found) {
+	    query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
+			    "VALUES (:attribute, :incident)");
+	    query2->bindValue(":attribute", selected);
+	    query2->bindValue(":incident", incident);
+	    query2->exec();
+	  }
+	  delete query2;
+	}
+	query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
+		       "WHERE type = :type AND relationship = :name");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":name", current);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QString sourceText = query->value(1).toString();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources "
+			  "WHERE attribute = :attribute AND incident = :incident "
+			  "AND source_text = :sourceText");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":sourceText", sourceText);
+	  query2->exec();
+	  query2->first();
+	  bool found = false;
+	  if (!query2->isNull(0)) {
+	    found = true;
+	  }
+	  if (!found) {
+	    query2->prepare("INSERT INTO attributes_to_incidents_sources "
+			    "(attribute, incident, source_text) "
+			    "VALUES (:attribute, :incident, :source_text)");
+	    query2->bindValue(":attribute", selected);
+	    query2->bindValue(":incident", incident);
+	    query2->bindValue(":source_text", sourceText);
+	    query2->exec();
+	  }
+	  delete query2;
+	}
+      }
+    }
+  }
+  delete query;
+}
+
+void AttributesWidget::autoAssignEntityAt(QModelIndex &index) {
+  QString selected = index.data().toString();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM relationship_types");
+  QVector<QString> relationships;
+  while (query->next()) {
+    QString relationship = query->value(0).toString();
+    relationships.push_back(relationship);
+  }
+  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, relationships);
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) {
+    QString selectedRelationship = comboDialog->getSelection();
+    QVector<QString> valid;
+    query->prepare("SELECT name FROM entity_relationships "
+		   "WHERE type = :type AND source = :entity");
+    query->bindValue(":type", selectedRelationship);
+    query->bindValue(":entity", selected);
+    query->exec();
+    while (query->next()) {
+      QString current = query->value(0).toString();
+      valid.push_back(current);
+    }
+    query->prepare("SELECT name FROM entity_relationships "
+		   "WHERE type = :type AND target = :entity");
+    query->bindValue(":type", selectedRelationship);
+    query->bindValue(":entity", selected);
+    query->exec();
+    while (query->next()) {
+      QString current = query->value(0).toString();
+      valid.push_back(current);
+    }
+    QVectorIterator<QString> it(valid);
+    while (it.hasNext()) {
+      QString current = it.next();
+      query->prepare("SELECT incident FROM relationships_to_incidents "
+		     "WHERE type = :type AND relationship = :name");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":name", current);
+      query->exec();
+      while (query->next()) {
+	int incident = query->value(0).toInt();
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			"WHERE attribute = :attribute AND incident = :incident");
+	query2->bindValue(":attribute", selected);
+	query2->bindValue(":incident", incident);
+	query2->exec();
+	query2->first();
+	bool found = false;
+	if (!query2->isNull(0)) {
+	  found = true;
+	}
+	if (!found) {
+	  query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
+			  "VALUES (:attribute, :incident)");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+
+	}
+	delete query2;
+      }
+      query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
+		     "WHERE type = :type AND relationship = :name");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":name", current);
+      query->exec();
+      while (query->next()) {
+	int incident = query->value(0).toInt();
+	QString sourceText = query->value(1).toString();
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources"
+			"WHERE attribute = :attribute AND incident = :incident "
+			"AND source_text = :sourceText");
+	query2->bindValue(":attribute", selected);
+	query2->bindValue(":incident", incident);
+	query2->bindValue(":sourceText", sourceText);
+	query2->exec();
+	query2->first();
+	bool found = false;
+	if (!query2->isNull(0)) {
+	  found = true;
+	}
+	if (!found) {
+	  query2->prepare("INSERT INTO attributes_to_incidents_sources "
+			  "(attribute, incident, source_text) "
+			  "VALUES (:attribute, :incident, :source_text)");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":source_text", sourceText);
+	  query2->exec();
+	}
+	delete query2;
+      }
+    }
   }
   delete query;
 }

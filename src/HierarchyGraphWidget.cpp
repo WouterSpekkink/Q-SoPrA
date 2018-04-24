@@ -1676,6 +1676,12 @@ void HierarchyGraphWidget::removeUnusedAttributes() {
 	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
 	query2->bindValue(":current", *it3);
 	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
       }
     }
     if (!found) {

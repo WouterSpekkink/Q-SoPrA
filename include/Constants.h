@@ -73,6 +73,8 @@ extern QString CHANGERECTCOLOR;
 extern QString DELETERECT;
 extern QString ADDLINKAGEACTION;
 extern QString SELECTFOLLOWERSACTION;
+extern QString AUTOASSIGNALLACTION;
+extern QString AUTOASSIGNSPECIFICACTION;
 extern qreal Pi;
 
 #endif

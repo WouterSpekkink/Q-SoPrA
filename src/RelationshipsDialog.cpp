@@ -424,6 +424,8 @@ void RelationshipsDialog::removeEntities() {
 		"EXCEPT SELECT source FROM entity_relationships "
 		"EXCEPT SELECT target FROM entity_relationships "
 		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
 		"EXCEPT SELECT father FROM entities");
     QSet<QString> temp;
     while (query->next()) {
@@ -439,6 +441,12 @@ void RelationshipsDialog::removeEntities() {
 	query2->bindValue(":current", *it3);
 	query2->exec();
 	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
 	query2->bindValue(":current", *it3);
 	query2->exec();
       }

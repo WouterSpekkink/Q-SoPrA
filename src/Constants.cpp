@@ -71,4 +71,6 @@ QString CHANGERECTCOLOR = "Change rectangle color";
 QString DELETERECT = "Delete rectangle";
 QString ADDLINKAGEACTION = "Add linkage between incidents";
 QString SELECTFOLLOWERSACTION = "Select subsequent incidents/events";
+QString AUTOASSIGNALLACTION = "Automatically assign all entities based on relationship";
+QString AUTOASSIGNSPECIFICACTION = "Automatically assign this entity based on relationship";
 qreal Pi = 3.14;
