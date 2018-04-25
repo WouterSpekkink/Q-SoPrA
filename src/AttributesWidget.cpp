@@ -1837,7 +1837,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
   if (selected == ENTITIES) {
     QMenu menu;
     QAction *action1 = new QAction(AUTOASSIGNALLACTION, this);
-    QAction *action2 = new QAction(UNASSIGNALLACTION);
+    QAction *action2 = new QAction(UNASSIGNALLACTION, this);
     menu.addAction(action1);
     menu.addAction(action2);
     QSqlQuery *query = new QSqlQuery;
@@ -1861,9 +1861,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
     delete query;
     delete query2;
     if (QAction *action = menu.exec(globalPos)) {
-      if (action->text() == AUTOASSIGNALLACTION) {
+      if (action->text() == AUTOASSIGNALLACTION, this) {
 	autoAssignAll();
-      } else if (action->text() == UNASSIGNALLACTION) {
+      } else if (action->text() == UNASSIGNALLACTION, this) {
 	unassignAllEntities();
       }
     }
@@ -1876,7 +1876,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
     if (topName == ENTITIES) {
       QMenu menu;
       QAction *action1 = new QAction(AUTOASSIGNSPECIFICACTION, this);
-      QAction *action2 = new QAction(UNASSIGNALLACTION);
+      QAction *action2 = new QAction(UNASSIGNALLACTION, this);
       menu.addAction(action1);
       menu.addAction(action2);
       QSqlQuery *query = new QSqlQuery;
@@ -1890,16 +1890,16 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       }
       delete query;
       if (QAction *action = menu.exec(globalPos)) {
-	if (action->text() == AUTOASSIGNSPECIFICACTION) {
+	if (action->text() == AUTOASSIGNSPECIFICACTION, this) {
 	  autoAssignEntityAt(targetIndex);
-	} else if (action->text() == UNASSIGNALLACTION) {
+	} else if (action->text() == UNASSIGNALLACTION, this) {
 	  unassignAllAttribute(targetIndex);
 	}
       }
     } else {
       QMenu menu;
-      QAction *action1 = new QAction(UNASSIGNALLACTION);
-      QAction *action2 = new QAction(MERGEATTRIBUTESACTION);
+      QAction *action1 = new QAction(UNASSIGNALLACTION, this);
+      QAction *action2 = new QAction(MERGEATTRIBUTESACTION, this);
       menu.addAction(action1);
       menu.addAction(action2);
       QSqlQuery *query = new QSqlQuery;
@@ -1915,7 +1915,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       if (QAction *action = menu.exec(globalPos)) {
 	if (action->text() == UNASSIGNALLACTION) {
 	  unassignAllAttribute(targetIndex);
-	} else if (action->text() == MERGEATTRIBUTESACTION) {
+	} else if (action->text() == MERGEATTRIBUTESACTION, this) {
 	  mergeAttributes(targetIndex);
 	}
       }
