@@ -137,7 +137,7 @@ void AttributeDialog::saveAndClose() {
     delete warningBox;
     return;
   }
-  if (!empty && name == "Entities") {
+  if (name == ENTITIES) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);

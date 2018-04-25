@@ -1436,7 +1436,7 @@ void AttributesWidget::previousCoded() {
     if (currentIndex.data().toString() == "Entities") {
       entity = true;
     }
-    if (attribute = ENTITIES) {
+    if (attribute == ENTITIES) {
       attribute = "NONE";
     }
     findChildren(attribute, &attributeVector, entity);
