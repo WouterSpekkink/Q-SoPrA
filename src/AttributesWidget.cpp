@@ -1924,6 +1924,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
 }
 
 void AttributesWidget::autoAssignAll() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   QSqlQuery *query = new QSqlQuery;
   QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
   comboDialog->exec();
@@ -2050,6 +2051,8 @@ void AttributesWidget::autoAssignAll() {
   setButtons();
   highlightText();
   occurrenceGraph->checkCongruency();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void AttributesWidget::autoAssignEntityAt(QModelIndex &index) {

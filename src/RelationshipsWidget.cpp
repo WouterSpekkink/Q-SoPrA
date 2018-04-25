@@ -901,6 +901,7 @@ void RelationshipsWidget::newRelationship() {
       QString description = query->value(1).toString();
       QString hint = breakString(directedness + " - " + description);
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
+      relationshipsDialog->setAttributesWidget(attributesWidget);
       relationshipsDialog->setEventGraph(eventGraph);
       relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
       relationshipsDialog->submitType(currentType);
@@ -958,6 +959,7 @@ void RelationshipsWidget::editRelationship() {
       QString leftEntity = query->value(0).toString();
       QString rightEntity = query->value(1).toString();
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
+      relationshipsDialog->setAttributesWidget(attributesWidget);
       relationshipsDialog->setEventGraph(eventGraph);
       relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
       relationshipsDialog->submitType(currentType);

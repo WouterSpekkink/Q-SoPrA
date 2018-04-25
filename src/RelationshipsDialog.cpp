@@ -195,6 +195,9 @@ void RelationshipsDialog::addEntity() {
   updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
+  // We have to make sure that the new entity also appears as a new attribute in attributes trees.
+  eventGraph->resetTree();
+  attributesWidget->resetTree();
 }
 
 void RelationshipsDialog::editEntity() {
@@ -467,12 +470,14 @@ void RelationshipsDialog::removeEntities() {
   reset();
   delete query;  
   delete query2;
-  eventGraph->resetTree();
   occurrenceGraph->checkCongruency();
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
+  // Also remove the entities from attribute trees.
+  eventGraph->resetTree();
+  attributesWidget->resetTree();
 }
 
 void RelationshipsDialog::cancelAndClose() {
@@ -603,5 +608,9 @@ void RelationshipsDialog::setEventGraph(EventGraphWidget *egw) {
 
 void RelationshipsDialog::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
   occurrenceGraph = ogw;
+}
+
+void RelationshipsDialog::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
 }
 
