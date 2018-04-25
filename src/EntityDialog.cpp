@@ -354,7 +354,7 @@ void EntityDialog::addAttribute() {
       name = attributeDialog->getName();
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
-      attribute->setToolTip(description);
+      attribute->setToolTip(breakString(description));
       QStandardItem *father = attributesTree->
 	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);

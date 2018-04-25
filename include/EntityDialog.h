@@ -20,6 +20,7 @@
 #include "Constants.h"
 #include "MergeAttributesDialog.h"
 #include "RelationshipsWidget.h"
+#include "SupportingFunctions.h"
 
 class RelationshipsWidget;
 
