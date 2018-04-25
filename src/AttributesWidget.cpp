@@ -1433,8 +1433,11 @@ void AttributesWidget::previousCoded() {
       currentIndex = currentIndex.parent();
     }
     bool entity = false;
-    if (currentIndex.data().toString() == "Entity") {
+    if (currentIndex.data().toString() == "Entities") {
       entity = true;
+    }
+    if (attribute = ENTITIES) {
+      attribute = "NONE";
     }
     findChildren(attribute, &attributeVector, entity);
     QVectorIterator<QString> it(attributeVector);
