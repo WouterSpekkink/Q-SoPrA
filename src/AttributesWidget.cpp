@@ -1,5 +1,6 @@
 #include "../include/AttributesWidget.h"
 
+
 AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
 
   descriptionFilter = "";
@@ -1555,6 +1556,7 @@ void AttributesWidget::collapseTree() {
 void AttributesWidget::previousCoded() {
   setComment();
   if (attributesTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = attributesTreeView->currentIndex();
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
@@ -1562,12 +1564,12 @@ void AttributesWidget::previousCoded() {
     int currentOrder = query->value(0).toInt();
     QVector<QString> attributeVector;
     attributeVector.push_back(attribute);
-    QModelIndex currentIndex = attributesTreeView->currentIndex();
-    while (currentIndex.parent().isValid()) {
-      currentIndex = currentIndex.parent();
+    QModelIndex oldIndex = attributesTreeView->currentIndex();
+    while (oldIndex.parent().isValid()) {
+      oldIndex = oldIndex.parent();
     }
     bool entity = false;
-    if (currentIndex.data().toString() == "Entities") {
+    if (oldIndex.data().toString() == "Entities") {
       entity = true;
     }
     if (attribute == ENTITIES) {
@@ -1592,7 +1594,6 @@ void AttributesWidget::previousCoded() {
       } else if (!(query->isNull(0)) && query->value(0).toInt() > order) {
 	order = query->value(0).toInt();
       }
-      
     }
     if (order != -1) {
       query->prepare("UPDATE save_data "
@@ -1602,12 +1603,16 @@ void AttributesWidget::previousCoded() {
       retrieveData();
     }
     delete query;
+    attributesTreeView->setCurrentIndex(currentIndex);
+    attributesTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
   }
 }
 
 void AttributesWidget::nextCoded() {
   setComment();
   if (attributesTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = attributesTreeView->currentIndex();
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
@@ -1615,12 +1620,12 @@ void AttributesWidget::nextCoded() {
     int currentOrder = query->value(0).toInt();
     QVector<QString> attributeVector;
     attributeVector.push_back(attribute);
-    QModelIndex currentIndex = attributesTreeView->currentIndex();
-    while (currentIndex.parent().isValid()) {
-      currentIndex = currentIndex.parent();
+    QModelIndex oldIndex = attributesTreeView->currentIndex();
+    while (oldIndex.parent().isValid()) {
+      oldIndex = oldIndex.parent();
     }
     bool entity = false;
-    if (currentIndex.data().toString() == "Entities") {
+    if (oldIndex.data().toString() == "Entities") {
       entity = true;
     }
     if (attribute == ENTITIES) {
@@ -1654,6 +1659,9 @@ void AttributesWidget::nextCoded() {
       retrieveData();
     }
     delete query;
+    attributesTreeView->setCurrentIndex(currentIndex);
+    attributesTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
   }
 }
 
@@ -2029,6 +2037,7 @@ void AttributesWidget::autoAssignAll() {
   query->exec();
   query->first();
   int currentIncident = query->value(0).toInt();
+  resetFont(attributesTree);
   query->prepare("SELECT attribute FROM attributes_to_incidents "
 		 "WHERE incident = :incident");
   query->bindValue(":incident", currentIncident);
@@ -2149,6 +2158,7 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index) {
   query->exec();
   query->first();
   int currentIncident = query->value(0).toInt();
+  resetFont(attributesTree);
   query->prepare("SELECT attribute FROM attributes_to_incidents "
 		 "WHERE incident = :incident");
   query->bindValue(":incident", currentIncident);
@@ -2199,6 +2209,7 @@ void AttributesWidget::unassignAllEntities() {
     query->exec();
     query->first();
     int currentIncident = query->value(0).toInt();
+    resetFont(attributesTree);
     query->prepare("SELECT attribute FROM attributes_to_incidents "
 		   "WHERE incident = :incident");
     query->bindValue(":incident", currentIncident);
@@ -2239,6 +2250,7 @@ void AttributesWidget::unassignAllAttribute(QModelIndex &index) {
     query->exec();
     query->first();
     int currentIncident = query->value(0).toInt();
+    resetFont(attributesTree);
     query->prepare("SELECT attribute FROM attributes_to_incidents "
 		   "WHERE incident = :incident");
     query->bindValue(":incident", currentIncident);

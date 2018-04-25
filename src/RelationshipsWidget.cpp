@@ -1438,6 +1438,7 @@ void RelationshipsWidget::nextComment() {
 void RelationshipsWidget::previousCoded() {
   setComment();
   if (relationshipsTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = relationshipsTreeView->currentIndex();
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
     QStandardItem *currentItem = relationshipsTree->
       itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
@@ -1474,6 +1475,9 @@ void RelationshipsWidget::previousCoded() {
 	retrieveData();
       }
       delete query;
+      relationshipsTreeView->setCurrentIndex(currentIndex);
+      relationshipsTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
     }
   }
 }
@@ -1481,6 +1485,7 @@ void RelationshipsWidget::previousCoded() {
 void RelationshipsWidget::nextCoded() {
   setComment();
   if (relationshipsTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = relationshipsTreeView->currentIndex();
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
     QStandardItem *currentItem = relationshipsTree->
       itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
@@ -1517,6 +1522,9 @@ void RelationshipsWidget::nextCoded() {
 	retrieveData();
       }
       delete query;
+      relationshipsTreeView->setCurrentIndex(currentIndex);
+      relationshipsTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
     }
   }
 }
