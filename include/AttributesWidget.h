@@ -23,6 +23,8 @@
 #include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"
 #include "MergeAttributesDialog.h"
+#include "RelationshipComboBoxDialog.h"
+#include "RelationshipsWidget.h"
 
 class EventGraphWidget;
 
@@ -34,6 +36,9 @@ public:
   AttributesWidget(QWidget *parent=0);
   ~AttributesWidget() {};
   void resetTree();
+  void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
+  void setRelationshipsWidget(RelationshipsWidget *rw);
 
 private slots:
   void setCommentBool();
@@ -57,6 +62,7 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
+  void updateEntityAfterEdit(const QString name, const QString description, const QString oldName);
   void selectText();
   void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
@@ -88,8 +94,6 @@ private slots:
   void getValue();
   void fixTree();
   bool eventFilter(QObject *object, QEvent *event);
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
   
 private:
   QPointer<QSqlTableModel> incidentsModel;
@@ -100,6 +104,7 @@ private:
   QPointer<AttributeTreeFilter> treeFilter;
   EventGraphWidget *eventGraph;
   OccurrenceGraphWidget *occurrenceGraph;
+  RelationshipsWidget *relationshipsWidget;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

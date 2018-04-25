@@ -368,11 +368,7 @@ void EntityDialog::addAttribute() {
       query->bindValue(":father", currentParent);
       query->exec();
       delete query;
-      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-      // The entity dialog does not necessarily have the relationships widget as its parent.
-      if (rw) {
-	rw->networkGraph->resetTree();
-      }
+      relationshipsWidget->networkGraph->resetTree();
     }
     delete attributeDialog;
   } else {
@@ -395,11 +391,8 @@ void EntityDialog::addAttribute() {
       attributesTree->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
-      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
       // The entity dialog does not necessarily have the relationships widget as its parent.
-      if (rw) {
-	rw->networkGraph->resetTree();
-      }
+      relationshipsWidget->networkGraph->resetTree();
     }
     delete attributeDialog;
   }
@@ -443,11 +436,7 @@ void EntityDialog::editAttribute() {
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
-      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-      // The entity dialog does not necessarily have the relationships widget as its parent.
-      if (rw) {
-	rw->networkGraph->resetTree();
-      }
+      relationshipsWidget->networkGraph->resetTree();
     }
     delete attributeDialog;
     delete query;
@@ -555,11 +544,7 @@ void EntityDialog::removeUnusedAttributes() {
       unfinished = false;
     }
   }
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-  // The entity dialog does not necessarily have the relationships widget as its parent.
-  if (rw) {
-    rw->networkGraph->resetTree();
-  }
+  relationshipsWidget->networkGraph->resetTree();
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   delete attributesTree;
@@ -906,4 +891,8 @@ bool EntityDialog::eventFilter(QObject *object, QEvent *event) {
 void EntityDialog::resetTree() {
   delete attributesTree;
   setTree();
+}
+
+void EntityDialog::setRelationshipsWidget(RelationshipsWidget *rw) {
+  relationshipsWidget = rw;
 }

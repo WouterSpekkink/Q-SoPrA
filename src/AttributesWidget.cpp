@@ -677,6 +677,7 @@ void AttributesWidget::newAttribute() {
     QString top = tempIndex.data().toString();
     if (top == ENTITIES) {
         EntityDialog *entityDialog = new EntityDialog(this);
+	entityDialog->setRelationshipsWidget(relationshipsWidget);
 	entityDialog->setNew();
 	entityDialog->exec();
 	if (entityDialog->getExitStatus() == 0) {
@@ -777,6 +778,7 @@ void AttributesWidget::editAttribute() {
 	query->first();
 	QString description = query->value(0).toString();
 	EntityDialog *entityDialog = new EntityDialog(this);
+	entityDialog->setRelationshipsWidget(relationshipsWidget);
 	entityDialog->submitName(name);
 	entityDialog->submitDescription(description);
 	entityDialog->exec();
@@ -789,6 +791,7 @@ void AttributesWidget::editAttribute() {
 	  currentAttribute->setData(newName, Qt::DisplayRole);
 	  QString hint = breakString(description);
 	  currentAttribute->setToolTip(hint);
+	  updateEntityAfterEdit(newName, description, name);
 	}
 	delete query;
 	delete entityDialog;
@@ -856,7 +859,138 @@ void AttributesWidget::editAttribute() {
     attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   }
 }  
-    
+
+
+void AttributesWidget::updateEntityAfterEdit(const QString name,
+						const QString description,
+						const QString former) {
+  QSqlQuery *query = new QSqlQuery;
+  // Update the entity itself.
+  query->prepare("UPDATE entities "
+		 "SET name = :name, description = :description "
+		 "WHERE name = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
+  // Update attributes.
+  query->prepare("UPDATE attributes_to_entities "
+		 "SET entity = :new "
+		 "WHERE entity = :old");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  // Update entities assigned as attributes
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET attribute = :new "
+		 "WHERE attribute = :old ");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  /*
+    Next up are the relationships in which the entity already participates.
+    First, let us update all the relationships where the current entity is a source.
+  */
+  if (name != former) {
+    query->prepare("SELECT name, target, type "
+		   "FROM entity_relationships WHERE source = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString target = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = name + arrow + target;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET source = :source, name = :name "
+		      "WHERE source = :oldSource AND name = :oldRelationship");
+      query2->bindValue(":source", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldSource", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    // And then the relationships where the entity is a target.
+    query->prepare("SELECT name, source, type "
+		   "FROM entity_relationships WHERE target = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = source + arrow + name;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET target = :target, name = :name "
+		      "WHERE target = :oldTarget AND name = :oldRelationship");
+      query2->bindValue(":target", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldTarget", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    delete query;
+  }
+  /* 
+     If an entity is edited, we should communicate this change both to the
+     relationships widget and the event graph. The tree of the Hierachy Graph Widget
+     is reconstructed every time it is switched to, so we do not need to reset it
+     explicitly.
+  */
+  relationshipsWidget->resetTree();
+  eventGraph->resetTree();
+}
+
 void AttributesWidget::selectText() {
   if (rawField->textCursor().selectedText().trimmed() != "") {
     int end = 0;
@@ -1783,16 +1917,12 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
 
 void AttributesWidget::autoAssignAll() {
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM relationship_types");
-  QVector<QString> relationships;
-  while (query->next()) {
-    QString relationship = query->value(0).toString();
-    relationships.push_back(relationship);
-  }
-  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, relationships);
+  QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) {
     QString selectedRelationship = comboDialog->getSelection();
+    bool tail = comboDialog->tailSelected();
+    bool head = comboDialog->headSelected();
     QVector<QString> entities;
     query->exec("SELECT name FROM entities");
     while (query->next()) {
@@ -1803,23 +1933,27 @@ void AttributesWidget::autoAssignAll() {
     while (it.hasNext()) {
       QString selected = it.next();
       QVector<QString> valid;
-      query->prepare("SELECT name FROM entity_relationships "
-		     "WHERE type = :type AND source = :entity");
-      query->bindValue(":type", selectedRelationship);
-      query->bindValue(":entity", selected);
-      query->exec();
-      while (query->next()) {
-	QString current = query->value(0).toString();
-	valid.push_back(current);
+      if (tail) {
+	query->prepare("SELECT name FROM entity_relationships "
+		       "WHERE type = :type AND source = :entity");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":entity", selected);
+	query->exec();
+	while (query->next()) {
+	  QString current = query->value(0).toString();
+	  valid.push_back(current);
+	}
       }
-      query->prepare("SELECT name FROM entity_relationships "
-		     "WHERE type = :type AND target = :entity");
-      query->bindValue(":type", selectedRelationship);
-      query->bindValue(":entity", selected);
-      query->exec();
-      while (query->next()) {
-	QString current = query->value(0).toString();
-	valid.push_back(current);
+      if (head) {
+	query->prepare("SELECT name FROM entity_relationships "
+		       "WHERE type = :type AND target = :entity");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":entity", selected);
+	query->exec();
+	while (query->next()) {
+	  QString current = query->value(0).toString();
+	  valid.push_back(current);
+	}
       }
       QVectorIterator<QString> it2(valid);
       while (it2.hasNext()) {
@@ -1910,36 +2044,37 @@ void AttributesWidget::autoAssignAll() {
 }
 
 void AttributesWidget::autoAssignEntityAt(QModelIndex &index) {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   QString selected = index.data().toString();
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM relationship_types");
-  QVector<QString> relationships;
-  while (query->next()) {
-    QString relationship = query->value(0).toString();
-    relationships.push_back(relationship);
-  }
-  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, relationships);
+  QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) {
     QString selectedRelationship = comboDialog->getSelection();
+    bool tail = comboDialog->tailSelected();
+    bool head = comboDialog->headSelected();
     QVector<QString> valid;
-    query->prepare("SELECT name FROM entity_relationships "
-		   "WHERE type = :type AND source = :entity");
-    query->bindValue(":type", selectedRelationship);
-    query->bindValue(":entity", selected);
-    query->exec();
-    while (query->next()) {
-      QString current = query->value(0).toString();
-      valid.push_back(current);
+    if (tail) {
+      query->prepare("SELECT name FROM entity_relationships "
+		     "WHERE type = :type AND source = :entity");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":entity", selected);
+      query->exec();
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	valid.push_back(current);
+      }
     }
-    query->prepare("SELECT name FROM entity_relationships "
-		   "WHERE type = :type AND target = :entity");
-    query->bindValue(":type", selectedRelationship);
-    query->bindValue(":entity", selected);
-    query->exec();
-    while (query->next()) {
-      QString current = query->value(0).toString();
-      valid.push_back(current);
+    if (head) {
+      query->prepare("SELECT name FROM entity_relationships "
+		     "WHERE type = :type AND target = :entity");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":entity", selected);
+      query->exec();
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	valid.push_back(current);
+      }
     }
     QVectorIterator<QString> it(valid);
     while (it.hasNext()) {
@@ -2026,6 +2161,8 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index) {
   setButtons();
   highlightText();
   occurrenceGraph->checkCongruency();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void AttributesWidget::unassignAllEntities() {
@@ -2352,6 +2489,10 @@ void AttributesWidget::setEventGraph(EventGraphWidget *egw) {
 
 void AttributesWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
   occurrenceGraph = ogw;
+}
+
+void AttributesWidget::setRelationshipsWidget(RelationshipsWidget *rw) {
+  relationshipsWidget = rw;
 }
 
 void AttributesWidget::resetTree() {

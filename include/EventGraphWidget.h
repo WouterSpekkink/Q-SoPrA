@@ -61,6 +61,9 @@ public:
   QVector<Arrow*> getEdges();
   void resetTree();
   void checkCongruency();
+  void setAttributesWidget(AttributesWidget* aw);
+  void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
+  void setRelationshipsWidget(RelationshipsWidget *rw);
 
 private slots:
   void setCommentBool();
@@ -95,6 +98,7 @@ private slots:
   void highlightText();
   void newAttribute();
   void editAttribute();
+  void updateEntityAfterEdit(const QString name, const QString description, const QString oldName);
   void removeUnusedAttributes();  
   void seeComponents();
   void previousDataItem();
@@ -192,8 +196,6 @@ private slots:
   void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit);
   void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit);
   bool eventFilter(QObject *object, QEvent *event);
-  void setAttributesWidget(AttributesWidget* aw);
-  void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void finalBusiness();
   
 signals:
@@ -220,6 +222,7 @@ private:
   QVector<RectObject*> rectVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
+  RelationshipsWidget *relationshipsWidget;
   
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;

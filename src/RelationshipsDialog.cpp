@@ -174,6 +174,7 @@ void RelationshipsDialog::filterEntity(const QString &text) {
 
 void RelationshipsDialog::addEntity() {
   EntityDialog *entityDialog = new EntityDialog(this);
+  entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
   entityDialog->setNew();
   entityDialog->exec();
   if (entityDialog->getExitStatus() == 0) {
@@ -206,6 +207,7 @@ void RelationshipsDialog::editEntity() {
     query->first();
     QString description = query->value(0).toString();
     EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
     entityDialog->submitName(selected);
     entityDialog->submitDescription(description);
     entityDialog->exec();
@@ -236,7 +238,6 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
   query->bindValue(":description", description);
   query->bindValue(":former", former);
   query->exec();
-
   // Update attributes.
   query->prepare("UPDATE attributes_to_entities "
 		 "SET entity = :new "
@@ -244,7 +245,13 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
   query->bindValue(":new", name);
   query->bindValue(":old", former);
   query->exec();
-
+  // Update entities assigned as attributes
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET attribute = :new "
+		 "WHERE attribute = :old ");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
   /*
     Next up are the relationships in which the entity already participates.
     First, let us update all the relationships where the current entity is a source.
@@ -351,6 +358,7 @@ void RelationshipsDialog::editLeftAssignedEntity() {
     query->first();
     QString description =  query->value(0).toString();
     EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
     entityDialog->submitName(selected);
     entityDialog->submitDescription(description);
     entityDialog->exec();
@@ -383,6 +391,7 @@ void RelationshipsDialog::editRightAssignedEntity() {
     query->first();
     QString description =  query->value(0).toString();
     EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
     entityDialog->submitName(selected);
     entityDialog->submitDescription(description);
     entityDialog->exec();
@@ -595,3 +604,4 @@ void RelationshipsDialog::setEventGraph(EventGraphWidget *egw) {
 void RelationshipsDialog::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
   occurrenceGraph = ogw;
 }
+

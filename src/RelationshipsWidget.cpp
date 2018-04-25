@@ -1002,6 +1002,8 @@ void RelationshipsWidget::editRelationship() {
 	setTree();
 	relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
 	retrieveData();
+	attributesWidget->resetTree();
+	eventGraph->resetTree();
       }
       delete relationshipsDialog;
       delete query;
@@ -1663,6 +1665,10 @@ void RelationshipsWidget::setEventGraph(EventGraphWidget *egw) {
 
 void RelationshipsWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
   occurrenceGraph = ogw;
+}
+
+void RelationshipsWidget::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
 }
 
 void RelationshipsWidget::resetTree() {

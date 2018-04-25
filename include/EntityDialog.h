@@ -19,6 +19,9 @@
 #include "AttributeDialog.h"
 #include "Constants.h"
 #include "MergeAttributesDialog.h"
+#include "RelationshipsWidget.h"
+
+class RelationshipsWidget;
 
 class EntityDialog : public QDialog {
   Q_OBJECT
@@ -35,6 +38,7 @@ public:
   void setNew();
   void clearSelection();
   void resetTree();
+  void setRelationshipsWidget(RelationshipsWidget *rw);
 
 private slots:
   void setValueButton();
@@ -65,6 +69,7 @@ private:
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<AttributeTreeFilter> treeFilter;
   QPointer<AttributeDialog> attributeDialog;
+  RelationshipsWidget *relationshipsWidget;
   
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;

@@ -1433,6 +1433,7 @@ void HierarchyGraphWidget::newAttribute() {
     QString top = tempIndex.data().toString();
     if (top == ENTITIES) {
         EntityDialog *entityDialog = new EntityDialog(this);
+	entityDialog->setRelationshipsWidget(relationshipsWidget);
 	entityDialog->setNew();
 	entityDialog->exec();
 	if (entityDialog->getExitStatus() == 0) {
@@ -1533,6 +1534,7 @@ void HierarchyGraphWidget::editAttribute() {
 	query->first();
 	QString description = query->value(0).toString();
 	EntityDialog *entityDialog = new EntityDialog(this);
+	entityDialog->setRelationshipsWidget(relationshipsWidget);
 	entityDialog->submitName(name);
 	entityDialog->submitDescription(description);
 	entityDialog->exec();
@@ -1545,6 +1547,7 @@ void HierarchyGraphWidget::editAttribute() {
 	  currentAttribute->setData(newName, Qt::DisplayRole);
 	  QString hint = breakString(description);
 	  currentAttribute->setToolTip(hint);
+	  updateEntityAfterEdit(newName, description, name);
 	}
 	delete query;
 	delete entityDialog;
@@ -1611,6 +1614,129 @@ void HierarchyGraphWidget::editAttribute() {
     attributesTree->sort(0, Qt::AscendingOrder);
     attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   }
+}
+
+void HierarchyGraphWidget::updateEntityAfterEdit(const QString name,
+						const QString description,
+						const QString former) {
+  QSqlQuery *query = new QSqlQuery;
+  // Update the entity itself.
+  query->prepare("UPDATE entities "
+		 "SET name = :name, description = :description "
+		 "WHERE name = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
+  // Update attributes.
+  query->prepare("UPDATE attributes_to_entities "
+		 "SET entity = :new "
+		 "WHERE entity = :old");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  // Update entities assigned as attributes
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET attribute = :new "
+		 "WHERE attribute = :old ");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  /*
+    Next up are the relationships in which the entity already participates.
+    First, let us update all the relationships where the current entity is a source.
+  */
+  if (name != former) {
+    query->prepare("SELECT name, target, type "
+		   "FROM entity_relationships WHERE source = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString target = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = name + arrow + target;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET source = :source, name = :name "
+		      "WHERE source = :oldSource AND name = :oldRelationship");
+      query2->bindValue(":source", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldSource", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    // And then the relationships where the entity is a target.
+    query->prepare("SELECT name, source, type "
+		   "FROM entity_relationships WHERE target = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = source + arrow + name;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET target = :target, name = :name "
+		      "WHERE target = :oldTarget AND name = :oldRelationship");
+      query2->bindValue(":target", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldTarget", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    delete query;
+  }
+  relationshipsWidget->resetTree();
 }
 
 void HierarchyGraphWidget::removeUnusedAttributes() {
@@ -2114,8 +2240,8 @@ void HierarchyGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 
 void HierarchyGraphWidget::setButtons() {
   if (attributesTreeView->currentIndex().isValid()) {
+    QString currentAttribute = attributesTreeView->currentIndex().data().toString();
     if (selectedIncident != 0) {
-      QString currentAttribute = attributesTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
       bool empty = false;
       query->prepare("SELECT attribute, incident FROM "
@@ -2148,10 +2274,8 @@ void HierarchyGraphWidget::setButtons() {
       }
       if (currentAttribute != ENTITIES) {
 	assignAttributeButton->setEnabled(true);
-	editAttributeButton->setEnabled(true);
       } else {
 	assignAttributeButton->setEnabled(false);
-	editAttributeButton->setEnabled(false);
       }
       delete query;
     } else if (selectedMacro != NULL) {
@@ -2164,13 +2288,16 @@ void HierarchyGraphWidget::setButtons() {
       }
       if (currentAttribute != ENTITIES) {
 	assignAttributeButton->setEnabled(true);
-	editAttributeButton->setEnabled(true);
       } else {
 	assignAttributeButton->setEnabled(false);
-	editAttributeButton->setEnabled(false);
       }
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
+    }
+    if (currentAttribute != ENTITIES) {
+      editAttributeButton->setEnabled(true);
+    } else {
+      editAttributeButton->setEnabled(false);
     }
   } else {
     assignAttributeButton->setEnabled(false);
@@ -2216,6 +2343,10 @@ void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) {
 
 void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) {
   eventGraph = egw;
+}
+
+void HierarchyGraphWidget::setRelationshipsWidget(RelationshipsWidget *rw) {
+  relationshipsWidget = rw;
 }
 
 void HierarchyGraphWidget::finalBusiness() {

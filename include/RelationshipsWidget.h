@@ -24,6 +24,9 @@
 #include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"
 #include "EditEntityDialog.h"
+#include "AttributesWidget.h"
+
+class AttributesWidget;
 
 class RelationshipsWidget : public QWidget {
   Q_OBJECT
@@ -36,7 +39,11 @@ public:
   ~RelationshipsWidget() {};
 
   void resetTree();
-			   
+  void setNetworkGraph(NetworkGraphWidget *ngw);
+  void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
+  void setAttributesWidget(AttributesWidget *aw);
+						     
 private slots:
   void retrieveData();
   void setCommentBool();
@@ -85,9 +92,6 @@ private slots:
   void collapseTree();
   void finalBusiness();
   bool eventFilter(QObject *object, QEvent *event);
-  void setNetworkGraph(NetworkGraphWidget *ngw);
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
   
 private:
   QPointer<QSqlTableModel> incidentsModel;
@@ -101,6 +105,7 @@ private:
   NetworkGraphWidget *networkGraph;
   EventGraphWidget *eventGraph;
   OccurrenceGraphWidget *occurrenceGraph;
+  AttributesWidget *attributesWidget;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

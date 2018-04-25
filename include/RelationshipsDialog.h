@@ -48,6 +48,8 @@ public:
   void submitType(QString type);
   void submitDescription(QString description);
   void submitDirectedness(QString directedness);					     
+  void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
 					       
 private slots:
   void filterEntity(const QString &text);
@@ -64,9 +66,7 @@ private slots:
   void setButtons();
   void cancelAndClose();
   void saveAndClose();
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
-  
+    
 private:
   QPointer<EntityTableModel> entitiesTable;
   QPointer<ZoomableListView> entitiesView;
