@@ -1521,7 +1521,8 @@ void RelationshipsWidget::nextCoded() {
   
 void RelationshipsWidget::setButtons() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       QStandardItem *typeItem = currentItem->parent();
@@ -1614,9 +1615,9 @@ void RelationshipsWidget::boldSelected(QAbstractItemModel *model, QString name, 
 	font.setBold(true);
 	currentRelationship->setFont(font);
 	font.setBold(false);
-	font.setItalic(true);
+	font.setUnderline(true);
 	currentRelationship->parent()->setFont(font);
-	font.setItalic(false);
+	font.setUnderline(false);
       }
     }
     if (model->hasChildren(index)) {
@@ -1632,7 +1633,7 @@ void RelationshipsWidget::resetFont(QAbstractItemModel *model, QModelIndex paren
     QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(index);
     QFont font;
     font.setBold(false);
-    font.setItalic(false);
+    font.setUnderline(false);
     currentRelationship->setFont(font);
     if (model->hasChildren(index)) {
       resetFont(model, index);
