@@ -51,10 +51,10 @@ void DeselectableTreeViewEntities::dropEvent(QDropEvent *event) {
   } else if (this->dropIndicatorPosition() == QAbstractItemView::AboveItem ||
 	     this->dropIndicatorPosition() == QAbstractItemView::BelowItem) {
     targetName = this->model()->data(targetIndex.parent()).toString();
-    if (targetName == "") {
-      targetName = "NONE";
-    }
   } else if (this->dropIndicatorPosition() == QAbstractItemView::OnViewport) {
+    targetName = "NONE";
+  }
+  if (targetName == "") {
     targetName = "NONE";
   }
   if (targetName == childName) {
