@@ -241,6 +241,14 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
   query->bindValue(":description", description);
   query->bindValue(":former", former);
   query->exec();
+  // Update the parent entities
+  query->prepare("UPDATE entities "
+		 "SET father = :name, description = :description "
+		 "WHERE father = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
   // Update attributes.
   query->prepare("UPDATE attributes_to_entities "
 		 "SET entity = :new "

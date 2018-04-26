@@ -874,6 +874,14 @@ void AttributesWidget::updateEntityAfterEdit(const QString name,
   query->bindValue(":description", description);
   query->bindValue(":former", former);
   query->exec();
+  // Update the parent entities
+  query->prepare("UPDATE entities "
+		 "SET father = :name, description = :description "
+		 "WHERE father = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
   // Update attributes.
   query->prepare("UPDATE attributes_to_entities "
 		 "SET entity = :new "
@@ -1861,9 +1869,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
     delete query;
     delete query2;
     if (QAction *action = menu.exec(globalPos)) {
-      if (action->text() == AUTOASSIGNALLACTION, this) {
+      if (action->text() == AUTOASSIGNALLACTION) {
 	autoAssignAll();
-      } else if (action->text() == UNASSIGNALLACTION, this) {
+      } else if (action->text() == UNASSIGNALLACTION) {
 	unassignAllEntities();
       }
     }
@@ -1890,9 +1898,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       }
       delete query;
       if (QAction *action = menu.exec(globalPos)) {
-	if (action->text() == AUTOASSIGNSPECIFICACTION, this) {
+	if (action->text() == AUTOASSIGNSPECIFICACTION) {
 	  autoAssignEntityAt(targetIndex);
-	} else if (action->text() == UNASSIGNALLACTION, this) {
+	} else if (action->text() == UNASSIGNALLACTION) {
 	  unassignAllAttribute(targetIndex);
 	}
       }

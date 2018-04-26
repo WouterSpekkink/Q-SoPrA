@@ -50,7 +50,7 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
     tempIndex = tempIndex.parent();
   }
   QString topName = tempIndex.data().toString();
-  if (topName == "Entities") {
+  if (topName == ENTITIES) {
     entity = true;
   }
   QString targetName = "";
@@ -61,7 +61,7 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
     targetName = this->model()->data(targetIndex.parent()).toString();
     if (targetName == "") {
       targetName = "NONE";
-    } else if (targetName == "Entities") {
+    } else if (targetName == ENTITIES) {
       targetName = "NONE";
     } else if (this->dropIndicatorPosition() == QAbstractItemView::OnViewport) {
       targetName = "NONE";
@@ -76,7 +76,7 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
       fatherIndex = fatherIndex.parent();
     }
     QString topName = fatherIndex.data().toString();
-    if (topName != "Entities") {
+    if (topName != ENTITIES) {
       event->ignore();
     } else {
       QSqlQuery* query = new QSqlQuery;  
@@ -96,7 +96,7 @@ void DeselectableTreeView::dropEvent(QDropEvent *event) {
       fatherIndex = fatherIndex.parent();
     }
     QString topName = fatherIndex.data().toString();
-    if (topName == "Entities") {
+    if (topName == ENTITIES) {
       event->ignore();
     } else {
       QSqlQuery* query = new QSqlQuery;  
