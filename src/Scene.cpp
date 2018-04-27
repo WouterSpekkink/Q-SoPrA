@@ -940,19 +940,28 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       clearSelection();
       arrow->setSelected(true);
       QMenu menu;
+      QAction *action1 = new QAction(REMOVELINKAGEACTION, this);
+      QAction *action2 = new QAction(KEEPLINKAGEACTION, this);
+      QAction *action3 = new QAction(ACCEPTLINKAGEACTION, this);
+      QAction *action4 = new QAction(REJECTLINKAGEACTION, this);
+      QAction *action5 = new QAction(IGNOREMEACTION, this);
+      QAction *action6 = new QAction(REMOVENORMALLINKAGEACTION, this);
+      QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
       if (arrow->getColor() == QColor(Qt::darkMagenta)) {
-	menu.addAction(REMOVELINKAGEACTION);
-	menu.addAction(KEEPLINKAGEACTION);
+	menu.addAction(action1);
+	menu.addAction(action2);
       } else if (arrow->getColor() == QColor(Qt::darkRed)) {
-	menu.addAction(ACCEPTLINKAGEACTION);
-	menu.addAction(REJECTLINKAGEACTION);
+	menu.addAction(action3);
+	menu.addAction(action4);
       } else if (arrow->getColor() == QColor(Qt::darkGreen)) {
-	menu.addAction(REMOVELINKAGEACTION);
-	menu.addAction(KEEPLINKAGEACTION);
-	menu.addAction(IGNOREME);      
+	menu.addAction(action1);
+	menu.addAction(action2);
+	menu.addAction(action5);      
       } else if (arrow->getColor() == edgeColor) {
-	menu.addAction(REMOVENORMALLINKAGE);
+	menu.addAction(action6);
+	menu.addAction(action7);
       }
+      
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit ArrowContextMenuAction(action->text());
       }

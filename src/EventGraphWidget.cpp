@@ -2259,10 +2259,6 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
       }
       if (tempSource != NULL && tempTarget != NULL) {
 	if (tempSource->getOrder() < tempTarget->getOrder()) {
-	  //qreal sourceHeight = tempSource->scenePos().y();
-	  //qreal newTargetHeight = sourceHeight + qrand() % 150 - 75;
-	  //int targetOrder = tempTarget->getOriginalPos().x();
-	  //tempTarget->setPos(QPointF(targetOrder, newTargetHeight));
 	  Arrow *currentEdge = new Arrow(type, coder);
 	  currentEdge->setStartItem(tempSource);
 	  currentEdge->setEndItem(tempTarget);
@@ -2270,10 +2266,6 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	  edgeVector.push_back(currentEdge);
 	  break;
 	} else if (tempSource->getOrder() > tempTarget->getOrder()) {
-	  //qreal targetHeight = tempTarget->scenePos().y();
-	  //qreal newSourceHeight = targetHeight + qrand() % 150 - 75;
-	  //int sourceOrder = tempSource->getOriginalPos().x();
-	  //tempSource->setPos(QPointF(sourceOrder, newSourceHeight));
 	  Arrow *currentEdge = new Arrow(type, coder);
 	  currentEdge->setStartItem(tempSource);
 	  currentEdge->setEndItem(tempTarget);
@@ -2663,6 +2655,13 @@ void EventGraphWidget::setCompareButton() {
 }
 
 void EventGraphWidget::compare() {
+  edgeColor = QColor(Qt::black);
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    current->setColor(edgeColor);
+  }
+  emit changeEdgeColor(edgeColor);
   selectedCompare = compareComboBox->currentText();
   getCompareEdges(selectedCompare, selectedType);
   plotCompareEdges();
@@ -4497,18 +4496,43 @@ void EventGraphWidget::setEventColor() {
 }
 
 void EventGraphWidget::setEdgeColor() {
-  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    edgeColor = colorDialog->selectedColor();
-    QVectorIterator<Arrow*> it(edgeVector);
-    while (it.hasNext()) {
-      Arrow *currentArrow = it.next();
-      currentArrow->setColor(edgeColor);
+  if (edgeVector.size() > 0) {
+    bool sameColor = true;
+    QVector<Arrow*>::iterator it;
+    QColor color = edgeVector.first()->getColor();
+    for (it = edgeVector.begin() + 1; it != edgeVector.end(); it++) {
+      Arrow *current = *it;
+      if (current->getColor() != color) {
+	sameColor = false;
+	break;
+      }
     }
-    emit changeEdgeColor(edgeColor);
+    if (compareVector.size() > 0 || !sameColor) {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Comparing linkages</h2>");
+      warningBox->setInformativeText("You are still comparing linkages between two coders. "
+				     "Resolve any remaining comparisons before changing the "
+				     "edge color");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    } else {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) {
+	edgeColor = colorDialog->selectedColor();
+	QVectorIterator<Arrow*> it2(edgeVector);
+	while (it2.hasNext()) {
+	  Arrow *currentArrow = it2.next();
+	  currentArrow->setColor(edgeColor);
+	}
+	emit changeEdgeColor(edgeColor);
+      }
+      delete colorDialog;
+    } 
   }
-  delete colorDialog;
 }
 
 void EventGraphWidget::setLabelColor() {
@@ -4524,7 +4548,7 @@ void EventGraphWidget::setLabelColor() {
   }
   delete colorDialog;
 }
-
+  
 void EventGraphWidget::setBackgroundColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
@@ -6722,10 +6746,12 @@ void EventGraphWidget::processArrowContextMenu(const QString &action) {
     acceptLinkage();
   } else if (action == REJECTLINKAGEACTION) {
     rejectLinkage();
-  } else if (action == IGNOREME) {
+  } else if (action == IGNOREMEACTION) {
     ignoreLinkage();
-  } else if (action == REMOVENORMALLINKAGE) {
+  } else if (action == REMOVENORMALLINKAGEACTION) {
     removeNormalLinkage();
+  } else if (action == CHANGECOMMENTACTION) {
+    changeLinkageComment();
   }
 }
 
@@ -6759,47 +6785,112 @@ void EventGraphWidget::removeLinkage() {
 }
 
 void EventGraphWidget::removeNormalLinkage() {
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      if (arrow) {
-	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	QPointer<QMessageBox> warningBox = new QMessageBox(this);
-	warningBox->addButton(QMessageBox::Yes);
-	warningBox->addButton(QMessageBox::No);
-	warningBox->setIcon(QMessageBox::Warning);
-	warningBox->setText("<h2>Are you sure?</h2>");
-	warningBox->setInformativeText("Are you sure you want to remove this linkage?");
-	if (warningBox->exec() == QMessageBox::Yes) {
-	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
-	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
-	  if (startEvent && endEvent) {
-	    int tail = startEvent->getId();
-	    int head = endEvent->getId();
-	  
-	    QSqlQuery *query =  new QSqlQuery;
-	    query->prepare("DELETE FROM linkages "
-			   "WHERE tail = :tail AND head = :head "
-			   "AND coder = :coder AND type = :type");
-	    query->bindValue(":tail", tail);
-	    query->bindValue(":head", head);
-	    query->bindValue(":coder", selectedCoder);
-	    query->bindValue(":type", selectedType);
-	    query->exec();
-	    delete query;
-	  }
-	  edgeVector.removeOne(currentEdge);
-	  delete currentEdge;
-	  delete warningBox;
+  if (scene->selectedItems().size() == 1) {
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(scene->selectedItems().first());
+    if (arrow) {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Are you sure you want to remove this linkage?");
+      if (warningBox->exec() == QMessageBox::Yes) {
+	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
+	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
+	if (startEvent && endEvent) {
+	  int tail = startEvent->getId();
+	  int head = endEvent->getId();
+	  QSqlQuery *query =  new QSqlQuery;
+	  query->prepare("DELETE FROM linkages "
+			 "WHERE tail = :tail AND head = :head "
+			 "AND coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", head);
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);
+	  query->exec();
+	  delete query;
+	  delete arrow;
+	  edgeVector.removeOne(arrow);
 	} else {
-	  delete warningBox;
-	  return;
+	  QPointer<QMessageBox> warningBox2 = new QMessageBox(this);
+	  warningBox2->addButton(QMessageBox::Ok);
+	  warningBox2->setIcon(QMessageBox::Warning);
+	  warningBox2->setText("<h2>Cannot remove this linkage</h2>");
+	  warningBox2->setInformativeText("You cannot remove linkages that have abstracted events "
+					  "as tail and/or head.");
+	  warningBox2->exec();
 	}
+	delete warningBox;
+	return;
       } else {
-	it.next();
+	delete warningBox;
+	return;
       }
     }
+  }
+}
+
+void EventGraphWidget::changeLinkageComment() {
+  if (scene->selectedItems().size() == 1) {
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(scene->selectedItems().first());
+    int tail = 0;
+    int head = 0;
+    EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
+    EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
+    MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(arrow->startItem());
+    MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+    if (startEvent) {
+      tail = startEvent->getId();
+    } else if (startMacro) {
+      tail = startMacro->getId();
+    }
+    if (endEvent) {
+      head = endEvent->getId();
+    } else if (endMacro) {
+      head = endMacro->getId();
+    }
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT comment FROM linkage_comments "
+		   "WHERE type = :type AND tail = :tail AND head = :head");
+    query->bindValue(":type", selectedType);
+    query->bindValue(":tail", tail);
+    query->bindValue(":head", head);
+    query->exec();
+    query->first();
+    QString comment = "";
+    bool empty = true;
+    if (!query->isNull(0)) {
+      comment = query->value(0).toString();
+      empty = false;
+    }
+    if (arrow) {
+      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+      textDialog->submitText(comment);
+      textDialog->setWindowTitle("Set comment");
+      textDialog->setLabel("Free text:");
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString newComment = textDialog->getText();
+	if (empty) {
+	  query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
+			 "VALUES (:comment, :coder, :type, :tail, :head)");
+	} else {
+	  query->prepare("UPDATE linkage_comments "
+			 "SET comment = :comment, coder = :coder "
+			 "WHERE type = :type AND tail = :tail AND head = :head");
+	}
+	query->bindValue(":comment", newComment);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", selectedType);
+	query->bindValue(":tail", tail);
+	query->bindValue(":head", head);
+	query->exec();
+	QString toolTip = breakString(selectedCoder + " - " + newComment);
+	arrow->setToolTip(toolTip);
+      }
+    }
+    delete query;
   }
 }
 

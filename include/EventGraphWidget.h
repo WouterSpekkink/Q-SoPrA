@@ -170,6 +170,7 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
+  void changeLinkageComment();
   void processEventGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
