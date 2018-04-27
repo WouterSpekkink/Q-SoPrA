@@ -250,6 +250,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
+  connect(this, SIGNAL(changeEdgeColor(const QColor)), scene, SLOT(changeEdgeColor(const QColor)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -455,7 +456,7 @@ void EventGraphWidget::checkCongruency() {
     query->exec();
     while (query->next()) {
       int tailId = query->value(0).toInt();
-      int headId = query->value(0).toInt();
+      int headId = query->value(1).toInt();
       bool tailVisible = false;
       bool headVisible = false;
       QVectorIterator<EventItem*> it(eventVector);
@@ -580,6 +581,10 @@ void EventGraphWidget::showComments() {
   attWidget->hide();
   commentWidget->show();
 }
+
+QColor EventGraphWidget::getEdgeColor() {
+  return edgeColor;
+}  
 
 void EventGraphWidget::retrieveData() {
   setComment();
@@ -3501,6 +3506,7 @@ void EventGraphWidget::seePlots() {
     int blue = query->value(4).toInt();
     int alpha = query->value(5).toInt();
     edgeColor = QColor(red, green, blue, alpha);
+    emit changeEdgeColor(edgeColor);
     selectedType = type;
     selectedCoder = coder;
     int index = coderComboBox->findText(coder);
@@ -4500,6 +4506,7 @@ void EventGraphWidget::setEdgeColor() {
       Arrow *currentArrow = it.next();
       currentArrow->setColor(edgeColor);
     }
+    emit changeEdgeColor(edgeColor);
   }
   delete colorDialog;
 }

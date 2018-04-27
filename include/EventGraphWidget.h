@@ -64,6 +64,7 @@ public:
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void setRelationshipsWidget(RelationshipsWidget *rw);
+  QColor getEdgeColor();
 
 private slots:
   void setCommentBool();
@@ -200,6 +201,7 @@ private slots:
   
 signals:
   void seeHierarchy(MacroEvent *);
+  void changeEdgeColor(const QColor);
   
 private:
   QPointer<Scene> scene;

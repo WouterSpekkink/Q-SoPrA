@@ -19,6 +19,11 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   moveRect = false;
   rotateRect = false;
   rotateText = false;
+  edgeColor = QColor(Qt::black);
+}
+
+void Scene::changeEdgeColor(const QColor color) {
+  edgeColor = color;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -945,7 +950,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	menu.addAction(REMOVELINKAGEACTION);
 	menu.addAction(KEEPLINKAGEACTION);
 	menu.addAction(IGNOREME);      
-      } else if (arrow->getColor() == QColor(Qt::black)) {
+      } else if (arrow->getColor() == edgeColor) {
 	menu.addAction(REMOVENORMALLINKAGE);
       }
       if (QAction *action = menu.exec(event->screenPos())) {

@@ -1923,7 +1923,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       if (QAction *action = menu.exec(globalPos)) {
 	if (action->text() == UNASSIGNALLACTION) {
 	  unassignAllAttribute(targetIndex);
-	} else if (action->text() == MERGEATTRIBUTESACTION, this) {
+	} else if (action->text() == MERGEATTRIBUTESACTION) {
 	  mergeAttributes(targetIndex);
 	}
       }
