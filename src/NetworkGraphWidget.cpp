@@ -1488,12 +1488,12 @@ void NetworkGraphWidget::circularLayout() {
 */
 void NetworkGraphWidget::expandLayout() {
   QPointF virtualCenter = QPointF(0,0);
-  int total = 0;
+  qreal total = 0.0;
   QVectorIterator<NetworkNode*> it(nodeVector);
   while (it.hasNext()) {
     NetworkNode *current = it.next();
     virtualCenter += current->scenePos();
-    total++;
+    total = total + 1.0;
   }
   virtualCenter /= total;
   QVectorIterator<NetworkNode*> it2(nodeVector);

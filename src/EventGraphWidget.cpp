@@ -120,8 +120,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   exportTableButton = new QPushButton(tr("Export table"), graphicsWidget);
   exportNodesButton = new QPushButton(tr("Export nodes"), graphicsWidget);
   exportEdgesButton = new QPushButton(tr("Export edges"), graphicsWidget);
-  increaseDistanceButton = new QPushButton(tr("< >"), this);
-  decreaseDistanceButton = new QPushButton(tr("> <"), this);
+  increaseDistanceButton = new QPushButton("< >", this);
+  decreaseDistanceButton = new QPushButton("> <", this);
+  expandButton = new QPushButton(tr("Expand"), this);
+  contractButton = new QPushButton(tr("Contract"), this);
   compareButton = new QPushButton(tr("Compare"), this);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
   toggleDetailsButton->setCheckable(true);
@@ -233,6 +235,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(nextEventButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
+  connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
+  connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -411,6 +415,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
   decreaseDistanceButton->setMaximumWidth(decreaseDistanceButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(expandButton);
+  drawOptionsLeftLayout->addWidget(contractButton);
+  expandButton->setMaximumWidth(expandButton->sizeHint().width());
+  contractButton->setMaximumWidth(contractButton->sizeHint().width());
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -2550,6 +2558,74 @@ void EventGraphWidget::decreaseDistance() {
       }
     }
     distance = distance - 1.0;
+  }
+}
+
+void EventGraphWidget::expandGraph() {
+  qreal virtualCenter = 0.0;
+  int total = 0;
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *current = it.next();
+    virtualCenter += current->scenePos().y();
+    total = total + 1.0;
+  }
+  QVectorIterator<MacroEvent*> it2(macroVector);
+  while (it2.hasNext()) {
+    MacroEvent *current = it2.next();
+    virtualCenter += current->scenePos().y();
+    total = total + 1.0;
+  }
+  virtualCenter /= total;
+  it.toFront();
+  while (it.hasNext()) {
+    EventItem *current = it.next();
+    qreal currentY = current->scenePos().y();
+    qreal diffY  = (currentY - virtualCenter) * 1.1;
+    current->setPos(current->scenePos().x(), virtualCenter + diffY);
+    current->getLabel()->setNewPos(current->scenePos());
+  }
+  it2.toFront();
+  while (it2.hasNext()) {
+    MacroEvent *current = it2.next();
+    qreal currentY = current->scenePos().y();
+    qreal diffY  = (currentY - virtualCenter) * 1.1;
+    current->setPos(current->scenePos().x(), virtualCenter + diffY);
+    current->getLabel()->setNewPos(current->scenePos());
+  }
+}
+
+void EventGraphWidget::contractGraph() {
+  qreal virtualCenter = 0.0;
+  int total = 0;
+  QVectorIterator<EventItem*> it(eventVector);
+  while (it.hasNext()) {
+    EventItem *current = it.next();
+    virtualCenter += current->scenePos().y();
+    total = total + 1.0;
+  }
+  QVectorIterator<MacroEvent*> it2(macroVector);
+  while (it2.hasNext()) {
+    MacroEvent *current = it2.next();
+    virtualCenter += current->scenePos().y();
+    total = total + 1.0;
+  }
+  virtualCenter /= total;
+  it.toFront();
+  while (it.hasNext()) {
+    EventItem *current = it.next();
+    qreal currentY = current->scenePos().y();
+    qreal diffY  = (currentY - virtualCenter) * 0.9;
+    current->setPos(current->scenePos().x(), virtualCenter + diffY);
+    current->getLabel()->setNewPos(current->scenePos());
+  }
+  it2.toFront();
+  while (it2.hasNext()) {
+    MacroEvent *current = it2.next();
+    qreal currentY = current->scenePos().y();
+    qreal diffY  = (currentY - virtualCenter) * 0.9;
+    current->setPos(current->scenePos().x(), virtualCenter + diffY);
+    current->getLabel()->setNewPos(current->scenePos());
   }
 }
 

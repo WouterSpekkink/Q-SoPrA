@@ -116,6 +116,8 @@ private slots:
   void changePos(MacroEvent *item, qreal &dist);
   void increaseDistance();
   void decreaseDistance();
+  void expandGraph();
+  void contractGraph();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void setPlotButton();
   void getLinkageDetails();
@@ -256,6 +258,8 @@ private:
   QPointer<QPushButton> compareButton;
   QPointer<QPushButton> increaseDistanceButton;
   QPointer<QPushButton> decreaseDistanceButton;
+  QPointer<QPushButton> expandButton;
+  QPointer<QPushButton> contractButton;
   QPointer<QPushButton> toggleDetailsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> toggleLegendButton;
