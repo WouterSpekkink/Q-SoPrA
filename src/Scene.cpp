@@ -947,6 +947,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QAction *action5 = new QAction(IGNOREMEACTION, this);
       QAction *action6 = new QAction(REMOVENORMALLINKAGEACTION, this);
       QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
+      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
+      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
       if (arrow->getColor() == QColor(Qt::darkMagenta)) {
 	menu.addAction(action1);
 	menu.addAction(action2);
@@ -957,11 +959,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	menu.addAction(action1);
 	menu.addAction(action2);
 	menu.addAction(action5);      
-      } else if (arrow->getColor() == edgeColor) {
+      } else if (arrow->getColor() == edgeColor && startEvent && endEvent) {
 	menu.addAction(action6);
 	menu.addAction(action7);
       }
-      
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit ArrowContextMenuAction(action->text());
       }

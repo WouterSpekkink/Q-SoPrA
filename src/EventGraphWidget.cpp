@@ -6731,6 +6731,8 @@ void EventGraphWidget::addLinkage() {
 	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
 	newArrow->setStartItem(eventOne);
 	newArrow->setEndItem(eventTwo);
+	QString toolTip = "no comment";
+	newArrow->setToolTip(toolTip);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       }
@@ -6755,6 +6757,8 @@ void EventGraphWidget::addLinkage() {
 	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
 	newArrow->setStartItem(eventTwo);
 	newArrow->setEndItem(eventOne);
+	QString toolTip = "no comment";
+	newArrow->setToolTip(toolTip);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
       }
@@ -6944,26 +6948,40 @@ void EventGraphWidget::changeLinkageComment() {
       QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
       textDialog->submitText(comment);
       textDialog->setWindowTitle("Set comment");
-      textDialog->setLabel("Free text:");
+      textDialog->setLabel("Comment:");
+      textDialog->setEmptyAllowed(true);
       textDialog->exec();
       if (textDialog->getExitStatus() == 0) {
 	QString newComment = textDialog->getText();
-	if (empty) {
-	  query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
-			 "VALUES (:comment, :coder, :type, :tail, :head)");
+	if (newComment != "") {
+	  if (empty) {
+	    query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
+			   "VALUES (:comment, :coder, :type, :tail, :head)");
+	  } else {
+	    query->prepare("UPDATE linkage_comments "
+			   "SET comment = :comment, coder = :coder "
+			   "WHERE type = :type AND tail = :tail AND head = :head");
+	  }
+	  query->bindValue(":comment", newComment);
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", selectedType);
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", head);
+	  query->exec();
+	  QString toolTip = breakString(selectedCoder + " - " + newComment);
+	  arrow->setToolTip(toolTip);
 	} else {
-	  query->prepare("UPDATE linkage_comments "
-			 "SET comment = :comment, coder = :coder "
-			 "WHERE type = :type AND tail = :tail AND head = :head");
+	  if (empty) {
+	    query->prepare("DELETE FROM linkage_comments "
+			   "WHERE type = :type AND tail = :tail AND head = :head");
+	    query->bindValue(":type", selectedType);
+	    query->bindValue(":tail", tail);
+	    query->bindValue(":head", head);
+	    query->exec();
+	    QString toolTip = "no comment";
+	    arrow->setToolTip(toolTip);
+	  }
 	}
-	query->bindValue(":comment", newComment);
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);
-	query->bindValue(":tail", tail);
-	query->bindValue(":head", head);
-	query->exec();
-	QString toolTip = breakString(selectedCoder + " - " + newComment);
-	arrow->setToolTip(toolTip);
       }
     }
     delete query;
