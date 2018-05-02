@@ -1374,6 +1374,7 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 }
 
 void EventGraphWidget::assignAttribute() {
+  int barPos = rawField->verticalScrollBar()->value();
   if (selectedIncident != 0) {
     if (attributesTreeView->currentIndex().isValid()) {
       QString attribute = attributesTreeView->currentIndex().data().toString();
@@ -1417,6 +1418,7 @@ void EventGraphWidget::assignAttribute() {
     }
     setButtons();
   }
+  rawField->verticalScrollBar()->setValue(barPos);
   occurrenceGraph->checkCongruency();
 }
 
@@ -1757,6 +1759,7 @@ void EventGraphWidget::removeUnusedAttributes() {
 }
 
 void EventGraphWidget::highlightText() {
+  int barPos = rawField->verticalScrollBar()->value();
   if (selectedIncident != 0) {
     QTextCursor currentPos = rawField->textCursor();
     if (attributesTreeView->currentIndex().isValid()) {
@@ -1823,6 +1826,7 @@ void EventGraphWidget::highlightText() {
       rawField->setTextCursor(currentPos);
     }
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void EventGraphWidget::fixTree() {

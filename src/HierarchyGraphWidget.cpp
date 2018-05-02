@@ -1295,6 +1295,7 @@ void HierarchyGraphWidget::exportSvg() {
 }
 
 void HierarchyGraphWidget::assignAttribute() {
+  int barPos = rawField->verticalScrollBar()->value();
   if (selectedIncident != 0) {
     if (attributesTreeView->currentIndex().isValid()) {
       QString attribute = attributesTreeView->currentIndex().data().toString();
@@ -1345,6 +1346,7 @@ void HierarchyGraphWidget::assignAttribute() {
     }
     setButtons();
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void HierarchyGraphWidget::unassignAttribute() {
@@ -1840,6 +1842,7 @@ void HierarchyGraphWidget::changeFilter(const QString &text) {
 }
 
 void HierarchyGraphWidget::highlightText() {
+  int barPos = rawField->verticalScrollBar()->value();
   if (selectedIncident != 0) {
     QTextCursor currentPos = rawField->textCursor();
     if (attributesTreeView->currentIndex().isValid()) {
@@ -1906,6 +1909,7 @@ void HierarchyGraphWidget::highlightText() {
       rawField->setTextCursor(currentPos);
     }
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void HierarchyGraphWidget::removeText() {

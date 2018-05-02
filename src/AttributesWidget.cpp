@@ -1062,6 +1062,7 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
 }
   
 void AttributesWidget::highlightText() {
+  int barPos = rawField->verticalScrollBar()->value();
   QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) {
     QStandardItem *currentAttribute = attributesTree->
@@ -1137,10 +1138,12 @@ void AttributesWidget::highlightText() {
     rawField->setTextCursor(cursor);
     rawField->setTextCursor(currentPos);
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void AttributesWidget::assignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
+    int barPos = rawField->verticalScrollBar()->value();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     query->first();
@@ -1184,12 +1187,14 @@ void AttributesWidget::assignAttribute() {
       setButtons();
     }
     delete query;
+      rawField->verticalScrollBar()->setValue(barPos);
   }
   occurrenceGraph->checkCongruency();
 }
 
 void AttributesWidget::unassignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
+    int barPos = rawField->verticalScrollBar()->value();
     QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
@@ -1251,6 +1256,7 @@ void AttributesWidget::unassignAttribute() {
     }
     delete query;
     delete query2;
+    rawField->verticalScrollBar()->setValue(barPos);
   }
   setButtons();
   occurrenceGraph->checkCongruency();
