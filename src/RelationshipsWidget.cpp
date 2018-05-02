@@ -326,7 +326,6 @@ void RelationshipsWidget::retrieveData() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   int total = incidentsModel->rowCount();
-
   QString indexText = "<b>Incident (" + QString::number(order)
     + " / " + QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
@@ -451,6 +450,7 @@ void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
 }
 
 void RelationshipsWidget::highlightText() {
+  int barPos = rawField->verticalScrollBar()->value();
   QTextCursor currentPos =  rawField->textCursor();
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentRelationship = relationshipsTree->
@@ -530,7 +530,9 @@ void RelationshipsWidget::highlightText() {
       rawField->setTextCursor(currentPos);
     }
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
+
 void RelationshipsWidget::changeFilter(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
@@ -693,8 +695,10 @@ void RelationshipsWidget::entitiesOverview() {
 }
 
 void RelationshipsWidget::assignRelationship() {
+  int barPos = rawField->verticalScrollBar()->value();
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QStandardItem *typeItem = currentItem->parent();
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
@@ -703,7 +707,6 @@ void RelationshipsWidget::assignRelationship() {
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("relationships_record").toInt();
-      
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
       query2->bindValue(":order", order);
@@ -745,11 +748,13 @@ void RelationshipsWidget::assignRelationship() {
       delete query2;
     }
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void RelationshipsWidget::unassignRelationship() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       QStandardItem *typeItem = currentItem->parent();
