@@ -5,6 +5,7 @@
 #include <QMouseEvent>
 #include <QSqlQuery>
 #include <QStandardItem>
+#include "../include/Constants.h"
 
 class DeselectableTreeView : public QTreeView {
   Q_OBJECT

@@ -58,7 +58,7 @@ private slots:
   void toggleGraphicsControls();
   
   void addAttribute();
-  void findChildren(QString father, QVector<QString> *children);
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void setModeButton(QTableWidgetItem *item);
   void disableModeButton();
   void removeMode();

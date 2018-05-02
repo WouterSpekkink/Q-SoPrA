@@ -23,6 +23,8 @@
 #include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"
 #include "MergeAttributesDialog.h"
+#include "RelationshipComboBoxDialog.h"
+#include "RelationshipsWidget.h"
 
 class EventGraphWidget;
 
@@ -34,6 +36,9 @@ public:
   AttributesWidget(QWidget *parent=0);
   ~AttributesWidget() {};
   void resetTree();
+  void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
+  void setRelationshipsWidget(RelationshipsWidget *rw);
 
 private slots:
   void setCommentBool();
@@ -57,7 +62,7 @@ private slots:
   void retrieveData();
   void newAttribute();
   void editAttribute();
-  void mergeAttributes();
+  void updateEntityAfterEdit(const QString name, const QString description, const QString oldName);
   void selectText();
   void sourceAttributeText(const QString &attribute, const int &incident);
   void highlightText();
@@ -69,11 +74,18 @@ private slots:
   void setTree();
   void expandTree();
   void collapseTree();
-  void findChildren(QString father, QVector<QString> *children);
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void previousCoded();
   void nextCoded();
   void setButtons();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
+  void treeContextMenu(const QPoint &);
+  void autoAssignAll();
+  void autoAssignEntityAt(QModelIndex &index);
+  void unassignAllEntities();
+  void unassignAllAttribute(QModelIndex &index);
+  void mergeAttributes(QModelIndex &index);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void finalBusiness();
@@ -82,11 +94,8 @@ private slots:
   void getValue();
   void fixTree();
   bool eventFilter(QObject *object, QEvent *event);
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
   
 private:
-  QPointer<AttributeDialog> attributeDialog;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> attributesModel;
   QPointer<QSqlTableModel> assignedModel;
@@ -95,6 +104,7 @@ private:
   QPointer<AttributeTreeFilter> treeFilter;
   EventGraphWidget *eventGraph;
   OccurrenceGraphWidget *occurrenceGraph;
+  RelationshipsWidget *relationshipsWidget;
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;
@@ -136,7 +146,6 @@ private:
   QPointer<QPushButton> commentNextButton;
   QPointer<QPushButton> newAttributeButton;
   QPointer<QPushButton> editAttributeButton;
-  QPointer<QPushButton> mergeAttributesButton;
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;

@@ -42,8 +42,9 @@ extern QString PARALLELACTION;
 extern QString NORMALIZEACTION;
 extern QString CLOSEGAPACTION;
 extern QString CHANGEDESCRIPTIONACTION;
-extern QString IGNOREME;
-extern QString REMOVENORMALLINKAGE;
+extern QString IGNOREMEACTION;
+extern QString REMOVENORMALLINKAGEACTION;
+extern QString CHANGECOMMENTACTION;
 extern QString ENTITY;
 extern QString INCIDENT;
 extern QString MACRO;
@@ -73,6 +74,11 @@ extern QString CHANGERECTCOLOR;
 extern QString DELETERECT;
 extern QString ADDLINKAGEACTION;
 extern QString SELECTFOLLOWERSACTION;
+extern QString ENTITIES;
+extern QString AUTOASSIGNALLACTION;
+extern QString AUTOASSIGNSPECIFICACTION;
+extern QString UNASSIGNALLACTION;
+extern QString MERGEATTRIBUTESACTION;
 extern qreal Pi;
 
 #endif

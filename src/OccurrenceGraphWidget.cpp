@@ -219,9 +219,18 @@ void OccurrenceGraphWidget::checkCongruency() {
       if (id >= 0) {
 	int order = current->getOrder();
 	QString attribute = current->getAttribute();
+	QSqlQuery *query3 = new QSqlQuery;
+	bool entity = false;
+	query3->prepare("SELECT name FROM entities WHERE name = :name");
+	query3->bindValue(":name", attribute);
+	query3->exec();
+	query3->first();
+	if (!query3->isNull(0)) {
+	  entity = true;
+	}
 	QVector<QString> attributeVector;
 	attributeVector.push_back(attribute);
-	findChildren(attribute, &attributeVector);
+	findChildren(attribute, &attributeVector, entity);
 	QVectorIterator<QString> it2(attributeVector);
 	bool found = false;
 	while (it2.hasNext()) {
@@ -328,20 +337,26 @@ void OccurrenceGraphWidget::addAttribute() {
     reset();
     QColor color = attributeColorDialog->getColor();
     QColor textColor = attributeColorDialog->getTextColor();
+    bool entity = attributeColorDialog->isEntity();
     QString attribute = attributeColorDialog->getAttribute();
     if (!presentAttributes.contains(attribute)) {
       presentAttributes.push_back(attribute);
       savePlotButton->setEnabled(true);
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT description FROM incident_attributes "
-		     "WHERE name = :name");
+      if (entity) {
+	query->prepare("SELECT description FROM entities "
+		       "WHERE name = :name");
+      } else {
+	query->prepare("SELECT description FROM incident_attributes "
+		       "WHERE name = :name");
+      }
       query->bindValue(":name", attribute);
       query->exec();
       query->first();
       QString description = query->value(0).toString();
       QVector<QString> attributeVector;
       attributeVector.push_back(attribute);
-      findChildren(attribute, &attributeVector);
+      findChildren(attribute, &attributeVector, entity);
       QVectorIterator<QString> it(attributeVector);
       QVector<int> orders;
       QSqlDatabase::database().transaction();
@@ -428,15 +443,19 @@ void OccurrenceGraphWidget::setChangeLabel() {
   }
 }
 
-void OccurrenceGraphWidget::findChildren(QString father, QVector<QString> *children) {
+void OccurrenceGraphWidget::findChildren(QString father, QVector<QString> *children, bool entity) {
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  if (entity) {
+    query->prepare("SELECT name FROM entities WHERE father = :father");
+  } else {
+    query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  }
   query->bindValue(":father", father);
   query->exec();
   while (query->next()) {
     QString currentChild = query->value(0).toString();
     children->push_back(currentChild);
-    findChildren(currentChild, children);
+    findChildren(currentChild, children, entity);
   }
   delete query;
 }

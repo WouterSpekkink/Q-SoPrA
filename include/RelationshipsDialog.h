@@ -19,16 +19,17 @@
 #include "EntityDialog.h"
 #include "ZoomableListView.h"
 #include "SupportingFunctions.h"
+#include "EventGraphWidget.h"
+#include "OccurrenceGraphWidget.h"
+#include "AttributesWidget.h"
 
-/*
-  I need to forward declare the class here because this header is also included in the
-  EntitiesFilter header.
-*/
 class EntitiesFilter;
+class AttributesWidget;
 
 class RelationshipsDialog : public QDialog {
   Q_OBJECT
   friend class EntitiesFilter;
+  friend class RelationshipsWidget;
 
 public:
   RelationshipsDialog(QWidget *parent = 0);
@@ -45,7 +46,10 @@ public:
   void submitType(QString type);
   void submitDescription(QString description);
   void submitDirectedness(QString directedness);					     
-					       
+  void setEventGraph(EventGraphWidget *egw);
+  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
+  void setAttributesWidget(AttributesWidget *aw);
+						     
 private slots:
   void filterEntity(const QString &text);
   void assignLeftEntity();
@@ -61,12 +65,15 @@ private slots:
   void setButtons();
   void cancelAndClose();
   void saveAndClose();
-  
+    
 private:
   QPointer<EntityTableModel> entitiesTable;
   QPointer<ZoomableListView> entitiesView;
   QPointer<EntitiesFilter> entitiesFilter;
-    
+  EventGraphWidget *eventGraph;
+  OccurrenceGraphWidget *occurrenceGraph;
+  AttributesWidget *attributesWidget;
+  
   QPointer<QLabel> filterLabel;
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> tailLabel;

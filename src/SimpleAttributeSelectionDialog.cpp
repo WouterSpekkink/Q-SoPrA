@@ -66,6 +66,7 @@ void SimpleAttributeSelectionDialog::setTree() {
       buildHierarchy(father, name);
     }
   } else if (type == INCIDENT) {
+    // First we will fetch the 'normal' attributes.{
     query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
     while (query->next()) {
       QString name = query->value(0).toString();
@@ -76,6 +77,28 @@ void SimpleAttributeSelectionDialog::setTree() {
       father->setToolTip(hint);
       father->setEditable(false);
       buildHierarchy(father, name);
+    }
+    // And then we will also fetch the entities.
+    QStandardItem *entities = new QStandardItem(ENTITIES);
+    QString entitiesHint = breakString("You can also assign entities that you have created "
+				       "in the relationships widget as attributes.");
+    entities->setToolTip(entitiesHint);
+    QFont font;
+    font.setItalic(true);
+    attributesTree->appendRow(entities);
+    entities->setFont(font);
+    query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
+    int children = 0;
+    while (query->next()) {
+      QString name = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *father = new QStandardItem(name);
+      entities->setChild(children, father);
+      children++;
+      QString hint = breakString(description);
+      father->setToolTip(hint);
+      father->setEditable(false);
+      buildEntities(father, name);
     }
   }
   treeFilter->setSourceModel(attributesTree);
@@ -121,6 +144,26 @@ void SimpleAttributeSelectionDialog::buildHierarchy(QStandardItem *top, QString 
   delete query;
 }
 
+void SimpleAttributeSelectionDialog::buildEntities(QStandardItem *top, QString name) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name, description FROM entities WHERE father = :father");
+  query->bindValue(":father", name);
+  query->exec();
+  int children = 0;
+  while (query->next()) {
+    QString childName = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *child = new QStandardItem(childName);
+    top->setChild(children, child);
+    QString hint = breakString(description);
+    child->setToolTip(hint);
+    child->setEditable(false);
+    children++;
+    buildEntities(child, childName);
+  }
+  delete query;
+}
+
 void SimpleAttributeSelectionDialog::changeFilter(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
@@ -129,6 +172,13 @@ void SimpleAttributeSelectionDialog::changeFilter(const QString &text) {
 void SimpleAttributeSelectionDialog::setAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     chosenAttribute = attributesTreeView->currentIndex().data().toString();
+  }
+  QModelIndex currentIndex = attributesTreeView->currentIndex();
+  while (currentIndex.parent().isValid()) {
+    currentIndex = currentIndex.parent();
+  }
+  if (currentIndex.data().toString() == ENTITIES) {
+    entity = true;
   }
 }
 
@@ -161,3 +211,6 @@ int SimpleAttributeSelectionDialog::getExitStatus() {
   return exitStatus;
 }
 
+bool SimpleAttributeSelectionDialog::isEntity() {
+    return entity;
+}

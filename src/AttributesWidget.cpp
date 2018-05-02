@@ -1,5 +1,6 @@
 #include "../include/AttributesWidget.h"
 
+
 AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
 
   descriptionFilter = "";
@@ -83,8 +84,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   newAttributeButton = new QPushButton("New attribute", this);
   editAttributeButton = new QPushButton("Edit attribute", this);
   editAttributeButton->setEnabled(false);
-  mergeAttributesButton = new QPushButton("Merge with...", this);
-  mergeAttributesButton->setEnabled(false);
   assignAttributeButton = new QPushButton("Assign attribute", this);
   assignAttributeButton->setEnabled(false);
   unassignAttributeButton = new QPushButton("Unassign attribute", this);
@@ -106,7 +105,13 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   attributesTreeView->installEventFilter(this);
   rawField->viewport()->installEventFilter(this);
   commentField->installEventFilter(this);
-  
+
+  /*
+    To make possible context menu actions. This also requires the connection of a signal,
+    which I do somewhere in the below.
+  */
+  attributesTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+ 
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -128,7 +133,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   connect(commentNextButton, SIGNAL(clicked()), this, SLOT(nextComment()));
   connect(newAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
-  connect(mergeAttributesButton, SIGNAL(clicked()), this, SLOT(mergeAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
@@ -148,6 +152,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
   connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
+  connect(attributesTreeView, SIGNAL(customContextMenuRequested(QPoint)),
+	  this, SLOT(treeContextMenu(QPoint)));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(previousCodedButton, SIGNAL(clicked()), this, SLOT(previousCoded()));
@@ -179,7 +185,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   descriptionLayoutRight->addWidget(descriptionPreviousButton);
   descriptionPreviousButton->setMaximumWidth(descriptionPreviousButton->sizeHint().width());
   descriptionLayoutRight->addWidget(descriptionFilterField);
-  //  descriptionFilterField->setFixedWidth(250);
   descriptionLayoutRight->addWidget(descriptionNextButton);
   descriptionNextButton->setMaximumWidth(descriptionNextButton->sizeHint().width());
   descriptionLayout->addLayout(descriptionLayoutRight);
@@ -195,7 +200,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   rawLayoutRight->addWidget(rawPreviousButton);
   rawPreviousButton->setMaximumWidth(rawPreviousButton->sizeHint().width());
   rawLayoutRight->addWidget(rawFilterField);
-  //  rawFilterField->setFixedWidth(250);
   rawLayoutRight->addWidget(rawNextButton);
   rawNextButton->setMaximumWidth(rawNextButton->sizeHint().width());
   rawLayout->addLayout(rawLayoutRight);
@@ -211,7 +215,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   commentLayoutRight->addWidget(commentPreviousButton);
   commentPreviousButton->setMaximumWidth(commentPreviousButton->sizeHint().width());
   commentLayoutRight->addWidget(commentFilterField);
-  //  commentFilterField->setFixedWidth(250);
   commentLayoutRight->addWidget(commentNextButton);
   commentNextButton->setMaximumWidth(commentNextButton->sizeHint().width());
   commentLayout->addLayout(commentLayoutRight);
@@ -262,7 +265,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(newAttributeButton);
   rightButtonBottomLayout->addWidget(editAttributeButton);
-  rightButtonBottomLayout->addWidget(mergeAttributesButton);
   rightButtonBottomLayout->addWidget(removeUnusedAttributesButton);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
@@ -279,7 +281,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
     rawFilterField->setMaximumWidth(200);
     commentFilterField->setMaximumWidth(200);
   }
-  
   setLayout(mainLayout);
 }
 
@@ -666,51 +667,88 @@ void AttributesWidget::changeFilter(const QString &text) {
 
 void AttributesWidget::newAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
-    QString currentParent = treeFilter->mapToSource(attributesTreeView->currentIndex()).data().toString();
+    QString currentParent = treeFilter->
+      mapToSource(attributesTreeView->currentIndex()).data().toString();
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this, INCIDENT);
-    attributeDialog->exec();
-    if (attributeDialog->getExitStatus() == 0) {
-      name = attributeDialog->getName();
-      description = attributeDialog->getDescription();
-      QStandardItem *attribute = new QStandardItem(name);    
-      attribute->setToolTip(description);
-      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-      QStandardItem *father = attributesTree->itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-      father->appendRow(attribute);
-      attribute->setToolTip(hint);
-      attribute->setEditable(false);
-
-      attributesModel->select();
-      int newIndex = attributesModel->rowCount();
-
-      attributesModel->insertRow(newIndex);
-      attributesModel->setData(attributesModel->index(newIndex, 1), name);
-      attributesModel->setData(attributesModel->index(newIndex, 2), description);
-      attributesModel->setData(attributesModel->index(newIndex, 3), currentParent);
-      attributesModel->submitAll();
-      eventGraph->resetTree();
+    QModelIndex tempIndex = attributesTreeView->currentIndex();
+    while (tempIndex.parent().isValid()) {
+      tempIndex = tempIndex.parent();
     }
-    delete attributeDialog;
+    QString top = tempIndex.data().toString();
+    if (top == ENTITIES) {
+        EntityDialog *entityDialog = new EntityDialog(this);
+	entityDialog->setRelationshipsWidget(relationshipsWidget);
+	entityDialog->setNew();
+	entityDialog->exec();
+	if (entityDialog->getExitStatus() == 0) {
+	  QString name = entityDialog->getName();
+	  QString description = entityDialog->getDescription();
+	  QStandardItem *attribute = new QStandardItem(name);    
+	  attribute->setToolTip(description);
+	  QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+	  QStandardItem *father = attributesTree->
+	    itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+	  father->appendRow(attribute);
+	  attribute->setToolTip(hint);
+	  attribute->setEditable(false);
+	  QString fatherName = currentParent;
+	  if (fatherName == ENTITIES) {
+	    fatherName = "NONE";
+	  }
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("INSERT INTO entities (name, description, father) "
+			 "VALUES (:name, :description, :father)");
+	  query->bindValue(":name", name);
+	  query->bindValue(":description", description);
+	  query->bindValue(":father", fatherName);
+	  query->exec();
+	  delete query;
+	}
+	delete entityDialog;
+	eventGraph->resetTree();
+    } else {
+      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+      attributeDialog->exec();
+      if (attributeDialog->getExitStatus() == 0) {
+	name = attributeDialog->getName();
+	description = attributeDialog->getDescription();
+	QStandardItem *attribute = new QStandardItem(name);    
+	attribute->setToolTip(description);
+	QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+	QStandardItem *father = attributesTree->
+	  itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+	father->appendRow(attribute);
+	attribute->setToolTip(hint);
+	attribute->setEditable(false);
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("INSERT INTO attributes (name, descripion, father) "
+		       "VALUES (:name, :description, :father)");
+	query->bindValue(":name", name);
+	query->bindValue(":description", description);
+	query->bindValue(":father", currentParent);
+	query->exec();
+	delete query;
+	eventGraph->resetTree();
+      }
+      delete attributeDialog;
+    }
   } else {
     QString name = "";
     QString description = "";
-    attributeDialog = new AttributeDialog(this, INCIDENT);
+    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
     attributeDialog->exec();
-    
     if (attributeDialog->getExitStatus() == 0) {
       name = attributeDialog->getName();
       description = attributeDialog->getDescription();
-    
-      int newIndex = attributesModel->rowCount();
-      
-      attributesModel->insertRow(newIndex);
-      
-      attributesModel->setData(attributesModel->index(newIndex, 1), name);
-      attributesModel->setData(attributesModel->index(newIndex, 2), description);
-      attributesModel->setData(attributesModel->index(newIndex, 3), "NONE");
-      attributesModel->submitAll();
+      QString currentParent = "NONE";
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO attributes (name, descripion, father) "
+		     "VALUES (:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", "NONE");
+      query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
       QString hint = breakString(description);
@@ -727,116 +765,46 @@ void AttributesWidget::newAttribute() {
 void AttributesWidget::editAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     QString name = attributesTreeView->currentIndex().data().toString();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
-    query->bindValue(":name", name);
-    query->exec();
-    query->first();
-    QString description = query->value(0).toString();
-    attributeDialog = new AttributeDialog(this, INCIDENT);
-    attributeDialog->submitName(name);
-    attributeDialog->setDescription(description);
-    attributeDialog->exec();
-    if (attributeDialog->getExitStatus() == 0) {
-      QString newName = attributeDialog->getName();
-      description = attributeDialog->getDescription();
-      QStandardItem *currentAttribute = attributesTree->
-	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-      currentAttribute->setData(newName);
-      currentAttribute->setData(newName, Qt::DisplayRole);
-      QString hint = breakString(description);
-      currentAttribute->setToolTip(hint);
-      query->prepare("UPDATE incident_attributes "
-		     "SET name = :newname, description = :newdescription "
-		     "WHERE name = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":newdescription", description);
-      query->bindValue(":oldname", name);
-      query->exec();
-      query->prepare("UPDATE incident_attributes "
-		     "SET father = :newname "
-		     "WHERE father = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", name);
-      query->exec();
-      query->prepare("UPDATE attributes_to_incidents "
-		     "SET attribute = :newname "
-		     "WHERE attribute = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", name);
-      query->exec();
-      query->prepare("UPDATE attributes_to_incidents_sources "
-		     "SET attribute = :newname "
-		     "WHERE attribute = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", name);
-      query->exec();
-      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
-		     "SET attribute = :newname "
-		     "WHERE attribute = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", name);
-      query->exec();
-      this->setCursor(Qt::WaitCursor);
-      retrieveData();
-      this->setCursor(Qt::ArrowCursor);
-      eventGraph->resetTree();
-    }
-    delete query;
-    delete attributeDialog;
-  }
-  attributesTree->sort(0, Qt::AscendingOrder);
-  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-}
-
-void AttributesWidget::mergeAttributes() {
-  if (attributesTreeView->currentIndex().isValid()) {    
-    QString origin = attributesTreeView->currentIndex().data().toString();
-    QPointer<MergeAttributesDialog> mergeDialog = new MergeAttributesDialog(this, origin, INCIDENT);
-    mergeDialog->setWindowTitle("Select attribute to merge with");
-    mergeDialog->exec();
-    if (mergeDialog->getExitStatus() == 0) {
-      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Yes);
-      warningBox->addButton(QMessageBox::No);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("Merging attributes cannot be undone. "
-				     "Are you sure you want to proceed?");
-      if (warningBox->exec() == QMessageBox::Yes) {
-	QString partner = mergeDialog->getAttribute();
+    if (name != ENTITIES) {
+      QModelIndex tempIndex = attributesTreeView->currentIndex();
+      while (tempIndex.parent().isValid()) {
+	tempIndex = tempIndex.parent();
+      }
+      QString top = tempIndex.data().toString();
+      if (top == ENTITIES) {
 	QSqlQuery *query = new QSqlQuery;
-	query->prepare("UPDATE incident_attributes SET father = :new "
-		       "WHERE father = :old");
-	query->bindValue(":new", partner);
-	query->bindValue(":old", origin);
-	query->exec();
-	query->prepare("DELETE FROM incident_attributes WHERE name = :old");
-	query->bindValue(":old", origin);
-	query->exec();
-	query->prepare("UPDATE attributes_to_incidents SET attribute = :new "
-		       "WHERE attribute = :old");
-	query->bindValue(":new", partner);
-	query->bindValue(":old", origin);
-	query->exec();
-	query->prepare("UPDATE attributes_to_incidents_sources SET attribute = :new "
-		       "WHERE attribute = :old");
-	query->bindValue(":new", partner);
-	query->bindValue(":old", origin);
-	query->exec();
-	query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
-		       "SET attribute = :new WHERE attribute = :old");
-	query->bindValue(":new", partner);
-	query->bindValue(":old", origin);
-	query->exec();
-	delete mergeDialog;
-	query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
-	query->bindValue(":name", partner);
+	query->prepare("SELECT description FROM entities WHERE name = :name");
+	query->bindValue(":name", name);
 	query->exec();
 	query->first();
 	QString description = query->value(0).toString();
-	attributeDialog = new AttributeDialog(this, INCIDENT);
-	attributeDialog->submitName(partner);
+	EntityDialog *entityDialog = new EntityDialog(this);
+	entityDialog->setRelationshipsWidget(relationshipsWidget);
+	entityDialog->submitName(name);
+	entityDialog->submitDescription(description);
+	entityDialog->exec();
+	if (entityDialog->getExitStatus() == 0) {
+	  QString newName = entityDialog->getName();
+	  description = entityDialog->getDescription();
+	  QStandardItem *currentAttribute = attributesTree->
+	    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+	  currentAttribute->setData(newName);
+	  currentAttribute->setData(newName, Qt::DisplayRole);
+	  QString hint = breakString(description);
+	  currentAttribute->setToolTip(hint);
+	  updateEntityAfterEdit(newName, description, name);
+	}
+	delete query;
+	delete entityDialog;
+      } else {
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+	query->bindValue(":name", name);
+	query->exec();
+	query->first();
+	QString description = query->value(0).toString();
+	QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+	attributeDialog->submitName(name);
 	attributeDialog->setDescription(description);
 	attributeDialog->exec();
 	if (attributeDialog->getExitStatus() == 0) {
@@ -853,31 +821,31 @@ void AttributesWidget::mergeAttributes() {
 			 "WHERE name = :oldname");
 	  query->bindValue(":newname", newName);
 	  query->bindValue(":newdescription", description);
-	  query->bindValue(":oldname", partner);
+	  query->bindValue(":oldname", name);
 	  query->exec();
 	  query->prepare("UPDATE incident_attributes "
 			 "SET father = :newname "
 			 "WHERE father = :oldname");
 	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", partner);
+	  query->bindValue(":oldname", name);
 	  query->exec();
 	  query->prepare("UPDATE attributes_to_incidents "
 			 "SET attribute = :newname "
 			 "WHERE attribute = :oldname");
 	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", partner);
+	  query->bindValue(":oldname", name);
 	  query->exec();
 	  query->prepare("UPDATE attributes_to_incidents_sources "
 			 "SET attribute = :newname "
 			 "WHERE attribute = :oldname");
 	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", partner);
+	  query->bindValue(":oldname", name);
 	  query->exec();
 	  query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
 			 "SET attribute = :newname "
 			 "WHERE attribute = :oldname");
 	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", partner);
+	  query->bindValue(":oldname", name);
 	  query->exec();
 	  this->setCursor(Qt::WaitCursor);
 	  retrieveData();
@@ -886,14 +854,150 @@ void AttributesWidget::mergeAttributes() {
 	}
 	delete query;
 	delete attributeDialog;
-	attributesTree->sort(0, Qt::AscendingOrder);
-	attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-	resetTree();
-	fixTree();
-	eventGraph->resetTree();
       }
     }
+    attributesTree->sort(0, Qt::AscendingOrder);
+    attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   }
+}  
+
+
+void AttributesWidget::updateEntityAfterEdit(const QString name,
+						const QString description,
+						const QString former) {
+  QSqlQuery *query = new QSqlQuery;
+  // Update the entity itself.
+  query->prepare("UPDATE entities "
+		 "SET name = :name, description = :description "
+		 "WHERE name = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
+  // Update the parent entities
+  query->prepare("UPDATE entities "
+		 "SET father = :name, description = :description "
+		 "WHERE father = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
+  // Update attributes.
+  query->prepare("UPDATE attributes_to_entities "
+		 "SET entity = :new "
+		 "WHERE entity = :old");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  // Update entities assigned as attributes
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET attribute = :new "
+		 "WHERE attribute = :old ");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  /*
+    Next up are the relationships in which the entity already participates.
+    First, let us update all the relationships where the current entity is a source.
+  */
+  if (name != former) {
+    query->prepare("SELECT name, target, type "
+		   "FROM entity_relationships WHERE source = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString target = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = name + arrow + target;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET source = :source, name = :name "
+		      "WHERE source = :oldSource AND name = :oldRelationship");
+      query2->bindValue(":source", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldSource", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    // And then the relationships where the entity is a target.
+    query->prepare("SELECT name, source, type "
+		   "FROM entity_relationships WHERE target = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = source + arrow + name;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET target = :target, name = :name "
+		      "WHERE target = :oldTarget AND name = :oldRelationship");
+      query2->bindValue(":target", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldTarget", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    delete query;
+  }
+  /* 
+     If an entity is edited, we should communicate this change both to the
+     relationships widget and the event graph. The tree of the Hierachy Graph Widget
+     is reconstructed every time it is switched to, so we do not need to reset it
+     explicitly.
+  */
+  relationshipsWidget->resetTree();
+  eventGraph->resetTree();
 }
 
 void AttributesWidget::selectText() {
@@ -958,6 +1062,7 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
 }
   
 void AttributesWidget::highlightText() {
+  int barPos = rawField->verticalScrollBar()->value();
   QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) {
     QStandardItem *currentAttribute = attributesTree->
@@ -1033,10 +1138,12 @@ void AttributesWidget::highlightText() {
     rawField->setTextCursor(cursor);
     rawField->setTextCursor(currentPos);
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void AttributesWidget::assignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
+    int barPos = rawField->verticalScrollBar()->value();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     query->first();
@@ -1080,12 +1187,14 @@ void AttributesWidget::assignAttribute() {
       setButtons();
     }
     delete query;
+      rawField->verticalScrollBar()->setValue(barPos);
   }
   occurrenceGraph->checkCongruency();
 }
 
 void AttributesWidget::unassignAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
+    int barPos = rawField->verticalScrollBar()->value();
     QSqlQueryModel *query = new QSqlQueryModel(this);
     query->setQuery("SELECT * FROM save_data");
     int order = 0; 
@@ -1147,6 +1256,7 @@ void AttributesWidget::unassignAttribute() {
     }
     delete query;
     delete query2;
+    rawField->verticalScrollBar()->setValue(barPos);
   }
   setButtons();
   occurrenceGraph->checkCongruency();
@@ -1249,6 +1359,43 @@ void AttributesWidget::removeUnusedAttributes() {
       if (!takenAttributes.contains(*it3)) {
 	found = true;
 	query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+      }
+    }
+    if (!found) {
+      unfinished = false;
+    }
+  }
+  unfinished =  true;
+  while (unfinished) {
+    query->exec("SELECT name FROM entities "
+		"EXCEPT SELECT source FROM entity_relationships "
+		"EXCEPT SELECT target FROM entity_relationships "
+		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
+		"EXCEPT SELECT father FROM entities");
+    QSet<QString> temp;
+    while (query->next()) {
+      QString current = query->value(0).toString();
+      temp.insert(current);
+    }
+    QSet<QString>::iterator it3;
+    bool found = false;
+    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
+      if (!takenAttributes.contains(*it3)) {
+	found = true;
+	query2->prepare("DELETE FROM entities WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
 	query2->bindValue(":current", *it3);
 	query2->exec();
       }
@@ -1423,6 +1570,7 @@ void AttributesWidget::collapseTree() {
 void AttributesWidget::previousCoded() {
   setComment();
   if (attributesTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = attributesTreeView->currentIndex();
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
@@ -1430,7 +1578,18 @@ void AttributesWidget::previousCoded() {
     int currentOrder = query->value(0).toInt();
     QVector<QString> attributeVector;
     attributeVector.push_back(attribute);
-    findChildren(attribute, &attributeVector);
+    QModelIndex oldIndex = attributesTreeView->currentIndex();
+    while (oldIndex.parent().isValid()) {
+      oldIndex = oldIndex.parent();
+    }
+    bool entity = false;
+    if (oldIndex.data().toString() == "Entities") {
+      entity = true;
+    }
+    if (attribute == ENTITIES) {
+      attribute = "NONE";
+    }
+    findChildren(attribute, &attributeVector, entity);
     QVectorIterator<QString> it(attributeVector);
     int order = -1;
     while (it.hasNext()) {
@@ -1449,7 +1608,6 @@ void AttributesWidget::previousCoded() {
       } else if (!(query->isNull(0)) && query->value(0).toInt() > order) {
 	order = query->value(0).toInt();
       }
-      
     }
     if (order != -1) {
       query->prepare("UPDATE save_data "
@@ -1459,12 +1617,16 @@ void AttributesWidget::previousCoded() {
       retrieveData();
     }
     delete query;
+    attributesTreeView->setCurrentIndex(currentIndex);
+    attributesTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
   }
 }
 
 void AttributesWidget::nextCoded() {
   setComment();
   if (attributesTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = attributesTreeView->currentIndex();
     QString attribute = attributesTreeView->currentIndex().data().toString();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
@@ -1472,7 +1634,18 @@ void AttributesWidget::nextCoded() {
     int currentOrder = query->value(0).toInt();
     QVector<QString> attributeVector;
     attributeVector.push_back(attribute);
-    findChildren(attribute, &attributeVector);
+    QModelIndex oldIndex = attributesTreeView->currentIndex();
+    while (oldIndex.parent().isValid()) {
+      oldIndex = oldIndex.parent();
+    }
+    bool entity = false;
+    if (oldIndex.data().toString() == "Entities") {
+      entity = true;
+    }
+    if (attribute == ENTITIES) {
+      attribute = "NONE";
+    }
+    findChildren(attribute, &attributeVector, entity);
     QVectorIterator<QString> it(attributeVector);
     int order = -1;
     while (it.hasNext()) {
@@ -1500,19 +1673,26 @@ void AttributesWidget::nextCoded() {
       retrieveData();
     }
     delete query;
+    attributesTreeView->setCurrentIndex(currentIndex);
+    attributesTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
   }
 }
 
-void AttributesWidget::findChildren(QString father, QVector<QString> *children) {
+void AttributesWidget::findChildren(QString father, QVector<QString> *children, bool entity) {
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  if (entity) {
+    query->prepare("SELECT name FROM entities WHERE father = :father");
+  } else {
+    query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  }
   query->bindValue(":father", father);
   query->exec();
   while (query->next()) {
     QString currentChild = query->value(0).toString();
     children->push_back(currentChild);
-    findChildren(currentChild, children);
-  }
+    findChildren(currentChild, children, entity);
+  }  
   delete query;
 }
 
@@ -1560,11 +1740,15 @@ void AttributesWidget::setButtons() {
 	removeTextButton->setEnabled(false);
 	resetTextsButton->setEnabled(false);
       }
-      assignAttributeButton->setEnabled(true);
+      if (currentAttribute != ENTITIES) {
+	assignAttributeButton->setEnabled(true);
+	editAttributeButton->setEnabled(true);
+      } else {
+	assignAttributeButton->setEnabled(false);
+	editAttributeButton->setEnabled(false);
+      }
       previousCodedButton->setEnabled(true);
       nextCodedButton->setEnabled(true);
-      editAttributeButton->setEnabled(true);
-      mergeAttributesButton->setEnabled(true);
     }
     delete query;
   } else {
@@ -1575,13 +1759,13 @@ void AttributesWidget::setButtons() {
    unassignAttributeButton->setEnabled(false);
    removeTextButton->setEnabled(false);
    resetTextsButton->setEnabled(false);
-   mergeAttributesButton->setEnabled(false);
   }
 }
 
 void AttributesWidget::setTree() {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
+  // First we will fetch the 'normal' attributes.
   query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
   while (query->next()) {
     QString name = query->value(0).toString();
@@ -1593,6 +1777,28 @@ void AttributesWidget::setTree() {
     father->setEditable(false);
     buildHierarchy(father, name);
   }
+  // And then we will also fetch the entities.
+  QStandardItem *entities = new QStandardItem(ENTITIES);
+  QString entitiesHint = breakString("You can also assign entities that you have created "
+				     "in the relationships widget as attributes.");
+  entities->setToolTip(entitiesHint);
+  QFont font;
+  font.setItalic(true);
+  attributesTree->appendRow(entities);
+  entities->setFont(font);
+  query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
+  int children = 0;
+  while (query->next()) {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *father = new QStandardItem(name);
+    entities->setChild(children, father);
+    children++;
+    QString hint = breakString(description);
+    father->setToolTip(hint);
+    father->setEditable(false);
+    buildEntities(father, name);
+  }    
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
   delete query;
@@ -1618,6 +1824,577 @@ void AttributesWidget::buildHierarchy(QStandardItem *top, QString name) {
   delete query;
 }
 
+void AttributesWidget::buildEntities(QStandardItem *top, QString name) {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name, description FROM entities WHERE father = :father");
+  query->bindValue(":father", name);
+  query->exec();
+  int children = 0;
+  while (query->next()) {
+    QString childName = query->value(0).toString();
+    QString description = query->value(1).toString();
+    QStandardItem *child = new QStandardItem(childName);
+    top->setChild(children, child);
+    QString hint = breakString(description);
+    child->setToolTip(hint);
+    child->setEditable(false);
+    children++;
+    buildEntities(child, childName);
+  }
+  delete query;
+}
+
+void AttributesWidget::treeContextMenu(const QPoint &pos) {
+  QPoint globalPos = attributesTreeView->mapToGlobal(pos);
+  QModelIndex targetIndex = attributesTreeView->indexAt(pos);
+  QString selected = targetIndex.data().toString();
+  if (selected == ENTITIES) {
+    QMenu menu;
+    QAction *action1 = new QAction(AUTOASSIGNALLACTION, this);
+    QAction *action2 = new QAction(UNASSIGNALLACTION, this);
+    menu.addAction(action1);
+    menu.addAction(action2);
+    QSqlQuery *query = new QSqlQuery;
+    QSqlQuery *query2 = new QSqlQuery;
+    query->exec("SELECT name FROM entities");
+    query2->prepare("SELECT attribute FROM attributes_to_incidents "
+		    "WHERE attribute = :entity");
+    bool found = false;
+    while (query->next()) {
+      QString currentEntity = query->value(0).toString();
+      query2->bindValue(":entity", currentEntity);
+      query2->exec();
+      query2->first();
+      if (!query2->isNull(0)) {
+	found = true;
+      }
+    }
+    if (!found) {
+      action2->setEnabled(false);
+    }
+    delete query;
+    delete query2;
+    if (QAction *action = menu.exec(globalPos)) {
+      if (action->text() == AUTOASSIGNALLACTION) {
+	autoAssignAll();
+      } else if (action->text() == UNASSIGNALLACTION) {
+	unassignAllEntities();
+      }
+    }
+  } else {
+    QModelIndex tempIndex = attributesTreeView->selectionModel()->currentIndex();
+    while (tempIndex.parent().isValid()) {
+      tempIndex = tempIndex.parent();
+    }
+    QString topName = tempIndex.data().toString();
+    if (topName == ENTITIES) {
+      QMenu menu;
+      QAction *action1 = new QAction(AUTOASSIGNSPECIFICACTION, this);
+      QAction *action2 = new QAction(UNASSIGNALLACTION, this);
+      menu.addAction(action1);
+      menu.addAction(action2);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE attribute = :selected");
+      query->bindValue(":selected", selected);
+      query->exec();
+      query->first();
+      if (query->isNull(0)) {
+	action2->setEnabled(false);
+      }
+      delete query;
+      if (QAction *action = menu.exec(globalPos)) {
+	if (action->text() == AUTOASSIGNSPECIFICACTION) {
+	  autoAssignEntityAt(targetIndex);
+	} else if (action->text() == UNASSIGNALLACTION) {
+	  unassignAllAttribute(targetIndex);
+	}
+      }
+    } else {
+      QMenu menu;
+      QAction *action1 = new QAction(UNASSIGNALLACTION, this);
+      QAction *action2 = new QAction(MERGEATTRIBUTESACTION, this);
+      menu.addAction(action1);
+      menu.addAction(action2);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE attribute = :selected");
+      query->bindValue(":selected", selected);
+      query->exec();
+      query->first();
+      if (query->isNull(0)) {
+	action1->setEnabled(false);
+      }
+      delete query;
+      if (QAction *action = menu.exec(globalPos)) {
+	if (action->text() == UNASSIGNALLACTION) {
+	  unassignAllAttribute(targetIndex);
+	} else if (action->text() == MERGEATTRIBUTESACTION) {
+	  mergeAttributes(targetIndex);
+	}
+      }
+    } 
+  }
+}
+
+void AttributesWidget::autoAssignAll() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QSqlQuery *query = new QSqlQuery;
+  QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) {
+    QString selectedRelationship = comboDialog->getSelection();
+    bool tail = comboDialog->tailSelected();
+    bool head = comboDialog->headSelected();
+    QVector<QString> entities;
+    query->exec("SELECT name FROM entities");
+    while (query->next()) {
+      QString currentEntity = query->value(0).toString();
+      entities.push_back(currentEntity);
+    }
+    QVectorIterator<QString> it(entities);
+    while (it.hasNext()) {
+      QString selected = it.next();
+      QVector<QString> valid;
+      if (tail) {
+	query->prepare("SELECT name FROM entity_relationships "
+		       "WHERE type = :type AND source = :entity");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":entity", selected);
+	query->exec();
+	while (query->next()) {
+	  QString current = query->value(0).toString();
+	  valid.push_back(current);
+	}
+      }
+      if (head) {
+	query->prepare("SELECT name FROM entity_relationships "
+		       "WHERE type = :type AND target = :entity");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":entity", selected);
+	query->exec();
+	while (query->next()) {
+	  QString current = query->value(0).toString();
+	  valid.push_back(current);
+	}
+      }
+      QVectorIterator<QString> it2(valid);
+      while (it2.hasNext()) {
+	QString current = it2.next();
+	query->prepare("SELECT incident FROM relationships_to_incidents "
+		       "WHERE type = :type AND relationship = :name");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":name", current);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			  "WHERE attribute = :attribute AND incident = :incident");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  bool found = false;
+	  if (!query2->isNull(0)) {
+	    found = true;
+	  }
+	  if (!found) {
+	    query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
+			    "VALUES (:attribute, :incident)");
+	    query2->bindValue(":attribute", selected);
+	    query2->bindValue(":incident", incident);
+	    query2->exec();
+	  }
+	  delete query2;
+	}
+	query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
+		       "WHERE type = :type AND relationship = :name");
+	query->bindValue(":type", selectedRelationship);
+	query->bindValue(":name", current);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  QString sourceText = query->value(1).toString();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources "
+			  "WHERE attribute = :attribute AND incident = :incident "
+			  "AND source_text = :sourceText");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":sourceText", sourceText);
+	  query2->exec();
+	  query2->first();
+	  bool found = false;
+	  if (!query2->isNull(0)) {
+	    found = true;
+	  }
+	  if (!found) {
+	    query2->prepare("INSERT INTO attributes_to_incidents_sources "
+			    "(attribute, incident, source_text) "
+			    "VALUES (:attribute, :incident, :source_text)");
+	    query2->bindValue(":attribute", selected);
+	    query2->bindValue(":incident", incident);
+	    query2->bindValue(":source_text", sourceText);
+	    query2->exec();
+	  }
+	  delete query2;
+	}
+      }
+    }
+  }
+  resetFont(attributesTree);
+  query->exec("SELECT attributes_record FROM save_data");
+  query->first();
+  int currentOrder = query->value(0).toInt();
+  query->prepare("SELECT id FROM incidents WHERE ch_order = :currentOrder");
+  query->bindValue(":currentOrder", currentOrder);
+  query->exec();
+  query->first();
+  int currentIncident = query->value(0).toInt();
+  resetFont(attributesTree);
+  query->prepare("SELECT attribute FROM attributes_to_incidents "
+		 "WHERE incident = :incident");
+  query->bindValue(":incident", currentIncident);
+  query->exec();
+  while (query->next()) {
+    QString currentAttribute = query->value(0).toString();
+    boldSelected(attributesTree, currentAttribute);
+  }
+  delete query;
+  setButtons();
+  highlightText();
+  occurrenceGraph->checkCongruency();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+}
+
+void AttributesWidget::autoAssignEntityAt(QModelIndex &index) {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QString selected = index.data().toString();
+  QSqlQuery *query = new QSqlQuery;
+  QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) {
+    QString selectedRelationship = comboDialog->getSelection();
+    bool tail = comboDialog->tailSelected();
+    bool head = comboDialog->headSelected();
+    QVector<QString> valid;
+    if (tail) {
+      query->prepare("SELECT name FROM entity_relationships "
+		     "WHERE type = :type AND source = :entity");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":entity", selected);
+      query->exec();
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	valid.push_back(current);
+      }
+    }
+    if (head) {
+      query->prepare("SELECT name FROM entity_relationships "
+		     "WHERE type = :type AND target = :entity");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":entity", selected);
+      query->exec();
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	valid.push_back(current);
+      }
+    }
+    QVectorIterator<QString> it(valid);
+    while (it.hasNext()) {
+      QString current = it.next();
+      query->prepare("SELECT incident FROM relationships_to_incidents "
+		     "WHERE type = :type AND relationship = :name");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":name", current);
+      query->exec();
+      while (query->next()) {
+	int incident = query->value(0).toInt();
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			"WHERE attribute = :attribute AND incident = :incident");
+	query2->bindValue(":attribute", selected);
+	query2->bindValue(":incident", incident);
+	query2->exec();
+	query2->first();
+	bool found = false;
+	if (!query2->isNull(0)) {
+	  found = true;
+	}
+	if (!found) {
+	  query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
+			  "VALUES (:attribute, :incident)");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	}
+	delete query2;
+      }
+      query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
+		     "WHERE type = :type AND relationship = :name");
+      query->bindValue(":type", selectedRelationship);
+      query->bindValue(":name", current);
+      query->exec();
+      while (query->next()) {
+	int incident = query->value(0).toInt();
+	QString sourceText = query->value(1).toString();
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources"
+			"WHERE attribute = :attribute AND incident = :incident "
+			"AND source_text = :sourceText");
+	query2->bindValue(":attribute", selected);
+	query2->bindValue(":incident", incident);
+	query2->bindValue(":sourceText", sourceText);
+	query2->exec();
+	query2->first();
+	bool found = false;
+	if (!query2->isNull(0)) {
+	  found = true;
+	}
+	if (!found) {
+	  query2->prepare("INSERT INTO attributes_to_incidents_sources "
+			  "(attribute, incident, source_text) "
+			  "VALUES (:attribute, :incident, :source_text)");
+	  query2->bindValue(":attribute", selected);
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":source_text", sourceText);
+	  query2->exec();
+	}
+	delete query2;
+      }
+    }
+  }
+  resetFont(attributesTree);
+  query->exec("SELECT attributes_record FROM save_data");
+  query->first();
+  int currentOrder = query->value(0).toInt();
+  query->prepare("SELECT id FROM incidents WHERE ch_order = :currentOrder");
+  query->bindValue(":currentOrder", currentOrder);
+  query->exec();
+  query->first();
+  int currentIncident = query->value(0).toInt();
+  resetFont(attributesTree);
+  query->prepare("SELECT attribute FROM attributes_to_incidents "
+		 "WHERE incident = :incident");
+  query->bindValue(":incident", currentIncident);
+  query->exec();
+  while (query->next()) {
+    QString currentAttribute = query->value(0).toString();
+    boldSelected(attributesTree, currentAttribute);
+  }
+  delete query;
+  setButtons();
+  highlightText();
+  occurrenceGraph->checkCongruency();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+}
+
+void AttributesWidget::unassignAllEntities() {
+  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->addButton(QMessageBox::Yes);
+  warningBox->addButton(QMessageBox::No);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Are you sure?</h2>");
+  warningBox->setInformativeText("This will unassign all entities from all incidents. "
+				 "Are you sure you want to proceed?");
+  if (warningBox->exec() == QMessageBox::Yes) {
+    QSqlQuery *query = new QSqlQuery;
+    QSqlQuery *query2 = new QSqlQuery;
+    QSqlQuery *query3 = new QSqlQuery;
+    query->exec("SELECT name FROM entities");
+    query2->prepare("DELETE FROM attributes_to_incidents "
+		    "WHERE attribute = :entity");
+    query3->prepare("DELETE FROM attributes_to_incidents_sources "
+		    "WHERE attribute = :entity");
+    while (query->next()) {
+      QString currentEntity = query->value(0).toString();
+      query2->bindValue(":entity", currentEntity);
+      query2->exec();
+      query3->bindValue(":entity", currentEntity);
+      query3->exec();
+    }
+    query->exec();
+    resetFont(attributesTree);
+    query->exec("SELECT attributes_record FROM save_data");
+    query->first();
+    int currentOrder = query->value(0).toInt();
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :currentOrder");
+    query->bindValue(":currentOrder", currentOrder);
+    query->exec();
+    query->first();
+    int currentIncident = query->value(0).toInt();
+    resetFont(attributesTree);
+    query->prepare("SELECT attribute FROM attributes_to_incidents "
+		   "WHERE incident = :incident");
+    query->bindValue(":incident", currentIncident);
+    query->exec();
+    while (query->next()) {
+      QString currentAttribute = query->value(0).toString();
+      boldSelected(attributesTree, currentAttribute);
+    }
+    delete query;
+    delete query2;
+    delete query3;
+  }
+}
+
+void AttributesWidget::unassignAllAttribute(QModelIndex &index) {
+  QString selected = index.data().toString();
+  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->addButton(QMessageBox::Yes);
+  warningBox->addButton(QMessageBox::No);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Are you sure?</h2>");
+  warningBox->setInformativeText("This will unassign the selected attribute from all incidents. "
+				 "Are you sure you want to proceed?");
+  if (warningBox->exec() == QMessageBox::Yes) {
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("DELETE FROM attributes_to_incidents "
+		   "WHERE attribute = :attribute");
+    query->bindValue(":attribute", selected);
+    query->exec();
+    query->prepare("DELETE FROM attributes_to_incidents_sources "
+		   "WHERE attribute = :attribute");
+    query->bindValue(":attribute", selected);
+    query->exec("SELECT attributes_record FROM save_data");
+    query->first();
+    int currentOrder = query->value(0).toInt();
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :currentOrder");
+    query->bindValue(":currentOrder", currentOrder);
+    query->exec();
+    query->first();
+    int currentIncident = query->value(0).toInt();
+    resetFont(attributesTree);
+    query->prepare("SELECT attribute FROM attributes_to_incidents "
+		   "WHERE incident = :incident");
+    query->bindValue(":incident", currentIncident);
+    query->exec();
+    while (query->next()) {
+      QString currentAttribute = query->value(0).toString();
+      boldSelected(attributesTree, currentAttribute);
+    }
+    delete query;
+  }
+}
+
+void AttributesWidget::mergeAttributes(QModelIndex &index) {
+  QString origin = index.data().toString();
+  if (origin != ENTITIES) {
+    QModelIndex tempIndex = attributesTreeView->currentIndex();
+    while (tempIndex.parent().isValid()) {
+      tempIndex = tempIndex.parent();
+    }
+    QString top = tempIndex.data().toString();
+    if (top != ENTITIES) {
+      QPointer<MergeAttributesDialog> mergeDialog =
+	new MergeAttributesDialog(this, origin, INCIDENT);
+      mergeDialog->setWindowTitle("Select attribute to merge with");
+      mergeDialog->exec();
+      if (mergeDialog->getExitStatus() == 0) {
+	QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	warningBox->addButton(QMessageBox::Yes);
+	warningBox->addButton(QMessageBox::No);
+	warningBox->setIcon(QMessageBox::Warning);
+	warningBox->setText("<h2>Are you sure?</h2>");
+	warningBox->setInformativeText("Merging attributes cannot be undone. "
+				       "Are you sure you want to proceed?");
+	if (warningBox->exec() == QMessageBox::Yes) {
+	  QString partner = mergeDialog->getAttribute();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("UPDATE incident_attributes SET father = :new "
+			 "WHERE father = :old");
+	  query->bindValue(":new", partner);
+	  query->bindValue(":old", origin);
+	  query->exec();
+	  query->prepare("DELETE FROM incident_attributes WHERE name = :old");
+	  query->bindValue(":old", origin);
+	  query->exec();
+	  query->prepare("UPDATE attributes_to_incidents SET attribute = :new "
+			 "WHERE attribute = :old");
+	  query->bindValue(":new", partner);
+	  query->bindValue(":old", origin);
+	  query->exec();
+	  query->prepare("UPDATE attributes_to_incidents_sources SET attribute = :new "
+			 "WHERE attribute = :old");
+	  query->bindValue(":new", partner);
+	  query->bindValue(":old", origin);
+	  query->exec();
+	  query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+			 "SET attribute = :new WHERE attribute = :old");
+	  query->bindValue(":new", partner);
+	  query->bindValue(":old", origin);
+	  query->exec();
+	  delete mergeDialog;
+	  query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+	  query->bindValue(":name", partner);
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+	  attributeDialog->submitName(partner);
+	  attributeDialog->setDescription(description);
+	  attributeDialog->exec();
+	  if (attributeDialog->getExitStatus() == 0) {
+	    QString newName = attributeDialog->getName();
+	    description = attributeDialog->getDescription();
+	    QStandardItem *currentAttribute = attributesTree->
+	      itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+	    currentAttribute->setData(newName);
+	    currentAttribute->setData(newName, Qt::DisplayRole);
+	    QString hint = breakString(description);
+	    currentAttribute->setToolTip(hint);
+	    query->prepare("UPDATE incident_attributes "
+			   "SET name = :newname, description = :newdescription "
+			   "WHERE name = :oldname");
+	    query->bindValue(":newname", newName);
+	    query->bindValue(":newdescription", description);
+	    query->bindValue(":oldname", partner);
+	    query->exec();
+	    query->prepare("UPDATE incident_attributes "
+			   "SET father = :newname "
+			   "WHERE father = :oldname");
+	    query->bindValue(":newname", newName);
+	    query->bindValue(":oldname", partner);
+	    query->exec();
+	    query->prepare("UPDATE attributes_to_incidents "
+			   "SET attribute = :newname "
+			   "WHERE attribute = :oldname");
+	    query->bindValue(":newname", newName);
+	    query->bindValue(":oldname", partner);
+	    query->exec();
+	    query->prepare("UPDATE attributes_to_incidents_sources "
+			   "SET attribute = :newname "
+			   "WHERE attribute = :oldname");
+	    query->bindValue(":newname", newName);
+	    query->bindValue(":oldname", partner);
+	    query->exec();
+	    query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+			   "SET attribute = :newname "
+			   "WHERE attribute = :oldname");
+	    query->bindValue(":newname", newName);
+	    query->bindValue(":oldname", partner);
+	    query->exec();
+	    this->setCursor(Qt::WaitCursor);
+	    retrieveData();
+	    this->setCursor(Qt::ArrowCursor);
+	    eventGraph->resetTree();
+	  }
+	  delete query;
+	  delete attributeDialog;
+	  attributesTree->sort(0, Qt::AscendingOrder);
+	  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+	  resetTree();
+	  fixTree();
+	  eventGraph->resetTree();
+	}
+      }
+    }
+  }
+}
+
 void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QModelIndex parent) {
   for(int i = 0; i != model->rowCount(parent); i++) {
     QModelIndex index = model->index(i, 0, parent);
@@ -1626,43 +2403,56 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
     QFont font;
     font.setBold(true);
     QFont font2;
-    font2.setItalic(true);
+    font2.setUnderline(true);
     QFont font3;
     font3.setBold(true);
-    font3.setItalic(true);
-    if (name == currentName) {
-      if (currentAttribute->font().italic()) {
-	currentAttribute->setFont(font3);
-      } else {
-	currentAttribute->setFont(font);
-      }
-      if (currentAttribute->parent()) {
-	while (currentAttribute->parent()) {
-          currentAttribute = currentAttribute->parent();
-	  QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->exec("SELECT attributes_record FROM save_data");
-	  query->first();
-	  int order = query->value(0).toInt();
-	  query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	  query->bindValue(":order", order);
-	  query->exec();
-	  query->first();
-	  int incident = query->value(0).toInt();
-	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			 "WHERE attribute = :attribute AND incident = :incident");
-	  query->bindValue(":attribute", parentName);
-	  query->bindValue(":incident", incident);
-	  query->exec();
-	  query->first();
-	  if (query->isNull(0)) {
-	    currentAttribute->setFont(font2);      
-	  } else {
-	    currentAttribute->setFont(font3);
+    font3.setUnderline(true);
+    QFont font4;
+    font4.setItalic(true);
+    QFont font5;
+    font5.setItalic(true);
+    font5.setUnderline(true);
+    if (name != ENTITIES) {
+      if (name == currentName) {
+	if (currentAttribute->font().underline()) {
+	  currentAttribute->setFont(font3);
+	} else {
+	  currentAttribute->setFont(font);
+	}
+	if (currentAttribute->parent()) {
+	  while (currentAttribute->parent()) {
+	    currentAttribute = currentAttribute->parent();
+	    QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
+	    if (parentName != ENTITIES) {
+	      QSqlQuery *query = new QSqlQuery;
+	      query->exec("SELECT attributes_record FROM save_data");
+	      query->first();
+	      int order = query->value(0).toInt();
+	      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+	      query->bindValue(":order", order);
+	      query->exec();
+	      query->first();
+	      int incident = query->value(0).toInt();
+	      query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			     "WHERE attribute = :attribute AND incident = :incident");
+	      query->bindValue(":attribute", parentName);
+	      query->bindValue(":incident", incident);
+	      query->exec();
+	      query->first();
+	      if (query->isNull(0)) {
+		currentAttribute->setFont(font2);      
+	      } else {
+		currentAttribute->setFont(font3);
+	      }
+	      delete query;
+	    } else {
+	      currentAttribute->setFont(font5);
+	    }
 	  }
-	  delete query;
-        }
-      }
+	}
+      } 
+    } else {
+      currentAttribute->setFont(font4);
     }
     if (model->hasChildren(index)) {
       boldSelected(model, name, index);
@@ -1677,8 +2467,16 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
     QFont font;
     font.setBold(false);
-    font.setItalic(false);
-    currentAttribute->setFont(font);
+    font.setUnderline(false);
+    QFont font2;
+    font2.setItalic(true);
+    font2.setBold(false);
+    font2.setUnderline(false);
+    if (currentName != ENTITIES) {
+      currentAttribute->setFont(font);
+    } else {
+      currentAttribute->setFont(font2);
+    }
     if (model->hasChildren(index)) {
       resetFont(model, index);
     }
@@ -1720,6 +2518,10 @@ void AttributesWidget::setEventGraph(EventGraphWidget *egw) {
 
 void AttributesWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
   occurrenceGraph = ogw;
+}
+
+void AttributesWidget::setRelationshipsWidget(RelationshipsWidget *rw) {
+  relationshipsWidget = rw;
 }
 
 void AttributesWidget::resetTree() {

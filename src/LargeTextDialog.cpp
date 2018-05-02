@@ -4,6 +4,7 @@ LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent) {
   text = "";
   subText = "";
   exitStatus = 1;
+  emptyAllowed = false;
   textLabel = new QLabel(tr("<b>Text:</b>"), this);
   textField = new QTextEdit(this);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
@@ -50,9 +51,13 @@ void LargeTextDialog::cancelAndClose() {
   this->close();
 }
 
+void LargeTextDialog::setEmptyAllowed(bool status) {
+  emptyAllowed = status;
+}
+
 void LargeTextDialog::saveAndClose() {
   text = textField->toPlainText().trimmed();
-  if (text == "") {
+  if (text == "" && !emptyAllowed) {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);

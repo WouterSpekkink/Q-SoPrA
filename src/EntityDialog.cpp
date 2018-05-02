@@ -354,7 +354,7 @@ void EntityDialog::addAttribute() {
       name = attributeDialog->getName();
       description = attributeDialog->getDescription();
       QStandardItem *attribute = new QStandardItem(name);    
-      attribute->setToolTip(description);
+      attribute->setToolTip(breakString(description));
       QStandardItem *father = attributesTree->
 	itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
       father->appendRow(attribute);
@@ -368,8 +368,7 @@ void EntityDialog::addAttribute() {
       query->bindValue(":father", currentParent);
       query->exec();
       delete query;
-      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-      rw->networkGraph->resetTree();
+      relationshipsWidget->networkGraph->resetTree();
     }
     delete attributeDialog;
   } else {
@@ -392,8 +391,8 @@ void EntityDialog::addAttribute() {
       attributesTree->appendRow(attribute);
       attribute->setToolTip(description);
       attribute->setEditable(false);
-      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-      rw->networkGraph->resetTree();
+      // The entity dialog does not necessarily have the relationships widget as its parent.
+      relationshipsWidget->networkGraph->resetTree();
     }
     delete attributeDialog;
   }
@@ -437,8 +436,7 @@ void EntityDialog::editAttribute() {
       query->bindValue(":newname", newName);
       query->bindValue(":oldname", name);
       query->exec();
-      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-      rw->networkGraph->resetTree();
+      relationshipsWidget->networkGraph->resetTree();
     }
     delete attributeDialog;
     delete query;
@@ -546,8 +544,7 @@ void EntityDialog::removeUnusedAttributes() {
       unfinished = false;
     }
   }
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*> (parent()->parent());
-  rw->networkGraph->resetTree();
+  relationshipsWidget->networkGraph->resetTree();
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   delete attributesTree;
@@ -677,6 +674,16 @@ void EntityDialog::saveAndClose() {
     delete warningBox;
     return;
   }
+  if (name == ENTITIES) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Invalid name.");
+    warningBox->setInformativeText("You cannot use this name for an entity.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM entities WHERE name = :name");
@@ -690,6 +697,21 @@ void EntityDialog::saveAndClose() {
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Duplicate name.");
     warningBox->setInformativeText("You cannot create entities with identical names.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
+  query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
+  query->bindValue(":name", name);
+  query->exec();
+  query->first();
+  empty = query->isNull(0);
+  if (!empty) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Attribute name.");
+    warningBox->setInformativeText("Incident attributes and entities cannot share names.");
     warningBox->exec();
     delete warningBox;
     return;
@@ -869,4 +891,8 @@ bool EntityDialog::eventFilter(QObject *object, QEvent *event) {
 void EntityDialog::resetTree() {
   delete attributesTree;
   setTree();
+}
+
+void EntityDialog::setRelationshipsWidget(RelationshipsWidget *rw) {
+  relationshipsWidget = rw;
 }

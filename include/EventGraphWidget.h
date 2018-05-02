@@ -61,6 +61,10 @@ public:
   QVector<Arrow*> getEdges();
   void resetTree();
   void checkCongruency();
+  void setAttributesWidget(AttributesWidget* aw);
+  void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
+  void setRelationshipsWidget(RelationshipsWidget *rw);
+  QColor getEdgeColor();
 
 private slots:
   void setCommentBool();
@@ -79,6 +83,7 @@ private slots:
   void showComments();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
 		    QString type = "", QModelIndex parent = QModelIndex());
@@ -94,6 +99,7 @@ private slots:
   void highlightText();
   void newAttribute();
   void editAttribute();
+  void updateEntityAfterEdit(const QString name, const QString description, const QString oldName);
   void removeUnusedAttributes();  
   void seeComponents();
   void previousDataItem();
@@ -110,6 +116,8 @@ private slots:
   void changePos(MacroEvent *item, qreal &dist);
   void increaseDistance();
   void decreaseDistance();
+  void expandGraph();
+  void contractGraph();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void setPlotButton();
   void getLinkageDetails();
@@ -131,7 +139,7 @@ private slots:
   void exportNodes();
   void exportEdges();
   void colorByAttribute();
-  void findChildren(QString father, QVector<QString> *children);
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void setEventColor();
   void setEdgeColor();
   void setLabelColor();
@@ -164,6 +172,7 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
+  void changeLinkageComment();
   void processEventGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
@@ -191,12 +200,11 @@ private slots:
   void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit);
   void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit);
   bool eventFilter(QObject *object, QEvent *event);
-  void setAttributesWidget(AttributesWidget* aw);
-  void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void finalBusiness();
   
 signals:
   void seeHierarchy(MacroEvent *);
+  void changeEdgeColor(const QColor);
   
 private:
   QPointer<Scene> scene;
@@ -219,6 +227,7 @@ private:
   QVector<RectObject*> rectVector;
   AttributesWidget *attributesWidget;
   OccurrenceGraphWidget *occurrenceGraph;
+  RelationshipsWidget *relationshipsWidget;
   
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
@@ -249,6 +258,8 @@ private:
   QPointer<QPushButton> compareButton;
   QPointer<QPushButton> increaseDistanceButton;
   QPointer<QPushButton> decreaseDistanceButton;
+  QPointer<QPushButton> expandButton;
+  QPointer<QPushButton> contractButton;
   QPointer<QPushButton> toggleDetailsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> toggleLegendButton;

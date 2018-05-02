@@ -21,7 +21,8 @@ public:
   void submitText(const QString &submittedText);
   void setLabel(const QString &submittedLabel);
   int getExitStatus();
-
+  void setEmptyAllowed(bool status);
+		     
 private slots:
   void cancelAndClose();
   void saveAndClose();
@@ -37,6 +38,7 @@ private:
   QString text;
   QString subText;
   int exitStatus;
+  bool emptyAllowed;
 };
 
 #endif

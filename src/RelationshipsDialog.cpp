@@ -174,24 +174,30 @@ void RelationshipsDialog::filterEntity(const QString &text) {
 
 void RelationshipsDialog::addEntity() {
   EntityDialog *entityDialog = new EntityDialog(this);
+  entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
   entityDialog->setNew();
   entityDialog->exec();
   if (entityDialog->getExitStatus() == 0) {
     QString name = entityDialog->getName();
     QString description = entityDialog->getDescription();
-    entitiesTable->select();
-    updateTable();
-    int max = entitiesTable->rowCount();
-    entitiesTable->insertRow(max);
-    entitiesTable->setData(entitiesTable->index(max, 1), name);
-    entitiesTable->setData(entitiesTable->index(max, 2), description);
-    entitiesTable->submitAll();
+    QString father = "NONE";
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("INSERT INTO entities (name, description, father) "
+		   "VALUES (:name, :description, :father)");
+    query->bindValue(":name", name);
+    query->bindValue(":description", description);
+    query->bindValue(":father", father);
+    query->exec();
+    delete query;
   }
   delete entityDialog;
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
+  // We have to make sure that the new entity also appears as a new attribute in attributes trees.
+  eventGraph->resetTree();
+  attributesWidget->resetTree();
 }
 
 void RelationshipsDialog::editEntity() {
@@ -204,6 +210,7 @@ void RelationshipsDialog::editEntity() {
     query->first();
     QString description = query->value(0).toString();
     EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
     entityDialog->submitName(selected);
     entityDialog->submitDescription(description);
     entityDialog->exec();
@@ -234,7 +241,14 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
   query->bindValue(":description", description);
   query->bindValue(":former", former);
   query->exec();
-
+  // Update the parent entities
+  query->prepare("UPDATE entities "
+		 "SET father = :name, description = :description "
+		 "WHERE father = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
   // Update attributes.
   query->prepare("UPDATE attributes_to_entities "
 		 "SET entity = :new "
@@ -242,7 +256,13 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
   query->bindValue(":new", name);
   query->bindValue(":old", former);
   query->exec();
-
+  // Update entities assigned as attributes
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET attribute = :new "
+		 "WHERE attribute = :old ");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
   /*
     Next up are the relationships in which the entity already participates.
     First, let us update all the relationships where the current entity is a source.
@@ -349,6 +369,7 @@ void RelationshipsDialog::editLeftAssignedEntity() {
     query->first();
     QString description =  query->value(0).toString();
     EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
     entityDialog->submitName(selected);
     entityDialog->submitDescription(description);
     entityDialog->exec();
@@ -381,6 +402,7 @@ void RelationshipsDialog::editRightAssignedEntity() {
     query->first();
     QString description =  query->value(0).toString();
     EntityDialog *entityDialog = new EntityDialog(this);
+    entityDialog->setRelationshipsWidget(qobject_cast<RelationshipsWidget*>(parent()));
     entityDialog->submitName(selected);
     entityDialog->submitDescription(description);
     entityDialog->exec();
@@ -405,25 +427,65 @@ void RelationshipsDialog::editRightAssignedEntity() {
 void RelationshipsDialog::removeEntities() {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
-  query->exec("SELECT name FROM entities EXCEPT SELECT source "
-	      "FROM entity_relationships EXCEPT SELECT target "
-	      "FROM entity_relationships");
-  while (query->next()) {
-    QString current = query->value(0).toString();
-    query2->prepare("DELETE FROM entities WHERE name = :current");
-    query2->bindValue(":current", current);
-    query2->exec();
-    query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-    query2->bindValue(":current", current);
-    query2->exec();
+  bool unfinished = true;
+  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QSet<QString> takenAttributes;
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent* current = it.next();
+    QSet<QString> attributes = current->getAttributes();
+    QSet<QString>::iterator it2;
+    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
+      takenAttributes.insert(*it2);
+    }
+  }
+  while (unfinished) {
+    query->exec("SELECT name FROM entities "
+		"EXCEPT SELECT source FROM entity_relationships "
+		"EXCEPT SELECT target FROM entity_relationships "
+		"EXCEPT SELECT attribute FROM attributes_to_incidents "
+		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		"EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
+		"EXCEPT SELECT father FROM entities");
+    QSet<QString> temp;
+    while (query->next()) {
+      QString current = query->value(0).toString();			   
+      temp.insert(current);
+    }
+    QSet<QString>::iterator it3;
+    bool found = false;
+    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
+      if (!takenAttributes.contains(*it3)) {
+	found = true;
+	query2->prepare("DELETE FROM entities WHERE name = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
+	query2->bindValue(":current", *it3);
+	query2->exec();
+      }
+    }
+    if (!found) {
+      unfinished = false;
+    }
   }
   reset();
   delete query;  
   delete query2;
+  occurrenceGraph->checkCongruency();
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
+  // Also remove the entities from attribute trees.
+  eventGraph->resetTree();
+  attributesWidget->resetTree();
 }
 
 void RelationshipsDialog::cancelAndClose() {
@@ -546,5 +608,17 @@ void RelationshipsDialog::updateTable() {
   while (entitiesTable->canFetchMore()) {
     entitiesTable->fetchMore();
   }
+}
+
+void RelationshipsDialog::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void RelationshipsDialog::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
+}
+
+void RelationshipsDialog::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
 }
 

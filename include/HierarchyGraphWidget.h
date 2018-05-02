@@ -35,8 +35,10 @@
 #include "EllipseObject.h"
 #include "RectObject.h"
 #include "TextObject.h"
+#include "RelationshipsWidget.h"
 
 class AttributesWidget;
+class RelationshipsWidget;
 
 class HierarchyGraphWidget : public QDialog {
   Q_OBJECT
@@ -53,6 +55,7 @@ public:
   void cleanUp();
   void setAttributesWidget(AttributesWidget *aw);
   void setEventGraph(EventGraphWidget *egw);
+  void setRelationshipsWidget(RelationshipsWidget *rw);
   void resetTree();
 					   
 private slots:
@@ -71,6 +74,7 @@ private slots:
   void unassignAttribute();
   void newAttribute();
   void editAttribute();
+  void updateEntityAfterEdit(const QString name, const QString description, const QString oldName);
   void removeUnusedAttributes();
   void changeFilter(const QString &text);
   void selectText();
@@ -104,6 +108,7 @@ private slots:
   
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
+  void buildEntities(QStandardItem *top, QString name);
   void fixTree();
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
@@ -125,6 +130,7 @@ private:
   QVector<QGraphicsItem*> currentData;
   AttributesWidget *attributesWidget;
   EventGraphWidget *eventGraph;
+  RelationshipsWidget *relationshipsWidget;
 
   QVector<LineObject*> lineVector;
   QVector<TextObject*> textVector;

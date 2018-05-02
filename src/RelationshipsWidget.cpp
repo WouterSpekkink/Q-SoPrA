@@ -326,7 +326,6 @@ void RelationshipsWidget::retrieveData() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   int total = incidentsModel->rowCount();
-
   QString indexText = "<b>Incident (" + QString::number(order)
     + " / " + QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
@@ -451,6 +450,7 @@ void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
 }
 
 void RelationshipsWidget::highlightText() {
+  int barPos = rawField->verticalScrollBar()->value();
   QTextCursor currentPos =  rawField->textCursor();
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentRelationship = relationshipsTree->
@@ -530,7 +530,9 @@ void RelationshipsWidget::highlightText() {
       rawField->setTextCursor(currentPos);
     }
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
+
 void RelationshipsWidget::changeFilter(const QString &text) {
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
@@ -693,8 +695,10 @@ void RelationshipsWidget::entitiesOverview() {
 }
 
 void RelationshipsWidget::assignRelationship() {
+  int barPos = rawField->verticalScrollBar()->value();
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QStandardItem *typeItem = currentItem->parent();
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
@@ -703,7 +707,6 @@ void RelationshipsWidget::assignRelationship() {
       query->setQuery("SELECT * FROM save_data");
       int order = 0; 
       order = query->record(0).value("relationships_record").toInt();
-      
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
       query2->bindValue(":order", order);
@@ -745,11 +748,13 @@ void RelationshipsWidget::assignRelationship() {
       delete query2;
     }
   }
+  rawField->verticalScrollBar()->setValue(barPos);
 }
 
 void RelationshipsWidget::unassignRelationship() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       QStandardItem *typeItem = currentItem->parent();
@@ -901,6 +906,9 @@ void RelationshipsWidget::newRelationship() {
       QString description = query->value(1).toString();
       QString hint = breakString(directedness + " - " + description);
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
+      relationshipsDialog->setAttributesWidget(attributesWidget);
+      relationshipsDialog->setEventGraph(eventGraph);
+      relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
       relationshipsDialog->submitDirectedness(directedness);
@@ -956,6 +964,9 @@ void RelationshipsWidget::editRelationship() {
       QString leftEntity = query->value(0).toString();
       QString rightEntity = query->value(1).toString();
       RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
+      relationshipsDialog->setAttributesWidget(attributesWidget);
+      relationshipsDialog->setEventGraph(eventGraph);
+      relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
       relationshipsDialog->submitType(currentType);
       relationshipsDialog->submitDescription(description);
       relationshipsDialog->submitDirectedness(directedness);
@@ -998,6 +1009,8 @@ void RelationshipsWidget::editRelationship() {
 	setTree();
 	relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
 	retrieveData();
+	attributesWidget->resetTree();
+	eventGraph->resetTree();
       }
       delete relationshipsDialog;
       delete query;
@@ -1432,6 +1445,7 @@ void RelationshipsWidget::nextComment() {
 void RelationshipsWidget::previousCoded() {
   setComment();
   if (relationshipsTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = relationshipsTreeView->currentIndex();
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
     QStandardItem *currentItem = relationshipsTree->
       itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
@@ -1468,6 +1482,9 @@ void RelationshipsWidget::previousCoded() {
 	retrieveData();
       }
       delete query;
+      relationshipsTreeView->setCurrentIndex(currentIndex);
+      relationshipsTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
     }
   }
 }
@@ -1475,6 +1492,7 @@ void RelationshipsWidget::previousCoded() {
 void RelationshipsWidget::nextCoded() {
   setComment();
   if (relationshipsTreeView->currentIndex().isValid()) {
+    QPersistentModelIndex currentIndex = relationshipsTreeView->currentIndex();
     QString relationship = relationshipsTreeView->currentIndex().data().toString();
     QStandardItem *currentItem = relationshipsTree->
       itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
@@ -1511,13 +1529,17 @@ void RelationshipsWidget::nextCoded() {
 	retrieveData();
       }
       delete query;
+      relationshipsTreeView->setCurrentIndex(currentIndex);
+      relationshipsTreeView->selectionModel()->select(currentIndex,
+						 QItemSelectionModel::SelectCurrent);
     }
   }
 }
   
 void RelationshipsWidget::setButtons() {
   if (relationshipsTreeView->currentIndex().isValid()) {
-    QStandardItem *currentItem = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
     if (currentItem->parent()) {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       QStandardItem *typeItem = currentItem->parent();
@@ -1610,9 +1632,9 @@ void RelationshipsWidget::boldSelected(QAbstractItemModel *model, QString name, 
 	font.setBold(true);
 	currentRelationship->setFont(font);
 	font.setBold(false);
-	font.setItalic(true);
+	font.setUnderline(true);
 	currentRelationship->parent()->setFont(font);
-	font.setItalic(false);
+	font.setUnderline(false);
       }
     }
     if (model->hasChildren(index)) {
@@ -1628,7 +1650,7 @@ void RelationshipsWidget::resetFont(QAbstractItemModel *model, QModelIndex paren
     QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(index);
     QFont font;
     font.setBold(false);
-    font.setItalic(false);
+    font.setUnderline(false);
     currentRelationship->setFont(font);
     if (model->hasChildren(index)) {
       resetFont(model, index);
@@ -1650,6 +1672,18 @@ void RelationshipsWidget::finalBusiness() {
 
 void RelationshipsWidget::setNetworkGraph(NetworkGraphWidget *ngw) {
   networkGraph = ngw;
+}
+
+void RelationshipsWidget::setEventGraph(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void RelationshipsWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
+}
+
+void RelationshipsWidget::setAttributesWidget(AttributesWidget *aw) {
+  attributesWidget = aw;
 }
 
 void RelationshipsWidget::resetTree() {
