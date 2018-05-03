@@ -45,11 +45,10 @@ private:
   QColor color;
   QPolygonF arrowHead;
   int height;
-  QLineF oLine;
+  QLineF ghostLine;
   QPointF arrowP1;
   QPointF arrowP2;
-  QPointF tempStart;
-  QPointF midPoint;
+  QPointF controlPoint;
   qreal theta;
   QString relType;
   QString name;

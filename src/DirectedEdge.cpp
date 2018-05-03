@@ -35,45 +35,37 @@ void DirectedEdge::calc() {
   // Let us first calculate the distance between our two points.
   qreal xDiff = end->pos().x() - start->pos().x();
   qreal yDiff = end->pos().y() - start->pos().y();
-
   qreal distance = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
+  /* 
+     Then we draw two new points that are on a horizontal line.
+     This makes it easier to draw a control point perpendicular to the line.
 
-  // Then we draw two new points that are on a horizontal line.
-  // This makes it easier to draw a control point perpendicular to the line.
-  tempStart = QPointF(0, 0);
-  QPointF tempEnd = QPointF(distance, 0);
-
-  // Calculate midpoint
-  qreal mX = (tempStart.x() + tempEnd.x()) / 2;
-  qreal mY = (tempStart.y() + tempEnd.y()) / 2;
-  midPoint = QPointF(mX, mY);
-  midPoint.setY(midPoint.y() + height);
-
-  QLineF newLine = QLineF(tempStart, tempEnd);
-  setLine(newLine);
-
-  // But then we still need to rotate and translate the painter such that it draws
-  // the line between the correct points. 
-  qreal dY = end->pos().y() - start->pos().y();
-  qreal dX = end->pos().x() - start->pos().x();
-  
-  // theta is initially the angle in radians, so we convert it to degrees.
-  theta = atan2(dY, dX);
+     First, we calculate the control point
+  */
+  qreal controlX = (0.0 + distance) / 2;
+  controlPoint = QPointF(controlX, height);
+  /* 
+     We need to rotate and translate the painter such that it draws
+     the line between the correct points. Here we calculate the amount
+     of degrees that we need to rotate the painter.
+  */
+  theta = atan2(yDiff, xDiff);
   theta = qRadiansToDegrees(theta);
-
-  oLine = QLineF(midPoint, tempEnd);
-  oLine.setLength(oLine.length() - 18);
-  
-  double angle = ::acos(oLine.dx() / oLine.length());
-  if (oLine.dy() >= 0)
+  /* 
+     The ghost line is a line from the control point to the end point.
+     We do not draw it, but we need it to position the arrowhead.
+  */
+  ghostLine = QLineF(controlPoint, QPointF(distance, 0));
+  ghostLine.setLength(ghostLine.length() - 18);
+  // Then we do some calculations to determine how the arrow is drawn.  
+  double angle = ::acos(ghostLine.dx() / ghostLine.length());
+  if (ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
-
   qreal arrowSize = 10;
-  
-  arrowP1 = oLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-    cos(angle + Pi / 3) * arrowSize);
-  arrowP2 = oLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-  cos(angle + Pi - Pi / 3) * arrowSize);
+  arrowP1 = ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
+				     cos(angle + Pi / 3) * arrowSize);
+  arrowP2 = ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
+				     cos(angle + Pi - Pi / 3) * arrowSize);
   prepareGeometryChange();
 }
 
@@ -85,12 +77,12 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   calc();
 
   arrowHead.clear();
-  arrowHead << oLine.p2() << arrowP1 << arrowP2;
+  arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
 
   QPainterPath myPath;
-  myPath.moveTo(tempStart);
-  myPath.quadTo(midPoint, oLine.p2());
-  painter->translate(start->pos() - tempStart);
+  myPath.moveTo(QPointF(0,0));
+  myPath.quadTo(controlPoint, ghostLine.p2());
+  painter->translate(start->pos() - QPointF(0, 0));
   painter->rotate(theta);
   painter->drawPolygon(arrowHead);
   painter->strokePath(myPath, QPen(color));
