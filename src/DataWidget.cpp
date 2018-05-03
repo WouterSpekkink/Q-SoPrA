@@ -287,8 +287,7 @@ void DataWidget::moveUp() {
       incidentsModel->sort(1, Qt::AscendingOrder);
       incidentsModel->select();
       updateTable();
-      QModelIndex newIndex = tableView->model()->index(currentOrder - 2, 0);
-      tableView->setCurrentIndex(newIndex);
+      tableView->selectRow(currentOrder - 2);
       delete query;
     }
   }
@@ -316,8 +315,7 @@ void DataWidget::moveDown() {
       incidentsModel->sort(1, Qt::AscendingOrder);
       incidentsModel->select();
       updateTable();
-      QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
-      tableView->setCurrentIndex(newIndex);
+      tableView->selectRow(currentOrder);
       delete query;
     }
   }
