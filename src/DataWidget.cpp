@@ -37,6 +37,19 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setTextElideMode(Qt::ElideMiddle);
   tableView->setItemDelegateForColumn(7, new CheckBoxDelegate(tableView));
 
+  // Let's set up our search field
+  findSelectLabel = new QLabel("<b>Set search field:</b>", this);
+  
+  findComboBox = new QComboBox(this);
+  findComboBox->addItem("Timing");
+  findComboBox->addItem("Source");
+  findComboBox->addItem("Description");
+  findComboBox->addItem("Raw");
+  findComboBox->addItem("Comment");
+
+  findFieldLabel = new QLabel(tr("<b>Search:</b>"), this);
+  findField = new QLineEdit(this);
+
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident", this);
   editRecordButton = new QPushButton("Edit incident", this);
@@ -46,6 +59,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   moveDownButton = new QPushButton("Move down", this);
   duplicateRowButton = new QPushButton("Duplicate incident", this);
   removeRowButton = new QPushButton("Remove incident", this);
+  findPreviousButton = new QPushButton("Find previous", this);
+  findNextButton = new QPushButton("Find next", this);
 
   // We disable some buttons initially.
   editRecordButton->setEnabled(false);
@@ -76,10 +91,21 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   connect(tableView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
+  connect(findPreviousButton, SIGNAL(clicked()), this, SLOT(findPrevious()));
+  connect(findNextButton, SIGNAL(clicked()), this, SLOT(findNext()));
+  connect(findField, SIGNAL(textChanged(const QString&)), this, SLOT(setFindKey(const QString&)));
   
   // Then we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
+  QPointer<QHBoxLayout> findLayout = new QHBoxLayout;
+  findLayout->addWidget(findSelectLabel);
+  findLayout->addWidget(findComboBox);
+  findLayout->addWidget(findFieldLabel);
+  findLayout->addWidget(findField);
+  findLayout->addWidget(findPreviousButton);
+  findLayout->addWidget(findNextButton);
+  mainLayout->addLayout(findLayout);
   QPointer<QHBoxLayout> recordButtonsLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> recordButtonsLeftLayout = new QVBoxLayout;
   recordButtonsLeftLayout->addWidget(appendRecordButton);
@@ -402,6 +428,171 @@ void DataWidget::removeRow() {
   }
   eventGraph->checkCongruency();
   occurrenceGraph->checkCongruency();
+}
+
+void DataWidget::findPrevious() {
+  if (currentFind != "") {
+    // If we have not selected a valid index, default to last row.
+    while (incidentsModel->canFetchMore()) {
+      incidentsModel->fetchMore();
+    }
+    int currentOrder = incidentsModel->rowCount() - 1;
+    if (tableView->currentIndex().isValid()) {
+      currentOrder = tableView->currentIndex().row() + 1;
+    }
+    QString searchText = "%" + currentFind + "%";
+    QSqlQuery *query = new QSqlQuery;
+    if (findComboBox->currentText() == "Timing") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE timestamp LIKE :text "
+		     "AND ch_order < :order "
+		     "ORDER BY ch_order desc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Source") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE source LIKE :text "
+		     "AND ch_order < :order "
+		     "ORDER BY ch_order desc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Description") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE description LIKE :text "
+		     "AND ch_order < :order "
+		     "ORDER BY ch_order desc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Raw") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE raw LIKE :text "
+		     "AND ch_order < :order "
+		     "ORDER BY ch_order desc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Comment") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE comment LIKE :text "
+		     "AND ch_order < :order "
+		     "ORDER BY ch_order desc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    }
+    delete query;
+  }
+}
+
+void DataWidget::findNext() {
+  if (currentFind != "") {
+    // If we have not selected a valid index, default to the last row.
+    int currentOrder = 1;
+    if (tableView->currentIndex().isValid()) {
+      currentOrder = tableView->currentIndex().row() + 1;
+    }
+    QString searchText = "%" + currentFind + "%";
+    QSqlQuery *query = new QSqlQuery;
+    if (findComboBox->currentText() == "Timing") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE timestamp LIKE :text "
+		     "AND ch_order > :order "
+		     "ORDER BY ch_order asc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Source") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE source LIKE :text "
+		     "AND ch_order > :order "
+		     "ORDER BY ch_order asc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Description") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE description LIKE :text "
+		     "AND ch_order > :order "
+		     "ORDER BY ch_order asc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Raw") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE raw LIKE :text "
+		     "AND ch_order > :order "
+		     "ORDER BY ch_order asc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    } else if (findComboBox->currentText() == "Comment") {
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE comment LIKE :text "
+		     "AND ch_order > :order "
+		     "ORDER BY ch_order asc ");
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	int newOrder = query->value(0).toInt();
+	tableView->selectRow(newOrder - 1);
+      }
+    }
+    delete query;
+  }
+}
+
+void DataWidget::setFindKey(const QString &text) {
+  currentFind = text;
 }
 
 void DataWidget::resetHeader(int header) {

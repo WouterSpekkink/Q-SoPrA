@@ -566,7 +566,6 @@ void AttributesWidget::nextRaw() {
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE raw LIKE :text "

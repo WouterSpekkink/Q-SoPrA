@@ -45,6 +45,9 @@ private slots:
   void saveCurrent(const QModelIndex &index);
   void checkChange(const QModelIndex &topLeft, const QModelIndex &bottomRight);
   void setButtons();
+  void findPrevious();
+  void findNext();
+  void setFindKey(const QString &text);
   
 private:
   QPointer<EventSequenceDatabase> esd;
@@ -53,6 +56,13 @@ private:
   QPointer<ZoomableTableView> tableView;
   EventGraphWidget *eventGraph;
   OccurrenceGraphWidget *occurrenceGraph;
+
+  QPointer<QLabel> findSelectLabel;
+  QPointer<QLabel> findFieldLabel;
+  
+  QPointer<QComboBox> findComboBox;
+  
+  QPointer<QLineEdit> findField;
   
   QPointer<QPushButton> appendRecordButton;
   QPointer<QPushButton> editRecordButton;
@@ -62,8 +72,11 @@ private:
   QPointer<QPushButton> moveDownButton;
   QPointer<QPushButton> duplicateRowButton;
   QPointer<QPushButton> removeRowButton;
+  QPointer<QPushButton> findPreviousButton;
+  QPointer<QPushButton> findNextButton;
 
   QString currentData;
+  QString currentFind;
 
   int currentRow;
 };
