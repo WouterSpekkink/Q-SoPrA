@@ -6122,13 +6122,19 @@ void EventGraphWidget::colorLineage() {
       } else if (macro) {
 	macro->setColor(origin);
       }
-      findAncestors(ancestors, current);
-      findDescendants(descendants, current);
+      QSet<QGraphicsItem*> finished;
+      finished.insert(current);
+      findAncestors(ancestors, current, &finished);
+      finished.clear();
+      finished.insert(current);
+      findDescendants(descendants, current, &finished);
     }
   }
 }
 
-void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
+void EventGraphWidget::findAncestors(QColor ancestor,
+				     QGraphicsItem *origin,
+				     QSet<QGraphicsItem*> *pFinished) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
   query->bindValue(":type", selectedType);
@@ -6147,7 +6153,10 @@ void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
 	} else if (macro) {
 	  macro->setColor(ancestor);
 	}
-	findAncestors(ancestor, edge->endItem());
+	if (!pFinished->contains(edge->endItem())) {
+	  pFinished->insert(edge->endItem());
+	  findAncestors(ancestor, edge->endItem(), pFinished);
+	}
       }
     }
   } else if (direction == FUTURE) {
@@ -6162,7 +6171,10 @@ void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
 	} else if (macro) {
 	  macro->setColor(ancestor);
 	}
-	findAncestors(ancestor, edge->startItem());
+	if (!pFinished->contains(edge->startItem())) {
+	  pFinished->insert(edge->startItem());
+	  findAncestors(ancestor, edge->startItem(), pFinished);
+	}
       }
     }
   }
@@ -6170,7 +6182,9 @@ void EventGraphWidget::findAncestors(QColor ancestor, QGraphicsItem *origin) {
 }
 
 
-void EventGraphWidget::findDescendants(QColor descendant, QGraphicsItem *origin) {
+void EventGraphWidget::findDescendants(QColor descendant,
+				       QGraphicsItem *origin,
+				       QSet<QGraphicsItem*> *pFinished) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
   query->bindValue(":type", selectedType);
@@ -6189,7 +6203,10 @@ void EventGraphWidget::findDescendants(QColor descendant, QGraphicsItem *origin)
 	} else if (macro) {
 	  macro->setColor(descendant);
 	}
-	findDescendants(descendant, edge->startItem());
+	if (!pFinished->contains(edge->startItem())) {
+	  pFinished->insert(edge->startItem());
+	  findDescendants(descendant, edge->startItem(), pFinished);
+	}
       }
     }
   } else if (direction == FUTURE) {
@@ -6204,7 +6221,10 @@ void EventGraphWidget::findDescendants(QColor descendant, QGraphicsItem *origin)
 	} else if (macro) {
 	  macro->setColor(descendant);
 	}
-	findDescendants(descendant, edge->endItem());
+	if (!pFinished->contains(edge->endItem())) {
+	  pFinished->insert(edge->endItem());
+	  findDescendants(descendant, edge->endItem(), pFinished);
+	}
       }
     }
   }
@@ -6779,15 +6799,17 @@ void EventGraphWidget::selectFollowers() {
   query->exec();
   query->first();
   QString direction = query->value(0).toString();
+  QSet<QGraphicsItem*> finished;
+  finished.insert(origin);
   if (direction == PAST) {
-    selectAncestors(origin);
+    selectAncestors(origin, &finished);
   } else if (direction == FUTURE) {
-    selectDescendants(origin);
+    selectDescendants(origin, &finished);
   }
   delete query;
 }
 
-void EventGraphWidget::selectAncestors(QGraphicsItem *origin) {
+void EventGraphWidget::selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *edge = it.next();
@@ -6799,12 +6821,15 @@ void EventGraphWidget::selectAncestors(QGraphicsItem *origin) {
       } else if (macro) {
 	macro->setSelected(true);
       }
-      selectAncestors(edge->startItem());
+      if (!pFinished->contains(edge->startItem())) {
+	pFinished->insert(edge->startItem());
+	selectAncestors(edge->startItem(), pFinished);
+      }
     }
   }
 }
 
-void EventGraphWidget::selectDescendants(QGraphicsItem *origin) {
+void EventGraphWidget::selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *edge = it.next();
@@ -6816,7 +6841,10 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin) {
       } else if (macro) {
 	macro->setSelected(true);
       }
-      selectDescendants(edge->endItem());
+      if (!pFinished->contains(edge->endItem())) {
+	pFinished->insert(edge->endItem());
+	selectDescendants(edge->endItem(), pFinished);
+      }
     }
   }
 }

@@ -154,8 +154,8 @@ private slots:
   void recolorLabels();
   void colorLineage();
   void exportTransitionMatrix();
-  void findAncestors(QColor ancestor, QGraphicsItem *origin);
-  void findDescendants(QColor descendant, QGraphicsItem *origin);
+  void findAncestors(QColor ancestor, QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
+  void findDescendants(QColor descendant, QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
   void settleEvent();
   void makeParallel();
   void normalizeDistance();
@@ -163,8 +163,8 @@ private slots:
   void changeEventDescription();
   void addLinkage();
   void selectFollowers();
-  void selectAncestors(QGraphicsItem *origin);
-  void selectDescendants(QGraphicsItem *origin);
+  void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
+  void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();
