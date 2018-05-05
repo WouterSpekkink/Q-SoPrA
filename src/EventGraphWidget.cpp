@@ -5184,6 +5184,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     addLinkage();
   } else if (action == SELECTFOLLOWERSACTION) {
     selectFollowers();
+  } else if (action == SELECTPREDECESSORSACTION) {
+    selectPredecessors();
   }
 }
 
@@ -6809,6 +6811,24 @@ void EventGraphWidget::selectFollowers() {
   delete query;
 }
 
+void EventGraphWidget::selectPredecessors() {
+  QGraphicsItem *origin = scene->selectedItems()[0];
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+  query->bindValue(":type", selectedType);
+  query->exec();
+  query->first();
+  QString direction = query->value(0).toString();
+  QSet<QGraphicsItem*> finished;
+  finished.insert(origin);
+  if (direction == PAST) {
+    selectDescendants(origin, &finished);
+  } else if (direction == FUTURE) {
+    selectAncestors(origin, &finished);
+  }
+  delete query;
+}
+
 void EventGraphWidget::selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
@@ -6868,30 +6888,25 @@ void EventGraphWidget::processArrowContextMenu(const QString &action) {
 }
 
 void EventGraphWidget::removeLinkage() {
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      if (arrow) {
-	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
-	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
-	int tail = startEvent->getId();
-	int head = endEvent->getId();
-	QSqlQuery *query =  new QSqlQuery;
-	query->prepare("DELETE FROM linkages "
-		       "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
-	query->bindValue(":tail", tail);
-	query->bindValue(":head", head);
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);
-	query->exec();
-	delete query;
-	delete currentEdge;
-	edgeVector.removeOne(currentEdge);
-      } else {
-	it.next();
-      }
+  if (scene->selectedItems().size() == 1) {
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(scene->selectedItems().first());
+    if (arrow) {
+      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow);
+      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow);
+      int tail = startEvent->getId();
+      int head = endEvent->getId();
+      QSqlQuery *query =  new QSqlQuery;
+      query->prepare("DELETE FROM linkages "
+		     "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
+      query->bindValue(":tail", tail);
+      query->bindValue(":head", head);
+      query->bindValue(":coder", selectedCoder);
+      query->bindValue(":type", selectedType);
+      query->exec();
+      delete query;
+      scene->removeItem(arrow);
+      delete arrow;
+      edgeVector.removeOne(arrow);
     }
   }
 }
@@ -6922,6 +6937,7 @@ void EventGraphWidget::removeNormalLinkage() {
 	  query->bindValue(":type", selectedType);
 	  query->exec();
 	  delete query;
+	  scene->removeItem(arrow);
 	  delete arrow;
 	  edgeVector.removeOne(arrow);
 	} else {

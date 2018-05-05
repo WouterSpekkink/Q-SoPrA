@@ -163,6 +163,7 @@ private slots:
   void changeEventDescription();
   void addLinkage();
   void selectFollowers();
+  void selectPredecessors();
   void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
   void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
   void processArrowContextMenu(const QString &action);

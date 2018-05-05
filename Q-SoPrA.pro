@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = Q-SoPrA
 INCLUDEPATH += .
-CONFIG += c++11
+CONFIG += c++11 release
 QT += sql svg widgets
 
 # Input

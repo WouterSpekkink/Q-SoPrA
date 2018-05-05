@@ -860,6 +860,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action14);
       QAction *action17 = new QAction(SELECTFOLLOWERSACTION, this);
       menu.addAction(action17);
+      QAction *action18 = new QAction(SELECTPREDECESSORSACTION, this);
+      menu.addAction(action18);
       if (selectedItems().size() > 1) {
 	action3->setEnabled(false);
 	action6->setEnabled(false);
@@ -867,6 +869,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	action9->setEnabled(false);
 	action10->setEnabled(false);
 	action17->setEnabled(false);
+	action18->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);
@@ -917,6 +920,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action11);
       QAction *action14 = new QAction(SELECTFOLLOWERSACTION, this);
       menu.addAction(action14);
+      QAction *action15 = new QAction(SELECTPREDECESSORSACTION, this);
+      menu.addAction(action15);
       if (selectedItems().size() > 1) {
 	action3->setEnabled(false);
 	action6->setEnabled(false);
@@ -925,6 +930,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	action10->setEnabled(false);
 	action11->setEnabled(false);
 	action14->setEnabled(false);
+	action15->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);
