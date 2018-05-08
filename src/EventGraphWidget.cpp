@@ -6979,6 +6979,15 @@ void EventGraphWidget::changeLinkageComment() {
       head = endMacro->getId();
     }
     QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+    query->bindValue(":id", tail);
+    query->exec();
+    query->first();
+    tail = query->value(0).toInt();
+    query->bindValue(":id", head);
+    query->exec();
+    query->first();
+    head = query->value(0).toInt();
     query->prepare("SELECT comment FROM linkage_comments "
 		   "WHERE type = :type AND tail = :tail AND head = :head");
     query->bindValue(":type", selectedType);
