@@ -485,9 +485,11 @@ void EventGraphWidget::checkCongruency() {
 	  Arrow *current = it.next();
 	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
 	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
-	  if (startEvent->getId() == tailId &&
-	      endEvent->getId() == headId) {
-	    found = true;
+	  if (startEvent && endEvent) {
+	    if (startEvent->getId() == tailId &&
+		endEvent->getId() == headId) {
+	      found = true;
+	    }
 	  }
 	}
 	if (!found) {
