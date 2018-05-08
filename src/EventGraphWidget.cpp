@@ -6939,8 +6939,10 @@ void EventGraphWidget::removeNormalLinkage() {
 	  query->bindValue(":type", selectedType);
 	  query->exec();
 	  delete query;
-	  // delete arrow;
 	  arrow->hide();
+	  arrow->setStartItem(NULL);
+	  arrow->setEndItem(NULL);
+	  delete arrow;
 	  edgeVector.removeOne(arrow);
 	  return;
 	} else {
