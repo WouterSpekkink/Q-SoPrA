@@ -60,22 +60,26 @@ void SavedPlotsDialog::loadPlot() {
 }
 
 void SavedPlotsDialog::removePlot() {
-  QPointer<QMessageBox> warningBox = new QMessageBox(this);
-  warningBox->addButton(QMessageBox::Yes);
-  warningBox->addButton(QMessageBox::No);
-  warningBox->setIcon(QMessageBox::Warning);
-  warningBox->setText("<h2>Are you sure?</h2>");
-  warningBox->setInformativeText("Removing an incident cannot be undone. "
-				 "Are you sure you want to remove this incident?");
-  if (warningBox->exec() == QMessageBox::Yes) {
-    exitStatus = 2;
-    selectedPlot = plotsComboBox->currentText();
-    delete warningBox;
-    this->close();
+  if (plotsComboBox->currentText() != DEFAULT) {
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("Removing a plot cannot be undone. "
+				   "Are you sure you want to remove this plot?");
+    if (warningBox->exec() == QMessageBox::Yes) {
+      exitStatus = 2;
+      selectedPlot = plotsComboBox->currentText();
+      delete warningBox;
+      this->close();
+    } else {
+      delete warningBox;
+      return;
+    }
   } else {
-    delete warningBox;
     return;
-  }
+  } 
 }
 
 int SavedPlotsDialog::getExitStatus() {

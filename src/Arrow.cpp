@@ -72,11 +72,15 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
 }
 
 QRectF Arrow::boundingRect() const {
-  qreal extra = (pen().width() + 20) / 2.0;
-  return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
-				     end->pos().y() - start->pos().y()))
-    .normalized()
-    .adjusted(-extra, -extra, extra, extra);
+  if (start && end) {
+    qreal extra = (pen().width() + 20) / 2.0;
+    return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
+				       end->pos().y() - start->pos().y()))
+      .normalized()
+      .adjusted(-extra, -extra, extra, extra);
+  } else {
+    return QGraphicsLineItem::boundingRect();
+  }
 }
 
 QPainterPath Arrow::shape() const {
@@ -92,7 +96,6 @@ QPainterPath Arrow::shape() const {
   result.lineTo(myLine.p2() + vec - orthogonal);
   result.lineTo(myLine.p2() + vec + orthogonal);
   result.closeSubpath();
-
   return result;
 }
 
@@ -237,9 +240,7 @@ void Arrow::calculate() {
       newLine.setLength(newLine.length() - 28);
     }
   }
-  
   setLine(newLine);
-  
   double angle = ::acos(line().dx() / line().length());
   if (line().dy() >= 0)
     angle = (Pi * 2) - angle;
@@ -249,7 +250,6 @@ void Arrow::calculate() {
 					  cos(angle + Pi / 3) * arrowSize);
   arrowP2 = line().p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 					  cos(angle + Pi - Pi / 3) * arrowSize);
-  prepareGeometryChange();
 }
 
 void Arrow::setColor(const QColor &subColor) {

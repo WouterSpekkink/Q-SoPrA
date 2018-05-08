@@ -8,6 +8,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedIncident = 0;
   commentBool = false;
   edgeColor = QColor(Qt::black);
+  emit changeEdgeColor(edgeColor);
   
   distance = 0;
   vectorPos = 0;
@@ -6906,7 +6907,6 @@ void EventGraphWidget::removeLinkage() {
       query->bindValue(":type", selectedType);
       query->exec();
       delete query;
-      scene->removeItem(arrow);
       delete arrow;
       edgeVector.removeOne(arrow);
     }
@@ -6939,9 +6939,10 @@ void EventGraphWidget::removeNormalLinkage() {
 	  query->bindValue(":type", selectedType);
 	  query->exec();
 	  delete query;
-	  scene->removeItem(arrow);
-	  delete arrow;
+	  // delete arrow;
+	  arrow->hide();
 	  edgeVector.removeOne(arrow);
+	  return;
 	} else {
 	  QPointer<QMessageBox> warningBox2 = new QMessageBox(this);
 	  warningBox2->addButton(QMessageBox::Ok);
@@ -6951,8 +6952,6 @@ void EventGraphWidget::removeNormalLinkage() {
 					  "as tail and/or head.");
 	  warningBox2->exec();
 	}
-	delete warningBox;
-	return;
       } else {
 	delete warningBox;
 	return;

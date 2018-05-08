@@ -64,7 +64,11 @@ class Arrow : public QGraphicsLineItem {
 
 public: 
   Arrow(QString subType, QString subCoder, QGraphicsItem *parent = 0);
-  ~Arrow() {prepareGeometryChange();};
+  ~Arrow() {
+    start = NULL;
+    end = NULL;
+    prepareGeometryChange();
+  };
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;

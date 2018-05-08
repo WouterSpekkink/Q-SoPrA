@@ -2321,14 +2321,12 @@ void HierarchyGraphWidget::setButtons() {
 }
 
 void HierarchyGraphWidget::cleanUp() {
-  QGraphicsItemGroup *group = NULL;
   setComment();
-  if (scene->items().size() > 0) {
-    group = scene->createItemGroup(scene->items());
-  }
-  if (group != NULL) {
-    scene->destroyItemGroup(group);
-  }
+  eventVector.clear();
+  macroVector.clear();
+  edgeVector.clear();
+  origin = NULL;
+  scene->clear();
   currentData.clear();
   selectedMacro = NULL;
   selectedIncident = 0;
