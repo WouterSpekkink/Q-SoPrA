@@ -288,3 +288,4 @@ void Arrow::setStartItem(QGraphicsItem *subStart) {
 void Arrow::setEndItem(QGraphicsItem *subEnd) {
   end = subEnd;
 }
+

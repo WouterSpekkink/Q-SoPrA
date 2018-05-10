@@ -461,6 +461,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   newOrigin->setMode(submittedOrigin->getMode());
   newOrigin->setColor(submittedOrigin->getColor());
   newOrigin->setAttributes(submittedOrigin->getAttributes());
+  newOrigin->setOrder(submittedOrigin->getOrder());
   newOrigin->setZValue(1);
   MacroLabel *macroLabel = new MacroLabel(newOrigin);
   newOrigin->setLabel(macroLabel);
@@ -490,17 +491,17 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   }
   if (newOrigin->getConstraint() == PATHS ||
       newOrigin->getConstraint() == PATHSATT) {
-    QString label = "P-" + QString::number(newOrigin->getId());
+    QString label = "P-" + QString::number(newOrigin->getOrder());
     macroLabel->setPlainText(label);
     macroLabel->setTextWidth(macroLabel->boundingRect().width());
   } else if (newOrigin->getConstraint() == SEMIPATHS ||
 	     newOrigin->getConstraint() == SEMIPATHSATT) {
-    QString label = "S-" + QString::number(newOrigin->getId());
+    QString label = "S-" + QString::number(newOrigin->getOrder());
     macroLabel->setPlainText(label);
     macroLabel->setTextWidth(macroLabel->boundingRect().width());
   } else if (newOrigin->getConstraint() == NOCONSTRAINT ||
 	     newOrigin->getConstraint() == NOCONSTRAINTATT) {
-    QString label = "N-" + QString::number(newOrigin->getId());
+    QString label = "N-" + QString::number(newOrigin->getOrder());
     macroLabel->setPlainText(label);
     macroLabel->setTextWidth(macroLabel->boundingRect().width());
   }
@@ -529,6 +530,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newMacro->setColor(macro->getColor());
       newMacro->setAttributes(macro->getAttributes());
       newMacro->setPos(newMacro->getOriginalPos());
+      newMacro->setOrder(macro->getOrder());
       newMacro->setZValue(1);
       bool found = false;
       if (newMacro->getMode() != "") {
@@ -565,17 +567,17 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newMacro->setLabel(newMacroLabel);
       if (newMacro->getConstraint() == PATHS ||
 	  newMacro->getConstraint() == PATHSATT) {
-	QString label = "P-" + QString::number(newMacro->getId());
+	QString label = "P-" + QString::number(newMacro->getOrder());
 	newMacroLabel->setPlainText(label);
 	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
       } else if (newMacro->getConstraint() == SEMIPATHS ||
 		 newMacro->getConstraint() == SEMIPATHSATT) {
-	QString label = "S-" + QString::number(newMacro->getId());
+	QString label = "S-" + QString::number(newMacro->getOrder());
 	newMacroLabel->setPlainText(label);
 	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
       } else if (newMacro->getConstraint() == NOCONSTRAINT ||
 		 newMacro->getConstraint() == NOCONSTRAINTATT) {
-	QString label = "N-" + QString::number(newMacro->getId());
+	QString label = "N-" + QString::number(newMacro->getOrder());
 	newMacroLabel->setPlainText(label);
 	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
       }
@@ -709,6 +711,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	newMacro->setColor(macro->getColor());
 	newMacro->setAttributes(macro->getAttributes());
 	newMacro->setPos(newMacro->getOriginalPos());
+	newMacro->setOrder(macro->getOrder());
 	newMacro->setZValue(1);
 	bool found = false;
 	if (newMacro->getMode() != "") {
@@ -745,17 +748,17 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	newMacro->setLabel(newMacroLabel);
 	if (newMacro->getConstraint() == PATHS ||
 	    newMacro->getConstraint() == PATHSATT) {
-	  QString label = "P-" + QString::number(newMacro->getId());
+	  QString label = "P-" + QString::number(newMacro->getOrder());
 	  newMacroLabel->setPlainText(label);
 	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
 	} else if (newMacro->getConstraint() == SEMIPATHS ||
 		   newMacro->getConstraint() == SEMIPATHSATT) {
-	  QString label = "S-" + QString::number(newMacro->getId());
+	  QString label = "S-" + QString::number(newMacro->getOrder());
 	  newMacroLabel->setPlainText(label);
 	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
 	} else if (newMacro->getConstraint() == NOCONSTRAINT ||
 		   newMacro->getConstraint() == NOCONSTRAINTATT) {
-	  QString label = "N-" + QString::number(newMacro->getId());
+	  QString label = "N-" + QString::number(newMacro->getOrder());
 	  newMacroLabel->setPlainText(label);
 	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
 	}

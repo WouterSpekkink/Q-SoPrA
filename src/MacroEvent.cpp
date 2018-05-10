@@ -293,3 +293,7 @@ bool MacroEvent::isCopy() {
 void MacroEvent::setCopy(bool status) {
   copy = status;
 }
+
+void MacroEvent::setNewId(int newId) {
+  id = newId;
+}

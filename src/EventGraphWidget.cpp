@@ -2301,6 +2301,7 @@ void EventGraphWidget::plotEdges() {
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
+    currentEdge->updatePosition();
   }
 }
 
@@ -2712,6 +2713,7 @@ void EventGraphWidget::getLinkageDetails() {
 }
 
 void EventGraphWidget::plotGraph() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   cleanUp();
   selectedCoder = coderComboBox->currentText();
   selectedType = typeComboBox->currentText();
@@ -2728,6 +2730,9 @@ void EventGraphWidget::plotGraph() {
   setRangeControls();
   plotLabel->setText("Unsaved plot");
   checkCongruency();
+  updateArrows();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void EventGraphWidget::setCompareButton() {
@@ -2825,6 +2830,7 @@ void EventGraphWidget::plotCompareEdges() {
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
+    currentEdge->updatePosition();
   }
   QVectorIterator<Arrow*> it2(edgeVector);
   while (it2.hasNext()) {
@@ -3571,6 +3577,7 @@ void EventGraphWidget::seePlots() {
   QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, EVENTGRAPH);
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) {
+    QApplication::setOverrideCursor(Qt::WaitCursor);
     savePlotButton->setEnabled(true);
     cleanUp();
     scene->clear();
@@ -3973,6 +3980,7 @@ void EventGraphWidget::seePlots() {
 	currentEdge->setColor(color);
 	edgeVector.push_back(currentEdge);
 	scene->addItem(currentEdge);
+	currentEdge->updatePosition();
 	if (hidden == 1) {
 	  currentEdge->hide();
 	} else {
@@ -4156,6 +4164,8 @@ void EventGraphWidget::seePlots() {
     checkCongruency();
     setVisibility();
     delete query;
+    QApplication::restoreOverrideCursor();
+    qApp->processEvents();
   } else if (savedPlotsDialog->getExitStatus() == 2) {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
     QString plot = savedPlotsDialog->getSelectedPlot();
@@ -4923,10 +4933,12 @@ void EventGraphWidget::exportTable() {
 	QString mode = macro->getMode();
 	QString type = "";
 	QString id = macro->getLabel()->toPlainText();
-	if (macro->getConstraint() == PATHS) {
+	if (macro->getConstraint() == PATHS || macro->getConstraint() == PATHSATT) {
 	  type = "Paths based";
-	} else if (macro->getConstraint() == SEMIPATHS) {
+	} else if (macro->getConstraint() == SEMIPATHS || macro->getConstraint() == SEMIPATHSATT) {
 	  type = "Semi-paths based";
+	} else if (macro->getConstraint() == NOCONSTRAINT || macro->getConstraint() == NOCONSTRAINTATT) {
+	  type = "No constraint";
 	}
 	QString components = "";
 	QVector<EventItem*> incidents = macro->getIncidents();
@@ -5058,12 +5070,19 @@ void EventGraphWidget::exportNodes() {
       QString yCoord = QString::number(macro->scenePos().y());
       QString identifier = "";
       QString type = "";
-      if (macro->getConstraint() == PATHS) {
+      if (macro->getConstraint() == PATHS ||
+	  macro->getConstraint() == PATHSATT) {
 	identifier = "p";
 	type = "Paths based";
-      } else if (macro->getConstraint() == SEMIPATHS) {
+      } else if (macro->getConstraint() == SEMIPATHS ||
+		 macro->getConstraint() == PATHSATT) {
 	identifier = "s";
 	type = "Semi-paths based";
+      } else if (macro->getConstraint() == NOCONSTRAINT ||
+		 macro->getConstraint() == NOCONSTRAINTATT) {
+	identifier = "n";
+	type = "No constraint";
+
       }
       QString id = identifier + QString::number(macro->getId());
       ids.push_back(id);
@@ -5419,35 +5438,8 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	QString description = textDialog->getText();
 	MacroEvent* current = new MacroEvent(width, description, originalPos,
 					     macroVector.size() + 1, constraint, tempIncidents);
-	std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
 	current->setPos(originalPos);
 	current->setZValue(1);
-	int order = 1;
-	QVectorIterator<MacroEvent*> mit(macroVector);
-	if (macroVector.size() == 0) {
-	  current->setOrder(order);
-	} else {
-	  while (mit.hasNext()) {
-	    MacroEvent *temp = mit.next();
-	    if (temp->scenePos().x() <= current->scenePos().x()) {
-	      order = temp->getOrder() + 1;
-	    } else {
-	      temp->setOrder(temp->getOrder() + 1);
-	      if (temp->getConstraint() == PATHS) {
-		QString label = "P-" + QString::number(temp->getId());
-		temp->getLabel()->setPlainText(label);
-		temp->getLabel()->setPlainText(label);
-		temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
-	      } else if (temp->getConstraint() == SEMIPATHS) {
-		QString label = "S-" + QString::number(temp->getId());
-		temp->getLabel()->setPlainText(label);
-		temp->getLabel()->setPlainText(label);
-		temp->getLabel()->setTextWidth(temp->getLabel()->boundingRect().width());
-	      }
-	    }
-	  }
-	  current->setOrder(order);
-	}
 	QVectorIterator<QGraphicsItem*> it3(currentData);
 	while (it3.hasNext()) {
 	  EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
@@ -5540,19 +5532,6 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	scene->addItem(current);
 	MacroLabel *macroLabel = new MacroLabel(current);
 	current->setLabel(macroLabel);
-	if (constraint == PATHS || constraint == PATHSATT) {
-	  QString label = "P-" + QString::number(current->getId());
-	  macroLabel->setPlainText(label);
-	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
-	} else if (constraint == SEMIPATHS || constraint == SEMIPATHSATT) {
-	  QString label = "S-" + QString::number(current->getId());
-	  macroLabel->setPlainText(label);
-	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
-	} else if (constraint == NOCONSTRAINT || constraint == NOCONSTRAINTATT) {
-	  QString label = "N-" + QString::number(current->getId());
-	  macroLabel->setPlainText(label);
-	  macroLabel->setTextWidth(macroLabel->boundingRect().width());
-	}
 	qreal xOffset = (current->getWidth() / 2) - 20;
 	macroLabel->setOffset(QPointF(xOffset,0));
 	macroLabel->setNewPos(current->scenePos());
@@ -5561,6 +5540,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	macroLabelVector.push_back(macroLabel);
 	scene->addItem(macroLabel);
 	rewireLinkages(current, tempIncidents);
+	updateMacroOrder();
 	setVisibility();
 	currentData.clear();
 	current->setSelected(true);
@@ -5852,6 +5832,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      newEdge->setEndItem(tempTarget);
 	      edgeVector.push_back(newEdge);
 	      scene->addItem(newEdge);
+	      newEdge->updatePosition();
 	    }
 	  }
 	}
@@ -5911,6 +5892,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      newEdge->setEndItem(tempTarget);
 	      edgeVector.push_back(newEdge);
 	      scene->addItem(newEdge);
+	      newEdge->updatePosition();
 	    }
 	  }
 	}
@@ -6051,12 +6033,63 @@ void EventGraphWidget::disaggregateEvent() {
   scene->removeItem(selectedMacro);
   delete selectedMacro->getLabel();
   macroLabelVector.removeOne(selectedMacro->getLabel());
+  updateMacroIds(selectedMacro);
   delete selectedMacro;
   macroVector.removeOne(selectedMacro);
   selectedMacro = NULL;
   setVisibility();
 }
-  
+
+void EventGraphWidget::updateMacroIds(MacroEvent *macro) {
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent *current = it.next();
+    if (current != macro && current->getId() > macro->getId()) {
+      current->setNewId(current->getId() - 1);
+    }
+  }
+}
+
+void EventGraphWidget::updateMacroOrder() {
+  int order = 1;
+  std::sort(macroVector.begin(), macroVector.end(), componentsSort);
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) {
+    MacroEvent *current = it.next();
+    current->setOrder(order);
+    MacroLabel *label = current->getLabel();
+    delete label;
+    macroLabelVector.removeOne(label);
+    MacroLabel *newLabel = new MacroLabel(current);
+    order++;
+    if (current->getConstraint() == PATHS ||
+	current->getConstraint() == PATHSATT) {
+      QString label = "P-" + QString::number(current->getOrder());
+      newLabel->setPlainText(label);
+      newLabel->setTextWidth(newLabel->boundingRect().width());
+      
+    } else if (current->getConstraint() == SEMIPATHS ||
+	       current->getConstraint() == SEMIPATHSATT) {
+      QString label = "S-" + QString::number(current->getOrder());
+      newLabel->setPlainText(label);
+      newLabel->setTextWidth(newLabel->boundingRect().width());
+    } else if (current->getConstraint() == NOCONSTRAINT ||
+	       current->getConstraint() == NOCONSTRAINTATT) {
+      QString label = "N-" + QString::number(current->getOrder());
+      newLabel->setPlainText(label);
+      newLabel->setTextWidth(newLabel->boundingRect().width());
+    }
+    current->setLabel(newLabel);
+    macroLabelVector.push_back(newLabel);
+    qreal xOffset = (current->getWidth() / 2) - 20;
+    newLabel->setOffset(QPointF(xOffset,0));
+    newLabel->setNewPos(current->scenePos());
+    newLabel->setZValue(2);
+    newLabel->setDefaultTextColor(Qt::black);
+    scene->addItem(newLabel);
+  }
+}
+
 void EventGraphWidget::recolorEvents() {
   if (scene->selectedItems().size() > 0) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -6760,6 +6793,7 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setEndItem(eventOne);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
+	newArrow->updatePosition();
       } else if (direction == FUTURE) {
 	query->bindValue(":tail", idOne);
 	query->bindValue(":head", idTwo);
@@ -6773,6 +6807,7 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setToolTip(toolTip);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
+	newArrow->updatePosition();
       }
     } else {
       if (direction == PAST) {
@@ -6786,6 +6821,7 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setEndItem(eventTwo);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
+	newArrow->updatePosition();
       } else if (direction == FUTURE) {
 	query->bindValue(":tail", idTwo);
 	query->bindValue(":head", idOne);
@@ -6799,6 +6835,7 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setToolTip(toolTip);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
+	newArrow->updatePosition();
       }
     }
     delete query;

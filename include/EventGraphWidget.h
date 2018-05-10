@@ -149,6 +149,8 @@ private slots:
   void processEventItemContextMenu(const QString &action);
   void colligateEvents(QString constraint);
   void disaggregateEvent();
+  void updateMacroIds(MacroEvent *macro);
+  void updateMacroOrder();
   bool checkConstraints(QVector<EventItem*> incidents, QString constraint);
   void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();

@@ -63,7 +63,8 @@ public:
   QString getConstraint() const;
   bool isCopy();
   void setCopy(bool status);
-
+  void setNewId(int newId);
+  
   QPainterPath shape() const override;
   
   enum {Type = UserType + 8};
