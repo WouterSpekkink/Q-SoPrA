@@ -19,6 +19,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   moveRect = false;
   rotateRect = false;
   rotateText = false;
+  hierarchyMove = false;
   edgeColor = QColor(Qt::black);
 }
 
@@ -270,6 +271,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	clearSelection();
 	incident->setSelected(true);
 	selectedEvent = incident;
+	hierarchyMove = true;
       } else {
 	emit resetItemSelection();
 	incident->setSelected(true);
@@ -281,6 +283,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 	clearSelection();
 	macro->setSelected(true);
 	selectedMacro = macro;
+	hierarchyMove = true;
       } else {
 	emit resetItemSelection();
 	macro->setSelected(true);
@@ -505,6 +508,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   moveRect = false;
   rotateRect = false;
   rotateText = false;
+  hierarchyMove = false;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
@@ -551,6 +555,13 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     emit posChanged(selectedMacro, dist);
     selectedMacro->setDislodged(true);
     lastMousePos = event->scenePos();
+  } else if (hierarchyMove) {
+    emit relevantChange();
+    if (selectedEvent) {
+      emit moveItems(selectedEvent, event->scenePos());
+    } else if (selectedMacro) {
+      emit moveItems(selectedMacro, event->scenePos());
+    }
   } else if (lineMoveOn) {
     emit relevantChange();
     lastMousePos = event->scenePos();

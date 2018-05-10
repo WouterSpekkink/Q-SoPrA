@@ -70,7 +70,8 @@ void EventItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-  if (event->modifiers() & Qt::AltModifier) {
+  if ((event->modifiers() & Qt::AltModifier) ||
+      (isCopy() && (event->modifiers() & Qt::ControlModifier))) {
     setCursor(Qt::SizeAllCursor);
     QPointF newPos = event->scenePos();
     this->setPos(newPos);

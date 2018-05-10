@@ -2652,11 +2652,9 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
       qreal currentY = source->scenePos().y();
       qreal newY = pos.y();
       qreal yDiff = newY - currentY;
-
       QVectorIterator<QGraphicsItem*> it2(currentData);
       while (it2.hasNext()) {
 	QGraphicsItem *current = it2.next();
-
 	current->setPos(current->scenePos().x(), current->scenePos().y() + yDiff);
 	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
 	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);

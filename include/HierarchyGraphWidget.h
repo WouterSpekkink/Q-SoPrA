@@ -69,6 +69,7 @@ private slots:
   void showComments();
   void buildComponents(MacroEvent *submittedOrigin, int layer);
   void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
+  void processMoveItems(QGraphicsItem *item, QPointF pos);
   void exportSvg();
   void assignAttribute();
   void unassignAttribute();

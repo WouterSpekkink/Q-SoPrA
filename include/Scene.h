@@ -64,6 +64,7 @@ protected:
   bool moveRect;
   bool rotateRect;
   bool rotateText;
+  bool hierarchyMove;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;

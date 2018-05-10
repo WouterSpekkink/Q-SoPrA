@@ -135,6 +135,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
 	  this, SLOT(processEllipseContextMenu(const QString &)));
   connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
 	  this, SLOT(processRectContextMenu(const QString &)));
+  connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
+	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(view, SIGNAL(HierarchyGraphContextMenuAction(const QString &, const QPoint&)),
 	  this, SLOT(processHierarchyGraphContextMenu(const QString &, const QPoint&)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
@@ -886,6 +888,50 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
   }
 }
 
+void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
+  QGraphicsItem *source = NULL;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *temp = it.next();
+    if (temp == item) {
+      source = temp;
+    }
+  }
+  if (source != NULL) {
+    qreal currentX = source->scenePos().x();
+    qreal currentY = source->scenePos().y();
+    qreal newX = pos.x();
+    qreal newY = pos.y();
+    qreal xDiff = newX - currentX;
+    qreal yDiff = newY - currentY;
+    MacroEvent *sourceMacro = qgraphicsitem_cast<MacroEvent*>(source);
+    sourceMacro->setPos(source->scenePos().x() + xDiff, source->scenePos().y() + yDiff);
+    sourceMacro->getLabel()->setNewPos(sourceMacro->scenePos());
+    QListIterator<QGraphicsItem*> it2(scene->items());
+    while (it2.hasNext()) {
+      QGraphicsItem *current = it2.next();
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
+      if (arrow && arrow->getType() == "Hierarchy") {
+	MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+	if (endMacro) {
+	  if (endMacro == qgraphicsitem_cast<MacroEvent*>(source)) {
+	    QGraphicsItem* partner = arrow->startItem();
+	    partner->setPos(partner->scenePos().x() + xDiff, partner->scenePos().y() + yDiff);
+	    EventItem *partnerEvent = qgraphicsitem_cast<EventItem*>(partner);
+	    MacroEvent *partnerMacro = qgraphicsitem_cast<MacroEvent*>(partner);
+	    if (partnerEvent) {
+	      partnerEvent->getLabel()->setNewPos(partnerEvent->scenePos());
+	    } else if (partnerMacro) {
+	      partnerMacro->getLabel()->setNewPos(partnerMacro->scenePos());
+	    }
+	  }
+	}
+      }
+    }
+  }
+}
+
+  
 void HierarchyGraphWidget::getEdges() {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
