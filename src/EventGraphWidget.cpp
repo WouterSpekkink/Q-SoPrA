@@ -206,6 +206,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posChanged(MacroEvent*, qreal&)),
 	  this, SLOT(changePos(MacroEvent*, qreal&)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateArrows()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
@@ -4245,6 +4246,14 @@ void EventGraphWidget::setChangeLabel() {
   }
 }
 
+void EventGraphWidget::updateArrows() {
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    current->updatePosition();
+  }
+}
+
 void EventGraphWidget::colorByAttribute() {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
   attributeColorDialog->exec();
@@ -6939,9 +6948,6 @@ void EventGraphWidget::removeNormalLinkage() {
 	  query->bindValue(":type", selectedType);
 	  query->exec();
 	  delete query;
-	  arrow->hide();
-	  arrow->setStartItem(NULL);
-	  arrow->setEndItem(NULL);
 	  delete arrow;
 	  edgeVector.removeOne(arrow);
 	  return;

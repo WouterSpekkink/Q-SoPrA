@@ -72,15 +72,16 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
 }
 
 QRectF Arrow::boundingRect() const {
-  if (start && end) {
-    qreal extra = (pen().width() + 20) / 2.0;
-    return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
-				       end->pos().y() - start->pos().y()))
-      .normalized()
-      .adjusted(-extra, -extra, extra, extra);
-  } else {
-    return QGraphicsLineItem::boundingRect();
-  }
+  qreal extra = (pen().width() + 20) / 2.0;
+  return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),
+				    line().p2().y() - line().p1().y()))
+    .normalized()
+    .adjusted(-extra, -extra, extra, extra);
+}
+
+void Arrow::updatePosition() {
+  newLine = QLineF(mapFromItem(start, 0, 0), mapFromItem(end, 0, 0));
+  setLine(newLine);
 }
 
 QPainterPath Arrow::shape() const {
@@ -105,11 +106,9 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   myPen.setColor(color);
   painter->setPen(myPen);
   painter->setBrush(color);
-
   if (line().length() > 0) {
     arrowHead.clear();
     arrowHead << line().p2() << arrowP1 << arrowP2;
-  
     painter->drawPolygon(arrowHead);
     painter->drawLine(line());
     if (isSelected()) {
@@ -244,8 +243,6 @@ void Arrow::calculate() {
   double angle = ::acos(line().dx() / line().length());
   if (line().dy() >= 0)
     angle = (Pi * 2) - angle;
-
-
   arrowP1 = line().p2() - QPointF(sin(angle + Pi / 3) * arrowSize,
 					  cos(angle + Pi / 3) * arrowSize);
   arrowP2 = line().p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,

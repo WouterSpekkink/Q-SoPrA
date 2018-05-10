@@ -64,13 +64,10 @@ class Arrow : public QGraphicsLineItem {
 
 public: 
   Arrow(QString subType, QString subCoder, QGraphicsItem *parent = 0);
-  ~Arrow() {
-    start = NULL;
-    end = NULL;
-    prepareGeometryChange();
-  };
+  ~Arrow() {};
 
   QRectF boundingRect() const override;
+  void updatePosition();
   QPainterPath shape() const override;
   void setColor(const QColor &subColor);
   QColor getColor();
@@ -101,6 +98,7 @@ private:
   QPointF arrowP1;
   QPointF arrowP2;
   bool copy;
+  bool deleted;
 };
 
 #endif
