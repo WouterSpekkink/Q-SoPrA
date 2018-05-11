@@ -95,7 +95,15 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   exitButton->setStyleSheet("QPushButton {color: blue; font-weight: bold}");
   valueButton = new QPushButton(tr("Store value"), attWidget);
   valueButton->setEnabled(false);
-
+  colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
+  removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
+  removeModeButton->setEnabled(false);
+  moveModeUpButton = new QPushButton(tr("Up"), legendWidget);
+  moveModeUpButton->setEnabled(false);
+  moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
+  moveModeDownButton->setEnabled(false);
+  restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  
   rawField->viewport()->installEventFilter(infoWidget);
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -125,8 +133,17 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
   	  this, SLOT(changeFilter(const QString &)));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
+  connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
+  connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
+  connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
+  connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
+  connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
+  connect(eventListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
+	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
+  connect(eventListWidget, SIGNAL(noneSelected()),
+	  this, SLOT(disableModeButtons()));
   connect(scene, SIGNAL(LineContextMenuAction(const QString &)),
 	  this, SLOT(processLineContextMenu(const QString &)));
   connect(scene, SIGNAL(TextContextMenuAction(const QString &)),
@@ -216,6 +233,13 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
   legendLayout->addWidget(legendLabel);
   legendLayout->addWidget(eventListWidget);
+  QPointer<QHBoxLayout> modeButtonsLayout = new QHBoxLayout;
+  modeButtonsLayout->addWidget(moveModeUpButton);
+  modeButtonsLayout->addWidget(moveModeDownButton);
+  legendLayout->addLayout(modeButtonsLayout);
+  legendLayout->addWidget(colorByAttributeButton);
+  legendLayout->addWidget(removeModeButton);
+  legendLayout->addWidget(restoreModeColorsButton);
   legendWidget->setMinimumWidth(175);
   legendWidget->setMaximumWidth(175);
   legendWidget->setLayout(legendLayout);
@@ -1034,6 +1058,328 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
       }
     }
   }
+}
+
+void HierarchyGraphWidget::colorByAttribute() {
+  QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
+  attributeColorDialog->exec();
+  if (attributeColorDialog->getExitStatus() == 0) {
+    QColor color = attributeColorDialog->getColor();
+    QColor textColor = attributeColorDialog->getTextColor();
+    QString attribute = attributeColorDialog->getAttribute();
+    QString description = "";
+    QSqlQuery *query = new QSqlQuery;
+    bool entity = attributeColorDialog->isEntity();
+    if (entity) {
+      query->prepare("SELECT description FROM entities "
+		     "WHERE name = :name");
+      query->bindValue(":name", attribute);
+      query->exec();
+      query->first();
+      description = query->value(0).toString();
+    } else {
+      query->prepare("SELECT description FROM incident_attributes "
+		     "WHERE name = :name");
+      query->bindValue(":name", attribute);
+      query->exec();
+      query->first();
+      description = query->value(0).toString();
+    }
+    QVector<QString> attributeVector;
+    attributeVector.push_back(attribute);
+    findChildren(attribute, &attributeVector, entity);
+    QVectorIterator<QString> it(attributeVector);
+    while (it.hasNext()) {
+      QString currentAttribute = it.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	int currentIncident = query->value(0).toInt();
+	QListIterator<QGraphicsItem*> it2(scene->items());
+	while (it2.hasNext()) {
+	  QGraphicsItem *current = it2.next();
+	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+	  if (currentEvent && currentEvent->getId() == currentIncident) {
+	    currentEvent->setColor(color);
+	    currentEvent->setMode(attribute);
+	    currentEvent->getLabel()->setDefaultTextColor(textColor);
+	  }
+	}
+      }
+      QListIterator<QGraphicsItem*> it2(scene->items());
+      while (it2.hasNext()) {
+	QGraphicsItem *current = it2.next();
+	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	if (currentMacro) {
+	  QSet<QString> attributes = currentMacro->getAttributes();
+	  if (attributes.contains(currentAttribute)) {
+	    currentMacro->setColor(color);
+	    currentMacro->setMode(attribute);
+	    currentMacro->getLabel()->setDefaultTextColor(textColor);
+	  }
+	}
+      }
+    }
+    bool found = false;
+    for (int i = 0; i < eventListWidget->rowCount(); i++) {
+      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) {
+	found = true;
+	QTableWidgetItem *item = eventListWidget->item(i,0);
+	QString toolTip = breakString(attribute + " - " + description);
+	item->setToolTip(toolTip);
+	eventListWidget->item(i, 1)->setBackground(color);
+	break;
+      }
+    }
+    if (!found) {
+      QTableWidgetItem *item = new QTableWidgetItem(attribute);
+      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+      QString toolTip = breakString(attribute + " - " + description);
+      item->setToolTip(toolTip);
+      item->setData(Qt::DisplayRole, attribute);
+      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(color);
+      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+    }
+    delete query;
+  }
+  delete attributeColorDialog;
+}
+
+
+void HierarchyGraphWidget::removeMode() {
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+    MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+    if (currentEvent && currentEvent->getMode() == text) {
+      currentEvent->setColor(Qt::white);
+      currentEvent->getLabel()->setDefaultTextColor(Qt::black);
+      currentEvent->setMode("");
+    } else if (currentMacro && currentMacro->getMode() == text) {
+      currentMacro->setColor(Qt::white);
+      currentMacro->getLabel()->setDefaultTextColor(Qt::black);
+      currentMacro->setMode("");
+    }
+  }
+  for (int i = 0; i != eventListWidget->rowCount();) {
+    if (eventListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) {
+      eventListWidget->removeRow(i);
+    }
+    if (i != eventListWidget->rowCount()) {
+      i++;
+    }
+  }
+  // We also want to restore any other modes that were overruled by the one we just removed.
+  for (int i = 0; i != eventListWidget->rowCount(); i++) {
+    QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(currentMode);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT name FROM entities WHERE name = :name");
+    query->bindValue(":name", currentMode);
+    query->exec();
+    query->first();
+    bool entity = false;
+    if (!query->isNull(0)) {
+      entity = true;
+    }
+    findChildren(currentMode, &attributeVector, entity);
+    QVectorIterator<QString> it2(attributeVector);
+    while (it2.hasNext()) {
+      QString currentAttribute = it2.next();
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	int currentIncident = query->value(0).toInt();
+	QListIterator<QGraphicsItem*> it3(scene->items());
+	while (it3.hasNext()) {
+	  QGraphicsItem *current = it3.next();
+	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+	  if (currentEvent && currentEvent->getId() == currentIncident) {
+	    currentEvent->setColor(color);
+	    currentEvent->setMode(currentMode);
+	  }
+	}
+      }
+      QListIterator<QGraphicsItem*> it3(scene->items());
+      while (it3.hasNext()) {
+	QGraphicsItem *current = it3.next();
+	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	if (currentMacro) {
+	  QSet<QString> attributes = currentMacro->getAttributes();
+	  if (attributes.contains(currentAttribute)) {
+	    currentMacro->setColor(color);
+	    currentMacro->setMode(currentMode);
+	  }
+	}
+      }
+    }
+    delete query;
+  }
+}
+
+void HierarchyGraphWidget::setModeButtons(QTableWidgetItem *item) {
+  QString text = item->data(Qt::DisplayRole).toString();
+  if (text != "") {
+    removeModeButton->setEnabled(true);
+  } else {
+    removeModeButton->setEnabled(false);
+  }
+  if (text != eventListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) {
+    moveModeUpButton->setEnabled(true);
+  } else {
+    moveModeUpButton->setEnabled(false);
+  }
+  if (text != eventListWidget->item(eventListWidget->rowCount() - 1, 0)
+      ->data(Qt::DisplayRole).toString()) {
+    moveModeDownButton->setEnabled(true);
+  } else {
+    moveModeDownButton->setEnabled(false);
+  }
+}
+
+void HierarchyGraphWidget::disableModeButtons() {
+  removeModeButton->setEnabled(false);
+  moveModeUpButton->setEnabled(false);
+  moveModeDownButton->setEnabled(false);
+}
+
+void HierarchyGraphWidget::restoreModeColors() {
+  for (int i = 0; i != eventListWidget->rowCount(); i++) {
+    QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QVector<QString> attributeVector;
+    attributeVector.push_back(currentMode);
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT name FROM entities WHERE name = :name");
+    query->bindValue(":name", currentMode);
+    query->exec();
+    query->first();
+    bool entity = false;
+    if (!query->isNull(0)) {
+      entity = true;
+    }
+    findChildren(currentMode, &attributeVector, entity);    
+    QVectorIterator<QString> it3(attributeVector);
+    while (it3.hasNext()) {
+      QString currentAttribute = it3.next();
+      query->prepare("SELECT incident FROM attributes_to_incidents "
+		     "WHERE attribute = :currentAttribute");
+      query->bindValue(":currentAttribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	int currentIncident = query->value(0).toInt();
+	QListIterator<QGraphicsItem*> it4(scene->items());
+	while (it4.hasNext()) {
+	  QGraphicsItem *current = it4.next();
+	  EventItem* currentEvent = qgraphicsitem_cast<EventItem*>(current);
+	  if (currentEvent && currentEvent->getId() == currentIncident) {
+	    currentEvent->setColor(color);
+	    currentEvent->setMode(currentMode);
+	  }
+	}
+      }
+      QListIterator<QGraphicsItem*> it4(scene->items());
+      while (it4.hasNext()) {
+	QGraphicsItem *current = it4.next();
+	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	if (currentMacro) {
+	  QSet<QString> attributes = currentMacro->getAttributes();
+	  if (attributes.contains(currentAttribute)) {
+	    currentMacro->setColor(color);
+	    currentMacro->setMode(currentMode);
+	  }
+	}
+      }
+    }
+    delete query;
+  }
+  for (int i = 0; i < eventListWidget->rowCount(); i++) {
+    QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QListIterator<QGraphicsItem*> it(scene->items());
+    while (it.hasNext()) {
+      QGraphicsItem *current = it.next();
+      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (currentEvent && currentEvent->getMode() == mode) {
+	currentEvent->setColor(color);
+      } else if (currentMacro && currentMacro->getMode() == mode) {
+	currentMacro->setColor(color);
+      }
+    }
+  }
+}
+
+void HierarchyGraphWidget::moveModeUp() {
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  if (text != eventListWidget->item(0,0)->data(Qt::DisplayRole).toString()) {
+    int currentRow = eventListWidget->row(eventListWidget->currentItem());
+    QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow,0);
+    QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+    int newRow = currentRow - 1;
+    QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
+    QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+    eventListWidget->setItem(newRow, 0, currentItem);
+    eventListWidget->item(newRow, 1)->setBackground(currentColor);
+    eventListWidget->setItem(currentRow, 0, otherItem);
+    eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+    restoreModeColors();
+    QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
+    eventListWidget->setCurrentIndex(newIndex);
+    setModeButtons(eventListWidget->currentItem());
+  }
+}
+
+void HierarchyGraphWidget::moveModeDown() {
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  if (text != eventListWidget->item(eventListWidget->rowCount() - 1, 0)->
+      data(Qt::DisplayRole).toString()) {
+    int currentRow = eventListWidget->row(eventListWidget->currentItem());
+    QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow, 0);
+    QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+    int newRow = currentRow + 1;
+    QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
+    QColor otherColor = eventListWidget->item(newRow, 1)->background().color();;
+    eventListWidget->setItem(newRow, 0, currentItem);
+    eventListWidget->item(newRow, 1)->setBackground(currentColor);
+    eventListWidget->setItem(currentRow, 0, otherItem);
+    eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+    restoreModeColors();
+    QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
+    eventListWidget->setCurrentIndex(newIndex);
+    setModeButtons(eventListWidget->currentItem());
+  }
+}
+
+void HierarchyGraphWidget::findChildren(QString father, QVector<QString> *children, bool entity) {
+  QSqlQuery *query = new QSqlQuery;
+  if (entity) {
+    query->prepare("SELECT name FROM entities WHERE father = :father");
+  } else {
+    query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  }
+  query->bindValue(":father", father);
+  query->exec();
+  while (query->next()) {
+    QString currentChild = query->value(0).toString();
+    children->push_back(currentChild);
+    findChildren(currentChild, children, entity);
+  }
+  delete query;
 }
 
 void HierarchyGraphWidget::processHierarchyGraphContextMenu(const QString &action, const QPoint &pos) {

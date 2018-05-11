@@ -191,6 +191,7 @@ private slots:
   void changeText();
   void changeTextColor();
   void deleteText();
+  void copyDescriptionToText();
   void processEllipseContextMenu(const QString &action);
   void changeEllipseColor();
   void deleteEllipse();

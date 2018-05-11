@@ -6,6 +6,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   chosenColor = QColor(Qt::darkGreen);
   chosenTextColor = QColor(Qt::black);
   chosenAttribute = DEFAULT;
+  entity = false;
 
   attributeLabel = new QLabel(tr("<b>Choose attribute:</b>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);

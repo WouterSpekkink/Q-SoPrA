@@ -5215,6 +5215,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     selectFollowers();
   } else if (action == SELECTPREDECESSORSACTION) {
     selectPredecessors();
+  } else if (action == COPYDESCRIPTIONTOTEXTACTION) {
+    copyDescriptionToText();
   }
 }
 
@@ -5390,7 +5392,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
       QApplication::restoreOverrideCursor();
       qApp->processEvents();
     }
-    std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
+    std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
     if (checkConstraints(tempIncidents, constraint)) {
       qreal lowestX = 0.0;
       qreal highestX = 0.0;
@@ -5543,6 +5545,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	currentData.clear();
 	current->setSelected(true);
 	retrieveData();
+	setChangeLabel();
       }
       delete textDialog;
     } else {
@@ -6035,6 +6038,7 @@ void EventGraphWidget::disaggregateEvent() {
   delete selectedMacro;
   macroVector.removeOne(selectedMacro);
   selectedMacro = NULL;
+  updateMacroOrder();
   setVisibility();
 }
 
@@ -6056,6 +6060,7 @@ void EventGraphWidget::updateMacroOrder() {
     MacroEvent *current = it.next();
     current->setOrder(order);
     MacroLabel *label = current->getLabel();
+    QColor labelColor = label->defaultTextColor();
     delete label;
     macroLabelVector.removeOne(label);
     MacroLabel *newLabel = new MacroLabel(current);
@@ -6083,7 +6088,7 @@ void EventGraphWidget::updateMacroOrder() {
     newLabel->setOffset(QPointF(xOffset,0));
     newLabel->setNewPos(current->scenePos());
     newLabel->setZValue(2);
-    newLabel->setDefaultTextColor(Qt::black);
+    newLabel->setDefaultTextColor(labelColor);
     scene->addItem(newLabel);
   }
 }
@@ -6093,6 +6098,7 @@ void EventGraphWidget::recolorEvents() {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
+      setChangeLabel();
       QColor color = colorDialog->selectedColor();
       delete colorDialog;
       QListIterator<QGraphicsItem*> it(scene->selectedItems());
@@ -6118,6 +6124,7 @@ void EventGraphWidget::recolorLabels() {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
     if (colorDialog->exec()) {
+      setChangeLabel();
       QColor color = colorDialog->selectedColor();
       delete colorDialog;
       QListIterator<QGraphicsItem*> it(scene->selectedItems());
@@ -7259,6 +7266,40 @@ void EventGraphWidget::deleteText() {
     if (text) {
       delete text;
       textVector.removeOne(text);
+    }
+  }
+}
+
+void EventGraphWidget::copyDescriptionToText() {
+  if (scene->selectedItems().size() == 1) {
+    EventItem *event = qgraphicsitem_cast<EventItem*>(scene->selectedItems().first());
+    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(scene->selectedItems().first());
+    if (event) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT description FROM incidents WHERE id = :id");
+      query->bindValue(":id", event->getId());
+      query->exec();
+      query->first();
+      QString text = query->value(0).toString();
+      delete query;
+      TextObject *newText = new TextObject(text);
+      textVector.push_back(newText);
+      scene->addItem(newText);
+      QPointF pos = event->scenePos();
+      pos.setY(pos.y() - 80);
+      newText->setPos(pos);
+      newText->setZValue(4);
+      newText->adjustSize();
+    } else if (macro) {
+      QString text = macro->getDescription();
+      TextObject *newText = new TextObject(text);
+      textVector.push_back(newText);
+      scene->addItem(newText);
+      QPointF pos = macro->scenePos();
+      pos.setY(pos.y() - 80);
+      newText->setPos(pos);
+      newText->setZValue(4);
+      newText->adjustSize();
     }
   }
 }

@@ -83,7 +83,7 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
   } else if (macro && !macro->isCopy()) {
     if (wheelEvent->modifiers() & Qt::ShiftModifier) {
       if (macro->isSelected()) {
-	if (wheelEvent->delta() > 0 && macro->getWidth() < 1000) {
+	if (wheelEvent->delta() > 0) {
 	  macro->setWidth(macro->getWidth() + 5);
 	  QPointF original = macro->scenePos();
 	  macro->getLabel()->setNewPos(original, 2.5);
@@ -873,6 +873,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action17);
       QAction *action18 = new QAction(SELECTPREDECESSORSACTION, this);
       menu.addAction(action18);
+      QAction *action19 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+      menu.addAction(action19);
       if (selectedItems().size() > 1) {
 	action3->setEnabled(false);
 	action6->setEnabled(false);
@@ -881,6 +883,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	action10->setEnabled(false);
 	action17->setEnabled(false);
 	action18->setEnabled(false);
+	action19->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);
@@ -933,6 +936,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action14);
       QAction *action15 = new QAction(SELECTPREDECESSORSACTION, this);
       menu.addAction(action15);
+      QAction *action16 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+      menu.addAction(action16);
       if (selectedItems().size() > 1) {
 	action3->setEnabled(false);
 	action6->setEnabled(false);
@@ -942,6 +947,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	action11->setEnabled(false);
 	action14->setEnabled(false);
 	action15->setEnabled(false);
+	action16->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);

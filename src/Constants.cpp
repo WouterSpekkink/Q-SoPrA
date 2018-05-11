@@ -78,4 +78,5 @@ QString AUTOASSIGNALLACTION = "Automatically assign all entities based on relati
 QString AUTOASSIGNSPECIFICACTION = "Automatically assign this entity based on relationship";
 QString UNASSIGNALLACTION = "Unassign all";
 QString MERGEATTRIBUTESACTION = "Merge attribute with...";
+QString COPYDESCRIPTIONTOTEXTACTION = "Copy description to text";
 qreal Pi = 3.14;

@@ -64,6 +64,14 @@ private slots:
   void toggleDetails();
   void toggleLegend();
   void changeModeColor(QTableWidgetItem *item);
+  void colorByAttribute();
+  void removeMode();
+  void restoreModeColors();
+  void moveModeUp();
+  void moveModeDown();
+  void setModeButtons(QTableWidgetItem *item);
+  void disableModeButtons();
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void retrieveData();
   void showAttributes();
   void showComments();
@@ -178,6 +186,11 @@ private:
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> toggleLinkagesButton;
   QPointer<QPushButton> toggleHierarchyButton;
+  QPointer<QPushButton> colorByAttributeButton;
+  QPointer<QPushButton> removeModeButton;
+  QPointer<QPushButton> restoreModeColorsButton;
+  QPointer<QPushButton> moveModeUpButton;
+  QPointer<QPushButton> moveModeDownButton;
 
   QPointer<DeselectableListWidget> eventListWidget;
   
