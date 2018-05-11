@@ -533,8 +533,8 @@ void OccurrenceGraphWidget::groupOccurrences() {
   while (it.hasNext()) {
     OccurrenceItem *current = it.next();
     current->setGrouped(false);
-    QVectorIterator<QString> it2(presentAttributes);
     int dist = 0;
+    QVectorIterator<QString> it2(presentAttributes);
     while (it2.hasNext()) {
       QString text = it2.next();
       if (text == current->getAttribute()) {
@@ -546,51 +546,65 @@ void OccurrenceGraphWidget::groupOccurrences() {
       }
     }
   }
-  QVector<OccurrenceItem*> keep;
-  QVectorIterator<OccurrenceItem*> it3(occurrenceVector);
-  while (it3.hasNext()) {
-    OccurrenceItem *first = it3.next();
-    QVectorIterator<OccurrenceItem*> it4(occurrenceVector);
-    QVector<OccurrenceItem*> temp;
-    temp.push_back(first);
-    if (!keep.contains(first)) {
-      keep.push_back(first);
-    }
-    QVector<OccurrenceItem*> rem;
-    while (it4.hasNext()) {
-      OccurrenceItem *second = it4.next();
-      if (first != second && second->scenePos().x() == first->scenePos().x()) {
-	if (second->getAttribute() != first->getAttribute()) {
-	  temp.push_back(second);
-	} else {
-	  rem.push_back(second);
+  std::sort(occurrenceVector.begin(), occurrenceVector.end(), eventLessThan);
+  QVector<OccurrenceItem*> finished;
+  QVector<OccurrenceItem*> ignored;
+  QVector<OccurrenceItem*>::iterator it3;
+  for (it3 = occurrenceVector.begin(); it3 != occurrenceVector.end(); it3++) {
+    OccurrenceItem *first = *it3;
+    QVector<OccurrenceItem*> group;
+    QVector<QString> closedAttributes;
+    if (!finished.contains(first) && !ignored.contains(first)) {
+      group.push_back(first);
+      finished.push_back(first);
+      closedAttributes.push_back(first->getAttribute());
+      QVector<OccurrenceItem*>::iterator it4;
+      for (it4 = it3 + 1; it4 != occurrenceVector.end(); it4++) {
+	OccurrenceItem *second = *it4;
+	if (!finished.contains(second) && !ignored.contains(second)) {
+	  // First we need to check if they are in the same x coordinate
+	  if (second->scenePos().x() == first->scenePos().x()) {
+	    // Next we need to check if they are of a different attribute.
+	    if (second->getAttribute() != first->getAttribute()) {
+	      // We also need to check if we perhaps already have an entity with this attribute.
+	      if (!closedAttributes.contains(second->getAttribute())) {
+		// Now we are sure that this entity belongs in this group.
+		group.push_back(second);
+		finished.push_back(second);
+		closedAttributes.push_back(second->getAttribute());
+	      } else {
+		ignored.push_back(second);
+	      }
+	    } else {
+	      ignored.push_back(second);
+	    }
+	  }
 	}
       }
-    }
-    QVectorIterator<OccurrenceItem*> it5(rem);
-    while (it5.hasNext()) {
-      OccurrenceItem *candidate = it5.next();
-      if (!keep.contains(candidate)) {
-	candidate->hide();
-	candidate->setPermHidden(true);
-	candidate->getLabel()->hide();
-      }
-    }
-    std::sort(temp.begin(), temp.end(), attributeLessThan);
-    QVectorIterator<OccurrenceItem*> it6(temp);
-    qreal x = temp.first()->scenePos().x();
-    qreal startY = temp.first()->scenePos().y();
-    int dist = 0;
-    while (it6.hasNext()) {
-      OccurrenceItem *current = it6.next();
-      if (temp.size() > 1) {
-	current->setGrouped(true);
-      }
-      if (current->isVisible()) {
+      // Now we should have a finished group.
+      std::sort(group.begin(), group.end(), attributeLessThan);
+      qreal x = group.first()->scenePos().x();
+      qreal startY = group.first()->scenePos().y();
+      int dist = 80;
+      QVector<OccurrenceItem*>::iterator it5;
+      for (it5 = group.begin() + 1; it5 != group.end(); it5++) {
+	OccurrenceItem *current = *it5;
+	if (group.size() > 1) {
+	  current->setGrouped(true);
+	}
 	current->setPos(x, startY - dist);
 	current->getLabel()->setNewPos(current->scenePos());
 	dist += 80;
       }
+    }
+  }
+  QVectorIterator<OccurrenceItem*> it6(occurrenceVector);
+  while (it6.hasNext()) {
+    OccurrenceItem *candidate = it6.next();
+    if (!finished.contains(candidate)) {
+      candidate->hide();
+      candidate->setPermHidden(true);
+      candidate->getLabel()->hide();
     }
   }
 }
@@ -688,12 +702,17 @@ void OccurrenceGraphWidget::getEvents() {
 	      macro = macro->getMacroEvent();
 	    }
 	    QString type = "";
-	    if (macro->getConstraint() == PATHS) {
+	    if (macro->getConstraint() == PATHS ||
+		macro->getConstraint() == PATHSATT) {
 	      type = "P";
-	    } else if (macro->getConstraint() == SEMIPATHS) {
+	    } else if (macro->getConstraint() == SEMIPATHS ||
+		       macro->getConstraint() == SEMIPATHSATT) {
 	      type = "S";
+	    } else if (macro->getConstraint() == NOCONSTRAINT ||
+		       macro->getConstraint() == NOCONSTRAINTATT) {
+	      type = "N";
 	    }
-	    QString text = type + QString::number(macro->getId()) + " - " +
+	    QString text = type + QString::number(macro->getOrder()) + " - " +
 	      occurrence->getAttribute();
 	    QColor textColor = occurrence->getLabel()->defaultTextColor();
 	    delete occurrence->getLabel();
@@ -753,12 +772,17 @@ void OccurrenceGraphWidget::getEvents() {
 	  scene->addItem(newOccurrence);
 	  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 	  QString type = "";
-	  if (macro->getConstraint() == PATHS) {
+	  if (macro->getConstraint() == PATHS ||
+	      macro->getConstraint() == PATHSATT) {
 	    type = "P";
-	  } else if (macro->getConstraint() == SEMIPATHS) {
-	    type = "S";
+	  } else if (macro->getConstraint() == SEMIPATHS ||
+		     macro->getConstraint() == SEMIPATHSATT) {
+	    type = "S"; 
+	  } else if (macro->getConstraint() == NOCONSTRAINT ||
+		     macro->getConstraint() == NOCONSTRAINTATT) {
+	    type = "N";
 	  }
-	  QString text = type + QString::number(macro->getId()) + " - " + currentAttribute;
+	  QString text = type + QString::number(macro->getOrder()) + " - " + currentAttribute;
 	  label->setPlainText(text);
 	  label->setDefaultTextColor(Qt::black);
 	  label->setTextWidth(label->boundingRect().width());
