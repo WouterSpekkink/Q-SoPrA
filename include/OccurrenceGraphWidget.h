@@ -73,7 +73,8 @@ private slots:
   void setBackgroundColor();
   void increaseDistance();
   void decreaseDistance();
-
+  void updateArrows();
+  
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setVisibility();

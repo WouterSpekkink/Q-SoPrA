@@ -45,7 +45,6 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
 	}
       }
     }
-    QGraphicsView::mousePressEvent(event);
   } else if (event->button() == Qt::RightButton) { 
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
     NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
@@ -55,6 +54,10 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
     NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
     OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
     OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
+    TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -64,7 +67,8 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
     if (occurrenceLabel) {
       occurrence = occurrenceLabel->getOccurrence();
     }
-    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel) {
+    if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel &&
+	!line && !text && !ellipse && !rect) {
       pan = true;
       QApplication::setOverrideCursor(Qt::ClosedHandCursor);
       lastMousePos = event->pos();
@@ -81,6 +85,14 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event) {
       occurrence->setSelected(true);
     } else if (networkNode) {
       networkNode->setSelected(true);
+    } else if (line) {
+      line->setSelected(true);
+    } else if (text) {
+      text->setSelected(true);
+    } else if (ellipse) {
+      ellipse->setSelected(true);
+    } else if (rect) {
+      rect->setSelected(true);
     }
   } else {
     pan = false;
@@ -135,12 +147,26 @@ void BandlessGraphicsView::mouseMoveEvent(QMouseEvent *event) {
 
 void BandlessGraphicsView::wheelEvent(QWheelEvent* event) {
   if (event->modifiers() & Qt::ControlModifier) {
-    this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    double scaleFactor = 1.15;
-    if (event->delta() > 0) {
-      this->scale(scaleFactor, scaleFactor);
-    } else {
-      this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+    event->ignore();
+    QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
+    wheelEvent.setWidget(viewport());
+    wheelEvent.setScenePos(mapToScene(event->pos()));
+    wheelEvent.setScreenPos(event->globalPos());
+    wheelEvent.setButtons(event->buttons());
+    wheelEvent.setModifiers(event->modifiers());
+    wheelEvent.setDelta(event->delta());
+    wheelEvent.setOrientation(event->orientation());
+    wheelEvent.setAccepted(false);
+    qApp->sendEvent(this->scene(), &wheelEvent);
+    event->setAccepted(wheelEvent.isAccepted());
+    if (!(event->isAccepted())) {
+      this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+      double scaleFactor = 1.15;
+      if (event->delta() > 0) {
+	this->scale(scaleFactor, scaleFactor);
+      } else {
+	this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
+      }
     }
   } else if (event->modifiers() & Qt::ShiftModifier) {
     event->ignore();
