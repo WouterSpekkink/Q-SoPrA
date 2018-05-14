@@ -198,6 +198,10 @@ private slots:
   void processRectContextMenu(const QString &action);
   void changeRectColor();
   void deleteRect();
+  void duplicateLine();
+  void duplicateText();
+  void duplicateEllipse();
+  void duplicateRect();
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems,

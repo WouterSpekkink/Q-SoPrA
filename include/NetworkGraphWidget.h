@@ -160,6 +160,10 @@ private slots:
   void processRectContextMenu(const QString &action);
   void changeRectColor();
   void deleteRect();
+  void duplicateLine();
+  void duplicateText();
+  void duplicateEllipse();
+  void duplicateRect();
 
   void setPlotButton();
   void plotNewGraph();

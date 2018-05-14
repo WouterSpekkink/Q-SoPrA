@@ -30,7 +30,7 @@ QRectF LineObject::boundingRect() const {
 }
 
 QPainterPath LineObject::shape() const {
-  static const qreal clickTolerance = 10;
+  static const qreal clickTolerance = 15;
   QPointF vec = endPos - startPos;
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());
@@ -61,6 +61,11 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 				   Qt::RoundCap, Qt::RoundJoin));
   if (arrow2On) {
     painter->drawPolyline(arrowHead2);
+  }
+  if (isSelected()) {
+    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+    QPainterPath outline = shape();
+    painter->drawPath(outline);
   }
 }
 
@@ -164,7 +169,6 @@ void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
 
 void LineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
 }
 
 void LineObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
@@ -173,6 +177,5 @@ void LineObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
 
 void LineObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
   QApplication::restoreOverrideCursor();
-  qApp->processEvents();
 }
 

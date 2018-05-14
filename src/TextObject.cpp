@@ -40,7 +40,6 @@ int TextObject::type() const {
 
 void TextObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
   QGraphicsTextItem::mouseReleaseEvent(event);
 }
 

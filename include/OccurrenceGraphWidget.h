@@ -70,6 +70,7 @@ private slots:
   void getEvents();
   void restore();
   void plotLabels();
+  void changeLabels();
   void setBackgroundColor();
   void increaseDistance();
   void decreaseDistance();
@@ -106,6 +107,10 @@ private slots:
   void processRectContextMenu(const QString &action);
   void changeRectColor();
   void deleteRect();
+  void duplicateLine();
+  void duplicateText();
+  void duplicateEllipse();
+  void duplicateRect();
 
   void saveCurrentPlot();
   void seePlots();
@@ -142,6 +147,7 @@ private:
   QPointer<QPushButton> getEventsButton;
   QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
+  QPointer<QPushButton> changeLabelsButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> increaseDistanceButton;
   QPointer<QPushButton> decreaseDistanceButton;

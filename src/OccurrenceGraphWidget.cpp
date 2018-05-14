@@ -67,6 +67,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   getEventsButton = new QPushButton(tr("Match current event graph"), this);
   restoreButton = new QPushButton(tr("Restore to original"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
+  changeLabelsButton = new QPushButton(tr("Short labels"), graphicsWidget);
+  changeLabelsButton->setCheckable(true);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
@@ -108,6 +110,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   connect(view, SIGNAL(OccurrenceGraphContextMenuAction(const QString &, const QPoint&)),
 	  this, SLOT(processOccurrenceGraphContextMenu(const QString &, const QPoint&)));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
+  connect(changeLabelsButton, SIGNAL(clicked()), this, SLOT(changeLabels()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
@@ -154,6 +157,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
+  graphicsControlsLayout->addWidget(changeLabelsButton);
   QPointer<QFrame> sepLine = new QFrame();
   sepLine->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine);
@@ -513,7 +517,8 @@ void OccurrenceGraphWidget::changeModeColor(QTableWidgetItem *item) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     colorDialog->setCurrentColor(item->background().color());
     colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-    if (colorDialog->exec()) {
+    colorDialog->show();
+    if (colorDialog->getColor().isValid()) {
       QColor color = colorDialog->selectedColor();
       item->setBackground(color);
       QTableWidgetItem* neighbour = attributeListWidget->item(item->row(), 0);
@@ -929,6 +934,8 @@ void OccurrenceGraphWidget::processLineContextMenu(const QString &action) {
     toggleArrow2();
   } else if (action == DELETELINE) {
     deleteLine();
+  } else if (action == COPYOBJECT) {
+    duplicateLine();
   }
 }
 
@@ -975,6 +982,31 @@ void OccurrenceGraphWidget::deleteLine() {
   }
 }
 
+void OccurrenceGraphWidget::duplicateLine() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      QPointF newStartPos = line->getStartPos();
+      QPointF newEndPos = line->getEndPos();
+      newStartPos.setY(newStartPos.y() - 100);
+      newEndPos.setY(newEndPos.y() - 100);
+      LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
+      if (line->arrow1()) {
+	newLineObject->setArrow1(true);
+      }
+      if (line->arrow2()) {
+	newLineObject->setArrow2(true);
+      }
+      newLineObject->setPenWidth(line->getPenWidth());
+      newLineObject->setPenStyle(line->getPenStyle());
+      newLineObject->setColor(line->getColor());
+      lineVector.push_back(newLineObject);
+      scene->addItem(newLineObject);
+      newLineObject->setZValue(3);
+    }
+  }
+}
+
 void OccurrenceGraphWidget::processTextContextMenu(const QString &action) {
   if (action == CHANGETEXT) {
     changeText();
@@ -982,6 +1014,8 @@ void OccurrenceGraphWidget::processTextContextMenu(const QString &action) {
     changeTextColor();
   } else if (action == DELETETEXT) {
     deleteText();
+  } else if (action == COPYOBJECT) {
+    duplicateText();
   }
 }
 
@@ -1029,11 +1063,42 @@ void OccurrenceGraphWidget::deleteText() {
   }
 }
 
+void OccurrenceGraphWidget::duplicateText() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      QString oldText = text->toPlainText();
+      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+      textDialog->setWindowTitle("Set text");
+      textDialog->setLabel("Free text:");
+      textDialog->submitText(oldText);
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString alteredText = textDialog->getText();
+	TextObject *newText = new TextObject(alteredText);
+	textVector.push_back(newText);
+	scene->addItem(newText);
+	QPointF pos = text->scenePos();
+	pos.setY(pos.y() - 300);
+	newText->setPos(pos);
+	newText->setZValue(4);
+	newText->adjustSize();
+	newText->setDefaultTextColor(text->defaultTextColor());
+	newText->setRotationValue(text->getRotationValue());
+	newText->setFont(text->font());
+      }
+      delete textDialog;
+    }
+  }
+}
+
 void OccurrenceGraphWidget::processEllipseContextMenu(const QString &action) {
   if (action == CHANGEELLIPSECOLOR) {
     changeEllipseColor();
   } else if (action == DELETEELLIPSE) {
     deleteEllipse();
+  } else if (action == COPYOBJECT) {
+    duplicateEllipse();
   }
 }
 
@@ -1062,11 +1127,37 @@ void OccurrenceGraphWidget::deleteEllipse() {
   }  
 }
 
+void OccurrenceGraphWidget::duplicateEllipse() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      EllipseObject *newEllipse = new EllipseObject();
+      newEllipse->setRotationValue(ellipse->getRotationValue());
+      newEllipse->setTopLeft(ellipse->topLeft());
+      newEllipse->setBottomLeft(ellipse->bottomLeft());
+      newEllipse->setTopRight(ellipse->topRight());
+      newEllipse->setBottomRight(ellipse->bottomRight());
+      newEllipse->setColor(ellipse->getColor());
+      newEllipse->setPenWidth(ellipse->getPenWidth());
+      newEllipse->setPenStyle(ellipse->getPenStyle());
+      ellipseVector.push_back(newEllipse);
+      newEllipse->setZValue(3);
+      scene->addItem(newEllipse);
+      QPointF pos = ellipse->mapToScene(ellipse->getCenter());
+      pos.setY(pos.y() - 100);
+      pos.setX(pos.x() - 100);
+      newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+    }
+  }
+}
+
 void OccurrenceGraphWidget::processRectContextMenu(const QString &action) {
   if (action == CHANGERECTCOLOR) {
     changeRectColor();
   } else if (action == DELETERECT) {
     deleteRect();
+  } else if (action == COPYOBJECT) {
+    duplicateRect();
   }
 }
 
@@ -1095,6 +1186,30 @@ void OccurrenceGraphWidget::deleteRect() {
   }  
 }
 
+void OccurrenceGraphWidget::duplicateRect() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      RectObject *newRect = new RectObject();
+      newRect->setRotationValue(rect->getRotationValue());
+      newRect->setTopLeft(rect->topLeft());
+      newRect->setBottomLeft(rect->bottomLeft());
+      newRect->setTopRight(rect->topRight());
+      newRect->setBottomRight(rect->bottomRight());
+      newRect->setColor(rect->getColor());
+      newRect->setPenWidth(rect->getPenWidth());
+      newRect->setPenStyle(rect->getPenStyle());
+      rectVector.push_back(newRect);
+      newRect->setZValue(3);
+      scene->addItem(newRect);
+      QPointF pos = rect->mapToScene(rect->getCenter());
+      pos.setY(pos.y() - 100);
+      pos.setX(pos.x() - 100);
+      newRect->moveCenter(newRect->mapFromScene(pos));
+    }
+  }
+}
+
 void OccurrenceGraphWidget::plotLabels() {
   QVectorIterator<OccurrenceLabel*> it(labelVector);
   while (it.hasNext()) {
@@ -1109,6 +1224,47 @@ void OccurrenceGraphWidget::plotLabels() {
     }
   }
   labelsVisible = !(labelsVisible);
+}
+
+void OccurrenceGraphWidget::changeLabels() {
+  if (changeLabelsButton->isChecked()) {
+    QVectorIterator<OccurrenceItem*> it(occurrenceVector);
+    while (it.hasNext()) {
+      OccurrenceItem *currentOccurrence = it.next();
+      OccurrenceLabel *oldLabel = currentOccurrence->getLabel();
+      OccurrenceLabel *newLabel = new OccurrenceLabel(currentOccurrence);
+      QString text = QString::number(currentOccurrence->getOrder());
+      newLabel->setPlainText(text);
+      newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
+      newLabel->setTextWidth(newLabel->boundingRect().width());
+      newLabel->setNewPos(currentOccurrence->scenePos());
+      labelVector.push_back(newLabel);
+      currentOccurrence->setLabel(newLabel);
+      newLabel->setZValue(2);
+      scene->addItem(newLabel);
+      delete oldLabel;
+      labelVector.removeOne(oldLabel);
+    }
+  } else {
+    QVectorIterator<OccurrenceItem*> it(occurrenceVector);
+    while (it.hasNext()) {
+      OccurrenceItem *currentOccurrence = it.next();
+      OccurrenceLabel *oldLabel = currentOccurrence->getLabel();
+      OccurrenceLabel *newLabel = new OccurrenceLabel(currentOccurrence);
+      QString text = QString::number(currentOccurrence->getOrder()) + " - " +
+	currentOccurrence->getAttribute();
+      newLabel->setPlainText(text);
+      newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
+      newLabel->setTextWidth(newLabel->boundingRect().width());
+      newLabel->setNewPos(currentOccurrence->scenePos());
+      labelVector.push_back(newLabel);
+      currentOccurrence->setLabel(newLabel);
+      newLabel->setZValue(2);
+      scene->addItem(newLabel);
+      delete oldLabel;
+      labelVector.removeOne(oldLabel);
+    }
+  }
 }
 
 void OccurrenceGraphWidget::setBackgroundColor() {

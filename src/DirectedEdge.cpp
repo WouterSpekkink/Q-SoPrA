@@ -23,8 +23,7 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
 }
 
 QRectF DirectedEdge::boundingRect() const {
-  qreal extra = (pen().width() + height + 20) / 2.0;
-  
+  qreal extra = (pen().width() + height + 20) / 2.0;  
   return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
 				     end->pos().y() - start->pos().y()))
     .normalized()
@@ -39,7 +38,6 @@ void DirectedEdge::calc() {
   /* 
      Then we draw two new points that are on a horizontal line.
      This makes it easier to draw a control point perpendicular to the line.
-
      First, we calculate the control point
   */
   qreal controlX = (0.0 + distance) / 2;

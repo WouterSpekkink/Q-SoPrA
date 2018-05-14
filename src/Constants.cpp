@@ -79,4 +79,5 @@ QString AUTOASSIGNSPECIFICACTION = "Automatically assign this entity based on re
 QString UNASSIGNALLACTION = "Unassign all";
 QString MERGEATTRIBUTESACTION = "Merge attribute with...";
 QString COPYDESCRIPTIONTOTEXTACTION = "Copy description to text";
+QString COPYOBJECT = "Duplicate object";
 qreal Pi = 3.14;

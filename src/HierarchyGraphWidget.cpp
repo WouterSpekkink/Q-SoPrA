@@ -1456,6 +1456,8 @@ void HierarchyGraphWidget::processLineContextMenu(const QString &action) {
     toggleArrow2();
   } else if (action == DELETELINE) {
     deleteLine();
+  } else if (action == COPYOBJECT) {
+    duplicateLine();
   }
 }
 
@@ -1502,6 +1504,31 @@ void HierarchyGraphWidget::deleteLine() {
   }
 }
 
+void HierarchyGraphWidget::duplicateLine() {
+  if (scene->selectedItems().size() == 1) {
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    if (line) {
+      QPointF newStartPos = line->getStartPos();
+      QPointF newEndPos = line->getEndPos();
+      newStartPos.setY(newStartPos.y() - 100);
+      newEndPos.setY(newEndPos.y() - 100);
+      LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
+      if (line->arrow1()) {
+	newLineObject->setArrow1(true);
+      }
+      if (line->arrow2()) {
+	newLineObject->setArrow2(true);
+      }
+      newLineObject->setPenWidth(line->getPenWidth());
+      newLineObject->setPenStyle(line->getPenStyle());
+      newLineObject->setColor(line->getColor());
+      lineVector.push_back(newLineObject);
+      scene->addItem(newLineObject);
+      newLineObject->setZValue(3);
+    }
+  }
+}
+
 void HierarchyGraphWidget::processTextContextMenu(const QString &action) {
   if (action == CHANGETEXT) {
     changeText();
@@ -1509,6 +1536,8 @@ void HierarchyGraphWidget::processTextContextMenu(const QString &action) {
     changeTextColor();
   } else if (action == DELETETEXT) {
     deleteText();
+  } else if (action == COPYOBJECT) {
+    duplicateText();
   }
 }
 
@@ -1556,11 +1585,42 @@ void HierarchyGraphWidget::deleteText() {
   }
 }
 
+void HierarchyGraphWidget::duplicateText() {
+  if (scene->selectedItems().size() == 1) {
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (text) {
+      QString oldText = text->toPlainText();
+      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+      textDialog->setWindowTitle("Set text");
+      textDialog->setLabel("Free text:");
+      textDialog->submitText(oldText);
+      textDialog->exec();
+      if (textDialog->getExitStatus() == 0) {
+	QString alteredText = textDialog->getText();
+	TextObject *newText = new TextObject(alteredText);
+	textVector.push_back(newText);
+	scene->addItem(newText);
+	QPointF pos = text->scenePos();
+	pos.setY(pos.y() - 300);
+	newText->setPos(pos);
+	newText->setZValue(4);
+	newText->adjustSize();
+	newText->setDefaultTextColor(text->defaultTextColor());
+	newText->setRotationValue(text->getRotationValue());
+	newText->setFont(text->font());
+      }
+      delete textDialog;
+    }
+  }
+}
+
 void HierarchyGraphWidget::processEllipseContextMenu(const QString &action) {
   if (action == CHANGEELLIPSECOLOR) {
     changeEllipseColor();
   } else if (action == DELETEELLIPSE) {
     deleteEllipse();
+  } else if (action == COPYOBJECT) {
+    duplicateEllipse();
   }
 }
 
@@ -1589,11 +1649,37 @@ void HierarchyGraphWidget::deleteEllipse() {
   }  
 }
 
+void HierarchyGraphWidget::duplicateEllipse() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      EllipseObject *newEllipse = new EllipseObject();
+      newEllipse->setRotationValue(ellipse->getRotationValue());
+      newEllipse->setTopLeft(ellipse->topLeft());
+      newEllipse->setBottomLeft(ellipse->bottomLeft());
+      newEllipse->setTopRight(ellipse->topRight());
+      newEllipse->setBottomRight(ellipse->bottomRight());
+      newEllipse->setColor(ellipse->getColor());
+      newEllipse->setPenWidth(ellipse->getPenWidth());
+      newEllipse->setPenStyle(ellipse->getPenStyle());
+      ellipseVector.push_back(newEllipse);
+      newEllipse->setZValue(3);
+      scene->addItem(newEllipse);
+      QPointF pos = ellipse->mapToScene(ellipse->getCenter());
+      pos.setY(pos.y() - 100);
+      pos.setX(pos.x() - 100);
+      newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+    }
+  }
+}
+
 void HierarchyGraphWidget::processRectContextMenu(const QString &action) {
   if (action == CHANGERECTCOLOR) {
     changeRectColor();
   } else if (action == DELETERECT) {
     deleteRect();
+  } else if (action == COPYOBJECT) {
+    duplicateRect();
   }
 }
 
@@ -1620,6 +1706,30 @@ void HierarchyGraphWidget::deleteRect() {
       rectVector.removeOne(rect);
     }
   }  
+}
+
+void HierarchyGraphWidget::duplicateRect() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      RectObject *newRect = new RectObject();
+      newRect->setRotationValue(rect->getRotationValue());
+      newRect->setTopLeft(rect->topLeft());
+      newRect->setBottomLeft(rect->bottomLeft());
+      newRect->setTopRight(rect->topRight());
+      newRect->setBottomRight(rect->bottomRight());
+      newRect->setColor(rect->getColor());
+      newRect->setPenWidth(rect->getPenWidth());
+      newRect->setPenStyle(rect->getPenStyle());
+      rectVector.push_back(newRect);
+      newRect->setZValue(3);
+      scene->addItem(newRect);
+      QPointF pos = rect->mapToScene(rect->getCenter());
+      pos.setY(pos.y() - 100);
+      pos.setX(pos.x() - 100);
+      newRect->moveCenter(newRect->mapFromScene(pos));
+    }
+  }
 }
 
 void HierarchyGraphWidget::toggleLinkages() {

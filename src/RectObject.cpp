@@ -174,7 +174,6 @@ void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
 
 void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
 }
 
 void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
@@ -183,5 +182,4 @@ void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
 
 void RectObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
 }

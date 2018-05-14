@@ -81,6 +81,7 @@ extern QString AUTOASSIGNSPECIFICACTION;
 extern QString UNASSIGNALLACTION;
 extern QString MERGEATTRIBUTESACTION;
 extern QString COPYDESCRIPTIONTOTEXTACTION;
+extern QString COPYOBJECT;
 extern qreal Pi;
 
 #endif

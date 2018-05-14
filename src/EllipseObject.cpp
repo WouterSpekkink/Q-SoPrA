@@ -179,7 +179,6 @@ void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
 
 void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
 }
 
 void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
@@ -188,6 +187,5 @@ void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
 
 void EllipseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
   QApplication::restoreOverrideCursor();
-  QApplication::processEvents();
 }
 

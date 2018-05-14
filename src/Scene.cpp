@@ -101,132 +101,131 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
       wheelEvent->ignore();
     }
   } else if (text) {
-    clearSelection();
-    text->setSelected(true);
-    emit resetItemSelection();
-    if (wheelEvent->modifiers() & Qt::ControlModifier) {
-      if (wheelEvent->delta() > 0) {
-	QFont font = text->font();
-	int size = font.pointSize();
-	if (size <= 999) {
-	  size++;
-	  font.setPointSize(size);
-	  text->setFont(font);
-	}
-      } else if (wheelEvent->delta() < 0) {
-	QFont font = text->font();
-	int size = font.pointSize();
-	if (size >= 9) {
-	  size--;
-	  font.setPointSize(size);
-	  text->setFont(font);
+    if (text->isSelected()) {
+      if (wheelEvent->modifiers() & Qt::ControlModifier) {
+	if (wheelEvent->delta() > 0) {
+	  QFont font = text->font();
+	  int size = font.pointSize();
+	  if (size <= 999) {
+	    size++;
+	    font.setPointSize(size);
+	    text->setFont(font);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  QFont font = text->font();
+	  int size = font.pointSize();
+	  if (size >= 9) {
+	    size--;
+	    font.setPointSize(size);
+	    text->setFont(font);
+	  }
 	}
       }
-    }
-    if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      if (wheelEvent->delta() > 0) {
+      if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+	if (wheelEvent->delta() > 0) {
 	  int width = text->textWidth();
 	  width = width + 10;
 	  text->setTextWidth(width);
-      } else if (wheelEvent->delta() < 0) {
-	int width = text->textWidth();
-	width = width - 10;
-	text->setTextWidth(width);
+	} else if (wheelEvent->delta() < 0) {
+	  int width = text->textWidth();
+	  width = width - 10;
+	  text->setTextWidth(width);
+	}
       }
+      emit relevantChange();
+      wheelEvent->accept();
     }
-    emit relevantChange();
-    wheelEvent->accept();
   } else if (ellipse) {
-    clearSelection();
-    ellipse->setSelected(true);
-    emit resetItemSelection();
-    if (wheelEvent->modifiers() & Qt::ControlModifier) {
-      if (wheelEvent->delta() > 0) {
-	if (ellipse->getPenWidth() < 20) {
-	  ellipse->setPenWidth(ellipse->getPenWidth() + 1);
+    if (ellipse->isSelected()) {
+      if (wheelEvent->modifiers() & Qt::ControlModifier) {
+	if (wheelEvent->delta() > 0) {
+	  if (ellipse->getPenWidth() < 20) {
+	    ellipse->setPenWidth(ellipse->getPenWidth() + 1);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  if (ellipse->getPenWidth() > 1) {
+	    ellipse->setPenWidth(ellipse->getPenWidth() - 1);
+	  }
 	}
-      } else if (wheelEvent->delta() < 0) {
-	if (ellipse->getPenWidth() > 1) {
-	  ellipse->setPenWidth(ellipse->getPenWidth() - 1);
+      } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+	if (wheelEvent->delta() > 0) {
+	  if (ellipse->getPenStyle() < 5) {
+	    ellipse->setPenStyle(ellipse->getPenStyle() + 1);
+	  } else {
+	    ellipse->setPenStyle(1);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  if (ellipse->getPenStyle() > 1) {
+	    ellipse->setPenStyle(ellipse->getPenStyle() - 1);
+	  } else {
+	    ellipse->setPenStyle(5);
+	  }
 	}
       }
-    } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      if (wheelEvent->delta() > 0) {
-	if (ellipse->getPenStyle() < 5) {
-	  ellipse->setPenStyle(ellipse->getPenStyle() + 1);
-	} else {
-	  ellipse->setPenStyle(1);
-	}
-      } else if (wheelEvent->delta() < 0) {
-	if (ellipse->getPenStyle() > 1) {
-	  ellipse->setPenStyle(ellipse->getPenStyle() - 1);
-	} else {
-	  ellipse->setPenStyle(5);
-	}
-      }
+      wheelEvent->accept();
+      emit relevantChange();
     }
-    wheelEvent->accept();
   } else if (line) {
-    clearSelection();
-    line->setSelected(true);
-    emit resetItemSelection();
-    if (wheelEvent->modifiers() & Qt::ControlModifier) {
-      if (wheelEvent->delta() > 0) {
-	if (line->getPenWidth() < 7) {
-	  line->setPenWidth(line->getPenWidth() + 1);
+    if (line->isSelected()) {
+      if (wheelEvent->modifiers() & Qt::ControlModifier) {
+	if (wheelEvent->delta() > 0) {
+	  if (line->getPenWidth() < 7) {
+	    line->setPenWidth(line->getPenWidth() + 1);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  if (line->getPenWidth() > 1) {
+	    line->setPenWidth(line->getPenWidth() - 1);
+	  }
 	}
-      } else if (wheelEvent->delta() < 0) {
-	if (line->getPenWidth() > 1) {
-	  line->setPenWidth(line->getPenWidth() - 1);
+      } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+	if (wheelEvent->delta() > 0) {
+	  if (line->getPenStyle() < 5) {
+	    line->setPenStyle(line->getPenStyle() + 1);
+	  } else {
+	    line->setPenStyle(1);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  if (line->getPenStyle() > 1) {
+	    line->setPenStyle(line->getPenStyle() - 1);
+	  } else {
+	    line->setPenStyle(5);
+	  }
 	}
       }
-    } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      if (wheelEvent->delta() > 0) {
-	if (line->getPenStyle() < 5) {
-	  line->setPenStyle(line->getPenStyle() + 1);
-	} else {
-	  line->setPenStyle(1);
-	}
-      } else if (wheelEvent->delta() < 0) {
-	if (line->getPenStyle() > 1) {
-	  line->setPenStyle(line->getPenStyle() - 1);
-	} else {
-	  line->setPenStyle(5);
-	}
-      }
+      emit relevantChange();
+      wheelEvent->accept();
     }
-    wheelEvent->accept();
   } else if (rect) {
-    clearSelection();
-    rect->setSelected(true);
-    emit resetItemSelection();
-    if (wheelEvent->modifiers() & Qt::ControlModifier) {
-      if (wheelEvent->delta() > 0) {
-	if (rect->getPenWidth() < 20) {
-	  rect->setPenWidth(rect->getPenWidth() + 1);
+    if (rect->isSelected()) {
+      if (wheelEvent->modifiers() & Qt::ControlModifier) {
+	if (wheelEvent->delta() > 0) {
+	  if (rect->getPenWidth() < 20) {
+	    rect->setPenWidth(rect->getPenWidth() + 1);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  if (rect->getPenWidth() > 1) {
+	    rect->setPenWidth(rect->getPenWidth() - 1);
+	  }
 	}
-      } else if (wheelEvent->delta() < 0) {
-	if (rect->getPenWidth() > 1) {
-	  rect->setPenWidth(rect->getPenWidth() - 1);
+      } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
+	if (wheelEvent->delta() > 0) {
+	  if (rect->getPenStyle() < 5) {
+	    rect->setPenStyle(rect->getPenStyle() + 1);
+	  } else {
+	    rect->setPenStyle(1);
+	  }
+	} else if (wheelEvent->delta() < 0) {
+	  if (rect->getPenStyle() > 1) {
+	    rect->setPenStyle(rect->getPenStyle() - 1);
+	  } else {
+	    rect->setPenStyle(5);
+	  }
 	}
       }
-    } else if (wheelEvent->modifiers() & Qt::ShiftModifier) {
-      if (wheelEvent->delta() > 0) {
-	if (rect->getPenStyle() < 5) {
-	  rect->setPenStyle(rect->getPenStyle() + 1);
-	} else {
-	  rect->setPenStyle(1);
-	}
-      } else if (wheelEvent->delta() < 0) {
-	if (rect->getPenStyle() > 1) {
-	  rect->setPenStyle(rect->getPenStyle() - 1);
-	} else {
-	  rect->setPenStyle(5);
-	}
-      }
+      emit relevantChange();
+      wheelEvent->accept();
     }
-    wheelEvent->accept();
-   } else {
+  } else {
     wheelEvent->ignore();
   }
 }
@@ -468,6 +467,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       selectedOccurrence = occurrence;
     } else if (line) {
       clearSelection();
+      line->setSelected(true);
       selectedLine = line;
       emit resetItemSelection();
       lineMoveOn = true;
@@ -827,7 +827,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
     NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
     LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
     TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(), QTransform()));
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(), QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+								       QTransform()));
     RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(), QTransform()));
     if (nodeLabel) {
       incident = nodeLabel->getNode();
@@ -1017,8 +1018,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action2);
       QAction *action3 = new QAction(TOGGLEARROW2, this);
       menu.addAction(action3);
-      QAction *action4 = new QAction(DELETELINE, this);
+      QAction *action4 = new QAction(COPYOBJECT, this);
       menu.addAction(action4);
+      QAction *action5 = new QAction(DELETELINE, this);
+      menu.addAction(action5);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit LineContextMenuAction(action->text());
       }
@@ -1030,8 +1033,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action1);
       QAction *action2 = new QAction(CHANGETEXTCOLOR, this);
       menu.addAction(action2);
-      QAction *action3 = new QAction(DELETETEXT, this);
+      QAction *action3 = new QAction(COPYOBJECT, this);
       menu.addAction(action3);
+      QAction *action4 = new QAction(DELETETEXT, this);
+      menu.addAction(action4);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit TextContextMenuAction(action->text());
       }
@@ -1041,8 +1046,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
       menu.addAction(action1);
-      QAction *action2 = new QAction(DELETEELLIPSE, this);
+      QAction *action2 = new QAction(COPYOBJECT, this);
       menu.addAction(action2);
+      QAction *action3 = new QAction(DELETEELLIPSE, this);
+      menu.addAction(action3);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit EllipseContextMenuAction(action->text());
       }
@@ -1052,8 +1059,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(CHANGERECTCOLOR, this);
       menu.addAction(action1);
-      QAction *action2 = new QAction(DELETERECT, this);
+      QAction *action2 = new QAction(COPYOBJECT, this);
       menu.addAction(action2);
+      QAction *action3 = new QAction(DELETERECT, this);
+      menu.addAction(action3);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit RectContextMenuAction(action->text());
       }
