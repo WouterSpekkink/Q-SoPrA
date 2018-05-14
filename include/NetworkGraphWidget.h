@@ -106,7 +106,8 @@ private slots:
   void plotDirectedEdges(QString type, QColor color);
   void getUndirectedEdges();
   void plotUndirectedEdges(QString type, QColor color);
-
+  void updateEdges();
+  
   void colorByAttribute();
   void setNodeColor();
   void setLabelColor();

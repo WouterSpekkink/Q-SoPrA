@@ -24,10 +24,14 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
 
 QRectF DirectedEdge::boundingRect() const {
   qreal extra = (pen().width() + height + 20) / 2.0;  
-  return QRectF(start->pos(), QSizeF(end->pos().x() - start->pos().x(),
-				     end->pos().y() - start->pos().y()))
+  return QRectF(boundLine.p1(), QSizeF(boundLine.p2().x() - boundLine.p1().x(),
+				       boundLine.p2().y() - boundLine.p1().y()))
     .normalized()
     .adjusted(-extra, -extra, extra, extra);
+}
+
+void DirectedEdge::updatePosition() {
+  boundLine = QLineF(mapFromItem(start, 0, 0), mapFromItem(end, 0, 0));
 }
 
 void DirectedEdge::calc() {

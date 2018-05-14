@@ -91,7 +91,6 @@ QPainterPath Arrow::shape() const {
   QPointF vec = myLine.p2() - myLine.p1();
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());
-
   QPainterPath result(myLine.p1() - vec + orthogonal);
   result.lineTo(myLine.p1() - vec - orthogonal);
   result.lineTo(myLine.p2() + vec - orthogonal);

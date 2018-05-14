@@ -235,6 +235,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateEdges()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(NetworkNodeContextMenuAction(const QString &)),
@@ -249,6 +250,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processRectContextMenu(const QString &)));
   connect(view, SIGNAL(NetworkGraphContextMenuAction(const QString &, const QPoint&)),
 	  this, SLOT(processNetworkGraphContextMenu(const QString &, const QPoint&)));
+  connect(view, SIGNAL(changedView()), this, SLOT(updateEdges()));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
@@ -1312,6 +1314,21 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
   processHeights();
 }
 
+void NetworkGraphWidget::updateEdges() {
+  QVectorIterator<DirectedEdge*> it(directedVector);
+  while (it.hasNext()) {
+    DirectedEdge *current = it.next();
+    current->updatePosition();
+  }
+  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  while (it2.hasNext()) {
+    UndirectedEdge *current = it2.next();
+    current->updatePosition();
+  }
+}
+
+
+
 void NetworkGraphWidget::simpleLayout() {
   qApp->setOverrideCursor(Qt::WaitCursor);
   QVectorIterator<NetworkNode*> it(nodeVector);
@@ -1442,6 +1459,7 @@ void NetworkGraphWidget::simpleLayout() {
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
   qApp->restoreOverrideCursor();
   qApp->processEvents();
+  updateEdges();
 }
 
 void NetworkGraphWidget::circularLayout() {
@@ -1480,6 +1498,7 @@ void NetworkGraphWidget::circularLayout() {
 		 qPow(first->scenePos().y() -
 		      second->scenePos().y(), 2));
   }
+  updateEdges();
 }
 
 /*
@@ -3088,7 +3107,6 @@ void NetworkGraphWidget::addRelationshipType() {
   delete colorDialog;
   plotDirectedEdges(selectedType, color);
   plotUndirectedEdges(selectedType, color);
-  simpleLayout();
   presentTypes.push_back(selectedType);
   setRangeControls();
   QSqlQuery *query = new QSqlQuery;
@@ -3114,6 +3132,7 @@ void NetworkGraphWidget::addRelationshipType() {
   delete query;
   addButton->setEnabled(false);
   setChangeLabel();
+  simpleLayout();
 }
 
 void NetworkGraphWidget::removeRelationshipType() {

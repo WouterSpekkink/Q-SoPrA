@@ -223,6 +223,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processRectContextMenu(const QString &)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &, const QPoint &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &, const QPoint &)));
+  connect(view, SIGNAL(changedView()), this, SLOT(updateArrows()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));

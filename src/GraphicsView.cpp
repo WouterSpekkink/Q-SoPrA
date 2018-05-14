@@ -211,6 +211,7 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
       } else {
 	this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
       }
+      emit changedView();
     }
   } else if (event->modifiers() & Qt::ShiftModifier) {
     event->ignore();
@@ -231,6 +232,7 @@ void GraphicsView::wheelEvent(QWheelEvent* event) {
       } else {
 	this->horizontalScrollBar()->setValue(this->horizontalScrollBar()->value() - event->delta());
       }
+      emit changedView();
     }
   } else {
     QGraphicsView::wheelEvent(event);

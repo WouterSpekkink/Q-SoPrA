@@ -15,6 +15,7 @@ public:
   ~UndirectedEdge() {};
 
   QRectF boundingRect() const override;
+  void updatePosition();
   void setColor(const QColor &subColor);
   QColor getColor();
   NetworkNode *startItem() const; 
@@ -47,6 +48,7 @@ private:
   QPolygonF arrowHeadOne;
   QPolygonF arrowHeadTwo;
   int height;
+  QLineF boundLine;
   QLineF ghostLineOne;
   QLineF ghostLineTwo;
   QPointF arrowP1;
