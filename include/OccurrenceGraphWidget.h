@@ -52,17 +52,23 @@ public:
   void setEventGraph(EventGraphWidget *egw);			     
   void checkCongruency();
   bool attributesPresent();
+  bool relationshipsPresent();
 			
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
   
   void addAttribute();
+  void addRelationship();
   void findChildren(QString father, QVector<QString> *children, bool entity);
-  void setModeButton(QTableWidgetItem *item);
-  void disableModeButton();
-  void removeMode();
-  void changeModeColor(QTableWidgetItem *item);
+  void setAttributeModeButton(QTableWidgetItem *item);
+  void disableAttributeModeButton();
+  void removeAttributeMode();
+  void changeAttributeModeColor(QTableWidgetItem *item);
+  void setRelationshipModeButton(QTableWidgetItem *item);
+  void disableRelationshipModeButton();
+  void removeRelationshipMode();
+  void changeRelationshipModeColor(QTableWidgetItem *item);
   
   void wireLinkages();
   void groupOccurrences();
@@ -125,7 +131,8 @@ private:
   QPointer<GraphicsView> view;
   QPointer<QWidget> graphicsWidget;
   QPointer<QWidget> legendWidget;
-  QVector<OccurrenceItem*> occurrenceVector;
+  QVector<OccurrenceItem*> attributeOccurrenceVector;
+  QVector<OccurrenceItem*> relationshipOccurrenceVector;
   QVector<Arrow*> edgeVector;
   QVector<OccurrenceLabel*> labelVector;
   QVector<LineObject*> lineVector;
@@ -134,7 +141,8 @@ private:
   QVector<RectObject*> rectVector;
   EventGraphWidget *eventGraph;
 
-  QPointer<QLabel> legendLabel;
+  QPointer<QLabel> attributeLegendLabel;
+  QPointer<QLabel> relationshipLegendLabel;
   QPointer<QLabel> plotLabel;
   QPointer<QLabel> changeLabel;
   QPointer<QLabel> incongruencyLabel;
@@ -146,6 +154,7 @@ private:
   QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> addAttributeButton;
+  QPointer<QPushButton> addRelationshipButton;
   QPointer<QPushButton> getEventsButton;
   QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
@@ -153,18 +162,21 @@ private:
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> increaseDistanceButton;
   QPointer<QPushButton> decreaseDistanceButton;
-  QPointer<QPushButton> removeModeButton;
+  QPointer<QPushButton> removeAttributeModeButton;
+  QPointer<QPushButton> removeRelationshipModeButton;
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> exportMatrixButton;
   
   QPointer<DeselectableListWidget> attributeListWidget;
-
+  QPointer<DeselectableListWidget> relationshipListWidget;
+  
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
 
   QVector<QString> presentAttributes;
+  QVector<QString> presentRelationships;
   
   int distance;
   bool labelsVisible;
