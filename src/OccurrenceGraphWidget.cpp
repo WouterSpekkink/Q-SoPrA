@@ -517,8 +517,8 @@ void OccurrenceGraphWidget::changeModeColor(QTableWidgetItem *item) {
     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
     colorDialog->setCurrentColor(item->background().color());
     colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-    colorDialog->show();
-    if (colorDialog->getColor().isValid()) {
+    colorDialog->setModal(true);
+    if (colorDialog->exec()) {
       QColor color = colorDialog->selectedColor();
       item->setBackground(color);
       QTableWidgetItem* neighbour = attributeListWidget->item(item->row(), 0);
