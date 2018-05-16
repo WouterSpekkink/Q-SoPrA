@@ -194,9 +194,11 @@ private slots:
   void copyDescriptionToText();
   void processEllipseContextMenu(const QString &action);
   void changeEllipseColor();
+  void changeEllipseFillColor();
   void deleteEllipse();
   void processRectContextMenu(const QString &action);
   void changeRectColor();
+  void changeRectFillColor();
   void deleteRect();
   void duplicateLine();
   void duplicateText();

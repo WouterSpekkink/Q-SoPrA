@@ -387,7 +387,7 @@ void OccurrenceGraphWidget::addAttribute() {
 							       currentIncident, order, attribute);
 	    newOccurrence->setPos(newOccurrence->getOriginalPos());
 	    newOccurrence->setColor(color);
-	    newOccurrence->setZValue(1);
+	    newOccurrence->setZValue(3);
 	    occurrenceVector.push_back(newOccurrence);
 	    scene->addItem(newOccurrence);
 	    OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -398,7 +398,7 @@ void OccurrenceGraphWidget::addAttribute() {
 	    label->setNewPos(newOccurrence->scenePos());
 	    labelVector.push_back(label);
 	    newOccurrence->setLabel(label);
-	    label->setZValue(2);
+	    label->setZValue(4);
 	    scene->addItem(label);
 	  }
 	}
@@ -644,6 +644,7 @@ void OccurrenceGraphWidget::wireLinkages() {
       }
       if (tempTarget != NULL) {
 	Arrow *newArrow = new Arrow(tempSource->getAttribute(), "");
+	newArrow->setZValue(2);
 	newArrow->setStartItem(tempSource);
 	newArrow->setEndItem(tempTarget);
 	newArrow->setCopy(true);
@@ -774,7 +775,7 @@ void OccurrenceGraphWidget::getEvents() {
 							     currentAttribute);
 	  newOccurrence->setPos(newOccurrence->getOriginalPos());
 	  newOccurrence->setColor(color);
-	  newOccurrence->setZValue(1);
+	  newOccurrence->setZValue(3);
 	  occurrenceVector.push_back(newOccurrence);
 	  scene->addItem(newOccurrence);
 	  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -796,7 +797,7 @@ void OccurrenceGraphWidget::getEvents() {
 	  label->setNewPos(newOccurrence->scenePos());
 	  labelVector.push_back(label);
 	  newOccurrence->setLabel(label);
-	  label->setZValue(2);
+	  label->setZValue(4);
 	  scene->addItem(label);
 	}
       }
@@ -887,7 +888,7 @@ void OccurrenceGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPoint
   }
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(3);
+  newLineObject->setZValue(5);
 }
 
 void OccurrenceGraphWidget::addTextObject(const QPointF &pos) {
@@ -901,7 +902,7 @@ void OccurrenceGraphWidget::addTextObject(const QPointF &pos) {
     textVector.push_back(newText);
     scene->addItem(newText);
     newText->setPos(pos);
-    newText->setZValue(4);
+    newText->setZValue(6);
     newText->adjustSize();
   }
   delete textDialog;
@@ -911,7 +912,7 @@ void OccurrenceGraphWidget::addEllipseObject(const QPointF &pos) {
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
-  newEllipse->setZValue(3);
+  newEllipse->setZValue(1);
   newEllipse->setPos(pos);
   newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
@@ -920,7 +921,7 @@ void OccurrenceGraphWidget::addRectObject(const QPointF &pos) {
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
-  newRect->setZValue(3);
+  newRect->setZValue(1);
   newRect->setPos(pos);
   newRect->moveCenter(newRect->mapFromScene(pos));
 }
@@ -1002,7 +1003,7 @@ void OccurrenceGraphWidget::duplicateLine() {
       newLineObject->setColor(line->getColor());
       lineVector.push_back(newLineObject);
       scene->addItem(newLineObject);
-      newLineObject->setZValue(3);
+      newLineObject->setZValue(5);
     }
   }
 }
@@ -1081,7 +1082,7 @@ void OccurrenceGraphWidget::duplicateText() {
 	QPointF pos = text->scenePos();
 	pos.setY(pos.y() - 300);
 	newText->setPos(pos);
-	newText->setZValue(4);
+	newText->setZValue(6);
 	newText->adjustSize();
 	newText->setDefaultTextColor(text->defaultTextColor());
 	newText->setRotationValue(text->getRotationValue());
@@ -1095,6 +1096,8 @@ void OccurrenceGraphWidget::duplicateText() {
 void OccurrenceGraphWidget::processEllipseContextMenu(const QString &action) {
   if (action == CHANGEELLIPSECOLOR) {
     changeEllipseColor();
+  } else if (action == CHANGEELLIPSEFILLCOLOR) {
+    changeEllipseFillColor();
   } else if (action == DELETEELLIPSE) {
     deleteEllipse();
   } else if (action == COPYOBJECT) {
@@ -1111,6 +1114,22 @@ void OccurrenceGraphWidget::changeEllipseColor() {
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	ellipse->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void OccurrenceGraphWidget::changeEllipseFillColor() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	ellipse->setFillColor(color);
       }
       delete colorDialog;
     }
@@ -1138,10 +1157,11 @@ void OccurrenceGraphWidget::duplicateEllipse() {
       newEllipse->setTopRight(ellipse->topRight());
       newEllipse->setBottomRight(ellipse->bottomRight());
       newEllipse->setColor(ellipse->getColor());
+      newEllipse->setFillColor(ellipse->getFillColor());
       newEllipse->setPenWidth(ellipse->getPenWidth());
       newEllipse->setPenStyle(ellipse->getPenStyle());
       ellipseVector.push_back(newEllipse);
-      newEllipse->setZValue(3);
+      newEllipse->setZValue(1);
       scene->addItem(newEllipse);
       QPointF pos = ellipse->mapToScene(ellipse->getCenter());
       pos.setY(pos.y() - 100);
@@ -1154,6 +1174,8 @@ void OccurrenceGraphWidget::duplicateEllipse() {
 void OccurrenceGraphWidget::processRectContextMenu(const QString &action) {
   if (action == CHANGERECTCOLOR) {
     changeRectColor();
+  } else if (action == CHANGERECTFILLCOLOR) {
+    changeRectFillColor();
   } else if (action == DELETERECT) {
     deleteRect();
   } else if (action == COPYOBJECT) {
@@ -1170,6 +1192,22 @@ void OccurrenceGraphWidget::changeRectColor() {
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	rect->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void OccurrenceGraphWidget::changeRectFillColor() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	rect->setFillColor(color);
       }
       delete colorDialog;
     }
@@ -1197,10 +1235,11 @@ void OccurrenceGraphWidget::duplicateRect() {
       newRect->setTopRight(rect->topRight());
       newRect->setBottomRight(rect->bottomRight());
       newRect->setColor(rect->getColor());
+      newRect->setFillColor(rect->getFillColor());
       newRect->setPenWidth(rect->getPenWidth());
       newRect->setPenStyle(rect->getPenStyle());
       rectVector.push_back(newRect);
-      newRect->setZValue(3);
+      newRect->setZValue(1);
       scene->addItem(newRect);
       QPointF pos = rect->mapToScene(rect->getCenter());
       pos.setY(pos.y() - 100);
@@ -1240,7 +1279,7 @@ void OccurrenceGraphWidget::changeLabels() {
       newLabel->setNewPos(currentOccurrence->scenePos());
       labelVector.push_back(newLabel);
       currentOccurrence->setLabel(newLabel);
-      newLabel->setZValue(2);
+      newLabel->setZValue(4);
       scene->addItem(newLabel);
       delete oldLabel;
       labelVector.removeOne(oldLabel);
@@ -1259,7 +1298,7 @@ void OccurrenceGraphWidget::changeLabels() {
       newLabel->setNewPos(currentOccurrence->scenePos());
       labelVector.push_back(newLabel);
       currentOccurrence->setLabel(newLabel);
-      newLabel->setZValue(2);
+      newLabel->setZValue(4);
       scene->addItem(newLabel);
       delete oldLabel;
       labelVector.removeOne(oldLabel);
@@ -1826,10 +1865,12 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_og_plots_ellipses "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha) "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha, "
+		   ":fillred, :fillgreen, :fillblue, :fillalpha)");
     QVectorIterator<EllipseObject*> it10(ellipseVector);
     while (it10.hasNext()) {
       EllipseObject *ellipse = it10.next();
@@ -1851,6 +1892,11 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
+      QColor fillColor = ellipse->getFillColor();
+      int fillred = fillColor.red();
+      int fillgreen = fillColor.green();
+      int fillblue = fillColor.blue();
+      int fillalpha = fillColor.alpha();
       query->bindValue(":plot", name);
       query->bindValue(":xpos", xpos);
       query->bindValue(":ypos", ypos);
@@ -1869,6 +1915,10 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
+      query->bindValue(":fillred", fillred);
+      query->bindValue(":fillgreen", fillgreen);
+      query->bindValue(":fillblue", fillblue);
+      query->bindValue(":fillalpha", fillalpha);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -1885,10 +1935,12 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_og_plots_rects "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha) "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha, "
+		   ":fillred, :fillgreen, :fillblue, :fillalpha)");
     QVectorIterator<RectObject*> it11(rectVector);
     while (it11.hasNext()) {
       RectObject *rect = it11.next();
@@ -1910,6 +1962,11 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
+      QColor fillColor = rect->getFillColor();
+      int fillred = fillColor.red();
+      int fillgreen = fillColor.green();
+      int fillblue = fillColor.blue();
+      int fillalpha = fillColor.alpha();
       query->bindValue(":plot", name);
       query->bindValue(":xpos", xpos);
       query->bindValue(":ypos", ypos);
@@ -1928,6 +1985,10 @@ void OccurrenceGraphWidget::saveCurrentPlot() {
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
+      query->bindValue(":fillred", fillred);
+      query->bindValue(":fillgreen", fillgreen);
+      query->bindValue(":fillblue", fillblue);
+      query->bindValue(":fillalpha", fillalpha);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -1991,7 +2052,7 @@ void OccurrenceGraphWidget::seePlots() {
 						       id, order, attribute);
       currentItem->setPos(currentPos);
       currentItem->setColor(QColor(red, green, blue, alpha));
-      currentItem->setZValue(1);
+      currentItem->setZValue(3);
       occurrenceVector.push_back(currentItem);
       scene->addItem(currentItem);
       if (hidden == 1) {
@@ -2034,7 +2095,7 @@ void OccurrenceGraphWidget::seePlots() {
 	  currentLabel->setPos(QPointF(currentX, currentY));
 	  currentLabel->setOffset(QPointF(xOffset, yOffset));
 	  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
-	  currentLabel->setZValue(2);
+	  currentLabel->setZValue(4);
 	  currentItem->setLabel(currentLabel);
 	  labelVector.push_back(currentLabel);
 	  scene->addItem(currentLabel);
@@ -2095,7 +2156,7 @@ void OccurrenceGraphWidget::seePlots() {
       QColor color = QColor(red, green, blue, alpha);
       LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
       lineVector.push_back(newLine);
-      newLine->setZValue(3);
+      newLine->setZValue(5);
       newLine->setColor(color);
       if (arone == 1) {
 	newLine->setArrow1(true);
@@ -2126,7 +2187,7 @@ void OccurrenceGraphWidget::seePlots() {
       QColor color = QColor(red, green, blue, alpha);
       TextObject *newText = new TextObject(desc);
       textVector.push_back(newText);
-      newText->setZValue(4);
+      newText->setZValue(6);
       newText->setDefaultTextColor(color);
       newText->setTextWidth(width);
       QFont font = newText->font();
@@ -2138,7 +2199,8 @@ void OccurrenceGraphWidget::seePlots() {
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha "
 		   "FROM saved_og_plots_ellipses "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -2161,7 +2223,12 @@ void OccurrenceGraphWidget::seePlots() {
       int green = query->value(14).toInt();
       int blue = query->value(15).toInt();
       int alpha = query->value(16).toInt();
+      int fillred = query->value(17).toInt();
+      int fillgreen = query->value(18).toInt();
+      int fillblue = query->value(19).toInt();
+      int fillalpha = query->value(20).toInt();
       QColor color = QColor(red, green, blue, alpha);
+      QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
       EllipseObject *newEllipse = new EllipseObject();
       ellipseVector.push_back(newEllipse);
       scene->addItem(newEllipse);
@@ -2172,13 +2239,15 @@ void OccurrenceGraphWidget::seePlots() {
       newEllipse->moveCenter(newEllipse->mapToScene(QPointF(xpos, ypos)));
       newEllipse->setRotationValue(rotation);
       newEllipse->setColor(color);
+      newEllipse->setFillColor(fillColor);
       newEllipse->setPenWidth(penwidth);
       newEllipse->setPenStyle(penstyle);
-      newEllipse->setZValue(3);
+      newEllipse->setZValue(1);
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha "
 		   "FROM saved_og_plots_rects "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -2201,7 +2270,12 @@ void OccurrenceGraphWidget::seePlots() {
       int green = query->value(14).toInt();
       int blue = query->value(15).toInt();
       int alpha = query->value(16).toInt();
+      int fillred = query->value(17).toInt();
+      int fillgreen = query->value(18).toInt();
+      int fillblue = query->value(19).toInt();
+      int fillalpha = query->value(20).toInt();
       QColor color = QColor(red, green, blue, alpha);
+      QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
       RectObject *newRect = new RectObject();
       rectVector.push_back(newRect);
       scene->addItem(newRect);
@@ -2212,9 +2286,10 @@ void OccurrenceGraphWidget::seePlots() {
       newRect->moveCenter(newRect->mapToScene(QPointF(xpos, ypos)));
       newRect->setRotationValue(rotation);
       newRect->setColor(color);
+      newRect->setFillColor(fillColor);
       newRect->setPenWidth(penwidth);
       newRect->setPenStyle(penstyle);
-      newRect->setZValue(3);
+      newRect->setZValue(1);
     }
     distance = 70;
     plotLabel->setText(plot);
@@ -2225,6 +2300,7 @@ void OccurrenceGraphWidget::seePlots() {
     setRangeControls();
     setVisibility();
     checkCongruency();
+    updateArrows();
     delete query;
   } else if (savedPlotsDialog->getExitStatus() == 2) {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!

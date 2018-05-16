@@ -4,6 +4,7 @@
 EllipseObject::EllipseObject() {
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
+  fillColor = QColor(Qt::transparent);
   rotation = 0;
   penWidth = 1;
   penStyle = 1;
@@ -13,11 +14,12 @@ EllipseObject::EllipseObject() {
 
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
-  QPainterPath path;
-  path.addEllipse(drawRect);
-  painter->strokePath(path, QPen(color, penWidth, Qt::PenStyle(penStyle)));
+  painter->setBrush(fillColor);
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
+  painter->drawEllipse(drawRect);
   if (isSelected()) {
     QRectF selectRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
+    painter->setBrush(QColor(Qt::transparent));
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
     QPainterPath outline;
     outline.addRect(selectRect);
@@ -32,6 +34,14 @@ QColor EllipseObject::getColor() {
 
 void EllipseObject::setColor(const QColor &subColor) {
   color = subColor;
+}
+
+QColor EllipseObject::getFillColor() {
+  return fillColor;
+}
+
+void EllipseObject::setFillColor(const QColor &subColor) {
+  fillColor = subColor;
 }
 
 qreal EllipseObject::getLeft() {

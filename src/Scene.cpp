@@ -1046,10 +1046,12 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
       menu.addAction(action1);
-      QAction *action2 = new QAction(COPYOBJECT, this);
+      QAction *action2 = new QAction(CHANGEELLIPSEFILLCOLOR, this);
       menu.addAction(action2);
-      QAction *action3 = new QAction(DELETEELLIPSE, this);
+      QAction *action3 = new QAction(COPYOBJECT, this);
       menu.addAction(action3);
+      QAction *action4 = new QAction(DELETEELLIPSE, this);
+      menu.addAction(action4);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit EllipseContextMenuAction(action->text());
       }
@@ -1059,10 +1061,12 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(CHANGERECTCOLOR, this);
       menu.addAction(action1);
-      QAction *action2 = new QAction(COPYOBJECT, this);
+      QAction *action2 = new QAction(CHANGERECTFILLCOLOR, this);
       menu.addAction(action2);
-      QAction *action3 = new QAction(DELETERECT, this);
+      QAction *action3 = new QAction(COPYOBJECT, this);
       menu.addAction(action3);
+      QAction *action4 = new QAction(DELETERECT, this);
+      menu.addAction(action4);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit RectContextMenuAction(action->text());
       }

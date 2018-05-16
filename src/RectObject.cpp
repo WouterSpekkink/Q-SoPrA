@@ -4,6 +4,7 @@
 RectObject::RectObject() {
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
+  fillColor = QColor(Qt::transparent);
   rotation = 0;
   penWidth = 1;
   penStyle = 1;
@@ -13,10 +14,11 @@ RectObject::RectObject() {
 
 void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   prepareGeometryChange();
-  QPainterPath path;
-  path.addRect(drawRect);
-  painter->strokePath(path, QPen(color, penWidth, Qt::PenStyle(penStyle)));
+  painter->setBrush(fillColor);
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
+  painter->drawRect(drawRect);
   if (isSelected()) {
+    painter->setBrush(QColor(Qt::transparent));
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
     painter->drawLine(topLeft(), bottomRight());
     painter->drawLine(topRight(), bottomLeft());
@@ -30,6 +32,14 @@ QColor RectObject::getColor() {
 
 void RectObject::setColor(const QColor &subColor) {
   color = subColor;
+}
+
+QColor RectObject::getFillColor() {
+  return fillColor;
+}
+
+void RectObject::setFillColor(const QColor &subColor) {
+  fillColor = subColor;
 }
 
 qreal RectObject::getLeft() {

@@ -1109,9 +1109,9 @@ void NetworkGraphWidget::getEntities() {
     label->setDefaultTextColor(Qt::black);
     labelVector.push_back(label);
     currentNode->setLabel(label);
-    label->setZValue(2);
+    label->setZValue(4);
     label->hide();
-    currentNode->setZValue(1);
+    currentNode->setZValue(3);
     currentNode->hide();
     nodeVector.push_back(currentNode);
   }
@@ -1184,6 +1184,7 @@ void NetworkGraphWidget::getDirectedEdges() {
 	}
 	if (tempSource != NULL && tempTarget != NULL) {
 	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, type, name, 0);
+	  currentEdge->setZValue(2);
 	  currentEdge->setComment(comment);
 	  currentEdge->hide();
 	  directedVector.push_back(currentEdge);
@@ -1258,6 +1259,7 @@ void NetworkGraphWidget::getUndirectedEdges() {
 	  } else {
 	    currentEdge = new UndirectedEdge(tempTarget, tempSource, type, name, 0);
 	  }
+	  currentEdge->setZValue(2);
 	  currentEdge->setComment(comment);
 	  currentEdge->hide();
 	  undirectedVector.push_back(currentEdge);
@@ -1727,7 +1729,7 @@ void NetworkGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF &
   }
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(3);
+  newLineObject->setZValue(5);
 }
 
 void NetworkGraphWidget::addTextObject(const QPointF &pos) {
@@ -1741,7 +1743,7 @@ void NetworkGraphWidget::addTextObject(const QPointF &pos) {
     textVector.push_back(newText);
     scene->addItem(newText);
     newText->setPos(pos);
-    newText->setZValue(4);
+    newText->setZValue(6);
     newText->adjustSize();
   }
   delete textDialog;
@@ -1751,7 +1753,7 @@ void NetworkGraphWidget::addEllipseObject(const QPointF &pos) {
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
-  newEllipse->setZValue(3);
+  newEllipse->setZValue(1);
   newEllipse->setPos(pos);
   newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
@@ -1760,7 +1762,7 @@ void NetworkGraphWidget::addRectObject(const QPointF &pos) {
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
-  newRect->setZValue(3);
+  newRect->setZValue(1);
   newRect->setPos(pos);
   newRect->moveCenter(newRect->mapFromScene(pos));
 }
@@ -1842,7 +1844,7 @@ void NetworkGraphWidget::duplicateLine() {
       newLineObject->setColor(line->getColor());
       lineVector.push_back(newLineObject);
       scene->addItem(newLineObject);
-      newLineObject->setZValue(3);
+      newLineObject->setZValue(5);
     }
   }
 }
@@ -1921,7 +1923,7 @@ void NetworkGraphWidget::duplicateText() {
 	QPointF pos = text->scenePos();
 	pos.setY(pos.y() - 300);
 	newText->setPos(pos);
-	newText->setZValue(4);
+	newText->setZValue(6);
 	newText->adjustSize();
 	newText->setDefaultTextColor(text->defaultTextColor());
 	newText->setRotationValue(text->getRotationValue());
@@ -1933,8 +1935,10 @@ void NetworkGraphWidget::duplicateText() {
 }
 
 void NetworkGraphWidget::processEllipseContextMenu(const QString &action) {
-  if (action == CHANGEELLIPSECOLOR) {
+  if (action == CHANGEELLIPSECOLOR) { 
     changeEllipseColor();
+  } else if (action == CHANGEELLIPSEFILLCOLOR) {
+    changeEllipseFillColor();
   } else if (action == DELETEELLIPSE) {
     deleteEllipse();
   } else if (action == COPYOBJECT) {
@@ -1951,6 +1955,22 @@ void NetworkGraphWidget::changeEllipseColor() {
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	ellipse->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void NetworkGraphWidget::changeEllipseFillColor() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	ellipse->setFillColor(color);
       }
       delete colorDialog;
     }
@@ -1978,10 +1998,11 @@ void NetworkGraphWidget::duplicateEllipse() {
       newEllipse->setTopRight(ellipse->topRight());
       newEllipse->setBottomRight(ellipse->bottomRight());
       newEllipse->setColor(ellipse->getColor());
+      newEllipse->setFillColor(ellipse->getFillColor());
       newEllipse->setPenWidth(ellipse->getPenWidth());
       newEllipse->setPenStyle(ellipse->getPenStyle());
       ellipseVector.push_back(newEllipse);
-      newEllipse->setZValue(3);
+      newEllipse->setZValue(1);
       scene->addItem(newEllipse);
       QPointF pos = ellipse->mapToScene(ellipse->getCenter());
       pos.setY(pos.y() - 100);
@@ -1994,6 +2015,8 @@ void NetworkGraphWidget::duplicateEllipse() {
 void NetworkGraphWidget::processRectContextMenu(const QString &action) {
   if (action == CHANGERECTCOLOR) {
     changeRectColor();
+  } else if (action == CHANGERECTFILLCOLOR) {
+    changeRectFillColor();
   } else if (action == DELETERECT) {
     deleteRect();
   } else if (action == COPYOBJECT) {
@@ -2010,6 +2033,22 @@ void NetworkGraphWidget::changeRectColor() {
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	rect->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void NetworkGraphWidget::changeRectFillColor() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	rect->setFillColor(color);
       }
       delete colorDialog;
     }
@@ -2037,10 +2076,11 @@ void NetworkGraphWidget::duplicateRect() {
       newRect->setTopRight(rect->topRight());
       newRect->setBottomRight(rect->bottomRight());
       newRect->setColor(rect->getColor());
+      newRect->setFillColor(rect->getFillColor());
       newRect->setPenWidth(rect->getPenWidth());
       newRect->setPenStyle(rect->getPenStyle());
       rectVector.push_back(newRect);
-      newRect->setZValue(3);
+      newRect->setZValue(1);
       scene->addItem(newRect);
       QPointF pos = rect->mapToScene(rect->getCenter());
       pos.setY(pos.y() - 100);
@@ -2216,6 +2256,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    directedVector.push_back(newEdge);
 		  }
 		} else if (directedness == UNDIRECTED) {
@@ -2243,6 +2284,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    undirectedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2280,6 +2322,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    directedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2309,6 +2352,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    undirectedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2353,6 +2397,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    directedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2382,6 +2427,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    undirectedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2419,6 +2465,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    directedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2448,6 +2495,7 @@ void NetworkGraphWidget::multimodeTransformation() {
 		    }
 		  }
 		  if (!found) {
+		    newEdge->setZValue(2);
 		    undirectedVector.push_back(newEdge);
 		  } else {
 		    delete newEdge;
@@ -2665,6 +2713,7 @@ void NetworkGraphWidget::mergeRelationships() {
 	if (types.contains(directed->getType())) {
 	  DirectedEdge *newDirected = new DirectedEdge(directed->startItem(), directed->endItem(),
 						       name, CREATED, 0);
+	  newDirected->setZValue(2);
 	  newDirected->setColor(color);
 	  directedVector.push_back(newDirected);
 	  delete directed;
@@ -2702,6 +2751,7 @@ void NetworkGraphWidget::mergeRelationships() {
 							     undirected->endItem(),
 							     name, CREATED, 0);
 	  newUndirected->setColor(color);
+	  newUndirected->setZValue(2);
 	  undirectedVector.push_back(newUndirected);
 	  delete undirected;
 	  undirectedVector.removeOne(undirected);
@@ -3788,10 +3838,12 @@ void NetworkGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_ng_plots_ellipses "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha) "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha, "
+		   ":fillred, :fillgreen, :fillblue, :fillalpha)");
     QVectorIterator<EllipseObject*> it10(ellipseVector);
     while (it10.hasNext()) {
       EllipseObject *ellipse = it10.next();
@@ -3813,6 +3865,11 @@ void NetworkGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
+      QColor fillColor = ellipse->getFillColor();
+      int fillred = fillColor.red();
+      int fillgreen = fillColor.green();
+      int fillblue = fillColor.blue();
+      int fillalpha = fillColor.alpha();
       query->bindValue(":plot", name);
       query->bindValue(":xpos", xpos);
       query->bindValue(":ypos", ypos);
@@ -3831,6 +3888,10 @@ void NetworkGraphWidget::saveCurrentPlot() {
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
+      query->bindValue(":fillred", fillred);
+      query->bindValue(":fillgreen", fillgreen);
+      query->bindValue(":fillblue", fillblue);
+      query->bindValue(":fillalpha", fillalpha);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -3847,10 +3908,12 @@ void NetworkGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_ng_plots_rects "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha) "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :red, :green, :blue, :alpha, "
+		   ":fillred, :fillgreen, :fillblue, :fillalpha)");
     QVectorIterator<RectObject*> it11(rectVector);
     while (it11.hasNext()) {
       RectObject *rect = it11.next();
@@ -3872,6 +3935,11 @@ void NetworkGraphWidget::saveCurrentPlot() {
       int green = color.green();
       int blue = color.blue();
       int alpha = color.alpha();
+      QColor fillColor = rect->getFillColor();
+      int fillred = fillColor.red();
+      int fillgreen = fillColor.green();
+      int fillblue = fillColor.blue();
+      int fillalpha = fillColor.alpha();
       query->bindValue(":plot", name);
       query->bindValue(":xpos", xpos);
       query->bindValue(":ypos", ypos);
@@ -3890,6 +3958,10 @@ void NetworkGraphWidget::saveCurrentPlot() {
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
+      query->bindValue(":fillred", fillred);
+      query->bindValue(":fillgreen", fillgreen);
+      query->bindValue(":fillblue", fillblue);
+      query->bindValue(":fillalpha", fillalpha);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -3936,7 +4008,7 @@ void NetworkGraphWidget::seePlots() {
       node->setMode(mode);
       scene->addItem(node);
       node->setPos(currentPos);
-      node->setZValue(1);
+      node->setZValue(3);
       if (hidden == 1) {
 	node->hide();
       } else {
@@ -3978,7 +4050,7 @@ void NetworkGraphWidget::seePlots() {
 	  currentLabel->setOffset(QPointF(xOffset, yOffset));
 	  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
 	  scene->addItem(currentLabel);
-	  currentLabel->setZValue(2);
+	  currentLabel->setZValue(4);
 	  if (hidden == 1) {
 	    currentLabel->hide();
 	  } else {
@@ -4078,6 +4150,7 @@ void NetworkGraphWidget::seePlots() {
 	if (tempSource != NULL && tempTarget != NULL) {
 	  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget,
 						       type, name, 0);
+	  currentEdge->setZValue(2);
 	  currentEdge->setComment(comment);
 	  currentEdge->setHeight(height);
 	  if (filtered == 1) {
@@ -4133,6 +4206,7 @@ void NetworkGraphWidget::seePlots() {
 	if (tempSource != NULL && tempTarget != NULL) {
 	  UndirectedEdge *currentEdge = new UndirectedEdge(tempSource, tempTarget,
 							   type, name, 0);
+	  currentEdge->setZValue(2);
 	  currentEdge->setComment(comment);
 	  currentEdge->setHeight(height);
 	  if (filtered == 0) {
@@ -4197,7 +4271,7 @@ void NetworkGraphWidget::seePlots() {
       QColor color = QColor(red, green, blue, alpha);
       LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
       lineVector.push_back(newLine);
-      newLine->setZValue(3);
+      newLine->setZValue(5);
       newLine->setColor(color);
       if (arone == 1) {
 	newLine->setArrow1(true);
@@ -4228,7 +4302,7 @@ void NetworkGraphWidget::seePlots() {
       QColor color = QColor(red, green, blue, alpha);
       TextObject *newText = new TextObject(desc);
       textVector.push_back(newText);
-      newText->setZValue(4);
+      newText->setZValue(6);
       newText->setDefaultTextColor(color);
       newText->setTextWidth(width);
       QFont font = newText->font();
@@ -4240,7 +4314,8 @@ void NetworkGraphWidget::seePlots() {
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha "
 		   "FROM saved_ng_plots_ellipses "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -4263,7 +4338,12 @@ void NetworkGraphWidget::seePlots() {
       int green = query->value(14).toInt();
       int blue = query->value(15).toInt();
       int alpha = query->value(16).toInt();
+      int fillred = query->value(17).toInt();
+      int fillgreen = query->value(18).toInt();
+      int fillblue = query->value(19).toInt();
+      int fillalpha = query->value(20).toInt();
       QColor color = QColor(red, green, blue, alpha);
+      QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
       EllipseObject *newEllipse = new EllipseObject();
       ellipseVector.push_back(newEllipse);
       scene->addItem(newEllipse);
@@ -4274,13 +4354,15 @@ void NetworkGraphWidget::seePlots() {
       newEllipse->moveCenter(newEllipse->mapToScene(QPointF(xpos, ypos)));
       newEllipse->setRotationValue(rotation);
       newEllipse->setColor(color);
+      newEllipse->setFillColor(fillColor);
       newEllipse->setPenWidth(penwidth);
       newEllipse->setPenStyle(penstyle);
-      newEllipse->setZValue(3);
+      newEllipse->setZValue(1);
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha "
+		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "fillred, fillgreen, fillblue, fillalpha "
 		   "FROM saved_ng_plots_rects "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -4303,7 +4385,12 @@ void NetworkGraphWidget::seePlots() {
       int green = query->value(14).toInt();
       int blue = query->value(15).toInt();
       int alpha = query->value(16).toInt();
+      int fillred = query->value(17).toInt();
+      int fillgreen = query->value(18).toInt();
+      int fillblue = query->value(19).toInt();
+      int fillalpha = query->value(20).toInt();
       QColor color = QColor(red, green, blue, alpha);
+      QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
       RectObject *newRect = new RectObject();
       rectVector.push_back(newRect);
       scene->addItem(newRect);
@@ -4314,9 +4401,10 @@ void NetworkGraphWidget::seePlots() {
       newRect->moveCenter(newRect->mapToScene(QPointF(xpos, ypos)));
       newRect->setRotationValue(rotation);
       newRect->setColor(color);
+      newRect->setFillColor(fillColor);
       newRect->setPenWidth(penwidth);
       newRect->setPenStyle(penstyle);
-      newRect->setZValue(3);
+      newRect->setZValue(1);
     }
     checkCongruency();
     setRangeControls();

@@ -320,7 +320,11 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE saved_eg_plots_rects "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -340,7 +344,11 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE saved_ng_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
@@ -470,7 +478,11 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE saved_ng_plots_rects "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -490,7 +502,11 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE saved_og_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
@@ -582,7 +598,11 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE saved_og_plots_rects "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -602,7 +622,11 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();
@@ -907,7 +931,11 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_rects "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -927,7 +955,11 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
@@ -1057,7 +1089,11 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_rects "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -1077,7 +1113,11 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text)");
@@ -1169,7 +1209,11 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_rects "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -1189,7 +1233,11 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "fillred integer, "
+		  "fillgreen integer, "
+		  "fillblue integer, "
+		  "fillalpha integer)");
       delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();

@@ -21,7 +21,7 @@ LineObject::LineObject(QPointF subStartPos,
 }
 
 QRectF LineObject::boundingRect() const {
-  qreal extra = (pen().width() + 20) / 2.0;
+  qreal extra = (pen().width() + 40) / 2.0;
   
   return QRectF(startPos, QSizeF(endPos.x() - startPos.x(),
 				 endPos.y() - startPos.y()))

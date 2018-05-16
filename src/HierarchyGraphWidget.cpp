@@ -488,7 +488,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   newOrigin->setColor(submittedOrigin->getColor());
   newOrigin->setAttributes(submittedOrigin->getAttributes());
   newOrigin->setOrder(submittedOrigin->getOrder());
-  newOrigin->setZValue(1);
+  newOrigin->setZValue(3);
   MacroLabel *macroLabel = new MacroLabel(newOrigin);
   newOrigin->setLabel(macroLabel);
   QTableWidgetItem *item = new QTableWidgetItem(newOrigin->getMode());
@@ -537,7 +537,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   qreal xOffset = (newOrigin->getWidth() / 2) - 20;
   macroLabel->setOffset(QPointF(xOffset,0));
   macroLabel->setNewPos(newOrigin->scenePos());
-  macroLabel->setZValue(2);
+  macroLabel->setZValue(4);
   macroLabel->setDefaultTextColor(Qt::black);
   scene->addItem(newOrigin);
   scene->addItem(macroLabel);
@@ -557,7 +557,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newMacro->setAttributes(macro->getAttributes());
       newMacro->setPos(newMacro->getOriginalPos());
       newMacro->setOrder(macro->getOrder());
-      newMacro->setZValue(1);
+      newMacro->setZValue(3);
       bool found = false;
       if (newMacro->getMode() != "") {
 	for (int i = 0; i < eventListWidget->rowCount(); i++) {
@@ -610,10 +610,11 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       qreal xOffset = (newMacro->getWidth() / 2) - 20;
       newMacroLabel->setOffset(QPointF(xOffset,0));
       newMacroLabel->setNewPos(newMacro->scenePos());
-      newMacroLabel->setZValue(2);
+      newMacroLabel->setZValue(4);
       newMacroLabel->setDefaultTextColor(Qt::black);
       currentLayer.push_back(newMacro);
       Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+      newArrow->setZValue(2);
       newArrow->setStartItem(newMacro);
       newArrow->setEndItem(newOrigin);
       newArrow->setCopy(true);
@@ -631,7 +632,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newEvent->setMode(event->getMode());
       newEvent->setColor(event->getColor());
       newEvent->setPos(newEvent->getOriginalPos());
-      newEvent->setZValue(1);
+      newEvent->setZValue(3);
       bool found = false;
       if (newEvent->getMode() != "") {
 	for (int i = 0; i < eventListWidget->rowCount(); i++) {
@@ -671,10 +672,11 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       currentPos.setX(currentPos.x() - (text->textWidth() / 2));
       currentPos.setY(currentPos.y() -12);
       text->setPos(currentPos);    
-      text->setZValue(2);
+      text->setZValue(4);
       text->setDefaultTextColor(Qt::black);
       currentLayer.push_back(newEvent);
       Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+      newArrow->setZValue(2);
       newArrow->setStartItem(newEvent);
       newArrow->setEndItem(newOrigin);
       newArrow->setCopy(true);
@@ -738,7 +740,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	newMacro->setAttributes(macro->getAttributes());
 	newMacro->setPos(newMacro->getOriginalPos());
 	newMacro->setOrder(macro->getOrder());
-	newMacro->setZValue(1);
+	newMacro->setZValue(3);
 	bool found = false;
 	if (newMacro->getMode() != "") {
 	  QSqlQuery *query = new QSqlQuery;
@@ -791,11 +793,12 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	qreal xOffset = (newMacro->getWidth() / 2) - 20;
 	newMacroLabel->setOffset(QPointF(xOffset, 0));
 	newMacroLabel->setNewPos(newMacro->scenePos());
-	newMacroLabel->setZValue(2);
+	newMacroLabel->setZValue(4);
 	newMacroLabel->setDefaultTextColor(Qt::black);
 	currentLayer.push_back(newMacro);
 	partners.push_back(macro);
 	Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+	newArrow->setZValue(2);
 	newArrow->setStartItem(newMacro);
 	newArrow->setEndItem(partLayer[it]);
 	newArrow->setCopy(true);
@@ -824,7 +827,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  newEvent->setMode(event->getMode());
 	  newEvent->setColor(event->getColor());
 	  newEvent->setPos(newEvent->getOriginalPos());
-	  newEvent->setZValue(1);
+	  newEvent->setZValue(3);
 	  bool found = false;
 	  if (newEvent->getMode() != "") {
 	    QSqlQuery *query = new QSqlQuery;
@@ -864,11 +867,12 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
 	  currentPos.setY(currentPos.y() -12);
 	  text->setPos(currentPos);    
-	  text->setZValue(2);
+	  text->setZValue(4);
 	  text->setDefaultTextColor(Qt::black);
 	  currentLayer.push_back(newEvent);
 	  partners.push_back(event);
 	  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+	  newArrow->setZValue(2);
 	  newArrow->setStartItem(newEvent);
 	  newArrow->setEndItem(partLayer[it]);
 	  newArrow->setCopy(true);
@@ -1017,6 +1021,7 @@ void HierarchyGraphWidget::getEdges() {
       }
       if (valid) {
 	Arrow *newArrow = new Arrow("Linkages", "", 0);
+	newArrow->setZValue(2);
 	newArrow->setStartItem(source);
 	newArrow->setEndItem(target);
 	newArrow->setColor(QColor(169, 169, 169, 255));
@@ -1409,7 +1414,7 @@ void HierarchyGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF
   }
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(3);
+  newLineObject->setZValue(5);
 }
 
 void HierarchyGraphWidget::addTextObject(const QPointF &pos) {
@@ -1423,7 +1428,7 @@ void HierarchyGraphWidget::addTextObject(const QPointF &pos) {
     textVector.push_back(newText);
     scene->addItem(newText);
     newText->setPos(pos);
-    newText->setZValue(4);
+    newText->setZValue(6);
     newText->adjustSize();
   }
   delete textDialog;
@@ -1433,7 +1438,7 @@ void HierarchyGraphWidget::addEllipseObject(const QPointF &pos) {
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
-  newEllipse->setZValue(3);
+  newEllipse->setZValue(1);
   newEllipse->setPos(pos);
   newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
@@ -1442,7 +1447,7 @@ void HierarchyGraphWidget::addRectObject(const QPointF &pos) {
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
-  newRect->setZValue(3);
+  newRect->setZValue(1);
   newRect->setPos(pos);
   newRect->moveCenter(newRect->mapFromScene(pos));
 }
@@ -1524,7 +1529,7 @@ void HierarchyGraphWidget::duplicateLine() {
       newLineObject->setColor(line->getColor());
       lineVector.push_back(newLineObject);
       scene->addItem(newLineObject);
-      newLineObject->setZValue(3);
+      newLineObject->setZValue(5);
     }
   }
 }
@@ -1603,7 +1608,7 @@ void HierarchyGraphWidget::duplicateText() {
 	QPointF pos = text->scenePos();
 	pos.setY(pos.y() - 300);
 	newText->setPos(pos);
-	newText->setZValue(4);
+	newText->setZValue(6);
 	newText->adjustSize();
 	newText->setDefaultTextColor(text->defaultTextColor());
 	newText->setRotationValue(text->getRotationValue());
@@ -1617,6 +1622,8 @@ void HierarchyGraphWidget::duplicateText() {
 void HierarchyGraphWidget::processEllipseContextMenu(const QString &action) {
   if (action == CHANGEELLIPSECOLOR) {
     changeEllipseColor();
+  } else if (action == CHANGEELLIPSEFILLCOLOR) {
+    changeEllipseFillColor();
   } else if (action == DELETEELLIPSE) {
     deleteEllipse();
   } else if (action == COPYOBJECT) {
@@ -1633,6 +1640,22 @@ void HierarchyGraphWidget::changeEllipseColor() {
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	ellipse->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::changeEllipseFillColor() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	ellipse->setFillColor(color);
       }
       delete colorDialog;
     }
@@ -1660,10 +1683,11 @@ void HierarchyGraphWidget::duplicateEllipse() {
       newEllipse->setTopRight(ellipse->topRight());
       newEllipse->setBottomRight(ellipse->bottomRight());
       newEllipse->setColor(ellipse->getColor());
+      newEllipse->setFillColor(ellipse->getFillColor());
       newEllipse->setPenWidth(ellipse->getPenWidth());
       newEllipse->setPenStyle(ellipse->getPenStyle());
       ellipseVector.push_back(newEllipse);
-      newEllipse->setZValue(3);
+      newEllipse->setZValue(1);
       scene->addItem(newEllipse);
       QPointF pos = ellipse->mapToScene(ellipse->getCenter());
       pos.setY(pos.y() - 100);
@@ -1676,6 +1700,8 @@ void HierarchyGraphWidget::duplicateEllipse() {
 void HierarchyGraphWidget::processRectContextMenu(const QString &action) {
   if (action == CHANGERECTCOLOR) {
     changeRectColor();
+  } else if (action == CHANGERECTFILLCOLOR) {
+    changeRectFillColor();
   } else if (action == DELETERECT) {
     deleteRect();
   } else if (action == COPYOBJECT) {
@@ -1692,6 +1718,22 @@ void HierarchyGraphWidget::changeRectColor() {
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	rect->setColor(color);
+      }
+      delete colorDialog;
+    }
+  }
+}
+
+void HierarchyGraphWidget::changeRectFillColor() {
+  if (scene->selectedItems().size() == 1) {
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    if (rect) {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      if (colorDialog->exec()) {
+	QColor color = colorDialog->selectedColor();
+	rect->setFillColor(color);
       }
       delete colorDialog;
     }
@@ -1719,10 +1761,11 @@ void HierarchyGraphWidget::duplicateRect() {
       newRect->setTopRight(rect->topRight());
       newRect->setBottomRight(rect->bottomRight());
       newRect->setColor(rect->getColor());
+      newRect->setFillColor(rect->getFillColor());
       newRect->setPenWidth(rect->getPenWidth());
       newRect->setPenStyle(rect->getPenStyle());
       rectVector.push_back(newRect);
-      newRect->setZValue(3);
+      newRect->setZValue(1);
       scene->addItem(newRect);
       QPointF pos = rect->mapToScene(rect->getCenter());
       pos.setY(pos.y() - 100);

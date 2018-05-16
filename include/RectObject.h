@@ -17,6 +17,8 @@ public:
   QRectF boundingRect() const override;
   QColor getColor();
   void setColor(const QColor &subColor);
+  QColor getFillColor();
+  void setFillColor(const QColor &subColor);
   qreal getLeft();
   void setLeft(qreal newLeft);
   qreal getRight();
@@ -56,6 +58,7 @@ protected:
 private:
   QRectF drawRect;
   QColor color;
+  QColor fillColor;
   qreal rotation;
   int penWidth;
   int penStyle;
