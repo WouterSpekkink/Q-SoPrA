@@ -5284,16 +5284,17 @@ void EventGraphWidget::colligateEvents(QString constraint) {
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
       if (event) {
 	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	int id = currentEvent->getId();
 	if (attribute != "") {
 	  QVector<QString> attributes;
 	  attributes.push_back(attribute);
+	  qDebug() << entity;
 	  findChildren(attribute, &attributes, entity);
-	  QVectorIterator<QString> it2(attributes);
 	  bool hasAttribute = false;
+	  QVectorIterator<QString> it2(attributes);
 	  while (it2.hasNext()) {
 	    QString currentAttribute = it2.next();
 	    QSqlQuery *query = new QSqlQuery;
-	    int id = currentEvent->getId();
 	    query->prepare("SELECT incident FROM attributes_to_incidents "
 			   "WHERE attribute = :attribute AND incident = :id");
 	    query->bindValue(":attribute", currentAttribute);
@@ -5329,7 +5330,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	      QSqlQuery *query = new QSqlQuery;
 	      int id = currentIncident->getId();
 	      query->prepare("SELECT incident FROM attributes_to_incidents "
-			    "WHERE attribute = :attribute AND incident = :id");
+			     "WHERE attribute = :attribute AND incident = :id");
 	      query->bindValue(":attribute", currentAttribute);
 	      query->bindValue(":id", id);
 	      query->exec();
@@ -5360,179 +5361,144 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	}
       }
     }
-    std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
-    if (constraint == SEMIPATHS || constraint == SEMIPATHSATT) {
-      QApplication::setOverrideCursor(Qt::WaitCursor);
-      QVector<QGraphicsItem*> allEvents;
-      QVectorIterator<EventItem*> evIt(eventVector);
-      while (evIt.hasNext()) {
-	allEvents.push_back(evIt.next());
-      }
-      QVectorIterator<MacroEvent*> maIt(macroVector);
-      while (maIt.hasNext()) {
-	allEvents.push_back(maIt.next());
-      }
-      std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-      EventItem *first = tempIncidents.first();
-      EventItem *last = tempIncidents.last();
-      QSet<int> markOne;
-      QSet<int> markTwo;
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
-      query->bindValue(":name", selectedType);
-      query->exec();
-      query->first();
-      QString direction = query->value(0).toString();
-      delete query;
-      if (direction == PAST) {
-	findTailsUpperBound(&markOne, first->getId(), last->getOrder());
-	findHeadsLowerBound(&markTwo, last->getId(), first->getOrder());
-      } else if (direction == FUTURE) {
-	findTailsLowerBound(&markOne, first->getId(), first->getOrder());
-	findHeadsUpperBound(&markTwo, last->getId(), last->getOrder());
-      }
-      QVectorIterator<QGraphicsItem*> it4(allEvents);
-      while (it4.hasNext()) {
-	QGraphicsItem *temp = it4.next();
-	EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
-	MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
-	if (eventTemp) {
-	  if (markOne.contains(eventTemp->getId()) &&
-	      markTwo.contains(eventTemp->getId()) &&
-	      !tempIncidents.contains(eventTemp)) {
-	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	    warningBox->addButton(QMessageBox::Ok);
-	    warningBox->setIcon(QMessageBox::Warning);
-	    warningBox->setText("<b>Constraints not met.</b>");
-	    warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-					   "that were set for abstraction.");
-	    warningBox->exec();
-	    delete warningBox;
-	    return;
-	  } else if (macroTemp) {
-	    QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
-	    QVectorIterator<EventItem*> it5(macroIncidents);
-	    while (it5.hasNext()) {
-	      eventTemp = it5.next();
-	      if (markOne.contains(eventTemp->getId()) &&
-		  markTwo.contains(eventTemp->getId()) &&
-		  !tempIncidents.contains(eventTemp)) {
-		QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		warningBox->addButton(QMessageBox::Ok);
-		warningBox->setIcon(QMessageBox::Warning);
-		warningBox->setText("<b>Constraints not met.</b>");
-		warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-					       "that were set for abstraction.");
-		warningBox->exec();
-		delete warningBox;
+    if (tempIncidents.size() > 0) {
+      std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
+      if (constraint == SEMIPATHS || constraint == SEMIPATHSATT) {
+	QApplication::setOverrideCursor(Qt::WaitCursor);
+	QVector<QGraphicsItem*> allEvents;
+	QVectorIterator<EventItem*> evIt(eventVector);
+	while (evIt.hasNext()) {
+	  allEvents.push_back(evIt.next());
+	}
+	QVectorIterator<MacroEvent*> maIt(macroVector);
+	while (maIt.hasNext()) {
+	  allEvents.push_back(maIt.next());
+	}
+	std::sort(allEvents.begin(), allEvents.end(), componentsSort);
+	EventItem *first = tempIncidents.first();
+	EventItem *last = tempIncidents.last();
+	QSet<int> markOne;
+	QSet<int> markTwo;
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
+	query->bindValue(":name", selectedType);
+	query->exec();
+	query->first();
+	QString direction = query->value(0).toString();
+	delete query;
+	if (direction == PAST) {
+	  findTailsUpperBound(&markOne, first->getId(), last->getOrder());
+	  findHeadsLowerBound(&markTwo, last->getId(), first->getOrder());
+	} else if (direction == FUTURE) {
+	  findTailsLowerBound(&markOne, first->getId(), first->getOrder());
+	  findHeadsUpperBound(&markTwo, last->getId(), last->getOrder());
+	}
+	QVectorIterator<QGraphicsItem*> it4(allEvents);
+	while (it4.hasNext()) {
+	  QGraphicsItem *temp = it4.next();
+	  EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
+	  MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
+	  if (eventTemp) {
+	    if (markOne.contains(eventTemp->getId()) &&
+		markTwo.contains(eventTemp->getId()) &&
+		!tempIncidents.contains(eventTemp)) {
+	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->addButton(QMessageBox::Ok);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<b>Constraints not met.</b>");
+	      warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
+					     "that were set for abstraction.");
+	      warningBox->exec();
+	      delete warningBox;
+	      return;
+	    } else if (macroTemp) {
+	      QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
+	      QVectorIterator<EventItem*> it5(macroIncidents);
+	      while (it5.hasNext()) {
+		eventTemp = it5.next();
+		if (markOne.contains(eventTemp->getId()) &&
+		    markTwo.contains(eventTemp->getId()) &&
+		    !tempIncidents.contains(eventTemp)) {
+		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		  warningBox->addButton(QMessageBox::Ok);
+		  warningBox->setIcon(QMessageBox::Warning);
+		  warningBox->setText("<b>Constraints not met.</b>");
+		  warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
+						 "that were set for abstraction.");
+		  warningBox->exec();
+		  delete warningBox;
+		}
 	      }
 	    }
 	  }
 	}
+	QApplication::restoreOverrideCursor();
+	qApp->processEvents();
       }
-      QApplication::restoreOverrideCursor();
-      qApp->processEvents();
-    }
-    std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
-    if (checkConstraints(tempIncidents, constraint)) {
-      qreal lowestX = 0.0;
-      qreal highestX = 0.0;
-      qreal lowestY = 0.0;
-      qreal highestY = 0.0;
-      QVectorIterator<EventItem*> it2(tempIncidents);
-      while (it2.hasNext()) {
-	EventItem *current = it2.next();
-	if (lowestX == 0.0) {
-	  lowestX = current->scenePos().x();
+      std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
+      if (checkConstraints(tempIncidents, constraint)) {
+	qreal lowestX = 0.0;
+	qreal highestX = 0.0;
+	qreal lowestY = 0.0;
+	qreal highestY = 0.0;
+	QVectorIterator<EventItem*> it2(tempIncidents);
+	while (it2.hasNext()) {
+	  EventItem *current = it2.next();
+	  if (lowestX == 0.0) {
+	    lowestX = current->scenePos().x();
+	  }
+	  if (highestX == 0.0) {
+	    highestX = current->scenePos().x();
+	  }
+	  if (lowestY == 0.0) {
+	    lowestY = current->scenePos().y();
+	  }
+	  if (highestY == 0.0) {
+	    highestY = current->scenePos().y();
+	  }
+	  if (current->scenePos().x() < lowestX) {
+	    lowestX = current->scenePos().x();
+	  }
+	  if (current->scenePos().x() > highestX) {
+	    highestX = current->scenePos().x();
+	  }
+	  if (current->scenePos().y() < lowestY) {
+	    lowestY = current->scenePos().y();
+	  }
+	  if (current->scenePos().y() > highestY) {
+	    highestY = current->scenePos().y();
+	  }
 	}
-	if (highestX == 0.0) {
-	  highestX = current->scenePos().x();
-	}
-	if (lowestY == 0.0) {
-	  lowestY = current->scenePos().y();
-	}
-	if (highestY == 0.0) {
-	  highestY = current->scenePos().y();
-	}
-	if (current->scenePos().x() < lowestX) {
-	  lowestX = current->scenePos().x();
-	}
-	if (current->scenePos().x() > highestX) {
-	  highestX = current->scenePos().x();
-	}
-	if (current->scenePos().y() < lowestY) {
-	  lowestY = current->scenePos().y();
-	}
-	if (current->scenePos().y() > highestY) {
-	  highestY = current->scenePos().y();
-	}
-      }
-      int width = highestX - lowestX + tempIncidents.last()->getWidth();
-      qreal xPos = lowestX;
-      qreal yPos = lowestY + ((highestY - lowestY) / 2);
-      QPointF originalPos = QPointF(xPos, yPos);
-      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-      textDialog->setWindowTitle("Event description");
-      textDialog->setLabel("Event description:");
-      textDialog->exec();
-      if (textDialog->getExitStatus() == 0) {
-	QString description = textDialog->getText();
-	MacroEvent* current = new MacroEvent(width, description, originalPos,
-					     macroVector.size() + 1, constraint, tempIncidents);
-	current->setPos(originalPos);
-	current->setZValue(3);
-	QVectorIterator<QGraphicsItem*> it3(currentData);
-	while (it3.hasNext()) {
-	  EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
-	  if (event) {
-	    EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
-	    if (attribute != "") {
-	      bool hasAttribute = false;
-	      QVector<QString> attributes;
-	      attributes.push_back(attribute);
-	      findChildren(attribute, &attributes, entity);
-	      QVectorIterator<QString> it4(attributes);
-	      while (it4.hasNext()) {
-		QString currentAttribute = it4.next();
-		int id = item->getId();
-		QSqlQuery *query = new QSqlQuery;
-       		query->prepare("SELECT incident FROM attributes_to_incidents "
-			       "WHERE attribute = :attribute AND incident = :id");
-		query->bindValue(":attribute", currentAttribute);
-		query->bindValue(":id", id);
-		query->exec();
-		query->first();
-		if (!query->isNull(0)) {
-		  hasAttribute = true;
-		  break;
-		}
-		delete query;
-	      }
-	      if (hasAttribute) {
-		item->setMacroEvent(current);
-		item->hide();
-	      }
-	    } else {
-	      item->setMacroEvent(current);
-	      item->hide();
-	    }
-	  } else if (macro) {
-	    MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
-	    QVectorIterator<EventItem*> it4(item->getIncidents());
-	    bool checkpoint = false;
-	    while (it4.hasNext()) {
-	      EventItem *currentIncident = it4.next();
+	int width = highestX - lowestX + tempIncidents.last()->getWidth();
+	qreal xPos = lowestX;
+	qreal yPos = lowestY + ((highestY - lowestY) / 2);
+	QPointF originalPos = QPointF(xPos, yPos);
+	QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+	textDialog->setWindowTitle("Event description");
+	textDialog->setLabel("Event description:");
+	textDialog->exec();
+	if (textDialog->getExitStatus() == 0) {
+	  QString description = textDialog->getText();
+	  MacroEvent* current = new MacroEvent(width, description, originalPos,
+					       macroVector.size() + 1, constraint, tempIncidents);
+	  current->setPos(originalPos);
+	  current->setZValue(3);
+	  QVectorIterator<QGraphicsItem*> it3(currentData);
+	  while (it3.hasNext()) {
+	    EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
+	    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
+	    if (event) {
+	      EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
 	      if (attribute != "") {
+		bool hasAttribute = false;
 		QVector<QString> attributes;
 		attributes.push_back(attribute);
 		findChildren(attribute, &attributes, entity);
-		bool hasAttribute = false;
-		QVectorIterator<QString> it5(attributes);
-		while (it5.hasNext()) {
-		  QString currentAttribute = it5.next();
+		QVectorIterator<QString> it4(attributes);
+		while (it4.hasNext()) {
+		  QString currentAttribute = it4.next();
+		  int id = item->getId();
 		  QSqlQuery *query = new QSqlQuery;
-		  int id = currentIncident->getId();
 		  query->prepare("SELECT incident FROM attributes_to_incidents "
 				 "WHERE attribute = :attribute AND incident = :id");
 		  query->bindValue(":attribute", currentAttribute);
@@ -5546,51 +5512,97 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 		  delete query;
 		}
 		if (hasAttribute) {
-		  checkpoint = true;
-		} else {
-		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		  warningBox->addButton(QMessageBox::Ok);
-		  warningBox->setIcon(QMessageBox::Warning);
-		  warningBox->setText("<b>Invalid abstract event</b>");
-		  warningBox->setInformativeText("At least one of the selected abstract events "
-						 "contains incidents that do not have the selected "
-						 "attribute.");
-		  warningBox->exec();
-		  delete warningBox;
-		  return;
+		  item->setMacroEvent(current);
+		  item->hide();
 		}
 	      } else {
-		checkpoint = true;
+		item->setMacroEvent(current);
+		item->hide();
+	      }
+	    } else if (macro) {
+	      MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
+	      QVectorIterator<EventItem*> it4(item->getIncidents());
+	      bool checkpoint = false;
+	      while (it4.hasNext()) {
+		EventItem *currentIncident = it4.next();
+		if (attribute != "") {
+		  QVector<QString> attributes;
+		  attributes.push_back(attribute);
+		  findChildren(attribute, &attributes, entity);
+		  bool hasAttribute = false;
+		  QVectorIterator<QString> it5(attributes);
+		  while (it5.hasNext()) {
+		    QString currentAttribute = it5.next();
+		    QSqlQuery *query = new QSqlQuery;
+		    int id = currentIncident->getId();
+		    query->prepare("SELECT incident FROM attributes_to_incidents "
+				   "WHERE attribute = :attribute AND incident = :id");
+		    query->bindValue(":attribute", currentAttribute);
+		    query->bindValue(":id", id);
+		    query->exec();
+		    query->first();
+		    if (!query->isNull(0)) {
+		      hasAttribute = true;
+		      break;
+		    }
+		    delete query;
+		  }
+		  if (hasAttribute) {
+		    checkpoint = true;
+		  } else {
+		    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		    warningBox->addButton(QMessageBox::Ok);
+		    warningBox->setIcon(QMessageBox::Warning);
+		    warningBox->setText("<b>Invalid abstract event</b>");
+		    warningBox->setInformativeText("At least one of the selected abstract events "
+						   "contains incidents that do not have the selected "
+						   "attribute.");
+		    warningBox->exec();
+		    delete warningBox;
+		    return;
+		  }
+		} else {
+		  checkpoint = true;
+		}
+	      }
+	      if (checkpoint) {
+		item->setMacroEvent(current);
+		item->hide();
 	      }
 	    }
-	    if (checkpoint) {
-	      item->setMacroEvent(current);
-	      item->hide();
-	    }
 	  }
+	  macroVector.push_back(current);
+	  scene->addItem(current);
+	  MacroLabel *macroLabel = new MacroLabel(current);
+	  current->setLabel(macroLabel);
+	  qreal xOffset = (current->getWidth() / 2) - 20;
+	  macroLabel->setOffset(QPointF(xOffset,0));
+	  macroLabel->setNewPos(current->scenePos());
+	  macroLabel->setZValue(4);
+	  macroLabel->setDefaultTextColor(Qt::black);
+	  macroLabelVector.push_back(macroLabel);
+	  scene->addItem(macroLabel);
+	  rewireLinkages(current, tempIncidents);
+	  updateMacroOrder();
+	  setVisibility();
+	  currentData.clear();
+	  current->setSelected(true);
+	  retrieveData();
+	  setChangeLabel();
 	}
-	macroVector.push_back(current);
-	scene->addItem(current);
-	MacroLabel *macroLabel = new MacroLabel(current);
-	current->setLabel(macroLabel);
-	qreal xOffset = (current->getWidth() / 2) - 20;
-	macroLabel->setOffset(QPointF(xOffset,0));
-	macroLabel->setNewPos(current->scenePos());
-	macroLabel->setZValue(4);
-	macroLabel->setDefaultTextColor(Qt::black);
-	macroLabelVector.push_back(macroLabel);
-	scene->addItem(macroLabel);
-	rewireLinkages(current, tempIncidents);
-	updateMacroOrder();
-	setVisibility();
-	currentData.clear();
-	current->setSelected(true);
-	retrieveData();
-	setChangeLabel();
+	delete textDialog;
+      } else {
+	return;
       }
-      delete textDialog;
     } else {
-      return;
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<b>No incidents selected</b>");
+      warningBox->setInformativeText("None of the selected incidents have the selected "
+				     "attribute.");
+      warningBox->exec();
+      delete warningBox;
     }
   } else {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);

@@ -1,11 +1,12 @@
 #include "../include/AttributeSelectionDialog.h"
 
-AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString submittedType) : QDialog(parent) {
+AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString submittedType) :
+  QDialog(parent) {
   type = submittedType;
   exitStatus = 1;
   chosenAttribute = DEFAULT;
   checked = false;
-
+  
   attributeLabel = new QLabel(tr("<b>Choose attribute:</b>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
 
@@ -183,6 +184,8 @@ void AttributeSelectionDialog::setAttribute() {
   }
   if (currentIndex.data().toString() == ENTITIES) {
     entity = true;
+  } else {
+    entity = false;
   }
 }
 
@@ -209,7 +212,7 @@ void AttributeSelectionDialog::saveAndClose() {
 }
 
 QString AttributeSelectionDialog::getAttribute() {
-    return chosenAttribute;
+  return chosenAttribute;
 }
 
 int AttributeSelectionDialog::getExitStatus() {
@@ -221,5 +224,5 @@ bool AttributeSelectionDialog::getChecked() {
 }
 
 bool AttributeSelectionDialog::isEntity() {
-    return entity;
+  return entity;
 }

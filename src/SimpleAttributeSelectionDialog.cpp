@@ -172,13 +172,15 @@ void SimpleAttributeSelectionDialog::changeFilter(const QString &text) {
 void SimpleAttributeSelectionDialog::setAttribute() {
   if (attributesTreeView->currentIndex().isValid()) {
     chosenAttribute = attributesTreeView->currentIndex().data().toString();
-  }
+    }
   QModelIndex currentIndex = attributesTreeView->currentIndex();
   while (currentIndex.parent().isValid()) {
     currentIndex = currentIndex.parent();
   }
   if (currentIndex.data().toString() == ENTITIES) {
     entity = true;
+  } else {
+    entity = false;
   }
 }
 
@@ -204,7 +206,7 @@ void SimpleAttributeSelectionDialog::saveAndClose() {
 }
 
 QString SimpleAttributeSelectionDialog::getAttribute() {
-    return chosenAttribute;
+  return chosenAttribute;
 }
 
 int SimpleAttributeSelectionDialog::getExitStatus() {
@@ -212,5 +214,5 @@ int SimpleAttributeSelectionDialog::getExitStatus() {
 }
 
 bool SimpleAttributeSelectionDialog::isEntity() {
-    return entity;
+  return entity;
 }
