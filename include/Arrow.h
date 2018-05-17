@@ -67,7 +67,6 @@ public:
   ~Arrow() {};
 
   QRectF boundingRect() const override;
-  void updatePosition();
   QPainterPath shape() const override;
   void setColor(const QColor &subColor);
   QColor getColor();
@@ -97,12 +96,9 @@ private:
   QString coder;
   QLineF newLine;
   QLineF ghostLine;
-  QLineF arrowLine;
   QPointF arrowP1;
   QPointF arrowP2;
   QPointF controlPoint;
-  QPointF departure;
-  qreal theta;
   int height;
   bool copy;
   bool deleted;

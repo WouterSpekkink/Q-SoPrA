@@ -45,13 +45,12 @@ private:
   NetworkNode *end;
   QColor color;
   QPolygonF arrowHead;
+  QPainterPath strokePath;
   int height;
-  QLineF boundLine;
   QLineF ghostLine;
   QPointF arrowP1;
   QPointF arrowP2;
   QPointF controlPoint;
-  qreal theta;
   QString relType;
   QString name;
   QString comment;

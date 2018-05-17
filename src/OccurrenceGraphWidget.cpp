@@ -116,7 +116,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   connect(getEventsButton, SIGNAL(clicked()), this, SLOT(getEvents()));
   connect(restoreButton, SIGNAL(clicked()), this, SLOT(restore()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
-  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateArrows()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(moveLine(QGraphicsItem *, QPointF)),
@@ -577,7 +576,6 @@ void OccurrenceGraphWidget::addAttribute() {
   scene->update();
   view->update();
   checkCongruency();
-  updateArrows();
 }
 
 void OccurrenceGraphWidget::addRelationship() {
@@ -679,7 +677,6 @@ void OccurrenceGraphWidget::addRelationship() {
   scene->update();
   view->update();
   checkCongruency();
-  updateArrows();
 }
 
 void OccurrenceGraphWidget::setChangeLabel() {
@@ -1249,7 +1246,6 @@ void OccurrenceGraphWidget::getEvents() {
   }
   groupOccurrences();
   wireLinkages();
-  updateArrows();
 }
 
 void OccurrenceGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
@@ -1890,14 +1886,6 @@ void OccurrenceGraphWidget::decreaseDistance() {
     }
   }
   distance--;
-}
-
-void OccurrenceGraphWidget::updateArrows() {
-  QVectorIterator<Arrow*> it(edgeVector);
-  while (it.hasNext()) {
-    Arrow *current = it.next();
-    current->updatePosition();
-  }
 }
 
 void OccurrenceGraphWidget::setRangeControls() {
@@ -2980,7 +2968,6 @@ void OccurrenceGraphWidget::seePlots() {
     setRangeControls();
     setVisibility();
     checkCongruency();
-    updateArrows();
     delete query;
   } else if (savedPlotsDialog->getExitStatus() == 2) {
     // DON'T FORGET TO UPDATE THIS FUNCTION!!!!
