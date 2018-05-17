@@ -92,11 +92,17 @@ private:
   QGraphicsItem *end;
   QColor color;
   QPolygonF arrowHead;
+  QPainterPath strokePath;
   QString typeInd;
   QString coder;
   QLineF newLine;
+  QLineF ghostLine;
   QPointF arrowP1;
   QPointF arrowP2;
+  QPointF controlPoint;
+  QPointF departure;
+  qreal theta;
+  int height;
   bool copy;
   bool deleted;
 };
