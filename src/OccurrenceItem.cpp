@@ -163,3 +163,4 @@ void OccurrenceItem::setGrouped(bool status) {
 bool OccurrenceItem::isGrouped() {
   return grouped;
 }
+

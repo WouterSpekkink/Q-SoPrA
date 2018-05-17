@@ -38,6 +38,7 @@
 #include "EllipseObject.h"
 #include "RectObject.h"
 #include "TextObject.h"
+#include "RelationshipColorDialog.h"
 
 class EventGraphWidget;
 
@@ -134,7 +135,8 @@ private:
   QVector<OccurrenceItem*> attributeOccurrenceVector;
   QVector<OccurrenceItem*> relationshipOccurrenceVector;
   QVector<Arrow*> edgeVector;
-  QVector<OccurrenceLabel*> labelVector;
+  QVector<OccurrenceLabel*> attributeLabelVector;
+  QVector<OccurrenceLabel*> relationshipLabelVector;
   QVector<LineObject*> lineVector;
   QVector<TextObject*> textVector;
   QVector<EllipseObject*> ellipseVector;

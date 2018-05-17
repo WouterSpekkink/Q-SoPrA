@@ -371,8 +371,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(exportTransitionMatrixButton);
-  legendWidget->setMinimumWidth(175);
-  legendWidget->setMaximumWidth(175);
+  legendWidget->setMinimumWidth(250);
+  legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
   

@@ -122,6 +122,17 @@ void RelationshipTypeDialog::cancelAndClose() {
 void RelationshipTypeDialog::saveAndClose() {
   description = descriptionField->toPlainText().trimmed();
   name = name.trimmed();
+  if (name.contains("(") || name.contains(")")) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Name contains illegal character.");
+    warningBox->setInformativeText("The name of a relationship type cannot "
+				   "contain the '(' and ')' characters.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
   if (description == "") {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);

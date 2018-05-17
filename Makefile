@@ -14,7 +14,7 @@ CC            = gcc
 CXX           = g++
 DEFINES       = -DQT_NO_DEBUG -DQT_SVG_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I/opt/Qt/5.9.4/gcc_64/include -I/opt/Qt/5.9.4/gcc_64/include/QtSvg -I/opt/Qt/5.9.4/gcc_64/include/QtWidgets -I/opt/Qt/5.9.4/gcc_64/include/QtGui -I/opt/Qt/5.9.4/gcc_64/include/QtSql -I/opt/Qt/5.9.4/gcc_64/include/QtCore -I. -isystem /usr/include/libdrm -I/opt/Qt/5.9.4/gcc_64/mkspecs/linux-g++
 QMAKE         = /opt/Qt/5.9.4/gcc_64/bin/qmake
 DEL_FILE      = rm -f
@@ -113,6 +113,7 @@ SOURCES       = main.cpp \
 		src/RecordDialog.cpp \
 		src/RectObject.cpp \
 		src/RelationalTable.cpp \
+		src/RelationshipColorDialog.cpp \
 		src/RelationshipComboBoxDialog.cpp \
 		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
@@ -176,6 +177,7 @@ SOURCES       = main.cpp \
 		moc_RawRelationshipsTable.cpp \
 		moc_RecordDialog.cpp \
 		moc_RelationalTable.cpp \
+		moc_RelationshipColorDialog.cpp \
 		moc_RelationshipComboBoxDialog.cpp \
 		moc_RelationshipsDialog.cpp \
 		moc_RelationshipsWidget.cpp \
@@ -251,6 +253,7 @@ OBJECTS       = main.o \
 		RecordDialog.o \
 		RectObject.o \
 		RelationalTable.o \
+		RelationshipColorDialog.o \
 		RelationshipComboBoxDialog.o \
 		RelationshipsDialog.o \
 		RelationshipsWidget.o \
@@ -315,6 +318,7 @@ OBJECTS       = main.o \
 		moc_RawRelationshipsTable.o \
 		moc_RecordDialog.o \
 		moc_RelationalTable.o \
+		moc_RelationshipColorDialog.o \
 		moc_RelationshipComboBoxDialog.o \
 		moc_RelationshipsDialog.o \
 		moc_RelationshipsWidget.o \
@@ -569,6 +573,7 @@ DIST          = /opt/Qt/5.9.4/gcc_64/mkspecs/features/spec_pre.prf \
 		include/RecordDialog.h \
 		include/RectObject.h \
 		include/RelationalTable.h \
+		include/RelationshipColorDialog.h \
 		include/RelationshipComboBoxDialog.h \
 		include/RelationshipsDialog.h \
 		include/RelationshipsWidget.h \
@@ -647,6 +652,7 @@ DIST          = /opt/Qt/5.9.4/gcc_64/mkspecs/features/spec_pre.prf \
 		src/RecordDialog.cpp \
 		src/RectObject.cpp \
 		src/RelationalTable.cpp \
+		src/RelationshipColorDialog.cpp \
 		src/RelationshipComboBoxDialog.cpp \
 		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
@@ -1062,8 +1068,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipComboBoxDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1093,11 +1099,11 @@ compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
 moc_predefs.h: /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp
-	g++ -pipe -O2 -Wall -W -dM -E -o moc_predefs.h /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp
+	g++ -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 moc_AttributeColorDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QtCore \
@@ -3035,6 +3041,8 @@ moc_AttributesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -3042,7 +3050,6 @@ moc_AttributesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -4637,6 +4644,8 @@ moc_DataWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -4644,7 +4653,6 @@ moc_DataWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -5651,6 +5659,7 @@ moc_EditEntityDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -6552,6 +6561,7 @@ moc_EntitiesFilter.cpp: /opt/Qt/5.9.4/gcc_64/include/QtCore/QSortFilterProxyMode
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -7147,6 +7157,7 @@ moc_EntityDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -7980,13 +7991,14 @@ moc_EventGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/LineageColorDialog.h \
 		include/OccurrenceGraphWidget.h \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -10634,6 +10646,8 @@ moc_HierarchyGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -10641,7 +10655,6 @@ moc_HierarchyGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -12978,6 +12991,8 @@ moc_LinkagesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -12985,7 +13000,6 @@ moc_LinkagesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -13876,6 +13890,7 @@ moc_MainWindow.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/NetworkGraphWidget.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
@@ -17578,6 +17593,8 @@ moc_OccurrenceGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		include/ZoomableTableView.h \
 		include/OccurrenceGraphWidget.h \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -17585,7 +17602,6 @@ moc_OccurrenceGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -18291,6 +18307,8 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -18298,7 +18316,6 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -18909,6 +18926,7 @@ moc_RawRelationshipsTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButto
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -19482,6 +19500,495 @@ moc_RelationalTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtSql/QtSql \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
 	/opt/Qt/5.9.4/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/opt/Qt/5.9.4/gcc_64/mkspecs/linux-g++ -I/home/wouterspekkink/Programming/Q-SoPrA -I/home/wouterspekkink/Programming/Q-SoPrA -I/opt/Qt/5.9.4/gcc_64/include -I/opt/Qt/5.9.4/gcc_64/include/QtSvg -I/opt/Qt/5.9.4/gcc_64/include/QtWidgets -I/opt/Qt/5.9.4/gcc_64/include/QtGui -I/opt/Qt/5.9.4/gcc_64/include/QtSql -I/opt/Qt/5.9.4/gcc_64/include/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationalTable.h -o moc_RelationalTable.cpp
+
+moc_RelationshipColorDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QtCore \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QtCoreDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcore-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemdetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocessordetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcompilerdetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypeinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsysinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlogging.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qflags.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasicatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qgenericatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_msvc.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobalstatic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmutex.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnumeric.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversiontagging.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnamespace.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstring.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qchar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrefcount.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringbuilder.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qalgorithms.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhashfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpair.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraylist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregexp.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringmatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetatype.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvarlengtharray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontainerfwd.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstracteventdispatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qeventloop.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariant.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdebug.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhash.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextstream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiodevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlocale.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qshareddata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvector.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpoint.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qset.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontiguouscache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractnativeeventfilter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractproxymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractstate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstracttransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qanimationgroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydataops.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydatapointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasictimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbitarray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbuffer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraymatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcollator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcommandlineoption.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcommandlineparser.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreapplication.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcryptographichash.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatastream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatetime.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdeadlinetimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qelapsedtimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdir.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfileinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfiledevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdiriterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qeasingcurve.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qendian.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qeventtransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qexception.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfactoryinterface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfileselector.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QObject \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QStringList \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfilesystemwatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfinalstate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfuture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfutureinterface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrunnable.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qresultstore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfuturesynchronizer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfuturewatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhistorystate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qidentityproxymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qisenum.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsonarray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsonvalue.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsondocument.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsonobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlibrary.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlibraryinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversionnumber.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qline.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlinkedlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlockfile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qloggingcategory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmargins.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmath.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmessageauthenticationcode.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetaobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmimedata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmimedatabase.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmimetype.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectcleanuphandler.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qoperatingsystemversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qparallelanimationgroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpauseanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpluginloader.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocess.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpropertyanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariantanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qqueue.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qreadwritelock.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrect.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsize.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregularexpression.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qresource.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsavefile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedvaluerollback.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsemaphore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsequentialanimationgroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsettings.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedmemory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsignalmapper.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsignaltransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsocketnotifier.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsortfilterproxymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstack.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstandardpaths.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstatemachine.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstorageinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlistmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemsemaphore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtemporarydir.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QScopedPointer \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtemporaryfile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextboundaryfinder.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextcodec.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qthread.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qthreadpool.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qthreadstorage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtimeline.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtimezone.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtranslator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypetraits.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurlquery.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/quuid.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qwaitcondition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qwineventnotifier.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qxmlstream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcoreversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QtGui \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QtGuiDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtgui-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcolor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgb.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgba64.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qregion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qkeysequence.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector2d.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtouchdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfont.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpen.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbrush.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpolygon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtransform.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainterpath.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixelformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextoption.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qglyphrun.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrawfont.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontdatabase.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextcursor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextdocument.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpalette.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessible.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessiblebridge.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessibleobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessibleplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbackingstore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QEvent \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QMargins \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QRect \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsurface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsurfaceformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcursor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbitmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qclipboard.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qdesktopservices.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qdrag.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontmetrics.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qgenericmatrix.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qgenericplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qgenericpluginfactory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qguiapplication.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qinputmethod.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qiconengine.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qiconengineplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimageiohandler.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimagereader.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimagewriter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix4x4.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector3d.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector4d.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qquaternion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmovie.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qoffscreensurface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qt_windows.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengles2ext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglbuffer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglcontext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QSurfaceFormat \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglversionfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengldebug.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglextrafunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglframebufferobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglpixeltransferoptions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSharedDataPointer \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglshaderprogram.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengltexture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengltextureblitter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QMatrix3x3 \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QMatrix4x4 \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengltimerquery.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglvertexarrayobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QPaintDeviceWindow \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevicewindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QWindow \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QPaintDevice \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QOpenGLContext \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QImage \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpagedpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpagelayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpagesize.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintengine.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpdfwriter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpicture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpictureformatplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmapcache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrasterwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qscreen.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QList \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSize \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSizeF \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QTransform \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsessionmanager.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qstandarditemmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qstatictext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qstylehints.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextdocumentfragment.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextdocumentwriter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtexttable.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvalidator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyleoption.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qslider.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractslider.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyle.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtabbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtabwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qrubberband.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaccessiblewidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qapplication.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qboxlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayoutitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgridlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qbuttongroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcalendarwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcheckbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcolordialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcolormap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcolumnview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcombobox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcommandlinkbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qpushbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcommonstyle.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcompleter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdatawidgetmapper.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdatetimeedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdial.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialogbuttonbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdirmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfileiconprovider.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdockwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdrawutil.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qerrormessage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfiledialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfilesystemmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfocusframe.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfontcombobox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfontdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qformlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLayout \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgesture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgesturerecognizer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsanchorlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicslayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicslayoutitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicseffect.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsgridlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsitemanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicslinearlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsproxywidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicswidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsscene.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicssceneevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicstransform.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QVector3D \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscrollarea.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgroupbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qheaderview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qinputdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlineedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qitemdelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qitemeditorfactory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qkeyeventtransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qkeysequenceedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlabel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlcdnumber.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlistview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlistwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmainwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmdiarea.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmdisubwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenu.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenubar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmessagebox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmouseeventtransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qopenglwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qplaintextedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtextedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qprogressbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qprogressdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qproxystyle.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCommonStyle \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qradiobutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscrollbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscroller.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QPointF \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QScrollerProperties \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscrollerproperties.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QMetaType \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVariant \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qshortcut.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsizegrip.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qspinbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsplashscreen.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsplitter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstackedlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstackedwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstatusbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstylefactory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstylepainter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyleplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsystemtrayicon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtableview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtablewidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtextbrowser.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtoolbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtoolbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtoolbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtooltip.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtreeview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtreewidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qundogroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qundostack.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qundoview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwhatsthis.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwidgetaction.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwizard.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QHBoxLayout \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLabel \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListWidget \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QPointer \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QColorDialog \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/QtSql \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/QtSqlDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qtsqlglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqldatabase.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqldriver.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqldriverplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlerror.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlfield.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlindex.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlrecord.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlquery.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlquerymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlrelationaldelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlrelationaltablemodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqltablemodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlresult.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qtsqlversion.h \
+		include/Constants.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QString \
+		include/DeselectableTreeView.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTreeView \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QMouseEvent \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/QSqlQuery \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QStandardItem \
+		include/SupportingFunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVector \
+		include/RelationshipTreeFilter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSortFilterProxyModel \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QStandardItemModel \
+		include/RelationshipColorDialog.h \
+		moc_predefs.h \
+		/opt/Qt/5.9.4/gcc_64/bin/moc
+	/opt/Qt/5.9.4/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/opt/Qt/5.9.4/gcc_64/mkspecs/linux-g++ -I/home/wouterspekkink/Programming/Q-SoPrA -I/home/wouterspekkink/Programming/Q-SoPrA -I/opt/Qt/5.9.4/gcc_64/include -I/opt/Qt/5.9.4/gcc_64/include/QtSvg -I/opt/Qt/5.9.4/gcc_64/include/QtWidgets -I/opt/Qt/5.9.4/gcc_64/include/QtGui -I/opt/Qt/5.9.4/gcc_64/include/QtSql -I/opt/Qt/5.9.4/gcc_64/include/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationshipColorDialog.h -o moc_RelationshipColorDialog.cpp
 
 moc_RelationshipComboBoxDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
@@ -20537,6 +21044,7 @@ moc_RelationshipsDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -21140,6 +21648,7 @@ moc_RelationshipsWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -23824,6 +24333,8 @@ main.o: main.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/MergeAttributesDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
 		include/RelationshipComboBoxDialog.h \
@@ -23831,7 +24342,6 @@ main.o: main.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -25943,13 +26453,14 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/LineageColorDialog.h \
 		include/OccurrenceGraphWidget.h \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -26648,6 +27159,8 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -26655,7 +27168,6 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -27906,6 +28418,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/NetworkGraphWidget.h \
 		include/DirectedEdge.h \
 		include/UndirectedEdge.h \
@@ -29117,6 +29630,7 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -30466,6 +30980,7 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -31058,6 +31573,7 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -31896,6 +32412,8 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -31903,7 +32421,6 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -34718,6 +35235,8 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -34725,7 +35244,6 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -35319,6 +35837,8 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -35326,7 +35846,6 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -37797,6 +38316,8 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -37804,7 +38325,6 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -39373,6 +39893,8 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/MergeAttributesDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
 		include/RelationshipComboBoxDialog.h \
@@ -39380,7 +39902,6 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -44082,7 +44603,8 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/SimpleAttributeSelectionDialog.h
+		include/SimpleAttributeSelectionDialog.h \
+		include/RelationshipColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OccurrenceGraphWidget.o src/OccurrenceGraphWidget.cpp
 
 OccurrenceItem.o: src/OccurrenceItem.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
@@ -45447,6 +45969,8 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
+		include/RelationshipTreeFilter.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCheckBox \
@@ -45454,7 +45978,6 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/RelationshipTypeDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QDateTime \
 		/opt/Qt/5.9.4/gcc_64/include/QtGui/QKeyEvent \
-		include/RelationshipTreeFilter.h \
 		include/RelationshipsDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListView \
 		include/EntitiesFilter.h \
@@ -46062,6 +46585,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -47081,6 +47605,493 @@ RelationalTable.o: src/RelationalTable.cpp include/RelationalTable.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QString \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVector
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationalTable.o src/RelationalTable.cpp
+
+RelationshipColorDialog.o: src/RelationshipColorDialog.cpp include/RelationshipColorDialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QtCore \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QtCoreDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig-bootstrapped.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcore-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemdetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocessordetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcompilerdetection.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypeinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsysinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlogging.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qflags.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasicatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_bootstrap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qgenericatomic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_cxx11.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_msvc.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobalstatic.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmutex.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnumeric.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversiontagging.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnamespace.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstring.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qchar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrefcount.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringbuilder.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qalgorithms.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhashfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpair.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraylist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregexp.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringmatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetatype.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvarlengtharray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontainerfwd.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstracteventdispatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qeventloop.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractitemmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariant.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdebug.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhash.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextstream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiodevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlocale.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qshareddata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvector.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpoint.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qset.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontiguouscache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer_impl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractnativeeventfilter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractproxymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstractstate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qabstracttransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qanimationgroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydataops.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydatapointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasictimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbitarray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbuffer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraymatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcollator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcommandlineoption.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcommandlineparser.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreapplication.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcryptographichash.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatastream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatetime.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdeadlinetimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qelapsedtimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdir.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfileinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfiledevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdiriterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qeasingcurve.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qendian.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qeventtransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qexception.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfactoryinterface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfileselector.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QObject \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QStringList \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfilesystemwatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfinalstate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfuture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfutureinterface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrunnable.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qresultstore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfuturesynchronizer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfuturewatcher.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhistorystate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qidentityproxymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qisenum.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qitemselectionmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsonarray.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsonvalue.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsondocument.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qjsonobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlibrary.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlibraryinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversionnumber.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qline.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlinkedlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlockfile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qloggingcategory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmargins.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmath.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmessageauthenticationcode.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetaobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmimedata.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmimedatabase.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmimetype.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectcleanuphandler.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qoperatingsystemversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qparallelanimationgroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpauseanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpointer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpluginloader.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocess.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpropertyanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariantanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qqueue.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qreadwritelock.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrect.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsize.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregularexpression.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qresource.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsavefile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedvaluerollback.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsemaphore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsequentialanimationgroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsettings.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedmemory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsignalmapper.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsignaltransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsocketnotifier.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsortfilterproxymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstack.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstandardpaths.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstatemachine.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstorageinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlistmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemsemaphore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtemporarydir.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QScopedPointer \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtemporaryfile.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextboundaryfinder.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextcodec.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qthread.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qthreadpool.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qthreadstorage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtimeline.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtimer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtimezone.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtranslator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypetraits.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurlquery.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/quuid.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qwaitcondition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qwineventnotifier.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qxmlstream.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcoreversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QtGui \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QtGuiDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtgui-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qabstracttextdocumentlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcolor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgb.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgba64.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs_win.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qregion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qkeysequence.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector2d.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtouchdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfont.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpen.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbrush.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpolygon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtransform.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainterpath.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixelformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextoption.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qglyphrun.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrawfont.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontdatabase.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextcursor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextdocument.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpalette.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessible.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessiblebridge.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessibleobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qaccessibleplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbackingstore.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QEvent \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QMargins \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QRect \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsurface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsurfaceformat.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcursor.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbitmap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qclipboard.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qdesktopservices.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qdrag.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontinfo.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontmetrics.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qgenericmatrix.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qgenericplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qgenericpluginfactory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qguiapplication.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qinputmethod.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qiconengine.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qiconengineplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimageiohandler.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimagereader.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimagewriter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix4x4.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector3d.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector4d.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qquaternion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmovie.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qoffscreensurface.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengl.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/qt_windows.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengles2ext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglbuffer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglcontext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QSurfaceFormat \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglversionfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengldebug.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglextrafunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglfunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglframebufferobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglpixeltransferoptions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSharedDataPointer \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglshaderprogram.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengltexture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengltextureblitter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QMatrix3x3 \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QMatrix4x4 \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopengltimerquery.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglvertexarrayobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qopenglwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QPaintDeviceWindow \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevicewindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QWindow \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QPaintDevice \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QOpenGLContext \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QImage \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpagedpaintdevice.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpagelayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpagesize.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintengine.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpdfwriter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpicture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpictureformatplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmapcache.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrasterwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qscreen.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QList \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSize \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSizeF \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QTransform \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsessionmanager.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qstandarditemmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qstatictext.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qstylehints.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qsyntaxhighlighter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextobject.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextdocumentfragment.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextdocumentwriter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextlist.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtexttable.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvalidator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgets-config.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsizepolicy.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractitemdelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyleoption.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractspinbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qslider.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractslider.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyle.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtabbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtabwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qrubberband.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qframe.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractitemview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractscrollarea.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaccessiblewidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qaction.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qactiongroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qapplication.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdesktopwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qboxlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayoutitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgridlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qbuttongroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcalendarwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcheckbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcolordialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcolormap.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcolumnview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcombobox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcommandlinkbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qpushbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcommonstyle.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qcompleter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdatawidgetmapper.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdatetimeedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdial.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialogbuttonbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdirmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfileiconprovider.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdockwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdrawutil.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qerrormessage.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfiledialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfilesystemmodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfocusframe.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfontcombobox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfontdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qformlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLayout \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgesture.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgesturerecognizer.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsanchorlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicslayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicslayoutitem.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicseffect.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsgridlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsitemanimation.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicslinearlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsproxywidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicswidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsscene.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicssceneevent.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicstransform.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QVector3D \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgraphicsview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscrollarea.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgroupbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qheaderview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qinputdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlineedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qitemdelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qitemeditorfactory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qkeyeventtransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qkeysequenceedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlabel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlcdnumber.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlistview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlistwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmainwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmdiarea.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmdisubwindow.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenu.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmenubar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmessagebox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qmouseeventtransition.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qopenglwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qplaintextedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtextedit.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qprogressbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qprogressdialog.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qproxystyle.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QCommonStyle \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qradiobutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscrollbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscroller.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QPointF \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QScrollerProperties \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qscrollerproperties.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QMetaType \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVariant \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qshortcut.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsizegrip.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qspinbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsplashscreen.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsplitter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstackedlayout.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstackedwidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstatusbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyleditemdelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstylefactory.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstylepainter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qstyleplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsystemtrayicon.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtableview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtablewidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtextbrowser.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtoolbar.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtoolbox.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtoolbutton.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtooltip.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtreeview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtreewidget.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtreewidgetitemiterator.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qundogroup.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qundostack.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qundoview.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwhatsthis.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwidgetaction.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwizard.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsversion.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QHBoxLayout \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLabel \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QListWidget \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QPointer \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QColorDialog \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/QtSql \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/QtSqlDepends \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qtsqlglobal.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqldatabase.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqldriver.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqldriverplugin.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlerror.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlfield.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlindex.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlrecord.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlquery.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlquerymodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlrelationaldelegate.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlrelationaltablemodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqltablemodel.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qsqlresult.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/qtsqlversion.h \
+		include/Constants.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QString \
+		include/DeselectableTreeView.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTreeView \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QMouseEvent \
+		/opt/Qt/5.9.4/gcc_64/include/QtSql/QSqlQuery \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QStandardItem \
+		include/SupportingFunctions.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVector \
+		include/RelationshipTreeFilter.h \
+		/opt/Qt/5.9.4/gcc_64/include/QtCore/QSortFilterProxyModel \
+		/opt/Qt/5.9.4/gcc_64/include/QtGui/QStandardItemModel
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipColorDialog.o src/RelationshipColorDialog.cpp
 
 RelationshipComboBoxDialog.o: src/RelationshipComboBoxDialog.cpp include/RelationshipComboBoxDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
@@ -48134,6 +49145,7 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/RecordDialog.h \
 		include/EventTableModel.h \
 		include/OccurrenceGraphWidget.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -48726,6 +49738,7 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/DeselectableListWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTableWidget \
 		include/SortFunctions.h \
+		include/RelationshipColorDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -51622,6 +52635,9 @@ moc_RecordDialog.o: moc_RecordDialog.cpp
 
 moc_RelationalTable.o: moc_RelationalTable.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationalTable.o moc_RelationalTable.cpp
+
+moc_RelationshipColorDialog.o: moc_RelationshipColorDialog.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipColorDialog.o moc_RelationshipColorDialog.cpp
 
 moc_RelationshipComboBoxDialog.o: moc_RelationshipComboBoxDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipComboBoxDialog.o moc_RelationshipComboBoxDialog.cpp

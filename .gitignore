@@ -2,8 +2,10 @@
 /Datasets
 /RECOVERED_FILES
 /recovery
+/release
 .directory
 .qmake.stash
 include/.directory
 src/.directory
 .supp
+

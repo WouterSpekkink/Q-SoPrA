@@ -29,7 +29,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   relationshipsTreeView->setHorizontalScrollBarPolicy(Qt::ScrollBarAsNeeded);
   relationshipsTreeView->header()->setStretchLastSection(false);
   relationshipsTreeView->header()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
   treeFilter = new RelationshipTreeFilter(this);
   treeFilter->setFilterCaseSensitivity(Qt::CaseInsensitive);
   setTree();

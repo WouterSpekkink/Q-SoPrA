@@ -478,7 +478,7 @@ void RelationshipsDialog::removeEntities() {
   reset();
   delete query;  
   delete query2;
-  occurrenceGraph->checkCongruency();
+  //  occurrenceGraph->checkCongruency(); // Does not seem necessary
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());

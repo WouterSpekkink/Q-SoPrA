@@ -17,5 +17,6 @@ bool stringSort(const QString one, const QString two);
 bool nodeLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo);
 bool nameLessThan(const NetworkNode *itemOne, const NetworkNode *itemTwo);
 bool modeSort(const NetworkNode *itemOne, const NetworkNode *itemTwo);
+bool occurrencesSort(const OccurrenceItem *itemOne, const OccurrenceItem *itemTwo);
 
 #endif

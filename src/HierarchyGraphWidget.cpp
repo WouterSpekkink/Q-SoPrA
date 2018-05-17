@@ -240,8 +240,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
-  legendWidget->setMinimumWidth(175);
-  legendWidget->setMaximumWidth(175);
+  legendWidget->setMinimumWidth(250);
+  legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
   

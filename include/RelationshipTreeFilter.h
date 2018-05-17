@@ -1,5 +1,5 @@
 #ifndef RELATIONSHIPTREEFILTER_H
-#define RELATIONSHIPTREEIFLTER_H
+#define RELATIONSHIPTREEFILTER_H
 
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
