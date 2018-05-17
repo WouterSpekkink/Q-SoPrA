@@ -206,7 +206,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posChanged(MacroEvent*, qreal&)),
 	  this, SLOT(changePos(MacroEvent*, qreal&)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
-  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateArrows()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
@@ -223,7 +222,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processRectContextMenu(const QString &)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &, const QPoint &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &, const QPoint &)));
-  connect(view, SIGNAL(changedView()), this, SLOT(updateArrows()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -2304,7 +2302,6 @@ void EventGraphWidget::plotEdges() {
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
-    currentEdge->updatePosition();
   }
 }
 
@@ -2731,7 +2728,6 @@ void EventGraphWidget::plotGraph() {
   setRangeControls();
   plotLabel->setText("Unsaved plot");
   checkCongruency();
-  updateArrows();
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -2832,7 +2828,6 @@ void EventGraphWidget::plotCompareEdges() {
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
-    currentEdge->updatePosition();
   }
   QVectorIterator<Arrow*> it2(edgeVector);
   while (it2.hasNext()) {
@@ -4005,7 +4000,6 @@ void EventGraphWidget::seePlots() {
 	currentEdge->setColor(color);
 	edgeVector.push_back(currentEdge);
 	scene->addItem(currentEdge);
-	currentEdge->updatePosition();
 	if (hidden == 1) {
 	  currentEdge->hide();
 	} else {
@@ -4292,14 +4286,6 @@ void EventGraphWidget::seePlots() {
 void EventGraphWidget::setChangeLabel() {
   if (changeLabel->text() == "" && eventVector.size() > 0) {
     changeLabel->setText("*");
-  }
-}
-
-void EventGraphWidget::updateArrows() {
-  QVectorIterator<Arrow*> it(edgeVector);
-  while (it.hasNext()) {
-    Arrow *current = it.next();
-    current->updatePosition();
   }
 }
 
@@ -5887,7 +5873,6 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      newEdge->setEndItem(tempTarget);
 	      edgeVector.push_back(newEdge);
 	      scene->addItem(newEdge);
-	      newEdge->updatePosition();
 	    }
 	  }
 	}
@@ -5948,7 +5933,6 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      newEdge->setEndItem(tempTarget);
 	      edgeVector.push_back(newEdge);
 	      scene->addItem(newEdge);
-	      newEdge->updatePosition();
 	    }
 	  }
 	}
@@ -6854,7 +6838,6 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setEndItem(eventOne);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
-	newArrow->updatePosition();
       } else if (direction == FUTURE) {
 	query->bindValue(":tail", idOne);
 	query->bindValue(":head", idTwo);
@@ -6869,7 +6852,6 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setToolTip(toolTip);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
-	newArrow->updatePosition();
       }
     } else {
       if (direction == PAST) {
@@ -6884,7 +6866,6 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setEndItem(eventTwo);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
-	newArrow->updatePosition();
       } else if (direction == FUTURE) {
 	query->bindValue(":tail", idTwo);
 	query->bindValue(":head", idOne);
@@ -6899,7 +6880,6 @@ void EventGraphWidget::addLinkage() {
 	newArrow->setToolTip(toolTip);
 	edgeVector.push_back(newArrow);
 	scene->addItem(newArrow);
-	newArrow->updatePosition();
       }
     }
     delete query;

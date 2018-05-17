@@ -69,17 +69,11 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   typeInd = subType;
   coder = subCoder;
   copy = false;
-  theta = 0.0;
   height = 0;
 }
 
 QRectF Arrow::boundingRect() const {
   return strokePath.controlPointRect();
-}
-
-void Arrow::updatePosition() {
-  newLine = QLineF(mapFromItem(start, 0, 0), mapFromItem(end, 0, 0));
-  setLine(newLine);
 }
 
 QPainterPath Arrow::shape() const {
@@ -220,15 +214,7 @@ void Arrow::calculate() {
   qreal cY = height * (dX / distance) + mY;
   controlPoint = QPointF(cX, cY);
   ghostLine = QLineF(controlPoint, end->pos());
-  ghostLine.setLength(ghostLine.length() - 28);
-  
-  qreal depX = (start->pos().x() + controlPoint.x() + ghostLine.p2().x()) / 3;
-  qreal depY = (start->pos().y() + controlPoint.y() + ghostLine.p2().y()) / 3;
-  
-  QPointF departure = QPointF(depX, depY);
-  arrowLine = QLineF(departure, ghostLine.p2());
-  
-  // Then we do some calculations to determine how the arrow is drawn.
+  ghostLine.setLength(ghostLine.length() - 28);  
   double angle = ::acos(ghostLine.dx() / ghostLine.length());
   if (ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;

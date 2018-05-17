@@ -47,8 +47,8 @@ private:
   QColor color;
   QPolygonF arrowHeadOne;
   QPolygonF arrowHeadTwo;
+  QPainterPath strokePath;
   int height;
-  QLineF boundLine;
   QLineF ghostLineOne;
   QLineF ghostLineTwo;
   QPointF arrowP1;
@@ -56,7 +56,6 @@ private:
   QPointF arrowP3;
   QPointF arrowP4;
   QPointF controlPoint;
-  qreal theta;
   QString relType;
   QString name;
   QString comment;

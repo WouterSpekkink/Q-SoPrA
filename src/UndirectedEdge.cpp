@@ -24,44 +24,33 @@ UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem,
 }
 
 QRectF UndirectedEdge::boundingRect() const {
-   qreal extra = (pen().width() + height + 20) / 2.0;  
-   return QRectF(boundLine.p1(), QSizeF(boundLine.p2().x() - boundLine.p1().x(),
-					boundLine.p2().y() - boundLine.p1().y()))
-    .normalized()
-    .adjusted(-extra, -extra, extra, extra);
-}
-
-void UndirectedEdge::updatePosition() {
-  boundLine = QLineF(mapFromItem(start, 0, 0), mapFromItem(end, 0, 0));
+  return strokePath.controlPointRect(); 
 }
 
 void UndirectedEdge::calc() {
   // Let us first calculate the distance between our two points.
-  qreal xDiff = end->pos().x() - start->pos().x();
-  qreal yDiff = end->pos().y() - start->pos().y();
-  qreal distance = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
-  /* 
-     Then we draw two new points that are on a horizontal line.
-     This makes it easier to draw a control point perpendicular to the line.
+  qreal dX = end->pos().x() - start->pos().x();
+  qreal dY = end->pos().y() - start->pos().y();
+  qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
 
-     First, we calculate the control point
-  */
-  qreal controlX = (0.0 + distance) / 2;
-  controlPoint = QPointF(controlX, height);
-  /* 
-     We need to rotate and translate the painter such that it draws
-     the line between the correct points. Here we calculate the amount
-     of degrees that we need to rotate the painter.
-  */
-  theta = atan2(yDiff, xDiff);
-  theta = qRadiansToDegrees(theta);
-  /* 
-     The ghost lines are lines from the control point to the start and end points.
-     We do not draw them, but we need them to position the arrowheads.
-  */
-  ghostLineOne = QLineF(controlPoint, QPointF(distance, 0));
+  QLineF newLine = QLineF(start->pos(), end->pos());
+  newLine.setLength(newLine.length() - 18);
+  qreal mX = (start->pos().x() + newLine.p2().x()) / 2;
+  qreal mY = (start->pos().y() + newLine.p2().y()) / 2;
+  qreal cX = height * (-1 * (dY / distance)) + mX;
+  qreal cY = height * (dX / distance) + mY;
+  controlPoint = QPointF(cX, cY);
+  ghostLineOne = QLineF(controlPoint, end->pos());
   ghostLineOne.setLength(ghostLineOne.length() - 18);
-  ghostLineTwo = QLineF(controlPoint, QPointF(0, 0));
+  
+  newLine = QLineF(end->pos(), start->pos());
+  newLine.setLength(newLine.length() - 18);
+  mX = (end->pos().x() + newLine.p2().x()) / 2;
+  mY = (end->pos().y() + newLine.p2().y()) / 2;
+  cX = height * (-1 * (dY / distance)) + mX;
+  cY = height * (dX / distance) + mY;
+  controlPoint = QPointF(cX, cY);
+  ghostLineTwo = QLineF(controlPoint, start->pos());
   ghostLineTwo.setLength(ghostLineTwo.length() - 18);
   // Then we do some calculations to determine how our arrows are drawn.
   double angle = ::acos(ghostLineOne.dx() / ghostLineOne.length());
@@ -92,12 +81,10 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   arrowHeadOne << ghostLineOne.p2() << arrowP1 << arrowP2;
   arrowHeadTwo.clear();
   arrowHeadTwo << ghostLineTwo.p2() << arrowP3 << arrowP4;
-  
   QPainterPath myPath;
   myPath.moveTo(ghostLineTwo.p2());
   myPath.quadTo(controlPoint, ghostLineOne.p2());
-  painter->translate(start->pos() - QPointF(0, 0));
-  painter->rotate(theta);
+  strokePath = myPath;
   painter->drawPolygon(arrowHeadOne);
   painter->strokePath(myPath, QPen(color));
   painter->drawPolygon(arrowHeadTwo);

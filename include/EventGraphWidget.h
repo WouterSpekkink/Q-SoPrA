@@ -129,7 +129,6 @@ private slots:
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
-  void updateArrows();
   void plotLabels();
   void processLowerRange(int value);
   void processUpperRange(int value);
