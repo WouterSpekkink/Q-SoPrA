@@ -55,7 +55,7 @@
 
 #include "../include/Arrow.h"
 #include <math.h>
-
+#include <QtCore>
 #include <QPen>
 #include <QPainter>
 #include "../include/Scene.h"
@@ -69,14 +69,12 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   typeInd = subType;
   coder = subCoder;
   copy = false;
+  theta = 0.0;
+  height = 0;
 }
 
 QRectF Arrow::boundingRect() const {
-  qreal extra = (pen().width() + 20) / 2.0;
-  return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),
-				    line().p2().y() - line().p1().y()))
-    .normalized()
-    .adjusted(-extra, -extra, extra, extra);
+  return strokePath.controlPointRect();
 }
 
 void Arrow::updatePosition() {
@@ -85,42 +83,34 @@ void Arrow::updatePosition() {
 }
 
 QPainterPath Arrow::shape() const {
-  static const qreal clickTolerance = 8;
-  QLineF myLine = line();
-  myLine.setLength(myLine.length() + 20);
-  QPointF vec = myLine.p2() - myLine.p1();
-  vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
-  QPointF orthogonal(vec.y(), -vec.x());
-  QPainterPath result(myLine.p1() - vec + orthogonal);
-  result.lineTo(myLine.p1() - vec - orthogonal);
-  result.lineTo(myLine.p2() + vec - orthogonal);
-  result.lineTo(myLine.p2() + vec + orthogonal);
-  result.closeSubpath();
-  return result;
+  QPainterPathStroker stroker;
+  stroker.setWidth(20);
+  return stroker.createStroke(strokePath);
 }
 
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   calculate();
   QPen myPen = pen();
+  arrowHead.clear();
+  arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
+  QPainterPath myPath;
+  myPath.moveTo(start->pos());
+  myPath.quadTo(controlPoint, ghostLine.p2());
+  strokePath = myPath;
   myPen.setColor(color);
   painter->setPen(myPen);
   painter->setBrush(color);
-  if (line().length() > 0) {
-    arrowHead.clear();
-    arrowHead << line().p2() << arrowP1 << arrowP2;
-    painter->drawPolygon(arrowHead);
-    painter->drawLine(line());
-    if (isSelected()) {
-      painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-      painter->setBrush(Qt::transparent);
-      painter->drawPath(shape());
-    }
+  painter->drawPolygon(arrowHead);
+  painter->strokePath(myPath, QPen(color));
+  if (isSelected()) {
+    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+    painter->setBrush(Qt::transparent);
+    painter->drawPath(shape());
   }
 }
 
 void Arrow::calculate() {
   prepareGeometryChange();
-  qreal arrowSize = 10;
   EventItem *startEvent = qgraphicsitem_cast<EventItem*>(start);
   EventItem *endEvent = qgraphicsitem_cast<EventItem*>(end);
   MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(start);
@@ -137,16 +127,13 @@ void Arrow::calculate() {
     if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endEvent->getWidth()) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(startX, endEvent->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX <= endStart) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(endX - (endEvent->getWidth() / 2) + 20, endEvent->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX >= endStart) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(endX + (endEvent->getWidth() / 2) - 20,
 				endEvent->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     }
   } else if (startEvent && endMacro) {
     // startX is middle of start node
@@ -158,17 +145,13 @@ void Arrow::calculate() {
     if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endMacro->getWidth()) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(startX, endMacro->pos().y())));
-      newLine.setLength(newLine.length() - 28);
-
     } else if (startX <= endStart) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(endX - (endMacro->getWidth() / 2) + 20, endMacro->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX >= endStart) {
       newLine = QLineF(QPointF(startX, startEvent->pos().y()),
 		       (QPointF(endX + (endMacro->getWidth() / 2) - 20,
 				endMacro->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     }
   } else if (startMacro && endMacro) {
     // startX is middle of start node
@@ -180,17 +163,13 @@ void Arrow::calculate() {
     if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endMacro->getWidth()) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(startX, endMacro->pos().y())));
-      newLine.setLength(newLine.length() - 28);
-
     } else if (startX <= endStart) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(endX - (endMacro->getWidth() / 2) + 20, endMacro->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX >= endStart) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(endX + (endMacro->getWidth() / 2) - 20,
 				endMacro->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     }
   } else if (startMacro && endEvent) {
     // startX is middle of start node
@@ -202,17 +181,13 @@ void Arrow::calculate() {
     if (startX >= end->pos().x() - 20 && startX <= end->pos().x() - 20 + endEvent->getWidth()) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(startX, endEvent->pos().y())));
-      newLine.setLength(newLine.length() - 28);
-      
     } else if (startX <= endStart) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(endX - (endEvent->getWidth() / 2) + 20, endEvent->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX >= endStart) {
       newLine = QLineF(QPointF(startX, startMacro->pos().y()),
 		       (QPointF(endX + (endEvent->getWidth() / 2) - 20,
 				endEvent->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     }
   } else if (occurrenceStart && occurrenceEnd) {
     // startX is middle of start node
@@ -225,27 +200,44 @@ void Arrow::calculate() {
 	occurrenceEnd->getWidth()) {
       newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
 		       (QPointF(startX, occurrenceEnd->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX <= endStart) {
       newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
 		       (QPointF(endX - (occurrenceEnd->getWidth() / 2) + 20,
 				occurrenceEnd->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     } else if (startX >= endStart) {
-      newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
+      newLine = QLineF(QPointF(startX, occurrenceStart->pos().y() - 20),
 		       (QPointF(endX + (occurrenceEnd->getWidth() / 2) - 20,
 				occurrenceEnd->pos().y())));
-      newLine.setLength(newLine.length() - 28);
     }
   }
-  setLine(newLine);
-  double angle = ::acos(line().dx() / line().length());
-  if (line().dy() >= 0)
+  newLine.setLength(newLine.length() - 28);
+  qreal dY = newLine.p2().y() - start->pos().y();
+  qreal dX = newLine.p2().x() - start->pos().x();
+  qreal mX = (start->pos().x() + newLine.p2().x()) / 2;
+  qreal mY = (start->pos().y() + newLine.p2().y()) / 2;
+  qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
+  qreal cX = height * (-1 * (dY / distance)) + mX;
+  qreal cY = height * (dX / distance) + mY;
+  controlPoint = QPointF(cX, cY);
+  ghostLine = QLineF(controlPoint, end->pos());
+  ghostLine.setLength(ghostLine.length() - 28);
+  
+  qreal depX = (start->pos().x() + controlPoint.x() + ghostLine.p2().x()) / 3;
+  qreal depY = (start->pos().y() + controlPoint.y() + ghostLine.p2().y()) / 3;
+  
+  QPointF departure = QPointF(depX, depY);
+  arrowLine = QLineF(departure, ghostLine.p2());
+  
+  // Then we do some calculations to determine how the arrow is drawn.
+  double angle = ::acos(ghostLine.dx() / ghostLine.length());
+  if (ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
-  arrowP1 = line().p2() - QPointF(sin(angle + Pi / 3) * arrowSize,
-					  cos(angle + Pi / 3) * arrowSize);
-  arrowP2 = line().p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-					  cos(angle + Pi - Pi / 3) * arrowSize);
+  qreal arrowSize = 10;
+  arrowP1 = ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
+				     cos(angle + Pi / 3) * arrowSize);
+  arrowP2 = ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
+				     cos(angle + Pi - Pi / 3) * arrowSize);
+  setLine(newLine);
 }
 
 void Arrow::setColor(const QColor &subColor) {
