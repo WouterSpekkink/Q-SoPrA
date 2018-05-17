@@ -526,7 +526,8 @@ void WelcomeDialog::newDatabase() {
 		  "blue integer, "
 		  "alpha integer, "
 		  "hidden integer, "
-		  "perm integer)");
+		  "perm integer, "
+		  "relationship integer)"); // 'Fake' boolean to check whether this is a relationship
       query->exec("CREATE TABLE saved_og_plots_occurrence_labels "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -541,7 +542,8 @@ void WelcomeDialog::newDatabase() {
 		  "green integer, "
 		  "blue integer, "
 		  "alpha integer, "
-		  "hidden integer)");
+		  "hidden integer, "
+		  "relationship integer)");
       query->exec("CREATE TABLE saved_og_plots_legend "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -550,7 +552,8 @@ void WelcomeDialog::newDatabase() {
 		  "red integer, "
 		  "blue integer, "
 		  "green integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "relationship integer)");
       query->exec("CREATE TABLE saved_og_plots_lines "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -1137,7 +1140,8 @@ void WelcomeDialog::openDatabase() {
 		  "blue integer, "
 		  "alpha integer, "
 		  "hidden integer, "
-		  "perm integer)");
+		  "perm integer, "
+		  "relationship integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_labels "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -1152,7 +1156,8 @@ void WelcomeDialog::openDatabase() {
 		  "green integer, "
 		  "blue integer, "
 		  "alpha integer, "
-		  "hidden integer)");
+		  "hidden integer, "
+		  "relationship integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_legend "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -1161,7 +1166,8 @@ void WelcomeDialog::openDatabase() {
 		  "red integer, "
 		  "blue integer, "
 		  "green integer, "
-		  "alpha integer)");
+		  "alpha integer, "
+		  "relationship integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_lines "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "

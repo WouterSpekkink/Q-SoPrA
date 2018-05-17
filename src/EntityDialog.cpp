@@ -644,6 +644,17 @@ void EntityDialog::saveAndClose() {
   name = nameField->text();
   description = description.trimmed();
   name = name.trimmed();
+  if (name.contains("(") || name.contains(")")) {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("Name contains illegal character.");
+    warningBox->setInformativeText("The name of an entity cannot "
+				   "contain the '(' and ')' characters.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
   if (description == "") {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
@@ -659,7 +670,7 @@ void EntityDialog::saveAndClose() {
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Name missing.");
-    warningBox->setInformativeText("An attribute requires a label.");
+    warningBox->setInformativeText("The entity requires a name.");
     warningBox->exec();
     delete warningBox;
     return;

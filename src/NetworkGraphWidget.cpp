@@ -346,8 +346,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(sepLine2);
   legendLayout->addWidget(mergeButton);
   legendLayout->addWidget(removeTypeButton);
-  legendWidget->setMinimumWidth(175);
-  legendWidget->setMaximumWidth(175);
+  legendWidget->setMinimumWidth(250);
+  legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
   

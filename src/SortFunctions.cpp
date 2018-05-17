@@ -133,3 +133,11 @@ bool modeSort(const NetworkNode *itemOne, const NetworkNode *itemTwo) {
     return false;
   }
 }
+
+bool occurrencesSort(const OccurrenceItem *itemOne, const OccurrenceItem *itemTwo) {
+  if (itemOne->getOrder() < itemTwo->getOrder()) {
+    return true;
+  } else {
+    return false;
+  }
+}

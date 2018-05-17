@@ -68,7 +68,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event) {
 	if (QAction *action = menu.exec(event->globalPos())) {
 	  emit NetworkGraphContextMenuAction(action->text(), mousePos);
 	}
-      } else if (ogw && ogw->attributesPresent()) {
+      } else if (ogw && (ogw->attributesPresent() || ogw->relationshipsPresent())) {
 	QMenu menu;
 	QAction *action1 = new QAction(ADDLINE, this);
 	QAction *action2 = new QAction(ADDSINGLEARROW, this);
