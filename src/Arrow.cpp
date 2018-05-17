@@ -70,15 +70,11 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   coder = subCoder;
   copy = false;
   theta = 0.0;
-  height = 20;
+  height = 0;
 }
 
 QRectF Arrow::boundingRect() const {
-  qreal extra = (pen().width() + 20) / 2.0;
-  return QRectF(line().p1(), QSizeF(line().p2().x() - line().p1().x(),
-				    line().p2().y() - line().p1().y()))
-    .normalized()
-    .adjusted(-extra, -extra, extra, extra);
+  return strokePath.controlPointRect();
 }
 
 void Arrow::updatePosition() {
@@ -87,18 +83,9 @@ void Arrow::updatePosition() {
 }
 
 QPainterPath Arrow::shape() const {
-  static const qreal clickTolerance = 8;
-  QLineF myLine = line();
-  myLine.setLength(myLine.length());
-  QPointF vec = myLine.p2() - myLine.p1();
-  vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
-  QPointF orthogonal(vec.y(), -vec.x());
-  QPainterPath result(myLine.p1() - vec + orthogonal);
-  result.lineTo(myLine.p1() - vec - orthogonal);
-  result.lineTo(myLine.p2() + vec - orthogonal);
-  result.lineTo(myLine.p2() + vec + orthogonal);
-  result.closeSubpath();
-  return result;
+  QPainterPathStroker stroker;
+  stroker.setWidth(20);
+  return stroker.createStroke(strokePath);
 }
 
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
@@ -107,21 +94,19 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   arrowHead.clear();
   arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
   QPainterPath myPath;
-  myPath.moveTo(QPointF(0,0));
+  myPath.moveTo(start->pos());
   myPath.quadTo(controlPoint, ghostLine.p2());
   strokePath = myPath;
+  myPen.setColor(color);
+  painter->setPen(myPen);
+  painter->setBrush(color);
+  painter->drawPolygon(arrowHead);
+  painter->strokePath(myPath, QPen(color));
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
     painter->setBrush(Qt::transparent);
     painter->drawPath(shape());
   }
-  myPen.setColor(color);
-  painter->setPen(myPen);
-  painter->setBrush(color);
-  painter->translate(start->pos() - QPointF(0, 0));
-  painter->rotate(theta);
-  painter->drawPolygon(arrowHead);
-  painter->strokePath(myPath, QPen(color));
 }
 
 void Arrow::calculate() {
@@ -225,27 +210,33 @@ void Arrow::calculate() {
 				occurrenceEnd->pos().y())));
     }
   }
-   // Let us first calculate the distance between our two points.
-  qreal xDiff = newLine.p2().x() - newLine.p1().x();
-  qreal yDiff = newLine.p2().y() - newLine.p1().y();
-  qreal distance = sqrt(pow(xDiff, 2) + pow(yDiff, 2));
-  qreal controlX = (0.0 + distance) / 2;
-  controlPoint = QPointF(controlX, height);
-  departure = controlPoint;
-  departure.setY(departure.y() - (departure.y() / 3));
-  theta = atan2(yDiff, xDiff);
-  theta = qRadiansToDegrees(theta);
-  ghostLine = QLineF(departure, QPointF(distance, 0));
+  newLine.setLength(newLine.length() - 28);
+  qreal dY = newLine.p2().y() - start->pos().y();
+  qreal dX = newLine.p2().x() - start->pos().x();
+  qreal mX = (start->pos().x() + newLine.p2().x()) / 2;
+  qreal mY = (start->pos().y() + newLine.p2().y()) / 2;
+  qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
+  qreal cX = height * (-1 * (dY / distance)) + mX;
+  qreal cY = height * (dX / distance) + mY;
+  controlPoint = QPointF(cX, cY);
+  ghostLine = QLineF(controlPoint, end->pos());
   ghostLine.setLength(ghostLine.length() - 28);
+  
+  qreal depX = (start->pos().x() + controlPoint.x() + ghostLine.p2().x()) / 3;
+  qreal depY = (start->pos().y() + controlPoint.y() + ghostLine.p2().y()) / 3;
+  
+  QPointF departure = QPointF(depX, depY);
+  arrowLine = QLineF(departure, ghostLine.p2());
+  
   // Then we do some calculations to determine how the arrow is drawn.
   double angle = ::acos(ghostLine.dx() / ghostLine.length());
   if (ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
   qreal arrowSize = 10;
   arrowP1 = ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-				cos(angle + Pi / 3) * arrowSize);
+				     cos(angle + Pi / 3) * arrowSize);
   arrowP2 = ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-				cos(angle + Pi - Pi / 3) * arrowSize);
+				     cos(angle + Pi - Pi / 3) * arrowSize);
   setLine(newLine);
 }
 

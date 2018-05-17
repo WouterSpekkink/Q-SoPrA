@@ -97,6 +97,7 @@ private:
   QString coder;
   QLineF newLine;
   QLineF ghostLine;
+  QLineF arrowLine;
   QPointF arrowP1;
   QPointF arrowP2;
   QPointF controlPoint;

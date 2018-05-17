@@ -354,12 +354,12 @@ void OccurrenceGraphWidget::checkCongruency() {
 	QString type = "";
 	bool relFin = false;
 	for (int i = 0; i != combi.length(); i++) {
-	  if (combi[i] != "(" && !relFin) {
+	  if (combi[i] != '(' && !relFin) {
 	    relationship.append(combi[i]);
-	  } else if (combi[i] == "(") {
+	  } else if (combi[i] == '(') {
 	    relFin = true;
 	  }
-	  if (relFin && combi[i] != ")" && combi[i] != "(") {
+	  if (relFin && combi[i] != ')' && combi[i] != '(') {
 	    type.append(combi[i]);
 	  }
 	}
@@ -404,12 +404,12 @@ void OccurrenceGraphWidget::checkCongruency() {
       QString type = "";
       bool relFin = false;
       for (int i = 0; i != combi.length(); i++) {
-	if (combi[i] != "(" && !relFin) {
+	if (combi[i] != '(' && !relFin) {
 	  relationship.append(combi[i]);
-	} else if (combi[i] == "(") {
+	} else if (combi[i] == '(') {
 	  relFin = true;
 	}
-	if (relFin && combi[i] != ")" && combi[i] != "(") {
+	if (relFin && combi[i] != ')' && combi[i] != '(') {
 	  type.append(combi[i]);
 	}
       }
