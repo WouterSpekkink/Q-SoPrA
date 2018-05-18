@@ -81,6 +81,12 @@ public:
 
   void setStartItem(QGraphicsItem *subStart);
   void setEndItem(QGraphicsItem *subEnd);
+
+  void setPenStyle(int style);
+  int getPenStyle();
+
+  void setHeight(int submittedHeight);
+  int getHeight();
   
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
@@ -102,6 +108,8 @@ private:
   int height;
   bool copy;
   bool deleted;
+  int penWidth;
+  int penStyle;
 };
 
 #endif

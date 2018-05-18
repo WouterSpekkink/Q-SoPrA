@@ -70,6 +70,8 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   coder = subCoder;
   copy = false;
   height = 0;
+  penWidth = 1;
+  penStyle = 1;
 }
 
 QRectF Arrow::boundingRect() const {
@@ -84,17 +86,16 @@ QPainterPath Arrow::shape() const {
 
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   calculate();
-  QPen myPen = pen();
   arrowHead.clear();
   arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
   QPainterPath myPath;
   myPath.moveTo(start->pos());
   myPath.quadTo(controlPoint, ghostLine.p2());
   strokePath = myPath;
-  myPen.setColor(color);
-  painter->setPen(myPen);
+  painter->setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   painter->setBrush(color);
   painter->drawPolygon(arrowHead);
+  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle), Qt::RoundCap, Qt::RoundJoin));
   painter->strokePath(myPath, QPen(color));
   if (isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
@@ -266,3 +267,18 @@ void Arrow::setEndItem(QGraphicsItem *subEnd) {
   end = subEnd;
 }
 
+void Arrow::setPenStyle(int style) {
+  penStyle = style;
+}
+
+int Arrow::getPenStyle() {
+  return penStyle;
+}
+
+void Arrow::setHeight(int submittedHeight) {
+  height = submittedHeight;
+}
+
+int Arrow::getHeight() {
+  return height;
+}

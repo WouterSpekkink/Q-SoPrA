@@ -738,7 +738,7 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->cleanUp();
   hgw->setEvents(egw->getEventItems());
   hgw->setMacros(egw->getMacros());
-  hgw->setEdges(egw->getEdges());
+  hgw->setEdges(egw->getEdgeVector());
   hgw->setOrigin(selectedMacro);
   hgw->getEdges();
   showMenus(false);

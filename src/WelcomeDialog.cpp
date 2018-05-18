@@ -160,12 +160,7 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE saved_eg_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
-		  "linkage text, "
-		  "coder text, "
-		  "edgered integer,"
-		  "edgegreen integer, "
-		  "edgeblue integer, "
-		  "edgealpha integer)");
+		  "coder text)");
       query->exec("CREATE TABLE saved_eg_plots_event_items " // We'll get information from incidents
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -190,6 +185,7 @@ void WelcomeDialog::newDatabase() {
 		  "head integer , "
 		  "tailmacro integer, "
 		  "headmacro integer, "
+		  "linkage integer, "
 		  "red integer, "
 		  "green integer, "
 		  "blue integer, "
@@ -774,12 +770,7 @@ void WelcomeDialog::openDatabase() {
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
-		  "linkage text, "
-		  "coder text, "
-		  "edgered integer, "
-		  "edgegreen integer, "
-		  "edgeblue integer, "
-		  "edgealpha integer)");
+		  "coder text)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_event_items " 
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "

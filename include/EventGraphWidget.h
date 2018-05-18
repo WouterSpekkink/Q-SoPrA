@@ -58,13 +58,12 @@ public:
 
   QVector<MacroEvent*> getMacros();
   QVector<EventItem*> getEventItems();
-  QVector<Arrow*> getEdges();
+  QVector<Arrow*> getEdgeVector();
   void resetTree();
   void checkCongruency();
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void setRelationshipsWidget(RelationshipsWidget *rw);
-  QColor getEdgeColor();
 
 private slots:
   void setCommentBool();
@@ -106,8 +105,8 @@ private slots:
   void nextDataItem();
   void getEvents();
   void plotEvents();
-  void getEdges(QString coder, QString type);
-  void plotEdges();
+  void getEdges(QString coder, QString type, QColor color);
+  void plotEdges(QString type);
   void layoutGraph();
   void getLabels();
   void addLabels();
@@ -122,6 +121,7 @@ private slots:
   void setPlotButton();
   void getLinkageDetails();
   void plotGraph();
+  void addLinkageType();
   void setCompareButton();
   void compare();
   void getCompareEdges(QString coder, QString type);
@@ -129,10 +129,12 @@ private slots:
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
+  void updateScene();
   void plotLabels();
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setVisibility();
+  void setHeights();
   void setRangeControls();
   void exportSvg();
   void exportTable();
@@ -156,8 +158,14 @@ private slots:
   void recolorLabels();
   void colorLineage();
   void exportTransitionMatrix();
-  void findAncestors(QColor ancestor, QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
-  void findDescendants(QColor descendant, QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
+  void findAncestors(QColor ancestor,
+		     QGraphicsItem *origin,
+		     QSet<QGraphicsItem*> *pFinished,
+		     QString type);
+  void findDescendants(QColor descendant,
+		       QGraphicsItem *origin,
+		       QSet<QGraphicsItem*> *pFinished,
+		       QString type);
   void settleEvent();
   void makeParallel();
   void normalizeDistance();
@@ -203,18 +211,17 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
-  void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit);
-  void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit);
+  void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
+  void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems,
-			   int lowerLimit, int upperLimit);
-  void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit);
-  void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit);
+			   int lowerLimit, int upperLimit, QString type);
+  void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
+  void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   bool eventFilter(QObject *object, QEvent *event);
   void finalBusiness();
   
 signals:
   void seeHierarchy(MacroEvent *);
-  void changeEdgeColor(const QColor);
   
 private:
   QPointer<Scene> scene;
@@ -242,6 +249,8 @@ private:
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
+
+  QPointer<DeselectableListWidget> linkageListWidget;
   
   QPointer<QLabel> coderLabel;
   QPointer<QLabel> typeLabel;
@@ -260,9 +269,11 @@ private:
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> incongruencyLabel;
-  QPointer<QLabel> legendLabel;
+  QPointer<QLabel> eventLegendLabel;
+  QPointer<QLabel> linkageLegendLabel;
   
   QPointer<QPushButton> plotButton;
+  QPointer<QPushButton> addLinkageButton;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> compareButton;
@@ -282,7 +293,6 @@ private:
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> eventColorButton;
-  QPointer<QPushButton> edgeColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> seeComponentsButton;
@@ -321,12 +331,12 @@ private:
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
+
+  QVector<QString> presentTypes;
   
   QString selectedCoder;
   QString selectedCompare;
-  QString selectedType;
   MacroEvent *selectedMacro;
-  QColor edgeColor;
   
   qreal distance;
   int vectorPos;
