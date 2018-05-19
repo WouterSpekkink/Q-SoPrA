@@ -20,11 +20,6 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   rotateRect = false;
   rotateText = false;
   hierarchyMove = false;
-  edgeColor = QColor(Qt::black);
-}
-
-void Scene::changeEdgeColor(const QColor color) {
-  edgeColor = color;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -959,6 +954,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
 	emit EventItemContextMenuAction(action->text());
       }
     } else if (arrow && !arrow->isCopy()) {
+
+      // NEED TO LOOK AT THE BELOW AND REDO THEM 
+
+      
       clearSelection();
       arrow->setSelected(true);
       QMenu menu;
@@ -971,17 +970,17 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
       EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
       EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
-      if (arrow->getColor() == QColor(Qt::darkMagenta)) {
+      if (arrow->getPenStyle() == 3) {
 	menu.addAction(action1);
 	menu.addAction(action2);
-      } else if (arrow->getColor() == QColor(Qt::darkRed)) {
+      } else if (arrow->getPenStyle() == 4) {
 	menu.addAction(action3);
 	menu.addAction(action4);
-      } else if (arrow->getColor() == QColor(Qt::darkGreen)) {
+      } else if (arrow->getPenStyle() == 2) {
 	menu.addAction(action1);
 	menu.addAction(action2);
-	menu.addAction(action5);      
-      } else if (arrow->getColor() == edgeColor && startEvent && endEvent) {
+	menu.addAction(action5);
+      } else if (arrow->getPenStyle() == 1 && startEvent && endEvent) {
 	menu.addAction(action6);
 	menu.addAction(action7);
       }

@@ -3,12 +3,9 @@
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   selectedCoder = "";
   selectedCompare = "";
-  selectedType = "";
   selectedMacro = NULL;
   selectedIncident = 0;
   commentBool = false;
-  edgeColor = QColor(Qt::black);
-  emit changeEdgeColor(edgeColor);
   
   distance = 0;
   vectorPos = 0;
@@ -49,6 +46,16 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 
+  linkageListWidget = new DeselectableListWidget(legendWidget);
+  linkageListWidget->setColumnCount(2);
+  linkageListWidget->horizontalHeader()->hide();
+  linkageListWidget->verticalHeader()->hide();
+  linkageListWidget->setColumnWidth(1, 20);
+  linkageListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  linkageListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  linkageListWidget->setStyleSheet("QTableView {gridline-color: black}");
+  linkageListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  
   coderLabel = new QLabel(tr("Choose coder:"), this);
   typeLabel = new QLabel(tr("Choose linkage:"), this);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
@@ -67,7 +74,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
   incongruencyLabel = new QLabel(tr(""), this);
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
-  legendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
+  eventLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
+  linkageLegendLabel = new QLabel(tr("<b>Linkages:</b>"), legendWidget);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -113,6 +121,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   eventListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   
   plotButton = new QPushButton(tr("Plot new"), this);
+  addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
+  addLinkageTypeButton->setEnabled(false);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
@@ -139,7 +149,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
-  edgeColorButton = new QPushButton(tr("Set edge color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   valueButton = new QPushButton(tr("Store value"), attWidget);
@@ -165,6 +174,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   moveModeUpButton->setEnabled(false);
   moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
   moveModeDownButton->setEnabled(false);
+  hideLinkageTypeButton = new QPushButton(tr("Hide"), legendWidget);
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton = new QPushButton(tr("Show"), legendWidget);
+  showLinkageTypeButton->setEnabled(false);
+  removeLinkageTypeButton = new QPushButton(tr("Remove from plot"), legendWidget);
+  removeLinkageTypeButton->setEnabled(false);
   
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -182,17 +197,17 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
-  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
+  connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
+  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
   connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setCompareButton()));  
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotGraph()));
+  connect(addLinkageTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
   connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
   connect(eventColorButton, SIGNAL(clicked()), this, SLOT(setEventColor()));
-  connect(edgeColorButton, SIGNAL(clicked()), this, SLOT(setEdgeColor()));
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
@@ -206,6 +221,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posChanged(MacroEvent*, qreal&)),
 	  this, SLOT(changePos(MacroEvent*, qreal&)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
@@ -250,12 +266,20 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(disableModeButtons()));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
+  connect(linkageListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
+	  this, SLOT(setLinkageButtons(QTableWidgetItem *)));
+  connect(linkageListWidget, SIGNAL(noneSelected()),
+	  this, SLOT(disableLinkageButtons()));
+  connect(linkageListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeLinkageColor(QTableWidgetItem *)));
+  connect(hideLinkageTypeButton, SIGNAL(clicked()), this, SLOT(hideLinkageType()));
+  connect(showLinkageTypeButton, SIGNAL(clicked()), this, SLOT(showLinkageType()));
+  connect(removeLinkageTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
-  connect(this, SIGNAL(changeEdgeColor(const QColor)), scene, SLOT(changeEdgeColor(const QColor)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -266,6 +290,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   plotOptionsLayout->addWidget(typeLabel);
   plotOptionsLayout->addWidget(typeComboBox);
   plotOptionsLayout->addWidget(plotButton);
+  plotOptionsLayout->addWidget(addLinkageTypeButton);
   plotOptionsLayout->addWidget(savePlotButton);
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
@@ -359,7 +384,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addLayout(middleLayout);
 
   QPointer<QVBoxLayout> legendLayout = new QVBoxLayout;
-  legendLayout->addWidget(legendLabel);
+  legendLayout->addWidget(eventLegendLabel);
   legendLayout->addWidget(eventListWidget);
   QPointer<QHBoxLayout> modeButtonsLayout = new QHBoxLayout;
   modeButtonsLayout->addWidget(moveModeUpButton);
@@ -369,6 +394,11 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(exportTransitionMatrixButton);
+  legendLayout->addWidget(linkageLegendLabel);
+  legendLayout->addWidget(linkageListWidget);
+  legendLayout->addWidget(hideLinkageTypeButton);
+  legendLayout->addWidget(showLinkageTypeButton);
+  legendLayout->addWidget(removeLinkageTypeButton);
   legendWidget->setMinimumWidth(250);
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
@@ -377,7 +407,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
-  graphicsControlsLayout->addWidget(edgeColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
   QPointer<QFrame> sepLine = new QFrame();
@@ -458,50 +487,55 @@ void EventGraphWidget::checkCongruency() {
 	return;
       }
     }
-    query->prepare("SELECT tail, head FROM linkages "
-		   "WHERE type = :type AND coder = :coder");
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
-    query->exec();
-    while (query->next()) {
-      int tailId = query->value(0).toInt();
-      int headId = query->value(1).toInt();
-      bool tailVisible = false;
-      bool headVisible = false;
-      QVectorIterator<EventItem*> it(eventVector);
-      while (it.hasNext()) {
-	EventItem *currentEvent = it.next();
-	if (currentEvent->isVisible()) {
-	  if (currentEvent->getId() == tailId) {
-	    tailVisible = true;
-	  } else if (currentEvent->getId() == headId) {
-	    headVisible = true;
-	  }
-	}
-      }
-      if (tailVisible && headVisible) {
-	QVectorIterator<Arrow*> it(edgeVector);
-	bool found = false;
-	while (it.hasNext()) {
-	  Arrow *current = it.next();
-	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
-	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
-	  if (startEvent && endEvent) {
-	    if (startEvent->getId() == tailId &&
-		endEvent->getId() == headId) {
-	      found = true;
+    QVectorIterator<QString> it(presentTypes);
+    while (it.hasNext()) {
+      QString currentType = it.next();
+      query->prepare("SELECT tail, head FROM linkages "
+		     "WHERE type = :type AND coder = :coder");
+      query->bindValue(":type", currentType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();
+      while (query->next()) {
+	int tailId = query->value(0).toInt();
+	int headId = query->value(1).toInt();
+	bool tailVisible = false;
+	bool headVisible = false;
+	QVectorIterator<EventItem*> it2(eventVector);
+	while (it2.hasNext()) {
+	  EventItem *currentEvent = it2.next();
+	  if (currentEvent->isVisible()) {
+	    if (currentEvent->getId() == tailId) {
+	      tailVisible = true;
+	    } else if (currentEvent->getId() == headId) {
+	      headVisible = true;
 	    }
 	  }
 	}
-	if (!found) {
-	  incongruencyLabel->setText("Incongruency detected");
-	  return;
+	if (tailVisible && headVisible) {
+	  QVectorIterator<Arrow*> it3(edgeVector);
+	  bool found = false;
+	  while (it3.hasNext()) {
+	    Arrow *current = it3.next();
+	    EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
+	    EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
+	    if (startEvent && endEvent) {
+	      if (startEvent->getId() == tailId &&
+		  endEvent->getId() == headId) {
+		found = true;
+	      }
+	    }
+	  }
+	  if (!found) {
+	    incongruencyLabel->setText("Incongruency detected");
+	    return;
+	  }
 	}
       }
-    }   
+    }
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
       Arrow* current = it3.next();
+      QString currentType = current->getType();
       EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
       EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
       if (startEvent && endEvent) {
@@ -510,7 +544,7 @@ void EventGraphWidget::checkCongruency() {
 	bool found = false;
 	query->prepare("SELECT tail, head FROM linkages "
 		       "WHERE type = :type AND coder = :coder");
-	query->bindValue(":type", selectedType);
+	query->bindValue(":type", currentType);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();
 	while (query->next()) {
@@ -529,7 +563,6 @@ void EventGraphWidget::checkCongruency() {
     delete query;
     incongruencyLabel->setText("");
   }
-    
 }
   
 void EventGraphWidget::setCommentBool() {
@@ -592,10 +625,6 @@ void EventGraphWidget::showComments() {
   attWidget->hide();
   commentWidget->show();
 }
-
-QColor EventGraphWidget::getEdgeColor() {
-  return edgeColor;
-}  
 
 void EventGraphWidget::retrieveData() {
   setComment();
@@ -2224,7 +2253,7 @@ void EventGraphWidget::plotEvents() {
   }
 }
 
-void EventGraphWidget::getEdges(QString coder, QString type) {
+void EventGraphWidget::getEdges(QString coder, QString type, QColor color) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM linkages "
 		 "WHERE coder = :coder AND type = :type");
@@ -2279,6 +2308,7 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	  currentEdge->setStartItem(tempSource);
 	  currentEdge->setEndItem(tempTarget);
 	  currentEdge->setToolTip(toolTip);
+	  currentEdge->setColor(color);
 	  edgeVector.push_back(currentEdge);
 	  break;
 	} else if (tempSource->getOrder() > tempTarget->getOrder()) {
@@ -2287,6 +2317,7 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
 	  currentEdge->setStartItem(tempSource);
 	  currentEdge->setEndItem(tempTarget);
 	  currentEdge->setToolTip(toolTip);
+	  currentEdge->setColor(color);
 	  edgeVector.push_back(currentEdge);
 	  break;
 	}
@@ -2297,11 +2328,13 @@ void EventGraphWidget::getEdges(QString coder, QString type) {
   delete query;
 }
 
-void EventGraphWidget::plotEdges() {
+void EventGraphWidget::plotEdges(QString type) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
-    scene->addItem(currentEdge);
+    if (currentEdge->getType() == type) {
+      scene->addItem(currentEdge);
+    }
   }
 }
 
@@ -2401,7 +2434,8 @@ void EventGraphWidget::cleanUp() {
   rectVector.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
-  selectedType = "";
+  linkageListWidget->setRowCount(0);
+  presentTypes.clear();
   selectedCoder = "";
   selectedCompare = "";
   selectedIncident = 0;
@@ -2668,13 +2702,24 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
   }
 }
 
-void EventGraphWidget::setPlotButton() {
+void EventGraphWidget::setPlotButtons() {
   if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) {
     plotButton->setEnabled(true);
   } else {
     plotButton->setEnabled(false);
   }
-  if (coderComboBox->currentText() != DEFAULT) {
+  if (coderComboBox->currentText() == selectedCoder &&
+      !presentTypes.contains(typeComboBox->currentText())) {
+    if (macroVector.size() > 0) {
+      addLinkageTypeButton->setEnabled(false);
+    } else {
+      addLinkageTypeButton->setEnabled(true);
+    }
+  } else {
+    addLinkageTypeButton->setEnabled(false);
+  }
+  if (coderComboBox->currentText() != DEFAULT &&
+      presentTypes.contains(typeComboBox->currentText())) {
     compareComboBox->clear();
     compareComboBox->addItem(DEFAULT);
     QSqlQuery *query = new QSqlQuery;
@@ -2711,15 +2756,58 @@ void EventGraphWidget::getLinkageDetails() {
 }
 
 void EventGraphWidget::plotGraph() {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   cleanUp();
   selectedCoder = coderComboBox->currentText();
-  selectedType = typeComboBox->currentText();
+  QString currentType = typeComboBox->currentText();
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  QColor color = QColor(Qt::black);
+  colorDialog->setCurrentColor(color);
+  if (colorDialog->exec()) {
+    color = colorDialog->selectedColor();
+  } else {
+    return;
+  }
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT description, direction FROM linkage_types "
+		 "WHERE name = :name");
+  query->bindValue(":name", currentType);
+  query->exec();
+  query->first();
+  QString description = query->value(0).toString();
+  QString direction = query->value(1).toString();
+  presentTypes.push_back(currentType);
+  QTableWidgetItem *item = new QTableWidgetItem(currentType);
+  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+  QString toolTip = breakString(currentType + " (" + direction + ") - " + description);
+  item->setToolTip(toolTip);
+  item->setData(Qt::DisplayRole, currentType);
+  linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+  linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+  linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+  linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(color);
+  linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+    setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
+	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  if (coderComboBox->currentText() != DEFAULT &&
+      presentTypes.contains(typeComboBox->currentText())) {
+    compareComboBox->clear();
+    compareComboBox->addItem(DEFAULT);
+    query->exec("SELECT name FROM coders");
+    while (query->next()) {
+      QString currentCoder = query->value(0).toString();
+      if (currentCoder != coderComboBox->currentText()) {
+	compareComboBox->addItem(currentCoder);
+      }
+    }
+  }
+  delete query;
   distance = 70;
   getEvents();
   plotEvents(); // Should allow for range to be set here.
-  getEdges(selectedCoder, selectedType);
-  plotEdges();
+  getEdges(selectedCoder, currentType, color);
+  plotEdges(currentType);
   layoutGraph();
   getLabels();
   addLabels();
@@ -2728,29 +2816,89 @@ void EventGraphWidget::plotGraph() {
   setRangeControls();
   plotLabel->setText("Unsaved plot");
   checkCongruency();
+  updateLinkages();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+}
+
+void EventGraphWidget::addLinkageType() {
+  QString currentType = typeComboBox->currentText();
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  QColor color = QColor(Qt::black);
+  colorDialog->setCurrentColor(color);
+  if (colorDialog->exec()) {
+    color = colorDialog->selectedColor();
+  } else {
+    return;
+  }
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT description, direction FROM linkage_types "
+		 "WHERE name = :name");
+  query->bindValue(":name", currentType);
+  query->exec();
+  query->first();
+  QString description = query->value(0).toString();
+  QString direction = query->value(1).toString();
+  presentTypes.push_back(currentType);
+  QTableWidgetItem *item = new QTableWidgetItem(currentType);
+  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+  QString toolTip = breakString(currentType + " (" + direction + ") - " + description);
+  item->setToolTip(toolTip);
+  item->setData(Qt::DisplayRole, currentType);
+  linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+  linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+  linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+  linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(color);
+  linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+    setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
+	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  if (coderComboBox->currentText() != DEFAULT &&
+      presentTypes.contains(typeComboBox->currentText())) {
+    compareComboBox->clear();
+    compareComboBox->addItem(DEFAULT);
+    query->exec("SELECT name FROM coders");
+    while (query->next()) {
+      QString currentCoder = query->value(0).toString();
+      if (currentCoder != coderComboBox->currentText()) {
+	compareComboBox->addItem(currentCoder);
+      }
+    }
+  }
+  delete query;
+  getEdges(selectedCoder, currentType, color);
+  plotEdges(currentType);
+  setHeights();
+  checkCongruency();
+  updateLinkages();
+  addLinkageTypeButton->setEnabled(false);
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
 
 void EventGraphWidget::setCompareButton() {
-  if (compareComboBox->currentText() != DEFAULT && selectedCoder != "") {
-    compareButton->setEnabled(true);
+  if (presentTypes.size() > 0) {
+    if (compareComboBox->currentText() != DEFAULT && selectedCoder != "") {
+      if (macroVector.size() > 0) {
+	compareButton->setEnabled(false);
+      } else {
+	compareButton->setEnabled(true);
+      }
+    } else {
+      compareButton->setEnabled(false);
+    }
   } else {
     compareButton->setEnabled(false);
   }
 }
 
+
 void EventGraphWidget::compare() {
-  edgeColor = QColor(Qt::black);
-  QVectorIterator<Arrow*> it(edgeVector);
-  while (it.hasNext()) {
-    Arrow *current = it.next();
-    current->setColor(edgeColor);
-  }
-  emit changeEdgeColor(edgeColor);
   selectedCompare = compareComboBox->currentText();
-  getCompareEdges(selectedCompare, selectedType);
+  getCompareEdges(selectedCompare, presentTypes[0]);
   plotCompareEdges();
+  updateLinkages();
   compareButton->setEnabled(false);
 }
 
@@ -2802,7 +2950,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 	  EventItem *tempS = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
 	  EventItem *tempT = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
 	  if (tempSource == tempS && tempTarget == tempT) {
-	    currentEdge->setColor(Qt::darkGreen);
+	    currentEdge->setPenStyle(2);
 	    sameFound = true;
 	  }
 	}
@@ -2811,7 +2959,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 	  compareEdge->setZValue(2);
 	  compareEdge->setStartItem(tempSource);
 	  compareEdge->setEndItem(tempTarget);
-	  compareEdge->setColor(Qt::darkRed);
+	  compareEdge->setPenStyle(4);
 	  compareVector.push_back(compareEdge);
 	  compareEdge->setToolTip(toolTip);
 	}
@@ -2824,6 +2972,8 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 }
 
 void EventGraphWidget::plotCompareEdges() {
+
+  // SHOULD REDO THIS.
   QVectorIterator<Arrow*> it(compareVector);
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
@@ -2832,10 +2982,10 @@ void EventGraphWidget::plotCompareEdges() {
   QVectorIterator<Arrow*> it2(edgeVector);
   while (it2.hasNext()) {
     Arrow *currentEdge = it2.next();
-    if (currentEdge->getColor() == edgeColor) {
-      currentEdge->setColor(Qt::darkMagenta);
+    if (currentEdge->getPenStyle() == 1) {
+      currentEdge->setPenStyle(3);
     } else {
-      currentEdge->setColor(edgeColor);
+      currentEdge->setPenStyle(1);
     }
   }
 }
@@ -2873,9 +3023,8 @@ void EventGraphWidget::saveCurrentPlot() {
     }
     if (!empty) {
       // Reset plot name and details, and clear out all data before writing.
-      query->prepare("UPDATE saved_eg_plots SET linkage = :linkage, coder = :coder "
+      query->prepare("UPDATE saved_eg_plots SET coder = :coder "
 		     "WHERE plot = :name");
-      query->bindValue(":linkage", selectedType);
       query->bindValue(":coder", selectedCoder);
       query->bindValue(":name", name);
       query->exec();
@@ -2951,16 +3100,10 @@ void EventGraphWidget::saveCurrentPlot() {
       query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
-      query->prepare("INSERT INTO saved_eg_plots (plot, linkage, coder, "
-		     "edgered, edgegreen, edgeblue, edgealpha) "
-		     "VALUES (:name, :linkage, :coder, :red, :green, :blue, :alpha)");
+      query->prepare("INSERT INTO saved_eg_plots (plot, coder, "
+		     "VALUES (:name, :coder)");
       query->bindValue(":name", name);
-      query->bindValue(":linkage", selectedType);
       query->bindValue(":coder", selectedCoder);
-      query->bindValue(":red", edgeColor.red());
-      query->bindValue(":green", edgeColor.green());
-      query->bindValue(":blue", edgeColor.blue());
-      query->bindValue(":alpha", edgeColor.alpha());
       query->exec();
     }
     QSqlDatabase::database().transaction();
@@ -3075,10 +3218,10 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_edges "
-		   "(plot, tail, head, tailmacro, headmacro, "
-		   "red, green, blue, alpha, hidden) "
-		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, "
-		   ":red, :green, :blue, :alpha, :hidden)");
+		   "(plot, tail, head, tailmacro, headmacro, linkage "
+		   "red, green, blue, alpha, hidden, masshidden) "
+		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :linkages, "
+		   ":red, :green, :blue, :alpha, :hidden, :masshidden)");
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
       Arrow *currentEdge = it3.next();
@@ -3091,11 +3234,13 @@ void EventGraphWidget::saveCurrentPlot() {
       EventItem *eventHead = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
       MacroEvent *macroTail = qgraphicsitem_cast<MacroEvent*>(currentEdge->startItem());
       MacroEvent *macroHead = qgraphicsitem_cast<MacroEvent*>(currentEdge->endItem());
+      QString linkage = currentEdge->getType();
       int tail = 0;
       int head = 0;
       int mTail = 0;
       int mHead = 0;
       int hidden = 1;
+      int massHidden = 0;
       if (eventTail) {
 	tail = eventTail->getId();
       } else if (macroTail) {
@@ -3111,16 +3256,21 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentEdge->isVisible()) {
 	hidden = 0;
       }
+      if (currentEdge->isMassHidden()) {
+	massHidden = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
       query->bindValue(":tmacro", mTail);
       query->bindValue(":hmacro", mHead);
+      query->bindValue(":linkage", linkage);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
       query->bindValue(":hidden", hidden);
+      query->bindValue(":masshidden", massHidden);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -3602,26 +3752,16 @@ void EventGraphWidget::seePlots() {
     scene->clear();
     QString plot = savedPlotsDialog->getSelectedPlot();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT linkage, coder, edgered, edgegreen, edgeblue, edgealpha "
+    query->prepare("SELECT coder "
 		   "FROM saved_eg_plots "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
     query->first();
-    QString type = query->value(0).toString();
-    QString coder = query->value(1).toString();
-    int red = query->value(2).toInt();
-    int green = query->value(3).toInt();
-    int blue = query->value(4).toInt();
-    int alpha = query->value(5).toInt();
-    edgeColor = QColor(red, green, blue, alpha);
-    emit changeEdgeColor(edgeColor);
-    selectedType = type;
+    QString coder = query->value(0).toString();
     selectedCoder = coder;
     int index = coderComboBox->findText(coder);
     coderComboBox->setCurrentIndex(index);
-    index = typeComboBox->findText(type);
-    typeComboBox->setCurrentIndex(index);
     query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		   "dislodged, mode, red, green, blue, alpha, hidden "
 		   "FROM saved_eg_plots_event_items "
@@ -3887,7 +4027,8 @@ void EventGraphWidget::seePlots() {
       }
     }
     std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
-    query->prepare("SELECT tail, head, tailmacro, headmacro, red, green, blue, alpha, hidden "
+    query->prepare("SELECT tail, head, tailmacro, headmacro, linkage, red, green, blue, alpha, "
+		   "hidden, masshidden "
 		   "FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -3897,11 +4038,13 @@ void EventGraphWidget::seePlots() {
       int head = query->value(1).toInt();
       int tM = query->value(2).toInt();
       int hM = query->value(3).toInt();
-      int red = query->value(4).toInt();
-      int green = query->value(5).toInt();
-      int blue = query->value(6).toInt();
-      int alpha = query->value(7).toInt();
-      int hidden = query->value(8).toInt();
+      QString linkage = query->value(4).toString();
+      int red = query->value(5).toInt();
+      int green = query->value(6).toInt();
+      int blue = query->value(7).toInt();
+      int alpha = query->value(8).toInt();
+      int hidden = query->value(9).toInt();
+      int massHidden = query->value(10).toInt();
       QColor color = QColor(red, green, blue, alpha);
       bool tailMacro = false;
       bool headMacro = false;
@@ -3918,7 +4061,7 @@ void EventGraphWidget::seePlots() {
 			"WHERE tail = :tail AND head = :head AND type = :type");
 	query2->bindValue(":tail", tail);
 	query2->bindValue(":head", head);
-	query2->bindValue(":type", type);
+	query2->bindValue(":type", linkage);
 	query2->exec();
 	query2->first();
 	QString comment = "";
@@ -3992,7 +4135,7 @@ void EventGraphWidget::seePlots() {
 	}
       }
       if (tempSource != NULL && tempTarget != NULL) {
-	Arrow *currentEdge = new Arrow(selectedType, selectedCoder);
+	Arrow *currentEdge = new Arrow(linkage, selectedCoder);
 	currentEdge->setZValue(2);
 	currentEdge->setStartItem(tempSource);
 	currentEdge->setEndItem(tempTarget);
@@ -4004,6 +4147,9 @@ void EventGraphWidget::seePlots() {
 	  currentEdge->hide();
 	} else {
 	  currentEdge->show();
+	}
+	if (massHidden) {
+	  currentEdge->setMassHidden(true);
 	}
       }
     }
@@ -4289,6 +4435,14 @@ void EventGraphWidget::setChangeLabel() {
   }
 }
 
+void EventGraphWidget::updateLinkages() {
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    current->updatePosition();
+  }
+}
+
 void EventGraphWidget::colorByAttribute() {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
   attributeColorDialog->exec();
@@ -4482,6 +4636,43 @@ void EventGraphWidget::disableModeButtons() {
   moveModeDownButton->setEnabled(false);
 }
 
+
+void EventGraphWidget::setLinkageButtons(QTableWidgetItem *item) {
+  QString text = item->data(Qt::DisplayRole).toString();
+  if (text != "") {
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *current = it.next();
+      if (current->getType() == text) {
+	if (current->isMassHidden()) {
+	  hideLinkageTypeButton->setEnabled(false);
+	  showLinkageTypeButton->setEnabled(true);
+	} else {
+	  hideLinkageTypeButton->setEnabled(true);
+	  showLinkageTypeButton->setEnabled(false);
+	}
+	break;
+      }
+    }
+    if (presentTypes.size() > 1) {
+      removeLinkageTypeButton->setEnabled(true);
+    } else {
+      removeLinkageTypeButton->setEnabled(false);
+    }
+  } else {
+    hideLinkageTypeButton->setEnabled(false);
+    showLinkageTypeButton->setEnabled(false);
+    removeLinkageTypeButton->setEnabled(false);
+  }
+}
+
+void EventGraphWidget::disableLinkageButtons() {
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton->setEnabled(false);
+  removeLinkageTypeButton->setEnabled(false);
+}
+
+
 void EventGraphWidget::restoreModeColors() {
   for (int i = 0; i != eventListWidget->rowCount(); i++) {
     QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -4624,41 +4815,17 @@ void EventGraphWidget::setEventColor() {
 
 void EventGraphWidget::setEdgeColor() {
   if (edgeVector.size() > 0) {
-    bool sameColor = true;
-    QVector<Arrow*>::iterator it;
-    QColor color = edgeVector.first()->getColor();
-    for (it = edgeVector.begin() + 1; it != edgeVector.end(); it++) {
-      Arrow *current = *it;
-      if (current->getColor() != color) {
-	sameColor = false;
-	break;
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      QVectorIterator<Arrow*> it(edgeVector);
+      while (it.hasNext()) {
+	Arrow *currentArrow = it.next();
+	currentArrow->setColor(color);
       }
     }
-    if (compareVector.size() > 0 || !sameColor) {
-      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Comparing linkages</h2>");
-      warningBox->setInformativeText("You are still comparing linkages between two coders. "
-				     "Resolve any remaining comparisons before changing the "
-				     "edge color");
-      warningBox->exec();
-      delete warningBox;
-      return;
-    } else {
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      if (colorDialog->exec()) {
-	edgeColor = colorDialog->selectedColor();
-	QVectorIterator<Arrow*> it2(edgeVector);
-	while (it2.hasNext()) {
-	  Arrow *currentArrow = it2.next();
-	  currentArrow->setColor(edgeColor);
-	}
-	emit changeEdgeColor(edgeColor);
-      }
-      delete colorDialog;
-    } 
+    delete colorDialog;
   }
 }
 
@@ -4712,6 +4879,92 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item) {
       }
     }
   }
+}
+
+void EventGraphWidget::changeLinkageColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = linkageListWidget->item(item->row(), 0);
+      QString type = neighbour->data(Qt::DisplayRole).toString();
+      QVectorIterator<Arrow*> it(edgeVector);
+      while (it.hasNext()) {
+	Arrow *current = it.next();
+	if (current->getType() == type) {
+	  current->setColor(color);
+	}
+      }
+    }
+  }
+}
+
+void EventGraphWidget::hideLinkageType() {
+  setChangeLabel();
+  showLinkageTypeButton->setEnabled(true);
+  hideLinkageTypeButton->setEnabled(false);
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  linkageListWidget->currentItem()->setBackground(Qt::gray);
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    if (current->getType() == text) {
+      current->setMassHidden(true);
+    }
+  }
+  setVisibility();
+  setHeights();
+}
+
+void EventGraphWidget::showLinkageType() {
+  setChangeLabel();
+  showLinkageTypeButton->setEnabled(false);
+  hideLinkageTypeButton->setEnabled(true);
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  linkageListWidget->currentItem()->setBackground(Qt::transparent);
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    if (current->getType() == text) {
+      current->setMassHidden(false);
+    }
+  }
+  setVisibility();
+  setHeights();
+}
+
+void EventGraphWidget::removeLinkageType() {
+  setChangeLabel();
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QVectorIterator<Arrow*> it (edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    if (current->getType() == text) {
+      delete current;
+      edgeVector.removeOne(current);
+    }
+  }
+  for (int i = 0; i != linkageListWidget->rowCount();) {
+    if (linkageListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) {
+      linkageListWidget->removeRow(i);
+    }
+    if (i != linkageListWidget->rowCount()) {
+      i++;
+    }
+  }
+  QVectorIterator<QString> it2(presentTypes);
+  while (it2.hasNext()) {
+    QString type = it2.next();
+    if (type == text) {
+      presentTypes.removeOne(type);
+    }
+  }
+  setHeights();
+  setPlotButtons();
+  disableLinkageButtons();
 }
 
 void EventGraphWidget::plotLabels() {
@@ -4793,11 +5046,13 @@ void EventGraphWidget::setVisibility() {
   QVectorIterator<Arrow*> it3(edgeVector);
   while (it3.hasNext()) {
     Arrow *currentEdge = it3.next();
-    if (currentEdge) {
+    if (currentEdge->isMassHidden()) {
+      currentEdge->hide();
+    } else {
       QGraphicsItem *tail = currentEdge->startItem();
       QGraphicsItem *head = currentEdge->endItem();
       if (tail->isVisible() && head->isVisible()) {
-      	currentEdge->setVisible(true);
+	currentEdge->setVisible(true);
       } else {
 	currentEdge->setVisible(false);
       }
@@ -4827,12 +5082,59 @@ void EventGraphWidget::setVisibility() {
       }
     }
   }
+  setHeights();
   QRectF currentRect = scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
+}
+
+void EventGraphWidget::setHeights() {
+  QVector<QString> finished;
+  QVectorIterator<QString> it(presentTypes);
+  it.toBack();
+  while (it.hasPrevious()) {
+    QString currentType = it.previous();
+    QVectorIterator<Arrow*> it2(edgeVector);
+    while (it2.hasNext()) {
+      Arrow *currentArrow = it2.next();
+      if (currentArrow->isVisible()) {
+	if (currentArrow->getType() == currentType) {
+	  QGraphicsItem *start = currentArrow->startItem();
+	  QGraphicsItem *end = currentArrow->endItem();
+	  int countFound = 0;
+	  bool found = false;
+	  QVectorIterator<Arrow*> it3(edgeVector);
+	  while (it3.hasNext()) {
+	    Arrow *otherArrow = it3.next();
+	    if (otherArrow->isVisible()) {
+	      if (otherArrow != currentArrow) {
+		if (otherArrow->startItem() == start &&
+		    otherArrow->endItem() == end) {
+		  found = true;
+		  if (!finished.contains(otherArrow->getType())) {
+		    countFound++;
+		  }
+		} else if (otherArrow->startItem() == end && otherArrow->endItem() == start) {
+		  found = true;
+		}
+	      }
+	    }
+	  }
+	  if (countFound > 0) {
+	    currentArrow->setHeight((countFound + 1) * 40);
+	  } else if (found) {
+	    currentArrow->setHeight(1 * 40);
+	  } else {
+	    currentArrow->setHeight(0);
+	  }
+	}
+      }
+      finished.push_back(currentType);
+    }
+  }
 }
 
 void EventGraphWidget::setRangeControls() {
@@ -4958,11 +5260,14 @@ void EventGraphWidget::exportTable() {
 	QString mode = macro->getMode();
 	QString type = "";
 	QString id = macro->getLabel()->toPlainText();
-	if (macro->getConstraint() == PATHS || macro->getConstraint() == PATHSATT) {
+	if (macro->getConstraint() == PATHS ||
+	    macro->getConstraint() == PATHSATT) {
 	  type = "Paths based";
-	} else if (macro->getConstraint() == SEMIPATHS || macro->getConstraint() == SEMIPATHSATT) {
+	} else if (macro->getConstraint() == SEMIPATHS ||
+		   macro->getConstraint() == SEMIPATHSATT) {
 	  type = "Semi-paths based";
-	} else if (macro->getConstraint() == NOCONSTRAINT || macro->getConstraint() == NOCONSTRAINTATT) {
+	} else if (macro->getConstraint() == NOCONSTRAINT ||
+		   macro->getConstraint() == NOCONSTRAINTATT) {
 	  type = "No constraint";
 	}
 	QString components = "";
@@ -5157,36 +5462,55 @@ void EventGraphWidget::exportEdges() {
 	EventItem *eventEnd = qgraphicsitem_cast<EventItem*>(edge->endItem());
 	MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
 	MacroEvent *macroEnd = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
-	QString description = selectedType;
+	QString description = edge->getType();
 	QString coder = selectedCoder;
 	QString source = "";
 	QString target = "";
 	if (eventStart && eventEnd) {
-	  source = "i" + QString::number(eventStart->getId());
-	  target = "i" + QString::number(eventEnd->getId());
+	  source = "i" + QString::number(eventStart->getOrder());
+	  target = "i" + QString::number(eventEnd->getOrder());
 	} else if (eventStart && macroEnd) {
-	  source = "i" + QString::number(eventStart->getId());
-	  if (macroEnd->getConstraint() == PATHS) {
-	    target = "p" + QString::number(macroEnd->getId());
-	  } else if (macroEnd->getConstraint() == SEMIPATHS) {
-	    target = "s" + QString::number(macroEnd->getId());
+	  source = "i" + QString::number(eventStart->getOrder());
+	  if (macroEnd->getConstraint() == PATHS ||
+	      macroEnd->getConstraint() == PATHSATT) {
+	    target = "p" + QString::number(macroEnd->getOrder());
+	  } else if (macroEnd->getConstraint() == SEMIPATHS ||
+		     macroEnd->getConstraint() == SEMIPATHSATT) {
+	    target = "s" + QString::number(macroEnd->getOrder());
+	  } else if (macroEnd->getConstraint() == NOCONSTRAINT ||
+		     macroEnd->getConstraint() == NOCONSTRAINTATT) {
+	    target = "n" + QString::number(macroEnd->getOrder());
 	  }
 	} else if (macroStart && macroEnd) {
-	  if (macroStart->getConstraint() == PATHS) {
-	    source = "p" + QString::number(macroStart->getId());
-	  } else if (macroStart->getConstraint() == SEMIPATHS) {
-	    source = "s" + QString::number(macroStart->getId());
+	  if (macroStart->getConstraint() == PATHS ||
+	      macroStart->getConstraint() == PATHSATT) {
+	    source = "p" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == SEMIPATHS ||
+		     macroStart->getConstraint() == SEMIPATHSATT) {
+	    source = "s" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == NOCONSTRAINT ||
+		     macroStart->getConstraint() == NOCONSTRAINTATT) {
+	    source = "n" + QString::number(macroStart->getOrder());
 	  }
-	  if (macroEnd->getConstraint() == PATHS) {
-	    target = "p" + QString::number(macroEnd->getId());
-	  } else if (macroEnd->getConstraint() == SEMIPATHS) {
+	  if (macroEnd->getConstraint() == PATHS ||
+	      macroEnd->getConstraint() == PATHSATT) {
+	    target = "p" + QString::number(macroEnd->getOrder());
+	  } else if (macroEnd->getConstraint() == SEMIPATHS ||
+		     macroEnd->getConstraint() == SEMIPATHSATT) {
 	    target = "s" + QString::number(macroEnd->getId());
+	  } else if (macroEnd->getConstraint() == NOCONSTRAINT ||
+		     macroEnd->getConstraint() == NOCONSTRAINTATT) {
+	    target = "n" + QString::number(macroEnd->getId());
 	  }
 	} else if (macroStart && eventEnd) {
 	  if (macroStart->getConstraint() == PATHS) {
-	    source = "p" + QString::number(macroStart->getId());
-	  } else if (macroStart->getConstraint() == SEMIPATHS) {
-	    source = "s" + QString::number(macroStart->getId());
+	    source = "p" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == SEMIPATHS ||
+		     macroStart->getConstraint() == SEMIPATHSATT) {
+	    source = "s" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == NOCONSTRAINT ||
+		     macroStart->getConstraint() == NOCONSTRAINTATT) {
+	    source = "n" + QString::number(macroStart->getOrder());
 	  }
 	  target = "i" + QString::number(eventEnd->getId());
 	}
@@ -5365,54 +5689,58 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	EventItem *last = tempIncidents.last();
 	QSet<int> markOne;
 	QSet<int> markTwo;
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
-	query->bindValue(":name", selectedType);
-	query->exec();
-	query->first();
-	QString direction = query->value(0).toString();
-	delete query;
-	if (direction == PAST) {
-	  findTailsUpperBound(&markOne, first->getId(), last->getOrder());
-	  findHeadsLowerBound(&markTwo, last->getId(), first->getOrder());
-	} else if (direction == FUTURE) {
-	  findTailsLowerBound(&markOne, first->getId(), first->getOrder());
-	  findHeadsUpperBound(&markTwo, last->getId(), last->getOrder());
-	}
-	QVectorIterator<QGraphicsItem*> it4(allEvents);
-	while (it4.hasNext()) {
-	  QGraphicsItem *temp = it4.next();
-	  EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
-	  MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
-	  if (eventTemp) {
-	    if (markOne.contains(eventTemp->getId()) &&
-		markTwo.contains(eventTemp->getId()) &&
-		!tempIncidents.contains(eventTemp)) {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<b>Constraints not met.</b>");
-	      warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-					     "that were set for abstraction.");
-	      warningBox->exec();
-	      delete warningBox;
-	      return;
-	    } else if (macroTemp) {
-	      QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
-	      QVectorIterator<EventItem*> it5(macroIncidents);
-	      while (it5.hasNext()) {
-		eventTemp = it5.next();
-		if (markOne.contains(eventTemp->getId()) &&
-		    markTwo.contains(eventTemp->getId()) &&
-		    !tempIncidents.contains(eventTemp)) {
-		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		  warningBox->addButton(QMessageBox::Ok);
-		  warningBox->setIcon(QMessageBox::Warning);
-		  warningBox->setText("<b>Constraints not met.</b>");
-		  warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-						 "that were set for abstraction.");
-		  warningBox->exec();
-		  delete warningBox;
+	QVectorIterator<QString> lit(presentTypes);
+	while (lit.hasNext()) {
+	  QString currentLinkage = lit.next();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
+	  query->bindValue(":name", currentLinkage);
+	  query->exec();
+	  query->first();
+	  QString direction = query->value(0).toString();
+	  delete query;
+	  if (direction == PAST) {
+	    findTailsUpperBound(&markOne, first->getId(), last->getOrder(), currentLinkage);
+	    findHeadsLowerBound(&markTwo, last->getId(), first->getOrder(), currentLinkage);
+	  } else if (direction == FUTURE) {
+	    findTailsLowerBound(&markOne, first->getId(), first->getOrder(), currentLinkage);
+	    findHeadsUpperBound(&markTwo, last->getId(), last->getOrder(), currentLinkage);
+	  }
+	  QVectorIterator<QGraphicsItem*> it4(allEvents);
+	  while (it4.hasNext()) {
+	    QGraphicsItem *temp = it4.next();
+	    EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
+	    MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
+	    if (eventTemp) {
+	      if (markOne.contains(eventTemp->getId()) &&
+		  markTwo.contains(eventTemp->getId()) &&
+		  !tempIncidents.contains(eventTemp)) {
+		QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		warningBox->addButton(QMessageBox::Ok);
+		warningBox->setIcon(QMessageBox::Warning);
+		warningBox->setText("<b>Constraints not met.</b>");
+		warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
+					       "that were set for abstraction.");
+		warningBox->exec();
+		delete warningBox;
+		return;
+	      } else if (macroTemp) {
+		QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
+		QVectorIterator<EventItem*> it5(macroIncidents);
+		while (it5.hasNext()) {
+		  eventTemp = it5.next();
+		  if (markOne.contains(eventTemp->getId()) &&
+		      markTwo.contains(eventTemp->getId()) &&
+		      !tempIncidents.contains(eventTemp)) {
+		    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		    warningBox->addButton(QMessageBox::Ok);
+		    warningBox->setIcon(QMessageBox::Warning);
+		    warningBox->setText("<b>Constraints not met.</b>");
+		    warningBox->setInformativeText("Abstracting these incidents breaks the "
+						   "constraints that were set for abstraction.");
+		    warningBox->exec();
+		    delete warningBox;
+		  }
 		}
 	      }
 	    }
@@ -5575,6 +5903,8 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  current->setSelected(true);
 	  retrieveData();
 	  setChangeLabel();
+	  addLinkageTypeButton->setEnabled(false);
+	  compareButton->setEnabled(false);
 	}
 	delete textDialog;
       } else {
@@ -5621,159 +5951,46 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
       incidentId.push_back(event->getId());
     }
   }
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-  query->bindValue(":type", selectedType);
-  query->exec();
-  query->first();
-  QString direction = query->value(0).toString();
-  QVectorIterator<EventItem*> dit(incidents);
-  QSet<int> markOne;
-  while (dit.hasNext()) {
-    EventItem *departure = dit.next();
-    // First we check the internal consistency;
-    if (constraint == PATHS) {
-      if (direction == PAST) {
-	findHeadsLowerBound(&markOne, departure->getId(), incidents.first()->getOrder());
-      } else if (direction == FUTURE) {
-	findHeadsUpperBound(&markOne, departure->getId(), incidents.last()->getOrder());
-      }
-    } else if (constraint == SEMIPATHS) {
-      QSet<int> items;
-      items.insert(departure->getId());
-      int lowerLimit = incidents.first()->getOrder();
-      int upperLimit = incidents.last()->getOrder();
-      findUndirectedPaths(&markOne, &items, lowerLimit, upperLimit);
-    }
-    QVectorIterator<EventItem*> cit(incidents);
-    while (cit.hasNext()) {
-      EventItem *current = cit.next();
-      bool found = false;
-      if (current != departure) {
-	if (markOne.contains(current->getId())) {
-	  found = true;
+  QVectorIterator<QString> lit(presentTypes);
+  while (lit.hasNext()) {
+    QString currentType = lit.next();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+    query->bindValue(":type", currentType);
+    query->exec();
+    query->first();
+    QString direction = query->value(0).toString();
+    QVectorIterator<EventItem*> dit(incidents);
+    QSet<int> markOne;
+    while (dit.hasNext()) {
+      EventItem *departure = dit.next();
+      // First we check the internal consistency;
+      if (constraint == PATHS) {
+	if (direction == PAST) {
+	  findHeadsLowerBound(&markOne, departure->getId(), incidents.first()->getOrder(),
+			      currentType);
+	} else if (direction == FUTURE) {
+	  findHeadsUpperBound(&markOne, departure->getId(), incidents.last()->getOrder(),
+			      currentType);
 	}
-	if (constraint == PATHS) {
-	  if (direction == PAST) {
-	    if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<b>Constraints not met.</b>");
-	      warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-					     "that were set for abstraction.");
-	      warningBox->exec();
-	      delete warningBox;
-	      delete query;
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      return false;
-	    }
-	  } else if (direction == FUTURE) {
-	    if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<b>Constraints not met.</b>");
-	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					     "that were set for colligation.");
-	      warningBox->exec();
-	      delete warningBox;
-	      delete query;
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      return false;
-	    }
-	  }
-	} else if (constraint == SEMIPATHS) {
-	  if (!found) {
-	    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	    warningBox->addButton(QMessageBox::Ok);
-	    warningBox->setIcon(QMessageBox::Warning);
-	    warningBox->setText("<b>Constraints not met.</b>");
-	    warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					   "that were set for colligation.");
-	    warningBox->exec();
-	    delete warningBox;
-	    delete query;
-	    QApplication::restoreOverrideCursor();
-	    qApp->processEvents();
-	    return false;
-	  }
-	}
+      } else if (constraint == SEMIPATHS) {
+	QSet<int> items;
+	items.insert(departure->getId());
+	int lowerLimit = incidents.first()->getOrder();
+	int upperLimit = incidents.last()->getOrder();
+	findUndirectedPaths(&markOne, &items, lowerLimit, upperLimit, currentType);
       }
-    }
-    if (constraint == PATHS) {
-      // Then we check the external consistency.
-      query->prepare("SELECT tail FROM linkages "
-		     "WHERE head = :head AND type = :type AND coder = :coder");
-      query->bindValue(":head", departure->getId());
-      query->bindValue(":type", selectedType);
-      query->bindValue(":coder", selectedCoder);
-      query->exec();
-      while (query->next()) {
-	QSet<int> markTwo;
-	int currentTail = query->value(0).toInt();
-	if (!(incidentId.contains(currentTail))) {
-	  if (direction == PAST) {
-	    findHeadsLowerBound(&markTwo, currentTail, incidents.first()->getOrder());
-	  } else if (direction ==  FUTURE) {
-	    findHeadsUpperBound(&markTwo, currentTail, incidents.last()->getOrder());
+      QVectorIterator<EventItem*> cit(incidents);
+      while (cit.hasNext()) {
+	EventItem *current = cit.next();
+	bool found = false;
+	if (current != departure) {
+	  if (markOne.contains(current->getId())) {
+	    found = true;
 	  }
-	  QVectorIterator<EventItem*> kit(incidents);
-	  while (kit.hasNext()) {
-	    EventItem *current = kit.next();
-	    bool found = false;
-	    if (markTwo.contains(current->getId())) {
-	      found = true;
-	    }
-	    if (!found) {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<b>Constraints not met.</b>");
-	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					     "that were set for colligation.");
-	      warningBox->exec();
-	      delete warningBox;
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      delete query;
-	      return false;
-	    }
-	  }
-	}
-      }
-      query->prepare("SELECT head FROM linkages "
-		     "WHERE tail = :tail AND type = :type AND coder = :coder");
-      query->bindValue(":tail", departure->getId());
-      query->bindValue(":type", selectedType);
-      query->bindValue(":coder", selectedCoder);
-      query->exec();
-      while (query->next()) {
-	int currentHead = query->value(0).toInt();
-	if (!(incidentId.contains(currentHead))) {
-	  QVectorIterator<EventItem*> lit(incidents);
-	  while (lit.hasNext()) {
-	    EventItem *current = lit.next();
-	    if (current != departure) {
-	      QSet<int> markTwo;
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("SELECT ch_order FROM incidents WHERE id = :currentHead");
-	      query2->bindValue(":currentHead", currentHead);
-	      query2->exec();
-	      query2->first();
-		int headOrder = query2->value(0).toInt();
-	      if (direction == PAST) {
-		findHeadsLowerBound(&markTwo, current->getId(), headOrder);
-	      } else if (direction == FUTURE) {
-		findHeadsUpperBound(&markTwo, current->getId(), headOrder);
-	      }
-	      bool found = false;
-	      if (markTwo.contains(currentHead)) {
-		found = true;
-	      }
-	      if (!found) {
+	  if (constraint == PATHS) {
+	    if (direction == PAST) {
+	      if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
 		QPointer <QMessageBox> warningBox = new QMessageBox(this);
 		warningBox->addButton(QMessageBox::Ok);
 		warningBox->setIcon(QMessageBox::Warning);
@@ -5787,159 +6004,284 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 		qApp->processEvents();
 		return false;
 	      }
+	    } else if (direction == FUTURE) {
+	      if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
+		QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		warningBox->addButton(QMessageBox::Ok);
+		warningBox->setIcon(QMessageBox::Warning);
+		warningBox->setText("<b>Constraints not met.</b>");
+		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					       "that were set for colligation.");
+		warningBox->exec();
+		delete warningBox;
+		delete query;
+		QApplication::restoreOverrideCursor();
+		qApp->processEvents();
+		return false;
+	      }
+	    }
+	  } else if (constraint == SEMIPATHS) {
+	    if (!found) {
+	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->addButton(QMessageBox::Ok);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<b>Constraints not met.</b>");
+	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					     "that were set for colligation.");
+	      warningBox->exec();
+	      delete warningBox;
+	      delete query;
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
+	      return false;
+	    }
+	  }
+	}
+      }
+      if (constraint == PATHS) {
+	// Then we check the external consistency.
+	query->prepare("SELECT tail FROM linkages "
+		       "WHERE head = :head AND type = :type AND coder = :coder");
+	query->bindValue(":head", departure->getId());
+	query->bindValue(":type", currentType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();
+	while (query->next()) {
+	  QSet<int> markTwo;
+	  int currentTail = query->value(0).toInt();
+	  if (!(incidentId.contains(currentTail))) {
+	    if (direction == PAST) {
+	      findHeadsLowerBound(&markTwo, currentTail, incidents.first()->getOrder(),
+				  currentType);
+	    } else if (direction ==  FUTURE) {
+	      findHeadsUpperBound(&markTwo, currentTail, incidents.last()->getOrder(),
+				  currentType);
+	    }
+	    QVectorIterator<EventItem*> kit(incidents);
+	    while (kit.hasNext()) {
+	      EventItem *current = kit.next();
+	      bool found = false;
+	      if (markTwo.contains(current->getId())) {
+		found = true;
+	      }
+	      if (!found) {
+		QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		warningBox->addButton(QMessageBox::Ok);
+		warningBox->setIcon(QMessageBox::Warning);
+		warningBox->setText("<b>Constraints not met.</b>");
+		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					       "that were set for colligation.");
+		warningBox->exec();
+		delete warningBox;
+		QApplication::restoreOverrideCursor();
+		qApp->processEvents();
+		delete query;
+		return false;
+	      }
+	    }
+	  }
+	}
+	query->prepare("SELECT head FROM linkages "
+		       "WHERE tail = :tail AND type = :type AND coder = :coder");
+	query->bindValue(":tail", departure->getId());
+	query->bindValue(":type", currentType);
+	query->bindValue(":coder", selectedCoder);
+	query->exec();
+	while (query->next()) {
+	  int currentHead = query->value(0).toInt();
+	  if (!(incidentId.contains(currentHead))) {
+	    QVectorIterator<EventItem*> lit(incidents);
+	    while (lit.hasNext()) {
+	      EventItem *current = lit.next();
+	      if (current != departure) {
+		QSet<int> markTwo;
+		QSqlQuery *query2 = new QSqlQuery;
+		query2->prepare("SELECT ch_order FROM incidents WHERE id = :currentHead");
+		query2->bindValue(":currentHead", currentHead);
+		query2->exec();
+		query2->first();
+		int headOrder = query2->value(0).toInt();
+		if (direction == PAST) {
+		  findHeadsLowerBound(&markTwo, current->getId(), headOrder, currentType);
+		} else if (direction == FUTURE) {
+		  findHeadsUpperBound(&markTwo, current->getId(), headOrder, currentType);
+		}
+		bool found = false;
+		if (markTwo.contains(currentHead)) {
+		  found = true;
+		}
+		if (!found) {
+		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		  warningBox->addButton(QMessageBox::Ok);
+		  warningBox->setIcon(QMessageBox::Warning);
+		  warningBox->setText("<b>Constraints not met.</b>");
+		  warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
+						 "that were set for abstraction.");
+		  warningBox->exec();
+		  delete warningBox;
+		  delete query;
+		  QApplication::restoreOverrideCursor();
+		  qApp->processEvents();
+		  return false;
+		}
+	      }
 	    }
 	  }
 	}
       }
     }
+    delete query;
   }
-  delete query;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   return true;
 }
 
 void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents) {
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-  query->bindValue(":type", selectedType);
-  query->exec();
-  query->first();
-  QString direction = query->value(0).toString();
-  QVector<int> incidentId;
-  QVectorIterator<EventItem*> tit(incidents);
-  while (tit.hasNext()) {
-    EventItem *event = qgraphicsitem_cast<EventItem*>(tit.next());
-    if (event) {
-      incidentId.push_back(event->getId());
-    }
-  }
-  QVectorIterator<EventItem*> it(incidents);
-  while (it.hasNext()) {
-    EventItem *current = it.next();
-    int incident = current->getId();
-    query->prepare("SELECT tail FROM linkages "
-		   "WHERE head = :head AND coder = :coder AND type = :type");
-    query->bindValue(":head", incident);
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
+  QVectorIterator<QString> lit(presentTypes);
+  while (lit.hasNext()) {
+    QString currentType = lit.next();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+    query->bindValue(":type", currentType);
     query->exec();
-    QSet<int> tailSet;
-    while (query->next()) {
-      int tail = query->value(0).toInt();
-      if (!(incidentId.contains(tail))) {
-	tailSet.insert(tail);
+    query->first();
+    QString direction = query->value(0).toString();
+    QVector<int> incidentId;
+    QVectorIterator<EventItem*> tit(incidents);
+    while (tit.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(tit.next());
+      if (event) {
+	incidentId.push_back(event->getId());
       }
     }
-    QList<int> tailList = tailSet.toList();
-    QListIterator<int> it2(tailList);
-    while (it2.hasNext()) {
-      QGraphicsItem *tempTarget = macro;
-      QGraphicsItem *tempSource = NULL;
-      int currentTail = it2.next();
-      QVectorIterator<EventItem*> et(eventVector);
-      while (et.hasNext()) {
-	EventItem *currentEvent = et.next();
-	if (currentEvent->getId() == currentTail) {
-	  if (currentEvent->getMacroEvent() == NULL) {
-	    tempSource = currentEvent;
-	  } else {
-	    tempSource = currentEvent->getMacroEvent();
-	    MacroEvent *tempMacro = currentEvent->getMacroEvent();
-	    while (tempMacro->getMacroEvent() != NULL) {
-	      tempMacro = tempMacro->getMacroEvent();
+    QVectorIterator<EventItem*> it(incidents);
+    while (it.hasNext()) {
+      EventItem *current = it.next();
+      int incident = current->getId();
+      query->prepare("SELECT tail FROM linkages "
+		     "WHERE head = :head AND coder = :coder AND type = :type");
+      query->bindValue(":head", incident);
+      query->bindValue(":type", currentType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();
+      QSet<int> tailSet;
+      while (query->next()) {
+	int tail = query->value(0).toInt();
+	if (!(incidentId.contains(tail))) {
+	  tailSet.insert(tail);
+	}
+      }
+      QList<int> tailList = tailSet.toList();
+      QListIterator<int> it2(tailList);
+      while (it2.hasNext()) {
+	QGraphicsItem *tempTarget = macro;
+	QGraphicsItem *tempSource = NULL;
+	int currentTail = it2.next();
+	QVectorIterator<EventItem*> et(eventVector);
+	while (et.hasNext()) {
+	  EventItem *currentEvent = et.next();
+	  if (currentEvent->getId() == currentTail) {
+	    if (currentEvent->getMacroEvent() == NULL) {
+	      tempSource = currentEvent;
+	    } else {
+	      tempSource = currentEvent->getMacroEvent();
+	      MacroEvent *tempMacro = currentEvent->getMacroEvent();
+	      while (tempMacro->getMacroEvent() != NULL) {
+		tempMacro = tempMacro->getMacroEvent();
+	      }
+	      tempSource = tempMacro;
 	    }
-	    tempSource = tempMacro;
-	  }
-	  if (!tempSource->isVisible()) {
-	    tempSource = NULL;
-	  }
-	  if (!tempTarget->isVisible()) {
-	    tempTarget = NULL;
-	  }
-	  if (tempSource && tempTarget) {
-	    bool found = false;
-	    QVectorIterator<Arrow*> it3(edgeVector);
-	    while (it3.hasNext()) {
-	      Arrow* temp = it3.next();
-	      if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
-		found = true;
+	    if (!tempSource->isVisible()) {
+	      tempSource = NULL;
+	    }
+	    if (!tempTarget->isVisible()) {
+	      tempTarget = NULL;
+	    }
+	    if (tempSource && tempTarget) {
+	      bool found = false;
+	      QVectorIterator<Arrow*> it3(edgeVector);
+	      while (it3.hasNext()) {
+		Arrow* temp = it3.next();
+		if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
+		  found = true;
+		}
+	      }
+	      if (!found) {
+		Arrow *newEdge = new Arrow(currentType, selectedCoder);
+		newEdge->setZValue(2);
+		newEdge->setStartItem(tempSource);
+		newEdge->setEndItem(tempTarget);
+		edgeVector.push_back(newEdge);
+		scene->addItem(newEdge);
 	      }
 	    }
-	    if (!found) {
-	      Arrow *newEdge = new Arrow(selectedType, selectedCoder);
-	      newEdge->setZValue(2);
-	      newEdge->setStartItem(tempSource);
-	      newEdge->setEndItem(tempTarget);
-	      edgeVector.push_back(newEdge);
-	      scene->addItem(newEdge);
+	  }
+	}
+      }
+      query->prepare("SELECT head FROM linkages "
+		     "WHERE tail = :tail AND coder = :coder AND type = :type");
+      query->bindValue(":tail", incident);
+      query->bindValue(":type", currentType);
+      query->bindValue(":coder", selectedCoder);
+      query->exec();
+      QSet<int> headSet;
+      while (query->next()) {
+	int head = query->value(0).toInt();
+	if (!(incidentId.contains(head))) {
+	  headSet.insert(head);
+	}
+      }
+      QList<int> headList = headSet.toList();
+      QListIterator<int> it4(headList);
+      while (it4.hasNext()) {
+	QGraphicsItem *tempTarget = NULL;
+	QGraphicsItem *tempSource = macro;
+	int currentHead = it4.next();
+	QVectorIterator<EventItem*> et(eventVector);
+	while (et.hasNext()) {
+	  EventItem *currentEvent = et.next();
+	  if (currentEvent->getId() == currentHead) {
+	    if (currentEvent->getMacroEvent() == NULL) {
+	      tempTarget = currentEvent;
+	    } else {
+	      tempTarget = currentEvent->getMacroEvent();
+	      MacroEvent *tempMacro = currentEvent->getMacroEvent();
+	      while (tempMacro->getMacroEvent() != NULL) {
+		tempMacro = tempMacro->getMacroEvent();
+	      }
+	      tempTarget = tempMacro;
+	    }
+	    if (!tempTarget->isVisible()) {
+	      tempTarget = NULL;
+	    }
+	    if (!tempSource->isVisible()) {
+	      tempSource = NULL;
+	    }
+	    if (tempSource && tempTarget) {
+	      bool found = false;
+	      QVectorIterator<Arrow*> it5(edgeVector);
+	      while (it5.hasNext()) {
+		Arrow *temp = it5.next();
+		if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
+		  found = true;
+		}
+	      }
+	      if (!found) {
+		Arrow *newEdge = new Arrow(currentType, selectedCoder);
+		newEdge->setZValue(2);
+		newEdge->setStartItem(tempSource);
+		newEdge->setEndItem(tempTarget);
+		edgeVector.push_back(newEdge);
+		scene->addItem(newEdge);
+	      }
 	    }
 	  }
 	}
       }
     }
-    query->prepare("SELECT head FROM linkages "
-		   "WHERE tail = :tail AND coder = :coder AND type = :type");
-    query->bindValue(":tail", incident);
-    query->bindValue(":type", selectedType);
-    query->bindValue(":coder", selectedCoder);
-    query->exec();
-    QSet<int> headSet;
-    while (query->next()) {
-      int head = query->value(0).toInt();
-      if (!(incidentId.contains(head))) {
-	headSet.insert(head);
-      }
-    }
-    QList<int> headList = headSet.toList();
-    QListIterator<int> it4(headList);
-    while (it4.hasNext()) {
-      QGraphicsItem *tempTarget = NULL;
-      QGraphicsItem *tempSource = macro;
-      int currentHead = it4.next();
-      QVectorIterator<EventItem*> et(eventVector);
-      while (et.hasNext()) {
-	EventItem *currentEvent = et.next();
-	if (currentEvent->getId() == currentHead) {
-	  if (currentEvent->getMacroEvent() == NULL) {
-	    tempTarget = currentEvent;
-	  } else {
-	    tempTarget = currentEvent->getMacroEvent();
-	    MacroEvent *tempMacro = currentEvent->getMacroEvent();
-	    while (tempMacro->getMacroEvent() != NULL) {
-	      tempMacro = tempMacro->getMacroEvent();
-	    }
-	    tempTarget = tempMacro;
-	  }
-	  if (!tempTarget->isVisible()) {
-	    tempTarget = NULL;
-	  }
-	  if (!tempSource->isVisible()) {
-	    tempSource = NULL;
-	  }
-	  if (tempSource && tempTarget) {
-	    bool found = false;
-	    QVectorIterator<Arrow*> it5(edgeVector);
-	    while (it5.hasNext()) {
-	      Arrow *temp = it5.next();
-	      if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
-		found = true;
-	      }
-	    }
-	    if (!found) {
-	      Arrow *newEdge = new Arrow(selectedType, selectedCoder);
-	      newEdge->setZValue(2);
-	      newEdge->setStartItem(tempSource);
-	      newEdge->setEndItem(tempTarget);
-	      edgeVector.push_back(newEdge);
-	      scene->addItem(newEdge);
-	    }
-	  }
-	}
-      }
-    }
+    delete query; 
   }
-  delete query; 
 }
 
 void EventGraphWidget::disaggregateEvent() {
@@ -6079,6 +6421,12 @@ void EventGraphWidget::disaggregateEvent() {
   selectedMacro = NULL;
   updateMacroOrder();
   setVisibility();
+  if (macroVector.size() > 0) {
+    addLinkageTypeButton->setEnabled(false);
+  } else {
+    addLinkageTypeButton->setEnabled(true);
+  }
+  setCompareButton();
 }
 
 void EventGraphWidget::updateMacroIds(MacroEvent *macro) {
@@ -6213,22 +6561,38 @@ void EventGraphWidget::colorLineage() {
       } else if (macro) {
 	macro->setColor(origin);
       }
-      QSet<QGraphicsItem*> finished;
-      finished.insert(current);
-      findAncestors(ancestors, current, &finished);
-      finished.clear();
-      finished.insert(current);
-      findDescendants(descendants, current, &finished);
+      if (presentTypes.size() > 1) {
+	QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
+	relationshipChooser->exec();
+	if (relationshipChooser->getExitStatus() == 0) {
+	  QString selection = relationshipChooser->getSelection();
+	  QSet<QGraphicsItem*> finished;
+	  finished.insert(current);
+	  findAncestors(ancestors, current, &finished, selection);
+	  finished.clear();
+	  finished.insert(current);
+	  findDescendants(descendants, current, &finished, selection);
+	}
+      } else {
+	QString selection = presentTypes[0];
+	QSet<QGraphicsItem*> finished;
+	finished.insert(current);
+	findAncestors(ancestors, current, &finished, selection);
+	finished.clear();
+	finished.insert(current);
+	findDescendants(descendants, current, &finished, selection);
+      }
     }
   }
 }
 
 void EventGraphWidget::findAncestors(QColor ancestor,
 				     QGraphicsItem *origin,
-				     QSet<QGraphicsItem*> *pFinished) {
+				     QSet<QGraphicsItem*> *pFinished,
+				     QString type) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->exec();
   query->first();
   QString direction = query->value(0).toString();
@@ -6246,7 +6610,7 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 	}
 	if (!pFinished->contains(edge->endItem())) {
 	  pFinished->insert(edge->endItem());
-	  findAncestors(ancestor, edge->endItem(), pFinished);
+	  findAncestors(ancestor, edge->endItem(), pFinished, type);
 	}
       }
     }
@@ -6264,7 +6628,7 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 	}
 	if (!pFinished->contains(edge->startItem())) {
 	  pFinished->insert(edge->startItem());
-	  findAncestors(ancestor, edge->startItem(), pFinished);
+	  findAncestors(ancestor, edge->startItem(), pFinished, type);
 	}
       }
     }
@@ -6275,10 +6639,11 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 
 void EventGraphWidget::findDescendants(QColor descendant,
 				       QGraphicsItem *origin,
-				       QSet<QGraphicsItem*> *pFinished) {
+				       QSet<QGraphicsItem*> *pFinished,
+				       QString type) {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->exec();
   query->first();
   QString direction = query->value(0).toString();
@@ -6296,7 +6661,7 @@ void EventGraphWidget::findDescendants(QColor descendant,
 	}
 	if (!pFinished->contains(edge->startItem())) {
 	  pFinished->insert(edge->startItem());
-	  findDescendants(descendant, edge->startItem(), pFinished);
+	  findDescendants(descendant, edge->startItem(), pFinished, type);
 	}
       }
     }
@@ -6314,7 +6679,7 @@ void EventGraphWidget::findDescendants(QColor descendant,
 	}
 	if (!pFinished->contains(edge->endItem())) {
 	  pFinished->insert(edge->endItem());
-	  findDescendants(descendant, edge->endItem(), pFinished);
+	  findDescendants(descendant, edge->endItem(), pFinished, type);
 	}
       }
     }
@@ -6323,7 +6688,16 @@ void EventGraphWidget::findDescendants(QColor descendant,
 }
 
 void EventGraphWidget::exportTransitionMatrix() {
-  // First we ask the user what kind of matrix (s)he wants to export
+  // First we ask the user which relationship to consider (if there are more than one present).
+  QString type = presentTypes[0];
+  if (presentTypes.size() > 1) {
+    QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
+    relationshipChooser->exec();
+    if (relationshipChooser->getExitStatus() == 0) {
+      type = relationshipChooser->getSelection();
+    }
+  }
+  // Then we ask the user what kind of matrix (s)he wants to export
   QPointer<ExportTransitionMatrixDialog> exportDialog = new ExportTransitionMatrixDialog(this);
   exportDialog->exec();
   if (exportDialog->getExitStatus() == 0) {
@@ -6360,66 +6734,68 @@ void EventGraphWidget::exportTransitionMatrix() {
       int occurrence = 0;
       while (arrowIt.hasNext()) {
 	Arrow *currentArrow = arrowIt.next();
-	EventItem *eventStart = qgraphicsitem_cast<EventItem*>(currentArrow->startItem());
-	MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(currentArrow->startItem());
-	if (isMode) {
-	  if (eventStart) {
-	    if (eventStart->getMode() == rowMode) {
-	      occurrence++;
+	if (currentArrow->getType() == type) {
+	  EventItem *eventStart = qgraphicsitem_cast<EventItem*>(currentArrow->startItem());
+	  MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(currentArrow->startItem());
+	  if (isMode) {
+	    if (eventStart) {
+	      if (eventStart->getMode() == rowMode) {
+		occurrence++;
+	      }
+	    } else if (macroStart) {
+	      if (macroStart->getMode() == rowMode) {
+		occurrence++;
+	      }
 	    }
-	  } else if (macroStart) {
-	    if (macroStart->getMode() == rowMode) {
-	      occurrence++;
+	  } else if (!isMode) {
+	    QVector<QString> attributeVector;
+	    attributeVector.push_back(rowMode);
+	    QSqlQuery *query = new QSqlQuery;
+	    query->prepare("SELECT name FROM entities WHERE name = :name");
+	    query->bindValue(":name", rowMode);
+	    query->exec();
+	    query->first();
+	    bool entity = false;
+	    if (!query->isNull(0)) {
+	      entity = true;
 	    }
-	  }
-	} else if (!isMode) {
-	  QVector<QString> attributeVector;
-	  attributeVector.push_back(rowMode);
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT name FROM entities WHERE name = :name");
-	  query->bindValue(":name", rowMode);
-	  query->exec();
-	  query->first();
-	  bool entity = false;
-	  if (!query->isNull(0)) {
-	    entity = true;
-	  }
-	  findChildren(rowMode, &attributeVector, entity);
-	  if (eventStart) {
-	    bool found = false;
-	    QVectorIterator<QString> attIt(attributeVector);
-	    while (attIt.hasNext()) {
-	      QString attribute = attIt.next();
-	      int id = eventStart->getId();
-	      if (eventStart) {
-		query->prepare("SELECT attribute FROM attributes_to_incidents "
-			       "WHERE attribute = :attribute AND incident = :id");
-		query->bindValue(":attribute", attribute);
-		query->bindValue(":id", id);
-		query->exec();
-		query->first();
-		if (!query->isNull(0)) {
+	    findChildren(rowMode, &attributeVector, entity);
+	    if (eventStart) {
+	      bool found = false;
+	      QVectorIterator<QString> attIt(attributeVector);
+	      while (attIt.hasNext()) {
+		QString attribute = attIt.next();
+		int id = eventStart->getId();
+		if (eventStart) {
+		  query->prepare("SELECT attribute FROM attributes_to_incidents "
+				 "WHERE attribute = :attribute AND incident = :id");
+		  query->bindValue(":attribute", attribute);
+		  query->bindValue(":id", id);
+		  query->exec();
+		  query->first();
+		  if (!query->isNull(0)) {
+		    found = true;
+		  }
+		}
+	      }
+	      if (found) {
+		occurrence++;
+	      }
+	    } else if (macroStart) {
+	      bool found = false;
+	      QVectorIterator<QString> attIt(attributeVector);
+	      while (attIt.hasNext()) {
+		QString attribute = attIt.next();
+		if (macroStart->getAttributes().contains(attribute)) {
 		  found = true;
 		}
 	      }
-	    }
-	    if (found) {
-	      occurrence++;
-	    }
-	  } else if (macroStart) {
-	    bool found = false;
-	    QVectorIterator<QString> attIt(attributeVector);
-	    while (attIt.hasNext()) {
-	      QString attribute = attIt.next();
-	      if (macroStart->getAttributes().contains(attribute)) {
-		found = true;
+	      if (found) {
+		occurrence++;
 	      }
 	    }
-	    if (found) {
-	      occurrence++;
-	    }
+	    delete query;
 	  }
-	  delete query;
 	}
       }
       // And we add the results to the appropriate columns.
@@ -6432,102 +6808,104 @@ void EventGraphWidget::exportTransitionMatrix() {
 	int count = 0;
 	while (it.hasNext()) {
 	  Arrow *edge = it.next();
-	  if (edge->isVisible()) {
-	    EventItem *startEvent = qgraphicsitem_cast<EventItem*>(edge->startItem());
-	    EventItem *endEvent = qgraphicsitem_cast<EventItem*>(edge->endItem());
-	    MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
-	    MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
-	    // If we are only counting modes.
-	    if (isMode) {
-	      QString startMode = "";
-	      QString endMode = "";
-	      if (startEvent) {
-		startMode = startEvent->getMode();
-	      } else if (startMacro) {
-		startMode = startMacro->getMode();
-	      }
-	      if (endEvent) {
-		endMode = endEvent->getMode(); 
-	      } else if (endMacro) {
-		endMode = endMacro->getMode();
-	      }
-	      if (startMode == rowMode && endMode == colMode) {
-		transitions++;
-		count++;
-	      }
-	      // If we are counting all occurrences of variables.
-	    } else if (!isMode) {
-	      bool rowFound = false;
-	      bool colFound = false;
-	      QVector<QString> rowVector;
-	      rowVector.push_back(rowMode);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT name FROM entities WHERE name = :name");
-	      query->bindValue(":name", rowMode);
-	      query->exec();
-	      query->first();
-	      bool entity = false;
-	      if (!query->isNull(0)) {
-		entity = true;
-	      }
-	      findChildren(rowMode, &rowVector, entity);
-	      QVector<QString> colVector;
-	      colVector.push_back(colMode);
-	      query->prepare("SELECT name FROM entities WHERE name = :name");
-	      query->bindValue(":name", colMode);
-	      query->exec();
-	      query->first();
-	      entity = false;
-	      if (!query->isNull(0)) {
-		entity = true;
-	      }
-	      findChildren(colMode, &colVector, entity);
-	      if (startEvent) {
-		int id = startEvent->getId();
-		query->prepare("SELECT attribute FROM attributes_to_incidents "
-			       "WHERE incident = :id");
-		query->bindValue(":id", id);
+	  if (edge->getType() == type) {
+	    if (edge->isVisible()) {
+	      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(edge->startItem());
+	      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(edge->endItem());
+	      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	      // If we are only counting modes.
+	      if (isMode) {
+		QString startMode = "";
+		QString endMode = "";
+		if (startEvent) {
+		  startMode = startEvent->getMode();
+		} else if (startMacro) {
+		  startMode = startMacro->getMode();
+		}
+		if (endEvent) {
+		  endMode = endEvent->getMode(); 
+		} else if (endMacro) {
+		  endMode = endMacro->getMode();
+		}
+		if (startMode == rowMode && endMode == colMode) {
+		  transitions++;
+		  count++;
+		}
+		// If we are counting all occurrences of variables.
+	      } else if (!isMode) {
+		bool rowFound = false;
+		bool colFound = false;
+		QVector<QString> rowVector;
+		rowVector.push_back(rowMode);
+		QSqlQuery *query = new QSqlQuery;
+		query->prepare("SELECT name FROM entities WHERE name = :name");
+		query->bindValue(":name", rowMode);
 		query->exec();
-		while (query->next()) {
-		  if (rowVector.contains(query->value(0).toString())) {
-		    rowFound = true;
-		  }
+		query->first();
+		bool entity = false;
+		if (!query->isNull(0)) {
+		  entity = true;
 		}
-	      } else if (startMacro) {
-		QSetIterator<QString> attIt(startMacro->getAttributes());
-		while(attIt.hasNext()) {
-		  QString currentAttribute = attIt.next();
-		  if (rowVector.contains(currentAttribute)) {
-		    rowFound = true;
-		  }
-		}
-	      }
-	      if (endEvent) {
-		int id = endEvent->getId();
-		query->prepare("SELECT attribute FROM attributes_to_incidents "
-			       "WHERE incident = :id");
-		query->bindValue(":id", id);
+		findChildren(rowMode, &rowVector, entity);
+		QVector<QString> colVector;
+		colVector.push_back(colMode);
+		query->prepare("SELECT name FROM entities WHERE name = :name");
+		query->bindValue(":name", colMode);
 		query->exec();
-		while (query->next()) {
-		  if (colVector.contains(query->value(0).toString())) {
-		    colFound = true;
+		query->first();
+		entity = false;
+		if (!query->isNull(0)) {
+		  entity = true;
+		}
+		findChildren(colMode, &colVector, entity);
+		if (startEvent) {
+		  int id = startEvent->getId();
+		  query->prepare("SELECT attribute FROM attributes_to_incidents "
+				 "WHERE incident = :id");
+		  query->bindValue(":id", id);
+		  query->exec();
+		  while (query->next()) {
+		    if (rowVector.contains(query->value(0).toString())) {
+		      rowFound = true;
+		    }
+		  }
+		} else if (startMacro) {
+		  QSetIterator<QString> attIt(startMacro->getAttributes());
+		  while(attIt.hasNext()) {
+		    QString currentAttribute = attIt.next();
+		    if (rowVector.contains(currentAttribute)) {
+		      rowFound = true;
+		    }
 		  }
 		}
-	      } else if (endMacro) {
-		QSetIterator<QString> attIt(endMacro->getAttributes());
-		while(attIt.hasNext()) {
-		  QString currentAttribute = attIt.next();
-		  if (colVector.contains(currentAttribute)) {
-		    colFound = true;
+		if (endEvent) {
+		  int id = endEvent->getId();
+		  query->prepare("SELECT attribute FROM attributes_to_incidents "
+				 "WHERE incident = :id");
+		  query->bindValue(":id", id);
+		  query->exec();
+		  while (query->next()) {
+		    if (colVector.contains(query->value(0).toString())) {
+		      colFound = true;
+		    }
+		  }
+		} else if (endMacro) {
+		  QSetIterator<QString> attIt(endMacro->getAttributes());
+		  while(attIt.hasNext()) {
+		    QString currentAttribute = attIt.next();
+		    if (colVector.contains(currentAttribute)) {
+		      colFound = true;
+		    }
 		  }
 		}
+		delete query;
+		if (rowFound && colFound) {
+		  transitions++;
+		  count++;
+		}
 	      }
-	      delete query;
-	      if (rowFound && colFound) {
-		transitions++;
-		count++;
-	      }
-	    }
+	    }	      
 	  }
   	}
 	// We push the current cell value to our row vector.
@@ -6815,9 +7193,18 @@ void EventGraphWidget::addLinkage() {
   EventItem *eventOne = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[0]);
   EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[1]);
   if (eventOne && eventTwo) {
+    QString type = presentTypes[0];
+    if (presentTypes.size() > 1) {
+      QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
+      relationshipChooser->exec();
+      if (relationshipChooser->getExitStatus() == 0) {
+	type = relationshipChooser->getSelection();
+      }
+      delete relationshipChooser;
+    }
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT direction FROM linkage_types WHERE name = :selectedType");
-    query->bindValue(":selectedType", selectedType);
+    query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+    query->bindValue(":type", type);
     query->exec();
     query->first();
     QString direction = query->value(0).toString();
@@ -6829,10 +7216,10 @@ void EventGraphWidget::addLinkage() {
       if (direction == PAST) {
 	query->bindValue(":tail", idTwo);
 	query->bindValue(":head", idOne);
-	query->bindValue(":type", selectedType);
+	query->bindValue(":type", type);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(type, selectedCoder);
 	newArrow->setZValue(2);
 	newArrow->setStartItem(eventTwo);
 	newArrow->setEndItem(eventOne);
@@ -6841,10 +7228,10 @@ void EventGraphWidget::addLinkage() {
       } else if (direction == FUTURE) {
 	query->bindValue(":tail", idOne);
 	query->bindValue(":head", idTwo);
-	query->bindValue(":type", selectedType);
+	query->bindValue(":type", type);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(type, selectedCoder);
 	newArrow->setZValue(2);
 	newArrow->setStartItem(eventOne);
 	newArrow->setEndItem(eventTwo);
@@ -6857,10 +7244,10 @@ void EventGraphWidget::addLinkage() {
       if (direction == PAST) {
 	query->bindValue(":tail", idOne);
 	query->bindValue(":head", idTwo);
-	query->bindValue(":type", selectedType);
+	query->bindValue(":type", type);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(type, selectedCoder);
 	newArrow->setZValue(2);
 	newArrow->setStartItem(eventOne);
 	newArrow->setEndItem(eventTwo);
@@ -6869,10 +7256,10 @@ void EventGraphWidget::addLinkage() {
       } else if (direction == FUTURE) {
 	query->bindValue(":tail", idTwo);
 	query->bindValue(":head", idOne);
-	query->bindValue(":type", selectedType);
+	query->bindValue(":type", type);
 	query->bindValue(":coder", selectedCoder);
 	query->exec();      
-	Arrow *newArrow = new Arrow(selectedType, selectedCoder);
+	Arrow *newArrow = new Arrow(type, selectedCoder);
 	newArrow->setZValue(2);
 	newArrow->setStartItem(eventTwo);
 	newArrow->setEndItem(eventOne);
@@ -6884,79 +7271,104 @@ void EventGraphWidget::addLinkage() {
     }
     delete query;
   }
+  updateLinkages();
 }
 
 void EventGraphWidget::selectFollowers() {
+  QString type = presentTypes[0];
+  if (presentTypes.size() > 1) {
+    QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
+    relationshipChooser->exec();
+    if (relationshipChooser->getExitStatus() == 0) {
+      type = relationshipChooser->getSelection();
+    }
+  }
   QGraphicsItem *origin = scene->selectedItems()[0];
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->exec();
   query->first();
   QString direction = query->value(0).toString();
   QSet<QGraphicsItem*> finished;
   finished.insert(origin);
   if (direction == PAST) {
-    selectAncestors(origin, &finished);
+    selectAncestors(origin, &finished, type);
   } else if (direction == FUTURE) {
-    selectDescendants(origin, &finished);
+    selectDescendants(origin, &finished, type);
   }
   delete query;
 }
 
 void EventGraphWidget::selectPredecessors() {
+  QString type = presentTypes[0];
+  if (presentTypes.size() > 1) {
+    QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
+    relationshipChooser->exec();
+    if (relationshipChooser->getExitStatus() == 0) {
+      type = relationshipChooser->getSelection();
+    }
+  }
   QGraphicsItem *origin = scene->selectedItems()[0];
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->exec();
   query->first();
   QString direction = query->value(0).toString();
   QSet<QGraphicsItem*> finished;
   finished.insert(origin);
   if (direction == PAST) {
-    selectDescendants(origin, &finished);
+    selectDescendants(origin, &finished, type);
   } else if (direction == FUTURE) {
-    selectAncestors(origin, &finished);
+    selectAncestors(origin, &finished, type);
   }
   delete query;
 }
 
-void EventGraphWidget::selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
+void EventGraphWidget::selectAncestors(QGraphicsItem *origin,
+				       QSet<QGraphicsItem*> *pFinished,
+				       QString type) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *edge = it.next();
-    if (edge->endItem() == origin) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(edge->startItem());
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
-      if (event) {
-	event->setSelected(true);
-      } else if (macro) {
-	macro->setSelected(true);
-      }
-      if (!pFinished->contains(edge->startItem())) {
-	pFinished->insert(edge->startItem());
-	selectAncestors(edge->startItem(), pFinished);
+    if (edge->getType() == type) {
+      if (edge->endItem() == origin) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(edge->startItem());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	if (event) {
+	  event->setSelected(true);
+	} else if (macro) {
+	  macro->setSelected(true);
+	}
+	if (!pFinished->contains(edge->startItem())) {
+	  pFinished->insert(edge->startItem());
+	  selectAncestors(edge->startItem(), pFinished, type);
+	}
       }
     }
   }
 }
 
-void EventGraphWidget::selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
+void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
+					 QSet<QGraphicsItem*> *pFinished,
+					 QString type) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *edge = it.next();
-    if (edge->startItem() == origin) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(edge->endItem());
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
-      if (event) {
-	event->setSelected(true);
-      } else if (macro) {
-	macro->setSelected(true);
-      }
-      if (!pFinished->contains(edge->endItem())) {
-	pFinished->insert(edge->endItem());
-	selectDescendants(edge->endItem(), pFinished);
+    if (edge->getType() == type) {
+      if (edge->startItem() == origin) {
+	EventItem *event = qgraphicsitem_cast<EventItem*>(edge->endItem());
+	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	if (event) {
+	  event->setSelected(true);
+	} else if (macro) {
+	  macro->setSelected(true);
+	}
+	if (!pFinished->contains(edge->endItem())) {
+	  pFinished->insert(edge->endItem());
+	  selectDescendants(edge->endItem(), pFinished, type);
+	}
       }
     }
   }
@@ -6988,13 +7400,14 @@ void EventGraphWidget::removeLinkage() {
       EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow);
       int tail = startEvent->getId();
       int head = endEvent->getId();
+      QString type = arrow->getType();
       QSqlQuery *query =  new QSqlQuery;
       query->prepare("DELETE FROM linkages "
 		     "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
       query->bindValue(":coder", selectedCoder);
-      query->bindValue(":type", selectedType);
+      query->bindValue(":type", type);
       query->exec();
       delete query;
       delete arrow;
@@ -7019,6 +7432,7 @@ void EventGraphWidget::removeNormalLinkage() {
 	if (startEvent && endEvent) {
 	  int tail = startEvent->getId();
 	  int head = endEvent->getId();
+	  QString type = arrow->getType();
 	  QSqlQuery *query =  new QSqlQuery;
 	  query->prepare("DELETE FROM linkages "
 			 "WHERE tail = :tail AND head = :head "
@@ -7026,7 +7440,7 @@ void EventGraphWidget::removeNormalLinkage() {
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
 	  query->bindValue(":coder", selectedCoder);
-	  query->bindValue(":type", selectedType);
+	  query->bindValue(":type", type);
 	  query->exec();
 	  delete query;
 	  delete arrow;
@@ -7054,6 +7468,7 @@ void EventGraphWidget::changeLinkageComment() {
     Arrow *arrow = qgraphicsitem_cast<Arrow*>(scene->selectedItems().first());
     int tail = 0;
     int head = 0;
+    QString type = arrow->getType();
     EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
     EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
     MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(arrow->startItem());
@@ -7080,7 +7495,7 @@ void EventGraphWidget::changeLinkageComment() {
     head = query->value(0).toInt();
     query->prepare("SELECT comment FROM linkage_comments "
 		   "WHERE type = :type AND tail = :tail AND head = :head");
-    query->bindValue(":type", selectedType);
+    query->bindValue(":type", type);
     query->bindValue(":tail", tail);
     query->bindValue(":head", head);
     query->exec();
@@ -7111,7 +7526,7 @@ void EventGraphWidget::changeLinkageComment() {
 	  }
 	  query->bindValue(":comment", newComment);
 	  query->bindValue(":coder", selectedCoder);
-	  query->bindValue(":type", selectedType);
+	  query->bindValue(":type", type);
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
 	  query->exec();
@@ -7121,7 +7536,7 @@ void EventGraphWidget::changeLinkageComment() {
 	  if (empty) {
 	    query->prepare("DELETE FROM linkage_comments "
 			   "WHERE type = :type AND tail = :tail AND head = :head");
-	    query->bindValue(":type", selectedType);
+	    query->bindValue(":type", type);
 	    query->bindValue(":tail", tail);
 	    query->bindValue(":head", head);
 	    query->exec();
@@ -7132,6 +7547,255 @@ void EventGraphWidget::changeLinkageComment() {
       }
     }
     delete query;
+  }
+}
+
+void EventGraphWidget::ignoreLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	currentEdge->setPenStyle(1);
+      } else {
+	it.next();
+      }
+    }
+  }
+}
+
+void EventGraphWidget::keepLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      if (arrow) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());
+	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
+	int tail = startEvent->getId();
+	currentEdge->setPenStyle(1);
+	QString type = currentEdge->getType();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	query->bindValue(":type", type);
+	query->exec();
+	query->first();
+	QString direction = query->value(0).toString();
+	QSet<int> markOne;
+	QSet<int> markTwo;
+	if (direction == PAST) {
+	  findHeadsLowerBound(&markOne, tail, 1, type);
+	  findTailsUpperBound(&markTwo, tail, eventVector.size(), type);
+	} else if (direction == FUTURE) {
+	  findTailsLowerBound(&markOne, tail, 1, type);
+	  findHeadsUpperBound(&markTwo, tail, eventVector.size(), type);
+	}
+	QSetIterator<int> it2(markOne);
+	bool found = false;
+	QSqlDatabase::database().transaction();
+	query->prepare("SELECT head FROM linkages "
+		       "WHERE coder = :coder AND type = :type "
+		       "AND tail = :tail");
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("SELECT tail, head FROM linkages "
+			"WHERE coder = :coder AND type = :type "
+			"AND tail = :tail AND head = :head");
+	while (it2.hasNext()) {
+	  int currentPathMate = it2.next();
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", type);
+	  query->bindValue(":tail", currentPathMate);
+	  query->exec();
+	  while (query->next()) {
+	    int mateHead = query->value(0).toInt();
+	    query2->bindValue(":coder", selectedCoder);
+	    query2->bindValue(":type", type);
+	    query2->bindValue(":tail", tail);
+	    query2->bindValue(":head", mateHead);
+	    query2->exec();
+	    query2->first();
+	    if (!(query2->isNull(0))) {
+	      found = true;
+	    }
+	  }
+	  if (found) {
+	    currentEdge->setPenStyle(2);
+	  }
+	}
+	QSqlDatabase::database().commit();
+	QSetIterator<int> it3(markTwo);
+        found = false;
+	QSqlDatabase::database().transaction();
+	query->prepare("SELECT head FROM linkages "
+		       "WHERE coder = :coder AND type = :type "
+		       "AND tail = :tail");
+	query2->prepare("SELECT tail, head FROM linkages "
+			"WHERE coder = :coder AND type = :type "
+			"AND tail = :tail AND head = :head");
+	while (it3.hasNext()) {
+	  int currentPathMate = it3.next();
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", type);
+	  query->bindValue(":tail", currentPathMate);
+	  query->exec();
+	  while (query->next()) {
+	    int mateHead = query->value(0).toInt();
+	    query2->bindValue(":coder", selectedCoder);
+	    query2->bindValue(":type", type);
+	    query2->bindValue(":tail", tail);
+	    query2->bindValue(":head", mateHead);
+	    query2->exec();
+	    query2->first();
+	    if (!(query2->isNull(0))) {
+	      found = true;
+	    }
+	  }
+	  if (found) {
+	    currentEdge->setPenStyle(2);
+	  }
+	}
+	QSqlDatabase::database().commit();
+	delete query2;
+	delete query;
+      } else {
+	it.next();
+      }
+    }
+  }
+}
+
+void EventGraphWidget::acceptLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	QString type = currentEdge->getType();
+	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
+	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
+	int tail = startEvent->getId();
+	int head = endEvent->getId();
+	currentEdge->setPenStyle(0);
+	edgeVector.push_back(currentEdge);
+	compareVector.removeOne(currentEdge);
+	QSqlQuery *query =  new QSqlQuery;
+	query->prepare("INSERT INTO linkages (tail, head, coder, type) "
+		       "VALUES (:tail, :head, :coder, :type)");
+	query->bindValue(":tail", tail);
+	query->bindValue(":head", head);
+	query->bindValue(":coder", selectedCoder);
+	query->bindValue(":type", type);
+	query->exec();
+       	query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	query->bindValue(":type", type);
+	query->exec();
+	query->first();
+	QString direction = query->value(0).toString();
+	QSet<int> markOne;
+	QSet<int> markTwo;
+	if (direction == PAST) {
+	  findHeadsLowerBound(&markOne, tail, 1, type);
+	  findTailsUpperBound(&markTwo, tail, eventVector.size(), type);
+	} else if (direction == FUTURE) {
+	  findTailsLowerBound(&markOne, tail, 1, type);
+	  findHeadsUpperBound(&markTwo, tail, eventVector.size(), type);
+	}
+	QSetIterator<int> it2(markOne);
+	bool found = false;
+	QSqlDatabase::database().transaction();
+	query->prepare("SELECT head FROM linkages "
+		       "WHERE coder = :coder AND type = :type "
+		       "AND tail = :tail");
+	QSqlQuery *query2 = new QSqlQuery;
+	query2->prepare("SELECT tail, head FROM linkages "
+			"WHERE coder = :coder AND type = :type "
+			"AND tail = :tail AND head = :head");
+	while (it2.hasNext()) {
+	  int currentPathMate = it2.next();
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", type);
+	  query->bindValue(":tail", currentPathMate);
+	  query->exec();
+	  while (query->next()) {
+	    int mateHead = query->value(0).toInt();
+	    query2->bindValue(":coder", selectedCoder);
+	    query2->bindValue(":type", type);
+	    query2->bindValue(":tail", tail);
+	    query2->bindValue(":head", mateHead);
+	    query2->exec();
+	    query2->first();
+	    if (!(query2->isNull(0))) {
+	      found = true;
+	    }
+	  }
+	  if (found) {
+	    currentEdge->setPenStyle(2);
+	  }
+	}
+	QSqlDatabase::database().commit();
+	QSetIterator<int> it3(markTwo);
+        found = false;
+	QSqlDatabase::database().transaction();
+	query->prepare("SELECT head FROM linkages "
+		       "WHERE coder = :coder AND type = :type "
+		       "AND tail = :tail");
+	query2->prepare("SELECT tail, head FROM linkages "
+			"WHERE coder = :coder AND type = :type "
+			"AND tail = :tail AND head = :head");
+	while (it3.hasNext()) {
+	  int currentPathMate = it3.next();
+	  query->bindValue(":coder", selectedCoder);
+	  query->bindValue(":type", type);
+	  query->bindValue(":tail", currentPathMate);
+	  query->exec();
+	  while (query->next()) {
+	    int mateHead = query->value(0).toInt();
+	
+	    query2->bindValue(":coder", selectedCoder);
+	    query2->bindValue(":type", type);
+	    query2->bindValue(":tail", tail);
+	    query2->bindValue(":head", mateHead);
+	    query2->exec();
+	    query2->first();
+	    if (!(query2->isNull(0))) {
+	      found = true;
+	    }
+	  }
+	  if (found) {
+	    currentEdge->setPenStyle(2);
+	  }
+	}
+	delete query;
+	delete query2;
+	QSqlDatabase::database().commit();
+      } else {
+	it.next();
+      }
+    }
+  }
+}
+
+void EventGraphWidget::rejectLinkage() {
+  if (scene->selectedItems().size() > 0) {
+    QListIterator<QGraphicsItem*> it(scene->selectedItems());
+    while (it.hasNext()) {
+      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
+      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
+      if (arrow && !(event) && !(text)) {
+	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
+	delete currentEdge;
+	compareVector.removeOne(currentEdge);
+      } else {
+	it.next();
+      }
+    }
   }
 }
 
@@ -7218,7 +7882,9 @@ void EventGraphWidget::changeLineColor() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
+      QColor currentColor = line->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7314,10 +7980,12 @@ void EventGraphWidget::changeText() {
 }
 
 void EventGraphWidget::changeTextColor() {
- if (scene->selectedItems().size() == 1) {
+  if (scene->selectedItems().size() == 1) {
     TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
     if (text) {
-     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      QColor currentColor = text->defaultTextColor();
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7325,7 +7993,7 @@ void EventGraphWidget::changeTextColor() {
       }
       delete colorDialog;
     }
- }
+  }
 }
 
 void EventGraphWidget::deleteText() {
@@ -7417,7 +8085,9 @@ void EventGraphWidget::changeEllipseColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7432,7 +8102,9 @@ void EventGraphWidget::changeEllipseFillColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
@@ -7495,7 +8167,9 @@ void EventGraphWidget::changeRectColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7510,7 +8184,9 @@ void EventGraphWidget::changeRectFillColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
@@ -7557,254 +8233,8 @@ void EventGraphWidget::duplicateRect() {
   }
 }
 
-void EventGraphWidget::ignoreLinkage() {
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
-      if (arrow && !(event) && !(text)) {
-	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	currentEdge->setColor(edgeColor);
-      } else {
-	it.next();
-      }
-    }
-  }
-}
-
-void EventGraphWidget::keepLinkage() {
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      if (arrow) {
-	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());
-	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
-	int tail = startEvent->getId();
-	currentEdge->setColor(edgeColor);
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-	query->bindValue(":type", selectedType);
-	query->exec();
-	query->first();
-	QString direction = query->value(0).toString();
-	QSet<int> markOne;
-	QSet<int> markTwo;
-	if (direction == PAST) {
-	  findHeadsLowerBound(&markOne, tail, 1);
-	  findTailsUpperBound(&markTwo, tail, eventVector.size());
-	} else if (direction == FUTURE) {
-	  findTailsLowerBound(&markOne, tail, 1);
-	  findHeadsUpperBound(&markTwo, tail, eventVector.size());
-	}
-	QSetIterator<int> it2(markOne);
-	bool found = false;
-	QSqlDatabase::database().transaction();
-	query->prepare("SELECT head FROM linkages "
-		       "WHERE coder = :coder AND type = :type "
-		       "AND tail = :tail");
-	QSqlQuery *query2 = new QSqlQuery;
-	query2->prepare("SELECT tail, head FROM linkages "
-			"WHERE coder = :coder AND type = :type "
-			"AND tail = :tail AND head = :head");
-	while (it2.hasNext()) {
-	  int currentPathMate = it2.next();
-	  query->bindValue(":coder", selectedCoder);
-	  query->bindValue(":type", selectedType);
-	  query->bindValue(":tail", currentPathMate);
-	  query->exec();
-	  while (query->next()) {
-	    int mateHead = query->value(0).toInt();
-	    query2->bindValue(":coder", selectedCoder);
-	    query2->bindValue(":type", selectedType);
-	    query2->bindValue(":tail", tail);
-	    query2->bindValue(":head", mateHead);
-	    query2->exec();
-	    query2->first();
-	    if (!(query2->isNull(0))) {
-	      found = true;
-	    }
-	  }
-	  if (found) {
-	    currentEdge->setColor(Qt::darkGreen);
-	  }
-	}
-	QSqlDatabase::database().commit();
-	QSetIterator<int> it3(markTwo);
-        found = false;
-	QSqlDatabase::database().transaction();
-	query->prepare("SELECT head FROM linkages "
-		       "WHERE coder = :coder AND type = :type "
-		       "AND tail = :tail");
-	query2->prepare("SELECT tail, head FROM linkages "
-			"WHERE coder = :coder AND type = :type "
-			"AND tail = :tail AND head = :head");
-	while (it3.hasNext()) {
-	  int currentPathMate = it3.next();
-	  query->bindValue(":coder", selectedCoder);
-	  query->bindValue(":type", selectedType);
-	  query->bindValue(":tail", currentPathMate);
-	  query->exec();
-	  while (query->next()) {
-	    int mateHead = query->value(0).toInt();
-	    query2->bindValue(":coder", selectedCoder);
-	    query2->bindValue(":type", selectedType);
-	    query2->bindValue(":tail", tail);
-	    query2->bindValue(":head", mateHead);
-	    query2->exec();
-	    query2->first();
-	    if (!(query2->isNull(0))) {
-	      found = true;
-	    }
-	  }
-	  if (found) {
-	    currentEdge->setColor(Qt::darkGreen);
-	  }
-	}
-	QSqlDatabase::database().commit();
-	delete query2;
-	delete query;
-      } else {
-	it.next();
-      }
-    }
-  }
-}
-
-void EventGraphWidget::acceptLinkage() {
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
-      if (arrow && !(event) && !(text)) {
-	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
-	EventItem *endEvent = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
-	int tail = startEvent->getId();
-	int head = endEvent->getId();
-	currentEdge->setColor(edgeColor);
-	edgeVector.push_back(currentEdge);
-	compareVector.removeOne(currentEdge);
-	QSqlQuery *query =  new QSqlQuery;
-	query->prepare("INSERT INTO linkages (tail, head, coder, type) "
-		       "VALUES (:tail, :head, :coder, :type)");
-	query->bindValue(":tail", tail);
-	query->bindValue(":head", head);
-	query->bindValue(":coder", selectedCoder);
-	query->bindValue(":type", selectedType);
-	query->exec();
-       	query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-	query->bindValue(":type", selectedType);
-	query->exec();
-	query->first();
-	QString direction = query->value(0).toString();
-	QSet<int> markOne;
-	QSet<int> markTwo;
-	if (direction == PAST) {
-	  findHeadsLowerBound(&markOne, tail, 1);
-	  findTailsUpperBound(&markTwo, tail, eventVector.size());
-	} else if (direction == FUTURE) {
-	  findTailsLowerBound(&markOne, tail, 1);
-	  findHeadsUpperBound(&markTwo, tail, eventVector.size());
-	}
-	QSetIterator<int> it2(markOne);
-	bool found = false;
-	QSqlDatabase::database().transaction();
-	query->prepare("SELECT head FROM linkages "
-		       "WHERE coder = :coder AND type = :type "
-		       "AND tail = :tail");
-	QSqlQuery *query2 = new QSqlQuery;
-	query2->prepare("SELECT tail, head FROM linkages "
-			"WHERE coder = :coder AND type = :type "
-			"AND tail = :tail AND head = :head");
-	while (it2.hasNext()) {
-	  int currentPathMate = it2.next();
-	  query->bindValue(":coder", selectedCoder);
-	  query->bindValue(":type", selectedType);
-	  query->bindValue(":tail", currentPathMate);
-	  query->exec();
-	  while (query->next()) {
-	    int mateHead = query->value(0).toInt();
-	    query2->bindValue(":coder", selectedCoder);
-	    query2->bindValue(":type", selectedType);
-	    query2->bindValue(":tail", tail);
-	    query2->bindValue(":head", mateHead);
-	    query2->exec();
-	    query2->first();
-	    if (!(query2->isNull(0))) {
-	      found = true;
-	    }
-	  }
-	  if (found) {
-	    currentEdge->setColor(Qt::darkGreen);
-	  }
-	}
-	QSqlDatabase::database().commit();
-	QSetIterator<int> it3(markTwo);
-        found = false;
-	QSqlDatabase::database().transaction();
-	query->prepare("SELECT head FROM linkages "
-		       "WHERE coder = :coder AND type = :type "
-		       "AND tail = :tail");
-	query2->prepare("SELECT tail, head FROM linkages "
-			"WHERE coder = :coder AND type = :type "
-			"AND tail = :tail AND head = :head");
-	while (it3.hasNext()) {
-	  int currentPathMate = it3.next();
-	  query->bindValue(":coder", selectedCoder);
-	  query->bindValue(":type", selectedType);
-	  query->bindValue(":tail", currentPathMate);
-	  query->exec();
-	  while (query->next()) {
-	    int mateHead = query->value(0).toInt();
-	
-	    query2->bindValue(":coder", selectedCoder);
-	    query2->bindValue(":type", selectedType);
-	    query2->bindValue(":tail", tail);
-	    query2->bindValue(":head", mateHead);
-	    query2->exec();
-	    query2->first();
-	    if (!(query2->isNull(0))) {
-	      found = true;
-	    }
-	  }
-	  if (found) {
-	    currentEdge->setColor(Qt::darkGreen);
-	  }
-	}
-	delete query;
-	delete query2;
-	QSqlDatabase::database().commit();
-      } else {
-	it.next();
-      }
-    }
-  }
-}
-
-void EventGraphWidget::rejectLinkage() {
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(it.peekNext());
-      NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
-      if (arrow && !(event) && !(text)) {
-	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	delete currentEdge;
-	compareVector.removeOne(currentEdge);
-      } else {
-	it.next();
-      }
-    }
-  }
-}
-
-void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident, int lowerLimit) {
+void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident,
+					   int lowerLimit, QString type) {
   int currentTail = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
@@ -7813,7 +8243,7 @@ void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
   query->bindValue(":tail", currentTail);
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->bindValue(":coder", selectedCoder);
   query->exec();
   std::vector<int> results;
@@ -7834,11 +8264,12 @@ void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findHeadsLowerBound(pMark, *it, lowerLimit);
+    findHeadsLowerBound(pMark, *it, lowerLimit, type);
   }
 }
 
-void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident, int upperLimit) {
+void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident,
+					   int upperLimit, QString type) {
   int currentTail = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
@@ -7847,7 +8278,7 @@ void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
   query->bindValue(":tail", currentTail);
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->bindValue(":coder", selectedCoder);
   query->exec();
   std::vector<int> results;
@@ -7868,12 +8299,12 @@ void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findHeadsUpperBound(pMark, *it, upperLimit);
+    findHeadsUpperBound(pMark, *it, upperLimit, type);
   }
 }
 
 void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submittedItems,
-					   int lowerLimit, int upperLimit) {
+					   int lowerLimit, int upperLimit, QString type) {
   QSet<int> temp = *submittedItems;
   QSetIterator<int> it(temp);
   QSqlDatabase::database().transaction();
@@ -7891,7 +8322,7 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
     int current = it.next();
     pMark->insert(current);  
     query->bindValue(":tail", current);
-    query->bindValue(":type", selectedType);
+    query->bindValue(":type", type);
     query->bindValue(":coder", selectedCoder);
     query->exec();
     while (query->next()) {
@@ -7905,7 +8336,7 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
       }
     }
     query3->bindValue(":head", current);
-    query3->bindValue(":type", selectedType);
+    query3->bindValue(":type", type);
     query3->bindValue(":coder", selectedCoder);
     query3->exec();
     while (query3->next()) {
@@ -7925,13 +8356,14 @@ void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitte
   delete query4;
   QSqlDatabase::database().commit();
   if (submittedItems->size() > temp.size()) {
-    findUndirectedPaths(pMark, submittedItems, lowerLimit, upperLimit);
+    findUndirectedPaths(pMark, submittedItems, lowerLimit, upperLimit, type);
   } else {
     return;
   }
 }
 
-void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident, int upperLimit) {
+void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident,
+					   int upperLimit, QString type) {
   int currentHead = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
@@ -7940,7 +8372,7 @@ void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
   query->bindValue(":head", currentHead);
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->bindValue(":coder", selectedCoder);
   query->exec();
   std::vector<int> results;
@@ -7961,11 +8393,12 @@ void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findTailsUpperBound(pMark, *it, upperLimit);
+    findTailsUpperBound(pMark, *it, upperLimit, type);
   }
 }
 
-void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident, int lowerLimit) {
+void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident,
+					   int lowerLimit, QString type) {
   int currentHead = currentIncident;
   QSqlDatabase::database().transaction();
   QSqlQuery *query = new QSqlQuery;
@@ -7974,7 +8407,7 @@ void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
   query->bindValue(":head", currentHead);
-  query->bindValue(":type", selectedType);
+  query->bindValue(":type", type);
   query->bindValue(":coder", selectedCoder);
   query->exec();
   std::vector<int> results;
@@ -7995,7 +8428,7 @@ void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident
   std::vector<int>::iterator it;
   for (it = results.begin(); it != results.end(); it++) {
     pMark->insert(*it);
-    findTailsLowerBound(pMark, *it, lowerLimit);
+    findTailsLowerBound(pMark, *it, lowerLimit, type);
   }
 }
 
@@ -8007,7 +8440,7 @@ QVector<EventItem*> EventGraphWidget::getEventItems() {
   return eventVector;
 }
 
-QVector<Arrow*> EventGraphWidget::getEdges() {
+QVector<Arrow*> EventGraphWidget::getEdgeVector() {
   return edgeVector;
 }
 

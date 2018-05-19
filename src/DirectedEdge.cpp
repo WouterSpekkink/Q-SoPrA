@@ -26,7 +26,15 @@ QRectF DirectedEdge::boundingRect() const {
   return strokePath.controlPointRect(); 
 }
 
-void DirectedEdge::calc() {
+void DirectedEdge::updatePosition() {
+  calculate();
+  QPainterPath myPath;
+  myPath.moveTo(start->pos());
+  myPath.quadTo(controlPoint, ghostLine.p2());
+  strokePath = myPath;
+}
+
+void DirectedEdge::calculate() {
   qreal dX = end->pos().x() - start->pos().x();
   qreal dY = end->pos().y() - start->pos().y();
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
@@ -56,7 +64,7 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   myPen.setColor(color);
   painter->setPen(myPen);
   painter->setBrush(color);
-  calc();
+  calculate();
   arrowHead.clear();
   arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
   QPainterPath myPath;

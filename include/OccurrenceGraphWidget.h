@@ -89,6 +89,7 @@ private slots:
   void exportSvg();
   void exportMatrix();
   void setChangeLabel();
+  void updateLinkages();
   
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void processMoveLine(QGraphicsItem *item, QPointF pos);

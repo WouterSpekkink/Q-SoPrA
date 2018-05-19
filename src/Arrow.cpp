@@ -70,10 +70,17 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   coder = subCoder;
   copy = false;
   height = 0;
+  penWidth = 1;
+  penStyle = 1;
+  massHidden = false;
 }
 
 QRectF Arrow::boundingRect() const {
-  return strokePath.controlPointRect();
+  if (height > 0) {
+    return strokePath.controlPointRect();
+  } else {
+    return QGraphicsLineItem::boundingRect(); 
+  }
 }
 
 QPainterPath Arrow::shape() const {
@@ -82,22 +89,41 @@ QPainterPath Arrow::shape() const {
   return stroker.createStroke(strokePath);
 }
 
+void Arrow::updatePosition() {
+  calculate();
+  QPainterPath myPath;
+  myPath.moveTo(start->pos());
+  myPath.quadTo(controlPoint, ghostLine.p2());
+  strokePath = myPath;
+}
+
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
   calculate();
-  QPen myPen = pen();
   arrowHead.clear();
   arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
   QPainterPath myPath;
   myPath.moveTo(start->pos());
   myPath.quadTo(controlPoint, ghostLine.p2());
   strokePath = myPath;
-  myPen.setColor(color);
-  painter->setPen(myPen);
+  painter->setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   painter->setBrush(color);
   painter->drawPolygon(arrowHead);
-  painter->strokePath(myPath, QPen(color));
-  if (isSelected()) {
+  QPen myPen = QPen(color, penWidth, Qt::PenStyle(penStyle), Qt::RoundCap, Qt::RoundJoin);
+  painter->strokePath(myPath, myPen);
+  if (penStyle == 1 && isSelected()) {
     painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+    painter->setBrush(Qt::transparent);
+    painter->drawPath(shape());
+  } else if (penStyle == 4) {
+    painter->setPen(QPen(QColor(Qt::darkRed), 1, Qt::DashLine));
+    painter->setBrush(Qt::transparent);
+    painter->drawPath(shape());
+  } else if (penStyle == 3) {
+    painter->setPen(QPen(QColor(Qt::darkBlue), 1, Qt::DashLine));
+    painter->setBrush(Qt::transparent);
+    painter->drawPath(shape());
+  } else if (penStyle == 2) {
+    painter->setPen(QPen(QColor(Qt::darkGreen), 1, Qt::DashLine));
     painter->setBrush(Qt::transparent);
     painter->drawPath(shape());
   }
@@ -266,3 +292,26 @@ void Arrow::setEndItem(QGraphicsItem *subEnd) {
   end = subEnd;
 }
 
+void Arrow::setPenStyle(int style) {
+  penStyle = style;
+}
+
+int Arrow::getPenStyle() {
+  return penStyle;
+}
+
+void Arrow::setHeight(int submittedHeight) {
+  height = submittedHeight;
+}
+
+int Arrow::getHeight() {
+  return height;
+}
+
+void Arrow::setMassHidden(bool status) {
+  massHidden = status;
+}
+
+bool Arrow::isMassHidden() {
+  return massHidden;
+}

@@ -68,6 +68,7 @@ public:
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
+  void updatePosition();
   void setColor(const QColor &subColor);
   QColor getColor();
   QGraphicsItem *startItem() const;
@@ -81,6 +82,14 @@ public:
 
   void setStartItem(QGraphicsItem *subStart);
   void setEndItem(QGraphicsItem *subEnd);
+
+  void setPenStyle(int style);
+  int getPenStyle();
+
+  void setHeight(int submittedHeight);
+  int getHeight();
+  bool isMassHidden();
+  void setMassHidden(bool status);
   
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
@@ -102,6 +111,9 @@ private:
   int height;
   bool copy;
   bool deleted;
+  int penWidth;
+  int penStyle;
+  bool massHidden;
 };
 
 #endif

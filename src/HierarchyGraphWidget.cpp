@@ -1470,7 +1470,9 @@ void HierarchyGraphWidget::changeLineColor() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
+      QColor currentColor = line->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1569,7 +1571,9 @@ void HierarchyGraphWidget::changeTextColor() {
   if (scene->selectedItems().size() == 1) {
     TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
     if (text) {
+      QColor currentColor = text->defaultTextColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1635,7 +1639,9 @@ void HierarchyGraphWidget::changeEllipseColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1650,7 +1656,9 @@ void HierarchyGraphWidget::changeEllipseFillColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
@@ -1713,7 +1721,9 @@ void HierarchyGraphWidget::changeRectColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1728,8 +1738,10 @@ void HierarchyGraphWidget::changeRectFillColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();

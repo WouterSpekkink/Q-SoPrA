@@ -27,9 +27,6 @@ public:
   QRectF itemsBoundingRect() const;
   OccurrenceItem* getSelectedOccurrence();
 
-public slots:
-  void changeEdgeColor(const QColor color);
-
 signals:
   void posChanged(EventItem *, qreal &dist);
   void posChanged(MacroEvent *, qreal &dist);
