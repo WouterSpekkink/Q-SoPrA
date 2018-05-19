@@ -2726,7 +2726,6 @@ void EventGraphWidget::getLinkageDetails() {
 }
 
 void EventGraphWidget::plotGraph() {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   cleanUp();
   selectedCoder = coderComboBox->currentText();
   QString currentType = typeComboBox->currentText();
@@ -2739,6 +2738,7 @@ void EventGraphWidget::plotGraph() {
   } else {
     return;
   }
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT description, direction FROM linkage_types "
 		 "WHERE name = :name");
@@ -2779,7 +2779,6 @@ void EventGraphWidget::plotGraph() {
 }
 
 void EventGraphWidget::addLinkageType() {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   QString currentType = typeComboBox->currentText();
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
@@ -2790,6 +2789,7 @@ void EventGraphWidget::addLinkageType() {
   } else {
     return;
   }
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT description, direction FROM linkage_types "
 		 "WHERE name = :name");
@@ -2900,7 +2900,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 	  compareEdge->setZValue(2);
 	  compareEdge->setStartItem(tempSource);
 	  compareEdge->setEndItem(tempTarget);
-	  compareEdge->setPenStyle(1);
+	  compareEdge->setPenStyle(4);
 	  compareVector.push_back(compareEdge);
 	  compareEdge->setToolTip(toolTip);
 	}
@@ -2920,15 +2920,15 @@ void EventGraphWidget::plotCompareEdges() {
     Arrow *currentEdge = it.next();
     scene->addItem(currentEdge);
   }
-  /*  QVectorIterator<Arrow*> it2(edgeVector);
+  QVectorIterator<Arrow*> it2(edgeVector);
   while (it2.hasNext()) {
     Arrow *currentEdge = it2.next();
-    if (currentEdge->getPenStyle() == 0) {
+    if (currentEdge->getPenStyle() == 1) {
       currentEdge->setPenStyle(3);
     } else {
-      currentEdge->setPenStyle(0);
+      currentEdge->setPenStyle(1);
     }
-    }*/
+  }
 }
 
 void EventGraphWidget::saveCurrentPlot() {
@@ -4367,8 +4367,10 @@ void EventGraphWidget::setChangeLabel() {
 }
 
 void EventGraphWidget::updateScene() {
-  if (changeLabel->text() == "" && eventVector.size() > 0) {
-    changeLabel->setText("*");
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    current->updatePosition();
   }
 }
 
@@ -7341,7 +7343,7 @@ void EventGraphWidget::ignoreLinkage() {
       NodeLabel *text = qgraphicsitem_cast<NodeLabel*>(it.peekNext());
       if (arrow && !(event) && !(text)) {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());;
-	currentEdge->setPenStyle(0);
+	currentEdge->setPenStyle(1);
       } else {
 	it.next();
       }
@@ -7358,7 +7360,7 @@ void EventGraphWidget::keepLinkage() {
 	Arrow *currentEdge = qgraphicsitem_cast<Arrow*>(it.next());
 	EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
 	int tail = startEvent->getId();
-	currentEdge->setPenStyle(0);
+	currentEdge->setPenStyle(1);
 	QString type = currentEdge->getType();
 	QSqlQuery *query = new QSqlQuery;
 	query->prepare("SELECT direction FROM linkage_types WHERE name = :type");

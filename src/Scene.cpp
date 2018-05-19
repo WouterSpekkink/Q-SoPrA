@@ -973,14 +973,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       if (arrow->getPenStyle() == 3) {
 	menu.addAction(action1);
 	menu.addAction(action2);
-      } else if (arrow->getPenStyle() == 1) {
+      } else if (arrow->getPenStyle() == 4) {
 	menu.addAction(action3);
 	menu.addAction(action4);
       } else if (arrow->getPenStyle() == 2) {
 	menu.addAction(action1);
 	menu.addAction(action2);
 	menu.addAction(action5);
-      } else if (arrow->getPenStyle() == 0 && startEvent && endEvent) {
+      } else if (arrow->getPenStyle() == 1 && startEvent && endEvent) {
 	menu.addAction(action6);
 	menu.addAction(action7);
       }

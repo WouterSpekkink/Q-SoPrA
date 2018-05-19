@@ -68,6 +68,7 @@ public:
 
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
+  void updatePosition();
   void setColor(const QColor &subColor);
   QColor getColor();
   QGraphicsItem *startItem() const;
@@ -87,7 +88,7 @@ public:
 
   void setHeight(int submittedHeight);
   int getHeight();
-  
+
 protected:
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
   void calculate();
