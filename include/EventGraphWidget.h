@@ -74,6 +74,8 @@ private slots:
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
   void disableModeButtons();
+  void setLinkageButtons(QTableWidgetItem *item);
+  void disableLinkageButtons();
   void restoreModeColors();
   void moveModeUp();
   void moveModeDown();
@@ -118,10 +120,11 @@ private slots:
   void expandGraph();
   void contractGraph();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
-  void setPlotButton();
+  void setPlotButtons();
   void getLinkageDetails();
   void plotGraph();
   void addLinkageType();
+  void removeLinkageType();
   void setCompareButton();
   void compare();
   void getCompareEdges(QString coder, QString type);
@@ -129,7 +132,7 @@ private slots:
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
-  void updateScene();
+  void updateLinkages();
   void plotLabels();
   void processLowerRange(int value);
   void processUpperRange(int value);
@@ -147,6 +150,9 @@ private slots:
   void setLabelColor();
   void setBackgroundColor();
   void changeModeColor(QTableWidgetItem *item);
+  void changeLinkageColor(QTableWidgetItem *item);
+  void hideLinkageType();
+  void showLinkageType();
   void processEventItemContextMenu(const QString &action);
   void colligateEvents(QString constraint);
   void disaggregateEvent();
@@ -174,8 +180,8 @@ private slots:
   void addLinkage();
   void selectFollowers();
   void selectPredecessors();
-  void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
-  void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished);
+  void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
+  void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();
@@ -273,7 +279,8 @@ private:
   QPointer<QLabel> linkageLegendLabel;
   
   QPointer<QPushButton> plotButton;
-  QPointer<QPushButton> addLinkageButton;
+  QPointer<QPushButton> addLinkageTypeButton;
+  QPointer<QPushButton> removeLinkageTypeButton;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> compareButton;
@@ -311,6 +318,8 @@ private:
   QPointer<QPushButton> exportTransitionMatrixButton;
   QPointer<QPushButton> moveModeUpButton;
   QPointer<QPushButton> moveModeDownButton;
+  QPointer<QPushButton> hideLinkageTypeButton;
+  QPointer<QPushButton> showLinkageTypeButton;
   
   QPointer<DeselectableListWidget> eventListWidget;
   

@@ -121,7 +121,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   eventListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   
   plotButton = new QPushButton(tr("Plot new"), this);
-  addLinkageButton = new QPushButton(tr("Add linkage"), this);
+  addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
+  addLinkageTypeButton->setEnabled(false);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
@@ -173,6 +174,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   moveModeUpButton->setEnabled(false);
   moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
   moveModeDownButton->setEnabled(false);
+  hideLinkageTypeButton = new QPushButton(tr("Hide"), legendWidget);
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton = new QPushButton(tr("Show"), legendWidget);
+  showLinkageTypeButton->setEnabled(false);
+  removeLinkageTypeButton = new QPushButton(tr("Remove from plot"), legendWidget);
+  removeLinkageTypeButton->setEnabled(false);
   
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -190,12 +197,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
-  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
+  connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
+  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
   connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setCompareButton()));  
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotGraph()));
-  connect(addLinkageButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
+  connect(addLinkageTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
@@ -214,7 +221,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(scene, SIGNAL(posChanged(MacroEvent*, qreal&)),
 	  this, SLOT(changePos(MacroEvent*, qreal&)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
-  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateScene()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(EventItemContextMenuAction(const QString &)),
@@ -259,6 +266,15 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(disableModeButtons()));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
+  connect(linkageListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
+	  this, SLOT(setLinkageButtons(QTableWidgetItem *)));
+  connect(linkageListWidget, SIGNAL(noneSelected()),
+	  this, SLOT(disableLinkageButtons()));
+  connect(linkageListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeLinkageColor(QTableWidgetItem *)));
+  connect(hideLinkageTypeButton, SIGNAL(clicked()), this, SLOT(hideLinkageType()));
+  connect(showLinkageTypeButton, SIGNAL(clicked()), this, SLOT(showLinkageType()));
+  connect(removeLinkageTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
@@ -274,7 +290,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   plotOptionsLayout->addWidget(typeLabel);
   plotOptionsLayout->addWidget(typeComboBox);
   plotOptionsLayout->addWidget(plotButton);
-  plotOptionsLayout->addWidget(addLinkageButton);
+  plotOptionsLayout->addWidget(addLinkageTypeButton);
   plotOptionsLayout->addWidget(savePlotButton);
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
@@ -380,6 +396,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   legendLayout->addWidget(exportTransitionMatrixButton);
   legendLayout->addWidget(linkageLegendLabel);
   legendLayout->addWidget(linkageListWidget);
+  legendLayout->addWidget(hideLinkageTypeButton);
+  legendLayout->addWidget(showLinkageTypeButton);
+  legendLayout->addWidget(removeLinkageTypeButton);
   legendWidget->setMinimumWidth(250);
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
@@ -2683,13 +2702,24 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
   }
 }
 
-void EventGraphWidget::setPlotButton() {
+void EventGraphWidget::setPlotButtons() {
   if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) {
     plotButton->setEnabled(true);
   } else {
     plotButton->setEnabled(false);
   }
-  if (coderComboBox->currentText() != DEFAULT) {
+  if (coderComboBox->currentText() == selectedCoder &&
+      !presentTypes.contains(typeComboBox->currentText())) {
+    if (macroVector.size() > 0) {
+      addLinkageTypeButton->setEnabled(false);
+    } else {
+      addLinkageTypeButton->setEnabled(true);
+    }
+  } else {
+    addLinkageTypeButton->setEnabled(false);
+  }
+  if (coderComboBox->currentText() != DEFAULT &&
+      presentTypes.contains(typeComboBox->currentText())) {
     compareComboBox->clear();
     compareComboBox->addItem(DEFAULT);
     QSqlQuery *query = new QSqlQuery;
@@ -2747,7 +2777,6 @@ void EventGraphWidget::plotGraph() {
   query->first();
   QString description = query->value(0).toString();
   QString direction = query->value(1).toString();
-  delete query;
   presentTypes.push_back(currentType);
   QTableWidgetItem *item = new QTableWidgetItem(currentType);
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -2761,6 +2790,19 @@ void EventGraphWidget::plotGraph() {
   linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
     setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
 	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  if (coderComboBox->currentText() != DEFAULT &&
+      presentTypes.contains(typeComboBox->currentText())) {
+    compareComboBox->clear();
+    compareComboBox->addItem(DEFAULT);
+    query->exec("SELECT name FROM coders");
+    while (query->next()) {
+      QString currentCoder = query->value(0).toString();
+      if (currentCoder != coderComboBox->currentText()) {
+	compareComboBox->addItem(currentCoder);
+      }
+    }
+  }
+  delete query;
   distance = 70;
   getEvents();
   plotEvents(); // Should allow for range to be set here.
@@ -2774,6 +2816,7 @@ void EventGraphWidget::plotGraph() {
   setRangeControls();
   plotLabel->setText("Unsaved plot");
   checkCongruency();
+  updateLinkages();
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -2798,7 +2841,6 @@ void EventGraphWidget::addLinkageType() {
   query->first();
   QString description = query->value(0).toString();
   QString direction = query->value(1).toString();
-  delete query;
   presentTypes.push_back(currentType);
   QTableWidgetItem *item = new QTableWidgetItem(currentType);
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -2812,10 +2854,25 @@ void EventGraphWidget::addLinkageType() {
   linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
     setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
 	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  if (coderComboBox->currentText() != DEFAULT &&
+      presentTypes.contains(typeComboBox->currentText())) {
+    compareComboBox->clear();
+    compareComboBox->addItem(DEFAULT);
+    query->exec("SELECT name FROM coders");
+    while (query->next()) {
+      QString currentCoder = query->value(0).toString();
+      if (currentCoder != coderComboBox->currentText()) {
+	compareComboBox->addItem(currentCoder);
+      }
+    }
+  }
+  delete query;
   getEdges(selectedCoder, currentType, color);
   plotEdges(currentType);
   setHeights();
   checkCongruency();
+  updateLinkages();
+  addLinkageTypeButton->setEnabled(false);
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -2823,23 +2880,25 @@ void EventGraphWidget::addLinkageType() {
 void EventGraphWidget::setCompareButton() {
   if (presentTypes.size() > 0) {
     if (compareComboBox->currentText() != DEFAULT && selectedCoder != "") {
-      compareButton->setEnabled(true);
+      if (macroVector.size() > 0) {
+	compareButton->setEnabled(false);
+      } else {
+	compareButton->setEnabled(true);
+      }
     } else {
       compareButton->setEnabled(false);
     }
+  } else {
+    compareButton->setEnabled(false);
   }
 }
 
 
 void EventGraphWidget::compare() {
-  /* 
-     I should rethink how this works. 
-     It would make more sense to go into a kind of comparison mode,
-     where the patterning of the linkages is changed (dotted, striped etc) rather than the colours.
-   */
   selectedCompare = compareComboBox->currentText();
   getCompareEdges(selectedCompare, presentTypes[0]);
   plotCompareEdges();
+  updateLinkages();
   compareButton->setEnabled(false);
 }
 
@@ -3160,9 +3219,9 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_edges "
 		   "(plot, tail, head, tailmacro, headmacro, linkage "
-		   "red, green, blue, alpha, hidden) "
+		   "red, green, blue, alpha, hidden, masshidden) "
 		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :linkages, "
-		   ":red, :green, :blue, :alpha, :hidden)");
+		   ":red, :green, :blue, :alpha, :hidden, :masshidden)");
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
       Arrow *currentEdge = it3.next();
@@ -3181,6 +3240,7 @@ void EventGraphWidget::saveCurrentPlot() {
       int mTail = 0;
       int mHead = 0;
       int hidden = 1;
+      int massHidden = 0;
       if (eventTail) {
 	tail = eventTail->getId();
       } else if (macroTail) {
@@ -3196,6 +3256,9 @@ void EventGraphWidget::saveCurrentPlot() {
       if (currentEdge->isVisible()) {
 	hidden = 0;
       }
+      if (currentEdge->isMassHidden()) {
+	massHidden = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":tail", tail);
       query->bindValue(":head", head);
@@ -3207,6 +3270,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":blue", blue);
       query->bindValue(":alpha", alpha);
       query->bindValue(":hidden", hidden);
+      query->bindValue(":masshidden", massHidden);
       query->exec();
       counter++;
       saveProgress->setProgress(counter);
@@ -3963,7 +4027,8 @@ void EventGraphWidget::seePlots() {
       }
     }
     std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
-    query->prepare("SELECT tail, head, tailmacro, headmacro, linkage, red, green, blue, alpha, hidden "
+    query->prepare("SELECT tail, head, tailmacro, headmacro, linkage, red, green, blue, alpha, "
+		   "hidden, masshidden "
 		   "FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot ");
     query->bindValue(":plot", plot);
@@ -3979,6 +4044,7 @@ void EventGraphWidget::seePlots() {
       int blue = query->value(7).toInt();
       int alpha = query->value(8).toInt();
       int hidden = query->value(9).toInt();
+      int massHidden = query->value(10).toInt();
       QColor color = QColor(red, green, blue, alpha);
       bool tailMacro = false;
       bool headMacro = false;
@@ -4081,6 +4147,9 @@ void EventGraphWidget::seePlots() {
 	  currentEdge->hide();
 	} else {
 	  currentEdge->show();
+	}
+	if (massHidden) {
+	  currentEdge->setMassHidden(true);
 	}
       }
     }
@@ -4366,7 +4435,7 @@ void EventGraphWidget::setChangeLabel() {
   }
 }
 
-void EventGraphWidget::updateScene() {
+void EventGraphWidget::updateLinkages() {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *current = it.next();
@@ -4566,6 +4635,43 @@ void EventGraphWidget::disableModeButtons() {
   moveModeUpButton->setEnabled(false);
   moveModeDownButton->setEnabled(false);
 }
+
+
+void EventGraphWidget::setLinkageButtons(QTableWidgetItem *item) {
+  QString text = item->data(Qt::DisplayRole).toString();
+  if (text != "") {
+    QVectorIterator<Arrow*> it(edgeVector);
+    while (it.hasNext()) {
+      Arrow *current = it.next();
+      if (current->getType() == text) {
+	if (current->isMassHidden()) {
+	  hideLinkageTypeButton->setEnabled(false);
+	  showLinkageTypeButton->setEnabled(true);
+	} else {
+	  hideLinkageTypeButton->setEnabled(true);
+	  showLinkageTypeButton->setEnabled(false);
+	}
+	break;
+      }
+    }
+    if (presentTypes.size() > 1) {
+      removeLinkageTypeButton->setEnabled(true);
+    } else {
+      removeLinkageTypeButton->setEnabled(false);
+    }
+  } else {
+    hideLinkageTypeButton->setEnabled(false);
+    showLinkageTypeButton->setEnabled(false);
+    removeLinkageTypeButton->setEnabled(false);
+  }
+}
+
+void EventGraphWidget::disableLinkageButtons() {
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton->setEnabled(false);
+  removeLinkageTypeButton->setEnabled(false);
+}
+
 
 void EventGraphWidget::restoreModeColors() {
   for (int i = 0; i != eventListWidget->rowCount(); i++) {
@@ -4775,6 +4881,92 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item) {
   }
 }
 
+void EventGraphWidget::changeLinkageColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = linkageListWidget->item(item->row(), 0);
+      QString type = neighbour->data(Qt::DisplayRole).toString();
+      QVectorIterator<Arrow*> it(edgeVector);
+      while (it.hasNext()) {
+	Arrow *current = it.next();
+	if (current->getType() == type) {
+	  current->setColor(color);
+	}
+      }
+    }
+  }
+}
+
+void EventGraphWidget::hideLinkageType() {
+  setChangeLabel();
+  showLinkageTypeButton->setEnabled(true);
+  hideLinkageTypeButton->setEnabled(false);
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  linkageListWidget->currentItem()->setBackground(Qt::gray);
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    if (current->getType() == text) {
+      current->setMassHidden(true);
+    }
+  }
+  setVisibility();
+  setHeights();
+}
+
+void EventGraphWidget::showLinkageType() {
+  setChangeLabel();
+  showLinkageTypeButton->setEnabled(false);
+  hideLinkageTypeButton->setEnabled(true);
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  linkageListWidget->currentItem()->setBackground(Qt::transparent);
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    if (current->getType() == text) {
+      current->setMassHidden(false);
+    }
+  }
+  setVisibility();
+  setHeights();
+}
+
+void EventGraphWidget::removeLinkageType() {
+  setChangeLabel();
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  QVectorIterator<Arrow*> it (edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    if (current->getType() == text) {
+      delete current;
+      edgeVector.removeOne(current);
+    }
+  }
+  for (int i = 0; i != linkageListWidget->rowCount();) {
+    if (linkageListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) {
+      linkageListWidget->removeRow(i);
+    }
+    if (i != linkageListWidget->rowCount()) {
+      i++;
+    }
+  }
+  QVectorIterator<QString> it2(presentTypes);
+  while (it2.hasNext()) {
+    QString type = it2.next();
+    if (type == text) {
+      presentTypes.removeOne(type);
+    }
+  }
+  setHeights();
+  setPlotButtons();
+  disableLinkageButtons();
+}
+
 void EventGraphWidget::plotLabels() {
   QVectorIterator<NodeLabel*> it(nodeLabelVector);
   while (it.hasNext()) {
@@ -4854,11 +5046,13 @@ void EventGraphWidget::setVisibility() {
   QVectorIterator<Arrow*> it3(edgeVector);
   while (it3.hasNext()) {
     Arrow *currentEdge = it3.next();
-    if (currentEdge) {
+    if (currentEdge->isMassHidden()) {
+      currentEdge->hide();
+    } else {
       QGraphicsItem *tail = currentEdge->startItem();
       QGraphicsItem *head = currentEdge->endItem();
       if (tail->isVisible() && head->isVisible()) {
-      	currentEdge->setVisible(true);
+	currentEdge->setVisible(true);
       } else {
 	currentEdge->setVisible(false);
       }
@@ -4906,34 +5100,40 @@ void EventGraphWidget::setHeights() {
     QVectorIterator<Arrow*> it2(edgeVector);
     while (it2.hasNext()) {
       Arrow *currentArrow = it2.next();
-      if (currentArrow->getType() == currentType) {
-	QGraphicsItem *start = currentArrow->startItem();
-	QGraphicsItem *end = currentArrow->endItem();
-	int countFound = 0;
-	bool found = false;
-	QVectorIterator<Arrow*> it3(edgeVector);
-	while (it3.hasNext()) {
-	  Arrow *otherArrow = it3.next();
-	  if (otherArrow != currentArrow) {
-	    if (otherArrow->startItem() == start &&
-		otherArrow->endItem() == end) {
-	      found = true;
-	      if (!finished.contains(otherArrow->getType())) {
-		countFound++;
+      if (currentArrow->isVisible()) {
+	if (currentArrow->getType() == currentType) {
+	  QGraphicsItem *start = currentArrow->startItem();
+	  QGraphicsItem *end = currentArrow->endItem();
+	  int countFound = 0;
+	  bool found = false;
+	  QVectorIterator<Arrow*> it3(edgeVector);
+	  while (it3.hasNext()) {
+	    Arrow *otherArrow = it3.next();
+	    if (otherArrow->isVisible()) {
+	      if (otherArrow != currentArrow) {
+		if (otherArrow->startItem() == start &&
+		    otherArrow->endItem() == end) {
+		  found = true;
+		  if (!finished.contains(otherArrow->getType())) {
+		    countFound++;
+		  }
+		} else if (otherArrow->startItem() == end && otherArrow->endItem() == start) {
+		  found = true;
+		}
 	      }
-	    } else if (otherArrow->startItem() == end && otherArrow->endItem() == start) {
-	      found = true;
 	    }
 	  }
-	}
-	if (countFound > 0) {
-	  currentArrow->setHeight((countFound + 1) * 40);
-	} else if (found) {
-	  currentArrow->setHeight(1 * 40);
+	  if (countFound > 0) {
+	    currentArrow->setHeight((countFound + 1) * 40);
+	  } else if (found) {
+	    currentArrow->setHeight(1 * 40);
+	  } else {
+	    currentArrow->setHeight(0);
+	  }
 	}
       }
+      finished.push_back(currentType);
     }
-    finished.push_back(currentType);
   }
 }
 
@@ -5267,31 +5467,50 @@ void EventGraphWidget::exportEdges() {
 	QString source = "";
 	QString target = "";
 	if (eventStart && eventEnd) {
-	  source = "i" + QString::number(eventStart->getId());
-	  target = "i" + QString::number(eventEnd->getId());
+	  source = "i" + QString::number(eventStart->getOrder());
+	  target = "i" + QString::number(eventEnd->getOrder());
 	} else if (eventStart && macroEnd) {
-	  source = "i" + QString::number(eventStart->getId());
-	  if (macroEnd->getConstraint() == PATHS) {
-	    target = "p" + QString::number(macroEnd->getId());
-	  } else if (macroEnd->getConstraint() == SEMIPATHS) {
-	    target = "s" + QString::number(macroEnd->getId());
+	  source = "i" + QString::number(eventStart->getOrder());
+	  if (macroEnd->getConstraint() == PATHS ||
+	      macroEnd->getConstraint() == PATHSATT) {
+	    target = "p" + QString::number(macroEnd->getOrder());
+	  } else if (macroEnd->getConstraint() == SEMIPATHS ||
+		     macroEnd->getConstraint() == SEMIPATHSATT) {
+	    target = "s" + QString::number(macroEnd->getOrder());
+	  } else if (macroEnd->getConstraint() == NOCONSTRAINT ||
+		     macroEnd->getConstraint() == NOCONSTRAINTATT) {
+	    target = "n" + QString::number(macroEnd->getOrder());
 	  }
 	} else if (macroStart && macroEnd) {
-	  if (macroStart->getConstraint() == PATHS) {
-	    source = "p" + QString::number(macroStart->getId());
-	  } else if (macroStart->getConstraint() == SEMIPATHS) {
-	    source = "s" + QString::number(macroStart->getId());
+	  if (macroStart->getConstraint() == PATHS ||
+	      macroStart->getConstraint() == PATHSATT) {
+	    source = "p" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == SEMIPATHS ||
+		     macroStart->getConstraint() == SEMIPATHSATT) {
+	    source = "s" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == NOCONSTRAINT ||
+		     macroStart->getConstraint() == NOCONSTRAINTATT) {
+	    source = "n" + QString::number(macroStart->getOrder());
 	  }
-	  if (macroEnd->getConstraint() == PATHS) {
-	    target = "p" + QString::number(macroEnd->getId());
-	  } else if (macroEnd->getConstraint() == SEMIPATHS) {
+	  if (macroEnd->getConstraint() == PATHS ||
+	      macroEnd->getConstraint() == PATHSATT) {
+	    target = "p" + QString::number(macroEnd->getOrder());
+	  } else if (macroEnd->getConstraint() == SEMIPATHS ||
+		     macroEnd->getConstraint() == SEMIPATHSATT) {
 	    target = "s" + QString::number(macroEnd->getId());
+	  } else if (macroEnd->getConstraint() == NOCONSTRAINT ||
+		     macroEnd->getConstraint() == NOCONSTRAINTATT) {
+	    target = "n" + QString::number(macroEnd->getId());
 	  }
 	} else if (macroStart && eventEnd) {
 	  if (macroStart->getConstraint() == PATHS) {
-	    source = "p" + QString::number(macroStart->getId());
-	  } else if (macroStart->getConstraint() == SEMIPATHS) {
-	    source = "s" + QString::number(macroStart->getId());
+	    source = "p" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == SEMIPATHS ||
+		     macroStart->getConstraint() == SEMIPATHSATT) {
+	    source = "s" + QString::number(macroStart->getOrder());
+	  } else if (macroStart->getConstraint() == NOCONSTRAINT ||
+		     macroStart->getConstraint() == NOCONSTRAINTATT) {
+	    source = "n" + QString::number(macroStart->getOrder());
 	  }
 	  target = "i" + QString::number(eventEnd->getId());
 	}
@@ -5684,6 +5903,8 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  current->setSelected(true);
 	  retrieveData();
 	  setChangeLabel();
+	  addLinkageTypeButton->setEnabled(false);
+	  compareButton->setEnabled(false);
 	}
 	delete textDialog;
       } else {
@@ -6200,6 +6421,12 @@ void EventGraphWidget::disaggregateEvent() {
   selectedMacro = NULL;
   updateMacroOrder();
   setVisibility();
+  if (macroVector.size() > 0) {
+    addLinkageTypeButton->setEnabled(false);
+  } else {
+    addLinkageTypeButton->setEnabled(true);
+  }
+  setCompareButton();
 }
 
 void EventGraphWidget::updateMacroIds(MacroEvent *macro) {
@@ -7044,6 +7271,7 @@ void EventGraphWidget::addLinkage() {
     }
     delete query;
   }
+  updateLinkages();
 }
 
 void EventGraphWidget::selectFollowers() {
@@ -7065,9 +7293,9 @@ void EventGraphWidget::selectFollowers() {
   QSet<QGraphicsItem*> finished;
   finished.insert(origin);
   if (direction == PAST) {
-    selectAncestors(origin, &finished);
+    selectAncestors(origin, &finished, type);
   } else if (direction == FUTURE) {
-    selectDescendants(origin, &finished);
+    selectDescendants(origin, &finished, type);
   }
   delete query;
 }
@@ -7091,22 +7319,16 @@ void EventGraphWidget::selectPredecessors() {
   QSet<QGraphicsItem*> finished;
   finished.insert(origin);
   if (direction == PAST) {
-    selectDescendants(origin, &finished);
+    selectDescendants(origin, &finished, type);
   } else if (direction == FUTURE) {
-    selectAncestors(origin, &finished);
+    selectAncestors(origin, &finished, type);
   }
   delete query;
 }
 
-void EventGraphWidget::selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
-  QString type = presentTypes[0];
-  if (presentTypes.size() > 1) {
-    QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
-    relationshipChooser->exec();
-    if (relationshipChooser->getExitStatus() == 0) {
-      type = relationshipChooser->getSelection();
-    }
-  }
+void EventGraphWidget::selectAncestors(QGraphicsItem *origin,
+				       QSet<QGraphicsItem*> *pFinished,
+				       QString type) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *edge = it.next();
@@ -7121,22 +7343,16 @@ void EventGraphWidget::selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem
 	}
 	if (!pFinished->contains(edge->startItem())) {
 	  pFinished->insert(edge->startItem());
-	  selectAncestors(edge->startItem(), pFinished);
+	  selectAncestors(edge->startItem(), pFinished, type);
 	}
       }
     }
   }
 }
 
-void EventGraphWidget::selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished) {
-  QString type = presentTypes[0];
-  if (presentTypes.size() > 1) {
-    QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, presentTypes);
-    relationshipChooser->exec();
-    if (relationshipChooser->getExitStatus() == 0) {
-      type = relationshipChooser->getSelection();
-    }
-  }
+void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
+					 QSet<QGraphicsItem*> *pFinished,
+					 QString type) {
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *edge = it.next();
@@ -7151,7 +7367,7 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin, QSet<QGraphicsIt
 	}
 	if (!pFinished->contains(edge->endItem())) {
 	  pFinished->insert(edge->endItem());
-	  selectDescendants(edge->endItem(), pFinished);
+	  selectDescendants(edge->endItem(), pFinished, type);
 	}
       }
     }
@@ -7666,7 +7882,9 @@ void EventGraphWidget::changeLineColor() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
+      QColor currentColor = line->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7762,10 +7980,12 @@ void EventGraphWidget::changeText() {
 }
 
 void EventGraphWidget::changeTextColor() {
- if (scene->selectedItems().size() == 1) {
+  if (scene->selectedItems().size() == 1) {
     TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
     if (text) {
-     QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      QColor currentColor = text->defaultTextColor();
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7773,7 +7993,7 @@ void EventGraphWidget::changeTextColor() {
       }
       delete colorDialog;
     }
- }
+  }
 }
 
 void EventGraphWidget::deleteText() {
@@ -7865,7 +8085,9 @@ void EventGraphWidget::changeEllipseColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7880,7 +8102,9 @@ void EventGraphWidget::changeEllipseFillColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
@@ -7943,7 +8167,9 @@ void EventGraphWidget::changeRectColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -7958,7 +8184,9 @@ void EventGraphWidget::changeRectFillColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {

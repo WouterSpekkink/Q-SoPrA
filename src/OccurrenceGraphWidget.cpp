@@ -116,6 +116,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   connect(getEventsButton, SIGNAL(clicked()), this, SLOT(getEvents()));
   connect(restoreButton, SIGNAL(clicked()), this, SLOT(restore()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(moveLine(QGraphicsItem *, QPointF)),
@@ -575,6 +576,7 @@ void OccurrenceGraphWidget::addAttribute() {
   setRangeControls();
   scene->update();
   view->update();
+  updateLinkages();
   checkCongruency();
 }
 
@@ -676,6 +678,7 @@ void OccurrenceGraphWidget::addRelationship() {
   setRangeControls();
   scene->update();
   view->update();
+  updateLinkages();
   checkCongruency();
 }
 
@@ -683,6 +686,14 @@ void OccurrenceGraphWidget::setChangeLabel() {
   if (changeLabel->text() == "" && (attributeOccurrenceVector.size() > 0 ||
 				    relationshipOccurrenceVector.size() > 0)) {
     changeLabel->setText("*");
+  }
+}
+
+void OccurrenceGraphWidget::updateLinkages() {
+  QVectorIterator<Arrow*> it(edgeVector);
+  while (it.hasNext()) {
+    Arrow *current = it.next();
+    current->updatePosition();
   }
 }
 
@@ -1017,6 +1028,7 @@ void OccurrenceGraphWidget::wireLinkages() {
       }
     }
   }
+  updateLinkages();
 }
 
 void OccurrenceGraphWidget::restore() {
@@ -1401,7 +1413,9 @@ void OccurrenceGraphWidget::changeLineColor() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
+      QColor currentColor = line->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1500,7 +1514,9 @@ void OccurrenceGraphWidget::changeTextColor() {
   if (scene->selectedItems().size() == 1) {
     TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
     if (text) {
+      QColor currentColor = text->defaultTextColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1564,9 +1580,11 @@ void OccurrenceGraphWidget::processEllipseContextMenu(const QString &action) {
 
 void OccurrenceGraphWidget::changeEllipseColor() {
   if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());    
     if (ellipse) {
+      QColor currentColor = ellipse->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1581,8 +1599,10 @@ void OccurrenceGraphWidget::changeEllipseFillColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1644,7 +1664,9 @@ void OccurrenceGraphWidget::changeRectColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1659,8 +1681,10 @@ void OccurrenceGraphWidget::changeRectFillColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();

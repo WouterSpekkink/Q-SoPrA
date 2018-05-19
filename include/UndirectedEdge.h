@@ -20,7 +20,7 @@ public:
   QColor getColor();
   NetworkNode *startItem() const; 
   NetworkNode *endItem() const;
-  void calc();
+  void calculate();
   QString getType();
   void setType(const QString submittedType);
   void setHeight(int submittedHeight);

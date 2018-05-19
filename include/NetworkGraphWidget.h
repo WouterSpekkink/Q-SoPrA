@@ -129,6 +129,7 @@ private slots:
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
+  void updateEdges();
   
   void simpleLayout();
   void circularLayout();

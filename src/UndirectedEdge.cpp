@@ -27,7 +27,16 @@ QRectF UndirectedEdge::boundingRect() const {
   return strokePath.controlPointRect(); 
 }
 
-void UndirectedEdge::calc() {
+void UndirectedEdge::updatePosition() {
+  calculate();
+  QPainterPath myPath;
+  myPath.moveTo(ghostLineTwo.p2());
+  myPath.quadTo(controlPoint, ghostLineOne.p2());
+  myPath.quadTo(controlPoint, ghostLineOne.p2());
+  strokePath = myPath;
+}
+
+void UndirectedEdge::calculate() {
   // Let us first calculate the distance between our two points.
   qreal dX = end->pos().x() - start->pos().x();
   qreal dY = end->pos().y() - start->pos().y();
@@ -76,7 +85,7 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   myPen.setColor(color);
   painter->setPen(myPen);
   painter->setBrush(color);
-  calc();
+  calculate();
   arrowHeadOne.clear();
   arrowHeadOne << ghostLineOne.p2() << arrowP1 << arrowP2;
   arrowHeadTwo.clear();

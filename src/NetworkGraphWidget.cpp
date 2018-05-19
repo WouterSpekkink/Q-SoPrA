@@ -235,6 +235,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
+  connect(scene, SIGNAL(relevantChange()), this, SLOT(updateEdges()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(NetworkNodeContextMenuAction(const QString &)),
@@ -1022,7 +1023,8 @@ void NetworkGraphWidget::editAttribute() {
     if (attributeDialog->getExitStatus() == 0) {
       QString newName = attributeDialog->getName();
       description = attributeDialog->getDescription();
-      QStandardItem *currentAttribute = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      QStandardItem *currentAttribute = attributesTree->
+	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       currentAttribute->setData(newName);
       currentAttribute->setData(newName, Qt::DisplayRole);      
       currentAttribute->setToolTip(description);
@@ -1290,6 +1292,7 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color) {
     }
   }
   processHeights();
+  updateEdges();
 }
 
 void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
@@ -1312,6 +1315,7 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color) {
     }
   }
   processHeights();
+  updateEdges();
 }
 
 void NetworkGraphWidget::simpleLayout() {
@@ -1507,6 +1511,7 @@ void NetworkGraphWidget::expandLayout() {
     current->setPos(virtualCenter.x() + diffX, virtualCenter.y() + diffY);
     current->getLabel()->setNewPos(current->scenePos());
   }
+  updateEdges();
 }
 
 /*
@@ -1532,6 +1537,7 @@ void NetworkGraphWidget::contractLayout() {
     current->setPos(virtualCenter.x() + diffX, virtualCenter.y() + diffY);
     current->getLabel()->setNewPos(current->scenePos());
   }
+  updateEdges();
 }
 
 void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
@@ -1667,6 +1673,7 @@ void NetworkGraphWidget::hideCurrentNode() {
       currentNode->getLabel()->hide();
     }
   }
+  updateEdges();
 }
 
 void NetworkGraphWidget::setNodePersistence(bool state) {
@@ -1766,7 +1773,9 @@ void NetworkGraphWidget::changeLineColor() {
   if (scene->selectedItems().size() == 1) {
     LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
     if (line) {
+      QColor currentColor = line->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1865,7 +1874,9 @@ void NetworkGraphWidget::changeTextColor() {
   if (scene->selectedItems().size() == 1) {
     TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
     if (text) {
+      QColor currentColor = text->defaultTextColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1931,7 +1942,9 @@ void NetworkGraphWidget::changeEllipseColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -1946,7 +1959,9 @@ void NetworkGraphWidget::changeEllipseFillColor() {
   if (scene->selectedItems().size() == 1) {
     EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
     if (ellipse) {
+      QColor currentColor = ellipse->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
@@ -2009,7 +2024,9 @@ void NetworkGraphWidget::changeRectColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
@@ -2024,7 +2041,9 @@ void NetworkGraphWidget::changeRectFillColor() {
   if (scene->selectedItems().size() == 1) {
     RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
     if (rect) {
+      QColor currentColor = rect->getColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
@@ -3119,6 +3138,7 @@ void NetworkGraphWidget::plotNewGraph() {
   savePlotButton->setEnabled(true);
   setRangeControls();
   plotLabel->setText("Unsaved plot");
+  updateEdges();
   checkCongruency();
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
@@ -3164,6 +3184,7 @@ void NetworkGraphWidget::addRelationshipType() {
   addButton->setEnabled(false);
   setChangeLabel();
   simpleLayout();
+  updateEdges();
 }
 
 void NetworkGraphWidget::removeRelationshipType() {
@@ -4463,6 +4484,19 @@ void NetworkGraphWidget::setChangeLabel() {
   }
 }
 
+void NetworkGraphWidget::updateEdges() {
+  QVectorIterator<DirectedEdge*> it(directedVector);
+  while (it.hasNext()) {
+    DirectedEdge *current = it.next();
+    current->updatePosition();
+  }
+  QVectorIterator<UndirectedEdge*> it2(undirectedVector);
+  while (it2.hasNext()) {
+    UndirectedEdge *current = it2.next();
+    current->updatePosition();
+  }
+}
+
 void NetworkGraphWidget::processLowerRange(int value) {
   lowerRangeDial->setValue(value);
   lowerRangeSpinBox->setValue(value);
@@ -4590,6 +4624,7 @@ void NetworkGraphWidget::setVisibility() {
   }
   delete query;
   delete query2;
+  updateEdges();
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);

@@ -72,10 +72,15 @@ Arrow::Arrow(QString subType, QString subCoder, QGraphicsItem *parent)
   height = 0;
   penWidth = 1;
   penStyle = 1;
+  massHidden = false;
 }
 
 QRectF Arrow::boundingRect() const {
-  return strokePath.controlPointRect();
+  if (height > 0) {
+    return strokePath.controlPointRect();
+  } else {
+    return QGraphicsLineItem::boundingRect(); 
+  }
 }
 
 QPainterPath Arrow::shape() const {
@@ -301,4 +306,12 @@ void Arrow::setHeight(int submittedHeight) {
 
 int Arrow::getHeight() {
   return height;
+}
+
+void Arrow::setMassHidden(bool status) {
+  massHidden = status;
+}
+
+bool Arrow::isMassHidden() {
+  return massHidden;
 }

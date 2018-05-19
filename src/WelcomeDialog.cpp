@@ -190,7 +190,8 @@ void WelcomeDialog::newDatabase() {
 		  "green integer, "
 		  "blue integer, "
 		  "alpha integer, "
-		  "hidden integer)");
+		  "hidden integer, "
+		  "masshidden integer)");
       query->exec("CREATE TABLE saved_eg_plots_event_labels "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
@@ -799,7 +800,8 @@ void WelcomeDialog::openDatabase() {
 		  "green integer, "
 		  "blue integer, "
 		  "alpha integer, "
-		  "hidden integer)");
+		  "hidden integer, "
+		  "masshidden integer)");
       query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_event_labels "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
