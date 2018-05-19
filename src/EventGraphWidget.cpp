@@ -4908,17 +4908,27 @@ void EventGraphWidget::setHeights() {
 	QGraphicsItem *start = currentArrow->startItem();
 	QGraphicsItem *end = currentArrow->endItem();
 	int countFound = 0;
+	bool found = false;
 	QVectorIterator<Arrow*> it3(edgeVector);
 	while (it3.hasNext()) {
 	  Arrow *otherArrow = it3.next();
-	  if (otherArrow != currentArrow && !finished.contains(otherArrow->getType())) {
-	    if ((otherArrow->startItem() == start && otherArrow->endItem() == end) ||
-		(otherArrow->startItem() == end && otherArrow->endItem() == start)) {
-	      countFound++;
+	  if (otherArrow != currentArrow) {
+	    if (otherArrow->startItem() == start &&
+		otherArrow->endItem() == end) {
+	      found = true;
+	      if (!finished.contains(otherArrow->getType())) {
+		countFound++;
+	      }
+	    } else if (otherArrow->startItem() == end && otherArrow->endItem() == start) {
+	      found = true;
 	    }
 	  }
 	}
-	currentArrow->setHeight(countFound * 40);
+	if (countFound > 0) {
+	  currentArrow->setHeight((countFound + 1) * 40);
+	} else if (found) {
+	  currentArrow->setHeight(1 * 40);
+	}
       }
     }
     finished.push_back(currentType);
