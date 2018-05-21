@@ -5927,6 +5927,7 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  current->setSelected(true);
 	  retrieveData();
 	  setChangeLabel();
+	  updateLinkages();
 	  addLinkageTypeButton->setEnabled(false);
 	  compareButton->setEnabled(false);
 	}
@@ -6451,6 +6452,7 @@ void EventGraphWidget::disaggregateEvent() {
     addLinkageTypeButton->setEnabled(true);
   }
   setCompareButton();
+  updateLinkages();
 }
 
 void EventGraphWidget::updateMacroIds(MacroEvent *macro) {
