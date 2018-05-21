@@ -4027,6 +4027,7 @@ void EventGraphWidget::seePlots() {
       }
     }
     std::sort(macroVector.begin(), macroVector.end(), eventLessThan);
+    QSet<QString> types;
     query->prepare("SELECT tail, head, tailmacro, headmacro, linkage, red, green, blue, alpha, "
 		   "hidden, masshidden "
 		   "FROM saved_eg_plots_edges "
@@ -4054,6 +4055,29 @@ void EventGraphWidget::seePlots() {
       if (hM == 1) {
 	headMacro = true;
       }
+      if (!types.contains(linkage)) {
+	QTableWidgetItem *item = new QTableWidgetItem(linkage);
+	QSqlQuery *query3 = new QSqlQuery;
+	query3->prepare("SELECT description, direction FROM linkage_types WHERE name = :name");
+	query3->bindValue(":name", linkage);
+	query3->exec();
+	query3->first();
+	QString description = query3->value(0).toString();
+	QString direction = query3->value(1).toString();
+	QString tip = linkage + " (" + direction + ") - " + description;
+	delete query3;
+	item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	item->setToolTip(tip);
+	item->setData(Qt::DisplayRole, linkage);
+	linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+	linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+	linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(color);
+	linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+	  setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
+		   Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+      }      
+      types.insert(linkage);
       QString toolTip = "";
       if (!(tailMacro) && !(headMacro)) {
 	QSqlQuery *query2 =  new QSqlQuery;

@@ -102,7 +102,7 @@ void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *
   arrowHead.clear();
   arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
   QPainterPath myPath;
-  myPath.moveTo(start->pos());
+  myPath.moveTo(newLine.p1());
   myPath.quadTo(controlPoint, ghostLine.p2());
   strokePath = myPath;
   painter->setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
@@ -230,17 +230,17 @@ void Arrow::calculate() {
 				occurrenceEnd->pos().y())));
     }
   }
-  newLine.setLength(newLine.length() - 28);
-  qreal dY = newLine.p2().y() - start->pos().y();
-  qreal dX = newLine.p2().x() - start->pos().x();
-  qreal mX = (start->pos().x() + newLine.p2().x()) / 2;
-  qreal mY = (start->pos().y() + newLine.p2().y()) / 2;
+  //  newLine.setLength(newLine.length() - 20);
+  qreal dY = newLine.p2().y() - newLine.p1().y();
+  qreal dX = newLine.p2().x() - newLine.p1().x();
+  qreal mX = (newLine.p1().x() + newLine.p2().x()) / 2;
+  qreal mY = (newLine.p1().y() + newLine.p2().y()) / 2;
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
   qreal cX = height * (-1 * (dY / distance)) + mX;
   qreal cY = height * (dX / distance) + mY;
   controlPoint = QPointF(cX, cY);
-  ghostLine = QLineF(controlPoint, end->pos());
-  ghostLine.setLength(ghostLine.length() - 28);  
+  ghostLine = QLineF(controlPoint, newLine.p2());
+  ghostLine.setLength(ghostLine.length() - 28);
   double angle = ::acos(ghostLine.dx() / ghostLine.length());
   if (ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
