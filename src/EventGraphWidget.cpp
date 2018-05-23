@@ -3100,7 +3100,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
-      query->prepare("INSERT INTO saved_eg_plots (plot, coder, "
+      query->prepare("INSERT INTO saved_eg_plots (plot, coder) "
 		     "VALUES (:name, :coder)");
       query->bindValue(":name", name);
       query->bindValue(":coder", selectedCoder);
@@ -3218,9 +3218,9 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_edges "
-		   "(plot, tail, head, tailmacro, headmacro, linkage "
+		   "(plot, tail, head, tailmacro, headmacro, linkage, "
 		   "red, green, blue, alpha, hidden, masshidden) "
-		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :linkages, "
+		   "VALUES (:plot, :tail, :head, :tmacro, :hmacro, :linkage, "
 		   ":red, :green, :blue, :alpha, :hidden, :masshidden)");
     QVectorIterator<Arrow*> it3(edgeVector);
     while (it3.hasNext()) {
@@ -4056,6 +4056,7 @@ void EventGraphWidget::seePlots() {
 	headMacro = true;
       }
       if (!types.contains(linkage)) {
+	presentTypes.push_back(linkage);
 	QTableWidgetItem *item = new QTableWidgetItem(linkage);
 	QSqlQuery *query3 = new QSqlQuery;
 	query3->prepare("SELECT description, direction FROM linkage_types WHERE name = :name");
@@ -4387,6 +4388,7 @@ void EventGraphWidget::seePlots() {
     query->prepare("DELETE FROM saved_eg_plots_edges "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
+    query->exec();
     // saved_eg_plots_event_labels
     query->prepare("DELETE FROM saved_eg_plots_event_labels "
 		   "WHERE plot = :plot");
@@ -5622,7 +5624,6 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	if (attribute != "") {
 	  QVector<QString> attributes;
 	  attributes.push_back(attribute);
-	  qDebug() << entity;
 	  findChildren(attribute, &attributes, entity);
 	  bool hasAttribute = false;
 	  QVectorIterator<QString> it2(attributes);
@@ -5922,12 +5923,12 @@ void EventGraphWidget::colligateEvents(QString constraint) {
 	  scene->addItem(macroLabel);
 	  rewireLinkages(current, tempIncidents);
 	  updateMacroOrder();
+	  updateLinkages();
 	  setVisibility();
 	  currentData.clear();
 	  current->setSelected(true);
 	  retrieveData();
 	  setChangeLabel();
-	  updateLinkages();
 	  addLinkageTypeButton->setEnabled(false);
 	  compareButton->setEnabled(false);
 	}
@@ -6228,8 +6229,10 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      QVectorIterator<Arrow*> it3(edgeVector);
 	      while (it3.hasNext()) {
 		Arrow* temp = it3.next();
-		if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
-		  found = true;
+		if (temp->getType() == currentType) {
+		  if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
+		    found = true;
+		  }
 		}
 	      }
 	      if (!found) {
@@ -6288,8 +6291,10 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 	      QVectorIterator<Arrow*> it5(edgeVector);
 	      while (it5.hasNext()) {
 		Arrow *temp = it5.next();
-		if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
-		  found = true;
+		if (temp->getType() == currentType) {
+		  if (temp->startItem() == tempSource && temp->endItem() == tempTarget) {
+		    found = true;
+		  }
 		}
 	      }
 	      if (!found) {
