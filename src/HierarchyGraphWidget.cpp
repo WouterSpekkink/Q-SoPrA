@@ -2039,7 +2039,7 @@ void HierarchyGraphWidget::newAttribute() {
 	attribute->setToolTip(hint);
 	attribute->setEditable(false);
 	QSqlQuery *query = new QSqlQuery;
-	query->prepare("INSERT INTO attributes (name, descripion, father) "
+	query->prepare("INSERT INTO incident_attributes (name, description, father) "
 		       "VALUES (:name, :description, :father)");
 	query->bindValue(":name", name);
 	query->bindValue(":description", description);
@@ -2060,11 +2060,11 @@ void HierarchyGraphWidget::newAttribute() {
       description = attributeDialog->getDescription();
       QString currentParent = "NONE";
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("INSERT INTO attributes (name, descripion, father) "
+      query->prepare("INSERT INTO incident_attributes (name, description, father) "
 		     "VALUES (:name, :description, :father)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
-      query->bindValue(":father", "NONE");
+      query->bindValue(":father", currentParent);
       query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);

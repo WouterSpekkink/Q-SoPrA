@@ -65,7 +65,7 @@ void WelcomeDialog::newDatabase() {
 		  "mark integer)");
       query->exec("CREATE TABLE incident_attributes "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
-		  "name varchar text, "
+		  "name text, "
 		  "description text, "
 		  "father text)");
       query->exec("CREATE TABLE attributes_to_incidents "
@@ -672,7 +672,7 @@ void WelcomeDialog::openDatabase() {
 		  "mark integer)");
       query->exec("CREATE TABLE IF NOT EXISTS incident_attributes "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
-		  "name varchar text, "
+		  "name text, "
 		  "description text, "
 		  "father text)");
       query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents "
