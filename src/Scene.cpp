@@ -835,34 +835,36 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
       menu.addAction(action1);
-      QAction *action12 = new QAction(COLLIGATEPATHSATTACTION, this);
-      menu.addAction(action12);    
-      QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
-      menu.addAction(action2);
-      QAction *action13 = new QAction(COLLIGATESEMIPATHSATTACTION, this);
-      menu.addAction(action13);
-      QAction *action15 = new QAction(COLLIGATEFREEACTION, this);
-      menu.addAction(action15);
-      QAction *action16 = new QAction(COLLIGATEFREEATTACTION, this);
-      menu.addAction(action16);
-      QAction *action3 = new QAction(MAKEMACROACTION, this);
+      QAction *action2 = new QAction(COLLIGATEPATHSATTACTION, this);
+      menu.addAction(action2);    
+      QAction *action3 = new QAction(COLLIGATESEMIPATHSACTION, this);
       menu.addAction(action3);
-      QAction *action4= new QAction(RECOLOREVENTSACTION, this);
+      QAction *action4 = new QAction(COLLIGATESEMIPATHSATTACTION, this);
       menu.addAction(action4);
-      QAction *action5 = new QAction(RECOLORLABELSACTION, this);
+      QAction *action5 = new QAction(COLLIGATEFREEACTION, this);
       menu.addAction(action5);
-      QAction *action6 = new QAction(COLORLINEAGEACTION, this);
+      QAction *action6 = new QAction(COLLIGATEFREEATTACTION, this);
       menu.addAction(action6);
-      QAction *action7 = new QAction(SETTLEACTION, this);
+      QAction *action7 = new QAction(MAKEMACROACTION, this);
       menu.addAction(action7);
-      QAction *action8 = new QAction(PARALLELACTION, this);
+      QAction *action8= new QAction(RECOLOREVENTSACTION, this);
       menu.addAction(action8);
-      QAction *action9 = new QAction(NORMALIZEACTION, this);
+      QAction *action9 = new QAction(RECOLORLABELSACTION, this);
       menu.addAction(action9);
-      QAction *action10 = new QAction(CLOSEGAPACTION, this);
+      QAction *action10 = new QAction(COLORLINEAGEACTION, this);
       menu.addAction(action10);
-      QAction *action14 = new QAction(ADDLINKAGEACTION, this);
+      QAction *action11 = new QAction(SETWIDTHACTION, this);
+      menu.addAction(action11);
+      QAction *action12= new QAction(SETTLEACTION, this);
+      menu.addAction(action12);
+      QAction *action13 = new QAction(PARALLELACTION, this);
+      menu.addAction(action13);
+      QAction *action14 = new QAction(NORMALIZEACTION, this);
       menu.addAction(action14);
+      QAction *action15 = new QAction(CLOSEGAPACTION, this);
+      menu.addAction(action15);
+      QAction *action16 = new QAction(ADDLINKAGEACTION, this);
+      menu.addAction(action16);
       QAction *action17 = new QAction(SELECTFOLLOWERSACTION, this);
       menu.addAction(action17);
       QAction *action18 = new QAction(SELECTPREDECESSORSACTION, this);
@@ -870,28 +872,29 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QAction *action19 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
       menu.addAction(action19);
       if (selectedItems().size() > 1) {
-	action3->setEnabled(false);
-	action6->setEnabled(false);
 	action7->setEnabled(false);
 	action9->setEnabled(false);
-	action10->setEnabled(false);
+	action11->setEnabled(false);
+	action12->setEnabled(false);
+	action14->setEnabled(false);
+	action15->setEnabled(false);
 	action17->setEnabled(false);
 	action18->setEnabled(false);
 	action19->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);
-	action12->setEnabled(false);
-	action13->setEnabled(false);
 	action2->setEnabled(false);
-	action8->setEnabled(false);
+	action3->setEnabled(false);
+	action4->setEnabled(false);
+	action13->setEnabled(false);
       }
-      action14->setEnabled(false);
+      action16->setEnabled(false);
       if (selectedItems().size() == 2) {
 	EventItem *eventOne = qgraphicsitem_cast<EventItem*>(selectedItems()[0]);
 	EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(selectedItems()[1]);
 	if (eventOne && eventTwo) {
-	  action14->setEnabled(true);
+	  action16->setEnabled(true);
 	}
       }
       if (QAction *action = menu.exec(event->screenPos())) {
@@ -902,62 +905,61 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       QMenu menu;
       QAction *action1 = new QAction(COLLIGATEPATHSACTION, this);
       menu.addAction(action1);
-      QAction *action12 = new QAction(COLLIGATEPATHSATTACTION, this);
-      menu.addAction(action12);
-      QAction *action2 = new QAction(COLLIGATESEMIPATHSACTION, this);
+      QAction *action2 = new QAction(COLLIGATEPATHSATTACTION, this);
       menu.addAction(action2);
-      QAction *action13 = new QAction(COLLIGATESEMIPATHSATTACTION, this);
-      menu.addAction(action13);
-      QAction *action3 = new QAction(DISAGGREGATEACTION, this);
+      QAction *action3 = new QAction(COLLIGATESEMIPATHSACTION, this);
       menu.addAction(action3);
-      QAction *action4 = new QAction(RECOLOREVENTSACTION, this);
+      QAction *action4 = new QAction(COLLIGATESEMIPATHSATTACTION, this);
       menu.addAction(action4);
-      QAction *action5 = new QAction(RECOLORLABELSACTION, this);
+      QAction *action5 = new QAction(DISAGGREGATEACTION, this);
       menu.addAction(action5);
-      QAction *action6 = new QAction(COLORLINEAGEACTION, this);
+      QAction *action6 = new QAction(RECOLOREVENTSACTION, this);
       menu.addAction(action6);
-      QAction *action7 = new QAction(SETTLEACTION, this);
+      QAction *action7 = new QAction(RECOLORLABELSACTION, this);
       menu.addAction(action7);
-      QAction *action8 = new QAction(PARALLELACTION, this);
+      QAction *action8 = new QAction(COLORLINEAGEACTION, this);
       menu.addAction(action8);
-      QAction *action9 = new QAction(NORMALIZEACTION, this);
+      QAction *action9 = new QAction(SETWIDTHACTION, this);
       menu.addAction(action9);
-      QAction *action10 = new QAction(CLOSEGAPACTION, this);
+      QAction *action10 = new QAction(SETTLEACTION, this);
       menu.addAction(action10);
-      QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
+      QAction *action11 = new QAction(PARALLELACTION, this);
       menu.addAction(action11);
-      QAction *action14 = new QAction(SELECTFOLLOWERSACTION, this);
+      QAction *action12 = new QAction(NORMALIZEACTION, this);
+      menu.addAction(action12);
+      QAction *action13 = new QAction(CLOSEGAPACTION, this);
+      menu.addAction(action13);
+      QAction *action14 = new QAction(CHANGEDESCRIPTIONACTION, this);
       menu.addAction(action14);
-      QAction *action15 = new QAction(SELECTPREDECESSORSACTION, this);
+      QAction *action15 = new QAction(SELECTFOLLOWERSACTION, this);
       menu.addAction(action15);
-      QAction *action16 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+      QAction *action16 = new QAction(SELECTPREDECESSORSACTION, this);
       menu.addAction(action16);
+      QAction *action17 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+      menu.addAction(action17);
       if (selectedItems().size() > 1) {
-	action3->setEnabled(false);
-	action6->setEnabled(false);
-	action7->setEnabled(false);
+	action5->setEnabled(false);
+	action8->setEnabled(false);
 	action9->setEnabled(false);
 	action10->setEnabled(false);
-	action11->setEnabled(false);
+	action12->setEnabled(false);
+	action13->setEnabled(false);
 	action14->setEnabled(false);
 	action15->setEnabled(false);
 	action16->setEnabled(false);
+	action17->setEnabled(false);
       }
       if (selectedItems().size() == 1) {
 	action1->setEnabled(false);
 	action2->setEnabled(false);
-	action12->setEnabled(false);
-	action13->setEnabled(false);
-	action8->setEnabled(false);
+	action3->setEnabled(false);
+	action4->setEnabled(false);
+	action11->setEnabled(false);
       }
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit EventItemContextMenuAction(action->text());
       }
     } else if (arrow && !arrow->isCopy()) {
-
-      // NEED TO LOOK AT THE BELOW AND REDO THEM 
-
-      
       clearSelection();
       arrow->setSelected(true);
       QMenu menu;

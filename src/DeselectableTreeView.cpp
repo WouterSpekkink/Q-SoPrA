@@ -3,15 +3,19 @@
 DeselectableTreeView::DeselectableTreeView(QWidget *parent) : QTreeView(parent) {}
 
 void DeselectableTreeView::mousePressEvent(QMouseEvent *event) {
-  QModelIndex item = indexAt(event->pos());
-  bool selected = selectionModel()->isSelected(indexAt(event->pos()));
-  QTreeView::mousePressEvent(event);
-  if ((item.row() == -1 && item.column() == -1) || selected) {
-    clearSelection();
-    const QModelIndex index;
-    selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
-    emit noneSelected();
-  } 
+  if (event->button() == Qt::RightButton) {
+    QTreeView::mousePressEvent(event);
+  } else {
+    QModelIndex item = indexAt(event->pos());
+    bool selected = selectionModel()->isSelected(indexAt(event->pos()));
+    QTreeView::mousePressEvent(event);
+    if ((item.row() == -1 && item.column() == -1) || selected) {
+      clearSelection();
+      const QModelIndex index;
+      selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+      emit noneSelected();
+    } 
+  }
 }
 
 void DeselectableTreeView::wheelEvent(QWheelEvent *event) {

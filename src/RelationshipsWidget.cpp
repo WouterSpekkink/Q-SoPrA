@@ -109,8 +109,10 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   relationshipsTreeView->installEventFilter(this);
   rawField->viewport()->installEventFilter(this);
   commentField->installEventFilter(this);
-  
-  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
+
+  relationshipsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
+   
+connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
   connect(jumpButton, SIGNAL(clicked()), this, SLOT(jumpIncident()));
@@ -155,12 +157,14 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
   connect(relationshipsTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
+  connect(relationshipsTreeView, SIGNAL(customContextMenuRequested(QPoint)),
+	  this, SLOT(treeContextMenu(QPoint)));
   connect(newRelationshipButton, SIGNAL(clicked()), this, SLOT(newRelationship()));
   connect(editRelationshipButton, SIGNAL(clicked()), this, SLOT(editRelationship()));
   connect(expandTreeButton, SIGNAL(clicked()), this, SLOT(expandTree()));
   connect(collapseTreeButton, SIGNAL(clicked()), this, SLOT(collapseTree()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
-
+  
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> indexLayout = new QHBoxLayout;
@@ -758,49 +762,48 @@ void RelationshipsWidget::unassignRelationship() {
       QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
       QStandardItem *typeItem = currentItem->parent();
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
-      QSqlQueryModel *query = new QSqlQueryModel(this);
-      query->setQuery("SELECT * FROM save_data");
-      int order = 0; 
-      order = query->record(0).value("relationships_record").toInt();
-      QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
-      query2->bindValue(":order", order);
-      query2->exec();
-      query2->first();
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT relationships_record FROM save_data");
+      query->first();
+      int order = query->value(0).toInt(); 
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+      query->bindValue(":order", order);
+      query->exec();
+      query->first();
       int id = 0;
-      if (!(query2->isNull(0))) {
-	id = query2->value(0).toInt();
+      if (!(query->isNull(0))) {
+	id = query->value(0).toInt();
 	assignedModel->select();
 	bool empty = false;
-	query2->prepare("SELECT relationship, incident "
+	query->prepare("SELECT relationship, incident "
 			"FROM relationships_to_incidents "
 			"WHERE relationship = :rel AND type = :type AND incident = :inc  ");
-	query2->bindValue(":rel", currentRelationship);
-	query2->bindValue(":type", currentType);
-	query2->bindValue(":inc", id);
-	query2->exec();
-	query2->first();
-	empty = query2->isNull(0);
+	query->bindValue(":rel", currentRelationship);
+	query->bindValue(":type", currentType);
+	query->bindValue(":inc", id);
+	query->exec();
+	query->first();
+	empty = query->isNull(0);
 	if (!empty) {
-	  query2->prepare("DELETE FROM relationships_to_incidents "
+	  query->prepare("DELETE FROM relationships_to_incidents "
 			  "WHERE relationship = :rel AND type = :type AND incident = :inc");
-	  query2->bindValue(":rel", currentRelationship);
-	  query2->bindValue(":type", currentType);	  
-	  query2->bindValue(":inc", id);
-	  query2->exec();
-	  query2->prepare("DELETE FROM relationships_to_incidents_sources "
+	  query->bindValue(":rel", currentRelationship);
+	  query->bindValue(":type", currentType);	  
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents_sources "
 			  "WHERE relationship = :rel AND type = :type AND incident = :inc");
-	  query2->bindValue(":rel", currentRelationship);
-	  query2->bindValue(":type", currentType);
-	  query2->bindValue(":inc", id);
-	  query2->exec();
+	  query->bindValue(":rel", currentRelationship);
+	  query->bindValue(":type", currentType);
+	  query->bindValue(":inc", id);
+	  query->exec();
 	  assignedModel->select();
 	  resetFont(relationshipsTree);
-	  query2->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
-	  while (query2->next()) {
-	    QString relationship = query2->value(0).toString();
-	    QString type = query2->value(1).toString();
-	    int incident = query2->value(2).toInt();
+	  query->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+	  while (query->next()) {
+	    QString relationship = query->value(0).toString();
+	    QString type = query->value(1).toString();
+	    int incident = query->value(2).toInt();
 	    if (incident == id) {
 	      boldSelected(relationshipsTree, relationship, type);
 	    }
@@ -810,7 +813,6 @@ void RelationshipsWidget::unassignRelationship() {
 	}
       }
       delete query;
-      delete query2;
     }
   }
 }
@@ -1083,6 +1085,119 @@ void RelationshipsWidget::setTree() {
   delete query;
   treeFilter->setSourceModel(relationshipsTree);
   relationshipsTreeView->setModel(treeFilter);
+}
+
+void RelationshipsWidget::treeContextMenu(const QPoint &pos) {
+  QPoint globalPos = relationshipsTreeView->mapToGlobal(pos);
+  QModelIndex targetIndex = relationshipsTreeView->indexAt(pos);
+  relationshipsTreeView->selectionModel()->select(targetIndex, QItemSelectionModel::Current);
+  QString relationship = targetIndex.data(Qt::DisplayRole).toString();
+  QString type = targetIndex.parent().data(Qt::DisplayRole).toString();
+  if (targetIndex.parent().isValid()) {
+    QMenu menu;
+    QAction *action1 = new QAction(ASSIGNRELATIONSHIPACTION, this);
+    QAction *action2 = new QAction(UNASSIGNRELATIONSHIPACTION, this);
+    QAction *action3 = new QAction(UNASSIGNALLACTION, this);
+    menu.addAction(action1);
+    menu.addAction(action2);
+    menu.addAction(action3);
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT relationships_record FROM save_data");
+    query->first();
+    int order = query->value(0).toInt();
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    int id = query->value(0).toInt();
+    query->prepare("SELECT relationship FROM relationships_to_incidents "
+		   "WHERE relationship = :relationship AND type = :type AND incident = :id");
+    query->bindValue(":relationship", relationship);
+    query->bindValue(":type", type);
+    query->bindValue(":id", id);
+    query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      action2->setEnabled(false);
+    }
+    query->prepare("SELECT relationship FROM relationships_to_incidents "
+		   "WHERE relationship = :relationship AND type = :type");
+    query->bindValue(":relationship", relationship);
+    query->bindValue(":type", type);
+    query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      action3->setEnabled(false);
+    }
+    if (QAction *action = menu.exec(globalPos)) {
+      if (action->text() == ASSIGNRELATIONSHIPACTION) {
+	assignRelationship();
+      } else if (action->text() == UNASSIGNRELATIONSHIPACTION) {
+	unassignRelationship();
+      } else if (action->text() == UNASSIGNALLACTION) {
+	unassignAll();
+      }
+    }
+  } else {
+    QMenu menu;
+    QAction *action1 = new QAction(ADDRELATIONSHIPACTION, this);
+    menu.addAction(action1);
+    if (QAction *action = menu.exec(globalPos)) {
+      if (action->text() == ADDRELATIONSHIPACTION) {
+	newRelationship();
+      }
+    }
+  }
+}
+
+void RelationshipsWidget::unassignAll() {
+  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->addButton(QMessageBox::Yes);
+  warningBox->addButton(QMessageBox::No);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Are you sure?</h2>");
+  warningBox->setInformativeText("This will unassign the selected relationship from all incidents. "
+				 "Are you sure you want to proceed?");
+  if (warningBox->exec() == QMessageBox::Yes) {
+    QStandardItem *currentItem = relationshipsTree->
+      itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+    QStandardItem *typeItem = currentItem->parent();
+    QString relationship = currentItem->data(Qt::DisplayRole).toString();
+    QString type = typeItem->data(Qt::DisplayRole).toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("DELETE FROM relationships_to_incidents "
+		   "WHERE relationship = :rel AND type = :type");
+    query->bindValue(":rel", relationship);
+    query->bindValue(":type", type);	  
+    query->exec();
+    query->prepare("DELETE FROM relationships_to_incidents_sources "
+		   "WHERE relationship = :rel AND type = :type");
+    query->bindValue(":rel", relationship);
+    query->bindValue(":type", type);
+    query->exec();
+    assignedModel->select();
+    resetFont(relationshipsTree);
+    query->exec("SELECT relationships_record FROM save_data");
+    query->first();
+    int order = query->value(0).toInt();
+    query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
+    int id = query->value(0).toInt();
+    query->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+    while (query->next()) {
+      QString relationship = query->value(0).toString();
+      QString type = query->value(1).toString();
+      int incident = query->value(2).toInt();
+      if (incident == id) {
+	boldSelected(relationshipsTree, relationship, type);
+      }
+    }
+    highlightText();
+    unassignRelationshipButton->setEnabled(false);
+    delete query;
+  }
 }
 
 void RelationshipsWidget::previousIncident() {

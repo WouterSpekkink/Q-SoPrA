@@ -747,7 +747,6 @@ void AttributesWidget::newAttribute() {
       query->bindValue(":name", name);
       query->bindValue(":description", description);
       query->bindValue(":father", currentParent);
-      qDebug() << query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
       QString hint = breakString(description);
@@ -1849,10 +1848,12 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
   QString selected = targetIndex.data().toString();
   if (selected == ENTITIES) {
     QMenu menu;
-    QAction *action1 = new QAction(AUTOASSIGNALLACTION, this);
-    QAction *action2 = new QAction(UNASSIGNALLACTION, this);
+    QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
+    QAction *action2 = new QAction(AUTOASSIGNALLACTION, this);
+    QAction *action3 = new QAction(UNASSIGNALLACTION, this);
     menu.addAction(action1);
     menu.addAction(action2);
+    menu.addAction(action3);
     QSqlQuery *query = new QSqlQuery;
     QSqlQuery *query2 = new QSqlQuery;
     query->exec("SELECT name FROM entities");
@@ -1869,12 +1870,14 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       }
     }
     if (!found) {
-      action2->setEnabled(false);
+      action3->setEnabled(false);
     }
     delete query;
     delete query2;
     if (QAction *action = menu.exec(globalPos)) {
-      if (action->text() == AUTOASSIGNALLACTION) {
+      if (action->text() == ADDATTRIBUTEACTION) {
+	newAttribute();
+      } else if (action->text() == AUTOASSIGNALLACTION) {
 	autoAssignAll();
       } else if (action->text() == UNASSIGNALLACTION) {
 	unassignAllEntities();
@@ -1888,10 +1891,16 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
     QString topName = tempIndex.data().toString();
     if (topName == ENTITIES) {
       QMenu menu;
-      QAction *action1 = new QAction(AUTOASSIGNSPECIFICACTION, this);
-      QAction *action2 = new QAction(UNASSIGNALLACTION, this);
+      QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
+      QAction *action2 = new QAction(ASSIGNATTRIBUTEACTION, this);
+      QAction *action3 = new QAction(UNASSIGNATTRIBUTEACTION, this);
+      QAction *action4 = new QAction(AUTOASSIGNSPECIFICACTION, this);
+      QAction *action5 = new QAction(UNASSIGNALLACTION, this);
       menu.addAction(action1);
       menu.addAction(action2);
+      menu.addAction(action3);
+      menu.addAction(action4);
+      menu.addAction(action5);
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT attribute FROM attributes_to_incidents "
 		     "WHERE attribute = :selected");
@@ -1899,11 +1908,36 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       query->exec();
       query->first();
       if (query->isNull(0)) {
-	action2->setEnabled(false);
+	action5->setEnabled(false);
+      }
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->exec("SELECT attributes_record FROM save_data");
+      query2->first();
+      int order = query2->value(0).toInt();
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = query2->value(0).toInt();
+      query2->prepare("SELECT attribute FROM attributes_to_incidents "
+		      "WHERE attribute = :entity AND incident = :id");
+      query2->bindValue(":entity", selected);
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      if (query2->isNull(0)) {
+	action3->setEnabled(false);
       }
       delete query;
+      delete query2;
       if (QAction *action = menu.exec(globalPos)) {
-	if (action->text() == AUTOASSIGNSPECIFICACTION) {
+	if (action->text() == ADDATTRIBUTEACTION) {
+	  newAttribute();
+	} else if (action->text() == ASSIGNATTRIBUTEACTION) {
+	  assignAttribute();
+	} else if (action->text() == UNASSIGNATTRIBUTEACTION) {
+	  unassignAttribute();
+	} else if (action->text() == AUTOASSIGNSPECIFICACTION) {
 	  autoAssignEntityAt(targetIndex);
 	} else if (action->text() == UNASSIGNALLACTION) {
 	  unassignAllAttribute(targetIndex);
@@ -1911,10 +1945,16 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       }
     } else {
       QMenu menu;
-      QAction *action1 = new QAction(UNASSIGNALLACTION, this);
-      QAction *action2 = new QAction(MERGEATTRIBUTESACTION, this);
+      QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
+      QAction *action2 = new QAction(ASSIGNATTRIBUTEACTION, this);
+      QAction *action3 = new QAction(UNASSIGNATTRIBUTEACTION, this);
+      QAction *action4 = new QAction(UNASSIGNALLACTION, this);
+      QAction *action5 = new QAction(MERGEATTRIBUTESACTION, this);
       menu.addAction(action1);
       menu.addAction(action2);
+      menu.addAction(action3);
+      menu.addAction(action4);
+      menu.addAction(action5);
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT attribute FROM attributes_to_incidents "
 		     "WHERE attribute = :selected");
@@ -1922,11 +1962,36 @@ void AttributesWidget::treeContextMenu(const QPoint &pos) {
       query->exec();
       query->first();
       if (query->isNull(0)) {
-	action1->setEnabled(false);
+	action4->setEnabled(false);
+      }
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->exec("SELECT attributes_record FROM save_data");
+      query2->first();
+      int order = query2->value(0).toInt();
+      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = query2->value(0).toInt();
+      query2->prepare("SELECT attribute FROM attributes_to_incidents "
+		      "WHERE attribute = :attribute AND incident = :id");
+      query2->bindValue(":attribute", selected);
+      query2->bindValue(":id", id);
+      query2->exec();
+      query2->first();
+      if (query2->isNull(0)) {
+	action3->setEnabled(false);
       }
       delete query;
+      delete query2;
       if (QAction *action = menu.exec(globalPos)) {
-	if (action->text() == UNASSIGNALLACTION) {
+	if (action->text() == ADDATTRIBUTEACTION) {
+	  newAttribute();
+	} else if (action->text() == ASSIGNATTRIBUTEACTION) {
+	  assignAttribute();
+	} else if (action->text() == UNASSIGNATTRIBUTEACTION) {
+	  unassignAttribute();
+	} else if (action->text() == UNASSIGNALLACTION) {
 	  unassignAllAttribute(targetIndex);
 	} else if (action->text() == MERGEATTRIBUTESACTION) {
 	  mergeAttributes(targetIndex);

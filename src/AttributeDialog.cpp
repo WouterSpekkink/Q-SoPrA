@@ -148,7 +148,6 @@ void AttributeDialog::saveAndClose() {
     return;
   }
   exitStatus = 0;
-  qDebug() << "THIS";
   delete query;
   this->close();
 }

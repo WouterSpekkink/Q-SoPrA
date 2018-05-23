@@ -45,6 +45,7 @@
 #include "TextObject.h"
 #include "EllipseObject.h"
 #include "RectObject.h"
+#include "EventWidthDialog.h"
 
 class AttributesWidget;
 
@@ -182,6 +183,7 @@ private slots:
   void selectPredecessors();
   void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
+  void setEventWidth();
   void processArrowContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();

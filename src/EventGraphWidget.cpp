@@ -5594,6 +5594,8 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action) {
     selectPredecessors();
   } else if (action == COPYDESCRIPTIONTOTEXTACTION) {
     copyDescriptionToText();
+  } else if (action == SETWIDTHACTION) {
+    setEventWidth();
   }
 }
 
@@ -6716,6 +6718,25 @@ void EventGraphWidget::findDescendants(QColor descendant,
     }
   }
   delete query;
+}
+
+void EventGraphWidget::setEventWidth() {
+  if (scene->selectedItems().size() == 1) {
+    QPointer<EventWidthDialog> widthDialog = new EventWidthDialog(this, 10000);
+    widthDialog->exec();
+    if (widthDialog->getExitStatus() == 0) {
+      int newWidth = widthDialog->getWidth();
+      EventItem *event = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[0]);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(scene->selectedItems()[0]);
+      if (event) {
+	event->setWidth(newWidth);
+	event->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
+	event->getLabel()->setNewPos(event->scenePos());
+      } else if (macro) {
+	macro->setWidth(newWidth);
+      }
+    }
+  }
 }
 
 void EventGraphWidget::exportTransitionMatrix() {
