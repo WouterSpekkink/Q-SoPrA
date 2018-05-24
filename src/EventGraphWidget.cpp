@@ -6734,6 +6734,9 @@ void EventGraphWidget::setEventWidth() {
 	event->getLabel()->setNewPos(event->scenePos());
       } else if (macro) {
 	macro->setWidth(newWidth);
+	macro->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
+	macro->getLabel()->setNewPos(macro->scenePos());
+	
       }
     }
   }
