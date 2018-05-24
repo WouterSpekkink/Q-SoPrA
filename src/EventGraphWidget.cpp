@@ -4258,10 +4258,10 @@ void EventGraphWidget::seePlots() {
       textVector.push_back(newText);
       newText->setZValue(6);
       newText->setDefaultTextColor(color);
-      newText->setTextWidth(width);
       QFont font = newText->font();
       font.setPointSize(size);
       newText->setFont(font);
+      newText->setTextWidth(width);
       newText->setPos(xpos, ypos);
       newText->setRotationValue(rotation);
       scene->addItem(newText);
