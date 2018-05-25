@@ -5979,166 +5979,47 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
       incidentId.push_back(event->getId());
     }
   }
-  QVectorIterator<QString> lit(presentTypes);
-  while (lit.hasNext()) {
-    QString currentType = lit.next();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-    query->bindValue(":type", currentType);
-    query->exec();
-    query->first();
-    QString direction = query->value(0).toString();
-    QVectorIterator<EventItem*> dit(incidents);
-    QSet<int> markOne;
-    while (dit.hasNext()) {
-      EventItem *departure = dit.next();
-      // First we check the internal consistency;
-      if (constraint == PATHS) {
-	if (direction == PAST) {
-	  findHeadsLowerBound(&markOne, departure->getId(), incidents.first()->getOrder(),
-			      currentType);
-	} else if (direction == FUTURE) {
-	  findHeadsUpperBound(&markOne, departure->getId(), incidents.last()->getOrder(),
-			      currentType);
-	}
-      } else if (constraint == SEMIPATHS) {
-	QSet<int> items;
-	items.insert(departure->getId());
-	int lowerLimit = incidents.first()->getOrder();
-	int upperLimit = incidents.last()->getOrder();
-	findUndirectedPaths(&markOne, &items, lowerLimit, upperLimit, currentType);
-      }
-      QVectorIterator<EventItem*> cit(incidents);
-      while (cit.hasNext()) {
-	EventItem *current = cit.next();
-	bool found = false;
-	if (current != departure) {
-	  if (markOne.contains(current->getId())) {
-	    found = true;
+  QVector<bool> linkagePresence = checkLinkagePresence(incidentId);
+  for (QVector<QString>::size_type lit = 0; lit != presentTypes.size(); lit++) {
+    QString currentType = presentTypes[lit];
+    if (linkagePresence[lit] == true) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+      query->bindValue(":type", currentType);
+      query->exec();
+      query->first();
+      QString direction = query->value(0).toString();
+      QVectorIterator<EventItem*> dit(incidents);
+      QSet<int> markOne;
+      while (dit.hasNext()) {
+	EventItem *departure = dit.next();
+	// First we check the internal consistency;
+	if (constraint == PATHS) {
+	  if (direction == PAST) {
+	    findHeadsLowerBound(&markOne, departure->getId(), incidents.first()->getOrder(),
+				currentType);
+	  } else if (direction == FUTURE) {
+	    findHeadsUpperBound(&markOne, departure->getId(), incidents.last()->getOrder(),
+				currentType);
 	  }
-	  if (constraint == PATHS) {
-	    if (direction == PAST) {
-	      if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
-		QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		warningBox->addButton(QMessageBox::Ok);
-		warningBox->setIcon(QMessageBox::Warning);
-		warningBox->setText("<b>Constraints not met.</b>");
-		warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-					       "that were set for abstraction.");
-		warningBox->exec();
-		delete warningBox;
-		delete query;
-		QApplication::restoreOverrideCursor();
-		qApp->processEvents();
-		return false;
-	      }
-	    } else if (direction == FUTURE) {
-	      if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
-		QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		warningBox->addButton(QMessageBox::Ok);
-		warningBox->setIcon(QMessageBox::Warning);
-		warningBox->setText("<b>Constraints not met.</b>");
-		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					       "that were set for colligation.");
-		warningBox->exec();
-		delete warningBox;
-		delete query;
-		QApplication::restoreOverrideCursor();
-		qApp->processEvents();
-		return false;
-	      }
-	    }
-	  } else if (constraint == SEMIPATHS) {
-	    if (!found) {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<b>Constraints not met.</b>");
-	      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					     "that were set for colligation.");
-	      warningBox->exec();
-	      delete warningBox;
-	      delete query;
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      return false;
-	    }
-	  }
+	} else if (constraint == SEMIPATHS) {
+	  QSet<int> items;
+	  items.insert(departure->getId());
+	  int lowerLimit = incidents.first()->getOrder();
+	  int upperLimit = incidents.last()->getOrder();
+	  findUndirectedPaths(&markOne, &items, lowerLimit, upperLimit, currentType);
 	}
-      }
-      if (constraint == PATHS) {
-	// Then we check the external consistency.
-	query->prepare("SELECT tail FROM linkages "
-		       "WHERE head = :head AND type = :type AND coder = :coder");
-	query->bindValue(":head", departure->getId());
-	query->bindValue(":type", currentType);
-	query->bindValue(":coder", selectedCoder);
-	query->exec();
-	while (query->next()) {
-	  QSet<int> markTwo;
-	  int currentTail = query->value(0).toInt();
-	  if (!(incidentId.contains(currentTail))) {
-	    if (direction == PAST) {
-	      findHeadsLowerBound(&markTwo, currentTail, incidents.first()->getOrder(),
-				  currentType);
-	    } else if (direction ==  FUTURE) {
-	      findHeadsUpperBound(&markTwo, currentTail, incidents.last()->getOrder(),
-				  currentType);
+	QVectorIterator<EventItem*> cit(incidents);
+	while (cit.hasNext()) {
+	  EventItem *current = cit.next();
+	  bool found = false;
+	  if (current != departure) {
+	    if (markOne.contains(current->getId())) {
+	      found = true;
 	    }
-	    QVectorIterator<EventItem*> kit(incidents);
-	    while (kit.hasNext()) {
-	      EventItem *current = kit.next();
-	      bool found = false;
-	      if (markTwo.contains(current->getId())) {
-		found = true;
-	      }
-	      if (!found) {
-		QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		warningBox->addButton(QMessageBox::Ok);
-		warningBox->setIcon(QMessageBox::Warning);
-		warningBox->setText("<b>Constraints not met.</b>");
-		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-					       "that were set for colligation.");
-		warningBox->exec();
-		delete warningBox;
-		QApplication::restoreOverrideCursor();
-		qApp->processEvents();
-		delete query;
-		return false;
-	      }
-	    }
-	  }
-	}
-	query->prepare("SELECT head FROM linkages "
-		       "WHERE tail = :tail AND type = :type AND coder = :coder");
-	query->bindValue(":tail", departure->getId());
-	query->bindValue(":type", currentType);
-	query->bindValue(":coder", selectedCoder);
-	query->exec();
-	while (query->next()) {
-	  int currentHead = query->value(0).toInt();
-	  if (!(incidentId.contains(currentHead))) {
-	    QVectorIterator<EventItem*> lit(incidents);
-	    while (lit.hasNext()) {
-	      EventItem *current = lit.next();
-	      if (current != departure) {
-		QSet<int> markTwo;
-		QSqlQuery *query2 = new QSqlQuery;
-		query2->prepare("SELECT ch_order FROM incidents WHERE id = :currentHead");
-		query2->bindValue(":currentHead", currentHead);
-		query2->exec();
-		query2->first();
-		int headOrder = query2->value(0).toInt();
-		if (direction == PAST) {
-		  findHeadsLowerBound(&markTwo, current->getId(), headOrder, currentType);
-		} else if (direction == FUTURE) {
-		  findHeadsUpperBound(&markTwo, current->getId(), headOrder, currentType);
-		}
-		bool found = false;
-		if (markTwo.contains(currentHead)) {
-		  found = true;
-		}
-		if (!found) {
+	    if (constraint == PATHS) {
+	      if (direction == PAST) {
+		if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
 		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
 		  warningBox->addButton(QMessageBox::Ok);
 		  warningBox->setIcon(QMessageBox::Warning);
@@ -6152,17 +6033,167 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 		  qApp->processEvents();
 		  return false;
 		}
+	      } else if (direction == FUTURE) {
+		if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
+		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		  warningBox->addButton(QMessageBox::Ok);
+		  warningBox->setIcon(QMessageBox::Warning);
+		  warningBox->setText("<b>Constraints not met.</b>");
+		  warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+						 "that were set for colligation.");
+		  warningBox->exec();
+		  delete warningBox;
+		  delete query;
+		  QApplication::restoreOverrideCursor();
+		  qApp->processEvents();
+		  return false;
+		}
+	      }
+	    } else if (constraint == SEMIPATHS) {
+	      if (!found) {
+		QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		warningBox->addButton(QMessageBox::Ok);
+		warningBox->setIcon(QMessageBox::Warning);
+		warningBox->setText("<b>Constraints not met.</b>");
+		warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+					       "that were set for colligation.");
+		warningBox->exec();
+		delete warningBox;
+		delete query;
+		QApplication::restoreOverrideCursor();
+		qApp->processEvents();
+		return false;
+	      }
+	    }
+	  }
+	}
+	if (constraint == PATHS) {
+	  // Then we check the external consistency.
+	  query->prepare("SELECT tail FROM linkages "
+			 "WHERE head = :head AND type = :type AND coder = :coder");
+	  query->bindValue(":head", departure->getId());
+	  query->bindValue(":type", currentType);
+	  query->bindValue(":coder", selectedCoder);
+	  query->exec();
+	  while (query->next()) {
+	    QSet<int> markTwo;
+	    int currentTail = query->value(0).toInt();
+	    if (!(incidentId.contains(currentTail))) {
+	      if (direction == PAST) {
+		findHeadsLowerBound(&markTwo, currentTail, incidents.first()->getOrder(),
+				    currentType);
+	      } else if (direction ==  FUTURE) {
+		findHeadsUpperBound(&markTwo, currentTail, incidents.last()->getOrder(),
+				    currentType);
+	      }
+	      QVectorIterator<EventItem*> kit(incidents);
+	      while (kit.hasNext()) {
+		EventItem *current = kit.next();
+		bool found = false;
+		if (markTwo.contains(current->getId())) {
+		  found = true;
+		}
+		if (!found) {
+		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		  warningBox->addButton(QMessageBox::Ok);
+		  warningBox->setIcon(QMessageBox::Warning);
+		  warningBox->setText("<b>Constraints not met.</b>");
+		  warningBox->setInformativeText("Colligating these incidents breaks the constraints "
+						 "that were set for colligation.");
+		  warningBox->exec();
+		  delete warningBox;
+		  QApplication::restoreOverrideCursor();
+		  qApp->processEvents();
+		  delete query;
+		  return false;
+		}
+	      }
+	    }
+	  }
+	  query->prepare("SELECT head FROM linkages "
+			 "WHERE tail = :tail AND type = :type AND coder = :coder");
+	  query->bindValue(":tail", departure->getId());
+	  query->bindValue(":type", currentType);
+	  query->bindValue(":coder", selectedCoder);
+	  query->exec();
+	  while (query->next()) {
+	    int currentHead = query->value(0).toInt();
+	    if (!(incidentId.contains(currentHead))) {
+	      QVectorIterator<EventItem*> lit(incidents);
+	      while (lit.hasNext()) {
+		EventItem *current = lit.next();
+		if (current != departure) {
+		  QSet<int> markTwo;
+		  QSqlQuery *query2 = new QSqlQuery;
+		  query2->prepare("SELECT ch_order FROM incidents WHERE id = :currentHead");
+		  query2->bindValue(":currentHead", currentHead);
+		  query2->exec();
+		  query2->first();
+		  int headOrder = query2->value(0).toInt();
+		  if (direction == PAST) {
+		    findHeadsLowerBound(&markTwo, current->getId(), headOrder, currentType);
+		  } else if (direction == FUTURE) {
+		    findHeadsUpperBound(&markTwo, current->getId(), headOrder, currentType);
+		  }
+		  bool found = false;
+		  if (markTwo.contains(currentHead)) {
+		    found = true;
+		  }
+		  if (!found) {
+		    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		    warningBox->addButton(QMessageBox::Ok);
+		    warningBox->setIcon(QMessageBox::Warning);
+		    warningBox->setText("<b>Constraints not met.</b>");
+		    warningBox->setInformativeText("Abstracting these incidents breaks the "
+						   "constraints that were set for abstraction.");
+		    warningBox->exec();
+		    delete warningBox;
+		    delete query;
+		    QApplication::restoreOverrideCursor();
+		    qApp->processEvents();
+		    return false;
+		  }
+		}
 	      }
 	    }
 	  }
 	}
       }
+      delete query;
     }
-    delete query;
   }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   return true;
+}
+
+QVector<bool> EventGraphWidget::checkLinkagePresence(QVector<int> incidentIds) {
+  QVector<bool> result;
+  QVectorIterator<QString> it(presentTypes);
+  while (it.hasNext()) {
+    QString currentType = it.next();
+    QVector<int> observed;
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT tail, head FROM linkages "
+		   "WHERE type = :type");
+    query->bindValue(":type", currentType);
+    query->exec();
+    while (query->next()) {
+      observed.push_back(query->value(0).toInt());
+      observed.push_back(query->value(1).toInt());
+    }
+    delete query;
+    QVectorIterator<int> it2(observed);
+    bool status = false;
+    while (it2.hasNext()) {
+      int currentObserved = it2.next();
+      if (incidentIds.contains(currentObserved)) {
+	status = true;
+      }
+    }
+    result.push_back(status);
+  }
+  return(result);
 }
 
 void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents) {
