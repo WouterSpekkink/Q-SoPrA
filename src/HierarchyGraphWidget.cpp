@@ -70,16 +70,21 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   eventListWidget->setStyleSheet("QTableView {gridline-color: black}");
   eventListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 
+  linkageListWidget = new DeselectableListWidget(legendWidget);
+  linkageListWidget->setColumnCount(2);
+  linkageListWidget->horizontalHeader()->hide();
+  linkageListWidget->verticalHeader()->hide();
+  linkageListWidget->setColumnWidth(1, 20);
+  linkageListWidget->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+  linkageListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  linkageListWidget->setStyleSheet("QTableView {gridline-color: black}");
+  linkageListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  
   exportSvgButton = new QPushButton(tr("Export svg"), this);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
   toggleDetailsButton->setCheckable(true);
   toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   toggleLegendButton->setCheckable(true);
-  toggleHierarchyButton = new QPushButton(tr("Toggle hierarchy"), this);
-  toggleHierarchyButton->setCheckable(true);
-  toggleHierarchyButton->setChecked(true);
-  toggleLinkagesButton = new QPushButton(tr("Toggle linkages"), this);
-  toggleLinkagesButton->setCheckable(true);
   assignAttributeButton = new QPushButton(tr("Assign attribute"), attWidget);
   unassignAttributeButton = new QPushButton(tr("Unassign attribute"), attWidget);
   addAttributeButton = new QPushButton(tr("New attribute"), attWidget);
@@ -103,6 +108,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
   moveModeDownButton->setEnabled(false);
   restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  hideLinkageTypeButton = new QPushButton(tr("Hide"), legendWidget);
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton = new QPushButton(tr("Show"), legendWidget);
+  showLinkageTypeButton->setEnabled(false);
   
   rawField->viewport()->installEventFilter(infoWidget);
   view->viewport()->installEventFilter(this);
@@ -111,8 +120,6 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
-  connect(toggleHierarchyButton, SIGNAL(clicked()), this, SLOT(toggleHierarchy()));
-  connect(toggleLinkagesButton, SIGNAL(clicked()), this, SLOT(toggleLinkages()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
@@ -144,6 +151,14 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(noneSelected()),
 	  this, SLOT(disableModeButtons()));
+  connect(linkageListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
+	  this, SLOT(setLinkageButtons(QTableWidgetItem *)));
+  connect(linkageListWidget, SIGNAL(noneSelected()),
+	  this, SLOT(disableLinkageButtons()));
+  connect(linkageListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
+	  this, SLOT(changeLinkageColor(QTableWidgetItem *)));
+  connect(hideLinkageTypeButton, SIGNAL(clicked()), this, SLOT(hideLinkage()));
+  connect(showLinkageTypeButton, SIGNAL(clicked()), this, SLOT(showLinkage()));
   connect(scene, SIGNAL(LineContextMenuAction(const QString &)),
 	  this, SLOT(processLineContextMenu(const QString &)));
   connect(scene, SIGNAL(TextContextMenuAction(const QString &)),
@@ -240,6 +255,9 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
+  legendLayout->addWidget(linkageListWidget);
+  legendLayout->addWidget(hideLinkageTypeButton);
+  legendLayout->addWidget(showLinkageTypeButton);
   legendWidget->setMinimumWidth(250);
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
@@ -254,8 +272,6 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
   drawOptionsRightLayout->addWidget(exportSvgButton);
-  drawOptionsRightLayout->addWidget(toggleHierarchyButton);
-  drawOptionsRightLayout->addWidget(toggleLinkagesButton);
   drawOptionsRightLayout->addWidget(exitButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);
@@ -618,6 +634,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newArrow->setStartItem(newMacro);
       newArrow->setEndItem(newOrigin);
       newArrow->setCopy(true);
+      newArrow->setColor(QColor(Qt::gray));
       scene->addItem(newArrow);
       partners.push_back(macro);
     }
@@ -680,6 +697,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
       newArrow->setStartItem(newEvent);
       newArrow->setEndItem(newOrigin);
       newArrow->setCopy(true);
+      newArrow->setColor(QColor(Qt::gray));
       scene->addItem(newArrow);
       partners.push_back(event);
     }
@@ -802,6 +820,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	newArrow->setStartItem(newMacro);
 	newArrow->setEndItem(partLayer[it]);
 	newArrow->setCopy(true);
+	newArrow->setColor(QColor(Qt::gray));
 	scene->addItem(newArrow);
       }
     }
@@ -876,6 +895,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  newArrow->setStartItem(newEvent);
 	  newArrow->setEndItem(partLayer[it]);
 	  newArrow->setCopy(true);
+	  newArrow->setColor(QColor(Qt::gray));
 	  scene->addItem(newArrow);
 	}
       }
@@ -961,9 +981,16 @@ void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
 
   
 void HierarchyGraphWidget::getEdges() {
+  QVector<QColor> typeColors;
   QVectorIterator<Arrow*> it(edgeVector);
   while (it.hasNext()) {
     Arrow *arrow = it.next();
+    QString originalType = arrow->getType();
+    QColor originalColor = arrow->getColor();
+    if (!presentTypes.contains(originalType)) {
+      presentTypes.push_back(originalType);
+      typeColors.push_back(originalColor);
+    }
     QGraphicsItem *source = NULL;
     QGraphicsItem *target = NULL;
     EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
@@ -1020,17 +1047,58 @@ void HierarchyGraphWidget::getEdges() {
 	}
       }
       if (valid) {
-	Arrow *newArrow = new Arrow("Linkages", "", 0);
+	Arrow *newArrow = new Arrow(originalType, "", 0);
 	newArrow->setZValue(2);
 	newArrow->setStartItem(source);
 	newArrow->setEndItem(target);
-	newArrow->setColor(QColor(169, 169, 169, 255));
+	newArrow->setColor(originalColor);
 	newArrow->setCopy(true);
 	scene->addItem(newArrow);
 	newArrow->hide();
+	newArrow->setMassHidden(true);
       }
     }
   }
+  QTableWidgetItem *item = new QTableWidgetItem("Hierarchy");
+  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+  QString toolTip = breakString("Hierarchical - indicates inclusion of events "
+				"in more abstract events.");
+  item->setToolTip(toolTip);
+  item->setData(Qt::DisplayRole, "Hierarchy");
+  linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+  linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+  linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+  linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(QColor(Qt::gray));
+  linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+    setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
+	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  for (QVector<QString>::size_type it2 = 0; it2 != presentTypes.size(); it2++) {
+    QString currentType = presentTypes[it2];
+    QColor currentColor = typeColors[it2];
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT description, direction FROM linkage_types "
+		 "WHERE name = :name");
+    query->bindValue(":name", currentType);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    QString direction = query->value(1).toString();
+    delete query;
+    QTableWidgetItem *item = new QTableWidgetItem(currentType);
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    QString toolTip = breakString(currentType + " (" + direction + ") - " + description);
+    item->setToolTip(toolTip);
+    item->setData(Qt::DisplayRole, currentType);
+    linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+    linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+    linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+    linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+    linkageListWidget->item(linkageListWidget->rowCount() - 1, 0)->setBackground(QColor(Qt::gray));
+    linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+      setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
+	       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  }
+  updateLinkages();
 }
 
 void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
@@ -1385,6 +1453,156 @@ void HierarchyGraphWidget::findChildren(QString father, QVector<QString> *childr
     findChildren(currentChild, children, entity);
   }
   delete query;
+}
+
+void HierarchyGraphWidget::setLinkageButtons(QTableWidgetItem *item) {
+  QString text = item->data(Qt::DisplayRole).toString();
+  if (text != "") {
+    QListIterator<QGraphicsItem*> it(scene->items());
+    while (it.hasNext()) {
+      QGraphicsItem *currentItem = it.next();
+      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+      if (current) {
+	if (current->getType() == text) {
+	  if (current->isMassHidden()) {
+	    hideLinkageTypeButton->setEnabled(false);
+	    showLinkageTypeButton->setEnabled(true);
+	  } else {
+	    hideLinkageTypeButton->setEnabled(true);
+	    showLinkageTypeButton->setEnabled(false);
+	  }
+	  break;
+	}
+      }
+    }
+  } else {
+    hideLinkageTypeButton->setEnabled(false);
+    showLinkageTypeButton->setEnabled(false);
+  }
+}
+
+void HierarchyGraphWidget::changeLinkageColor(QTableWidgetItem *item) {
+  if (item->column() == 1) {
+    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+    colorDialog->setCurrentColor(item->background().color());
+    if (colorDialog->exec()) {
+      QColor color = colorDialog->selectedColor();
+      item->setBackground(color);
+      QTableWidgetItem* neighbour = linkageListWidget->item(item->row(), 0);
+      QString type = neighbour->data(Qt::DisplayRole).toString();
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *currentItem = it.next();
+	Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+	if (current) {
+	  if (current->getType() == type) {
+	    current->setColor(color);
+	  }
+	}
+      }
+    }
+  }
+}
+
+void HierarchyGraphWidget::disableLinkageButtons() {
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton->setEnabled(false);
+}
+
+void HierarchyGraphWidget::hideLinkage() {
+  showLinkageTypeButton->setEnabled(true);
+  hideLinkageTypeButton->setEnabled(false);
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  linkageListWidget->currentItem()->setBackground(Qt::gray);
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *currentItem = it.next();
+    Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+    if (current) {
+      if (current->getType() == text) {
+	current->setMassHidden(true);
+	current->hide();
+      }
+    }
+  }
+  setHeights();
+}
+
+void HierarchyGraphWidget::showLinkage() {
+  showLinkageTypeButton->setEnabled(false);
+  hideLinkageTypeButton->setEnabled(true);
+  QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  linkageListWidget->currentItem()->setBackground(Qt::transparent);
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *currentItem = it.next();
+    Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+    if (current) {
+      if (current->getType() == text) {
+	current->setMassHidden(false);
+	current->show();
+      }
+    }
+  }
+  setHeights();
+}
+
+void HierarchyGraphWidget::updateLinkages() {
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
+    if (arrow) {
+      arrow->updatePosition();
+    }
+  }
+}
+
+void HierarchyGraphWidget::setHeights() {
+  QVector<QString> finished;
+  QVectorIterator<QString> it(presentTypes);
+  it.toBack();
+  while (it.hasPrevious()) {
+    QString currentType = it.previous();
+    QVectorIterator<Arrow*> it2(edgeVector);
+    while (it2.hasNext()) {
+      Arrow *currentArrow = it2.next();
+      if (currentArrow->isVisible()) {
+	if (currentArrow->getType() == currentType) {
+	  QGraphicsItem *start = currentArrow->startItem();
+	  QGraphicsItem *end = currentArrow->endItem();
+	  int countFound = 0;
+	  bool found = false;
+	  QVectorIterator<Arrow*> it3(edgeVector);
+	  while (it3.hasNext()) {
+	    Arrow *otherArrow = it3.next();
+	    if (otherArrow->isVisible()) {
+	      if (otherArrow != currentArrow) {
+		if (otherArrow->startItem() == start &&
+		    otherArrow->endItem() == end) {
+		  found = true;
+		  if (!finished.contains(otherArrow->getType())) {
+		    countFound++;
+		  }
+		} else if (otherArrow->startItem() == end && otherArrow->endItem() == start) {
+		  found = true;
+		}
+	      }
+	    }
+	  }
+	  if (countFound > 0) {
+	    currentArrow->setHeight((countFound + 1) * 40);
+	  } else if (found) {
+	    currentArrow->setHeight(1 * 40);
+	  } else {
+	    currentArrow->setHeight(0);
+	  }
+	}
+      }
+      finished.push_back(currentType);
+    }
+  }
 }
 
 void HierarchyGraphWidget::processHierarchyGraphContextMenu(const QString &action, const QPoint &pos) {
@@ -1783,52 +2001,6 @@ void HierarchyGraphWidget::duplicateRect() {
       pos.setY(pos.y() - 100);
       pos.setX(pos.x() - 100);
       newRect->moveCenter(newRect->mapFromScene(pos));
-    }
-  }
-}
-
-void HierarchyGraphWidget::toggleLinkages() {
-  showLinkages = !showLinkages;
-  if (showLinkages) {
-    QListIterator<QGraphicsItem*> it(scene->items());
-    while (it.hasNext()) {
-      QGraphicsItem *item = it.next();
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
-      if (arrow && arrow->getType() == "Linkages") {
-	arrow->show();
-      }
-    }
-  } else {
-    QListIterator<QGraphicsItem*> it(scene->items());
-    while (it.hasNext()) {
-      QGraphicsItem *item = it.next();
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
-      if (arrow && arrow->getType() == "Linkages") {
-	arrow->hide();
-      }
-    }
-  }
-}
-
-void HierarchyGraphWidget::toggleHierarchy() {
-  showHierarchy = !showHierarchy;
-  if (showHierarchy) {
-    QListIterator<QGraphicsItem*> it(scene->items());
-    while (it.hasNext()) {
-      QGraphicsItem *item = it.next();
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
-      if (arrow && arrow->getType() == "Hierarchy") {
-	arrow->show();
-      }
-    }
-  } else {
-    QListIterator<QGraphicsItem*> it(scene->items());
-    while (it.hasNext()) {
-      QGraphicsItem *item = it.next();
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(item);
-      if (arrow && arrow->getType() == "Hierarchy") {
-	arrow->hide();
-      }
     }
   }
 }
@@ -2900,6 +3072,8 @@ void HierarchyGraphWidget::cleanUp() {
   rectVector.clear();
   retrieveData();
   eventListWidget->setRowCount(0);
+  linkageListWidget->setRowCount(0);
+  presentTypes.clear();
 }
 
 void HierarchyGraphWidget::switchBack() {

@@ -91,9 +91,7 @@ private slots:
   void highlightText();
   void removeText();
   void resetTexts();
-  void toggleLinkages();
-  void toggleHierarchy();
-
+  
   void processHierarchyGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
@@ -120,6 +118,14 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
+
+  void setLinkageButtons(QTableWidgetItem *item);
+  void changeLinkageColor(QTableWidgetItem *item);
+  void hideLinkage();
+  void showLinkage();
+  void disableLinkageButtons();
+  void updateLinkages();
+  void setHeights();
   
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
@@ -190,20 +196,22 @@ private:
   QPointer<QPushButton> resetTextsButton;
   QPointer<QPushButton> exitButton;
   QPointer<QPushButton> exportSvgButton;
-  QPointer<QPushButton> toggleLinkagesButton;
-  QPointer<QPushButton> toggleHierarchyButton;
   QPointer<QPushButton> colorByAttributeButton;
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> restoreModeColorsButton;
   QPointer<QPushButton> moveModeUpButton;
   QPointer<QPushButton> moveModeDownButton;
+  QPointer<QPushButton> hideLinkageTypeButton;
+  QPointer<QPushButton> showLinkageTypeButton;
 
   QPointer<DeselectableListWidget> eventListWidget;
+  QPointer<DeselectableListWidget> linkageListWidget;
   
   MacroEvent *origin;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
   QVector<Arrow*> edgeVector;
+  QVector<QString> presentTypes;
   
   MacroEvent *selectedMacro;
   int selectedIncident;

@@ -4698,7 +4698,6 @@ void EventGraphWidget::disableLinkageButtons() {
   removeLinkageTypeButton->setEnabled(false);
 }
 
-
 void EventGraphWidget::restoreModeColors() {
   for (int i = 0; i != eventListWidget->rowCount(); i++) {
     QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -5990,8 +5989,8 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
       query->first();
       QString direction = query->value(0).toString();
       QVectorIterator<EventItem*> dit(incidents);
-      QSet<int> markOne;
       while (dit.hasNext()) {
+	QSet<int> markOne;
 	EventItem *departure = dit.next();
 	// First we check the internal consistency;
 	if (constraint == PATHS) {
@@ -6019,7 +6018,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 	    }
 	    if (constraint == PATHS) {
 	      if (direction == PAST) {
-		if (!found && current->getOriginalPos().x() < departure->getOriginalPos().x()) {
+		if (!found && current->getOrder() < departure->getOrder()) {
 		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
 		  warningBox->addButton(QMessageBox::Ok);
 		  warningBox->setIcon(QMessageBox::Warning);
@@ -6034,7 +6033,7 @@ bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString c
 		  return false;
 		}
 	      } else if (direction == FUTURE) {
-		if (!found && current->getOriginalPos().x() > departure->getOriginalPos().x()) {
+		if (!found && current->getOrder() > departure->getOrder()) {
 		  QPointer <QMessageBox> warningBox = new QMessageBox(this);
 		  warningBox->addButton(QMessageBox::Ok);
 		  warningBox->setIcon(QMessageBox::Warning);
@@ -6200,6 +6199,12 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
   QVectorIterator<QString> lit(presentTypes);
   while (lit.hasNext()) {
     QString currentType = lit.next();
+    QColor edgeColor = QColor(Qt::gray);
+    for (int i = 0; i < linkageListWidget->rowCount(); i++) {
+      if (linkageListWidget->item(i, 0)->data(Qt::DisplayRole) == currentType) {
+        edgeColor = linkageListWidget->item(i, 1)->background().color();
+      }
+    }    
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
     query->bindValue(":type", currentType);
@@ -6273,6 +6278,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 		newEdge->setZValue(2);
 		newEdge->setStartItem(tempSource);
 		newEdge->setEndItem(tempTarget);
+		newEdge->setColor(edgeColor);
 		edgeVector.push_back(newEdge);
 		scene->addItem(newEdge);
 	      }
@@ -6335,6 +6341,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> inc
 		newEdge->setZValue(2);
 		newEdge->setStartItem(tempSource);
 		newEdge->setEndItem(tempTarget);
+		newEdge->setColor(edgeColor);
 		edgeVector.push_back(newEdge);
 		scene->addItem(newEdge);
 	      }
@@ -7285,9 +7292,18 @@ void EventGraphWidget::addLinkage() {
       relationshipChooser->exec();
       if (relationshipChooser->getExitStatus() == 0) {
 	type = relationshipChooser->getSelection();
+      } else {
+	delete relationshipChooser;
+	return;
       }
       delete relationshipChooser;
     }
+    QColor edgeColor = QColor(Qt::gray);
+    for (int i = 0; i < linkageListWidget->rowCount(); i++) {
+      if (linkageListWidget->item(i, 0)->data(Qt::DisplayRole) == type) {
+        edgeColor = linkageListWidget->item(i, 1)->background().color();
+      }
+    }    
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
     query->bindValue(":type", type);
@@ -7296,67 +7312,99 @@ void EventGraphWidget::addLinkage() {
     QString direction = query->value(0).toString();
     int idOne = eventOne->getId();
     int idTwo = eventTwo->getId();
-    query->prepare("INSERT INTO linkages (tail, head, type, coder) "
-		   "VALUES (:tail, :head, :type, :coder)");
-    if (eventOne->getOrder() < eventTwo->getOrder()) {
-      if (direction == PAST) {
-	query->bindValue(":tail", idTwo);
-	query->bindValue(":head", idOne);
-	query->bindValue(":type", type);
-	query->bindValue(":coder", selectedCoder);
-	query->exec();      
-	Arrow *newArrow = new Arrow(type, selectedCoder);
-	newArrow->setZValue(2);
-	newArrow->setStartItem(eventTwo);
-	newArrow->setEndItem(eventOne);
-	edgeVector.push_back(newArrow);
-	scene->addItem(newArrow);
-      } else if (direction == FUTURE) {
-	query->bindValue(":tail", idOne);
-	query->bindValue(":head", idTwo);
-	query->bindValue(":type", type);
-	query->bindValue(":coder", selectedCoder);
-	query->exec();      
-	Arrow *newArrow = new Arrow(type, selectedCoder);
-	newArrow->setZValue(2);
-	newArrow->setStartItem(eventOne);
-	newArrow->setEndItem(eventTwo);
-	QString toolTip = "no comment";
-	newArrow->setToolTip(toolTip);
-	edgeVector.push_back(newArrow);
-	scene->addItem(newArrow);
-      }
-    } else {
-      if (direction == PAST) {
-	query->bindValue(":tail", idOne);
-	query->bindValue(":head", idTwo);
-	query->bindValue(":type", type);
-	query->bindValue(":coder", selectedCoder);
-	query->exec();      
-	Arrow *newArrow = new Arrow(type, selectedCoder);
-	newArrow->setZValue(2);
-	newArrow->setStartItem(eventOne);
-	newArrow->setEndItem(eventTwo);
-	edgeVector.push_back(newArrow);
-	scene->addItem(newArrow);
-      } else if (direction == FUTURE) {
-	query->bindValue(":tail", idTwo);
-	query->bindValue(":head", idOne);
-	query->bindValue(":type", type);
-	query->bindValue(":coder", selectedCoder);
-	query->exec();      
-	Arrow *newArrow = new Arrow(type, selectedCoder);
-	newArrow->setZValue(2);
-	newArrow->setStartItem(eventTwo);
-	newArrow->setEndItem(eventOne);
-	QString toolTip = "no comment";
-	newArrow->setToolTip(toolTip);
-	edgeVector.push_back(newArrow);
-	scene->addItem(newArrow);
+    bool found = false;
+    query->prepare("SELECT tail, head FROM linkages "
+		   "WHERE type = :type AND coder = :coder AND tail = :tail AND head = :head");
+    query->bindValue(":type", type);
+    query->bindValue(":coder", selectedCoder);
+    query->bindValue(":tail", idOne);
+    query->bindValue(":head", idTwo);
+    query->exec();
+    query->first();
+    if (!query->isNull(0)) {
+      found = true;
+    }
+    query->prepare("SELECT tail, head FROM linkages "
+		   "WHERE type = :type AND coder = :coder AND tail = :tail AND head = :head");
+    query->bindValue(":type", type);
+    query->bindValue(":coder", selectedCoder);
+    query->bindValue(":tail", idTwo);
+    query->bindValue(":head", idOne);
+    query->exec();
+    query->first();
+    if (!query->isNull(0)) {
+      found = true;
+    }
+    if (!found) {
+      query->prepare("INSERT INTO linkages (tail, head, type, coder) "
+		     "VALUES (:tail, :head, :type, :coder)");
+      if (eventOne->getOrder() < eventTwo->getOrder()) {
+	if (direction == PAST) {
+	  query->bindValue(":tail", idTwo);
+	  query->bindValue(":head", idOne);
+	  query->bindValue(":type", type);
+	  query->bindValue(":coder", selectedCoder);
+	  query->exec();      
+	  Arrow *newArrow = new Arrow(type, selectedCoder);
+	  newArrow->setZValue(2);
+	  newArrow->setStartItem(eventTwo);
+	  newArrow->setEndItem(eventOne);
+	  QString toolTip = "no comment";
+	  newArrow->setColor(edgeColor);
+	  edgeVector.push_back(newArrow);
+	  scene->addItem(newArrow);
+	} else if (direction == FUTURE) {
+	  query->bindValue(":tail", idOne);
+	  query->bindValue(":head", idTwo);
+	  query->bindValue(":type", type);
+	  query->bindValue(":coder", selectedCoder);
+	  query->exec();      
+	  Arrow *newArrow = new Arrow(type, selectedCoder);
+	  newArrow->setZValue(2);
+	  newArrow->setStartItem(eventOne);
+	  newArrow->setEndItem(eventTwo);
+	  QString toolTip = "no comment";
+	  newArrow->setToolTip(toolTip);
+	  newArrow->setColor(edgeColor);
+	  edgeVector.push_back(newArrow);
+	  scene->addItem(newArrow);
+	}
+      } else {
+	if (direction == PAST) {
+	  query->bindValue(":tail", idOne);
+	  query->bindValue(":head", idTwo);
+	  query->bindValue(":type", type);
+	  query->bindValue(":coder", selectedCoder);
+	  query->exec();      
+	  Arrow *newArrow = new Arrow(type, selectedCoder);
+	  newArrow->setZValue(2);
+	  newArrow->setStartItem(eventOne);
+	  newArrow->setEndItem(eventTwo);
+	  QString toolTip = "no comment";
+	  newArrow->setColor(edgeColor);
+	  edgeVector.push_back(newArrow);
+	  scene->addItem(newArrow);
+	} else if (direction == FUTURE) {
+	  query->bindValue(":tail", idTwo);
+	  query->bindValue(":head", idOne);
+	  query->bindValue(":type", type);
+	  query->bindValue(":coder", selectedCoder);
+	  query->exec();      
+	  Arrow *newArrow = new Arrow(type, selectedCoder);
+	  newArrow->setZValue(2);
+	  newArrow->setStartItem(eventTwo);
+	  newArrow->setEndItem(eventOne);
+	  QString toolTip = "no comment";
+	  newArrow->setColor(edgeColor);
+	  newArrow->setToolTip(toolTip);
+	  edgeVector.push_back(newArrow);
+	  scene->addItem(newArrow);
+	}
       }
     }
     delete query;
   }
+  setHeights();
   updateLinkages();
 }
 
@@ -7547,6 +7595,7 @@ void EventGraphWidget::removeNormalLinkage() {
       }
     }
   }
+  setHeights();
 }
 
 void EventGraphWidget::changeLinkageComment() {
