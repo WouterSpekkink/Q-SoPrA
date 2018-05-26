@@ -2945,8 +2945,10 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
       if (tempSource != NULL && tempTarget != NULL) {
 	bool sameFound = false;
 	QVectorIterator<Arrow*> it2(edgeVector);
+	QColor edgeColor = QColor(Qt::gray);
 	while (it2.hasNext()) {
 	  Arrow *currentEdge = it2.next();
+	  edgeColor = currentEdge->getColor();
 	  EventItem *tempS = qgraphicsitem_cast<EventItem*>(currentEdge->startItem());
 	  EventItem *tempT = qgraphicsitem_cast<EventItem*>(currentEdge->endItem());
 	  if (tempSource == tempS && tempTarget == tempT) {
@@ -2960,6 +2962,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 	  compareEdge->setStartItem(tempSource);
 	  compareEdge->setEndItem(tempTarget);
 	  compareEdge->setPenStyle(4);
+	  compareEdge->setColor(edgeColor);
 	  compareVector.push_back(compareEdge);
 	  compareEdge->setToolTip(toolTip);
 	}
@@ -2972,8 +2975,6 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type) {
 }
 
 void EventGraphWidget::plotCompareEdges() {
-
-  // SHOULD REDO THIS.
   QVectorIterator<Arrow*> it(compareVector);
   while (it.hasNext()) {
     Arrow *currentEdge = it.next();
@@ -4466,6 +4467,13 @@ void EventGraphWidget::updateLinkages() {
   while (it.hasNext()) {
     Arrow *current = it.next();
     current->updatePosition();
+  }
+  if (compareVector.size() > 0) {
+    QVectorIterator<Arrow*> it2(compareVector);
+    while (it2.hasNext()) {
+      Arrow *current = it2.next();
+      current->updatePosition();
+    }
   }
 }
 
