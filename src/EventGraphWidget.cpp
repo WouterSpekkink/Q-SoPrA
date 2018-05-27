@@ -4366,6 +4366,7 @@ void EventGraphWidget::seePlots() {
     changeLabel->setText("");
     scene->update();
     setRangeControls();
+    updateLinkages();
     checkCongruency();
     setVisibility();
     delete query;
@@ -8206,6 +8207,7 @@ void EventGraphWidget::duplicateText() {
 	newText->setRotationValue(text->getRotationValue());
 	newText->setFont(text->font());
 	newText->adjustSize();
+	newText->setTextWidth(newText->textWidth() + 50);
       }
       delete textDialog;
     }
