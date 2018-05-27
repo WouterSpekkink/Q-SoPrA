@@ -4,7 +4,6 @@ TextObject::TextObject(const QString &text,
 		       QGraphicsTextItem *parent)
   : QGraphicsTextItem(parent) {
   setPlainText(text);
-  setFlag(QGraphicsTextItem::ItemIsMovable, true);
   setFlag(QGraphicsTextItem::ItemIsSelectable, true);
   rotation = 0;
   setAcceptHoverEvents(true);
@@ -36,6 +35,10 @@ QPointF TextObject::getCenter() {
 
 int TextObject::type() const {
   return Type;
+}
+
+void TextObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
 void TextObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {

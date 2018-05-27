@@ -18,6 +18,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   manipulateRect = false;
   moveRect = false;
   rotateRect = false;
+  moveText = false;
   rotateText = false;
   hierarchyMove = false;
 }
@@ -479,8 +480,11 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
       selectedRect = rect;
       manipulateRect = true;
     } else if (text) {
-      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-      qApp->processEvents();
+      clearSelection();
+      text->setSelected(true);
+      selectedText = text;
+      lastMousePos = event->scenePos();
+      moveText = true;
     }
     selectedEvent = NULL;
     selectedMacro = NULL;
@@ -504,6 +508,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   rotateRect = false;
   rotateText = false;
   hierarchyMove = false;
+  moveText = false;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
@@ -764,6 +769,13 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     qreal angle = atan2(dY, dX);
     angle = qRadiansToDegrees(angle);
     selectedRect->setRotationValue(angle);
+    emit relevantChange();
+  } else if (moveText) {
+    QPointF newPos = event->scenePos();
+    qreal newXDiff = newPos.x() - lastMousePos.x();
+    qreal newYDiff = newPos.y() - lastMousePos.y();
+    selectedText->setPos(selectedText->scenePos() + QPointF(newXDiff, newYDiff));
+    lastMousePos = event->scenePos();
     emit relevantChange();
   } else if (rotateText) {
     lastMousePos = event->scenePos();

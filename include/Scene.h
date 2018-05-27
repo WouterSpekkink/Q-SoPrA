@@ -60,6 +60,7 @@ protected:
   bool rotateEllipse;
   bool moveRect;
   bool rotateRect;
+  bool moveText;
   bool rotateText;
   bool hierarchyMove;
   QPointF lastMousePos;

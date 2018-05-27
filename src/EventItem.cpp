@@ -19,7 +19,6 @@ EventItem::EventItem(int subWidth,
   width = subWidth;
   setToolTip(toolTip);
   originalPos = originalPosition;
-
   mode = "";
   selectionColor = QColor(Qt::black);
   id = subId;
@@ -167,6 +166,7 @@ void EventItem::setDislodged(bool state) {
 
 void EventItem::setWidth(int newWidth) {
   width = newWidth;
+  update();
 }
 
 int EventItem::getWidth() const {

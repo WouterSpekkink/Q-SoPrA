@@ -170,6 +170,7 @@ void MacroEvent::setDislodged(bool state) {
 
 void MacroEvent::setWidth(int newWidth) {
   width = newWidth;
+  update();
 }
 
 int MacroEvent::getWidth() const {
