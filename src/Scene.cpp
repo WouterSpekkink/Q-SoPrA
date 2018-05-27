@@ -771,11 +771,13 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     selectedRect->setRotationValue(angle);
     emit relevantChange();
   } else if (moveText) {
+    selectedText->resetTransform();
     QPointF newPos = event->scenePos();
     qreal newXDiff = newPos.x() - lastMousePos.x();
     qreal newYDiff = newPos.y() - lastMousePos.y();
     selectedText->setPos(selectedText->scenePos() + QPointF(newXDiff, newYDiff));
     lastMousePos = event->scenePos();
+    selectedText->setRotationValue(selectedText->getRotationValue());
     emit relevantChange();
   } else if (rotateText) {
     lastMousePos = event->scenePos();
