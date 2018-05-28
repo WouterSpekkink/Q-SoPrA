@@ -5564,10 +5564,10 @@ void EventGraphWidget::exportEdges() {
 	    target = "p" + QString::number(macroEnd->getOrder());
 	  } else if (macroEnd->getConstraint() == SEMIPATHS ||
 		     macroEnd->getConstraint() == SEMIPATHSATT) {
-	    target = "s" + QString::number(macroEnd->getId());
+	    target = "s" + QString::number(macroEnd->getOrder());
 	  } else if (macroEnd->getConstraint() == NOCONSTRAINT ||
 		     macroEnd->getConstraint() == NOCONSTRAINTATT) {
-	    target = "n" + QString::number(macroEnd->getId());
+	    target = "n" + QString::number(macroEnd->getOrder());
 	  }
 	} else if (macroStart && eventEnd) {
 	  if (macroStart->getConstraint() == PATHS) {
