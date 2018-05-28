@@ -5481,7 +5481,7 @@ void EventGraphWidget::exportNodes() {
 	type = "No constraint";
 
       }
-      QString id = identifier + QString::number(macro->getId());
+      QString id = identifier + QString::number(macro->getOrder());
       ids.push_back(id);
       labels.push_back(label);
       descriptions.push_back(description);
