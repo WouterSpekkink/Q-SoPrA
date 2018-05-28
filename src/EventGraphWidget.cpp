@@ -22,7 +22,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
-  view->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
+  scene->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
   view->setRenderHint(QPainter::Antialiasing);
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
   
@@ -3024,9 +3024,17 @@ void EventGraphWidget::saveCurrentPlot() {
     }
     if (!empty) {
       // Reset plot name and details, and clear out all data before writing.
-      query->prepare("UPDATE saved_eg_plots SET coder = :coder "
+      QColor color = scene->backgroundBrush().color();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      query->prepare("UPDATE saved_eg_plots SET coder = :coder, "
+		     "red = :red, green = :green, blue = :blue "
 		     "WHERE plot = :name");
       query->bindValue(":coder", selectedCoder);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
       query->bindValue(":name", name);
       query->exec();
       // saved_eg_plots_event_items
@@ -3101,10 +3109,17 @@ void EventGraphWidget::saveCurrentPlot() {
       query->exec();
     } else {
       // Insert new data into saved_eg_plots and then write data.
-      query->prepare("INSERT INTO saved_eg_plots (plot, coder) "
-		     "VALUES (:name, :coder)");
+      QColor color = scene->backgroundBrush().color();
+      int red = color.red();
+      int green = color.green();
+      int blue = color.blue();
+      query->prepare("INSERT INTO saved_eg_plots (plot, coder, red, green, blue) "
+		     "VALUES (:name, :coder, :red, :green, :blue)");
       query->bindValue(":name", name);
       query->bindValue(":coder", selectedCoder);
+      query->bindValue(":red", red);
+      query->bindValue(":green", green);
+      query->bindValue(":blue", blue);
       query->exec();
     }
     QSqlDatabase::database().transaction();
@@ -3508,9 +3523,9 @@ void EventGraphWidget::saveCurrentPlot() {
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_lines "
 		   "(plot, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
-		   "red, green, blue, alpha) "
+		   "zvalue, red, green, blue, alpha) "
 		   "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha)");
+		   ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha)");
     QVectorIterator<LineObject*> it8(lineVector);
     while (it8.hasNext()) {
       LineObject *currentLine = it8.next();
@@ -3518,7 +3533,6 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal starty = currentLine->getStartPos().y();
       qreal endx = currentLine->getEndPos().x();
       qreal endy = currentLine->getEndPos().y();
-      QColor color = currentLine->getColor();
       int arone = 0;
       int artwo = 0;
       if (currentLine->arrow1()) {
@@ -3529,6 +3543,8 @@ void EventGraphWidget::saveCurrentPlot() {
       }
       int penwidth = currentLine->getPenWidth();
       int penstyle = currentLine->getPenStyle();
+      int zValue = currentLine->zValue();
+      QColor color = currentLine->getColor();
       int red = color.red();
       int green = color.green();
       int blue = color.blue();
@@ -3542,6 +3558,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":artwo", artwo);
       query->bindValue(":penwidth", penwidth);
       query->bindValue(":penstyle", penstyle);
+      query->bindValue(":zvalue", zValue);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3560,9 +3577,10 @@ void EventGraphWidget::saveCurrentPlot() {
     counter = 1;
     saveProgress->show();
     query->prepare("INSERT INTO saved_eg_plots_texts "
-		   "(plot, desc, xpos, ypos, width, size, rotation, red, green, blue, alpha) "
+		   "(plot, desc, xpos, ypos, width, size, rotation, zvalue, "
+		   "red, green, blue, alpha) "
 		   "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
-		   ":red, :green, :blue, :alpha)");
+		   ":zvalue, :red, :green, :blue, :alpha)");
     QVectorIterator<TextObject*> it9(textVector);
     while (it9.hasNext()) {
       TextObject *currentText = it9.next();
@@ -3572,6 +3590,7 @@ void EventGraphWidget::saveCurrentPlot() {
       int width = currentText->textWidth();
       int size = currentText->font().pointSize();
       qreal rotation = currentText->getRotationValue();
+      int zValue = currentText->zValue();
       QColor color = currentText->defaultTextColor();
       int red = color.red();
       int green = color.green();
@@ -3584,6 +3603,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":width", width);
       query->bindValue(":size", size);
       query->bindValue(":rotation", rotation);
+      query->bindValue(":zvalue", zValue);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3604,11 +3624,11 @@ void EventGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_eg_plots_ellipses "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		   "fillred, fillgreen, fillblue, fillalpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha, "
+		   ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		   ":fillred, :fillgreen, :fillblue, :fillalpha)");
     QVectorIterator<EllipseObject*> it10(ellipseVector);
     while (it10.hasNext()) {
@@ -3626,6 +3646,7 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal rotation = ellipse->getRotationValue();
       int penwidth = ellipse->getPenWidth();
       int penstyle = ellipse->getPenStyle();
+      int zValue = ellipse->zValue();
       QColor color = ellipse->getColor();
       int red = color.red();
       int green = color.green();
@@ -3649,7 +3670,8 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":bottomrighty", bottomrighty);
       query->bindValue(":rotation", rotation);
       query->bindValue(":penwidth", penwidth);
-      query->bindValue(":penstyle", penstyle);      
+      query->bindValue(":penstyle", penstyle);
+      query->bindValue(":zvalue", zValue);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3674,11 +3696,11 @@ void EventGraphWidget::saveCurrentPlot() {
     query->prepare("INSERT INTO saved_eg_plots_rects "
 		   "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		   "fillred, fillgreen, fillblue, fillalpha) "
 		   "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
 		   ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
-		   ":penwidth, :penstyle, :red, :green, :blue, :alpha, "
+		   ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		   ":fillred, :fillgreen, :fillblue, :fillalpha)");
     QVectorIterator<RectObject*> it11(rectVector);
     while (it11.hasNext()) {
@@ -3696,6 +3718,7 @@ void EventGraphWidget::saveCurrentPlot() {
       qreal rotation = rect->getRotationValue();
       int penwidth = rect->getPenWidth();
       int penstyle = rect->getPenStyle();
+      int zValue = rect->zValue();
       QColor color = rect->getColor();
       int red = color.red();
       int green = color.green();
@@ -3720,6 +3743,7 @@ void EventGraphWidget::saveCurrentPlot() {
       query->bindValue(":rotation", rotation);
       query->bindValue(":penwidth", penwidth);
       query->bindValue(":penstyle", penstyle);
+      query->bindValue(":zvalue", zValue);
       query->bindValue(":red", red);
       query->bindValue(":green", green);
       query->bindValue(":blue", blue);
@@ -3753,14 +3777,18 @@ void EventGraphWidget::seePlots() {
     scene->clear();
     QString plot = savedPlotsDialog->getSelectedPlot();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT coder "
+    query->prepare("SELECT coder, red, green, blue "
 		   "FROM saved_eg_plots "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
     query->first();
     QString coder = query->value(0).toString();
+    int red = query->value(1).toInt();
+    int green = query->value(2).toInt();
+    int blue = query->value(3).toInt();
     selectedCoder = coder;
+    scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
     int index = coderComboBox->findText(coder);
     coderComboBox->setCurrentIndex(index);
     query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
@@ -4205,7 +4233,7 @@ void EventGraphWidget::seePlots() {
 		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
     }
     query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
-		   "red, green, blue, alpha "
+		   "zvalue, red, green, blue, alpha "
 		   "FROM saved_eg_plots_lines "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -4219,14 +4247,15 @@ void EventGraphWidget::seePlots() {
       int artwo = query->value(5).toInt();
       int penwidth = query->value(6).toInt();
       int penstyle = query->value(7).toInt();
-      int red = query->value(8).toInt();
-      int green = query->value(9).toInt();
-      int blue = query->value(10).toInt();
-      int alpha = query->value(11).toInt();
+      int zValue = query->value(8).toInt();
+      int red = query->value(9).toInt();
+      int green = query->value(10).toInt();
+      int blue = query->value(11).toInt();
+      int alpha = query->value(12).toInt();
       QColor color = QColor(red, green, blue, alpha);
       LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
       lineVector.push_back(newLine);
-      newLine->setZValue(5);
+      newLine->setZValue(zValue);
       newLine->setColor(color);
       if (arone == 1) {
 	newLine->setArrow1(true);
@@ -4238,7 +4267,7 @@ void EventGraphWidget::seePlots() {
       newLine->setPenStyle(penstyle);
       scene->addItem(newLine);
     }
-    query->prepare("SELECT desc, xpos, ypos, width, size, rotation, red, green, blue, alpha "
+    query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zValue, red, green, blue, alpha "
 		   "FROM saved_eg_plots_texts "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -4250,14 +4279,15 @@ void EventGraphWidget::seePlots() {
       int width = query->value(3).toInt();
       int size = query->value(4).toInt();
       qreal rotation = query->value(5).toReal();
-      int red = query->value(6).toInt();
-      int green = query->value(7).toInt();
-      int blue = query->value(8).toInt();
-      int alpha = query->value(9).toInt();
+      int zValue = query->value(6).toInt();
+      int red = query->value(7).toInt();
+      int green = query->value(8).toInt();
+      int blue = query->value(9).toInt();
+      int alpha = query->value(10).toInt();
       QColor color = QColor(red, green, blue, alpha);
       TextObject *newText = new TextObject(desc);
       textVector.push_back(newText);
-      newText->setZValue(6);
+      newText->setZValue(zValue);
       newText->setDefaultTextColor(color);
       QFont font = newText->font();
       font.setPointSize(size);
@@ -4269,7 +4299,7 @@ void EventGraphWidget::seePlots() {
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		   "fillred, fillgreen, fillblue, fillalpha "
 		   "FROM saved_eg_plots_ellipses "
 		   "WHERE plot = :plot");
@@ -4289,14 +4319,15 @@ void EventGraphWidget::seePlots() {
       qreal rotation = query->value(10).toReal();
       int penwidth = query->value(11).toInt();
       int penstyle = query->value(12).toInt();
-      int red = query->value(13).toInt();
-      int green = query->value(14).toInt();
-      int blue = query->value(15).toInt();
-      int alpha = query->value(16).toInt();
-      int fillred = query->value(17).toInt();
-      int fillgreen = query->value(18).toInt();
-      int fillblue = query->value(19).toInt();
-      int fillalpha = query->value(20).toInt();
+      int zValue = query->value(13).toInt();
+      int red = query->value(14).toInt();
+      int green = query->value(15).toInt();
+      int blue = query->value(16).toInt();
+      int alpha = query->value(17).toInt();
+      int fillred = query->value(18).toInt();
+      int fillgreen = query->value(19).toInt();
+      int fillblue = query->value(20).toInt();
+      int fillalpha = query->value(21).toInt();
       QColor color = QColor(red, green, blue, alpha);
       QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
       EllipseObject *newEllipse = new EllipseObject();
@@ -4312,11 +4343,11 @@ void EventGraphWidget::seePlots() {
       newEllipse->setFillColor(fillColor);
       newEllipse->setPenWidth(penwidth);
       newEllipse->setPenStyle(penstyle);
-      newEllipse->setZValue(1);
+      newEllipse->setZValue(zValue);
     }
     query->prepare("SELECT xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		   "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
-		   "penwidth, penstyle, red, green, blue, alpha, "
+		   "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		   "fillred, fillgreen, fillblue, fillalpha "
 		   "FROM saved_eg_plots_rects "
 		   "WHERE plot = :plot");
@@ -4336,14 +4367,15 @@ void EventGraphWidget::seePlots() {
       qreal rotation = query->value(10).toReal();
       int penwidth = query->value(11).toInt();
       int penstyle = query->value(12).toInt();
-      int red = query->value(13).toInt();
-      int green = query->value(14).toInt();
-      int blue = query->value(15).toInt();
-      int alpha = query->value(16).toInt();
-      int fillred = query->value(17).toInt();
-      int fillgreen = query->value(18).toInt();
-      int fillblue = query->value(19).toInt();
-      int fillalpha = query->value(20).toInt();
+      int zValue = query->value(13).toInt();
+      int red = query->value(14).toInt();
+      int green = query->value(15).toInt();
+      int blue = query->value(16).toInt();
+      int alpha = query->value(17).toInt();
+      int fillred = query->value(18).toInt();
+      int fillgreen = query->value(19).toInt();
+      int fillblue = query->value(20).toInt();
+      int fillalpha = query->value(21).toInt();
       QColor color = QColor(red, green, blue, alpha);
       QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
       RectObject *newRect = new RectObject();
@@ -4359,7 +4391,7 @@ void EventGraphWidget::seePlots() {
       newRect->setFillColor(fillColor);
       newRect->setPenWidth(penwidth);
       newRect->setPenStyle(penstyle);
-      newRect->setZValue(1);
+      newRect->setZValue(zValue);
     }
     distance = 70;
     plotLabel->setText(plot);
@@ -4441,7 +4473,7 @@ void EventGraphWidget::seePlots() {
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
     query->exec();
-    // saved_eg_plots_ellipses
+    // saved_eg_plots_eipses
     query->prepare("DELETE FROM saved_eg_plots_ellipses "
 		   "WHERE plot = :plot");
     query->bindValue(":plot", plot);
@@ -4881,8 +4913,9 @@ void EventGraphWidget::setBackgroundColor() {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) {
+    setChangeLabel();
     QColor color = colorDialog->selectedColor();
-    view->setBackgroundBrush(color);
+    scene->setBackgroundBrush(QBrush(color));
   }
   delete colorDialog;
 }
@@ -7994,7 +8027,7 @@ void EventGraphWidget::addEllipseObject(const QPointF &pos) {
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
-  newEllipse->setZValue(1);
+  newEllipse->setZValue(5);
   newEllipse->setPos(pos);
   newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
@@ -8003,7 +8036,7 @@ void EventGraphWidget::addRectObject(const QPointF &pos) {
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
-  newRect->setZValue(1);
+  newRect->setZValue(5);
   newRect->setPos(pos);
   newRect->moveCenter(newRect->mapFromScene(pos));
 }
@@ -8019,6 +8052,14 @@ void EventGraphWidget::processLineContextMenu(const QString &action) {
     deleteLine();
   } else if (action == COPYOBJECT) {
     duplicateLine();
+  } else if (action == ONEFORWARD) {
+    objectOneForward();
+  } else if (action == ONEBACKWARD) {
+    objectOneBackward();
+  } else if (action == BRINGFORWARD) {
+    objectToFront();
+  } else if (action ==  BRINGBACKWARD) {
+    objectToBack();
   }
 }
 
@@ -8101,6 +8142,14 @@ void EventGraphWidget::processTextContextMenu(const QString &action) {
     deleteText();
   } else if (action == COPYOBJECT) {
     duplicateText();
+  } else if (action == ONEFORWARD) {
+    objectOneForward();
+  } else if (action == ONEBACKWARD) {
+    objectOneBackward();
+  } else if (action == BRINGFORWARD) {
+    objectToFront();
+  } else if (action ==  BRINGBACKWARD) {
+    objectToBack();
   }
 }
 
@@ -8223,6 +8272,14 @@ void EventGraphWidget::processEllipseContextMenu(const QString &action) {
     deleteEllipse();
   } else if (action == COPYOBJECT) {
     duplicateEllipse();
+  } else if (action == ONEFORWARD) {
+    objectOneForward();
+  } else if (action == ONEBACKWARD) {
+    objectOneBackward();
+  } else if (action == BRINGFORWARD) {
+    objectToFront();
+  } else if (action ==  BRINGBACKWARD) {
+    objectToBack();
   }
 }
 
@@ -8234,6 +8291,7 @@ void EventGraphWidget::changeEllipseColor() {
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	ellipse->setColor(color);
@@ -8249,9 +8307,9 @@ void EventGraphWidget::changeEllipseFillColor() {
     if (ellipse) {
       QColor currentColor = ellipse->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      colorDialog->setCurrentColor(currentColor);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	ellipse->setFillColor(color);
@@ -8286,7 +8344,7 @@ void EventGraphWidget::duplicateEllipse() {
       newEllipse->setPenWidth(ellipse->getPenWidth());
       newEllipse->setPenStyle(ellipse->getPenStyle());
       ellipseVector.push_back(newEllipse);
-      newEllipse->setZValue(1);
+      newEllipse->setZValue(5);
       scene->addItem(newEllipse);
       QPointF pos = ellipse->mapToScene(ellipse->getCenter());
       pos.setY(pos.y() - 100);
@@ -8305,7 +8363,15 @@ void EventGraphWidget::processRectContextMenu(const QString &action) {
     deleteRect();
   } else if (action == COPYOBJECT) {
     duplicateRect();
-  } 
+  } else if (action == ONEFORWARD) {
+    objectOneForward();
+  } else if (action == ONEBACKWARD) {
+    objectOneBackward();
+  } else if (action == BRINGFORWARD) {
+    objectToFront();
+  } else if (action ==  BRINGBACKWARD) {
+    objectToBack();
+  }
 }
 
 void EventGraphWidget::changeRectColor() {
@@ -8316,6 +8382,7 @@ void EventGraphWidget::changeRectColor() {
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	rect->setColor(color);
@@ -8331,9 +8398,9 @@ void EventGraphWidget::changeRectFillColor() {
     if (rect) {
       QColor currentColor = rect->getFillColor();
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
       colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+      colorDialog->setCurrentColor(currentColor);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	rect->setFillColor(color);
@@ -8368,7 +8435,7 @@ void EventGraphWidget::duplicateRect() {
       newRect->setPenWidth(rect->getPenWidth());
       newRect->setPenStyle(rect->getPenStyle());
       rectVector.push_back(newRect);
-      newRect->setZValue(1);
+      newRect->setZValue(5);
       scene->addItem(newRect);
       QPointF pos = rect->mapToScene(rect->getCenter());
       pos.setY(pos.y() - 100);
@@ -8376,6 +8443,224 @@ void EventGraphWidget::duplicateRect() {
       newRect->moveCenter(newRect->mapFromScene(pos));
     }
   }
+}
+
+void EventGraphWidget::objectOneForward() {
+  int maxZ = -1;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    if (maxZ == -1) {
+      maxZ = current->zValue();
+    } else if (maxZ < current->zValue()) {
+      maxZ = current->zValue();
+    }
+  } 
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      int currentZValue = ellipse->zValue();
+      if (currentZValue < maxZ + 1) {
+	ellipse->setZValue(currentZValue + 1);
+      }
+    } else if (rect) {
+      int currentZValue = rect->zValue();
+      if (currentZValue < maxZ + 1) {
+	rect->setZValue(currentZValue + 1);
+      }
+    } else if (line) {
+      int currentZValue = line->zValue();
+      if (currentZValue <  maxZ + 1) {
+	line->setZValue(currentZValue + 1);
+      }
+    } else if (text) {
+      int currentZValue = text->zValue();
+      if (currentZValue < maxZ + 1) {
+	text->setZValue(currentZValue + 1);
+      }
+    }
+  }
+  fixZValues();
+}
+
+void EventGraphWidget::objectOneBackward() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      int currentZValue = ellipse->zValue();
+      if (currentZValue > 1) {
+	ellipse->setZValue(currentZValue - 1);
+	if (ellipse->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  ellipse) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    } else if (rect) {
+      int currentZValue = rect->zValue();
+      if (currentZValue > 1) {
+	rect->setZValue(currentZValue - 1);
+	if (rect->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  rect) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    } else if (line) {
+      int currentZValue = line->zValue();
+      if (currentZValue > 1) {
+	line->setZValue(currentZValue - 1);
+	if (line->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  line) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    } else if (text) {
+      int currentZValue = text->zValue();
+      if (currentZValue > 1) {
+	text->setZValue(currentZValue - 1);
+	if (text->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  text) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    }
+  }
+  fixZValues();
+}
+
+void EventGraphWidget::objectToFront() {
+  int maxZ = -1;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    if (maxZ == -1) {
+      maxZ = current->zValue();
+    } else if (maxZ < current->zValue()) {
+      maxZ = current->zValue();
+    }
+  }
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      ellipse->setZValue(maxZ + 1);
+    } else if (rect) {
+      rect->setZValue(maxZ + 1);
+    } else if (line) {
+      line->setZValue(maxZ + 1);
+    } else if (text) {
+      text->setZValue(maxZ + 1);
+    }
+  }
+  fixZValues();
+}
+
+void EventGraphWidget::objectToBack() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      ellipse->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != ellipse) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    } else if (rect) {
+      rect->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != rect) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    } else if (line) {
+      line->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != line) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    } else if (text) {
+      text->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != text) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    }
+  }
+  fixZValues();
+}
+
+void EventGraphWidget::fixZValues() {
+  int maxZ = -1;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    if (maxZ == -1) {
+      maxZ = current->zValue();
+    } else if (maxZ < current->zValue()) {
+      maxZ = current->zValue();
+    }
+  }
+  for (int i = 4; i != maxZ; i++) {
+    bool currentZFound = false;
+    QListIterator<QGraphicsItem*> it2(scene->items());
+    while (it2.hasNext()) {
+      QGraphicsItem* current = it2.next();
+      if (current->zValue() == i) {
+	currentZFound = true;
+	break;
+      }
+    }
+    if (!currentZFound) {
+      QListIterator<QGraphicsItem*> it3(scene->items());
+      while (it3.hasNext()) {
+	QGraphicsItem* current = it3.next();
+	if (current->zValue() > i) {
+	  current->setZValue(current->zValue() - 1);
+	}
+      }
+    }
+  }
+  setChangeLabel();  
 }
 
 void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident,

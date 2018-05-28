@@ -119,6 +119,12 @@ private slots:
   void duplicateEllipse();
   void duplicateRect();
 
+  void objectOneForward();
+  void objectOneBackward();
+  void objectToFront();
+  void objectToBack();
+  void fixZValues();
+  
   void setLinkageButtons(QTableWidgetItem *item);
   void changeLinkageColor(QTableWidgetItem *item);
   void hideLinkage();

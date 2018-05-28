@@ -91,6 +91,10 @@ extern QString ASSIGNATTRIBUTEACTION;
 extern QString UNASSIGNATTRIBUTEACTION;
 extern QString ASSIGNRELATIONSHIPACTION;
 extern QString UNASSIGNRELATIONSHIPACTION;
+extern QString ONEFORWARD;
+extern QString ONEBACKWARD;
+extern QString BRINGFORWARD;
+extern QString BRINGBACKWARD;
 extern qreal Pi;
 
 #endif

@@ -1037,6 +1037,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action4);
       QAction *action5 = new QAction(DELETELINE, this);
       menu.addAction(action5);
+      QAction *action6 = new QAction(ONEFORWARD, this);
+      menu.addAction(action6);
+      QAction *action7 = new QAction(ONEBACKWARD, this);
+      menu.addAction(action7);
+      QAction *action8 = new QAction(BRINGFORWARD, this);
+      menu.addAction(action8);
+      QAction *action9 = new QAction(BRINGBACKWARD, this);
+      menu.addAction(action9);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit LineContextMenuAction(action->text());
       }
@@ -1052,6 +1060,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action3);
       QAction *action4 = new QAction(DELETETEXT, this);
       menu.addAction(action4);
+      QAction *action5 = new QAction(ONEFORWARD, this);
+      menu.addAction(action5);
+      QAction *action6 = new QAction(ONEBACKWARD, this);
+      menu.addAction(action6);
+      QAction *action7 = new QAction(BRINGFORWARD, this);
+      menu.addAction(action7);
+      QAction *action8 = new QAction(BRINGBACKWARD, this);
+      menu.addAction(action8);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit TextContextMenuAction(action->text());
       }
@@ -1067,6 +1083,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action3);
       QAction *action4 = new QAction(DELETEELLIPSE, this);
       menu.addAction(action4);
+      QAction *action5 = new QAction(ONEFORWARD, this);
+      menu.addAction(action5);
+      QAction *action6 = new QAction(ONEBACKWARD, this);
+      menu.addAction(action6);
+      QAction *action7 = new QAction(BRINGFORWARD, this);
+      menu.addAction(action7);
+      QAction *action8 = new QAction(BRINGBACKWARD, this);
+      menu.addAction(action8);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit EllipseContextMenuAction(action->text());
       }
@@ -1082,6 +1106,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) {
       menu.addAction(action3);
       QAction *action4 = new QAction(DELETERECT, this);
       menu.addAction(action4);
+      QAction *action5 = new QAction(ONEFORWARD, this);
+      menu.addAction(action5);
+      QAction *action6 = new QAction(ONEBACKWARD, this);
+      menu.addAction(action6);
+      QAction *action7 = new QAction(BRINGFORWARD, this);
+      menu.addAction(action7);
+      QAction *action8 = new QAction(BRINGBACKWARD, this);
+      menu.addAction(action8);
       if (QAction *action = menu.exec(event->screenPos())) {
 	emit RectContextMenuAction(action->text());
       }
