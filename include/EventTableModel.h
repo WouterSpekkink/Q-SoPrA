@@ -1,7 +1,7 @@
 #ifndef EVENTTABLEMODEL_H
 #define EVENTTABLEMODEL_H
 
-#include <QtSql>
+o#include <QtSql>
 #include "SupportingFunctions.h"
 
 class EventTableModel : public QSqlTableModel {

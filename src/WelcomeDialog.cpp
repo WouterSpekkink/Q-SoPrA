@@ -40,7 +40,6 @@ void WelcomeDialog::newDatabase() {
     if (check_file.exists() && check_file.isFile()) {
       QFile::remove(dbName);
     }
-
     esd->openDB(dbName);
     bool ok = esd->db.open();
     if (!ok) {
@@ -648,6 +647,20 @@ void WelcomeDialog::newDatabase() {
 		  "fillgreen integer, "
 		  "fillblue integer, "
 		  "fillalpha integer)");
+      query->exec("CREATE TABLE cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "name text, "
+		  "description text)");
+      query->exec("INSERT INTO cases "
+		  "(name, "
+		  "description) "
+		  "VALUES ('Complete dataset', "
+		  "'Default case that contains all incidents "
+		  "in the dataset.')");
+      query->exec("CREATE TABLE incidents_to_cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "incident integer, "
+		  "case text)");
       delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();
@@ -1280,6 +1293,42 @@ void WelcomeDialog::openDatabase() {
 		  "fillgreen integer, "
 		  "fillblue integer, "
 		  "fillalpha integer)");
+      query->exec("CREATE TABLE IF NOT EXISTS cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "name text, "
+		  "description text)");
+      query->exec("CREATE TABLE IF NOT EXISTS incidents_to_cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "incident integer, "
+		  "case text)");
+      query->exec("SELECT name FROM cases");
+      bool found = false;
+      while (query->next()) {
+	QString current = query->value(0).toString();
+	if (current == "Complete dataset") {
+	  found = true;
+	}
+      }
+      if (!found) {
+	query->exec("INSERT INTO cases "
+		    "(name, "
+		    "description) "
+		    "VALUES ('Complete dataset', "
+		    "'Default case that contains all incidents "
+		    "in the dataset.')");
+	QSqlQuery *query2 = new QSqlQuery;
+	query->exec("SELECT id FROM incidents");
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  query2->prepare("INSERT into incidents_to_cases "
+			  "(incident, case) "
+			  "VALUES (:incident, :case)");
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":case", "Complete dataset");
+	  query2->exec()
+	}
+	delete query2;
+      }
       delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();

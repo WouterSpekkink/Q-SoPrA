@@ -1,5 +1,5 @@
-#ifndef MAINDIALOG_H
-#define MAINDIALOG_H
+#ifndef DATAWIDGET_H
+#define DATAWIDGET_H
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
