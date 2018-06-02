@@ -1932,10 +1932,11 @@ void NetworkGraphWidget::duplicateText() {
 	pos.setY(pos.y() - 300);
 	newText->setPos(pos);
 	newText->setZValue(6);
-	newText->adjustSize();
 	newText->setDefaultTextColor(text->defaultTextColor());
 	newText->setRotationValue(text->getRotationValue());
 	newText->setFont(text->font());
+	newText->adjustSize();
+	newText->setTextWidth(newText->textWidth() + 50);
       }
       delete textDialog;
     }
