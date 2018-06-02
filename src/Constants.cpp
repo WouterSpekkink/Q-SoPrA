@@ -93,4 +93,5 @@ QString ONEFORWARD = "Move forward";
 QString ONEBACKWARD = "Move backward";
 QString BRINGFORWARD = "Send to front";
 QString BRINGBACKWARD = "Send to back";
+QString COMPLETEDATASET = "Complete dataset";
 qreal Pi = 3.14;

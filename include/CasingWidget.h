@@ -10,6 +10,10 @@
 #include <QTableWidget>
 #include "Constants.h"
 #include "SupportingFunctions.h"
+#include "CaseDialog.h"
+#include "CheckBoxDelegate.h"
+#include "ComboBoxDialog.h"
+#include "Constants.h"
 
 class CasingWidget : public QWidget {
   Q_OBJECT
@@ -22,13 +26,20 @@ public:
 
 private slots:
   void createTable();
-  void addCase(); // Should open a dialog.
+  void addCase();
+  void removeCase();
+  void selectAll();
+  void deselectAll();
   void updateTable(); // Call this on each switch
+  void setCellState(QTableWidgetItem *item);
   
 private:
   QPointer<QTableWidget> tableWidget;
 
   QPointer<QPushButton> addCaseButton;
+  QPointer<QPushButton> removeCaseButton;
+  QPointer<QPushButton> selectAllButton;
+  QPointer<QPushButton> deselectAllButton;
   
 };
 

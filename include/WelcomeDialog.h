@@ -13,6 +13,7 @@
 #include <QFileInfo>
 #include <QSql>
 #include "EventSequenceDatabase.h"
+#include "Constants.h"
 
 class WelcomeDialog : public QDialog {
   Q_OBJECT

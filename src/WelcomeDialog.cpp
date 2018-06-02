@@ -660,7 +660,7 @@ void WelcomeDialog::newDatabase() {
       query->exec("CREATE TABLE incidents_to_cases "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "incident integer, "
-		  "case text)");
+		  "casename text)");
       delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();
@@ -1300,12 +1300,12 @@ void WelcomeDialog::openDatabase() {
       query->exec("CREATE TABLE IF NOT EXISTS incidents_to_cases "
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "incident integer, "
-		  "case text)");
+		  "casename text)");
       query->exec("SELECT name FROM cases");
       bool found = false;
       while (query->next()) {
 	QString current = query->value(0).toString();
-	if (current == "Complete dataset") {
+	if (current == COMPLETEDATASET) {
 	  found = true;
 	}
       }
@@ -1321,11 +1321,11 @@ void WelcomeDialog::openDatabase() {
 	while (query->next()) {
 	  int incident = query->value(0).toInt();
 	  query2->prepare("INSERT into incidents_to_cases "
-			  "(incident, case) "
+			  "(incident, casename) "
 			  "VALUES (:incident, :case)");
 	  query2->bindValue(":incident", incident);
-	  query2->bindValue(":case", "Complete dataset");
-	  query2->exec()
+	  query2->bindValue(":case", COMPLETEDATASET);
+	  query2->exec();
 	}
 	delete query2;
       }

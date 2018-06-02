@@ -29,6 +29,7 @@
 #include "MissingRelationshipsTable.h"
 #include "SupportingFunctions.h"
 #include "Constants.h"
+#include "CasingWidget.h"
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -50,6 +51,7 @@ private slots:
   void switchToRelationshipView();
   void switchToLinkageView();
   void switchToJournalView();
+  void switchToCasingView();
   void switchToEventGraphView();
   void switchToNetworkGraphView();
   void switchToOccurrenceGraphView();
@@ -60,7 +62,7 @@ private slots:
   void switchToEntitiesAttributesTableView();
   void switchToMissingAttributesTableView();
   void switchToMissingRelationshipsTableView();
-
+  
   void exportIncidentAttributes();
   void importIncidentAttributes();
   void exportRelTypes();
@@ -82,6 +84,7 @@ private:
   QPointer<QWidget> attributesWidget;
   QPointer<QWidget> relationshipsWidget;
   QPointer<QWidget> linkagesWidget;
+  QPointer<QWidget> casingWidget;
   QPointer<QWidget> journalWidget;
   QPointer<QWidget> eventGraphWidget;
   QPointer<QWidget> networkGraphWidget;
@@ -110,6 +113,7 @@ private:
   QPointer<QAction> attributeViewAct;
   QPointer<QAction> relationshipViewAct;
   QPointer<QAction> linkageViewAct;
+  QPointer<QAction> casingViewAct;
   QPointer<QAction> journalViewAct;
   
   QPointer<QAction> eventGraphViewAct;

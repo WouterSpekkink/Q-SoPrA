@@ -4,6 +4,7 @@
 #include <QtWidgets/QTextEdit>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
+#include <QtWidgets/QComboBox>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QSqlTableModel>
@@ -119,7 +120,8 @@ private:
   QPointer<QLabel> commentFilterLabel;
   QPointer<QLabel> attributeFilterLabel;
   QPointer<QLabel> valueLabel;
-
+  QPointer<QLabel> caseSelectionLabel;
+  
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> descriptionFilterField;
@@ -132,6 +134,8 @@ private:
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
 
+  QPointer<QComboBox> caseSelection;
+  
   QPointer<QPushButton> previousIncidentButton;
   QPointer<QPushButton> nextIncidentButton;
   QPointer<QPushButton> jumpButton;
@@ -156,7 +160,7 @@ private:
   QPointer<QPushButton> nextCodedButton;
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
-  
+
   QString descriptionFilter;
   QString rawFilter;
   QString commentFilter;

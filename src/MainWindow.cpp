@@ -17,6 +17,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   relationshipsWidget = new RelationshipsWidget(this);
   linkagesWidget = new LinkagesWidget(this);
   journalWidget = new JournalWidget(this);
+  casingWidget = new CasingWidget(this);
   eventGraphWidget = new EventGraphWidget(this);
   networkGraphWidget = new NetworkGraphWidget(this);
   occurrenceGraphWidget = new OccurrenceGraphWidget(this);
@@ -27,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   entitiesAttributesTableWidget = new EntitiesAttributesTable(this);
   missingAttributesTableWidget = new MissingAttributesTable(this);
   missingRelationshipsTableWidget = new MissingRelationshipsTable(this);
-  
+
   // Some of these widgets need some pointers to each other to communicate properly.
   DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
@@ -77,6 +78,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(entitiesAttributesTableWidget); // 12
   stacked->addWidget(missingAttributesTableWidget); // 13
   stacked->addWidget(missingRelationshipsTableWidget); // 14
+  stacked->addWidget(casingWidget); // 15
   
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
@@ -140,6 +142,10 @@ void MainWindow::createActions() {
   journalViewAct->setStatusTip("Switch to journal");
   connect(journalViewAct, SIGNAL(triggered()), this, SLOT(switchToJournalView()));
 
+  casingViewAct = new QAction(tr("&Casing"), this);
+  casingViewAct->setStatusTip("Switch to casing widget");
+  connect(casingViewAct, SIGNAL(triggered()), this, SLOT(switchToCasingView()));
+  
   // Graph menu actions
   eventGraphViewAct = new QAction(tr("&Event graph"), this);
   eventGraphViewAct->setStatusTip("Switch to event graph");
@@ -228,6 +234,7 @@ void MainWindow::createMenus() {
   toolMenu->addAction(attributeViewAct);
   toolMenu->addAction(relationshipViewAct);
   toolMenu->addAction(linkageViewAct);
+  toolMenu->addAction(casingViewAct);
   toolMenu->addAction(journalViewAct);
 
   graphMenu = menuBar->addMenu("Graphs");
@@ -671,6 +678,21 @@ void MainWindow::switchToJournalView() {
   jw->logField->setText("");
   jw->resetButtons();
   stacked->setCurrentWidget(journalWidget);
+}
+
+void MainWindow::switchToCasingView() {
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  aw->setComment();
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+  rw->setComment();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setComments();
+  lw->setLinkageComment();
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->setComment();
+  CasingWidget *cw = qobject_cast<CasingWidget*>(stacked->widget(15));
+  cw->updateTable();
+  stacked->setCurrentWidget(casingWidget);
 }
 
 void MainWindow::switchToEventGraphView() {
