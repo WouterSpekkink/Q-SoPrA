@@ -220,6 +220,13 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
+
+  void objectOneForward();
+  void objectOneBackward();
+  void objectToFront();
+  void objectToBack();
+  void fixZValues();
+  
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
   void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems,

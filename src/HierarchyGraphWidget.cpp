@@ -14,7 +14,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
-  view->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
+  scene->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
   view->setRenderHint(QPainter::Antialiasing);
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
   
@@ -1656,7 +1656,7 @@ void HierarchyGraphWidget::addEllipseObject(const QPointF &pos) {
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
-  newEllipse->setZValue(1);
+  newEllipse->setZValue(5);
   newEllipse->setPos(pos);
   newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
@@ -1665,7 +1665,7 @@ void HierarchyGraphWidget::addRectObject(const QPointF &pos) {
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
-  newRect->setZValue(1);
+  newRect->setZValue(5);
   newRect->setPos(pos);
   newRect->moveCenter(newRect->mapFromScene(pos));
 }
@@ -1831,10 +1831,12 @@ void HierarchyGraphWidget::duplicateText() {
 	pos.setY(pos.y() - 300);
 	newText->setPos(pos);
 	newText->setZValue(6);
-	newText->adjustSize();
 	newText->setDefaultTextColor(text->defaultTextColor());
 	newText->setRotationValue(text->getRotationValue());
 	newText->setFont(text->font());
+	newText->adjustSize();
+	newText->setTextWidth(newText->textWidth() + 50);
+
       }
       delete textDialog;
     }
@@ -1861,6 +1863,7 @@ void HierarchyGraphWidget::changeEllipseColor() {
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	ellipse->setColor(color);
@@ -1913,7 +1916,7 @@ void HierarchyGraphWidget::duplicateEllipse() {
       newEllipse->setPenWidth(ellipse->getPenWidth());
       newEllipse->setPenStyle(ellipse->getPenStyle());
       ellipseVector.push_back(newEllipse);
-      newEllipse->setZValue(1);
+      newEllipse->setZValue(5);
       scene->addItem(newEllipse);
       QPointF pos = ellipse->mapToScene(ellipse->getCenter());
       pos.setY(pos.y() - 100);
@@ -1943,6 +1946,7 @@ void HierarchyGraphWidget::changeRectColor() {
       QPointer<QColorDialog> colorDialog = new QColorDialog(this);
       colorDialog->setCurrentColor(currentColor);
       colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
       if (colorDialog->exec()) {
 	QColor color = colorDialog->selectedColor();
 	rect->setColor(color);
@@ -1995,12 +1999,229 @@ void HierarchyGraphWidget::duplicateRect() {
       newRect->setPenWidth(rect->getPenWidth());
       newRect->setPenStyle(rect->getPenStyle());
       rectVector.push_back(newRect);
-      newRect->setZValue(1);
+      newRect->setZValue(5);
       scene->addItem(newRect);
       QPointF pos = rect->mapToScene(rect->getCenter());
       pos.setY(pos.y() - 100);
       pos.setX(pos.x() - 100);
       newRect->moveCenter(newRect->mapFromScene(pos));
+    }
+  }
+}
+
+void HierarchyGraphWidget::objectOneForward() {
+  int maxZ = -1;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    if (maxZ == -1) {
+      maxZ = current->zValue();
+    } else if (maxZ < current->zValue()) {
+      maxZ = current->zValue();
+    }
+  } 
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      int currentZValue = ellipse->zValue();
+      if (currentZValue < maxZ + 1) {
+	ellipse->setZValue(currentZValue + 1);
+      }
+    } else if (rect) {
+      int currentZValue = rect->zValue();
+      if (currentZValue < maxZ + 1) {
+	rect->setZValue(currentZValue + 1);
+      }
+    } else if (line) {
+      int currentZValue = line->zValue();
+      if (currentZValue <  maxZ + 1) {
+	line->setZValue(currentZValue + 1);
+      }
+    } else if (text) {
+      int currentZValue = text->zValue();
+      if (currentZValue < maxZ + 1) {
+	text->setZValue(currentZValue + 1);
+      }
+    }
+  }
+  fixZValues();
+}
+
+void HierarchyGraphWidget::objectOneBackward() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      int currentZValue = ellipse->zValue();
+      if (currentZValue > 1) {
+	ellipse->setZValue(currentZValue - 1);
+	if (ellipse->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  ellipse) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    } else if (rect) {
+      int currentZValue = rect->zValue();
+      if (currentZValue > 1) {
+	rect->setZValue(currentZValue - 1);
+	if (rect->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  rect) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    } else if (line) {
+      int currentZValue = line->zValue();
+      if (currentZValue > 1) {
+	line->setZValue(currentZValue - 1);
+	if (line->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  line) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    } else if (text) {
+      int currentZValue = text->zValue();
+      if (currentZValue > 1) {
+	text->setZValue(currentZValue - 1);
+	if (text->zValue() == 1) {
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) {
+	    QGraphicsItem *current = it.next();
+	    if (current !=  text) {
+	      current->setZValue(current->zValue() + 1);
+	    }
+	  }
+	}
+      }
+    }
+  }
+  fixZValues();
+}
+
+void HierarchyGraphWidget::objectToFront() {
+  int maxZ = -1;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    if (maxZ == -1) {
+      maxZ = current->zValue();
+    } else if (maxZ < current->zValue()) {
+      maxZ = current->zValue();
+    }
+  }
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      ellipse->setZValue(maxZ + 1);
+    } else if (rect) {
+      rect->setZValue(maxZ + 1);
+    } else if (line) {
+      line->setZValue(maxZ + 1);
+    } else if (text) {
+      text->setZValue(maxZ + 1);
+    }
+  }
+  fixZValues();
+}
+
+void HierarchyGraphWidget::objectToBack() {
+  if (scene->selectedItems().size() == 1) {
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+    if (ellipse) {
+      ellipse->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != ellipse) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    } else if (rect) {
+      rect->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != rect) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    } else if (line) {
+      line->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != line) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    } else if (text) {
+      text->setZValue(1);
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) {
+	QGraphicsItem *current = it.next();
+	if (current != text) {
+	  current->setZValue(current->zValue() + 1);
+	}
+      }
+    }
+  }
+  fixZValues();
+}
+
+void HierarchyGraphWidget::fixZValues() {
+  int maxZ = -1;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext()) {
+    QGraphicsItem *current = it.next();
+    if (maxZ == -1) {
+      maxZ = current->zValue();
+    } else if (maxZ < current->zValue()) {
+      maxZ = current->zValue();
+    }
+  }
+  for (int i = 4; i != maxZ; i++) {
+    bool currentZFound = false;
+    QListIterator<QGraphicsItem*> it2(scene->items());
+    while (it2.hasNext()) {
+      QGraphicsItem* current = it2.next();
+      if (current->zValue() == i) {
+	currentZFound = true;
+	break;
+      }
+    }
+    if (!currentZFound) {
+      QListIterator<QGraphicsItem*> it3(scene->items());
+      while (it3.hasNext()) {
+	QGraphicsItem* current = it3.next();
+	if (current->zValue() > i) {
+	  current->setZValue(current->zValue() - 1);
+	}
+      }
     }
   }
 }

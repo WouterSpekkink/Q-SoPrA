@@ -121,6 +121,13 @@ private slots:
   void duplicateEllipse();
   void duplicateRect();
 
+
+  void objectOneForward();
+  void objectOneBackward();
+  void objectToFront();
+  void objectToBack();
+  void fixZValues();
+  
   void saveCurrentPlot();
   void seePlots();
   
