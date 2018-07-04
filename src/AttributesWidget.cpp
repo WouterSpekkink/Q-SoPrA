@@ -1889,77 +1889,45 @@ void AttributesWidget::previousCoded() {
       attribute = "NONE";
     }
     findChildren(attribute, &attributeVector, entity);
+    int order = 0;
+    QVector<int> candidates;
     QVectorIterator<QString> it(attributeVector);
-    int order = -1;
-    while (incidentsModel->canFetchMore()) {
-      incidentsModel->fetchMore();
-    }
-    bool valid = false;
-    bool check = true;
-    if (!valid && order != incidentsModel->rowCount()) {
-      if (caseSelection->currentText() == COMPLETEDATASET) {
-	valid = true;
-	check = false;
-      }
-      while (it.hasNext()) {
-	QString currentAttribute = it.next();
-	query->prepare("SELECT ch_order FROM "
-		       "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
-		       "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-		       "WHERE ch_order < :order AND attribute = :attribute)"
-		       "ORDER BY ch_order DESC");
-	query->bindValue(":order", currentOrder);
-	query->bindValue(":attribute", currentAttribute);
-	query->exec();
-	query->first();
-	if (order == -1 && !(query->isNull(0))) {
-	  if (check) {
-	    int temp = query->value(0).toInt();
-	    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	    query->bindValue(":order", temp);
-	    query->exec();
-	    query->first();
-	    int incident = query->value(0).toInt();
-	    query->prepare("SELECT incident FROM incidents_to_cases "
-			   "WHERE incident = :incident AND casename = :case");
-	    query->bindValue(":incident", incident);
-	    query->bindValue(":case", caseSelection->currentText());
-	    query->exec();
-	    query->first();
-	    if (!query->isNull(0)) {
-	      order = temp;
-	      valid = true;
-	    }
-	  } else {
-	    order = query->value(0).toInt();
-	  }
-	} else if (!(query->isNull(0)) && query->value(0).toInt() > order) {
-	  if (check) {
-	    int temp = query->value(0).toInt();
-	    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	    query->bindValue(":order", temp);
-	    query->exec();
-	    query->first();
-	    int incident = query->value(0).toInt();
-	    query->prepare("SELECT incident FROM incidents_to_cases "
-			   "WHERE incident = :incident AND casename = :case");
-	    query->bindValue(":incident", incident);
-	    query->bindValue(":case", caseSelection->currentText());
-	    query->exec();
-	    query->first();
-	    if (!query->isNull(0)) {
-	      order = temp;
-	      valid = true;
-	    }
-	  } else {
-	    order = query->value(0).toInt();
-	  }
-	} 
+    while (it.hasNext()) {
+      QString currentAttribute = it.next();
+      query->prepare("SELECT ch_order FROM "
+		     "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+		     "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+		     "WHERE ch_order < :order AND attribute = :attribute "
+		     "ORDER BY ch_order DESC)");
+      query->bindValue(":order", currentOrder);
+      query->bindValue(":attribute", currentAttribute);
+      query->exec();
+      while (query->next()){
+	candidates.push_back(query->value(0).toInt());
       }
     }
-    if (order != -1 && valid) {
+    std::sort(candidates.begin(), candidates.end());
+    QVectorIterator<int> it2(candidates);
+    while (it2.hasNext()) {
+      int current = it2.next();
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query->bindValue(":order", current);
+      query->exec();
+      query->first();
+      int incident = query->value(0).toInt();
+      query->prepare("SELECT incident FROM incidents_to_cases "
+		     "WHERE incident = :incident AND casename = :case");
+      query->bindValue(":incident", incident);
+      query->bindValue(":case", caseSelection->currentText());
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	order = current;
+      }
+    }
+    if (order != 0) {
       query->prepare("UPDATE save_data "
-		     "SET attributes_record=:new");
+		      "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1994,75 +1962,44 @@ void AttributesWidget::nextCoded() {
       attribute = "NONE";
     }
     findChildren(attribute, &attributeVector, entity);
+    int order = 0;
+    QVector<int> candidates;
     QVectorIterator<QString> it(attributeVector);
-    int order = -1;
-    while (incidentsModel->canFetchMore()) {
-      incidentsModel->fetchMore();
-    }
-    bool valid = false;
-    bool check = true;
-    if (!valid && order != incidentsModel->rowCount()) {
-      if (caseSelection->currentText() == COMPLETEDATASET) {
-	valid = true;
-	check = false;
-      }
-      while (it.hasNext()) {
-	QString currentAttribute = it.next();
-	query->prepare("SELECT ch_order FROM "
-		       "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
-		       "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-		       "WHERE ch_order > :order AND attribute = :attribute)"
-		       "ORDER BY ch_order ASC");
-	query->bindValue(":order", currentOrder);
-	query->bindValue(":attribute", currentAttribute);
-	query->exec();
-	query->first();
-	if (order == -1 && !(query->isNull(0))) {
-	  if (check) {
-	    int temp = query->value(0).toInt();
-	    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	    query->bindValue(":order", temp);
-	    query->exec();
-	    query->first();
-	    int incident = query->value(0).toInt();
-	    query->prepare("SELECT incident FROM incidents_to_cases "
-			   "WHERE incident = :incident AND casename = :case");
-	    query->bindValue(":incident", incident);
-	    query->bindValue(":case", caseSelection->currentText());
-	    query->exec();
-	    query->first();
-	    if (!query->isNull(0)) {
-	      order = temp;
-	      valid = true;
-	    }
-	  } else {
-	    order = query->value(0).toInt();
-	  }
-	} else if (!(query->isNull(0)) && query->value(0).toInt() < order) {
-	  if (check) {
-	    int temp = query->value(0).toInt();
-	    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	    query->bindValue(":order", temp);
-	    query->exec();
-	    query->first();
-	    int incident = query->value(0).toInt();
-	    query->prepare("SELECT incident FROM incidents_to_cases "
-			   "WHERE incident = :incident AND casename = :case");
-	    query->bindValue(":incident", incident);
-	    query->bindValue(":case", caseSelection->currentText());
-	    query->exec();
-	    query->first();
-	    if (!query->isNull(0)) {
-	      order = temp;
-	      valid = true;
-	    }
-	  } else {
-	    order = query->value(0).toInt();
-	  }
-	} 
+    while (it.hasNext()) {
+      QString currentAttribute = it.next();
+      query->prepare("SELECT ch_order FROM "
+		     "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+		     "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
+		     "WHERE ch_order > :order AND attribute = :attribute "
+		     "ORDER BY ch_order ASC)");
+      query->bindValue(":order", currentOrder);
+      query->bindValue(":attribute", currentAttribute);
+      query->exec();
+      while (query->next()) {
+	candidates.push_back(query->value(0).toInt());
       }
     }
-    if (order != -1 && valid) {
+    std::sort(candidates.begin(), candidates.end());
+    QVectorIterator<int> it2(candidates);
+    it2.toBack();
+    while (it2.hasPrevious()) {
+      int current = it2.previous();
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query->bindValue(":order", current);
+      query->exec();
+      query->first();
+      int incident = query->value(0).toInt();
+      query->prepare("SELECT incident FROM incidents_to_cases "
+		     "WHERE incident = :incident AND casename = :case");
+      query->bindValue(":incident", incident);
+      query->bindValue(":case", caseSelection->currentText());
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) {
+	order = current;
+      }
+    }
+    if (order != 0) {
       query->prepare("UPDATE save_data "
 		     "SET attributes_record=:new");
       query->bindValue(":new", order);

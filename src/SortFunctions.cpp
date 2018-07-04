@@ -141,3 +141,4 @@ bool occurrencesSort(const OccurrenceItem *itemOne, const OccurrenceItem *itemTw
     return false;
   }
 }
+
