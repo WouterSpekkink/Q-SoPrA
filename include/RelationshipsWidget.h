@@ -122,7 +122,8 @@ private:
   QPointer<QLabel> commentFilterLabel;
   QPointer<QLabel> relationshipFilterLabel;
   QPointer<QLabel> relationshipCommentLabel;
-
+  QPointer<QLabel> caseSelectionLabel;
+  
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> descriptionFilterField;
@@ -135,6 +136,8 @@ private:
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
 
+  QPointer<QComboBox> caseSelection;
+  
   QPointer<QPushButton> previousIncidentButton;
   QPointer<QPushButton> nextIncidentButton;
   QPointer<QPushButton> jumpButton;
