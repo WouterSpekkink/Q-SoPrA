@@ -1,7 +1,6 @@
 #include "../include/RelationshipsWidget.h"
 
 RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
-
   descriptionFilter = "";
   rawFilter = "";
   commentFilter = "";
@@ -49,7 +48,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
   relationshipCommentLabel = new QLabel("<b>Comment:</b>", this);
   relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>", this);
-  caseSelectionLabel = new QLabel("<b>Case:</b>", this);
   
   timeStampField = new QLineEdit(this);
   timeStampField->setReadOnly(true);
@@ -67,14 +65,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   relationshipCommentField = new QLineEdit(this);
   relationshipCommentField->setEnabled(false);
 
-  caseSelection = new QComboBox(this);
-  QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM cases");
-  while (query->next()) {
-    caseSelection->addItem(query->value(0).toString());
-  }
-  delete query;
-  
   previousIncidentButton = new QPushButton("Previous incident", this);
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
   nextIncidentButton = new QPushButton("Next incident", this);
@@ -234,11 +224,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   commentLayout->addLayout(commentLayoutRight);
   leftLayout->addLayout(commentLayout);
   leftLayout->addWidget(commentField);
-  QPointer<QHBoxLayout> caseLayout = new QHBoxLayout;
-  caseLayout->addWidget(caseSelectionLabel);
-  caseLayout->addWidget(caseSelection);
-  leftLayout->addLayout(caseLayout);
-  caseLayout->setAlignment(Qt::AlignLeft);
   QPointer<QHBoxLayout> leftButtonTopLayout = new QHBoxLayout;
   leftButtonTopLayout->addWidget(previousIncidentButton);
   leftButtonTopLayout->addWidget(jumpButton);
@@ -305,7 +290,6 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
     rawFilterField->setMaximumWidth(200);
     commentFilterField->setMaximumWidth(200);
   }
-  
   setLayout(mainLayout);
 }
 
@@ -1220,35 +1204,12 @@ void RelationshipsWidget::previousIncident() {
   query->first();
   order = query->value(0).toInt();
   if (order != 1) {
-        bool valid = false;
-    if (caseSelection->currentText() == COMPLETEDATASET) {
-      order--;
-      valid = true;
-    }
-    while (!valid && order != 1) {
-      order--;
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", order);
-      query->exec();
-      query->first();
-      int currentId = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", currentId);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	valid = true;
-      }
-    }
-    if (valid) {
-      query->prepare("UPDATE save_data "
-		     "SET relationships_record=:new");
-      query->bindValue(":new", order);
-      query->exec();
-      retrieveData();
-    }
+    order--;
+    query->prepare("UPDATE save_data "
+		   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -1265,43 +1226,11 @@ void RelationshipsWidget::jumpIncident() {
     order = indexDialog->getIndex();
     QSqlQuery *query = new QSqlQuery;
     if (order > 0) {
-      bool valid = false;
-      if (caseSelection->currentText() == COMPLETEDATASET) {
-	valid = true;
-      }
-      if (!valid) {
-	query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	query->bindValue(":order", order);
-	query->exec();
-	query->first();
-	int currentId = query->value(0).toInt();
-	query->prepare("SELECT incident FROM incidents_to_cases "
-		       "WHERE incident = :incident AND casename = :case");
-	query->bindValue(":incident", currentId);
-	query->bindValue(":case", caseSelection->currentText());
-	query->exec();
-	query->first();
-	if (!query->isNull(0)) {
-	  valid = true;
-	}
-      }
-      if (valid) {
-	query->prepare("UPDATE save_data "
-		       "SET relationships_record=:new");
-	query->bindValue(":new", order);
-	query->exec();
-	retrieveData();
-      } else {
-	QPointer<QMessageBox> warningBox = new QMessageBox(this);
-	warningBox->addButton(QMessageBox::Ok);
-	warningBox->setIcon(QMessageBox::Warning);
-	warningBox->setText("<h2>Invalid selection?</h2>");
-	warningBox->setInformativeText("The chosen incident was not "
-				       "assigned to the currently "
-				       "selected case.");
-	warningBox->exec();
-	delete warningBox;
-      }
+      query->prepare("UPDATE save_data "
+		     "SET relationships_record=:new");
+      query->bindValue(":new", order);
+      query->exec();
+      retrieveData();
     }
     delete query;
   }
@@ -1319,35 +1248,12 @@ void RelationshipsWidget::nextIncident() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) {
-    bool valid = false;
-    if (caseSelection->currentText() == COMPLETEDATASET) {
-      order++;
-      valid = true;
-    }
-    while (!valid && order != incidentsModel->rowCount()) {
-      order++;
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", order);
-      query->exec();
-      query->first();
-      int currentId = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", currentId);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	valid = true;
-      }
-    }
-    if (valid) {
-      query->prepare("UPDATE save_data "
-		     "SET relationships_record=:new");
-      query->bindValue(":new", order);
-      query->exec();
-      retrieveData();
-    }
+    order++;
+    query->prepare("UPDATE save_data "
+		   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -1384,7 +1290,6 @@ void RelationshipsWidget::toggleMark() {
 
 void RelationshipsWidget::previousMarked() {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
   int order = 0;
@@ -1396,53 +1301,20 @@ void RelationshipsWidget::previousMarked() {
   query->exec();
   query->first();
   if (order != 1) {
-    bool valid = false;
-    while (!valid && order != 1) {
-      query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order "
-		     "AND mark = 1 ORDER BY ch_order DESC");
-      query->bindValue(":order", order);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = query->value(0).toInt();
-      } else {
-	delete query;
-	return;
-      }
-      if (caseSelection->currentText() == COMPLETEDATASET) {
-	valid = true;
-      }
-      if (!valid) {
-	query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	query->bindValue(":order", order);
-	query->exec();
-	query->first();
-	int incident = query->value(0).toInt();
-	query->prepare("SELECT incident FROM incidents_to_cases "
-		       "WHERE incident = :incident AND casename = :case");
-	query->bindValue(":incident", incident);
-	query->bindValue(":case", caseSelection->currentText());
-	query->exec();
-	query->first();
-	if (!query->isNull(0)) {
-	  valid = true;
-	}
-      }
-    }
-    if (valid) {
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
-    } 
+    }
   }
   delete query;
 }
 
 void RelationshipsWidget::nextMarked() {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
   int order = 0;
@@ -1453,49 +1325,18 @@ void RelationshipsWidget::nextMarked() {
   query->bindValue(":order", order);
   query->exec();
   query->first();
+  incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) {
-    bool valid = false;
-    while (!valid && order != 1) {
-      query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order "
-		     "AND mark = 1 ORDER BY ch_order ASC");
-      query->bindValue(":order", order);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = query->value(0).toInt();
-      } else {
-	delete query;
-	return;
-      }
-      if (caseSelection->currentText() == COMPLETEDATASET) {
-	valid = true;
-      }
-      if (!valid) {
-	query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	query->bindValue(":order", order);
-	query->exec();
-	query->first();
-	int incident = query->value(0).toInt();
-	query->prepare("SELECT incident FROM incidents_to_cases "
-		       "WHERE incident = :incident AND casename = :case");
-	query->bindValue(":incident", incident);
-	query->bindValue(":case", caseSelection->currentText());
-	query->exec();
-	query->first();
-	if (!query->isNull(0)) {
-	  valid = true;
-	}
-      }
-    }
-    if (valid) {
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
-    } 
+    }
   }
   delete query;
 }
@@ -1509,43 +1350,22 @@ void RelationshipsWidget::previousDescription() {
   if (descriptionFilter != "") {
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
-    query->first();
-    int currentOrder = query->value(0).toInt();
     int order = 0;
-    QVector<int> candidates;
+    query->first();
+    order = query->value(0).toInt();
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE description LIKE :text "
 		   "AND ch_order < :order "
 		   "ORDER BY ch_order desc");
     query->bindValue(":text", searchText);
-    query->bindValue(":order", currentOrder);
+    query->bindValue(":order", order);
     query->exec();
-    while (query->next()) {
-      candidates.push_back(query->value(0).toInt());
-    }
-    std::sort(candidates.begin(), candidates.end());
-    QVectorIterator<int> it(candidates);
-    while (it.hasNext()) {
-      int current = it.next();
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", current);
-      query->exec();
-      query->first();
-      int incident = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", incident);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = current;
-      }
-    }
-    if (order != 0) {
+    query->first();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1559,47 +1379,22 @@ void RelationshipsWidget::nextDescription() {
   if (descriptionFilter != "") {
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
-    query->first();
-    int currentOrder = query->value(0).toInt();
     int order = 0;
-    QVector<int> candidates;
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    query->first();
+    order = query->value(0).toInt();
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE description LIKE :text "
 		   "AND ch_order > :order "
 		   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);
-    query->bindValue(":order", currentOrder);
+    query->bindValue(":order", order);
     query->exec();
-    while (query->next()) {
-      candidates.push_back(query->value(0).toInt());
-    }
-    std::sort(candidates.begin(), candidates.end());
-    QVectorIterator<int> it(candidates);
-    it.toBack();
-    while (it.hasPrevious()) {
-      int current = it.previous();
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", current);
-      query->exec();
-      query->first();
-      int incident = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", incident);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = current;
-      }
-    }
-    if (order != 0) {
+    query->first();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-                     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1617,43 +1412,22 @@ void RelationshipsWidget::previousRaw() {
   if (rawFilter != "") {
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
-    query->first();
-    int currentOrder = query->value(0).toInt();
     int order = 0;
-    QVector<int> candidates;
+    query->first();
+    order = query->value(0).toInt();
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE raw LIKE :text "
 		   "AND ch_order < :order "
 		   "ORDER BY ch_order desc");
     query->bindValue(":text", searchText);
-    query->bindValue(":order", currentOrder);
+    query->bindValue(":order", order);
     query->exec();
-    while (query->next()) {
-      candidates.push_back(query->value(0).toInt());
-    }
-    std::sort(candidates.begin(), candidates.end());
-    QVectorIterator<int> it(candidates);
-    while (it.hasNext()) {
-      int current = it.next();
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", current);
-      query->exec();
-      query->first();
-      int incident = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", incident);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = current;
-      }
-    }
-    if (order != 0) {
+    query->first();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1667,47 +1441,22 @@ void RelationshipsWidget::nextRaw() {
   if (rawFilter != "") {
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
-    query->first();
-    int currentOrder = query->value(0).toInt();
     int order = 0;
-    QVector<int> candidates;
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    query->first();
+    order = query->value(0).toInt();
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
+		   "WHERE raw LIKE :text "
 		   "AND ch_order > :order "
 		   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);
-    query->bindValue(":order", currentOrder);
+    query->bindValue(":order", order);
     query->exec();
-    while (query->next()) {
-      candidates.push_back(query->value(0).toInt());
-    }
-    std::sort(candidates.begin(), candidates.end());
-    QVectorIterator<int> it(candidates);
-    it.toBack();
-    while (it.hasPrevious()) {
-      int current = it.previous();
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", current);
-      query->exec();
-      query->first();
-      int incident = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", incident);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = current;
-      }
-    }
-    if (order != 0) {
+    query->first();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-                     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1725,43 +1474,22 @@ void RelationshipsWidget::previousComment() {
   if (commentFilter != "") {
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
-    query->first();
-    int currentOrder = query->value(0).toInt();
     int order = 0;
-    QVector<int> candidates;
+    query->first();
+    order = query->value(0).toInt();
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
+		   "WHERE comment LIKE :text "
 		   "AND ch_order < :order "
 		   "ORDER BY ch_order desc");
     query->bindValue(":text", searchText);
-    query->bindValue(":order", currentOrder);
+    query->bindValue(":order", order);
     query->exec();
-    while (query->next()) {
-      candidates.push_back(query->value(0).toInt());
-    }
-    std::sort(candidates.begin(), candidates.end());
-    QVectorIterator<int> it(candidates);
-    while (it.hasNext()) {
-      int current = it.next();
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", current);
-      query->exec();
-      query->first();
-      int incident = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", incident);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = current;
-      }
-    }
-    if (order != 0) {
+    query->first();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-		     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1775,47 +1503,22 @@ void RelationshipsWidget::nextComment() {
   if (commentFilter != "") {
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
-    query->first();
-    int currentOrder = query->value(0).toInt();
     int order = 0;
-    QVector<int> candidates;
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    query->first();
+    order = query->value(0).toInt();
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
-		   "WHERE description LIKE :text "
+		   "WHERE comment LIKE :text "
 		   "AND ch_order > :order "
 		   "ORDER BY ch_order asc");
     query->bindValue(":text", searchText);
-    query->bindValue(":order", currentOrder);
+    query->bindValue(":order", order);
     query->exec();
-    while (query->next()) {
-      candidates.push_back(query->value(0).toInt());
-    }
-    std::sort(candidates.begin(), candidates.end());
-    QVectorIterator<int> it(candidates);
-    it.toBack();
-    while (it.hasPrevious()) {
-      int current = it.previous();
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-      query->bindValue(":order", current);
-      query->exec();
-      query->first();
-      int incident = query->value(0).toInt();
-      query->prepare("SELECT incident FROM incidents_to_cases "
-		     "WHERE incident = :incident AND casename = :case");
-      query->bindValue(":incident", incident);
-      query->bindValue(":case", caseSelection->currentText());
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	order = current;
-      }
-    }
-    if (order != 0) {
+    query->first();
+    if (!query->isNull(0)) {
+      order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-                     "SET relationships_record = :new");
+		     "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -1837,10 +1540,8 @@ void RelationshipsWidget::previousCoded() {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
-      int currentOrder = query->value(0).toInt();
-      int order = 0;
-      QVector<int> candidates;
-      query->prepare("SELECT ch_order FROM "
+      int currentOrder = query->value(0).toInt(); 
+      query->prepare("SELECT incident, ch_order FROM "
 		     "(SELECT incident, ch_order, relationship, type "
 		     "FROM relationships_to_incidents "
 		     "LEFT JOIN incidents ON relationships_to_incidents.incident = incidents.id "
@@ -1850,32 +1551,18 @@ void RelationshipsWidget::previousCoded() {
       query->bindValue(":relationship", relationship);
       query->bindValue(":type", currentType);
       query->exec();
-      while (query->next()) {
-	candidates.push_back(query->value(0).toInt());
-      }
-      std::sort(candidates.begin(), candidates.end());
-      QVectorIterator<int> it(candidates);
-      while (it.hasNext()) {
-	int current = it.next();
-	query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	query->bindValue(":order", current);
+      int id = 0;
+      query->first();
+      if (!(query->isNull(0))) {
+	id = query->value(0).toInt();
+	query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+	query->bindValue(":id", id);
 	query->exec();
 	query->first();
-	int incident = query->value(0).toInt();
-	query->prepare("SELECT incident FROM incidents_to_cases "
-		       "WHERE incident = :incident AND casename = :case");
-	query->bindValue(":incident", incident);
-	query->bindValue(":case", caseSelection->currentText());
-	query->exec();
-	query->first();
-	if (!query->isNull(0)) {
-	  order = current;
-	}
-      }
-      if (order != 0) {
+	int newOrder = query->value(0).toInt();
 	query->prepare("UPDATE save_data "
-		       "SET relationships_record=:new");
-	query->bindValue(":new", order);
+			"SET relationships_record=:new");
+	query->bindValue(":new", newOrder);
 	query->exec();
 	retrieveData();
       }
@@ -1900,9 +1587,7 @@ void RelationshipsWidget::nextCoded() {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
-      int currentOrder = query->value(0).toInt();
-      int order = 0;
-      QVector<int> candidates;
+      int currentOrder = query->value(0).toInt(); 
       query->prepare("SELECT incident, ch_order FROM "
 		      "(SELECT incident, ch_order, relationship, type "
 		     "FROM relationships_to_incidents "
@@ -1913,33 +1598,18 @@ void RelationshipsWidget::nextCoded() {
       query->bindValue(":relationship", relationship);
       query->bindValue(":type", currentType);
       query->exec();
-      while (query->next()) {
-	candidates.push_back(query->value(0).toInt());
-      }
-      std::sort(candidates.begin(), candidates.end());
-      QVectorIterator<int> it(candidates);
-      it.toBack();
-      while (it.hasPrevious()) {
-	int current = it.previous();
-	query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	query->bindValue(":order", current);
+      int id = 0;
+      query->first();
+      if (!(query->isNull(0))) {
+	id = query->value(0).toInt();
+	query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+	query->bindValue(":id", id);
 	query->exec();
 	query->first();
-	int incident = query->value(0).toInt();
-	query->prepare("SELECT incident FROM incidents_to_cases "
-		       "WHERE incident = :incident AND casename = :case");
-	query->bindValue(":incident", incident);
-	query->bindValue(":case", caseSelection->currentText());
-	query->exec();
-	query->first();
-	if (!query->isNull(0)) {
-	  order = current;
-	}
-      }
-      if (order != 0) {
+	int newOrder = query->value(0).toInt();
 	query->prepare("UPDATE save_data "
-		       "SET relationships_record=:new");
-	query->bindValue(":new", order);
+			"SET relationships_record=:new");
+	query->bindValue(":new", newOrder);
 	query->exec();
 	retrieveData();
       }
@@ -1950,7 +1620,7 @@ void RelationshipsWidget::nextCoded() {
     }
   }
 }
-  
+
 void RelationshipsWidget::setButtons() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentItem = relationshipsTree->
