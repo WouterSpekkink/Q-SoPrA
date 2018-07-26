@@ -5,24 +5,33 @@ CasingWidget::CasingWidget(QWidget *parent) : QWidget(parent) {
   createTable();
 
   addCaseButton = new QPushButton(tr("Add case"));
+  editCaseButton = new QPushButton(tr("Edit case"));
   removeCaseButton = new QPushButton(tr("Remove case"));
   selectAllButton = new QPushButton(tr("Set all selected"));
   deselectAllButton = new QPushButton(tr("Set all deselected"));
+  attributeSelectButton = new QPushButton(tr("Select based on attribute"));
+  relationshipSelectButton = new QPushButton(tr("Select based on relationship"));
   
   connect(tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
 	    this, SLOT(setCellState(QTableWidgetItem*)));
   connect(addCaseButton, SIGNAL(clicked()), this, SLOT(addCase()));
+  connect(editCaseButton, SIGNAL(clicked()), this, SLOT(editCase()));
   connect(removeCaseButton, SIGNAL(clicked()), this, SLOT(removeCase()));
   connect(selectAllButton, SIGNAL(clicked()), this, SLOT(selectAll()));
   connect(deselectAllButton, SIGNAL(clicked()), this, SLOT(deselectAll()));
+  connect(attributeSelectButton, SIGNAL(clicked()), this, SLOT(attributeSelect()));
+  connect(relationshipSelectButton, SIGNAL(clicked()), this, SLOT(relationshipSelect()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableWidget);
   QPointer<QHBoxLayout> buttonLayout = new QHBoxLayout;
   buttonLayout->addWidget(addCaseButton);
+  buttonLayout->addWidget(editCaseButton);
   buttonLayout->addWidget(removeCaseButton);
   buttonLayout->addWidget(selectAllButton);
   buttonLayout->addWidget(deselectAllButton);
+  buttonLayout->addWidget(attributeSelectButton);
+  buttonLayout->addWidget(relationshipSelectButton);
   mainLayout->addLayout(buttonLayout);
   setLayout(mainLayout);
 }
@@ -36,7 +45,7 @@ void CasingWidget::createTable() {
   query->exec("SELECT COUNT(id) FROM cases");
   query->first();
   count = query->value(0).toInt();
-  tableWidget->setColumnCount(count + 2);
+  tableWidget->setColumnCount(count + 3);
   // We have a few columns that are always there
   QTableWidgetItem *headerOne = new QTableWidgetItem("Timing", 0);
   QTableWidgetItem *headerTwo = new QTableWidgetItem("Description", 1);
@@ -133,6 +142,53 @@ void CasingWidget::addCase() {
   }
 }
 
+void CasingWidget::editCase() {
+  QVector<QString> cases;
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString current = query->value(0).toString();
+    if (current != COMPLETEDATASET) {
+      cases.push_back(current);
+    }
+  }
+  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) {
+    QString caseName = comboDialog->getSelection();
+    QVector<QString> cases;
+    query->prepare("SELECT description FROM cases "
+		   "WHERE name = :name");
+    query->bindValue(":name", caseName);
+    query->exec();
+    query->first();
+    QString description = query->value(0).toString();
+    QPointer<CaseDialog> caseDialog = new CaseDialog(this);
+    caseDialog->submitName(caseName);
+    caseDialog->setDescription(description);
+    caseDialog->exec();
+    if (caseDialog->getExitStatus() == 0) {
+      QString newName = caseDialog->getName();
+      QString newDescription = caseDialog->getDescription();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE cases SET name = :newname, description = :newdescription "
+		     "WHERE name = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":newdescription", newDescription);
+      query->bindValue(":oldname", caseName);
+      query->exec();
+      updateTable();
+      query->prepare("UPDATE incidents_to_cases SET casename = :newname "
+		     "WHERE casename = :oldname");
+      query->bindValue(":newname", newName);
+      query->bindValue(":oldname", caseName);
+      query->exec();
+    }
+  }
+  delete query;
+  updateTable();
+}
+
 void CasingWidget::removeCase() {
   QSqlQuery *query = new QSqlQuery;
   QVector<QString> cases;
@@ -224,6 +280,14 @@ void CasingWidget::deselectAll() {
     updateTable();
   }
   delete query;
+}
+
+void CasingWidget::attributeSelect() {
+
+}
+
+void CasingWidget::relationshipSelect() {
+
 }
 
 void CasingWidget::setCellState(QTableWidgetItem *item) {

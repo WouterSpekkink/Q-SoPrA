@@ -66,6 +66,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   descriptionLabel = new QLabel("<b>Description:</b>", infoWidget);
   rawLabel = new QLabel("<b>Raw:</b>", infoWidget);
   commentLabel = new QLabel("<b>Comments:</b>", commentWidget);
+  casesLabel = new QLabel(tr("<b>Select cases:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   indexLabel = new QLabel(tr("<b>(0/0)</b>"), infoWidget);
@@ -76,6 +77,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
   eventLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   linkageLegendLabel = new QLabel(tr("<b>Linkages:</b>"), legendWidget);
+
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -119,6 +121,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   eventListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   eventListWidget->setStyleSheet("QTableView {gridline-color: black}");
   eventListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  caseListWidget = new QListWidget(graphicsWidget);
+  caseListWidget->setEnabled(false);
   
   plotButton = new QPushButton(tr("Plot new"), this);
   addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
@@ -272,6 +277,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(disableLinkageButtons()));
   connect(linkageListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeLinkageColor(QTableWidgetItem *)));
+  connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(hideLinkageTypeButton, SIGNAL(clicked()), this, SLOT(hideLinkageType()));
   connect(showLinkageTypeButton, SIGNAL(clicked()), this, SLOT(showLinkageType()));
   connect(removeLinkageTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
@@ -281,7 +287,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
-  
+    
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotOptionsLayout = new QHBoxLayout;
@@ -405,6 +411,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addWidget(legendWidget);				   
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(casesLabel);
+  graphicsControlsLayout->addWidget(caseListWidget);
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
@@ -464,6 +472,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   graphicsWidget->hide();
   attWidget->hide();
   legendWidget->hide();
+  updateCases();
 }
 
 void EventGraphWidget::checkCongruency() {
@@ -564,7 +573,7 @@ void EventGraphWidget::checkCongruency() {
     incongruencyLabel->setText("");
   }
 }
-  
+
 void EventGraphWidget::setCommentBool() {
   commentBool = true;
 }
@@ -614,6 +623,34 @@ void EventGraphWidget::toggleGraphicsControls() {
   } else {
     graphicsWidget->hide();
   }
+}
+
+void EventGraphWidget::updateCases() {
+  caseListWidget->clear();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString currentCase = query->value(0).toString();
+    QListWidgetItem *item = new QListWidgetItem(currentCase, caseListWidget);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
+  }
+}
+
+void EventGraphWidget::checkCases() {
+  for (int i = 0; i != caseListWidget->count(); i++) {
+    QListWidgetItem *item = caseListWidget->item(i);
+    if (item->checkState() == Qt::Checked) {
+      if (!checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+      }
+    } else {
+      if (checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
+      }
+    }
+  }
+  setVisibility();
 }
 
 void EventGraphWidget::showAttributes() {
@@ -2436,6 +2473,7 @@ void EventGraphWidget::cleanUp() {
   eventListWidget->setRowCount(0);
   linkageListWidget->setRowCount(0);
   presentTypes.clear();
+  checkedCases.clear();
   selectedCoder = "";
   selectedCompare = "";
   selectedIncident = 0;
@@ -2813,6 +2851,8 @@ void EventGraphWidget::plotGraph() {
   addLabels();
   compareComboBox->setCurrentIndex(0);
   savePlotButton->setEnabled(true);
+  updateCases();
+  caseListWidget->setEnabled(true);
   setRangeControls();
   plotLabel->setText("Unsaved plot");
   checkCongruency();
@@ -5100,6 +5140,34 @@ void EventGraphWidget::setVisibility() {
 	currentItem->getMacroEvent()->show();
       } else {
 	currentItem->getMacroEvent()->hide();
+      }
+    }
+  }
+  if (checkedCases.size() > 0) {
+    it.toFront();
+    while (it.hasNext()) {
+      EventItem *currentItem = it.next();
+      QVectorIterator<QString> it2(checkedCases);
+      bool found = false;
+      while (it2.hasNext()) {
+	QString currentCase = it2.next();
+	QSqlQuery *query = new QSqlQuery;
+	query->prepare("SELECT incident FROM incidents_to_cases "
+		       "WHERE incident = :incident AND casename = :casename");
+	query->bindValue(":incident", currentItem->getId());
+	query->bindValue(":casename", currentCase);
+	query->exec();
+	query->first();
+	if (!query->isNull(0)) {
+	  found = true;
+	}
+      }
+      if (!found) {
+	if (currentItem->getMacroEvent() == NULL) {
+	  currentItem->hide();
+	} else {
+	  currentItem->getMacroEvent()->hide();
+	}
       }
     }
   }

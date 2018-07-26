@@ -412,6 +412,9 @@ void DataWidget::removeRow() {
       query->prepare("DELETE FROM linkage_comments WHERE head = :head");
       query->bindValue(":head", id);
       query->exec();
+      query->prepare("DELETE FROM incidents_to_cases WHERE incident = :inc");
+      query->bindValue(":inc", id);
+      query->exec();
       query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
       query->bindValue(":oldOrder", currentOrder - 1);
       query->exec();

@@ -1301,35 +1301,6 @@ void WelcomeDialog::openDatabase() {
 		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "incident integer, "
 		  "casename text)");
-      query->exec("SELECT name FROM cases");
-      bool found = false;
-      while (query->next()) {
-	QString current = query->value(0).toString();
-	if (current == COMPLETEDATASET) {
-	  found = true;
-	}
-      }
-      if (!found) {
-	query->exec("INSERT INTO cases "
-		    "(name, "
-		    "description) "
-		    "VALUES ('Complete dataset', "
-		    "'Default case that contains all incidents "
-		    "in the dataset.')");
-	QSqlQuery *query2 = new QSqlQuery;
-	query->exec("SELECT id FROM incidents");
-	while (query->next()) {
-	  int incident = query->value(0).toInt();
-	  query2->prepare("INSERT into incidents_to_cases "
-			  "(incident, casename) "
-			  "VALUES (:incident, :case)");
-	  query2->bindValue(":incident", incident);
-	  query2->bindValue(":case", COMPLETEDATASET);
-	  query2->exec();
-	}
-	delete query2;
-      }
-      delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();
       exitStatus = 0;

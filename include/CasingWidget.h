@@ -27,9 +27,13 @@ public:
 private slots:
   void createTable();
   void addCase();
+  void editCase();
   void removeCase();
   void selectAll();
+  
   void deselectAll();
+  void attributeSelect();
+  void relationshipSelect();
   void updateTable(); // Call this on each switch
   void setCellState(QTableWidgetItem *item);
   
@@ -37,9 +41,12 @@ private:
   QPointer<QTableWidget> tableWidget;
 
   QPointer<QPushButton> addCaseButton;
+  QPointer<QPushButton> editCaseButton;
   QPointer<QPushButton> removeCaseButton;
   QPointer<QPushButton> selectAllButton;
   QPointer<QPushButton> deselectAllButton;
+  QPointer<QPushButton> attributeSelectButton;
+  QPointer<QPushButton> relationshipSelectButton;
   
 };
 
