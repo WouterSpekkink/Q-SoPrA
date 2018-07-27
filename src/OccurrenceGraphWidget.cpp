@@ -46,6 +46,9 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   relationshipListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   relationshipListWidget->setStyleSheet("QTableView {gridline-color: black}");
   relationshipListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  caseListWidget = new QListWidget(graphicsWidget);
+  caseListWidget->setEnabled(false);
   
   attributeLegendLabel = new QLabel(tr("<b>Attributes:</b>"), this);
   relationshipLegendLabel = new QLabel(tr("<b>Relationships:</b>"), this);
@@ -53,6 +56,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   changeLabel = new QLabel(tr("*"), this);
   incongruencyLabel = new QLabel(tr(""), this);
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
+  casesLabel = new QLabel(tr("<b>Select cases:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   
@@ -181,6 +185,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   screenLayout->addWidget(legendWidget);				   
 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(casesLabel);
+  graphicsControlsLayout->addWidget(caseListWidget);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
   graphicsControlsLayout->addWidget(changeLabelsButton);
@@ -231,6 +237,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 
   setLayout(mainLayout);
   graphicsWidget->hide();
+  updateCases();
 }
 
 void OccurrenceGraphWidget::checkCongruency() {
@@ -459,6 +466,18 @@ void OccurrenceGraphWidget::toggleGraphicsControls() {
     graphicsWidget->hide();
   } else {
     graphicsWidget->show();
+  }
+}
+
+void OccurrenceGraphWidget::updateCases() {
+  caseListWidget->clear();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString currentCase = query->value(0).toString();
+    QListWidgetItem *item = new QListWidgetItem(currentCase, caseListWidget);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
   }
 }
 

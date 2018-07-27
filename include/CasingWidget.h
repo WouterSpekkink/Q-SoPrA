@@ -15,6 +15,9 @@
 #include "ComboBoxDialog.h"
 #include "Constants.h"
 #include "SimpleAttributeSelectionDialog.h"
+#include "EventGraphWidget.h"
+#include "NetworkGraphWidget.h"
+#include "OccurrenceGraphWidget.h"
 
 class CasingWidget : public QWidget {
   Q_OBJECT
@@ -24,6 +27,10 @@ class CasingWidget : public QWidget {
 public:
   CasingWidget(QWidget *parent = 0);
   ~CasingWidget() {};
+
+  void setEventGraphWidget(EventGraphWidget *egw);
+  void setNetworkGraphWidget(NetworkGraphWidget *ngw);
+  void setOccurrenceGraphWidget(OccurrenceGraphWidget *ogw);
 
 private slots:
   void createTable();
@@ -39,6 +46,10 @@ private slots:
   void setCellState(QTableWidgetItem *item);
   
 private:
+  EventGraphWidget *eventGraph;
+  NetworkGraphWidget *networkGraph;
+  OccurrenceGraphWidget *occurrenceGraph;
+  
   QPointer<QTableWidget> tableWidget;
 
   QPointer<QPushButton> addCaseButton;

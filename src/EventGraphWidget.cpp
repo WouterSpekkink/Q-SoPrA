@@ -77,7 +77,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
   eventLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   linkageLegendLabel = new QLabel(tr("<b>Linkages:</b>"), legendWidget);
-
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);

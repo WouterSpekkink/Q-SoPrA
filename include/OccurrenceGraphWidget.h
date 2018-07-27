@@ -54,7 +54,8 @@ public:
   void checkCongruency();
   bool attributesPresent();
   bool relationshipsPresent();
-			
+  void updateCases();
+			     
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
@@ -157,6 +158,7 @@ private:
   QPointer<QLabel> incongruencyLabel;
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
+  QPointer<QLabel> casesLabel;
 
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
@@ -178,6 +180,8 @@ private:
   
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
+
+  QPointer<QListWidget> caseListWidget;
   
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;

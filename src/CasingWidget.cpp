@@ -121,9 +121,15 @@ void CasingWidget::createTable() {
 }
 
 void CasingWidget::updateTable() {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   tableWidget->setRowCount(0);
   tableWidget->setColumnCount(0);
   createTable();
+  eventGraph->updateCases();
+  networkGraph->updateCases();
+  occurrenceGraph->updateCases();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void CasingWidget::addCase() {
@@ -336,11 +342,11 @@ void CasingWidget::attributeSelect() {
 	  }
 	}
       }
+      updateTable();
     }
   }
   delete query;
   delete query2;
-  updateTable();
 }
 
 void CasingWidget::findChildren(QString father, QVector<QString> *children, bool entity) {
@@ -387,4 +393,16 @@ void CasingWidget::setCellState(QTableWidgetItem *item) {
     }
     delete query;
   }
+}
+
+void CasingWidget::setEventGraphWidget(EventGraphWidget *egw) {
+  eventGraph = egw;
+}
+
+void CasingWidget::setNetworkGraphWidget(NetworkGraphWidget *ngw) {
+  networkGraph = ngw;
+}
+
+void CasingWidget::setOccurrenceGraphWidget(OccurrenceGraphWidget *ogw) {
+  occurrenceGraph = ogw;
 }
