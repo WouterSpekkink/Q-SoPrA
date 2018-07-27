@@ -34,8 +34,8 @@ CaseDialog::CaseDialog(QWidget *parent) : QDialog(parent) {
   saveCloseButton->setMaximumWidth(saveCloseButton->sizeHint().width());
   mainLayout->addLayout(buttonLayout);
 
-  setWindowTitle("Add/Edit case");
   setLayout(mainLayout);
+  setWindowTitle("Add/Edit case");
 }
 
 void CaseDialog::setName(const QString &newName) {

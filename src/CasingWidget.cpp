@@ -10,7 +10,6 @@ CasingWidget::CasingWidget(QWidget *parent) : QWidget(parent) {
   selectAllButton = new QPushButton(tr("Set all selected"));
   deselectAllButton = new QPushButton(tr("Set all deselected"));
   attributeSelectButton = new QPushButton(tr("Select based on attribute"));
-  relationshipSelectButton = new QPushButton(tr("Select based on relationship"));
   
   connect(tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
 	    this, SLOT(setCellState(QTableWidgetItem*)));
@@ -20,18 +19,20 @@ CasingWidget::CasingWidget(QWidget *parent) : QWidget(parent) {
   connect(selectAllButton, SIGNAL(clicked()), this, SLOT(selectAll()));
   connect(deselectAllButton, SIGNAL(clicked()), this, SLOT(deselectAll()));
   connect(attributeSelectButton, SIGNAL(clicked()), this, SLOT(attributeSelect()));
-  connect(relationshipSelectButton, SIGNAL(clicked()), this, SLOT(relationshipSelect()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableWidget);
-  QPointer<QHBoxLayout> buttonLayout = new QHBoxLayout;
-  buttonLayout->addWidget(addCaseButton);
-  buttonLayout->addWidget(editCaseButton);
-  buttonLayout->addWidget(removeCaseButton);
-  buttonLayout->addWidget(selectAllButton);
-  buttonLayout->addWidget(deselectAllButton);
-  buttonLayout->addWidget(attributeSelectButton);
-  buttonLayout->addWidget(relationshipSelectButton);
+  QPointer<QVBoxLayout> buttonLayout = new QVBoxLayout;
+  QPointer<QHBoxLayout> topButtonLayout = new QHBoxLayout;
+  topButtonLayout->addWidget(addCaseButton);
+  topButtonLayout->addWidget(editCaseButton);
+  topButtonLayout->addWidget(removeCaseButton);
+  buttonLayout->addLayout(topButtonLayout);
+  QPointer<QHBoxLayout> bottomButtonLayout = new QHBoxLayout;
+  bottomButtonLayout->addWidget(selectAllButton);
+  bottomButtonLayout->addWidget(deselectAllButton);
+  bottomButtonLayout->addWidget(attributeSelectButton);
+  buttonLayout->addLayout(bottomButtonLayout);
   mainLayout->addLayout(buttonLayout);
   setLayout(mainLayout);
 }
@@ -153,6 +154,7 @@ void CasingWidget::editCase() {
     }
   }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to edit");
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) {
     QString caseName = comboDialog->getSelection();
@@ -200,6 +202,7 @@ void CasingWidget::removeCase() {
     }
   }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to remove");
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) {
     QString selection = comboDialog->getSelection();
@@ -237,6 +240,7 @@ void CasingWidget::selectAll() {
     }
   }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to assign incidents to");
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) {
     QString selection = comboDialog->getSelection();
@@ -270,6 +274,7 @@ void CasingWidget::deselectAll() {
     }
   }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to unassign incidents from");
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) {
     QString selection = comboDialog->getSelection();
@@ -283,11 +288,76 @@ void CasingWidget::deselectAll() {
 }
 
 void CasingWidget::attributeSelect() {
-
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  QVector<QString> cases;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString current = query->value(0).toString();
+    if (current != COMPLETEDATASET) {
+      cases.push_back(current);
+    }
+  }
+  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to assign incidents to");
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) {
+    QString caseName = comboDialog->getSelection();
+    QPointer<SimpleAttributeSelectionDialog> attributeSelection =
+      new SimpleAttributeSelectionDialog(this, INCIDENT);
+    attributeSelection->exec();
+    if (attributeSelection->getExitStatus() == 0) {
+      QString attribute = attributeSelection->getAttribute();
+      QVector<QString> attributes;
+      bool entity = attributeSelection->isEntity();
+      attributes.push_back(attribute);
+      findChildren(attribute, &attributes, entity);
+      QVectorIterator<QString> it(attributes);
+      while (it.hasNext()) {
+	QString current = it.next();
+	query->prepare("SELECT incident FROM attributes_to_incidents "
+		       "WHERE attribute = :attribute");
+	query->bindValue(":attribute", current);
+	query->exec();
+	while (query->next()) {
+	  int incident = query->value(0).toInt();
+	  query2->prepare("SELECT incident FROM incidents_to_cases "
+			  "WHERE incident = :incident AND casename = :casename");
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":casename", caseName);
+	  query2->exec();
+	  query2->first();
+	  if (query2->isNull(0)) {
+	    query2->prepare("INSERT into incidents_to_cases (incident, casename) "
+			    "VALUES (:incident, :casename)");
+	    query2->bindValue(":incident", incident);
+	    query2->bindValue(":casename", caseName);
+	    query2->exec();
+	  }
+	}
+      }
+    }
+  }
+  delete query;
+  delete query2;
+  updateTable();
 }
 
-void CasingWidget::relationshipSelect() {
-
+void CasingWidget::findChildren(QString father, QVector<QString> *children, bool entity) {
+  QSqlQuery *query = new QSqlQuery;
+  if (entity) {
+    query->prepare("SELECT name FROM entities WHERE father = :father");
+  } else {
+    query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+  }
+  query->bindValue(":father", father);
+  query->exec();
+  while (query->next()) {
+    QString currentChild = query->value(0).toString();
+    children->push_back(currentChild);
+    findChildren(currentChild, children, entity);
+  }
+  delete query;
 }
 
 void CasingWidget::setCellState(QTableWidgetItem *item) {

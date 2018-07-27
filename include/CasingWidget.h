@@ -14,6 +14,7 @@
 #include "CheckBoxDelegate.h"
 #include "ComboBoxDialog.h"
 #include "Constants.h"
+#include "SimpleAttributeSelectionDialog.h"
 
 class CasingWidget : public QWidget {
   Q_OBJECT
@@ -33,7 +34,7 @@ private slots:
   
   void deselectAll();
   void attributeSelect();
-  void relationshipSelect();
+  void findChildren(QString father, QVector<QString> *children, bool entity);
   void updateTable(); // Call this on each switch
   void setCellState(QTableWidgetItem *item);
   
@@ -46,8 +47,6 @@ private:
   QPointer<QPushButton> selectAllButton;
   QPointer<QPushButton> deselectAllButton;
   QPointer<QPushButton> attributeSelectButton;
-  QPointer<QPushButton> relationshipSelectButton;
-  
 };
 
 #endif
