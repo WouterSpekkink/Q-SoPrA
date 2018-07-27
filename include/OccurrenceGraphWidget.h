@@ -59,6 +59,7 @@ public:
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
+  void checkCases();
   
   void addAttribute();
   void addRelationship();
@@ -190,6 +191,7 @@ private:
 
   QVector<QString> presentAttributes;
   QVector<QString> presentRelationships;
+  QVector<QString> checkedCases;
   
   int distance;
   bool labelsVisible;

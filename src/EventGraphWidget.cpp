@@ -5122,6 +5122,9 @@ void EventGraphWidget::processUpperRange(int value) {
 } 
 
 void EventGraphWidget::setVisibility() {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT incident FROM incidents_to_cases "
+		 "WHERE incident = :incident AND casename = :casename");
   QVectorIterator<EventItem*> it(eventVector);
   int counter = 0;
   while (it.hasNext()) {
@@ -5150,9 +5153,6 @@ void EventGraphWidget::setVisibility() {
       bool found = false;
       while (it2.hasNext()) {
 	QString currentCase = it2.next();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT incident FROM incidents_to_cases "
-		       "WHERE incident = :incident AND casename = :casename");
 	query->bindValue(":incident", currentItem->getId());
 	query->bindValue(":casename", currentCase);
 	query->exec();
@@ -5165,7 +5165,26 @@ void EventGraphWidget::setVisibility() {
 	if (currentItem->getMacroEvent() == NULL) {
 	  currentItem->hide();
 	} else {
-	  currentItem->getMacroEvent()->hide();
+	  bool keep = false;
+	  QVector<EventItem*> contents = currentItem->getMacroEvent()->getIncidents();
+	  QVectorIterator<EventItem*> it2(contents);
+	  while (it2.hasNext()) {
+	    EventItem *currentIncident = it2.next();
+	    QVectorIterator<QString> it3(checkedCases);
+	    while (it3.hasNext()) {
+	      QString currentCase = it3.next();
+	      query->bindValue(":incident", currentIncident->getId());
+	      query->bindValue(":casename", currentCase);
+	      query->exec();
+	      query->first();
+	      if (!query->isNull(0)) {
+		keep = true;
+	      }
+	    }
+	  }
+	  if (!keep) {
+	    currentItem->getMacroEvent()->hide();
+	  }
 	}
       }
     }
@@ -5223,6 +5242,7 @@ void EventGraphWidget::setVisibility() {
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
+  delete query;
 }
 
 void EventGraphWidget::setHeights() {
