@@ -69,6 +69,7 @@ HEADERS += include/Arrow.h \
            include/OccurrenceItem.h \
            include/OccurrenceLabel.h \
            include/ProgressBar.h \
+           include/QueryModel.h \
            include/RawAttributesTable.h \
            include/RawRelationshipsTable.h \
            include/RecordDialog.h \
@@ -152,6 +153,7 @@ SOURCES += main.cpp \
            src/OccurrenceItem.cpp \
            src/OccurrenceLabel.cpp \
            src/ProgressBar.cpp \
+           src/QueryModel.cpp \
            src/RawAttributesTable.cpp \
            src/RawRelationshipsTable.cpp \
            src/RecordDialog.cpp \

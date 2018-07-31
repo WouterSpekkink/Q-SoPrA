@@ -724,6 +724,7 @@ void AttributesWidget::newAttribute() {
       query->bindValue(":name", name);
       query->bindValue(":description", description);
       query->bindValue(":father", currentParent);
+      query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
       QString hint = breakString(description);

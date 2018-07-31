@@ -13,7 +13,7 @@
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
-#include "RelationalTable.h"
+#include "QueryModel.h"
 #include "ZoomableTableView.h"
 #include "AttributeDialog.h"
 #include "EventGraphWidget.h"
@@ -47,7 +47,7 @@ private:
   EventGraphWidget *eventGraph;
   AttributesWidget *attributesWidget;
   
-  QPointer<RelationalTable> attributesModel;
+  QPointer<QueryModel> attributesModel;
   QPointer<ZoomableTableView> tableView;
   QPointer<QSortFilterProxyModel> filter;
 

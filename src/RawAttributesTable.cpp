@@ -2,21 +2,21 @@
 
 RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   // We first create our model, our table, the view and the filter of the view
-  attributesModel = new RelationalTable(this);
-  attributesModel->setTable("attributes_to_incidents_sources");
-  attributesModel->select();
+  attributesModel = new QueryModel(this);
+  attributesModel->setQuery("SELECT name, description, incident, source_text FROM incident_attributes "
+			    "INNER JOIN attributes_to_incidents_sources ON "
+			    "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			    "UNION ALL "
+			    "SELECT name, description, incident, source_text FROM entities "
+			    "INNER JOIN attributes_to_incidents_sources ON "
+			    "entities.name = attributes_to_incidents_sources.attribute "
+			    "ORDER BY name ASC");
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
   filter->setFilterKeyColumn(2);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
-  
-  // We set a few columns to display the data a bit differently.
-  attributesModel->setRelation(0,
-			       QSqlRelation("attributes_to_incidents_sources", "id", "attribute"));
-  attributesModel->setRelation(1, QSqlRelation("incident_attributes", "name", "description")); 
-  attributesModel->setRelation(2, QSqlRelation("incidents", "id", "ch_order")); 
   
   // Then we set how the data are displayed.
   attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
@@ -36,7 +36,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   tableView->setTextElideMode(Qt::ElideMiddle);
 
   // We first sort by attribute
-  attributesModel->sort(0, Qt::AscendingOrder);
+  tableView->sortByColumn(1, Qt::AscendingOrder);
   
   // We add the controls.
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
@@ -87,7 +87,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 }
 
 void RawAttributesTable::updateTable() {
-  attributesModel->select();
+  //  attributesModel->select();
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }
@@ -99,7 +99,7 @@ void RawAttributesTable::resetHeader(int header) {
 }
 
 void RawAttributesTable::sortHeader(int header) {
-  attributesModel->sort(header, Qt::AscendingOrder);
+  tableView->sortByColumn(header, Qt::AscendingOrder);
   updateTable();
 }
 
@@ -152,7 +152,7 @@ void RawAttributesTable::removeText() {
       query->exec();
       delete query;
     }
-    attributesModel->select();
+    //    attributesModel->select();
     updateTable();
   }
 }
