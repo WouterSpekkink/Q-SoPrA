@@ -65,6 +65,8 @@ private slots:
   
   void exportIncidentAttributes();
   void importIncidentAttributes();
+  void exportEntities();
+  void importEntities();
   void exportRelTypes();
   void importRelTypes();
   void exportEntityAttributes();
@@ -129,6 +131,8 @@ private:
 
   QPointer<QAction> exportIncidentAttributesAct;
   QPointer<QAction> importIncidentAttributesAct;
+  QPointer<QAction> exportEntitiesAct;
+  QPointer<QAction> importEntitiesAct;
   QPointer<QAction> exportRelTypesAct;
   QPointer<QAction> importRelTypesAct;
   QPointer<QAction> exportEntityAttributesAct;

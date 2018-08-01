@@ -206,6 +206,16 @@ void MainWindow::createActions() {
   connect(importIncidentAttributesAct, SIGNAL(triggered()),
 	  this, SLOT(importIncidentAttributes()));
 
+  exportEntitiesAct = new QAction(tr("&Export entities"), this);
+  exportEntitiesAct->setStatusTip("Export entities");
+  connect(exportEntitiesAct, SIGNAL(triggered()),
+	  this, SLOT(exportEntities()));
+  
+  importEntitiesAct = new QAction(tr("&Import entities"), this);
+  importEntitiesAct->setStatusTip("Import entities");
+  connect(importEntitiesAct, SIGNAL(triggered()),
+	  this, SLOT(importEntities()));
+  
   exportRelTypesAct = new QAction(tr("&Export relationship types"), this);
   exportRelTypesAct->setStatusTip("Export relationship types");
   connect(exportRelTypesAct, SIGNAL(triggered()),
@@ -258,6 +268,8 @@ void MainWindow::createMenus() {
   transferMenu = menuBar->addMenu("Transfer");
   transferMenu->addAction(exportIncidentAttributesAct);
   transferMenu->addAction(importIncidentAttributesAct);
+  transferMenu->addAction(exportEntitiesAct);
+  transferMenu->addAction(importEntitiesAct);
   transferMenu->addAction(exportRelTypesAct);
   transferMenu->addAction(importRelTypesAct);
   transferMenu->addAction(exportEntityAttributesAct);
@@ -967,14 +979,180 @@ void MainWindow::importIncidentAttributes() {
     QString description = QString::fromStdString(currentRow[1]);
     QString father = QString::fromStdString(currentRow[2]);
     QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    query->prepare("INSERT INTO incident_attributes "
-		   "(name, description, father) "
-		   "VALUES "
-		   "(:name, :description, :father)");
+    // Let us make sure that we are not creating duplicates.
+    query->prepare("SELECT name FROM incident_attributes "
+		   "WHERE name = :name");
     query->bindValue(":name", name);
-    query->bindValue(":description", description);
-    query->bindValue(":father", father);
     query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      query->prepare("INSERT INTO incident_attributes "
+		     "(name, description, father) "
+		     "VALUES "
+		     "(:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", father);
+      query->exec();
+    }
+    counter++;
+    loadProgress->setProgress(counter); // Set progress and report
+    qApp->processEvents(); // Make sure that the progress is visible
+    delete query; // Memory management
+  }
+  loadProgress->close(); // We can close the progress bar.
+  delete loadProgress; // Memory management
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+  aw->resetTree();
+}
+
+void MainWindow::exportEntities() {
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) {
+    if(!fileName.endsWith(".csv")) {
+      fileName.append(".csv");
+    }
+    // And we create a file outstream.  
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // We first write the header of the file.
+    fileOut << "name" << ","
+	    << "description" << ","
+	    << "father" << "\n";
+    /* 
+       The rest is relatively simple. We make a query return almost the entire table
+       and simply write that to a file.
+    */
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT name, description, father FROM entities");
+    while (query->next()) {
+      QString name = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QString father = query->value(2).toString();
+      fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
+	      << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
+    }
+    delete query;
+    // And that is it.
+    fileOut.close();
+  }
+}
+
+void MainWindow::importEntities() {
+   QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
+						  tr("csv files (*.csv)"));
+  // We then create an ifstream object that goes through the file.
+  std::ifstream file ((csvName.toStdString()).c_str());
+  std::vector<std::vector <std::string> > data; // To store our data in.
+  bool headerFound = false; // To be used in a condition further below.
+  while (file) {
+    // The buffer will hold each line of data as we read the file.
+    std::string buffer; 
+    if (!getline(file, buffer)) break; // We get the current line/
+    // We should check and handle any extra line breaks in the file.
+    while (checkLineBreaks(buffer) == true) {
+      std::string extra;
+      getline(file, extra);
+      buffer = buffer + "\n\n" + extra;
+    }
+    // We need an object to keep the separate tokens in a line.
+    std::vector<std::string> tokens; 
+    // We then split the current line into different tokens.
+    splitCsvLine(&tokens, buffer);
+    /* 
+       If we still need to import the header, let's do that first.
+       We immediately check if the correct headers were used.
+       If not, we report an error and return, letting the user fix the issue.
+    */
+    if (headerFound == false) {
+      if (tokens[0] != "name") {
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	errorBox->setText(tr("<b>ERROR</b>"));
+	errorBox->setInformativeText("Expected \"name\" in first column.");
+	errorBox->exec();
+	delete errorBox;
+	return;
+      }
+      if (tokens[1] != "description") {
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	errorBox->setText(tr("<b>ERROR</b>"));
+	errorBox->setInformativeText("Expected \"description\" "
+				     "in second column.");
+	errorBox->exec();
+	delete errorBox;
+	return;
+      }
+      if (tokens[2] != "father") {
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	errorBox->setText(tr("<b>ERROR</b>"));
+	errorBox->setInformativeText("Expected \"father\" in third column.");
+	errorBox->exec();
+	delete errorBox;
+	return;
+      }
+      /* 
+	 If we checked all headers and imported the header correctly,
+	 we can set the headerFound bool to true, so that this block 
+	 is skipped in all subsequent line reads.
+      */
+      headerFound = true;
+      // This is the block that is run after the header was already imported.
+    } else { 
+      // We iterate through the tokens and push them into the row vector.
+      std::vector<std::string> row;
+      std::vector<std::string>::iterator it;
+      if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") {
+	QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	errorBox->setText(tr("<b>ERROR</b>"));
+	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	errorBox->exec();
+	delete errorBox;
+	return;
+      }
+      for (it = tokens.begin(); it != tokens.end(); it++) {
+	row.push_back(*it);
+      }
+      // Then we push the row vector into the data vector.
+      data.push_back(row);
+    }
+  }
+  /* 
+     Writing to sqlite databases is quite slow, so if the 
+     csv-file is large, it will take a while. We use a progress bar 
+     to report to the user how much we have already imported 
+     into the sqlite database.
+  */
+  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  loadProgress->setWindowTitle("Importing entities");
+  loadProgress->setAttribute(Qt::WA_DeleteOnClose);
+  loadProgress->setModal(true);
+  loadProgress->show();
+  int counter = 1;
+  std::vector<std::vector <std::string> >::iterator it;
+  for (it = data.begin(); it != data.end(); it++) {
+    // We create all the necessary variables and write them to the table.
+    std::vector<std::string> currentRow = *it;
+    QString name = QString::fromStdString(currentRow[0]);
+    QString description = QString::fromStdString(currentRow[1]);
+    QString father = QString::fromStdString(currentRow[2]);
+    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
+    // Let us make sure that we are not creating duplicates.
+    query->prepare("SELECT name FROM entities "
+		   "WHERE name = :name");
+    query->bindValue(":name", name);
+    query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      query->prepare("INSERT INTO entities "
+		     "(name, description, father) "
+		     "VALUES "
+		     "(:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", father);
+      query->exec();
+    }
     counter++;
     loadProgress->setProgress(counter); // Set progress and report
     qApp->processEvents(); // Make sure that the progress is visible
@@ -1124,14 +1302,22 @@ void MainWindow::importRelTypes() {
     QString directedness = QString::fromStdString(currentRow[1]);
     QString description = QString::fromStdString(currentRow[2]);
     QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    query->prepare("INSERT INTO relationship_types "
-		   "(name, directedness, description) "
-		   "VALUES "
-		   "(:name, :description, :father)");
+    // Let us make sure that we are not creating duplicates.
+    query->prepare("SELECT name FROM relationship_types "
+		   "WHERE name = :name");
     query->bindValue(":name", name);
-    query->bindValue(":directedness", directedness);
-    query->bindValue(":description", description);
     query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      query->prepare("INSERT INTO relationship_types "
+		     "(name, directedness, description) "
+		     "VALUES "
+		     "(:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":directedness", directedness);
+      query->bindValue(":description", description);
+      query->exec();
+    }
     counter++;
     loadProgress->setProgress(counter); // Set progress and report
     qApp->processEvents(); // Make sure that the progress is visible
@@ -1187,7 +1373,6 @@ void MainWindow::importEntityAttributes() {
     // The buffer will hold each line of data as we read the file.
     std::string buffer; 
     if (!getline(file, buffer)) break; // We get the current line/
-
     // We should check and handle any extra line breaks in the file.
     while (checkLineBreaks(buffer) == true) {
       std::string extra;
@@ -1235,7 +1420,6 @@ void MainWindow::importEntityAttributes() {
 	 is skipped in all subsequent line reads.
       */
       headerFound = true;
-
       // This is the block that is run after the header was already imported.
     } else { 
       // We iterate through the tokens and push them into the row vector.
@@ -1276,14 +1460,22 @@ void MainWindow::importEntityAttributes() {
     QString description = QString::fromStdString(currentRow[1]);
     QString father = QString::fromStdString(currentRow[2]);
     QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    query->prepare("INSERT INTO entity_attributes "
-		   "(name, description, father) "
-		   "VALUES "
-		   "(:name, :description, :father)");
+    // Let us make sure that we are not creating duplicates.
+    query->prepare("SELECT name FROM entity_attributes "
+		   "WHERE name = :name");
     query->bindValue(":name", name);
-    query->bindValue(":description", description);
-    query->bindValue(":father", father);
     query->exec();
+    query->first();
+    if (query->isNull(0)) {
+      query->prepare("INSERT INTO entity_attributes "
+		     "(name, description, father) "
+		     "VALUES "
+		     "(:name, :description, :father)");
+      query->bindValue(":name", name);
+      query->bindValue(":description", description);
+      query->bindValue(":father", father);
+      query->exec();
+    }
     counter++;
     loadProgress->setProgress(counter); // Set progress and report
     qApp->processEvents(); // Make sure that the progress is visible
