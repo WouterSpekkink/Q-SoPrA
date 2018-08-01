@@ -61,6 +61,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   rw->setAttributesWidget(aw);
   rat->setEventGraph(egw);
   rat->setAttributesWidget(aw);
+  rat->setRelationshipsWidget(rw);
   rrt->setRelationshipsWidget(rw);
   rrt->setNetworkGraph(ngw);
   cw->setEventGraphWidget(egw);

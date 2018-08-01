@@ -90,6 +90,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 }
 
 void RawAttributesTable::updateTable() {
+  attributesModel->query().exec();
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }
@@ -214,66 +215,249 @@ void RawAttributesTable::removeText() {
       query->exec();
       delete query;
     }
-    //    attributesModel->select();
     updateTable();
   }
 }
 
 void RawAttributesTable::editAttribute() {
   if (tableView->currentIndex().isValid()) {
+    // First we need to check whether the selected attribute is an incident attribute or an entity
+    bool entity = false;
     int row = tableView->currentIndex().row();
     QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
-    query->bindValue(":name", attribute);
+    QSqlQuery *query = new QSqlQuery;    
+    query->prepare("SELECT name FROM entities WHERE name = :attribute");
+    query->bindValue(":attribute", attribute);
     query->exec();
     query->first();
-    QString description = query->value(0).toString();
-    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
-    attributeDialog->submitName(attribute);
-    attributeDialog->setDescription(description);
-    attributeDialog->exec();
-    if (attributeDialog->getExitStatus() == 0) {
-      QString newName = attributeDialog->getName();
-      description = attributeDialog->getDescription();
-      query->prepare("UPDATE incident_attributes "
-		     "SET name = :newname, description = :newdescription "
-		     "WHERE name = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":newdescription", description);
-      query->bindValue(":oldname", attribute);
+    if (!query->isNull(0)) {
+      entity = true;
+    }
+    if (entity) {
+      query->prepare("SELECT description FROM entities WHERE name = :name");
+      query->bindValue(":name", attribute);
       query->exec();
-      query->prepare("UPDATE incident_attributes "
-		     "SET father = :newname "
-		     "WHERE father = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", attribute);
+      query->first();
+      QString description = query->value(0).toString();
+      QPointer<EntityDialog> entityDialog = new EntityDialog(this);
+      entityDialog->submitName(attribute);
+      entityDialog->submitDescription(description);
+      entityDialog->exec();
+      if (entityDialog->getExitStatus() == 0) {
+	QString newName = entityDialog->getName();
+	description = entityDialog->getDescription();
+	updateEntityAfterEdit(newName, description, attribute);
+	query->prepare("UPDATE attributes_to_incidents "
+		       "SET attribute = :newname "
+		       "WHERE attribute = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	query->prepare("UPDATE attributes_to_incidents_sources "
+		       "SET attribute = :newname "
+		       "WHERE attribute = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		       "SET attribute = :newname "
+		       "WHERE attribute = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+      }
+      delete entityDialog;
+    } else {
+      query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+      query->bindValue(":name", attribute);
       query->exec();
-      query->prepare("UPDATE attributes_to_incidents "
-		     "SET attribute = :newname "
-		     "WHERE attribute = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", attribute);
-      query->exec();
-      query->prepare("UPDATE attributes_to_incidents_sources "
-		     "SET attribute = :newname "
-		     "WHERE attribute = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", attribute);
-      query->exec();
-      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
-		     "SET attribute = :newname "
-		     "WHERE attribute = :oldname");
-      query->bindValue(":newname", newName);
-      query->bindValue(":oldname", attribute);
-      query->exec();
-      eventGraph->resetTree();
-      attributesWidget->resetTree();
+      query->first();
+      QString description = query->value(0).toString();
+      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+      attributeDialog->submitName(attribute);
+      attributeDialog->setDescription(description);
+      attributeDialog->exec();
+      if (attributeDialog->getExitStatus() == 0) {
+	QString newName = attributeDialog->getName();
+	description = attributeDialog->getDescription();
+	query->prepare("UPDATE incident_attributes "
+		       "SET name = :newname, description = :newdescription "
+		       "WHERE name = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":newdescription", description);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	query->prepare("UPDATE incident_attributes "
+		       "SET father = :newname "
+		       "WHERE father = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	query->prepare("UPDATE attributes_to_incidents "
+		       "SET attribute = :newname "
+		       "WHERE attribute = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	query->prepare("UPDATE attributes_to_incidents_sources "
+		       "SET attribute = :newname "
+		       "WHERE attribute = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		       "SET attribute = :newname "
+		       "WHERE attribute = :oldname");
+	query->bindValue(":newname", newName);
+	query->bindValue(":oldname", attribute);
+	query->exec();
+	eventGraph->resetTree();
+	attributesWidget->resetTree();
+      }
+      delete attributeDialog;
     }
     delete query;
-    delete attributeDialog;
     updateTable();
   }
+}
+
+void RawAttributesTable::updateEntityAfterEdit(const QString name,
+					       const QString description,
+					       const QString former) {
+  QSqlQuery *query = new QSqlQuery;
+  // Update the entity itself.
+  query->prepare("UPDATE entities "
+		 "SET name = :name, description = :description "
+		 "WHERE name = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
+  // Update the parent entities
+  query->prepare("UPDATE entities "
+		 "SET father = :name, description = :description "
+		 "WHERE father = :former");
+  query->bindValue(":name", name);
+  query->bindValue(":description", description);
+  query->bindValue(":former", former);
+  query->exec();
+  // Update attributes.
+  query->prepare("UPDATE attributes_to_entities "
+		 "SET entity = :new "
+		 "WHERE entity = :old");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  // Update entities assigned as attributes
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET attribute = :new "
+		 "WHERE attribute = :old ");
+  query->bindValue(":new", name);
+  query->bindValue(":old", former);
+  query->exec();
+  /*
+    Next up are the relationships in which the entity already participates.
+    First, let us update all the relationships where the current entity is a source.
+  */
+  if (name != former) {
+    query->prepare("SELECT name, target, type "
+		   "FROM entity_relationships WHERE source = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString target = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = name + arrow + target;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET source = :source, name = :name "
+		      "WHERE source = :oldSource AND name = :oldRelationship");
+      query2->bindValue(":source", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldSource", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    // And then the relationships where the entity is a target.
+    query->prepare("SELECT name, source, type "
+		   "FROM entity_relationships WHERE target = :current");
+    query->bindValue(":current", former);
+    query->exec();
+    while (query->next()) {
+      QString oldRelationship = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString type = query->value(2).toString();
+      QSqlQuery *query2 = new QSqlQuery();
+      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      query2->bindValue(":type", type);
+      query2->exec();
+      query2->first();
+      QString directedness = query2->value(0).toString();
+      QString arrow = "";
+      if (directedness == UNDIRECTED) {
+	arrow = "<-->";
+      } else if (directedness == DIRECTED) {
+	arrow = "--->";
+      }
+      QString newRelationship = source + arrow + name;
+      query2->prepare("UPDATE entity_relationships "
+		      "SET target = :target, name = :name "
+		      "WHERE target = :oldTarget AND name = :oldRelationship");
+      query2->bindValue(":target", name);
+      query2->bindValue(":name", newRelationship);
+      query2->bindValue(":oldTarget", former);
+      query2->bindValue(":oldRelationship", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      query2->prepare("UPDATE relationships_to_incidents_sources "
+		      "SET relationship = :new "
+		      "WHERE relationship = :old");
+      query2->bindValue(":new", newRelationship);
+      query2->bindValue(":old", oldRelationship);
+      query2->exec();
+      delete query2;
+    }
+    delete query;
+  }
+  /* 
+     If an entity is edited, we should communicate this change both to the
+     relationships widget and the event graph. The tree of the Hierachy Graph Widget
+     is reconstructed every time it is switched to, so we do not need to reset it
+     explicitly.
+  */
+  relationshipsWidget->resetTree();
+  attributesWidget->resetTree();
+  eventGraph->resetTree();
 }
 
 void RawAttributesTable::exportTable() {
@@ -315,3 +499,8 @@ void RawAttributesTable::setEventGraph(EventGraphWidget *egw) {
 void RawAttributesTable::setAttributesWidget(AttributesWidget *aw) {
   attributesWidget = aw;
 }
+
+void RawAttributesTable::setRelationshipsWidget(RelationshipsWidget *rw) {
+  relationshipsWidget = rw;
+}
+

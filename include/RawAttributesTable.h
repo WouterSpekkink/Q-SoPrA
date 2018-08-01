@@ -18,6 +18,7 @@
 #include "AttributeDialog.h"
 #include "EventGraphWidget.h"
 #include "AttributesWidget.h"
+#include "EntityDialog.h"
 
 class AttributesWidget;
 
@@ -31,7 +32,8 @@ public:
   ~RawAttributesTable() {};
 
   void setEventGraph(EventGraphWidget *egw);
-  void setAttributesWidget(AttributesWidget *aw);					   
+  void setAttributesWidget(AttributesWidget *aw);
+  void setRelationshipsWidget(RelationshipsWidget *rw);
 
 private slots:
   void updateTable();
@@ -41,11 +43,15 @@ private slots:
   void setFilterColumn();
   void removeText();
   void editAttribute();
+  void updateEntityAfterEdit(const QString name,
+			     const QString description,
+			     const QString former);
   void exportTable();
   
 private:
   EventGraphWidget *eventGraph;
   AttributesWidget *attributesWidget;
+  RelationshipsWidget *relationshipsWidget;
   
   QPointer<QueryModel> attributesModel;
   QPointer<ZoomableTableView> tableView;
