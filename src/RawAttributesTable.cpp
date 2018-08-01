@@ -3,26 +3,15 @@
 RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   // We first create our model, our table, the view and the filter of the view
   attributesModel = new QueryModel(this);
-  attributesModel->setQuery("SELECT name, description, incident, source_text FROM incident_attributes "
-			    "INNER JOIN attributes_to_incidents_sources ON "
-			    "incident_attributes.name = attributes_to_incidents_sources.attribute "
-			    "UNION ALL "
-			    "SELECT name, description, incident, source_text FROM entities "
-			    "INNER JOIN attributes_to_incidents_sources ON "
-			    "entities.name = attributes_to_incidents_sources.attribute "
-			    "ORDER BY name ASC");
+
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(2);
+  filter->setFilterKeyColumn(0);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   
   // Then we set how the data are displayed.
-  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
-  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
-  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
-  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Text"));
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setSectionsMovable(true);
   tableView->horizontalHeader()->swapSections(0, 2);
@@ -34,9 +23,26 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
-
-  // We first sort by attribute
-  tableView->sortByColumn(1, Qt::AscendingOrder);
+  
+  attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
+			    "FROM incident_attributes "
+			    "INNER JOIN attributes_to_incidents_sources ON " 
+			    "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			    "LEFT JOIN incidents ON "
+			    "attributes_to_incidents_sources.incident = incidents.id "
+			    "UNION ALL "
+			    "SELECT name, entities.description, ch_order, source_text "
+			    "FROM entities "
+			    "INNER JOIN attributes_to_incidents_sources ON "
+			    "entities.name = attributes_to_incidents_sources.attribute "
+			    "LEFT JOIN incidents ON "
+			    "attributes_to_incidents_sources.incident = incidents.id "
+			    "ORDER BY name ASC");
+  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
+  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
+  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Text"));
+  updateTable();
   
   // We add the controls.
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
@@ -45,8 +51,8 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Incidents");
   filterComboBox->addItem("Attributes");
+  filterComboBox->addItem("Incidents");
   filterComboBox->addItem("Descriptions");
   filterComboBox->addItem("Texts");
 
@@ -67,9 +73,6 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   
-  // We fetch and sort the data.
-  updateTable();
-
   // And we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
@@ -87,7 +90,6 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 }
 
 void RawAttributesTable::updateTable() {
-  //  attributesModel->select();
   while (attributesModel->canFetchMore()) {
     attributesModel->fetchMore();
   }
@@ -99,7 +101,67 @@ void RawAttributesTable::resetHeader(int header) {
 }
 
 void RawAttributesTable::sortHeader(int header) {
-  tableView->sortByColumn(header, Qt::AscendingOrder);
+  if (header == 0) {
+    attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
+			      "FROM incident_attributes "
+			      "INNER JOIN attributes_to_incidents_sources ON " 
+			      "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "UNION ALL "
+			      "SELECT name, entities.description, ch_order, source_text "
+			      "FROM entities "
+			      "INNER JOIN attributes_to_incidents_sources ON "
+			      "entities.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "ORDER BY name ASC");
+  } else if (header == 1) {
+    attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
+			      "FROM incident_attributes "
+			      "INNER JOIN attributes_to_incidents_sources ON " 
+			      "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "UNION ALL "
+			      "SELECT name, entities.description, ch_order, source_text "
+			      "FROM entities "
+			      "INNER JOIN attributes_to_incidents_sources ON "
+			      "entities.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "ORDER BY incident_attributes.description ASC");
+  } else if (header == 2) {
+    attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
+			      "FROM incident_attributes "
+			      "INNER JOIN attributes_to_incidents_sources ON " 
+			      "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "UNION ALL "
+			      "SELECT name, entities.description, ch_order, source_text "
+			      "FROM entities "
+			      "INNER JOIN attributes_to_incidents_sources ON "
+			      "entities.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "ORDER BY ch_order ASC");
+  } else if (header == 3) {
+    attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
+			      "FROM incident_attributes "
+			      "INNER JOIN attributes_to_incidents_sources ON " 
+			      "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "UNION ALL "
+			      "SELECT name, entities.description, ch_order, source_text "
+			      "FROM entities "
+			      "INNER JOIN attributes_to_incidents_sources ON "
+			      "entities.name = attributes_to_incidents_sources.attribute "
+			      "LEFT JOIN incidents ON "
+			      "attributes_to_incidents_sources.incident = incidents.id "
+			      "ORDER BY source_text ASC");
+  }
   updateTable();
 }
 

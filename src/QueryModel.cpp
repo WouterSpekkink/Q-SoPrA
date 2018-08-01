@@ -19,8 +19,8 @@ QVariant QueryModel::data(const QModelIndex &index, int role) const {
     if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Incident") {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT description FROM incidents "
-		     "WHERE id = :id");
-      query->bindValue(":id", original);
+		     "WHERE ch_order = :ch_order");
+      query->bindValue(":ch_order", original);
       query->exec();
       query->first();
       QString description = query->value(0).toString();
@@ -41,22 +41,6 @@ QVariant QueryModel::data(const QModelIndex &index, int role) const {
     } else {
       QString toolTip = breakString(original);
       return toolTip;
-    }
-  } else if (role == Qt::DisplayRole) {
-    int col = index.column();
-    if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Incident") {
-      const QString original = QSqlQueryModel::data(index, Qt::EditRole).toString();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE id = :id");
-      query->bindValue(":id", original);
-      query->exec();
-      query->first();
-      QString orderValue = query->value(0).toString();
-      delete query;    
-      return orderValue;
-    } else {
-      return QSqlQueryModel::data(index, role);
     }
   } else {
     return QSqlQueryModel::data(index, role);
