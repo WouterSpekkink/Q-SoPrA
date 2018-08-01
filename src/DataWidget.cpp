@@ -391,13 +391,13 @@ void DataWidget::removeRow() {
       query->prepare("DELETE FROM attributes_to_incidents WHERE incident = :inc");
       query->bindValue(":inc", id);
       query->exec();
-      query->prepare("DELETE FROM attributes_to_incidents_sources WHERE id = :inc");
+      query->prepare("DELETE FROM attributes_to_incidents_sources WHERE incident = :inc");
       query->bindValue(":inc", id);
       query->exec();
       query->prepare("DELETE FROM relationships_to_incidents WHERE incident = :inc");
       query->bindValue(":inc", id);
       query->exec();
-      query->prepare("DELETE FROM relationships_to_incidents_sources WHERE id = :inc");
+      query->prepare("DELETE FROM relationships_to_incidents_sources WHERE incident = :inc");
       query->bindValue(":inc", id);
       query->exec();
       query->prepare("DELETE FROM linkages WHERE tail = :tail");
