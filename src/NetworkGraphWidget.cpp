@@ -43,7 +43,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   
   typeLabel = new QLabel(tr("Select type"), this);
-  casesLabel = new QLabel(tr("<b>Select cases:</b>"), graphicsWidget);
+  casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   nodeLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);

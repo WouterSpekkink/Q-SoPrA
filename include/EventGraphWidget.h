@@ -46,7 +46,6 @@
 #include "TextObject.h"
 #include "EllipseObject.h"
 #include "RectObject.h"
-#include "EventWidthDialog.h"
 
 class AttributesWidget;
 
@@ -241,6 +240,7 @@ private slots:
   
 signals:
   void seeHierarchy(MacroEvent *);
+  void changeEventWidth(QGraphicsItem *);
   
 private:
   QPointer<Scene> scene;

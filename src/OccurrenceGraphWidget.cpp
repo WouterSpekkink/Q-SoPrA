@@ -56,7 +56,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   changeLabel = new QLabel(tr("*"), this);
   incongruencyLabel = new QLabel(tr(""), this);
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
-  casesLabel = new QLabel(tr("<b>Select cases:</b>"), graphicsWidget);
+  casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   
@@ -2307,7 +2307,6 @@ void OccurrenceGraphWidget::setVisibility() {
 	    QVectorIterator<EventItem*> it5(contents);
 	    while (it5.hasNext()) {
 	      EventItem *currentIncident = it5.next();
-	      qDebug() << "TWO: " << currentIncident->getId();
 	      QVectorIterator<QString> it6(checkedCases);
 	      while (it6.hasNext()) {
 		QString currentCase = it6.next();

@@ -4,8 +4,6 @@
 #include <math.h>
 #include <QtCore>
 
-
-
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   resizeOnEvent = false;
   resizeOnMacro = false;
@@ -21,6 +19,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent) {
   moveText = false;
   rotateText = false;
   hierarchyMove = false;
+  eventWidthChange = false;
 }
 
 QRectF Scene::itemsBoundingRect() const {
@@ -31,6 +30,22 @@ QRectF Scene::itemsBoundingRect() const {
       boundingRect |= item->sceneBoundingRect();
     }
   return boundingRect.adjusted(-500, -500, 500, 500);
+}
+
+void Scene::modEventWidth(QGraphicsItem *item) {
+  EventItem *incident = qgraphicsitem_cast<EventItem*>(item);
+  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(item);
+  if (incident) {
+    eventWidthChange = true;
+    selectedEvent = incident;
+    clearSelection();
+    incident->setSelected(true);
+  } else if (macro) {
+    selectedMacro = macro;
+    eventWidthChange = true;
+    clearSelection();
+    macro->setSelected(true);
+  }
 }
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
@@ -227,6 +242,9 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
 }
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
+  if (eventWidthChange) {
+    eventWidthChange = false;
+  }
   if (event->modifiers() & Qt::ControlModifier) {
     EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
 								QTransform()));
@@ -539,7 +557,38 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
 }
   
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-  if (resizeOnEvent) {
+  if (eventWidthChange) {
+    if (selectedEvent != NULL) {
+      QPointF eventPos = selectedEvent->scenePos();
+      if (event->scenePos().x() > eventPos.x() && selectedEvent->getWidth() >= 40) {
+	int newWidth = event->scenePos().x() - selectedEvent->scenePos().x();
+	if (newWidth >= 40) {
+	  selectedEvent->setWidth(newWidth);
+	  selectedEvent->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
+	  selectedEvent->getLabel()->setNewPos(selectedEvent->scenePos());
+	}
+      } else {
+	selectedEvent->setWidth(40);
+	selectedEvent->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
+	selectedEvent->getLabel()->setNewPos(selectedEvent->scenePos());
+      }
+    } else if (selectedMacro != NULL) {
+      QPointF macroPos = selectedMacro->scenePos();
+      if (selectedMacro->scenePos().x() > macroPos.x() && selectedMacro->getWidth() >= 40) {
+	int newWidth = event->scenePos().x() - selectedMacro->scenePos().x();
+	if (newWidth >= 40) {
+	  selectedMacro->setWidth(newWidth);
+	  selectedMacro->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
+	  selectedMacro->getLabel()->setNewPos(selectedMacro->scenePos());
+	}
+      } else {
+	selectedMacro->setWidth(40);
+	selectedMacro->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
+	selectedMacro->getLabel()->setNewPos(selectedMacro->scenePos());
+      }
+    }
+  }
+  else if (resizeOnEvent) {
     qreal dist = event->scenePos().x() - lastMousePos.x();
     int currentY = selectedEvent->scenePos().y();
     selectedEvent->setPos(event->scenePos().x(), currentY);

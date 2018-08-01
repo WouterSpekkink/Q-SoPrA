@@ -66,7 +66,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   descriptionLabel = new QLabel("<b>Description:</b>", infoWidget);
   rawLabel = new QLabel("<b>Raw:</b>", infoWidget);
   commentLabel = new QLabel("<b>Comments:</b>", commentWidget);
-  casesLabel = new QLabel(tr("<b>Select cases:</b>"), graphicsWidget);
+  casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   indexLabel = new QLabel(tr("<b>(0/0)</b>"), infoWidget);
@@ -240,6 +240,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processEllipseContextMenu(const QString &)));
   connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
 	  this, SLOT(processRectContextMenu(const QString &)));
+  connect(this, SIGNAL(changeEventWidth(QGraphicsItem*)), scene, SLOT(modEventWidth(QGraphicsItem*)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &, const QPoint &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &, const QPoint &)));
   connect(attributesTreeView->selectionModel(),
@@ -6888,25 +6889,7 @@ void EventGraphWidget::findDescendants(QColor descendant,
 }
 
 void EventGraphWidget::setEventWidth() {
-  if (scene->selectedItems().size() == 1) {
-    QPointer<EventWidthDialog> widthDialog = new EventWidthDialog(this, 10000);
-    widthDialog->exec();
-    if (widthDialog->getExitStatus() == 0) {
-      int newWidth = widthDialog->getWidth();
-      EventItem *event = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[0]);
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(scene->selectedItems()[0]);
-      if (event) {
-	event->setWidth(newWidth);
-	event->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-	event->getLabel()->setNewPos(event->scenePos());
-      } else if (macro) {
-	macro->setWidth(newWidth);
-	macro->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-	macro->getLabel()->setNewPos(macro->scenePos());
-	
-      }
-    }
-  }
+  emit changeEventWidth(scene->selectedItems()[0]);
 }
 
 void EventGraphWidget::exportTransitionMatrix() {

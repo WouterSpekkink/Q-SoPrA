@@ -81,7 +81,6 @@ SOURCES       = main.cpp \
 		src/EventQueryModel.cpp \
 		src/EventSequenceDatabase.cpp \
 		src/EventTableModel.cpp \
-		src/EventWidthDialog.cpp \
 		src/ExportTransitionMatrixDialog.cpp \
 		src/GraphicsView.cpp \
 		src/HierarchyGraphWidget.cpp \
@@ -158,7 +157,6 @@ SOURCES       = main.cpp \
 		moc_EventQueryModel.cpp \
 		moc_EventSequenceDatabase.cpp \
 		moc_EventTableModel.cpp \
-		moc_EventWidthDialog.cpp \
 		moc_ExportTransitionMatrixDialog.cpp \
 		moc_GraphicsView.cpp \
 		moc_HierarchyGraphWidget.cpp \
@@ -229,7 +227,6 @@ OBJECTS       = main.o \
 		EventQueryModel.o \
 		EventSequenceDatabase.o \
 		EventTableModel.o \
-		EventWidthDialog.o \
 		ExportTransitionMatrixDialog.o \
 		GraphicsView.o \
 		HierarchyGraphWidget.o \
@@ -307,7 +304,6 @@ OBJECTS       = main.o \
 		moc_EventQueryModel.o \
 		moc_EventSequenceDatabase.o \
 		moc_EventTableModel.o \
-		moc_EventWidthDialog.o \
 		moc_ExportTransitionMatrixDialog.o \
 		moc_GraphicsView.o \
 		moc_HierarchyGraphWidget.o \
@@ -557,7 +553,6 @@ DIST          = /opt/Qt/5.9.4/gcc_64/mkspecs/features/spec_pre.prf \
 		include/EventQueryModel.h \
 		include/EventSequenceDatabase.h \
 		include/EventTableModel.h \
-		include/EventWidthDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/GraphicsView.h \
 		include/HierarchyGraphWidget.h \
@@ -640,7 +635,6 @@ DIST          = /opt/Qt/5.9.4/gcc_64/mkspecs/features/spec_pre.prf \
 		src/EventQueryModel.cpp \
 		src/EventSequenceDatabase.cpp \
 		src/EventTableModel.cpp \
-		src/EventWidthDialog.cpp \
 		src/ExportTransitionMatrixDialog.cpp \
 		src/GraphicsView.cpp \
 		src/HierarchyGraphWidget.cpp \
@@ -1092,8 +1086,8 @@ distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventWidthDialog.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventWidthDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/Arrow.h include/AttributeColorDialog.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/ExportTransitionMatrixDialog.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentsAttributesTable.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MacroEvent.h include/MacroLabel.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/Arrow.cpp src/AttributeColorDialog.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventItem.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/ExportTransitionMatrixDialog.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentsAttributesTable.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MacroEvent.cpp src/MacroLabel.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1125,9 +1119,9 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp
 	g++ -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /opt/Qt/5.9.4/gcc_64/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventWidthDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventWidthDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AttributeColorDialog.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 moc_AttributeColorDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QtCore \
@@ -3102,8 +3096,9 @@ moc_AttributesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -3117,7 +3112,6 @@ moc_AttributesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/AttributesWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -4373,8 +4367,9 @@ moc_CasingWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -4386,7 +4381,6 @@ moc_CasingWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/CasingWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -5595,8 +5589,9 @@ moc_DataWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -5610,7 +5605,6 @@ moc_DataWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/DataWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -6588,8 +6582,9 @@ moc_EditEntityDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -6603,7 +6598,6 @@ moc_EditEntityDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/ZoomableListView.h \
 		include/EditEntityDialog.h \
@@ -7493,8 +7487,9 @@ moc_EntitiesFilter.cpp: /opt/Qt/5.9.4/gcc_64/include/QtCore/QSortFilterProxyMode
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -7508,7 +7503,6 @@ moc_EntitiesFilter.cpp: /opt/Qt/5.9.4/gcc_64/include/QtCore/QSortFilterProxyMode
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/ZoomableListView.h \
 		include/EntitiesFilter.h \
@@ -8101,8 +8095,9 @@ moc_EntityDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -8116,7 +8111,6 @@ moc_EntityDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/EntityDialog.h \
 		moc_predefs.h \
@@ -8950,7 +8944,6 @@ moc_EventGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/EventWidthDialog.h \
 		include/MainWindow.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDesktopWidget \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMainWindow \
@@ -8969,8 +8962,9 @@ moc_EventGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QItemSelection \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -10258,137 +10252,6 @@ moc_EventTableModel.cpp: /opt/Qt/5.9.4/gcc_64/include/QtSql/QtSql \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
 	/opt/Qt/5.9.4/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/opt/Qt/5.9.4/gcc_64/mkspecs/linux-g++ -I/home/wouterspekkink/Programming/Q-SoPrA -I/home/wouterspekkink/Programming/Q-SoPrA -I/opt/Qt/5.9.4/gcc_64/include -I/opt/Qt/5.9.4/gcc_64/include/QtSvg -I/opt/Qt/5.9.4/gcc_64/include/QtWidgets -I/opt/Qt/5.9.4/gcc_64/include/QtGui -I/opt/Qt/5.9.4/gcc_64/include/QtSql -I/opt/Qt/5.9.4/gcc_64/include/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventTableModel.h -o moc_EventTableModel.cpp
-
-moc_EventWidthDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwidget.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiglobal.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobal.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig-bootstrapped.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcore-config.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemdetection.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocessordetection.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcompilerdetection.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypeinfo.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsysinfo.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlogging.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qflags.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasicatomic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qgenericatomic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_msvc.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobalstatic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmutex.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnumeric.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversiontagging.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtgui-config.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgets-config.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnamespace.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstring.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qchar.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearray.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrefcount.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydata.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringbuilder.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlist.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qalgorithms.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiterator.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhashfunctions.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpair.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraylist.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlist.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregexp.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringmatcher.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreevent.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedpointer.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetatype.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvarlengtharray.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontainerfwd.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject_impl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmargins.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrect.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsize.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpoint.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpalette.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcolor.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgb.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgba64.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbrush.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvector.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpolygon.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qregion.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatastream.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiodevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qline.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtransform.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainterpath.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimage.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixelformat.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmap.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qshareddata.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhash.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfont.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontmetrics.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontinfo.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcursor.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qkeysequence.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qevent.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariant.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmap.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdebug.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextstream.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlocale.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qset.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontiguouscache.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurlquery.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfile.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfiledevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector2d.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtouchdevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialog.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLabel \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlabel.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qframe.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLineEdit \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlineedit.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextcursor.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextformat.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpen.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextoption.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qpushbutton.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractbutton.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qboxlayout.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayout.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayoutitem.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgridlayout.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QHBoxLayout \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/QIntValidator \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvalidator.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregularexpression.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/QPointer \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpointer.h \
-		include/EventWidthDialog.h \
-		moc_predefs.h \
-		/opt/Qt/5.9.4/gcc_64/bin/moc
-	/opt/Qt/5.9.4/gcc_64/bin/moc $(DEFINES) --include ./moc_predefs.h -I/opt/Qt/5.9.4/gcc_64/mkspecs/linux-g++ -I/home/wouterspekkink/Programming/Q-SoPrA -I/home/wouterspekkink/Programming/Q-SoPrA -I/opt/Qt/5.9.4/gcc_64/include -I/opt/Qt/5.9.4/gcc_64/include/QtSvg -I/opt/Qt/5.9.4/gcc_64/include/QtWidgets -I/opt/Qt/5.9.4/gcc_64/include/QtGui -I/opt/Qt/5.9.4/gcc_64/include/QtSql -I/opt/Qt/5.9.4/gcc_64/include/QtCore -I/usr/include/c++/7 -I/usr/include/x86_64-linux-gnu/c++/7 -I/usr/include/c++/7/backward -I/usr/lib/gcc/x86_64-linux-gnu/7/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/7/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/EventWidthDialog.h -o moc_EventWidthDialog.cpp
 
 moc_ExportTransitionMatrixDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
@@ -11743,8 +11606,9 @@ moc_HierarchyGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -11758,7 +11622,6 @@ moc_HierarchyGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/HierarchyGraphWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -14089,8 +13952,9 @@ moc_LinkagesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -14104,7 +13968,6 @@ moc_LinkagesWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/LinkagesWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -14978,8 +14841,9 @@ moc_MainWindow.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -14993,7 +14857,6 @@ moc_MainWindow.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/MainWindow.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -18699,8 +18562,9 @@ moc_OccurrenceGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -18714,7 +18578,6 @@ moc_OccurrenceGraphWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets 
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/OccurrenceGraphWidget.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -19358,7 +19221,7 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QFileDialog \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfiledialog.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/SupportingFunctions.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QString \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVector \
@@ -19672,6 +19535,7 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -19685,7 +19549,6 @@ moc_RawAttributesTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/RawAttributesTable.h \
 		moc_predefs.h \
 		/opt/Qt/5.9.4/gcc_64/bin/moc
@@ -20277,6 +20140,7 @@ moc_RawRelationshipsTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButto
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
@@ -20291,7 +20155,6 @@ moc_RawRelationshipsTable.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButto
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/RawRelationshipsTable.h \
 		moc_predefs.h \
@@ -22389,8 +22252,9 @@ moc_RelationshipsDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -22404,7 +22268,6 @@ moc_RelationshipsDialog.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/ZoomableListView.h \
 		include/RelationshipsDialog.h \
@@ -22996,8 +22859,9 @@ moc_RelationshipsWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -23011,7 +22875,6 @@ moc_RelationshipsWidget.cpp: /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QTextEdit \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/ZoomableListView.h \
 		include/RelationshipsWidget.h \
@@ -25707,7 +25570,6 @@ main.o: main.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/EventWidthDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -25717,8 +25579,9 @@ main.o: main.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QApplication \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QItemSelection \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -27942,7 +27805,6 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/EventWidthDialog.h \
 		include/MainWindow.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDesktopWidget \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QMainWindow \
@@ -27961,8 +27823,9 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QItemSelection \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -28653,8 +28516,9 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QItemSelection \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -28667,8 +28531,7 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o BandlessGraphicsView.o src/BandlessGraphicsView.cpp
 
 CaseDialog.o: src/CaseDialog.cpp include/CaseDialog.h \
@@ -29538,8 +29401,9 @@ CasingWidget.o: src/CasingWidget.cpp include/CasingWidget.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -29549,8 +29413,7 @@ CasingWidget.o: src/CasingWidget.cpp include/CasingWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o CasingWidget.o src/CasingWidget.cpp
 
 CheckBoxDelegate.o: src/CheckBoxDelegate.cpp include/CheckBoxDelegate.h \
@@ -30784,8 +30647,9 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -30798,8 +30662,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DataWidget.o src/DataWidget.cpp
 
 DeselectableListWidget.o: src/DeselectableListWidget.cpp include/DeselectableListWidget.h \
@@ -31989,8 +31852,9 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -32004,7 +31868,6 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/ZoomableListView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EditEntityDialog.o src/EditEntityDialog.cpp
 
@@ -33342,8 +33205,9 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -33357,7 +33221,6 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/ZoomableListView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EntitiesFilter.o src/EntitiesFilter.cpp
@@ -33947,8 +33810,9 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -33962,7 +33826,6 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EntityDialog.o src/EntityDialog.cpp
 
@@ -34805,8 +34668,9 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -34819,8 +34683,7 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventGraphWidget.o src/EventGraphWidget.cpp
 
 EventItem.o: src/EventItem.cpp /opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
@@ -36567,135 +36430,6 @@ EventTableModel.o: src/EventTableModel.cpp include/EventTableModel.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVector
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventTableModel.o src/EventTableModel.cpp
 
-EventWidthDialog.o: src/EventWidthDialog.cpp include/EventWidthDialog.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QWidget \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qwidget.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgetsglobal.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtguiglobal.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobal.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig-bootstrapped.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qconfig.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtcore-config.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsystemdetection.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qprocessordetection.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcompilerdetection.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtypeinfo.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsysinfo.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlogging.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qflags.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbasicatomic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_bootstrap.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qgenericatomic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_cxx11.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qatomic_msvc.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qglobalstatic.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmutex.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnumeric.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qversiontagging.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtgui-config.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qtwidgets-config.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qnamespace.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobjectdefs_impl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qwindowdefs_win.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstring.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qchar.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearray.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrefcount.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qarraydata.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringbuilder.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlist.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qalgorithms.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiterator.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhashfunctions.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpair.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qbytearraylist.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringlist.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregexp.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qstringmatcher.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcoreevent.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qscopedpointer.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmetatype.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvarlengtharray.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontainerfwd.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qobject_impl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmargins.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpaintdevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qrect.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsize.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpoint.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpalette.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcolor.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgb.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qrgba64.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qbrush.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvector.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qmatrix.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpolygon.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qregion.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdatastream.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qiodevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qline.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtransform.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpainterpath.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qimage.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixelformat.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpixmap.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qshareddata.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qhash.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qsharedpointer_impl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfont.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontmetrics.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qfontinfo.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qsizepolicy.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qcursor.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qkeysequence.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qevent.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qvariant.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qmap.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qdebug.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qtextstream.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qlocale.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qset.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qcontiguouscache.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurl.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qurlquery.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfile.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qfiledevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvector2d.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtouchdevice.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QDialog \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialog.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLabel \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlabel.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qframe.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QLineEdit \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlineedit.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextcursor.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextformat.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qpen.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qtextoption.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QPushButton \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qpushbutton.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qabstractbutton.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qicon.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QVBoxLayout \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qboxlayout.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayout.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qlayoutitem.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qgridlayout.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QHBoxLayout \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/QIntValidator \
-		/opt/Qt/5.9.4/gcc_64/include/QtGui/qvalidator.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qregularexpression.h \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/QPointer \
-		/opt/Qt/5.9.4/gcc_64/include/QtCore/qpointer.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EventWidthDialog.o src/EventWidthDialog.cpp
-
 ExportTransitionMatrixDialog.o: src/ExportTransitionMatrixDialog.cpp include/ExportTransitionMatrixDialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgets \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QtWidgetsDepends \
@@ -37760,8 +37494,9 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -37774,8 +37509,7 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o GraphicsView.o src/GraphicsView.cpp
 
 HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidget.h \
@@ -38363,8 +38097,9 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QItemSelection \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -38378,7 +38113,6 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/BandlessGraphicsView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HierarchyGraphWidget.o src/HierarchyGraphWidget.cpp
 
@@ -40844,8 +40578,9 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -40858,8 +40593,7 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinkagesWidget.o src/LinkagesWidget.cpp
 
 LinkageTypeDialog.o: src/LinkageTypeDialog.cpp include/LinkageTypeDialog.h \
@@ -42423,7 +42157,6 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
-		include/EventWidthDialog.h \
 		include/CheckBoxDelegate.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QStyledItemDelegate \
 		include/LinkagesWidget.h \
@@ -42433,8 +42166,9 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QItemSelection \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -47091,8 +46825,9 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -47106,7 +46841,6 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/RelationshipColorDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o OccurrenceGraphWidget.o src/OccurrenceGraphWidget.cpp
 
@@ -48449,7 +48183,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qdialog.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/QFileDialog \
 		/opt/Qt/5.9.4/gcc_64/include/QtWidgets/qfiledialog.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/SupportingFunctions.h \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QString \
 		/opt/Qt/5.9.4/gcc_64/include/QtCore/QVector \
@@ -48762,6 +48496,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -48774,8 +48509,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
-		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h
+		include/EventNodeSettingsDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RawAttributesTable.o src/RawAttributesTable.cpp
 
 RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsTable.h \
@@ -49365,6 +49099,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
+		include/QueryModel.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -49378,7 +49113,6 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RawRelationshipsTable.o src/RawRelationshipsTable.cpp
 
@@ -51919,8 +51653,9 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -51934,7 +51669,6 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h \
 		include/ZoomableListView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipsDialog.o src/RelationshipsDialog.cpp
@@ -52524,8 +52258,9 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/HierarchyGraphWidget.h \
 		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
-		include/RelationalTable.h \
+		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
+		include/RelationalTable.h \
 		include/IncidentsAttributesTable.h \
 		include/EntitiesAttributesTable.h \
 		include/MissingAttributesTable.h \
@@ -52539,7 +52274,6 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
 		include/EventNodeSettingsDialog.h \
-		include/EventWidthDialog.h \
 		include/EditEntityDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipsWidget.o src/RelationshipsWidget.cpp
 
@@ -55336,9 +55070,6 @@ moc_EventSequenceDatabase.o: moc_EventSequenceDatabase.cpp
 
 moc_EventTableModel.o: moc_EventTableModel.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EventTableModel.o moc_EventTableModel.cpp
-
-moc_EventWidthDialog.o: moc_EventWidthDialog.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_EventWidthDialog.o moc_EventWidthDialog.cpp
 
 moc_ExportTransitionMatrixDialog.o: moc_ExportTransitionMatrixDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_ExportTransitionMatrixDialog.o moc_ExportTransitionMatrixDialog.cpp
