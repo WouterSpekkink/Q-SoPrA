@@ -2337,6 +2337,27 @@ void OccurrenceGraphWidget::setVisibility() {
 	  if (!query->isNull(0)) {
 	    found = true;
 	  }
+	  QVector<EventItem*> events = eventGraph->getEventItems();
+	  QVectorIterator<EventItem*> it5(events);
+	  while (it5.hasNext()) {
+	    EventItem *currentEvent = it5.next();
+	    if (currentEvent->getId() == currentItem->getId()) {
+	      if (currentEvent->getMacroEvent() != NULL) {
+		QVector<EventItem*> contents = currentEvent->getMacroEvent()->getIncidents();
+		QVectorIterator<EventItem*> it6(contents);
+		while (it6.hasNext()) {
+		  EventItem *currentIncident = it6.next();
+		  query->bindValue(":incident", currentIncident->getId());
+		  query->bindValue(":casename", currentCase);
+		  query->exec();
+		  query->first();
+		  if (!query->isNull(0)) {
+		    found = true;
+		  }
+		}
+	      }
+	    }
+	  }
 	}
 	if (!found) {
 	  currentItem->hide();
