@@ -6,24 +6,12 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
 
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(0);
+  filter->setFilterKeyColumn(2);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   
   // Then we set how the data are displayed.
-  tableView->horizontalHeader()->setStretchLastSection(true);
-  tableView->horizontalHeader()->setSectionsMovable(true);
-  tableView->horizontalHeader()->swapSections(0, 2);
-  tableView->horizontalHeader()->swapSections(1, 2);
-  tableView->setColumnWidth(0, 200);
-  tableView->setColumnWidth(1, 600);
-  tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
-  tableView->setSelectionMode( QAbstractItemView::SingleSelection );
-  tableView->verticalHeader()->setDefaultSectionSize(30);
-  tableView->setWordWrap(true);
-  tableView->setTextElideMode(Qt::ElideMiddle);
-  
   attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
 			    "FROM incident_attributes "
 			    "INNER JOIN attributes_to_incidents_sources ON " 
@@ -42,6 +30,18 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
   attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Text"));
+  tableView->horizontalHeader()->setStretchLastSection(true);
+  tableView->horizontalHeader()->setSectionsMovable(true);
+  tableView->horizontalHeader()->swapSections(0, 2);
+  tableView->horizontalHeader()->swapSections(1, 2);
+  tableView->setColumnWidth(0, 200);
+  tableView->setColumnWidth(1, 600);
+  tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
+  tableView->setSelectionMode( QAbstractItemView::SingleSelection );
+  tableView->verticalHeader()->setDefaultSectionSize(30);
+  tableView->setWordWrap(true);
+  tableView->setTextElideMode(Qt::ElideMiddle);
+  
   updateTable();
   
   // We add the controls.
@@ -51,8 +51,8 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) {
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Attributes");
   filterComboBox->addItem("Incidents");
+  filterComboBox->addItem("Attributes");
   filterComboBox->addItem("Descriptions");
   filterComboBox->addItem("Texts");
 

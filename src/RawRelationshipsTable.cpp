@@ -46,10 +46,10 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Types");
-  filterComboBox->addItem("Relationships");
-  filterComboBox->addItem("Descriptions");
   filterComboBox->addItem("Incidents");
+  filterComboBox->addItem("Relationships");
+  filterComboBox->addItem("Types");
+  filterComboBox->addItem("Descriptions");
   filterComboBox->addItem("Texts");
 
   removeTextButton = new QPushButton(tr("Remove selected"), this);
