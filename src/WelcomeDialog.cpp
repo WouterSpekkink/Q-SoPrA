@@ -239,7 +239,7 @@ void WelcomeDialog::newDatabase() {
 		  "incident integer, "
 		  "macro integer)");
       query->exec("CREATE TABLE saved_eg_plots_macros_to_macros "
-		  "id integer PRIMARY KEY AUTOINCREMENT, "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
 		  "plot text, "
 		  "son integer, "
 		  "father integer)");
