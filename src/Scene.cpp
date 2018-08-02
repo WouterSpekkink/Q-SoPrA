@@ -49,6 +49,9 @@ void Scene::modEventWidth(QGraphicsItem *item) {
 }
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) {
+  if (eventWidthChange) {
+    eventWidthChange = false;
+  }
   EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(wheelEvent->scenePos(),
 							      QTransform()));
   MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(wheelEvent->scenePos(),
@@ -454,7 +457,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 							      QTransform()));
     TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
 							      QTransform()));
-	
     if (nodeLabel) {
       incident = nodeLabel->getNode();
     }
@@ -574,7 +576,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
       }
     } else if (selectedMacro != NULL) {
       QPointF macroPos = selectedMacro->scenePos();
-      if (selectedMacro->scenePos().x() > macroPos.x() && selectedMacro->getWidth() >= 40) {
+      if (event->scenePos().x() > macroPos.x() && selectedMacro->getWidth() >= 40) {
 	int newWidth = event->scenePos().x() - selectedMacro->scenePos().x();
 	if (newWidth >= 40) {
 	  selectedMacro->setWidth(newWidth);

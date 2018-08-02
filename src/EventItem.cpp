@@ -165,6 +165,7 @@ void EventItem::setDislodged(bool state) {
 }
 
 void EventItem::setWidth(int newWidth) {
+  prepareGeometryChange();
   width = newWidth;
   update();
 }
