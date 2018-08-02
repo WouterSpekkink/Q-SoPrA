@@ -12,6 +12,7 @@
 #include <QFileDialog>
 #include <QGraphicsTextItem>
 #include <QColorDialog>
+#include <QListWidget>
 #include <math.h>
 #include <vector>
 #include <fstream>
@@ -45,7 +46,6 @@
 #include "TextObject.h"
 #include "EllipseObject.h"
 #include "RectObject.h"
-#include "EventWidthDialog.h"
 
 class AttributesWidget;
 
@@ -65,6 +65,7 @@ public:
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void setRelationshipsWidget(RelationshipsWidget *rw);
+  void updateCases();
 
 private slots:
   void setCommentBool();
@@ -72,6 +73,7 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
+  void checkCases();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
   void disableModeButtons();
@@ -238,6 +240,7 @@ private slots:
   
 signals:
   void seeHierarchy(MacroEvent *);
+  void changeEventWidth(QGraphicsItem *);
   
 private:
   QPointer<Scene> scene;
@@ -287,6 +290,7 @@ private:
   QPointer<QLabel> incongruencyLabel;
   QPointer<QLabel> eventLegendLabel;
   QPointer<QLabel> linkageLegendLabel;
+  QPointer<QLabel> casesLabel;
   
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
@@ -332,6 +336,8 @@ private:
   QPointer<QPushButton> showLinkageTypeButton;
   
   QPointer<DeselectableListWidget> eventListWidget;
+
+  QPointer<QListWidget> caseListWidget;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -352,6 +358,7 @@ private:
   QPointer<QSpinBox> upperRangeSpinBox;
 
   QVector<QString> presentTypes;
+  QVector<QString> checkedCases;
   
   QString selectedCoder;
   QString selectedCompare;

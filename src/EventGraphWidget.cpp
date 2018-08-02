@@ -66,6 +66,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   descriptionLabel = new QLabel("<b>Description:</b>", infoWidget);
   rawLabel = new QLabel("<b>Raw:</b>", infoWidget);
   commentLabel = new QLabel("<b>Comments:</b>", commentWidget);
+  casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   indexLabel = new QLabel(tr("<b>(0/0)</b>"), infoWidget);
@@ -119,6 +120,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   eventListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   eventListWidget->setStyleSheet("QTableView {gridline-color: black}");
   eventListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  caseListWidget = new QListWidget(graphicsWidget);
+  caseListWidget->setEnabled(false);
   
   plotButton = new QPushButton(tr("Plot new"), this);
   addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
@@ -236,6 +240,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(processEllipseContextMenu(const QString &)));
   connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
 	  this, SLOT(processRectContextMenu(const QString &)));
+  connect(this, SIGNAL(changeEventWidth(QGraphicsItem*)), scene, SLOT(modEventWidth(QGraphicsItem*)));
   connect(view, SIGNAL(EventGraphContextMenuAction(const QString &, const QPoint &)),
 	  this, SLOT(processEventGraphContextMenu(const QString &, const QPoint &)));
   connect(attributesTreeView->selectionModel(),
@@ -272,6 +277,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(disableLinkageButtons()));
   connect(linkageListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeLinkageColor(QTableWidgetItem *)));
+  connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(hideLinkageTypeButton, SIGNAL(clicked()), this, SLOT(hideLinkageType()));
   connect(showLinkageTypeButton, SIGNAL(clicked()), this, SLOT(showLinkageType()));
   connect(removeLinkageTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
@@ -281,7 +287,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
-  
+    
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotOptionsLayout = new QHBoxLayout;
@@ -405,6 +411,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addWidget(legendWidget);				   
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(casesLabel);
+  graphicsControlsLayout->addWidget(caseListWidget);
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
@@ -464,6 +472,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) {
   graphicsWidget->hide();
   attWidget->hide();
   legendWidget->hide();
+  updateCases();
 }
 
 void EventGraphWidget::checkCongruency() {
@@ -564,7 +573,7 @@ void EventGraphWidget::checkCongruency() {
     incongruencyLabel->setText("");
   }
 }
-  
+
 void EventGraphWidget::setCommentBool() {
   commentBool = true;
 }
@@ -614,6 +623,34 @@ void EventGraphWidget::toggleGraphicsControls() {
   } else {
     graphicsWidget->hide();
   }
+}
+
+void EventGraphWidget::updateCases() {
+  caseListWidget->clear();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString currentCase = query->value(0).toString();
+    QListWidgetItem *item = new QListWidgetItem(currentCase, caseListWidget);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
+  }
+}
+
+void EventGraphWidget::checkCases() {
+  for (int i = 0; i != caseListWidget->count(); i++) {
+    QListWidgetItem *item = caseListWidget->item(i);
+    if (item->checkState() == Qt::Checked) {
+      if (!checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+      }
+    } else {
+      if (checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
+      }
+    }
+  }
+  setVisibility();
 }
 
 void EventGraphWidget::showAttributes() {
@@ -2436,6 +2473,7 @@ void EventGraphWidget::cleanUp() {
   eventListWidget->setRowCount(0);
   linkageListWidget->setRowCount(0);
   presentTypes.clear();
+  checkedCases.clear();
   selectedCoder = "";
   selectedCompare = "";
   selectedIncident = 0;
@@ -2813,6 +2851,8 @@ void EventGraphWidget::plotGraph() {
   addLabels();
   compareComboBox->setCurrentIndex(0);
   savePlotButton->setEnabled(true);
+  updateCases();
+  caseListWidget->setEnabled(true);
   setRangeControls();
   plotLabel->setText("Unsaved plot");
   checkCongruency();
@@ -5083,6 +5123,9 @@ void EventGraphWidget::processUpperRange(int value) {
 } 
 
 void EventGraphWidget::setVisibility() {
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT incident FROM incidents_to_cases "
+		 "WHERE incident = :incident AND casename = :casename");
   QVectorIterator<EventItem*> it(eventVector);
   int counter = 0;
   while (it.hasNext()) {
@@ -5100,6 +5143,50 @@ void EventGraphWidget::setVisibility() {
 	currentItem->getMacroEvent()->show();
       } else {
 	currentItem->getMacroEvent()->hide();
+      }
+    }
+  }
+  if (checkedCases.size() > 0) {
+    it.toFront();
+    while (it.hasNext()) {
+      EventItem *currentItem = it.next();
+      QVectorIterator<QString> it2(checkedCases);
+      bool found = false;
+      while (it2.hasNext()) {
+	QString currentCase = it2.next();
+	query->bindValue(":incident", currentItem->getId());
+	query->bindValue(":casename", currentCase);
+	query->exec();
+	query->first();
+	if (!query->isNull(0)) {
+	  found = true;
+	}
+      }
+      if (!found) {
+	if (currentItem->getMacroEvent() == NULL) {
+	  currentItem->hide();
+	} else {
+	  bool keep = false;
+	  QVector<EventItem*> contents = currentItem->getMacroEvent()->getIncidents();
+	  QVectorIterator<EventItem*> it2(contents);
+	  while (it2.hasNext()) {
+	    EventItem *currentIncident = it2.next();
+	    QVectorIterator<QString> it3(checkedCases);
+	    while (it3.hasNext()) {
+	      QString currentCase = it3.next();
+	      query->bindValue(":incident", currentIncident->getId());
+	      query->bindValue(":casename", currentCase);
+	      query->exec();
+	      query->first();
+	      if (!query->isNull(0)) {
+		keep = true;
+	      }
+	    }
+	  }
+	  if (!keep) {
+	    currentItem->getMacroEvent()->hide();
+	  }
+	}
       }
     }
   }
@@ -5156,6 +5243,7 @@ void EventGraphWidget::setVisibility() {
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
+  delete query;
 }
 
 void EventGraphWidget::setHeights() {
@@ -6801,25 +6889,7 @@ void EventGraphWidget::findDescendants(QColor descendant,
 }
 
 void EventGraphWidget::setEventWidth() {
-  if (scene->selectedItems().size() == 1) {
-    QPointer<EventWidthDialog> widthDialog = new EventWidthDialog(this, 10000);
-    widthDialog->exec();
-    if (widthDialog->getExitStatus() == 0) {
-      int newWidth = widthDialog->getWidth();
-      EventItem *event = qgraphicsitem_cast<EventItem*>(scene->selectedItems()[0]);
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(scene->selectedItems()[0]);
-      if (event) {
-	event->setWidth(newWidth);
-	event->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-	event->getLabel()->setNewPos(event->scenePos());
-      } else if (macro) {
-	macro->setWidth(newWidth);
-	macro->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-	macro->getLabel()->setNewPos(macro->scenePos());
-	
-      }
-    }
-  }
+  emit changeEventWidth(scene->selectedItems()[0]);
 }
 
 void EventGraphWidget::exportTransitionMatrix() {

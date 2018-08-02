@@ -41,6 +41,9 @@ signals:
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);
   void RectContextMenuAction(const QString&);
+
+private slots:
+  void modEventWidth(QGraphicsItem* item);
   
 protected:
   void wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) override;
@@ -63,6 +66,7 @@ protected:
   bool moveText;
   bool rotateText;
   bool hierarchyMove;
+  bool eventWidthChange;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;

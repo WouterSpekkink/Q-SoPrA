@@ -1,7 +1,6 @@
 #include "../include/RelationshipsWidget.h"
 
 RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
-
   descriptionFilter = "";
   rawFilter = "";
   commentFilter = "";
@@ -49,7 +48,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
   commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
   relationshipCommentLabel = new QLabel("<b>Comment:</b>", this);
   relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>", this);
-
+  
   timeStampField = new QLineEdit(this);
   timeStampField->setReadOnly(true);
   sourceField = new QLineEdit(this);
@@ -112,7 +111,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) {
 
   relationshipsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
    
-connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
+  connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
   connect(jumpButton, SIGNAL(clicked()), this, SLOT(jumpIncident()));
@@ -190,7 +189,6 @@ connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   descriptionLayoutRight->addWidget(descriptionPreviousButton);
   descriptionPreviousButton->setMaximumWidth(descriptionPreviousButton->sizeHint().width());
   descriptionLayoutRight->addWidget(descriptionFilterField);
-  //  descriptionFilterField->setFixedWidth(250);
   descriptionLayoutRight->addWidget(descriptionNextButton);
   descriptionNextButton->setMaximumWidth(descriptionNextButton->sizeHint().width());
   descriptionLayout->addLayout(descriptionLayoutRight);
@@ -206,7 +204,6 @@ connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   rawLayoutRight->addWidget(rawPreviousButton);
   rawPreviousButton->setMaximumWidth(rawPreviousButton->sizeHint().width());
   rawLayoutRight->addWidget(rawFilterField);
-  //  rawFilterField->setFixedWidth(250);
   rawLayoutRight->addWidget(rawNextButton);
   rawNextButton->setMaximumWidth(rawNextButton->sizeHint().width());
   rawLayout->addLayout(rawLayoutRight);
@@ -222,7 +219,6 @@ connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   commentLayoutRight->addWidget(commentPreviousButton);
   commentPreviousButton->setMaximumWidth(commentPreviousButton->sizeHint().width());
   commentLayoutRight->addWidget(commentFilterField);
-  // commentFilterField->setFixedWidth(250);
   commentLayoutRight->addWidget(commentNextButton);
   commentNextButton->setMaximumWidth(commentNextButton->sizeHint().width());
   commentLayout->addLayout(commentLayoutRight);
@@ -294,7 +290,6 @@ connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
     rawFilterField->setMaximumWidth(200);
     commentFilterField->setMaximumWidth(200);
   }
-  
   setLayout(mainLayout);
 }
 
@@ -1209,29 +1204,10 @@ void RelationshipsWidget::previousIncident() {
   query->first();
   order = query->value(0).toInt();
   if (order != 1) {
+    order--;
     query->prepare("UPDATE save_data "
 		   "SET relationships_record=:new");
-    query->bindValue(":new", order - 1);
-    query->exec();
-    retrieveData();
-  }
-  delete query;
-}
-
-void RelationshipsWidget::nextIncident() {
-  setComment();
-  incidentsModel->select();
-  QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT relationships_record FROM save_data");
-  int order = 0;
-  query->first();
-  order = query->value(0).toInt();
-  while(incidentsModel->canFetchMore())
-    incidentsModel->fetchMore();
-  if (order != incidentsModel->rowCount()) {
-    query->prepare("UPDATE save_data "
-		   "SET relationships_record=:new");
-    query->bindValue(":new", order + 1);
+    query->bindValue(":new", order);
     query->exec();
     retrieveData();
   }
@@ -1244,7 +1220,6 @@ void RelationshipsWidget::jumpIncident() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   AttributeIndexDialog *indexDialog = new AttributeIndexDialog(this, incidentsModel->rowCount());
-  indexDialog->deleteLater();
   indexDialog->exec();
   int order = 0;
   if (indexDialog->getExitStatus() != 1) {
@@ -1260,6 +1235,27 @@ void RelationshipsWidget::jumpIncident() {
     delete query;
   }
   delete indexDialog;
+}
+
+void RelationshipsWidget::nextIncident() {
+  setComment();
+  incidentsModel->select();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT relationships_record FROM save_data");
+  int order = 0;
+  query->first();
+  order = query->value(0).toInt();
+  while(incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
+  if (order != incidentsModel->rowCount()) {
+    order++;
+    query->prepare("UPDATE save_data "
+		   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+  }
+  delete query;
 }
 
 void RelationshipsWidget::toggleMark() {
@@ -1292,16 +1288,15 @@ void RelationshipsWidget::toggleMark() {
   delete query;
 }
 
-
 void RelationshipsWidget::previousMarked() {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
+  query->prepare("SELECT ch_order FROM incidents "
+		 "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
   query->bindValue(":order", order);
   query->exec();
   query->first();
@@ -1320,17 +1315,17 @@ void RelationshipsWidget::previousMarked() {
 
 void RelationshipsWidget::nextMarked() {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
+  query->prepare("SELECT ch_order FROM incidents "
+		 "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
   query->bindValue(":order", order);
   query->exec();
   query->first();
-
+  incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) {
@@ -1353,13 +1348,11 @@ void RelationshipsWidget::setDescriptionFilter(const QString &text) {
 void RelationshipsWidget::previousDescription() {
   setComment();
   if (descriptionFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE description LIKE :text "
@@ -1369,8 +1362,6 @@ void RelationshipsWidget::previousDescription() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -1386,13 +1377,11 @@ void RelationshipsWidget::previousDescription() {
 void RelationshipsWidget::nextDescription() {
   setComment();
   if (descriptionFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE description LIKE :text "
@@ -1402,8 +1391,6 @@ void RelationshipsWidget::nextDescription() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -1423,13 +1410,11 @@ void RelationshipsWidget::setRawFilter(const QString &text) {
 void RelationshipsWidget::previousRaw() {
   setComment();
   if (rawFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE raw LIKE :text "
@@ -1439,8 +1424,6 @@ void RelationshipsWidget::previousRaw() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -1456,13 +1439,11 @@ void RelationshipsWidget::previousRaw() {
 void RelationshipsWidget::nextRaw() {
   setComment();
   if (rawFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE raw LIKE :text "
@@ -1472,8 +1453,6 @@ void RelationshipsWidget::nextRaw() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -1493,13 +1472,11 @@ void RelationshipsWidget::setCommentFilter(const QString &text) {
 void RelationshipsWidget::previousComment() {
   setComment();
   if (commentFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE comment LIKE :text "
@@ -1509,8 +1486,6 @@ void RelationshipsWidget::previousComment() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -1526,13 +1501,11 @@ void RelationshipsWidget::previousComment() {
 void RelationshipsWidget::nextComment() {
   setComment();
   if (commentFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT relationships_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
 		   "WHERE comment LIKE :text "
@@ -1542,8 +1515,6 @@ void RelationshipsWidget::nextComment() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -1649,7 +1620,7 @@ void RelationshipsWidget::nextCoded() {
     }
   }
 }
-  
+
 void RelationshipsWidget::setButtons() {
   if (relationshipsTreeView->currentIndex().isValid()) {
     QStandardItem *currentItem = relationshipsTree->

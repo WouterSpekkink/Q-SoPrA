@@ -2430,12 +2430,13 @@ void LinkagesWidget::setLinkageComment() {
 }
 
 void LinkagesWidget::pause(int time) {
-#ifdef __linux__ 
+  std::this_thread::sleep_for(std::chrono::milliseconds(time));
+  /*#ifdef __linux__ 
   std::chrono::milliseconds timespan(time); 
   std::this_thread::sleep_for(timespan);
-#elif _WIN32
+  #elif _WIN32
   Sleep(time);
-#endif
+  #endif*/
 }
 
 void LinkagesWidget::setLink() {

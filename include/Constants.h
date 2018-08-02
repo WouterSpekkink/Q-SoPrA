@@ -95,6 +95,7 @@ extern QString ONEFORWARD;
 extern QString ONEBACKWARD;
 extern QString BRINGFORWARD;
 extern QString BRINGBACKWARD;
+extern QString COMPLETEDATASET;
 extern qreal Pi;
 
 #endif

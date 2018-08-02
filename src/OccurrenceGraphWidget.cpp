@@ -9,6 +9,7 @@
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) {
   distance = 70;
   labelsVisible = true;
+  matched = false;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -46,6 +47,9 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   relationshipListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   relationshipListWidget->setStyleSheet("QTableView {gridline-color: black}");
   relationshipListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  caseListWidget = new QListWidget(graphicsWidget);
+  caseListWidget->setEnabled(false);
   
   attributeLegendLabel = new QLabel(tr("<b>Attributes:</b>"), this);
   relationshipLegendLabel = new QLabel(tr("<b>Relationships:</b>"), this);
@@ -53,6 +57,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   changeLabel = new QLabel(tr("*"), this);
   incongruencyLabel = new QLabel(tr(""), this);
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
+  casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   
@@ -131,6 +136,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 	  this, SLOT(processRectContextMenu(const QString &)));
   connect(view, SIGNAL(OccurrenceGraphContextMenuAction(const QString &, const QPoint&)),
 	  this, SLOT(processOccurrenceGraphContextMenu(const QString &, const QPoint&)));
+  connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
   connect(changeLabelsButton, SIGNAL(clicked()), this, SLOT(changeLabels()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
@@ -181,6 +187,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
   screenLayout->addWidget(legendWidget);				   
 
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(casesLabel);
+  graphicsControlsLayout->addWidget(caseListWidget);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
   graphicsControlsLayout->addWidget(changeLabelsButton);
@@ -231,6 +239,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 
   setLayout(mainLayout);
   graphicsWidget->hide();
+  updateCases();
 }
 
 void OccurrenceGraphWidget::checkCongruency() {
@@ -462,6 +471,34 @@ void OccurrenceGraphWidget::toggleGraphicsControls() {
   }
 }
 
+void OccurrenceGraphWidget::updateCases() {
+  caseListWidget->clear();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString currentCase = query->value(0).toString();
+    QListWidgetItem *item = new QListWidgetItem(currentCase, caseListWidget);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
+  }
+}
+
+void OccurrenceGraphWidget::checkCases() {
+  for (int i = 0; i != caseListWidget->count(); i++) {
+    QListWidgetItem *item = caseListWidget->item(i);
+    if (item->checkState() == Qt::Checked) {
+      if (!checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+      }
+    } else {
+      if (checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
+      }
+    }
+  }
+  setVisibility();
+}
+
 bool OccurrenceGraphWidget::attributesPresent() {
   return presentAttributes.size() > 0;
 }
@@ -578,6 +615,9 @@ void OccurrenceGraphWidget::addAttribute() {
   view->update();
   updateLinkages();
   checkCongruency();
+  if (!caseListWidget->isEnabled()) {
+    caseListWidget->setEnabled(true);
+  }
 }
 
 void OccurrenceGraphWidget::addRelationship() {
@@ -680,6 +720,9 @@ void OccurrenceGraphWidget::addRelationship() {
   view->update();
   updateLinkages();
   checkCongruency();
+  if (!caseListWidget->isEnabled()) {
+    caseListWidget->setEnabled(true);
+  }
 }
 
 void OccurrenceGraphWidget::setChangeLabel() {
@@ -742,6 +785,7 @@ void OccurrenceGraphWidget::removeAttributeMode() {
     groupOccurrences();
   } else if (presentAttributes.size() == 0 && presentRelationships.size() == 0) {
     savePlotButton->setEnabled(false);
+    caseListWidget->setEnabled(false);
   }
   wireLinkages();
   removeAttributeModeButton->setEnabled(false);
@@ -1035,9 +1079,11 @@ void OccurrenceGraphWidget::restore() {
   reset();
   groupOccurrences();
   wireLinkages();
+  setVisibility();
 }
 
 void OccurrenceGraphWidget::reset() {
+  matched = false;
   QVector<OccurrenceItem*>::iterator it;
   for (it = attributeOccurrenceVector.begin(); it != attributeOccurrenceVector.end();) {
     OccurrenceItem *current = *it;
@@ -1068,7 +1114,7 @@ void OccurrenceGraphWidget::reset() {
     }
   }
   // And now we do the same for the relationship-oriented occurrences
-    for (it = relationshipOccurrenceVector.begin(); it != relationshipOccurrenceVector.end();) {
+  for (it = relationshipOccurrenceVector.begin(); it != relationshipOccurrenceVector.end();) {
     OccurrenceItem *current = *it;
     if (current->getId() < 0) {
       delete current->getLabel();
@@ -1096,10 +1142,12 @@ void OccurrenceGraphWidget::reset() {
       it++;
     }
   }
+  setVisibility();
 }
 
 void OccurrenceGraphWidget::getEvents() {
   reset();
+  matched = true;
   QVector<EventItem*> incidents = eventGraph->getEventItems();
   if (incidents.size() > 0) {
     QVectorIterator<EventItem*> it(incidents);
@@ -2248,7 +2296,83 @@ void OccurrenceGraphWidget::setVisibility() {
 	currentItem->hide();
       }
     }
+    if (checkedCases.size() > 0) {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT incident FROM incidents_to_cases "
+		     "WHERE incident = :incident AND casename = :casename");
+      int id = currentItem->getId();
+      if (id < 0) { // Occurrence items for macro events have negative IDs.
+	bool keep = false;
+	QVector<MacroEvent*> macros = eventGraph->getMacros();
+	QVectorIterator<MacroEvent*> it4(macros);
+	while (it4.hasNext()) {
+	  MacroEvent *currentMacro = it4.next();
+	  if (currentMacro->getId() == id * -1) {
+	    QVector<EventItem*> contents = currentMacro->getIncidents();
+	    QVectorIterator<EventItem*> it5(contents);
+	    while (it5.hasNext()) {
+	      EventItem *currentIncident = it5.next();
+	      QVectorIterator<QString> it6(checkedCases);
+	      while (it6.hasNext()) {
+		QString currentCase = it6.next();
+		query->bindValue(":incident", currentIncident->getId());
+		query->bindValue(":casename", currentCase);
+		query->exec();
+		query->first();
+		if (!query->isNull(0)) {
+		  keep = true;
+		}
+	      }
+	    }
+	  }
+	}
+	if (!keep) {
+	  currentItem->hide();
+	}
+      } else {
+	bool found = false;
+	QVectorIterator<QString> it4(checkedCases);
+	while (it4.hasNext()) {
+	  QString currentCase = it4.next();
+	  query->bindValue(":incident", id);
+	  query->bindValue(":casename", currentCase);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) {
+	    found = true;
+	  }
+	  if (matched) {
+	    QVector<EventItem*> events = eventGraph->getEventItems();
+	    QVectorIterator<EventItem*> it5(events);
+	    while (it5.hasNext()) {
+	      EventItem *currentEvent = it5.next();
+	      if (currentEvent->getId() == currentItem->getId()) {
+		if (currentEvent->getMacroEvent() != NULL) {
+		  QVector<EventItem*> contents = currentEvent->getMacroEvent()->getIncidents();
+		  QVectorIterator<EventItem*> it6(contents);
+		  while (it6.hasNext()) {
+		    EventItem *currentIncident = it6.next();
+		    query->bindValue(":incident", currentIncident->getId());
+		    query->bindValue(":casename", currentCase);
+		    query->exec();
+		    query->first();
+		    if (!query->isNull(0)) {
+		      found = true;
+		    }
+		  }
+		}
+	      }
+	    }
+	  }
+	}
+	if (!found) {
+	  currentItem->hide();
+	}
+      }
+      delete query;
+    }
   }
+  wireLinkages();
   QVectorIterator<Arrow*> it4(edgeVector);
   while (it4.hasNext()) {
     Arrow *currentEdge = it4.next();
@@ -3368,6 +3492,7 @@ void OccurrenceGraphWidget::cleanUp() {
   relationshipListWidget->setRowCount(0);
   presentAttributes.clear();
   presentRelationships.clear();
+  checkedCases.clear();
 }
 
 void OccurrenceGraphWidget::finalBusiness() {

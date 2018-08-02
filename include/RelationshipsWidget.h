@@ -122,7 +122,7 @@ private:
   QPointer<QLabel> commentFilterLabel;
   QPointer<QLabel> relationshipFilterLabel;
   QPointer<QLabel> relationshipCommentLabel;
-
+  
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> descriptionFilterField;

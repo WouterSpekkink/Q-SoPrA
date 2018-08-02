@@ -1,6 +1,5 @@
 #include "../include/AttributesWidget.h"
 
-
 AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
 
   descriptionFilter = "";
@@ -66,7 +65,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) {
   attributeFilterField = new QLineEdit(this);
   valueField = new QLineEdit(this);
   valueField->setEnabled(false);
-  
+
   previousIncidentButton = new QPushButton("Previous incident", this);
   previousIncidentButton->setStyleSheet("QPushButton {font-weight: bold}");
   nextIncidentButton = new QPushButton("Next incident", this);
@@ -314,9 +313,10 @@ void AttributesWidget::previousIncident() {
   query->first();
   order = query->value(0).toInt();
   if (order != 1) {
+    order--;
     query->prepare("UPDATE save_data "
-                   "SET attributes_record=:new");
-    query->bindValue(":new", order - 1);
+		   "SET attributes_record=:new");
+    query->bindValue(":new", order);
     query->exec();
     retrieveData();
   }
@@ -336,7 +336,7 @@ void AttributesWidget::jumpIncident() {
     QSqlQuery *query = new QSqlQuery;
     if (order > 0) {
       query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
+		     "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
@@ -357,9 +357,10 @@ void AttributesWidget::nextIncident() {
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) {
+    order++;
     query->prepare("UPDATE save_data "
-                   "SET attributes_record=:new");
-    query->bindValue(":new", order + 1);
+		   "SET attributes_record=:new");
+    query->bindValue(":new", order);
     query->exec();
     retrieveData();
   }
@@ -403,19 +404,20 @@ void AttributesWidget::previousMarked() {
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
-  query->bindValue(":order", order);
-  query->exec();
-  query->first();
   if (order != 1) {
+    query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order "
+		   "AND mark = 1 ORDER BY ch_order DESC");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
+		     "SET attributes_record = :new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
-    }
+    } 
   }
   delete query;
 }
@@ -428,23 +430,22 @@ void AttributesWidget::nextMarked() {
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  query->prepare("SELECT ch_order FROM incidents "
-		 "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
-  query->bindValue(":order", order);
-  query->exec();
-  query->first();
-
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) {
+    query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order "
+		   "AND mark = 1 ORDER BY ch_order ASC");
+    query->bindValue(":order", order);
+    query->exec();
+    query->first();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
+		     "SET attributes_record = :new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
-    }
+    } 
   }
   delete query;
 }
@@ -457,13 +458,11 @@ void AttributesWidget::setDescriptionFilter(const QString &text) {
 void AttributesWidget::previousDescription() {
   setComment();
   if (descriptionFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE description LIKE :text "
@@ -473,8 +472,6 @@ void AttributesWidget::previousDescription() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -486,17 +483,14 @@ void AttributesWidget::previousDescription() {
     delete query;
   }
 }
-
 void AttributesWidget::nextDescription() {
   setComment();
   if (descriptionFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + descriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE description LIKE :text "
@@ -506,8 +500,6 @@ void AttributesWidget::nextDescription() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -527,13 +519,11 @@ void AttributesWidget::setRawFilter(const QString &text) {
 void AttributesWidget::previousRaw() {
   setComment();
   if (rawFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + rawFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE raw LIKE :text "
@@ -543,8 +533,6 @@ void AttributesWidget::previousRaw() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -560,7 +548,6 @@ void AttributesWidget::previousRaw() {
 void AttributesWidget::nextRaw() {
   setComment();
   if (rawFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     int order = 0;
@@ -575,8 +562,6 @@ void AttributesWidget::nextRaw() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -596,13 +581,11 @@ void AttributesWidget::setCommentFilter(const QString &text) {
 void AttributesWidget::previousComment() {
   setComment();
   if (commentFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE comment LIKE :text "
@@ -612,8 +595,6 @@ void AttributesWidget::previousComment() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -629,13 +610,11 @@ void AttributesWidget::previousComment() {
 void AttributesWidget::nextComment() {
   setComment();
   if (commentFilter != "") {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attributes_record FROM save_data");
     int order = 0;
     query->first();
     order = query->value(0).toInt();
-
     QString searchText = "%" + commentFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE comment LIKE :text "
@@ -645,8 +624,6 @@ void AttributesWidget::nextComment() {
     query->bindValue(":order", order);
     query->exec();
     query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
     if (!query->isNull(0)) {
       order = query->value(0).toInt();
       query->prepare("UPDATE save_data "
@@ -747,6 +724,7 @@ void AttributesWidget::newAttribute() {
       query->bindValue(":name", name);
       query->bindValue(":description", description);
       query->bindValue(":father", currentParent);
+      query->exec();
       QStandardItem *attribute = new QStandardItem(name);    
       attributesTree->appendRow(attribute);
       QString hint = breakString(description);

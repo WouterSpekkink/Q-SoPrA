@@ -169,6 +169,7 @@ void MacroEvent::setDislodged(bool state) {
 }
 
 void MacroEvent::setWidth(int newWidth) {
+  prepareGeometryChange();
   width = newWidth;
   update();
 }

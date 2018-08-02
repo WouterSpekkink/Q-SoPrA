@@ -40,7 +40,6 @@ void WelcomeDialog::newDatabase() {
     if (check_file.exists() && check_file.isFile()) {
       QFile::remove(dbName);
     }
-
     esd->openDB(dbName);
     bool ok = esd->db.open();
     if (!ok) {
@@ -648,6 +647,20 @@ void WelcomeDialog::newDatabase() {
 		  "fillgreen integer, "
 		  "fillblue integer, "
 		  "fillalpha integer)");
+      query->exec("CREATE TABLE cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "name text, "
+		  "description text)");
+      query->exec("INSERT INTO cases "
+		  "(name, "
+		  "description) "
+		  "VALUES ('Complete dataset', "
+		  "'Default case that contains all incidents "
+		  "in the dataset.')");
+      query->exec("CREATE TABLE incidents_to_cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "incident integer, "
+		  "casename text)");
       delete query;
       qApp->restoreOverrideCursor();
       qApp->processEvents();
@@ -1280,7 +1293,14 @@ void WelcomeDialog::openDatabase() {
 		  "fillgreen integer, "
 		  "fillblue integer, "
 		  "fillalpha integer)");
-      delete query;
+      query->exec("CREATE TABLE IF NOT EXISTS cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "name text, "
+		  "description text)");
+      query->exec("CREATE TABLE IF NOT EXISTS incidents_to_cases "
+		  "(id integer PRIMARY KEY AUTOINCREMENT, "
+		  "incident integer, "
+		  "casename text)");
       qApp->restoreOverrideCursor();
       qApp->processEvents();
       exitStatus = 0;

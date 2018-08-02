@@ -43,6 +43,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   
   typeLabel = new QLabel(tr("Select type"), this);
+  casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   nodeLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
@@ -168,6 +169,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   edgeListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   edgeListWidget->setStyleSheet("QTableView {gridline-color: black}");
   edgeListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+
+  caseListWidget = new QListWidget(graphicsWidget);
+  caseListWidget->setEnabled(false);
   
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -225,6 +229,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
 	  this, SLOT(disableModeButtons()));
   connect(nodeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
+  connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(setFilteredButton, SIGNAL(clicked()), this, SLOT(activateFilter()));
   connect(unsetFilteredButton, SIGNAL(clicked()), this, SLOT(deactivateFilter()));
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
@@ -351,6 +356,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   screenLayout->addWidget(legendWidget);				   
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(casesLabel);
+  graphicsControlsLayout->addWidget(caseListWidget);
   graphicsControlsLayout->addWidget(simpleLayoutButton);
   graphicsControlsLayout->addWidget(circularLayoutButton);
   QPointer<QHBoxLayout> expansionLayout = new QHBoxLayout;
@@ -412,7 +419,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) {
   setLayout(mainLayout);
 
   getTypes();
-
+  updateCases();
+  
   disableFilterButtons();
   infoWidget->hide();
   graphicsWidget->hide();
@@ -537,6 +545,22 @@ void NetworkGraphWidget::toggleLegend() {
     legendWidget->hide();
   }
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+}
+
+void NetworkGraphWidget::checkCases() {
+  for (int i = 0; i != caseListWidget->count(); i++) {
+    QListWidgetItem *item = caseListWidget->item(i);
+    if (item->checkState() == Qt::Checked) {
+      if (!checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+      }
+    } else {
+      if (checkedCases.contains(item->data(Qt::DisplayRole).toString())) {
+	checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
+      }
+    }
+  }
+  setVisibility();
 }
 
 bool NetworkGraphWidget::typesPresent() {
@@ -3394,6 +3418,7 @@ void NetworkGraphWidget::plotNewGraph() {
   plotLabel->setText("Unsaved plot");
   updateEdges();
   checkCongruency();
+  caseListWidget->setEnabled(true);
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
 }
 
@@ -3469,6 +3494,9 @@ void NetworkGraphWidget::removeRelationshipType() {
     }
   }
   presentTypes.removeOne(text);
+  if (presentTypes.size() == 0) {
+    caseListWidget->setEnabled(false);
+  }
   setVisibility();
 }
 
@@ -4814,6 +4842,18 @@ void NetworkGraphWidget::processUpperRange(int value) {
   setVisibility();
 }
 
+void NetworkGraphWidget::updateCases() {
+  caseListWidget->clear();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) {
+    QString currentCase = query->value(0).toString();
+    QListWidgetItem *item = new QListWidgetItem(currentCase, caseListWidget);
+    item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+    item->setCheckState(Qt::Unchecked);
+  }
+}
+
 void NetworkGraphWidget::setVisibility() {
   QSqlDatabase::database().transaction(); 
   QSqlQuery *query = new QSqlQuery;
@@ -4821,6 +4861,9 @@ void NetworkGraphWidget::setVisibility() {
 		 "WHERE relationship = :relationship AND type = :type");
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+  QSqlQuery *query3 = new QSqlQuery;
+  query3->prepare("SELECT incident FROM incidents_to_cases "
+		  "WHERE incident = :incident AND casename = :casename");
   QVectorIterator<NetworkNode*> it(nodeVector);
   while (it.hasNext()) {
     NetworkNode* currentNode = it.next();
@@ -4856,6 +4899,29 @@ void NetworkGraphWidget::setVisibility() {
 	}
       } else {
 	show = true;
+      }
+    }
+    if (checkedCases.size() > 0) {
+      query->bindValue(":relationship", relationship);
+      query->bindValue(":type", type);
+      query->exec();
+      bool found = false;
+      while (query->next()) {
+	int incident = query->value(0).toInt();
+	QVectorIterator<QString> it3(checkedCases);
+	while (it3.hasNext()) {
+	  QString currentCase = it3.next();
+	  query3->bindValue(":incident", incident);
+	  query3->bindValue(":casename", currentCase);
+	  query3->exec();
+	  query3->first();
+	  if (!query3->isNull(0)) {
+	    found = true;
+	  }
+	}
+      }
+      if (!found) {
+	show = false;
       }
     }
     if (show) {
@@ -4900,6 +4966,29 @@ void NetworkGraphWidget::setVisibility() {
 	show = true;
       }
     }
+    if (checkedCases.size() > 0) {
+      query->bindValue(":relationship", relationship);
+      query->bindValue(":type", type);
+      query->exec();
+      bool found = false;
+      while (query->next()) {
+	int incident = query->value(0).toInt();
+	QVectorIterator<QString> it4(checkedCases);
+	while (it4.hasNext()) {
+	  QString currentCase = it4.next();
+	  query3->bindValue(":incident", incident);
+	  query3->bindValue(":casename", currentCase);
+	  query3->exec();
+	  query3->first();
+	  if (!query3->isNull(0)) {
+	    found = true;
+	  }
+	}
+      }
+      if (!found) {
+	show = false;
+      }
+    }
     if (show) {
       currentUndirected->show();
       currentUndirected->startItem()->show();
@@ -4921,6 +5010,7 @@ void NetworkGraphWidget::setVisibility() {
   }
   delete query;
   delete query2;
+  delete query3;
   updateEdges();
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
@@ -5028,6 +5118,7 @@ void NetworkGraphWidget::cleanUp() {
   nodeListWidget->setRowCount(0);
   edgeListWidget->setRowCount(0);
   presentTypes.clear();
+  checkedCases.clear();
   minOrder = 0;
   maxOrder = 0;
   selectedEntityName = "";

@@ -55,11 +55,13 @@ public:
   void checkCongruency();
   void getTypes();
   bool typesPresent();
+  void updateCases();
 		 
 private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
+  void checkCases();
 
   void retrieveData();
   void setTree();
@@ -216,11 +218,14 @@ private:
   QPointer<QLabel> plotLabel;
   QPointer<QLabel> changeLabel;
   QPointer<QLabel> incongruencyLabel;
+  QPointer<QLabel> casesLabel;
   
   QPointer<QComboBox> typeComboBox;
 
   QPointer<DeselectableListWidget> nodeListWidget;
   QPointer<DeselectableListWidget> edgeListWidget;
+
+  QPointer<QListWidget> caseListWidget;
 
   QPointer<QLineEdit> nameField;
   QPointer<QLineEdit> attributesFilterField;
@@ -275,7 +280,8 @@ private:
   QPointer<QSpinBox> upperRangeSpinBox;
 
   QVector<QString> presentTypes; 
-
+  QVector<QString> checkedCases;
+  
   QString selectedType;
   QString selectedEntityName;
 
