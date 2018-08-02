@@ -123,7 +123,6 @@ private slots:
   void duplicateEllipse();
   void duplicateRect();
 
-
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
@@ -195,6 +194,7 @@ private:
   
   int distance;
   bool labelsVisible;
+  bool matched;
 };
 
 #endif

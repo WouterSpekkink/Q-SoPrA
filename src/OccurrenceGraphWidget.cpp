@@ -9,6 +9,7 @@
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) {
   distance = 70;
   labelsVisible = true;
+  matched = false;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -1078,9 +1079,11 @@ void OccurrenceGraphWidget::restore() {
   reset();
   groupOccurrences();
   wireLinkages();
+  setVisibility();
 }
 
 void OccurrenceGraphWidget::reset() {
+  matched = false;
   QVector<OccurrenceItem*>::iterator it;
   for (it = attributeOccurrenceVector.begin(); it != attributeOccurrenceVector.end();) {
     OccurrenceItem *current = *it;
@@ -1111,7 +1114,7 @@ void OccurrenceGraphWidget::reset() {
     }
   }
   // And now we do the same for the relationship-oriented occurrences
-    for (it = relationshipOccurrenceVector.begin(); it != relationshipOccurrenceVector.end();) {
+  for (it = relationshipOccurrenceVector.begin(); it != relationshipOccurrenceVector.end();) {
     OccurrenceItem *current = *it;
     if (current->getId() < 0) {
       delete current->getLabel();
@@ -1139,10 +1142,12 @@ void OccurrenceGraphWidget::reset() {
       it++;
     }
   }
+  setVisibility();
 }
 
 void OccurrenceGraphWidget::getEvents() {
   reset();
+  matched = true;
   QVector<EventItem*> incidents = eventGraph->getEventItems();
   if (incidents.size() > 0) {
     QVectorIterator<EventItem*> it(incidents);
@@ -2336,22 +2341,24 @@ void OccurrenceGraphWidget::setVisibility() {
 	  if (!query->isNull(0)) {
 	    found = true;
 	  }
-	  QVector<EventItem*> events = eventGraph->getEventItems();
-	  QVectorIterator<EventItem*> it5(events);
-	  while (it5.hasNext()) {
-	    EventItem *currentEvent = it5.next();
-	    if (currentEvent->getId() == currentItem->getId()) {
-	      if (currentEvent->getMacroEvent() != NULL) {
-		QVector<EventItem*> contents = currentEvent->getMacroEvent()->getIncidents();
-		QVectorIterator<EventItem*> it6(contents);
-		while (it6.hasNext()) {
-		  EventItem *currentIncident = it6.next();
-		  query->bindValue(":incident", currentIncident->getId());
-		  query->bindValue(":casename", currentCase);
-		  query->exec();
-		  query->first();
-		  if (!query->isNull(0)) {
-		    found = true;
+	  if (matched) {
+	    QVector<EventItem*> events = eventGraph->getEventItems();
+	    QVectorIterator<EventItem*> it5(events);
+	    while (it5.hasNext()) {
+	      EventItem *currentEvent = it5.next();
+	      if (currentEvent->getId() == currentItem->getId()) {
+		if (currentEvent->getMacroEvent() != NULL) {
+		  QVector<EventItem*> contents = currentEvent->getMacroEvent()->getIncidents();
+		  QVectorIterator<EventItem*> it6(contents);
+		  while (it6.hasNext()) {
+		    EventItem *currentIncident = it6.next();
+		    query->bindValue(":incident", currentIncident->getId());
+		    query->bindValue(":casename", currentCase);
+		    query->exec();
+		    query->first();
+		    if (!query->isNull(0)) {
+		      found = true;
+		    }
 		  }
 		}
 	      }

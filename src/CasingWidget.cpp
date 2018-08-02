@@ -3,7 +3,7 @@
 CasingWidget::CasingWidget(QWidget *parent) : QWidget(parent) {
   tableWidget = new QTableWidget(this);
   createTable();
-
+  
   addCaseButton = new QPushButton(tr("Add case"));
   editCaseButton = new QPushButton(tr("Edit case"));
   removeCaseButton = new QPushButton(tr("Remove case"));
@@ -104,6 +104,7 @@ void CasingWidget::createTable() {
 	  checked = true;
 	}
 	QTableWidgetItem *newCheck = new QTableWidgetItem(QString::number(incident), 1);
+	newCheck->setFlags(newCheck->flags() ^ Qt::ItemIsEditable);
 	tableWidget->blockSignals(true);
 	if (checked) {
 	  newCheck->setCheckState(Qt::Checked);
