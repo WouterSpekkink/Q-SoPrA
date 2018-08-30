@@ -2,7 +2,8 @@
 
 MultimodeDialog::MultimodeDialog(QWidget *parent,
 				 QVector<DirectedEdge*> *directed,
-				 QVector<UndirectedEdge*> *undirected) : QDialog(parent) {
+				 QVector<UndirectedEdge*> *undirected) : QDialog(parent) 
+{
   pDirected = directed;
   pUndirected = undirected;
   name = "";
@@ -126,280 +127,338 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   setFixedHeight(sizeHint().height());
 }
 
-void MultimodeDialog::setModes(QVector<QString> submittedModes) {
+void MultimodeDialog::setModes(QVector<QString> submittedModes) 
+{
   modes = submittedModes;
   QVectorIterator<QString> it(modes);
-  while (it.hasNext()) {
-    QString currentMode = it.next();
-    modeOneComboBox->addItem(currentMode);
-    modeTwoComboBox->addItem(currentMode);
-  }
+  while (it.hasNext()) 
+    {
+      QString currentMode = it.next();
+      modeOneComboBox->addItem(currentMode);
+      modeTwoComboBox->addItem(currentMode);
+    }
 }
 
-void MultimodeDialog::setModeOne(const QString &name) {
+void MultimodeDialog::setModeOne(const QString &name) 
+{
   modeOne = name;
-  if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) {
-    relationshipOneComboBox->clear();
-    relationshipOneComboBox->addItem(DEFAULT);
-    relationshipTwoComboBox->clear();
-    relationshipTwoComboBox->addItem(DEFAULT);
-    QList<QString> include;
-    QVectorIterator<DirectedEdge*> it(*pDirected);
-    while (it.hasNext()) {
-      DirectedEdge *directed = it.next();
-      if (directed->startItem()->getMode() == modeOne &&
-	  directed->endItem()->getMode() == modeTwo &&
-	  directed->isVisible()) {
-	include.push_back(directed->getType());;
-      } else if (directed->startItem()->getMode() == modeTwo &&
-		 directed->endItem()->getMode() == modeOne &&
-		 directed->isVisible()) {
-	include.push_back(directed->getType());;
-      }
-    }
+  if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) 
+    {
+      relationshipOneComboBox->clear();
+      relationshipOneComboBox->addItem(DEFAULT);
+      relationshipTwoComboBox->clear();
+      relationshipTwoComboBox->addItem(DEFAULT);
+      QList<QString> include;
+      QVectorIterator<DirectedEdge*> it(*pDirected);
+      while (it.hasNext()) 
+	{
+	  DirectedEdge *directed = it.next();
+	  if (directed->startItem()->getMode() == modeOne &&
+	      directed->endItem()->getMode() == modeTwo &&
+	      directed->isVisible()) 
+	    {
+	      include.push_back(directed->getType());;
+	    }
+	  else if (directed->startItem()->getMode() == modeTwo &&
+		   directed->endItem()->getMode() == modeOne &&
+		   directed->isVisible()) 
+	    {
+	      include.push_back(directed->getType());;
+	    }
+	}
     
-    QVectorIterator<UndirectedEdge*> it2(*pUndirected);
-    while (it2.hasNext()) {
-      UndirectedEdge *undirected = it2.next();
-      if (undirected->startItem()->getMode() == modeOne &&
-	  undirected->endItem()->getMode() == modeTwo &&
-	  undirected->isVisible()) {
-	include.push_back(undirected->getType());;
-      } else if (undirected->startItem()->getMode() == modeTwo &&
-		 undirected->endItem()->getMode() == modeOne &&
-		 undirected->isVisible()) {
-	include.push_back(undirected->getType());;
-      }
+      QVectorIterator<UndirectedEdge*> it2(*pUndirected);
+      while (it2.hasNext()) 
+	{
+	  UndirectedEdge *undirected = it2.next();
+	  if (undirected->startItem()->getMode() == modeOne &&
+	      undirected->endItem()->getMode() == modeTwo &&
+	      undirected->isVisible()) 
+	    {
+	      include.push_back(undirected->getType());;
+	    }
+	  else if (undirected->startItem()->getMode() == modeTwo &&
+		   undirected->endItem()->getMode() == modeOne &&
+		   undirected->isVisible()) 
+	    {
+	      include.push_back(undirected->getType());;
+	    }
+	}
+      std::sort(include.begin(), include.end(), stringSort);
+      QSet<QString> includeSet = QSet<QString>::fromList(include);
+      QSet<QString>::iterator it3;
+      for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) 
+	{
+	  relationshipOneComboBox->addItem(*it3);
+	  relationshipTwoComboBox->addItem(*it3);
+	}
+      relationshipOneComboBox->setEnabled(true);
+      relationshipTwoComboBox->setEnabled(true);
     }
-    std::sort(include.begin(), include.end(), stringSort);
-    QSet<QString> includeSet = QSet<QString>::fromList(include);
-    QSet<QString>::iterator it3;
-    for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) {
-      relationshipOneComboBox->addItem(*it3);
-      relationshipTwoComboBox->addItem(*it3);
+  else 
+    {
+      relationshipOneComboBox->clear();
+      relationshipOneComboBox->addItem(DEFAULT);
+      relationshipOneComboBox->setEnabled(false);
+      relationshipTwoComboBox->clear();
+      relationshipTwoComboBox->addItem(DEFAULT);
+      relationshipTwoComboBox->setEnabled(false);
     }
-    relationshipOneComboBox->setEnabled(true);
-    relationshipTwoComboBox->setEnabled(true);
-  } else {
-    relationshipOneComboBox->clear();
-    relationshipOneComboBox->addItem(DEFAULT);
-    relationshipOneComboBox->setEnabled(false);
-    relationshipTwoComboBox->clear();
-    relationshipTwoComboBox->addItem(DEFAULT);
-    relationshipTwoComboBox->setEnabled(false);
-  }
 }
 
-void MultimodeDialog::setModeTwo(const QString &name) {
+void MultimodeDialog::setModeTwo(const QString &name) 
+{
   modeTwo = name;
-  if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) {
-    relationshipOneComboBox->clear();
-    relationshipOneComboBox->addItem(DEFAULT);
-    relationshipTwoComboBox->clear();
-    relationshipTwoComboBox->addItem(DEFAULT);
-    QList<QString> include;
-    QVectorIterator<DirectedEdge*> it(*pDirected);
-    while (it.hasNext()) {
-      DirectedEdge *directed = it.next();
-      if (directed->startItem()->getMode() == modeOne &&
-	  directed->endItem()->getMode() == modeTwo &&
-	  directed->isVisible()) {
-	include.push_back(directed->getType());;
-      } else if (directed->startItem()->getMode() == modeTwo &&
-		 directed->endItem()->getMode() == modeOne &&
-		 directed->isVisible()) {
-	include.push_back(directed->getType());;
-      }
+  if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) 
+    {
+      relationshipOneComboBox->clear();
+      relationshipOneComboBox->addItem(DEFAULT);
+      relationshipTwoComboBox->clear();
+      relationshipTwoComboBox->addItem(DEFAULT);
+      QList<QString> include;
+      QVectorIterator<DirectedEdge*> it(*pDirected);
+      while (it.hasNext()) 
+	{
+	  DirectedEdge *directed = it.next();
+	  if (directed->startItem()->getMode() == modeOne &&
+	      directed->endItem()->getMode() == modeTwo &&
+	      directed->isVisible()) 
+	    {
+	      include.push_back(directed->getType());;
+	    }
+	  else if (directed->startItem()->getMode() == modeTwo &&
+		   directed->endItem()->getMode() == modeOne &&
+		   directed->isVisible()) 
+	    {
+	      include.push_back(directed->getType());;
+	    }
+	}
+      QVectorIterator<UndirectedEdge*> it2(*pUndirected);
+      while (it2.hasNext()) 
+	{
+	  UndirectedEdge *undirected = it2.next();
+	  if (undirected->startItem()->getMode() == modeOne &&
+	      undirected->endItem()->getMode() == modeTwo &&
+	      undirected->isVisible()) 
+	    {
+	      include.push_back(undirected->getType());;
+	    }
+	  else if (undirected->startItem()->getMode() == modeTwo &&
+		   undirected->endItem()->getMode() == modeOne &&
+		   undirected->isVisible()) 
+	    {
+	      include.push_back(undirected->getType());;
+	    }
+	}
+      std::sort(include.begin(), include.end(), stringSort);
+      QSet<QString> includeSet = QSet<QString>::fromList(include);
+      QSet<QString>::iterator it3;
+      for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) 
+	{
+	  relationshipOneComboBox->addItem(*it3);
+	  relationshipTwoComboBox->addItem(*it3);
+	}
+      relationshipOneComboBox->setEnabled(true);
+      relationshipTwoComboBox->setEnabled(true);
     }
-    QVectorIterator<UndirectedEdge*> it2(*pUndirected);
-    while (it2.hasNext()) {
-      UndirectedEdge *undirected = it2.next();
-      if (undirected->startItem()->getMode() == modeOne &&
-	  undirected->endItem()->getMode() == modeTwo &&
-	  undirected->isVisible()) {
-	include.push_back(undirected->getType());;
-      } else if (undirected->startItem()->getMode() == modeTwo &&
-		 undirected->endItem()->getMode() == modeOne &&
-		 undirected->isVisible()) {
-	include.push_back(undirected->getType());;
-      }
+  else 
+    {
+      relationshipOneComboBox->clear();
+      relationshipOneComboBox->addItem(DEFAULT);
+      relationshipOneComboBox->setEnabled(false);
+      relationshipTwoComboBox->clear();
+      relationshipTwoComboBox->addItem(DEFAULT);
+      relationshipTwoComboBox->setEnabled(false);
     }
-    std::sort(include.begin(), include.end(), stringSort);
-    QSet<QString> includeSet = QSet<QString>::fromList(include);
-    QSet<QString>::iterator it3;
-    for (it3 = includeSet.begin(); it3 != includeSet.end(); it3++) {
-      relationshipOneComboBox->addItem(*it3);
-      relationshipTwoComboBox->addItem(*it3);
-    }
-    relationshipOneComboBox->setEnabled(true);
-    relationshipTwoComboBox->setEnabled(true);
-  } else {
-    relationshipOneComboBox->clear();
-    relationshipOneComboBox->addItem(DEFAULT);
-    relationshipOneComboBox->setEnabled(false);
-    relationshipTwoComboBox->clear();
-    relationshipTwoComboBox->addItem(DEFAULT);
-    relationshipTwoComboBox->setEnabled(false);
-  }
 }
 
-QString MultimodeDialog::getDirectedness() {
+QString MultimodeDialog::getDirectedness() 
+{
   return directedness;
 }
 
-void MultimodeDialog::checkDirectedButton() {
+void MultimodeDialog::checkDirectedButton() 
+{
   directedButton->setChecked(true);
   undirectedButton->setChecked(false);
   directedness = DIRECTED;
 }
 
-void MultimodeDialog::checkUndirectedButton() {
+void MultimodeDialog::checkUndirectedButton() 
+{
   directedButton->setChecked(false);
   undirectedButton->setChecked(true);
   directedness = UNDIRECTED;
 }
 
-void MultimodeDialog::setRelationshipOne(const QString &name) {
+void MultimodeDialog::setRelationshipOne(const QString &name) 
+{
   relationshipOne = name;
-  if (relationshipOne == relationshipTwo) {
-    directedness = UNDIRECTED;
-    directedButton->setChecked(false);
-    undirectedButton->setChecked(true);
-    directedButton->setEnabled(false);
-    undirectedButton->setEnabled(false);
-  } else {
-    directedButton->setEnabled(true);
-    undirectedButton->setEnabled(true);
-  }
+  if (relationshipOne == relationshipTwo) 
+    {
+      directedness = UNDIRECTED;
+      directedButton->setChecked(false);
+      undirectedButton->setChecked(true);
+      directedButton->setEnabled(false);
+      undirectedButton->setEnabled(false);
+    }
+  else 
+    {
+      directedButton->setEnabled(true);
+      undirectedButton->setEnabled(true);
+    }
 }
 
-void MultimodeDialog::setRelationshipTwo(const QString &name) {
+void MultimodeDialog::setRelationshipTwo(const QString &name) 
+{
   relationshipTwo = name;
-  if (relationshipOne == relationshipTwo) {
-    directedness = UNDIRECTED;
-    directedButton->setChecked(false);
-    undirectedButton->setChecked(true);
-    directedButton->setEnabled(false);
-    undirectedButton->setEnabled(false);
-  } else {
-    directedButton->setEnabled(true);
-    undirectedButton->setEnabled(true);
-  }
+  if (relationshipOne == relationshipTwo) 
+    {
+      directedness = UNDIRECTED;
+      directedButton->setChecked(false);
+      undirectedButton->setChecked(true);
+      directedButton->setEnabled(false);
+      undirectedButton->setEnabled(false);
+    }
+  else 
+    {
+      directedButton->setEnabled(true);
+      undirectedButton->setEnabled(true);
+    }
 }
 
-QString MultimodeDialog::getModeOne() {
+QString MultimodeDialog::getModeOne() 
+{
   return modeOne;
 }
 
-QString MultimodeDialog::getModeTwo() {
+QString MultimodeDialog::getModeTwo() 
+{
   return modeTwo;
 }
 
-QString MultimodeDialog::getRelationshipOne() {
+QString MultimodeDialog::getRelationshipOne() 
+{
   return relationshipOne;
 }
 
-QString MultimodeDialog::getRelationshipTwo() {
+QString MultimodeDialog::getRelationshipTwo() 
+{
   return relationshipTwo;
 }
 
-QString MultimodeDialog::getName() {
+QString MultimodeDialog::getName() 
+{
   return name;
 }
 
-QString MultimodeDialog::getDescription() {
+QString MultimodeDialog::getDescription() 
+{
   return description;
 }
 
-int MultimodeDialog::getExitStatus() {
+int MultimodeDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void MultimodeDialog::cancelAndClose() {
+void MultimodeDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
 // TO DO: Check for attributes with same name.
-void MultimodeDialog::saveAndClose() {
+void MultimodeDialog::saveAndClose() 
+{
   description =  descriptionField->toPlainText().trimmed();
   name = nameField->text().trimmed();
-  if (modeOne == DEFAULT || modeTwo == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No valid modes selected.");
-    warningBox->setInformativeText("One or both of the selected modes are invalid.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (modeOne == modeTwo) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Modes should be different.");
-    warningBox->setInformativeText("You cannot select the same mode twice.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (relationshipOne == DEFAULT || relationshipTwo == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No valid relationships selected.");
-    warningBox->setInformativeText("You must select valid relationships for the transformation to be possible.");
-    warningBox->exec();
-    delete warningBox;
-    return;
+  if (modeOne == DEFAULT || modeTwo == DEFAULT) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("No valid modes selected.");
+      warningBox->setInformativeText("One or both of the selected modes are invalid.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (modeOne == modeTwo) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Modes should be different.");
+      warningBox->setInformativeText("You cannot select the same mode twice.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (relationshipOne == DEFAULT || relationshipTwo == DEFAULT) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("No valid relationships selected.");
+      warningBox->setInformativeText("You must select valid relationships for the transformation to be possible.");
+      warningBox->exec();
+      delete warningBox;
+      return;
     
-  }
-  if (description == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Description required.");
-    warningBox->setInformativeText("A relationship type requires a description.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (name == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Name required.");
-    warningBox->setInformativeText("A relationship type requires a name.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+    }
+  if (description == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Description required.");
+      warningBox->setInformativeText("A relationship type requires a description.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (name == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Name required.");
+      warningBox->setInformativeText("A relationship type requires a name.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   bool found = false;
   QVectorIterator<DirectedEdge*> it(*pDirected);
-  while (it.hasNext()) {
-    DirectedEdge* directed = it.next();
-    if (directed->getType() == name) {
-      found = true;
+  while (it.hasNext()) 
+    {
+      DirectedEdge* directed = it.next();
+      if (directed->getType() == name) 
+	{
+	  found = true;
+	}
     }
-  }
   QVectorIterator<UndirectedEdge*> it2(*pUndirected);
-  while (it2.hasNext()) {
-    UndirectedEdge* undirected = it2.next();
-    if (undirected->getType() == name) {
-      found = true;
+  while (it2.hasNext()) 
+    {
+      UndirectedEdge* undirected = it2.next();
+      if (undirected->getType() == name) 
+	{
+	  found = true;
+	}
     }
-  }
-  if (found) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Name already exists.");
-    warningBox->setInformativeText("You already have a relationship type with that name.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (found) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Name already exists.");
+      warningBox->setInformativeText("You already have a relationship type with that name.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   exitStatus = 0;
   this->close();
 }

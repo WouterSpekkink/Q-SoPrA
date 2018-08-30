@@ -1,6 +1,7 @@
 #include "../include/LineageColorDialog.h"
 
-LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) {
+LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) 
+{
   exitStatus = 1;
   originColor = QColor(255, 165, 0);
   ancestorColor = QColor(179, 225, 172);
@@ -71,12 +72,14 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) {
   setWindowTitle("Create lineage");
 }
 
-void LineageColorDialog::setOriginColor() {
+void LineageColorDialog::setOriginColor() 
+{
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    originColor = colorDialog->selectedColor();
-  }
+  if (colorDialog->exec()) 
+    {
+      originColor = colorDialog->selectedColor();
+    }
   QPixmap pixmapOne(originButton->width(), originButton->height());
   pixmapOne.fill(originColor);
   colorOneLabel->setPixmap(pixmapOne);
@@ -84,12 +87,14 @@ void LineageColorDialog::setOriginColor() {
   delete colorDialog;
 }
 
-void LineageColorDialog::setAncestorColor() {
+void LineageColorDialog::setAncestorColor() 
+{
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    ancestorColor = colorDialog->selectedColor();
-  }
+  if (colorDialog->exec()) 
+    {
+      ancestorColor = colorDialog->selectedColor();
+    }
   QPixmap pixmapTwo(ancestorButton->width(), ancestorButton->height());
   pixmapTwo.fill(ancestorColor);
   colorTwoLabel->setPixmap(pixmapTwo);
@@ -97,12 +102,14 @@ void LineageColorDialog::setAncestorColor() {
   delete colorDialog;
 }
 
-void LineageColorDialog::setDescendantColor() {
+void LineageColorDialog::setDescendantColor() 
+{
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    descendantColor = colorDialog->selectedColor();
-  }
+  if (colorDialog->exec()) 
+    {
+      descendantColor = colorDialog->selectedColor();
+    }
   QPixmap pixmapThree(descendantButton->width(), descendantButton->height());
   pixmapThree.fill(descendantColor);
   colorThreeLabel->setPixmap(pixmapThree);
@@ -110,12 +117,14 @@ void LineageColorDialog::setDescendantColor() {
   delete colorDialog;
 }
 
-void LineageColorDialog::setUnrelatedColor() {
+void LineageColorDialog::setUnrelatedColor() 
+{
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    unrelatedColor = colorDialog->selectedColor();
-  }
+  if (colorDialog->exec()) 
+    {
+      unrelatedColor = colorDialog->selectedColor();
+    }
   QPixmap pixmapFour(unrelatedButton->width(), unrelatedButton->height());
   pixmapFour.fill(unrelatedColor);
   colorFourLabel->setPixmap(pixmapFour);
@@ -123,33 +132,40 @@ void LineageColorDialog::setUnrelatedColor() {
   delete colorDialog;
 }
 
-void LineageColorDialog::cancelAndClose() {
+void LineageColorDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void LineageColorDialog::saveAndClose() {
+void LineageColorDialog::saveAndClose() 
+{
   exitStatus = 0;
   this->close();
 }
 
-QColor LineageColorDialog::getOriginColor() {
+QColor LineageColorDialog::getOriginColor() 
+{
   return originColor;
 }
 
-QColor LineageColorDialog::getAncestorColor() {
+QColor LineageColorDialog::getAncestorColor() 
+{
   return ancestorColor;
 }
 
-QColor LineageColorDialog::getDescendantColor() {
+QColor LineageColorDialog::getDescendantColor() 
+{
   return descendantColor;
 }
 
-QColor LineageColorDialog::getUnrelatedColor() {
+QColor LineageColorDialog::getUnrelatedColor() 
+{
   return unrelatedColor;
 }
 
-int LineageColorDialog::getExitStatus() {
+int LineageColorDialog::getExitStatus() 
+{
   return exitStatus;
 }
 

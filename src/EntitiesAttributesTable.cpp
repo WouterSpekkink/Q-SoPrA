@@ -1,6 +1,7 @@
 #include "../include/EntitiesAttributesTable.h"
 
-EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(parent) {
+EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(parent) 
+{
   // We first create our model, our table, the view and the filter of the view
   attributesModel = new RelationalTable(this);
   attributesModel->setTable("attributes_to_entities");
@@ -77,88 +78,106 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   setLayout(mainLayout);
 }
 
-void EntitiesAttributesTable::updateTable() {
-  while (attributesModel->canFetchMore()) {
-    attributesModel->fetchMore();
-  }
+void EntitiesAttributesTable::updateTable() 
+{
+  while (attributesModel->canFetchMore()) 
+    {
+      attributesModel->fetchMore();
+    }
 }
 
-void EntitiesAttributesTable::resetHeader(int header) {
+void EntitiesAttributesTable::resetHeader(int header) 
+{
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 
-void EntitiesAttributesTable::sortHeader(int header) {
+void EntitiesAttributesTable::sortHeader(int header) 
+{
   attributesModel->sort(header, Qt::AscendingOrder);
   updateTable();
 }
 
-void EntitiesAttributesTable::changeFilter(const QString &text) {
+void EntitiesAttributesTable::changeFilter(const QString &text) 
+{
   QRegExp regExp(text, Qt::CaseInsensitive);
   filter->setFilterRegExp(regExp);
 }
 
-void EntitiesAttributesTable::setFilterColumn() {
-  if (filterComboBox->currentText() == "Attributes") {
-    filter->setFilterKeyColumn(1);    
-  } else if (filterComboBox->currentText() == "Entities") {
-    filter->setFilterKeyColumn(2);
-  } else if (filterComboBox->currentText() == "Values") {
-    filter->setFilterKeyColumn(3);
-  }
-}
-
-void EntitiesAttributesTable::editValue() {
-  if (tableView->currentIndex().isValid()) {
-    int row = tableView->currentIndex().row();
-    QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
-    QString entity = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
-    QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
-    QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
-    simpleTextDialog->submitText(value);
-    simpleTextDialog->setLabel("<b>Change value:</b>");
-    simpleTextDialog->setWindowTitle("Edit value");
-    simpleTextDialog->exec();
-    if (simpleTextDialog->getExitStatus() == 0) {
-      QSqlQuery *query = new QSqlQuery;
-      QString newValue = simpleTextDialog->getText();
-      query->prepare("UPDATE attributes_to_entities SET value = :newValue "
-		     "WHERE value = :oldValue AND attribute = :attribute AND entity = :entity");
-      query->bindValue(":newValue", newValue);
-      query->bindValue(":oldValue", value);
-      query->bindValue(":attribute", attribute);
-      query->bindValue(":entity", entity);
-      query->exec();
-      updateTable();
-      delete query;
+void EntitiesAttributesTable::setFilterColumn() 
+{
+  if (filterComboBox->currentText() == "Attributes") 
+    {
+      filter->setFilterKeyColumn(1);    
     }
-  }
+  else  if (filterComboBox->currentText() == "Entities") 
+    {
+      filter->setFilterKeyColumn(2);
+    }
+  else  if (filterComboBox->currentText() == "Values") 
+    {
+      filter->setFilterKeyColumn(3);
+    }
 }
 
-void EntitiesAttributesTable::exportNormalMatrix() {
+void EntitiesAttributesTable::editValue() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      int row = tableView->currentIndex().row();
+      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+      QString entity = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+      QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
+      simpleTextDialog->submitText(value);
+      simpleTextDialog->setLabel("<b>Change value:</b>");
+      simpleTextDialog->setWindowTitle("Edit value");
+      simpleTextDialog->exec();
+      if (simpleTextDialog->getExitStatus() == 0) 
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  QString newValue = simpleTextDialog->getText();
+	  query->prepare("UPDATE attributes_to_entities SET value = :newValue "
+			 "WHERE value = :oldValue AND attribute = :attribute AND entity = :entity");
+	  query->bindValue(":newValue", newValue);
+	  query->bindValue(":oldValue", value);
+	  query->bindValue(":attribute", attribute);
+	  query->bindValue(":entity", entity);
+	  query->exec();
+	  updateTable();
+	  delete query;
+	}
+    }
+}
+
+void EntitiesAttributesTable::exportNormalMatrix() 
+{
   exportMatrix(false);
 }
 
-void EntitiesAttributesTable::exportValuedMatrix() {
+void EntitiesAttributesTable::exportValuedMatrix() 
+{
   exportMatrix(true);
 }
 
-void EntitiesAttributesTable::exportMatrix(bool valued) {
+void EntitiesAttributesTable::exportMatrix(bool valued) 
+{
   updateTable();
   // We first need a list with unique names of attributes and a list with unique entities.
   QSet<QString> attributeSet;
   QSet<QString> entitySet;
   QMultiMap<QString, QVector<QString>> valueMap;
-  for (int i = 0; i != tableView->verticalHeader()->count(); i++) {
-    QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
-    QString entity = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-    QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-    attributeSet.insert(attribute);
-    entitySet.insert(entity);
-    QVector<QString> temp;
-    temp.push_back(attribute);
-    temp.push_back(value);
-    valueMap.insert(entity, temp);
-  }
+  for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
+    {
+      QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+      QString entity = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+      attributeSet.insert(attribute);
+      entitySet.insert(entity);
+      QVector<QString> temp;
+      temp.push_back(attribute);
+      temp.push_back(value);
+      valueMap.insert(entity, temp);
+    }
   QList<QString> attributeList = attributeSet.toList();
   QList<QString> entityList = entitySet.toList();
   // Let's sort the attribute list alphabetically.
@@ -167,61 +186,75 @@ void EntitiesAttributesTable::exportMatrix(bool valued) {
   std::sort(entityList.begin(), entityList.end(), stringSort);
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
-    }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first need to write the header row.
-    QListIterator<QString> it(attributeList);
-    while (it.hasNext()) {
-      QString currentAttribute = it.next();
-      fileOut << "," << doubleQuote(currentAttribute).toStdString();
-    }
-    fileOut << "\n"; // we need a newline symbol at the end of the header.
-    // Then we iterate through our lists and fetch values from the value map.
-    QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, attributeList.size());
-    saveProgress->setWindowTitle("Compiling matrix");
-    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
-    saveProgress->setModal(true);
-    int counter = 1;
-    saveProgress->show();
-    QListIterator<QString> it2(entityList);
-    while (it2.hasNext()) {
-      QString currentEntity = it2.next();
-      QListIterator<QString> it3(attributeList);
-      fileOut << "\"" << doubleQuote(currentEntity).toStdString() << "\"";
-      while (it3.hasNext()) {
-	QString currentAttribute = it3.next();
-	QList<QVector<QString>> values = valueMap.values(currentEntity);
-	bool found = false;
-	for (int i = 0; i != values.size(); i++) {
-	  QVector<QString> currentPair = values[i];
-	  if (currentPair[0] == currentAttribute) {
-	    found = true;
-	    if (valued) {
-	      if (currentPair[1] == "") {
-		fileOut << "," << "1";
-	      } else {
-		fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
-	      }
-	    } else {
-	      fileOut << "," << "1";
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first need to write the header row.
+      QListIterator<QString> it(attributeList);
+      while (it.hasNext()) 
+	{
+	  QString currentAttribute = it.next();
+	  fileOut << "," << doubleQuote(currentAttribute).toStdString();
+	}
+      fileOut << "\n"; // we need a newline symbol at the end of the header.
+      // Then we iterate through our lists and fetch values from the value map.
+      QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, attributeList.size());
+      saveProgress->setWindowTitle("Compiling matrix");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      int counter = 1;
+      saveProgress->show();
+      QListIterator<QString> it2(entityList);
+      while (it2.hasNext()) 
+	{
+	  QString currentEntity = it2.next();
+	  QListIterator<QString> it3(attributeList);
+	  fileOut << "\"" << doubleQuote(currentEntity).toStdString() << "\"";
+	  while (it3.hasNext()) 
+	    {
+	      QString currentAttribute = it3.next();
+	      QList<QVector<QString>> values = valueMap.values(currentEntity);
+	      bool found = false;
+	      for (int i = 0; i != values.size(); i++) 
+		{
+		  QVector<QString> currentPair = values[i];
+		  if (currentPair[0] == currentAttribute) 
+		    {
+		      found = true;
+		      if (valued) 
+			{
+			  if (currentPair[1] == "") 
+			    {
+			      fileOut << "," << "1";
+			    }
+			  else  
+			    {
+			      fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
+			    }
+			}
+		      else  
+			{
+			  fileOut << "," << "1";
+			}
+		    }
+		}
+	      if (!found) 
+		{ 
+		  fileOut << "," << "0";
+		}
 	    }
-	  }
+	  fileOut << "\n"; // We need a newline symbol at the end of each row.
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
 	}
-	if (!found) { 
-	  fileOut << "," << "0";
-	}
-      }
-      fileOut << "\n"; // We need a newline symbol at the end of each row.
-      counter++;
-      saveProgress->setProgress(counter);
-      qApp->processEvents();
+      // And that should be it!
+      fileOut.close();
+      delete saveProgress;
     }
-    // And that should be it!
-    fileOut.close();
-    delete saveProgress;
-  }
 }

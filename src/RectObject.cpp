@@ -1,7 +1,8 @@
 #include <QtWidgets>
 #include "../include/RectObject.h"
 
-RectObject::RectObject() {
+RectObject::RectObject() 
+{
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
   fillColor = QColor(Qt::transparent);
@@ -12,122 +13,148 @@ RectObject::RectObject() {
   setAcceptHoverEvents(true);
 }
 
-void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
+{
   prepareGeometryChange();
   painter->setBrush(fillColor);
   painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
   painter->drawRect(drawRect);
-  if (isSelected()) {
-    painter->setBrush(QColor(Qt::transparent));
-    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-    painter->drawLine(topLeft(), bottomRight());
-    painter->drawLine(topRight(), bottomLeft());
-    update();
-  }
+  if (isSelected()) 
+    {
+      painter->setBrush(QColor(Qt::transparent));
+      painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+      painter->drawLine(topLeft(), bottomRight());
+      painter->drawLine(topRight(), bottomLeft());
+      update();
+    }
 }
 
-QColor RectObject::getColor() {
+QColor RectObject::getColor() 
+{
   return color;
 }
 
-void RectObject::setColor(const QColor &subColor) {
+void RectObject::setColor(const QColor &subColor) 
+{
   color = subColor;
 }
 
-QColor RectObject::getFillColor() {
+QColor RectObject::getFillColor() 
+{
   return fillColor;
 }
 
-void RectObject::setFillColor(const QColor &subColor) {
+void RectObject::setFillColor(const QColor &subColor) 
+{
   fillColor = subColor;
 }
 
-qreal RectObject::getLeft() {
+qreal RectObject::getLeft() 
+{
   return drawRect.left();
 }
 
-void RectObject::setLeft(qreal newLeft) {
+void RectObject::setLeft(qreal newLeft) 
+{
   drawRect.setLeft(newLeft);
   drawRect = drawRect.normalized();
 }
 
-qreal RectObject::getRight() {
+qreal RectObject::getRight() 
+{
   return drawRect.right();
 }
 
-void RectObject::setRight(qreal newRight) {
+void RectObject::setRight(qreal newRight) 
+{
   drawRect.setRight(newRight);
   drawRect = drawRect.normalized();
 }
 
-qreal RectObject::getTop() {
+qreal RectObject::getTop() 
+{
   return drawRect.top();
 }
 
-void RectObject::setTop(qreal newTop) {
+void RectObject::setTop(qreal newTop) 
+{
   drawRect.setTop(newTop);
   drawRect = drawRect.normalized();
 }
 
-qreal RectObject::getBottom() {
+qreal RectObject::getBottom() 
+{
   return drawRect.bottom();
 }
 
-void RectObject::setBottom(qreal newBottom) {
+void RectObject::setBottom(qreal newBottom) 
+{
   drawRect.setBottom(newBottom);
   drawRect = drawRect.normalized();
 }
 
-QPointF RectObject::topLeft() {
+QPointF RectObject::topLeft() 
+{
   return drawRect.topLeft();
 }
 
-QPointF RectObject::topRight() {
+QPointF RectObject::topRight() 
+{
   return drawRect.topRight();
 }
 
-QPointF RectObject::bottomLeft() {
+QPointF RectObject::bottomLeft() 
+{
   return drawRect.bottomLeft();
 }
 
-QPointF RectObject::bottomRight() {
+QPointF RectObject::bottomRight() 
+{
   return drawRect.bottomRight();
 }
 
-void RectObject::setTopLeft(QPointF topLeft) {
+void RectObject::setTopLeft(QPointF topLeft) 
+{
   drawRect.setTopLeft(topLeft);
   drawRect = drawRect.normalized();
 }
 
-void RectObject::setTopRight(QPointF topRight) {
+void RectObject::setTopRight(QPointF topRight) 
+{
   drawRect.setTopRight(topRight);
   drawRect = drawRect.normalized();
 }
 
-void RectObject::setBottomLeft(QPointF bottomLeft) {
+void RectObject::setBottomLeft(QPointF bottomLeft) 
+{
   drawRect.setBottomLeft(bottomLeft);
   drawRect = drawRect.normalized();
 }
 
-void RectObject::setBottomRight(QPointF bottomRight) {
+void RectObject::setBottomRight(QPointF bottomRight) 
+{
   drawRect.setBottomRight(bottomRight);
   drawRect = drawRect.normalized();
 }
 
-QPointF RectObject::getCenter() {
+QPointF RectObject::getCenter() 
+{
   return boundingRect().center();
 }
 
-void RectObject::moveCenter(QPointF newCenter) {
+void RectObject::moveCenter(QPointF newCenter) 
+{
   drawRect.moveCenter(newCenter);
   drawRect = drawRect.normalized();
 }
 
-qreal RectObject::getRotationValue() {
+qreal RectObject::getRotationValue() 
+{
   return rotation;
 }
 
-void RectObject::setRotationValue(qreal newRotation) {
+void RectObject::setRotationValue(qreal newRotation) 
+{
   rotation = newRotation;
   QTransform transform;
   QPointF center = drawRect.center();
@@ -144,12 +171,14 @@ void RectObject::setRotationValue(qreal newRotation) {
   moveBy(offset.x(), offset.y());
 }
 
-QRectF RectObject::boundingRect() const {
+QRectF RectObject::boundingRect() const 
+{
   QRectF myRect = drawRect.normalized().adjusted(-10,-10, 10, 10);
   return myRect;
 }
 
-QPainterPath RectObject::shape() const {
+QPainterPath RectObject::shape() const 
+{
   QPainterPath path;
   QPainterPathStroker stroker;
   stroker.setWidth(penWidth + 15);
@@ -157,39 +186,48 @@ QPainterPath RectObject::shape() const {
   return stroker.createStroke(path);
 }
 
-int RectObject::getPenWidth() {
+int RectObject::getPenWidth() 
+{
   return penWidth;
 }
 
-void RectObject::setPenWidth(int width) {
+void RectObject::setPenWidth(int width) 
+{
   penWidth = width;
 }
 
-int RectObject::getPenStyle() {
+int RectObject::getPenStyle() 
+{
   return penStyle;
 }
 
-void RectObject::setPenStyle(int style) {
+void RectObject::setPenStyle(int style) 
+{
   penStyle = style;
 }
 
 
-int RectObject::type() const {
+int RectObject::type() const 
+{
   return Type;
 }
 
-void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void RectObject::mousePressEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
-void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void RectObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::restoreOverrideCursor();
 }
 
-void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+void RectObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) 
+{
   QApplication::setOverrideCursor(Qt::OpenHandCursor);
 }
 
-void RectObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void RectObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) 
+{
   QApplication::restoreOverrideCursor();
 }

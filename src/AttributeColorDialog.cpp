@@ -1,6 +1,7 @@
 #include "../include/AttributeColorDialog.h"
 
-AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedType) : QDialog(parent) {
+AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedType) : QDialog(parent) 
+{
   type = submittedType;
   exitStatus = 1;
   chosenColor = QColor(Qt::darkGreen);
@@ -78,131 +79,149 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   setWindowTitle("Create mode");
 }
 
-void AttributeColorDialog::setTree() {
+void AttributeColorDialog::setTree() 
+{
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) {
-    query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);    
-      attributesTree->appendRow(father);
-      QString hint = breakString(description);
-      father->setToolTip(hint);
-      father->setEditable(false);
-      buildHierarchy(father, name);
+  if (type == ENTITY) 
+    {
+      query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *father = new QStandardItem(name);    
+	  attributesTree->appendRow(father);
+	  QString hint = breakString(description);
+	  father->setToolTip(hint);
+	  father->setEditable(false);
+	  buildHierarchy(father, name);
+	}
     }
-  } else if (type == INCIDENT) {
-    // First we will fetch the 'normal' attributes.
-    query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);    
-      attributesTree->appendRow(father);
-      QString hint = breakString(description);
-      father->setToolTip(hint);
-      father->setEditable(false);
-      buildHierarchy(father, name);
+  else if (type == INCIDENT) 
+    {
+      // First we will fetch the 'normal' attributes.
+      query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *father = new QStandardItem(name);    
+	  attributesTree->appendRow(father);
+	  QString hint = breakString(description);
+	  father->setToolTip(hint);
+	  father->setEditable(false);
+	  buildHierarchy(father, name);
+	}
+      // And then we will also fetch the entities.
+      QStandardItem *entities = new QStandardItem(ENTITIES);
+      QString entitiesHint = breakString("You can also assign entities that you have created "
+					 "in the relationships widget as attributes.");
+      entities->setToolTip(entitiesHint);
+      QFont font;
+      font.setItalic(true);
+      attributesTree->appendRow(entities);
+      entities->setFont(font);
+      query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *father = new QStandardItem(name);
+	  entities->setChild(children, father);
+	  children++;
+	  QString hint = breakString(description);
+	  father->setToolTip(hint);
+	  father->setEditable(false);
+	  buildEntities(father, name);
+	}
     }
-    // And then we will also fetch the entities.
-    QStandardItem *entities = new QStandardItem(ENTITIES);
-    QString entitiesHint = breakString("You can also assign entities that you have created "
-				       "in the relationships widget as attributes.");
-    entities->setToolTip(entitiesHint);
-    QFont font;
-    font.setItalic(true);
-    attributesTree->appendRow(entities);
-    entities->setFont(font);
-    query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
-    int children = 0;
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);
-      entities->setChild(children, father);
-      children++;
-      QString hint = breakString(description);
-      father->setToolTip(hint);
-      father->setEditable(false);
-      buildEntities(father, name);
-    }
-  }
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
   delete query;
 }
 
-void AttributeColorDialog::buildHierarchy(QStandardItem *top, QString name) {
+void AttributeColorDialog::buildHierarchy(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) {
-    query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
-    query->bindValue(":father", name);
-    query->exec();
-    int children = 0;
-    while (query->next()) {
-      QString childName = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *child = new QStandardItem(childName);
-      top->setChild(children, child);
-      QString hint = breakString(description);
-      child->setToolTip(hint);
-      child->setEditable(false);
-      children++;
-      buildHierarchy(child, childName);
+  if (type == ENTITY) 
+    {
+      query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
+      query->bindValue(":father", name);
+      query->exec();
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString childName = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *child = new QStandardItem(childName);
+	  top->setChild(children, child);
+	  QString hint = breakString(description);
+	  child->setToolTip(hint);
+	  child->setEditable(false);
+	  children++;
+	  buildHierarchy(child, childName);
+	}
     }
-  } else if (type == INCIDENT) {
-    query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
-    query->bindValue(":father", name);
-    query->exec();
-    int children = 0;
-    while (query->next()) {
-      QString childName = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *child = new QStandardItem(childName);
-      top->setChild(children, child);
-      QString hint = breakString(description);
-      child->setToolTip(hint);
-      child->setEditable(false);
-      children++;
-      buildHierarchy(child, childName);
+  else if (type == INCIDENT) 
+    {
+      query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
+      query->bindValue(":father", name);
+      query->exec();
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString childName = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *child = new QStandardItem(childName);
+	  top->setChild(children, child);
+	  QString hint = breakString(description);
+	  child->setToolTip(hint);
+	  child->setEditable(false);
+	  children++;
+	  buildHierarchy(child, childName);
+	}
     }
-  }
   delete query;
 }
 
-void AttributeColorDialog::buildEntities(QStandardItem *top, QString name) {
+void AttributeColorDialog::buildEntities(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, description FROM entities WHERE father = :father");
   query->bindValue(":father", name);
   query->exec();
   int children = 0;
-  while (query->next()) {
-    QString childName = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QStandardItem *child = new QStandardItem(childName);
-    top->setChild(children, child);
-    QString hint = breakString(description);
-    child->setToolTip(hint);
-    child->setEditable(false);
-    children++;
-    buildEntities(child, childName);
-  }
+  while (query->next()) 
+    {
+      QString childName = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *child = new QStandardItem(childName);
+      top->setChild(children, child);
+      QString hint = breakString(description);
+      child->setToolTip(hint);
+      child->setEditable(false);
+      children++;
+      buildEntities(child, childName);
+    }
   delete query;
 }
 
-void AttributeColorDialog::changeFilter(const QString &text) {
+void AttributeColorDialog::changeFilter(const QString &text) 
+{
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
 
-void AttributeColorDialog::setColor() {
+void AttributeColorDialog::setColor() 
+{
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    chosenColor = colorDialog->selectedColor();
-  }
+  if (colorDialog->exec()) 
+    {
+      chosenColor = colorDialog->selectedColor();
+    }
   QPixmap pixmapOne(100, colorButton->height());
   pixmapOne.fill(chosenColor);
   colorOneLabel->setPixmap(pixmapOne);
@@ -210,12 +229,14 @@ void AttributeColorDialog::setColor() {
   delete colorDialog;
 }
 
-void AttributeColorDialog::setTextColor() {
+void AttributeColorDialog::setTextColor() 
+{
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  if (colorDialog->exec()) {
-    chosenTextColor = colorDialog->selectedColor();
-  }
+  if (colorDialog->exec()) 
+    {
+      chosenTextColor = colorDialog->selectedColor();
+    }
   QPixmap pixmapTwo(100, textColorButton->height());
   pixmapTwo.fill(chosenTextColor);
   colorTwoLabel->setPixmap(pixmapTwo);
@@ -223,57 +244,71 @@ void AttributeColorDialog::setTextColor() {
   delete colorDialog;
 }
  
-void AttributeColorDialog::setAttribute() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    chosenAttribute = attributesTreeView->currentIndex().data().toString();
-  }
+void AttributeColorDialog::setAttribute() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      chosenAttribute = attributesTreeView->currentIndex().data().toString();
+    }
   QModelIndex currentIndex = attributesTreeView->currentIndex();
-  while (currentIndex.parent().isValid()) {
-    currentIndex = currentIndex.parent();
-  }
-  if (currentIndex.data().toString() == ENTITIES) {
-    entity = true;
-  }
+  while (currentIndex.parent().isValid()) 
+    {
+      currentIndex = currentIndex.parent();
+    }
+  if (currentIndex.data().toString() == ENTITIES) 
+    {
+      entity = true;
+    }
 }
 
-void AttributeColorDialog::cancelAndClose() {
+void AttributeColorDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void AttributeColorDialog::saveAndClose() {
-  if (chosenAttribute == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No attribute chosen.");
-    warningBox->setInformativeText("You have to choose an attribute to proceed.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  } else {
-    exitStatus = 0;
-    this->close();
-  }
+void AttributeColorDialog::saveAndClose() 
+{
+  if (chosenAttribute == DEFAULT) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("No attribute chosen.");
+      warningBox->setInformativeText("You have to choose an attribute to proceed.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  else 
+    {
+      exitStatus = 0;
+      this->close();
+    }
 }
 
-QColor AttributeColorDialog::getColor() {
+QColor AttributeColorDialog::getColor() 
+{
   return chosenColor;
 }
 
-QColor AttributeColorDialog::getTextColor() {
+QColor AttributeColorDialog::getTextColor() 
+{
   return chosenTextColor;
 }
 
-QString AttributeColorDialog::getAttribute() {
-    return chosenAttribute;
+QString AttributeColorDialog::getAttribute() 
+{
+  return chosenAttribute;
 }
 
-bool AttributeColorDialog::isEntity() {
-    return entity;
+bool AttributeColorDialog::isEntity() 
+{
+  return entity;
 }
 
-int AttributeColorDialog::getExitStatus() {
+int AttributeColorDialog::getExitStatus() 
+{  
   return exitStatus;
 }
 

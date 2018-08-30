@@ -1,8 +1,9 @@
 #include "../include/MergeAttributesDialog.h"
 
 MergeAttributesDialog::MergeAttributesDialog(QWidget *parent,
-						   QString submittedOrigin,
-						   QString submittedType) : QDialog(parent) {
+					     QString submittedOrigin,
+					     QString submittedType) : QDialog(parent) 
+{
   origin = submittedOrigin;
   type = submittedType;
   exitStatus = 1;
@@ -53,118 +54,142 @@ MergeAttributesDialog::MergeAttributesDialog(QWidget *parent,
   setWindowTitle("Select attribute");
 }
 
-void MergeAttributesDialog::setTree() {
+void MergeAttributesDialog::setTree() 
+{
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) {
-    query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      if (name != origin) {
-	QString description = query->value(1).toString();
-	QStandardItem *father = new QStandardItem(name);    
-	attributesTree->appendRow(father);
-	QString hint = breakString(description);
-	father->setToolTip(hint);
-	father->setEditable(false);
-	buildHierarchy(father, name);
-      }
+  if (type == ENTITY) 
+    {
+      query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  if (name != origin) 
+	    {
+	      QString description = query->value(1).toString();
+	      QStandardItem *father = new QStandardItem(name);    
+	      attributesTree->appendRow(father);
+	      QString hint = breakString(description);
+	      father->setToolTip(hint);
+	      father->setEditable(false);
+	      buildHierarchy(father, name);
+	    }
+	}
     }
-  } else if (type == INCIDENT) {
-    query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      if (name != origin) {
-	QString description = query->value(1).toString();
-	QStandardItem *father = new QStandardItem(name);    
-	attributesTree->appendRow(father);
-	QString hint = breakString(description);
-	father->setToolTip(hint);
-	father->setEditable(false);
-	buildHierarchy(father, name);
-      }
+  else if (type == INCIDENT) 
+    {
+      query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  if (name != origin) 
+	    {
+	      QString description = query->value(1).toString();
+	      QStandardItem *father = new QStandardItem(name);    
+	      attributesTree->appendRow(father);
+	      QString hint = breakString(description);
+	      father->setToolTip(hint);
+	      father->setEditable(false);
+	      buildHierarchy(father, name);
+	    }
+	}
     }
-  }
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
   delete query;
 }
 
-void MergeAttributesDialog::buildHierarchy(QStandardItem *top, QString name) {
+void MergeAttributesDialog::buildHierarchy(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) {
-    query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
-    query->bindValue(":father", name);
-    query->exec();
-    int children = 0;
-    while (query->next()) {
-      QString childName = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *child = new QStandardItem(childName);
-      top->setChild(children, child);
-      QString hint = breakString(description);
-      child->setToolTip(hint);
-      child->setEditable(false);
-      children++;
-      buildHierarchy(child, childName);
+  if (type == ENTITY) 
+    {
+      query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
+      query->bindValue(":father", name);
+      query->exec();
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString childName = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *child = new QStandardItem(childName);
+	  top->setChild(children, child);
+	  QString hint = breakString(description);
+	  child->setToolTip(hint);
+	  child->setEditable(false);
+	  children++;
+	  buildHierarchy(child, childName);
+	}
     }
-  } else {
-    query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
-    query->bindValue(":father", name);
-    query->exec();
-    int children = 0;
-    while (query->next()) {
-      QString childName = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *child = new QStandardItem(childName);
-      top->setChild(children, child);
-      QString hint = breakString(description);
-      child->setToolTip(hint);
-      child->setEditable(false);
-      children++;
-      buildHierarchy(child, childName);
+  else 
+    {
+      query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
+      query->bindValue(":father", name);
+      query->exec();
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString childName = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *child = new QStandardItem(childName);
+	  top->setChild(children, child);
+	  QString hint = breakString(description);
+	  child->setToolTip(hint);
+	  child->setEditable(false);
+	  children++;
+	  buildHierarchy(child, childName);
+	}
     }
-  }
   delete query;
 }
 
-void MergeAttributesDialog::changeFilter(const QString &text) {
+void MergeAttributesDialog::changeFilter(const QString &text) 
+{
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
  
-void MergeAttributesDialog::setAttribute() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    chosenAttribute = attributesTreeView->currentIndex().data().toString();
-  }
+void MergeAttributesDialog::setAttribute() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      chosenAttribute = attributesTreeView->currentIndex().data().toString();
+    }
 }
 
-void MergeAttributesDialog::cancelAndClose() {
+void MergeAttributesDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void MergeAttributesDialog::saveAndClose() {
-  if (chosenAttribute == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No attribute chosen.");
-    warningBox->setInformativeText("You have to choose an attribute to proceed.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  } else {
-    exitStatus = 0;
-    this->close();
-  }
+void MergeAttributesDialog::saveAndClose() 
+{
+  if (chosenAttribute == DEFAULT) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("No attribute chosen.");
+      warningBox->setInformativeText("You have to choose an attribute to proceed.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  else 
+    {
+      exitStatus = 0;
+      this->close();
+    }
 }
 
-QString MergeAttributesDialog::getAttribute() {
-    return chosenAttribute;
+QString MergeAttributesDialog::getAttribute() 
+{
+  return chosenAttribute;
 }
 
-int MergeAttributesDialog::getExitStatus() {
+int MergeAttributesDialog::getExitStatus() 
+{
   return exitStatus;
 }
 

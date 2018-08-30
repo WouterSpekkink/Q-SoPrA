@@ -3,7 +3,8 @@
 #include <QtCore>
 #include "../include/Scene.h"
 
-NetworkNodeLabel::NetworkNodeLabel(NetworkNode *submittedNode) {
+NetworkNodeLabel::NetworkNodeLabel(NetworkNode *submittedNode) 
+{
   //setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   node = submittedNode;
@@ -15,39 +16,46 @@ NetworkNodeLabel::NetworkNodeLabel(NetworkNode *submittedNode) {
   this->setFont(newFont);
 }
 
-NetworkNode* NetworkNodeLabel::getNode() {
+NetworkNode* NetworkNodeLabel::getNode() 
+{
   return node;
 }
 
-void NetworkNodeLabel::setNewPos(QPointF nodePos) {
+void NetworkNodeLabel::setNewPos(QPointF nodePos) 
+{
   QPointF newPos = nodePos;
   newPos.setX(newPos.x() + xOffset);
   newPos.setY(newPos.y() + yOffset);
   this->setPos(newPos);
 }
 
-void NetworkNodeLabel::setOriginalPos(QPointF nodePos) {
+void NetworkNodeLabel::setOriginalPos(QPointF nodePos) 
+{
   QPointF newPos = nodePos;
   newPos.setX(newPos.x() + xOffset);
   newPos.setY(newPos.y() + yOffset);
   this->setPos(newPos);
 }
 
-QPointF NetworkNodeLabel::getOffset() {
+QPointF NetworkNodeLabel::getOffset() 
+{
   return QPointF(xOffset, yOffset);
 }
 
-void NetworkNodeLabel::setOffset(QPointF offset) {
+void NetworkNodeLabel::setOffset(QPointF offset) 
+{
   xOffset = offset.x();
   yOffset = offset.y();
 }
 
-int NetworkNodeLabel::type() const {
+int NetworkNodeLabel::type() const 
+{
   return Type;
 }
 
 
-void NetworkNodeLabel::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+void NetworkNodeLabel::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
+{
   QPointF newPos = event->scenePos();
 
   QPointF nodePos = this->getNode()->scenePos();
@@ -65,7 +73,8 @@ void NetworkNodeLabel::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
   myScene->relevantChange();
 }
 
-void NetworkNodeLabel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void NetworkNodeLabel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
+{
   QPointF newPos = event->scenePos();
 
   QPointF nodePos = this->getNode()->scenePos();
@@ -82,31 +91,37 @@ void NetworkNodeLabel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
   QGraphicsItem::mouseReleaseEvent(event);
 }
 
-void NetworkNodeLabel::increaseFontSize() {
-  if (fontSize != 24) {
-    fontSize++;
-  }
+void NetworkNodeLabel::increaseFontSize() 
+{
+  if (fontSize != 24) 
+    {
+      fontSize++;
+    }
   QFont newFont = this->font();
   newFont.setPointSizeF(fontSize);
   this->setFont(newFont);
 }
 
-void NetworkNodeLabel::decreaseFontSize() {
-  if (fontSize != 12) {
-    fontSize--;
-  }
+void NetworkNodeLabel::decreaseFontSize() 
+{
+  if (fontSize != 12) 
+    {
+      fontSize--;
+    }
   QFont newFont = this->font();
   newFont.setPointSizeF(fontSize);
   this->setFont(newFont);
 }
 
-void NetworkNodeLabel::setFontSize(int size) {
+void NetworkNodeLabel::setFontSize(int size) 
+{
   fontSize = size;
   QFont newFont = this->font();
   newFont.setPointSizeF(fontSize);
   this->setFont(newFont);
 }
 
-int NetworkNodeLabel::getFontSize() {
+int NetworkNodeLabel::getFontSize() 
+{
   return fontSize;
 }

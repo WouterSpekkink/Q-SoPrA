@@ -1,6 +1,7 @@
 #include "../include/RelationshipTypeDialog.h"
 
-RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent) {
+RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent) 
+{
   directedness = DIRECTED;
   name = "";
   subName = "";
@@ -60,99 +61,117 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
   // This finishes the constructor.
 }
 
-QString RelationshipTypeDialog::getName() {
+QString RelationshipTypeDialog::getName() 
+{
   return name;
 }
 
-QString RelationshipTypeDialog::getDescription() {
+QString RelationshipTypeDialog::getDescription() 
+{
   return description;
 }
 
-QString RelationshipTypeDialog::getDirectedness() {
+QString RelationshipTypeDialog::getDirectedness() 
+{
   return directedness;
 }
 
-int RelationshipTypeDialog::getExitStatus() {
+int RelationshipTypeDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void RelationshipTypeDialog::submitName(const QString &submittedName) {
+void RelationshipTypeDialog::submitName(const QString &submittedName) 
+{
   name = submittedName;
   subName = submittedName;
   nameField->setText(name);
 }
 
-void RelationshipTypeDialog::submitDescription(const QString &submittedDescription) {
+void RelationshipTypeDialog::submitDescription(const QString &submittedDescription) 
+{
   description = submittedDescription;
   descriptionField->setText(description);
 }
 
-void RelationshipTypeDialog::submitDirectedness(const QString &submittedDirectedness) {
+void RelationshipTypeDialog::submitDirectedness(const QString &submittedDirectedness) 
+{
   directedness = submittedDirectedness;
-   if (directedness == DIRECTED) {
-    directedButton->setChecked(true);
-    undirectedButton->setChecked(false);
-  } else if (directedness == UNDIRECTED) {
-    directedButton->setChecked(false);
-    undirectedButton->setChecked(true);
-  }
+  if (directedness == DIRECTED) 
+    {
+      directedButton->setChecked(true);
+      undirectedButton->setChecked(false);
+    }
+  else if (directedness == UNDIRECTED) 
+    {
+      directedButton->setChecked(false);
+      undirectedButton->setChecked(true);
+    }
 }
 
-void RelationshipTypeDialog::setName(const QString &newName) {
+void RelationshipTypeDialog::setName(const QString &newName) 
+{
   name = newName;
 }
 
-void RelationshipTypeDialog::checkDirectedButton() {
+void RelationshipTypeDialog::checkDirectedButton() 
+{
   directedButton->setChecked(true);
   undirectedButton->setChecked(false);
   directedness = DIRECTED;
 }
 
-void RelationshipTypeDialog::checkUndirectedButton() {
+void RelationshipTypeDialog::checkUndirectedButton() 
+{
   directedButton->setChecked(false);
   undirectedButton->setChecked(true);
   directedness = UNDIRECTED;
 }
 
-void RelationshipTypeDialog::cancelAndClose() {
+void RelationshipTypeDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void RelationshipTypeDialog::saveAndClose() {
+void RelationshipTypeDialog::saveAndClose() 
+{
   description = descriptionField->toPlainText().trimmed();
   name = name.trimmed();
-  if (name.contains("(") || name.contains(")")) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Name contains illegal character.");
-    warningBox->setInformativeText("The name of a relationship type cannot "
-				   "contain the '(' and ')' characters.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (description == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Description required.");
-    warningBox->setInformativeText("A relationship type requires a description.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (name == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Name required.");
-    warningBox->setInformativeText("A relationship type requires a name.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (name.contains("(") || name.contains(")")) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Name contains illegal character.");
+      warningBox->setInformativeText("The name of a relationship type cannot "
+				     "contain the '(' and ')' characters.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (description == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Description required.");
+      warningBox->setInformativeText("A relationship type requires a description.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (name == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Name required.");
+      warningBox->setInformativeText("A relationship type requires a name.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM relationship_types WHERE name = :name");
@@ -160,16 +179,17 @@ void RelationshipTypeDialog::saveAndClose() {
   query->exec();
   query->first();
   empty = query->isNull(0);
-  if (!empty && name != subName) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Duplicate name.");
-    warningBox->setInformativeText("You cannot create relationship types with identical names.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (!empty && name != subName) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Duplicate name.");
+      warningBox->setInformativeText("You cannot create relationship types with identical names.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   delete query;
   exitStatus = 0;
   this->close();

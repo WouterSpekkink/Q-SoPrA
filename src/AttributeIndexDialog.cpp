@@ -1,6 +1,7 @@
 #include "../include/AttributeIndexDialog.h"
 
-AttributeIndexDialog::AttributeIndexDialog(QWidget *parent, int max) : QDialog(parent) {
+AttributeIndexDialog::AttributeIndexDialog(QWidget *parent, int max) : QDialog(parent) 
+{
   // First we construct our dialog's entities.
   exitStatus = 1;
   indexLabel = new QLabel(tr("Incident index:"), this);
@@ -36,32 +37,40 @@ AttributeIndexDialog::AttributeIndexDialog(QWidget *parent, int max) : QDialog(p
   // And this finished the constructor.
 }
 
-void AttributeIndexDialog::setIndexText(const QString newIndex) {
+void AttributeIndexDialog::setIndexText(const QString newIndex) 
+{
   QString indexText = newIndex.trimmed();
   // Let us immediately check if we should active the go Button.
-  if (indexText != "") {
-    goButton->setEnabled(true); 
-  } else {
-    goButton->setEnabled(false);
-  }
+  if (indexText != "") 
+    {
+      goButton->setEnabled(true); 
+    }
+  else 
+    {
+      goButton->setEnabled(false);
+    }
   index = indexText.toInt();
 }
 
-void AttributeIndexDialog::go() {
+void AttributeIndexDialog::go() 
+{
   exitStatus = 0;
   this->close();
 }
 
-void AttributeIndexDialog::cancel() {
+void AttributeIndexDialog::cancel() 
+{
   exitStatus = 1;
   this->close();
 }
 
-int AttributeIndexDialog::getIndex() {
+int AttributeIndexDialog::getIndex() 
+{
   return index;
 }
 
-int AttributeIndexDialog::getExitStatus() {
+int AttributeIndexDialog::getExitStatus() 
+{
   return exitStatus;
 }
 

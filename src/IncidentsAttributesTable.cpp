@@ -1,6 +1,7 @@
 #include "../include/IncidentsAttributesTable.h"
 
-IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(parent) {
+IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(parent) 
+{
   // We first create our model, our table, the view and the filter of the view
   attributesModel = new RelationalTable(this);
   attributesModel->setTable("attributes_to_incidents");
@@ -78,93 +79,111 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   setLayout(mainLayout);
 }
 
-void IncidentsAttributesTable::updateTable() {
-  while (attributesModel->canFetchMore()) {
-    attributesModel->fetchMore();
-  }
+void IncidentsAttributesTable::updateTable() 
+{
+  while (attributesModel->canFetchMore()) 
+    {
+      attributesModel->fetchMore();
+    }
 }
 
-void IncidentsAttributesTable::resetHeader(int header) {
+void IncidentsAttributesTable::resetHeader(int header) 
+{
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 
-void IncidentsAttributesTable::sortHeader(int header) {
+void IncidentsAttributesTable::sortHeader(int header) 
+{
   attributesModel->sort(header, Qt::AscendingOrder);
   updateTable();
 }
 
-void IncidentsAttributesTable::changeFilter(const QString &text) {
+void IncidentsAttributesTable::changeFilter(const QString &text) 
+{
   QRegExp regExp(text, Qt::CaseInsensitive);
   filter->setFilterRegExp(regExp);
 }
 
-void IncidentsAttributesTable::setFilterColumn() {
-  if (filterComboBox->currentText() == "Attributes") {
-    filter->setFilterKeyColumn(1);    
-  } else if (filterComboBox->currentText() == "Incidents") {
-    filter->setFilterKeyColumn(2);
-  } else if (filterComboBox->currentText() == "Values") {
-    filter->setFilterKeyColumn(3);
-  }
-}
-
-void IncidentsAttributesTable::editValue() {
-  if (tableView->currentIndex().isValid()) {
-    int row = tableView->currentIndex().row();
-    QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
-    int order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toInt();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    int incident = query->value(0).toInt();
-    QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
-    QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
-    simpleTextDialog->submitText(value);
-    simpleTextDialog->setLabel("<b>Change value:</b>");
-    simpleTextDialog->setWindowTitle("Edit value");
-    simpleTextDialog->exec();
-    if (simpleTextDialog->getExitStatus() == 0) {
-      QString newValue = simpleTextDialog->getText();
-      query->prepare("UPDATE attributes_to_incidents SET value = :newValue "
-		     "WHERE value = :oldValue AND attribute = :attribute AND incident = :incident");
-      query->bindValue(":newValue", newValue);
-      query->bindValue(":oldValue", value);
-      query->bindValue(":attribute", attribute);
-      query->bindValue(":incident", incident);
-      query->exec();
-      updateTable();
+void IncidentsAttributesTable::setFilterColumn() 
+{
+  if (filterComboBox->currentText() == "Attributes") 
+    {
+      filter->setFilterKeyColumn(1);    
     }
-    delete query;
-  }
+  else if (filterComboBox->currentText() == "Incidents") 
+    {
+      filter->setFilterKeyColumn(2);
+    }
+  else if (filterComboBox->currentText() == "Values") 
+    {
+      filter->setFilterKeyColumn(3);
+    }
 }
 
-void IncidentsAttributesTable::exportNormalMatrix() {
+void IncidentsAttributesTable::editValue() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      int row = tableView->currentIndex().row();
+      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+      int order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toInt();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query->bindValue(":order", order);
+      query->exec();
+      query->first();
+      int incident = query->value(0).toInt();
+      QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+      QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
+      simpleTextDialog->submitText(value);
+      simpleTextDialog->setLabel("<b>Change value:</b>");
+      simpleTextDialog->setWindowTitle("Edit value");
+      simpleTextDialog->exec();
+      if (simpleTextDialog->getExitStatus() == 0) 
+	{
+	  QString newValue = simpleTextDialog->getText();
+	  query->prepare("UPDATE attributes_to_incidents SET value = :newValue "
+			 "WHERE value = :oldValue AND attribute = :attribute AND incident = :incident");
+	  query->bindValue(":newValue", newValue);
+	  query->bindValue(":oldValue", value);
+	  query->bindValue(":attribute", attribute);
+	  query->bindValue(":incident", incident);
+	  query->exec();
+	  updateTable();
+	}
+      delete query;
+    }
+}
+
+void IncidentsAttributesTable::exportNormalMatrix() 
+{
   exportMatrix(false);
 }
 
-void IncidentsAttributesTable::exportValuedMatrix() {
+void IncidentsAttributesTable::exportValuedMatrix() 
+{
   exportMatrix(true);
 }
 
-void IncidentsAttributesTable::exportMatrix(bool valued) {
+void IncidentsAttributesTable::exportMatrix(bool valued) 
+{
   updateTable();
   // We first need a list with unique names of attributes and a list with unique incidents.
   QSet<QString> attributeSet;
   QSet<int> incidentSet;
   QMultiMap<int, QVector<QString>> valueMap;
-  for (int i = 0; i != tableView->verticalHeader()->count(); i++) {
-    QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
-    int incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toInt();
-    QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-    attributeSet.insert(attribute);
-    incidentSet.insert(incident);
-    QVector<QString> temp;
-    temp.push_back(attribute);
-    temp.push_back(value);
-    valueMap.insert(incident, temp);
-  }
+  for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
+    {
+      QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+      int incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toInt();
+      QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+      attributeSet.insert(attribute);
+      incidentSet.insert(incident);
+      QVector<QString> temp;
+      temp.push_back(attribute);
+      temp.push_back(value);
+      valueMap.insert(incident, temp);
+    }
   QList<QString> attributeList = attributeSet.toList();
   QList<int> incidentList = incidentSet.toList();
   // Let's sort the attribute list alphabetically.
@@ -173,61 +192,75 @@ void IncidentsAttributesTable::exportMatrix(bool valued) {
   std::sort(incidentList.begin(), incidentList.end(), intLessThan);
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
-    }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first need to write the header row.
-    QListIterator<QString> it(attributeList);
-    while (it.hasNext()) {
-      QString currentAttribute = it.next();
-      fileOut << "," << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
-    }
-    fileOut << "\n"; // we need a newline symbol at the end of the header.
-    // Then we iterate through our lists and fetch values from the value map.
-    QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, attributeList.size());
-    saveProgress->setWindowTitle("Compiling matrix");
-    saveProgress->setAttribute(Qt::WA_DeleteOnClose);
-    saveProgress->setModal(true);
-    int counter = 1;
-    saveProgress->show();
-    QListIterator<int> it2(incidentList);
-    while (it2.hasNext()) {
-      int currentIncident = it2.next();
-      QListIterator<QString> it3(attributeList);
-      fileOut << currentIncident;
-      while (it3.hasNext()) {
-	QString currentAttribute = it3.next();
-	QList<QVector<QString>> values = valueMap.values(currentIncident);
-	bool found = false;
-	for (int i = 0; i != values.size(); i++) {
-	  QVector<QString> currentPair = values[i];
-	  if (currentPair[0] == currentAttribute) {
-	    found = true;
-	    if (valued) {
-	      if (currentPair[1] == "") {
-		fileOut << "," << "1";
-	      } else {
-		fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
-	      }
-	    } else {
-	      fileOut << "," << "1";
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first need to write the header row.
+      QListIterator<QString> it(attributeList);
+      while (it.hasNext()) 
+	{
+	  QString currentAttribute = it.next();
+	  fileOut << "," << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
+	}
+      fileOut << "\n"; // we need a newline symbol at the end of the header.
+      // Then we iterate through our lists and fetch values from the value map.
+      QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, attributeList.size());
+      saveProgress->setWindowTitle("Compiling matrix");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      int counter = 1;
+      saveProgress->show();
+      QListIterator<int> it2(incidentList);
+      while (it2.hasNext()) 
+	{
+	  int currentIncident = it2.next();
+	  QListIterator<QString> it3(attributeList);
+	  fileOut << currentIncident;
+	  while (it3.hasNext()) 
+	    {
+	      QString currentAttribute = it3.next();
+	      QList<QVector<QString>> values = valueMap.values(currentIncident);
+	      bool found = false;
+	      for (int i = 0; i != values.size(); i++) 
+		{
+		  QVector<QString> currentPair = values[i];
+		  if (currentPair[0] == currentAttribute) 
+		    {
+		      found = true;
+		      if (valued) 
+			{
+			  if (currentPair[1] == "") 
+			    {
+			      fileOut << "," << "1";
+			    }
+			  else 
+			    {
+			      fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
+			    }
+			}
+		      else 
+			{
+			  fileOut << "," << "1";
+			}
+		    }
+		}
+	      if (!found) 
+		{
+		  fileOut << "," << "0";
+		}
 	    }
-	  }
+	  fileOut << "\n"; // We need a newline symbol at the end of each row.
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
 	}
-	if (!found) {
-	  fileOut << "," << "0";
-	}
-      }
-      fileOut << "\n"; // We need a newline symbol at the end of each row.
-      counter++;
-      saveProgress->setProgress(counter);
-      qApp->processEvents();
+      // And that should be it!
+      fileOut.close();
+      delete saveProgress;
     }
-    // And that should be it!
-    fileOut.close();
-    delete saveProgress;
-  }
 }

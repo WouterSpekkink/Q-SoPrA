@@ -1,7 +1,8 @@
 #include <QtWidgets>
 #include "../include/EllipseObject.h"
 
-EllipseObject::EllipseObject() {
+EllipseObject::EllipseObject() 
+{
   drawRect = QRectF(0, 0, 100, 100);
   color = QColor(0, 0, 0, 255);
   fillColor = QColor(Qt::transparent);
@@ -12,124 +13,150 @@ EllipseObject::EllipseObject() {
   setAcceptHoverEvents(true);
 }
 
-void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
+{
   prepareGeometryChange();
   painter->setBrush(fillColor);
   painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
   painter->drawEllipse(drawRect);
-  if (isSelected()) {
-    QRectF selectRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
-    painter->setBrush(QColor(Qt::transparent));
-    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-    QPainterPath outline;
-    outline.addRect(selectRect);
-    painter->drawPath(outline);
-    update();
-  }
+  if (isSelected()) 
+    {
+      QRectF selectRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
+      painter->setBrush(QColor(Qt::transparent));
+      painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+      QPainterPath outline;
+      outline.addRect(selectRect);
+      painter->drawPath(outline);
+      update();
+    }
 }
 
-QColor EllipseObject::getColor() {
+QColor EllipseObject::getColor() 
+{
   return color;
 }
 
-void EllipseObject::setColor(const QColor &subColor) {
+void EllipseObject::setColor(const QColor &subColor) 
+{
   color = subColor;
 }
 
-QColor EllipseObject::getFillColor() {
+QColor EllipseObject::getFillColor() 
+{
   return fillColor;
 }
 
-void EllipseObject::setFillColor(const QColor &subColor) {
+void EllipseObject::setFillColor(const QColor &subColor) 
+{
   fillColor = subColor;
 }
 
-qreal EllipseObject::getLeft() {
+qreal EllipseObject::getLeft() 
+{
   return drawRect.left();
 }
 
-void EllipseObject::setLeft(qreal newLeft) {
+void EllipseObject::setLeft(qreal newLeft) 
+{
   drawRect.setLeft(newLeft);
   drawRect = drawRect.normalized();
 }
 
-qreal EllipseObject::getRight() {
+qreal EllipseObject::getRight() 
+{
   return drawRect.right();
 }
 
-void EllipseObject::setRight(qreal newRight) {
+void EllipseObject::setRight(qreal newRight) 
+{
   drawRect.setRight(newRight);
   drawRect = drawRect.normalized();
 }
 
-qreal EllipseObject::getTop() {
+qreal EllipseObject::getTop() 
+{
   return drawRect.top();
 }
 
-void EllipseObject::setTop(qreal newTop) {
+void EllipseObject::setTop(qreal newTop) 
+{
   drawRect.setTop(newTop);
   drawRect = drawRect.normalized();
 }
 
-qreal EllipseObject::getBottom() {
+qreal EllipseObject::getBottom() 
+{
   return drawRect.bottom();
 }
 
-void EllipseObject::setBottom(qreal newBottom) {
+void EllipseObject::setBottom(qreal newBottom) 
+{
   drawRect.setBottom(newBottom);
   drawRect = drawRect.normalized();
 }
 
-QPointF EllipseObject::topLeft() {
+QPointF EllipseObject::topLeft() 
+{
   return drawRect.topLeft();
 }
 
-QPointF EllipseObject::topRight() {
+QPointF EllipseObject::topRight() 
+{
   return drawRect.topRight();
 }
 
-QPointF EllipseObject::bottomLeft() {
+QPointF EllipseObject::bottomLeft() 
+{
   return drawRect.bottomLeft();
 }
 
-QPointF EllipseObject::bottomRight() {
+QPointF EllipseObject::bottomRight() 
+{
   return drawRect.bottomRight();
 }
 
-void EllipseObject::setTopLeft(QPointF topLeft) {
+void EllipseObject::setTopLeft(QPointF topLeft) 
+{
   drawRect.setTopLeft(topLeft);
   drawRect = drawRect.normalized();
 }
 
-void EllipseObject::setTopRight(QPointF topRight) {
+void EllipseObject::setTopRight(QPointF topRight) 
+{
   drawRect.setTopRight(topRight);
   drawRect = drawRect.normalized();
 }
 
-void EllipseObject::setBottomLeft(QPointF bottomLeft) {
+void EllipseObject::setBottomLeft(QPointF bottomLeft) 
+{
   drawRect.setBottomLeft(bottomLeft);
   drawRect = drawRect.normalized();
 }
 
-void EllipseObject::setBottomRight(QPointF bottomRight) {
+void EllipseObject::setBottomRight(QPointF bottomRight) 
+{
   drawRect.setBottomRight(bottomRight);
   drawRect = drawRect.normalized();
 }
 
-QPointF EllipseObject::getCenter() {
+QPointF EllipseObject::getCenter() 
+{
   return boundingRect().center();
 }
 
-void EllipseObject::moveCenter(QPointF newCenter) {
+void EllipseObject::moveCenter(QPointF newCenter) 
+{
   drawRect.moveCenter(newCenter);
   drawRect = drawRect.normalized();
 }
 
-qreal EllipseObject::getRotationValue() {
+qreal EllipseObject::getRotationValue() 
+{
   return rotation;
 }
 
-void EllipseObject::setRotationValue(qreal newRotation) {
+void EllipseObject::setRotationValue(qreal newRotation) 
+{
   rotation = newRotation;
   QTransform transform;
   QPointF center = drawRect.center();
@@ -146,12 +173,14 @@ void EllipseObject::setRotationValue(qreal newRotation) {
   moveBy(offset.x(), offset.y());
 }
 
-QRectF EllipseObject::boundingRect() const {
+QRectF EllipseObject::boundingRect() const 
+{
   QRectF myRect = drawRect.normalized().adjusted(-10,-10, 10, 10);
   return myRect;
 }
 
-QPainterPath EllipseObject::shape() const {
+QPainterPath EllipseObject::shape() const 
+{
   QPainterPath path;
   QPainterPathStroker stroker;
   stroker.setWidth(penWidth + 15);
@@ -163,39 +192,48 @@ QPainterPath EllipseObject::shape() const {
   return stroker.createStroke(path);
 }
 
-int EllipseObject::getPenWidth() {
+int EllipseObject::getPenWidth() 
+{
   return penWidth;
 }
 
-void EllipseObject::setPenWidth(int width) {
+void EllipseObject::setPenWidth(int width) 
+{
   penWidth = width;
 }
 
-int EllipseObject::getPenStyle() {
+int EllipseObject::getPenStyle() 
+{
   return penStyle;
 }
 
-void EllipseObject::setPenStyle(int style) {
+void EllipseObject::setPenStyle(int style) 
+{
   penStyle = style;
 }
 
-int EllipseObject::type() const {
+int EllipseObject::type() const 
+{
   return Type;
 }
 
-void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void EllipseObject::mousePressEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
-void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void EllipseObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::restoreOverrideCursor();
 }
 
-void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+void EllipseObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) 
+{
   QApplication::setOverrideCursor(Qt::OpenHandCursor);
 }
 
-void EllipseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void EllipseObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) 
+{
   QApplication::restoreOverrideCursor();
 }
 

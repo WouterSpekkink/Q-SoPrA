@@ -1,6 +1,7 @@
 #include "../include/MainWindow.h"
 
-MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : QMainWindow(parent) {
+MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : QMainWindow(parent) 
+{
   // We make sure that the sql database is set.
   esd = submittedEsd;
 
@@ -111,7 +112,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->showMaximized();
 }
 
-void MainWindow::createActions() {
+void MainWindow::createActions() 
+{
   // File menu actions
   exitAct = new QAction(tr("&Exit program"), this);
   exitAct->setShortcuts(QKeySequence::Close);
@@ -237,7 +239,8 @@ void MainWindow::createActions() {
 	  this, SLOT(importEntityAttributes()));
 }
 
-void MainWindow::createMenus() {
+void MainWindow::createMenus() 
+{
   menuBar = new QMenuBar(this);
   fileMenu = menuBar->addMenu("File");
   fileMenu->addAction(importAct);
@@ -288,7 +291,8 @@ void MainWindow::createMenus() {
 
    We also check whether the file has the correct headers.
 */
-void MainWindow::importFromCsv() {
+void MainWindow::importFromCsv() 
+{
   // We ask the user to open a file to import from.
   QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
 						 tr("csv files (*.csv)"));
@@ -296,97 +300,109 @@ void MainWindow::importFromCsv() {
   std::ifstream file ((csvName.toStdString()).c_str());
   std::vector<std::vector <std::string> > data; // To store our data in.
   bool headerFound = false; // To be used in a condition further below.
-  while (file) {
-    // The buffer will hold each line of data as we read the file.
-    std::string buffer; 
-    if (!getline(file, buffer)) break; // We get the current line/
+  while (file) 
+    {
+      // The buffer will hold each line of data as we read the file.
+      std::string buffer; 
+      if (!getline(file, buffer)) break; // We get the current line/
 
-    // We should check and handle any extra line breaks in the file.
-    while (checkLineBreaks(buffer) == true) {
-      std::string extra;
-      getline(file, extra);
-      buffer = buffer + "\n\n" + extra;
-    }
-    // We need an object to keep the separate tokens in a line.
-    std::vector<std::string> tokens; 
-    // We then split the current line into different tokens.
-    splitCsvLine(&tokens, buffer);
-    /* 
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
-    */
-    if (headerFound == false) {
-      if (tokens[0] != "Timing" && tokens[0] != "timing") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Timing\" in first column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[1] != "Description" && tokens[1] != "description") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Description\" "
-				     "in second column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[2] != "Raw" && tokens[2] != "raw") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Raw\" in third column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[3] != "Comments" && tokens[3] != "comments") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Comments\" in "
-				     "fourth column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[4] != "Source" && tokens[4] != "source") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"Source\" in "
-				     "fifth column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
+      // We should check and handle any extra line breaks in the file.
+      while (checkLineBreaks(buffer) == true) 
+	{
+	  std::string extra;
+	  getline(file, extra);
+	  buffer = buffer + "\n\n" + extra;
+	}
+      // We need an object to keep the separate tokens in a line.
+      std::vector<std::string> tokens; 
+      // We then split the current line into different tokens.
+      splitCsvLine(&tokens, buffer);
       /* 
-	 If we checked all headers and imported the header correctly,
-	 we can set the headerFound bool to true, so that this block 
-	 is skipped in all subsequent line reads.
+	 If we still need to import the header, let's do that first.
+	 We immediately check if the correct headers were used.
+	 If not, we report an error and return, letting the user fix the issue.
       */
-      headerFound = true;
+      if (headerFound == false) 
+	{
+	  if (tokens[0] != "Timing" && tokens[0] != "timing") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"Timing\" in first column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[1] != "Description" && tokens[1] != "description") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"Description\" "
+					   "in second column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[2] != "Raw" && tokens[2] != "raw") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"Raw\" in third column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[3] != "Comments" && tokens[3] != "comments") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"Comments\" in "
+					   "fourth column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[4] != "Source" && tokens[4] != "source") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"Source\" in "
+					   "fifth column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  /* 
+	     If we checked all headers and imported the header correctly,
+	     we can set the headerFound bool to true, so that this block 
+	     is skipped in all subsequent line reads.
+	  */
+	  headerFound = true;
 
-      // This is the block that is run after the header was already imported.
-    } else { 
-      // We iterate through the tokens and push them into the row vector.
-      std::vector<std::string> row;
-      std::vector<std::string>::iterator it;
-      if (tokens[0] == "" || tokens[1] == "" || tokens[4] == "") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      for (it = tokens.begin(); it != tokens.end(); it++) {
-	row.push_back(*it);
-      }
-      // Then we push the row vector into the data vector.
-      data.push_back(row);
+	  // This is the block that is run after the header was already imported.
+	}
+      else 
+	{ 
+	  // We iterate through the tokens and push them into the row vector.
+	  std::vector<std::string> row;
+	  std::vector<std::string>::iterator it;
+	  if (tokens[0] == "" || tokens[1] == "" || tokens[4] == "") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  for (it = tokens.begin(); it != tokens.end(); it++) 
+	    {
+	      row.push_back(*it);
+	    }
+	  // Then we push the row vector into the data vector.
+	  data.push_back(row);
+	}
     }
-  }
   /* 
      Writing to sqlite databases is quite slow, so if the 
      csv-file is large, it will take a while. We use a progress bar 
@@ -421,26 +437,27 @@ void MainWindow::importFromCsv() {
 		 "VALUES "
 		 "(:order, :timestamp, :description, :raw, :comment, "
 		 ":source, :mark)");
-  for (it = data.begin(); it != data.end(); it++) {
-    // We create all the necessary variables and write them to the table.
-    std::vector<std::string> currentRow = *it;
-    QString timeStamp = QString::fromStdString(currentRow[0]);
-    QString description = QString::fromStdString(currentRow[1]);
-    QString raw = QString::fromStdString(currentRow[2]);
-    QString comment = QString::fromStdString(currentRow[3]);
-    QString source = QString::fromStdString(currentRow[4]);
-    query->bindValue(":order", order);
-    query->bindValue(":timestamp", timeStamp);
-    query->bindValue(":description", description);
-    query->bindValue(":raw", raw);
-    query->bindValue(":comment", comment);
-    query->bindValue(":source", source);
-    query->bindValue(":mark", 0);
-    query->exec();		   
-    order++; // Make sure that we increment the order variable.
-    loadProgress->setProgress(order); // Set progress and report
-    qApp->processEvents(); // Make sure that the progress is visible
-  }
+  for (it = data.begin(); it != data.end(); it++) 
+    {
+      // We create all the necessary variables and write them to the table.
+      std::vector<std::string> currentRow = *it;
+      QString timeStamp = QString::fromStdString(currentRow[0]);
+      QString description = QString::fromStdString(currentRow[1]);
+      QString raw = QString::fromStdString(currentRow[2]);
+      QString comment = QString::fromStdString(currentRow[3]);
+      QString source = QString::fromStdString(currentRow[4]);
+      query->bindValue(":order", order);
+      query->bindValue(":timestamp", timeStamp);
+      query->bindValue(":description", description);
+      query->bindValue(":raw", raw);
+      query->bindValue(":comment", comment);
+      query->bindValue(":source", source);
+      query->bindValue(":mark", 0);
+      query->exec();		   
+      order++; // Make sure that we increment the order variable.
+      loadProgress->setProgress(order); // Set progress and report
+      qApp->processEvents(); // Make sure that the progress is visible
+    }
   delete query; // Memory management
   QSqlDatabase::database().commit(); // Commit our transaction. 
   loadProgress->close(); // We can close the progress bar.
@@ -459,23 +476,28 @@ void MainWindow::importFromCsv() {
    equal number of quotes ("). If this is not the case, we can assume 
    that another line of data should be appended. 
 */
-bool MainWindow::checkLineBreaks(std::string line) {
+bool MainWindow::checkLineBreaks(std::string line) 
+{
   bool lineBreak = false; // This is the variable that will be returned.
-  for (std::string::size_type i = 0; i != line.length(); i++) {
-    /* 
-       If we did not find a quote yet, and we find one,
-       we set the lineBreak variable to true.
-    */
-    if (lineBreak == false && line[i] == '"') {
-      lineBreak = true;
-      /*
-	If we then find another quote, 
-	we can assume that no embedded line break exists.
+  for (std::string::size_type i = 0; i != line.length(); i++) 
+    {
+      /* 
+	 If we did not find a quote yet, and we find one,
+	 we set the lineBreak variable to true.
       */
-    } else if (lineBreak == true && line[i] == '"') {
-      lineBreak = false;
+      if (lineBreak == false && line[i] == '"') 
+	{
+	  lineBreak = true;
+	  /*
+	    If we then find another quote, 
+	    we can assume that no embedded line break exists.
+	  */
+	}
+      else if (lineBreak == true && line[i] == '"') 
+	{
+	  lineBreak = false;
+	}
     }
-  }
   // After reading the line, we return the result.
   return lineBreak;  
 }
@@ -490,7 +512,8 @@ bool MainWindow::checkLineBreaks(std::string line) {
    We also clean up the line of text a bit before we cut it up.
 */
 void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
-			      std::string line) {
+			      std::string line) 
+{
   bool inTextField = false; // To check whether or not we are in a text field.
   /* 
      The next two variables are to make sure that 
@@ -500,117 +523,142 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
   std::string::size_type previousPos = 0;
   // We use this integer to count the number of quotes in a line so far.
   int quoteCount = 0; 
-  for (std::string::size_type i = 0; i != line.length(); i++) {
-    if (line[i] == '"') {
-      quoteCount++; // If we found a quote, we increment this variable.
-    }
-    if (inTextField == false && line[i] == '"') {
-      /* 
-	 Finding a quote will mean that we are now 
-	 in a text field if we weren't already.
-      */
-      inTextField = true;
-      previousPos++; // We don't want to include the quote itself.
-      stringLength--;
-      /* 
-	 If we are in a text field, and we encounter another quote, then we
-	 should first check if it is accompanied by yet another pair of quotes. 
-	 This is based on the fact that csv files (if written correctly), 
-	 always use double quotes for
-	 quotes that are embedded in text fields. 
-
-	 We also double check by checking if the current amount of 
-	 quotes is divisible by 2, that is, if we have an 
-	 equal number of quotes.
-      */
-    } else if (inTextField == true && line[i] == '"' &&
-	       line[i + 1] != '"' && quoteCount % 2 == 0) {
-      // If these conditions hold, it means that we have now left the text field.
-      inTextField = false;
-      stringLength--; // We don't want to include the quote itself.
-    }
-    // If we encounter a comma, it means that we have encountered a new token.
-    if (inTextField == false && line[i] == ',') {
-      // We remove any white spaces before the start of this new token.
-      while (line[previousPos] == ' ') {
-	previousPos++;
-	stringLength--;
-      }
-      // We create a substring here.
-      std::string tempString = line.substr(previousPos, stringLength);
-      // In case we have any remaining double quotes, let us remove them.
-      if (tempString.size() > 1) {
-	for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) {
-	  if (*(it - 1) == '"' && *it == '"') {
-	    tempString.erase(it);
-	  } else {
-	    it++;
-	  }
+  for (std::string::size_type i = 0; i != line.length(); i++) 
+    {
+      if (line[i] == '"') 
+	{
+	  quoteCount++; // If we found a quote, we increment this variable.
 	}
-      }
-      // And then we store the resulting string as a new token.
-      tokens->push_back(tempString);
-      previousPos = i + 1; // We set a new starting position for the next token.
-      stringLength = 0; // And we reset the string length.
-    } else {
-      stringLength++; // We increment the string length as we go on.
+      if (inTextField == false && line[i] == '"') 
+	{
+	  /* 
+	     Finding a quote will mean that we are now 
+	     in a text field if we weren't already.
+	  */
+	  inTextField = true;
+	  previousPos++; // We don't want to include the quote itself.
+	  stringLength--;
+	  /* 
+	     If we are in a text field, and we encounter another quote, then we
+	     should first check if it is accompanied by yet another pair of quotes. 
+	     This is based on the fact that csv files (if written correctly), 
+	     always use double quotes for
+	     quotes that are embedded in text fields. 
+
+	     We also double check by checking if the current amount of 
+	     quotes is divisible by 2, that is, if we have an 
+	     equal number of quotes.
+	  */
+	}
+      else if (inTextField == true && line[i] == '"' &&
+	       line[i + 1] != '"' && quoteCount % 2 == 0) 
+	{
+	  // If these conditions hold, it means that we have now left the text field.
+	  inTextField = false;
+	  stringLength--; // We don't want to include the quote itself.
+	}
+      // If we encounter a comma, it means that we have encountered a new token.
+      if (inTextField == false && line[i] == ',') 
+	{
+	  // We remove any white spaces before the start of this new token.
+	  while (line[previousPos] == ' ') 
+	    {
+	      previousPos++;
+	      stringLength--;
+	    }
+	  // We create a substring here.
+	  std::string tempString = line.substr(previousPos, stringLength);
+	  // In case we have any remaining double quotes, let us remove them.
+	  if (tempString.size() > 1) 
+	    {
+	      for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) 
+		{
+		  if (*(it - 1) == '"' && *it == '"') 
+		    {
+		      tempString.erase(it);
+		    }
+		  else 
+		    {
+		      it++;
+		    }
+		}
+	    }
+	  // And then we store the resulting string as a new token.
+	  tokens->push_back(tempString);
+	  previousPos = i + 1; // We set a new starting position for the next token.
+	  stringLength = 0; // And we reset the string length.
+	}
+      else 
+	{
+	  stringLength++; // We increment the string length as we go on.
+	}
     }
-  }
   // After we finish reading the line, we should still include the last token.
-  while (line[previousPos] == ' ') {
-    previousPos++;
-    stringLength--;
-  }
-  std::string tempString = line.substr(previousPos, stringLength);
-  if (tempString.size() > 1) {
-    for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) {
-      if (*(it - 1) == '"' && *it == '"') {
-	tempString.erase(it);
-      } else {
-	it++;
-      }
+  while (line[previousPos] == ' ') 
+    {
+      previousPos++;
+      stringLength--;
     }
-  }
+  std::string tempString = line.substr(previousPos, stringLength);
+  if (tempString.size() > 1) 
+    {
+      for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) 
+	{
+	  if (*(it - 1) == '"' && *it == '"') 
+	    {
+	      tempString.erase(it);
+	    }
+	  else 
+	    {
+	      it++;
+	    }
+	}
+    }
   tokens->push_back(tempString);
 }
 
-void MainWindow::exportToCsv() {
+void MainWindow::exportToCsv() 
+{
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "Timing" << ","
+	      << "Description" << "," 
+	      << "Raw" << ","
+	      << "Comments" << ","
+	      << "Source" << "\n";
+      // Let us then just fetch the data from the current incidents table.
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT timestamp, description, raw, comment, source FROM incidents "
+		  "ORDER BY ch_order ASC ");
+      while (query->next()) 
+	{
+	  QString timing = doubleQuote(query->value(0).toString());
+	  QString description = doubleQuote(query->value(1).toString());
+	  QString raw = doubleQuote(query->value(2).toString());
+	  QString comment = doubleQuote(query->value(3).toString());
+	  QString source = doubleQuote(query->value(4).toString());
+	  fileOut << "\"" << timing.toStdString() << "\"" << ","
+		  << "\"" << description.toStdString() << "\"" << ","
+		  << "\"" << raw.toStdString() << "\"" << ","
+		  << "\"" << comment.toStdString() << "\"" << ","
+		  << "\"" << source.toStdString() << "\"" << "\n";
+	}
+      // And that should be it!
+      fileOut.close();
     }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first write the header of the file.
-    fileOut << "Timing" << ","
-	    << "Description" << "," 
-	    << "Raw" << ","
-	    << "Comments" << ","
-	    << "Source" << "\n";
-    // Let us then just fetch the data from the current incidents table.
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT timestamp, description, raw, comment, source FROM incidents "
-		"ORDER BY ch_order ASC ");
-    while (query->next()) {
-      QString timing = doubleQuote(query->value(0).toString());
-      QString description = doubleQuote(query->value(1).toString());
-      QString raw = doubleQuote(query->value(2).toString());
-      QString comment = doubleQuote(query->value(3).toString());
-      QString source = doubleQuote(query->value(4).toString());
-      fileOut << "\"" << timing.toStdString() << "\"" << ","
-	      << "\"" << description.toStdString() << "\"" << ","
-	      << "\"" << raw.toStdString() << "\"" << ","
-	      << "\"" << comment.toStdString() << "\"" << ","
-	      << "\"" << source.toStdString() << "\"" << "\n";
-    }
-    // And that should be it!
-    fileOut.close();
-  }
 }
 
-void MainWindow::switchToDataView() {
+void MainWindow::switchToDataView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -627,7 +675,8 @@ void MainWindow::switchToDataView() {
   stacked->setCurrentWidget(dataWidget);
 }
 
-void MainWindow::switchToAttributeView() {
+void MainWindow::switchToAttributeView() 
+{
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
   lw->setLinkageComment();
@@ -646,7 +695,8 @@ void MainWindow::switchToAttributeView() {
   aw->setButtons();
 }
 
-void MainWindow::switchToRelationshipView() {
+void MainWindow::switchToRelationshipView() 
+{
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   lw->setComments();
   lw->setLinkageComment();
@@ -665,7 +715,8 @@ void MainWindow::switchToRelationshipView() {
   rw->setButtons();
 }
 
-void MainWindow::switchToLinkageView() {
+void MainWindow::switchToLinkageView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -680,7 +731,8 @@ void MainWindow::switchToLinkageView() {
 }
 
 
-void MainWindow::switchToJournalView() {
+void MainWindow::switchToJournalView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -697,7 +749,8 @@ void MainWindow::switchToJournalView() {
   stacked->setCurrentWidget(journalWidget);
 }
 
-void MainWindow::switchToCasingView() {
+void MainWindow::switchToCasingView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -712,7 +765,8 @@ void MainWindow::switchToCasingView() {
   stacked->setCurrentWidget(casingWidget);
 }
 
-void MainWindow::switchToEventGraphView() {
+void MainWindow::switchToEventGraphView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -732,7 +786,8 @@ void MainWindow::switchToEventGraphView() {
   egw->setButtons();
 }
 
-void MainWindow::switchToNetworkGraphView() {
+void MainWindow::switchToNetworkGraphView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -748,7 +803,8 @@ void MainWindow::switchToNetworkGraphView() {
   stacked->setCurrentWidget(networkGraphWidget);
 }
 
-void MainWindow::switchToOccurrenceGraphView() {
+void MainWindow::switchToOccurrenceGraphView() 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -763,7 +819,8 @@ void MainWindow::switchToOccurrenceGraphView() {
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 
-void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
+void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) 
+{
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
@@ -790,21 +847,24 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) {
   hgw->setButtons();
 }
 
-void MainWindow::switchToRawAttributesTableView() {
+void MainWindow::switchToRawAttributesTableView() 
+{
   // Still need to figure out what else needs to happen here.
   RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(stacked->widget(9));
   rat->updateTable();
   stacked->setCurrentWidget(rawAttributesTableWidget);
 }
 
-void MainWindow::switchToRawRelationshipsTableView() {
+void MainWindow::switchToRawRelationshipsTableView() 
+{
   // Still need to figure out what else needs to happen here.
   RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(stacked->widget(10));
   rrt->updateTable();
   stacked->setCurrentWidget(rawRelationshipsTableWidget);
 }
 
-void MainWindow::switchToIncidentsAttributesTableView() {
+void MainWindow::switchToIncidentsAttributesTableView() 
+{
   // Still need to figure out what else needs to happen here.
   IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(11));
   iat->attributesModel->select();
@@ -812,7 +872,8 @@ void MainWindow::switchToIncidentsAttributesTableView() {
   stacked->setCurrentWidget(incidentsAttributesTableWidget);
 }
 
-void MainWindow::switchToEntitiesAttributesTableView() {
+void MainWindow::switchToEntitiesAttributesTableView() 
+{
   // Still need to figure out what else needs to happen here.
   EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
   eat->attributesModel->select();
@@ -820,145 +881,166 @@ void MainWindow::switchToEntitiesAttributesTableView() {
   stacked->setCurrentWidget(entitiesAttributesTableWidget);
 }
 
-void MainWindow::switchToMissingAttributesTableView() {
+void MainWindow::switchToMissingAttributesTableView() 
+{
   // Still need to figure out what else needs to happen here.
   MissingAttributesTable *mat = qobject_cast<MissingAttributesTable*>(stacked->widget(13));
   mat->updateTable();
   stacked->setCurrentWidget(missingAttributesTableWidget);
 }
 
-void MainWindow::switchToMissingRelationshipsTableView() {
+void MainWindow::switchToMissingRelationshipsTableView() 
+{
   // Still need to figure out what else needs to happen here.
   MissingRelationshipsTable *mrt = qobject_cast<MissingRelationshipsTable*>(stacked->widget(14));
   mrt->updateTable();
   stacked->setCurrentWidget(missingRelationshipsTableWidget);
 }
 
-void MainWindow::closeEvent(QCloseEvent *event) {
+void MainWindow::closeEvent(QCloseEvent *event) 
+{
   QPointer<QMessageBox> warningBox = new QMessageBox(this);
   warningBox->addButton(QMessageBox::Yes);
   warningBox->addButton(QMessageBox::No);
   warningBox->setIcon(QMessageBox::Warning);
   warningBox->setText("<h2>Are you sure?</h2>");
   warningBox->setInformativeText("Are you sure you want to exit the program?");
-  if (warningBox->exec() == QMessageBox::Yes) {
-    event->accept();
-  } else {
-    event->ignore();
-  } 
+  if (warningBox->exec() == QMessageBox::Yes) 
+    {
+      event->accept();
+    }
+  else 
+    {
+      event->ignore();
+    } 
 }
 
-void MainWindow::exportIncidentAttributes() {
+void MainWindow::exportIncidentAttributes() 
+{
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "name" << ","
+	      << "description" << ","
+	      << "father" << "\n";
+      /* 
+	 The rest is relatively simple. We make a query return almost the entire table
+	 and simply write that to a file.
+      */
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT name, description, father FROM incident_attributes");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QString father = query->value(2).toString();
+	  fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
+	}
+      delete query;
+      // And that is it.
+      fileOut.close();
     }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first write the header of the file.
-    fileOut << "name" << ","
-	    << "description" << ","
-	    << "father" << "\n";
-    /* 
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
-    */
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT name, description, father FROM incident_attributes");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QString father = query->value(2).toString();
-      fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
-	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-	      << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
-    }
-    delete query;
-    // And that is it.
-    fileOut.close();
-  }
 }
 
-void MainWindow::importIncidentAttributes() {
-   QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
+void MainWindow::importIncidentAttributes() 
+{
+  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
 						 tr("csv files (*.csv)"));
   // We then create an ifstream object that goes through the file.
   std::ifstream file ((csvName.toStdString()).c_str());
   std::vector<std::vector <std::string> > data; // To store our data in.
   bool headerFound = false; // To be used in a condition further below.
-  while (file) {
-    // The buffer will hold each line of data as we read the file.
-    std::string buffer; 
-    if (!getline(file, buffer)) break; // We get the current line/
-    // We should check and handle any extra line breaks in the file.
-    while (checkLineBreaks(buffer) == true) {
-      std::string extra;
-      getline(file, extra);
-      buffer = buffer + "\n\n" + extra;
-    }
-    // We need an object to keep the separate tokens in a line.
-    std::vector<std::string> tokens; 
-    // We then split the current line into different tokens.
-    splitCsvLine(&tokens, buffer);
-    /* 
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
-    */
-    if (headerFound == false) {
-      if (tokens[0] != "name") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"name\" in first column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[1] != "description") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"description\" "
-				     "in second column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[2] != "father") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"father\" in third column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
+  while (file) 
+    {
+      // The buffer will hold each line of data as we read the file.
+      std::string buffer; 
+      if (!getline(file, buffer)) break; // We get the current line/
+      // We should check and handle any extra line breaks in the file.
+      while (checkLineBreaks(buffer) == true) 
+	{
+	  std::string extra;
+	  getline(file, extra);
+	  buffer = buffer + "\n\n" + extra;
+	}
+      // We need an object to keep the separate tokens in a line.
+      std::vector<std::string> tokens; 
+      // We then split the current line into different tokens.
+      splitCsvLine(&tokens, buffer);
       /* 
-	 If we checked all headers and imported the header correctly,
-	 we can set the headerFound bool to true, so that this block 
-	 is skipped in all subsequent line reads.
+	 If we still need to import the header, let's do that first.
+	 We immediately check if the correct headers were used.
+	 If not, we report an error and return, letting the user fix the issue.
       */
-      headerFound = true;
-      // This is the block that is run after the header was already imported.
-    } else { 
-      // We iterate through the tokens and push them into the row vector.
-      std::vector<std::string> row;
-      std::vector<std::string>::iterator it;
-      if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      for (it = tokens.begin(); it != tokens.end(); it++) {
-	row.push_back(*it);
-      }
-      // Then we push the row vector into the data vector.
-      data.push_back(row);
+      if (headerFound == false) 
+	{
+	  if (tokens[0] != "name") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"name\" in first column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[1] != "description") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"description\" "
+					   "in second column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[2] != "father") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"father\" in third column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  /* 
+	     If we checked all headers and imported the header correctly,
+	     we can set the headerFound bool to true, so that this block 
+	     is skipped in all subsequent line reads.
+	  */
+	  headerFound = true;
+	  // This is the block that is run after the header was already imported.
+	}
+      else 
+	{ 
+	  // We iterate through the tokens and push them into the row vector.
+	  std::vector<std::string> row;
+	  std::vector<std::string>::iterator it;
+	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  for (it = tokens.begin(); it != tokens.end(); it++) 
+	    {
+	      row.push_back(*it);
+	    }
+	  // Then we push the row vector into the data vector.
+	  data.push_back(row);
+	}
     }
-  }
   /* 
      Writing to sqlite databases is quite slow, so if the 
      csv-file is large, it will take a while. We use a progress bar 
@@ -972,151 +1054,168 @@ void MainWindow::importIncidentAttributes() {
   loadProgress->show();
   int counter = 1;
   std::vector<std::vector <std::string> >::iterator it;
-  for (it = data.begin(); it != data.end(); it++) {
-    // We create all the necessary variables and write them to the table.
-    std::vector<std::string> currentRow = *it;
-    QString name = QString::fromStdString(currentRow[0]);
-    QString description = QString::fromStdString(currentRow[1]);
-    QString father = QString::fromStdString(currentRow[2]);
-    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    // Let us make sure that we are not creating duplicates.
-    query->prepare("SELECT name FROM incident_attributes "
-		   "WHERE name = :name");
-    query->bindValue(":name", name);
-    query->exec();
-    query->first();
-    if (query->isNull(0)) {
-      query->prepare("INSERT INTO incident_attributes "
-		     "(name, description, father) "
-		     "VALUES "
-		     "(:name, :description, :father)");
+  for (it = data.begin(); it != data.end(); it++) 
+    {
+      // We create all the necessary variables and write them to the table.
+      std::vector<std::string> currentRow = *it;
+      QString name = QString::fromStdString(currentRow[0]);
+      QString description = QString::fromStdString(currentRow[1]);
+      QString father = QString::fromStdString(currentRow[2]);
+      QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
+      // Let us make sure that we are not creating duplicates.
+      query->prepare("SELECT name FROM incident_attributes "
+		     "WHERE name = :name");
       query->bindValue(":name", name);
-      query->bindValue(":description", description);
-      query->bindValue(":father", father);
       query->exec();
+      query->first();
+      if (query->isNull(0)) 
+	{
+	  query->prepare("INSERT INTO incident_attributes "
+			 "(name, description, father) "
+			 "VALUES "
+			 "(:name, :description, :father)");
+	  query->bindValue(":name", name);
+	  query->bindValue(":description", description);
+	  query->bindValue(":father", father);
+	  query->exec();
+	}
+      counter++;
+      loadProgress->setProgress(counter); // Set progress and report
+      qApp->processEvents(); // Make sure that the progress is visible
+      delete query; // Memory management
     }
-    counter++;
-    loadProgress->setProgress(counter); // Set progress and report
-    qApp->processEvents(); // Make sure that the progress is visible
-    delete query; // Memory management
-  }
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->resetTree();
 }
 
-void MainWindow::exportEntities() {
+void MainWindow::exportEntities() 
+{
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "name" << ","
+	      << "description" << ","
+	      << "father" << "\n";
+      /* 
+	 The rest is relatively simple. We make a query return almost the entire table
+	 and simply write that to a file.
+      */
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT name, description, father FROM entities");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QString father = query->value(2).toString();
+	  fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
+	}
+      delete query;
+      // And that is it.
+      fileOut.close();
     }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first write the header of the file.
-    fileOut << "name" << ","
-	    << "description" << ","
-	    << "father" << "\n";
-    /* 
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
-    */
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT name, description, father FROM entities");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QString father = query->value(2).toString();
-      fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
-	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-	      << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
-    }
-    delete query;
-    // And that is it.
-    fileOut.close();
-  }
 }
 
-void MainWindow::importEntities() {
-   QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
-						  tr("csv files (*.csv)"));
+void MainWindow::importEntities() 
+{
+  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
+						 tr("csv files (*.csv)"));
   // We then create an ifstream object that goes through the file.
   std::ifstream file ((csvName.toStdString()).c_str());
   std::vector<std::vector <std::string> > data; // To store our data in.
   bool headerFound = false; // To be used in a condition further below.
-  while (file) {
-    // The buffer will hold each line of data as we read the file.
-    std::string buffer; 
-    if (!getline(file, buffer)) break; // We get the current line/
-    // We should check and handle any extra line breaks in the file.
-    while (checkLineBreaks(buffer) == true) {
-      std::string extra;
-      getline(file, extra);
-      buffer = buffer + "\n\n" + extra;
-    }
-    // We need an object to keep the separate tokens in a line.
-    std::vector<std::string> tokens; 
-    // We then split the current line into different tokens.
-    splitCsvLine(&tokens, buffer);
-    /* 
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
-    */
-    if (headerFound == false) {
-      if (tokens[0] != "name") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"name\" in first column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[1] != "description") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"description\" "
-				     "in second column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[2] != "father") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"father\" in third column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
+  while (file) 
+    {
+      // The buffer will hold each line of data as we read the file.
+      std::string buffer; 
+      if (!getline(file, buffer)) break; // We get the current line/
+      // We should check and handle any extra line breaks in the file.
+      while (checkLineBreaks(buffer) == true) 
+	{
+	  std::string extra;
+	  getline(file, extra);
+	  buffer = buffer + "\n\n" + extra;
+	}
+      // We need an object to keep the separate tokens in a line.
+      std::vector<std::string> tokens; 
+      // We then split the current line into different tokens.
+      splitCsvLine(&tokens, buffer);
       /* 
-	 If we checked all headers and imported the header correctly,
-	 we can set the headerFound bool to true, so that this block 
-	 is skipped in all subsequent line reads.
+	 If we still need to import the header, let's do that first.
+	 We immediately check if the correct headers were used.
+	 If not, we report an error and return, letting the user fix the issue.
       */
-      headerFound = true;
-      // This is the block that is run after the header was already imported.
-    } else { 
-      // We iterate through the tokens and push them into the row vector.
-      std::vector<std::string> row;
-      std::vector<std::string>::iterator it;
-      if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      for (it = tokens.begin(); it != tokens.end(); it++) {
-	row.push_back(*it);
-      }
-      // Then we push the row vector into the data vector.
-      data.push_back(row);
+      if (headerFound == false) 
+	{
+	  if (tokens[0] != "name") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"name\" in first column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[1] != "description") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"description\" "
+					   "in second column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[2] != "father") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"father\" in third column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  /* 
+	     If we checked all headers and imported the header correctly,
+	     we can set the headerFound bool to true, so that this block 
+	     is skipped in all subsequent line reads.
+	  */
+	  headerFound = true;
+	  // This is the block that is run after the header was already imported.
+	}
+      else 
+	{ 
+	  // We iterate through the tokens and push them into the row vector.
+	  std::vector<std::string> row;
+	  std::vector<std::string>::iterator it;
+	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  for (it = tokens.begin(); it != tokens.end(); it++) 
+	    {
+	      row.push_back(*it);
+	    }
+	  // Then we push the row vector into the data vector.
+	  data.push_back(row);
+	}
     }
-  }
   /* 
      Writing to sqlite databases is quite slow, so if the 
      csv-file is large, it will take a while. We use a progress bar 
@@ -1130,158 +1229,177 @@ void MainWindow::importEntities() {
   loadProgress->show();
   int counter = 1;
   std::vector<std::vector <std::string> >::iterator it;
-  for (it = data.begin(); it != data.end(); it++) {
-    // We create all the necessary variables and write them to the table.
-    std::vector<std::string> currentRow = *it;
-    QString name = QString::fromStdString(currentRow[0]);
-    QString description = QString::fromStdString(currentRow[1]);
-    QString father = QString::fromStdString(currentRow[2]);
-    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    // Let us make sure that we are not creating duplicates.
-    query->prepare("SELECT name FROM entities "
-		   "WHERE name = :name");
-    query->bindValue(":name", name);
-    query->exec();
-    query->first();
-    if (query->isNull(0)) {
-      query->prepare("INSERT INTO entities "
-		     "(name, description, father) "
-		     "VALUES "
-		     "(:name, :description, :father)");
+  for (it = data.begin(); it != data.end(); it++) 
+    {
+      // We create all the necessary variables and write them to the table.
+      std::vector<std::string> currentRow = *it;
+      QString name = QString::fromStdString(currentRow[0]);
+      QString description = QString::fromStdString(currentRow[1]);
+      QString father = QString::fromStdString(currentRow[2]);
+      QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
+      // Let us make sure that we are not creating duplicates.
+      query->prepare("SELECT name FROM entities "
+		     "WHERE name = :name");
       query->bindValue(":name", name);
-      query->bindValue(":description", description);
-      query->bindValue(":father", father);
       query->exec();
+      query->first();
+      if (query->isNull(0)) 
+	{
+	  query->prepare("INSERT INTO entities "
+			 "(name, description, father) "
+			 "VALUES "
+			 "(:name, :description, :father)");
+	  query->bindValue(":name", name);
+	  query->bindValue(":description", description);
+	  query->bindValue(":father", father);
+	  query->exec();
+	}
+      counter++;
+      loadProgress->setProgress(counter); // Set progress and report
+      qApp->processEvents(); // Make sure that the progress is visible
+      delete query; // Memory management
     }
-    counter++;
-    loadProgress->setProgress(counter); // Set progress and report
-    qApp->processEvents(); // Make sure that the progress is visible
-    delete query; // Memory management
-  }
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
   aw->resetTree();
 }
 
-void MainWindow::exportRelTypes() {
+void MainWindow::exportRelTypes() 
+{
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "name" << ","
+	      << "directedness" << ","
+	      << "description" << "\n";
+      /* 
+	 The rest is relatively simple. We make a query return almost the entire table
+	 and simply write that to a file.
+      */
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT name, directedness, description FROM relationship_types");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString directedness = query->value(1).toString();
+	  QString description = query->value(2).toString();
+	  fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+		  << directedness.toStdString() << ","
+		  << "\"" << doubleQuote(description).toStdString() << "\"" << "\n";
+	}
+      delete query;
+      // And that is it.
+      fileOut.close();
     }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first write the header of the file.
-    fileOut << "name" << ","
-	    << "directedness" << ","
-	    << "description" << "\n";
-    /* 
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
-    */
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT name, directedness, description FROM relationship_types");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString directedness = query->value(1).toString();
-      QString description = query->value(2).toString();
-      fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
-	      << directedness.toStdString() << ","
-	      << "\"" << doubleQuote(description).toStdString() << "\"" << "\n";
-    }
-    delete query;
-    // And that is it.
-    fileOut.close();
-  }
 }
 
-void MainWindow::importRelTypes() {
+void MainWindow::importRelTypes() 
+{
   QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
 						 tr("csv files (*.csv)"));
   // We then create an ifstream object that goes through the file.
   std::ifstream file ((csvName.toStdString()).c_str());
   std::vector<std::vector <std::string> > data; // To store our data in.
   bool headerFound = false; // To be used in a condition further below.
-  while (file) {
-    // The buffer will hold each line of data as we read the file.
-    std::string buffer; 
-    if (!getline(file, buffer)) break; // We get the current line/
-    // We should check and handle any extra line breaks in the file.
-    while (checkLineBreaks(buffer) == true) {
-      std::string extra;
-      getline(file, extra);
-      buffer = buffer + "\n\n" + extra;
-    }
-    // We need an object to keep the separate tokens in a line.
-    std::vector<std::string> tokens; 
-    // We then split the current line into different tokens.
-    splitCsvLine(&tokens, buffer);
-    /* 
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
-    */
-    if (headerFound == false) {
-      if (tokens[0] != "name") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"name\" in first column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[1] != "directedness") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"directedness\" "
-				     "in second column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[2] != "description") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"description\" in third column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
+  while (file) 
+    {
+      // The buffer will hold each line of data as we read the file.
+      std::string buffer; 
+      if (!getline(file, buffer)) break; // We get the current line/
+      // We should check and handle any extra line breaks in the file.
+      while (checkLineBreaks(buffer) == true) 
+	{
+	  std::string extra;
+	  getline(file, extra);
+	  buffer = buffer + "\n\n" + extra;
+	}
+      // We need an object to keep the separate tokens in a line.
+      std::vector<std::string> tokens; 
+      // We then split the current line into different tokens.
+      splitCsvLine(&tokens, buffer);
       /* 
-	 If we checked all headers and imported the header correctly,
-	 we can set the headerFound bool to true, so that this block 
-	 is skipped in all subsequent line reads.
+	 If we still need to import the header, let's do that first.
+	 We immediately check if the correct headers were used.
+	 If not, we report an error and return, letting the user fix the issue.
       */
-      headerFound = true;
-      // This is the block that is run after the header was already imported.
-    } else { 
-      // We iterate through the tokens and push them into the row vector.
-      std::vector<std::string> row;
-      std::vector<std::string>::iterator it;
-      if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      } else if (!(tokens[1] == DIRECTED.toStdString() || tokens[1] == UNDIRECTED.toStdString())) {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Encountered an invalid directedness value.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      for (it = tokens.begin(); it != tokens.end(); it++) {
-	row.push_back(*it);
-      }
-      // Then we push the row vector into the data vector.
-      data.push_back(row);
+      if (headerFound == false) 
+	{
+	  if (tokens[0] != "name") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"name\" in first column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[1] != "directedness") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"directedness\" "
+					   "in second column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[2] != "description") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"description\" in third column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  /* 
+	     If we checked all headers and imported the header correctly,
+	     we can set the headerFound bool to true, so that this block 
+	     is skipped in all subsequent line reads.
+	  */
+	  headerFound = true;
+	  // This is the block that is run after the header was already imported.
+	}
+      else 
+	{ 
+	  // We iterate through the tokens and push them into the row vector.
+	  std::vector<std::string> row;
+	  std::vector<std::string>::iterator it;
+	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  else if (!(tokens[1] == DIRECTED.toStdString() || tokens[1] == UNDIRECTED.toStdString())) 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Encountered an invalid directedness value.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  for (it = tokens.begin(); it != tokens.end(); it++) 
+	    {
+	      row.push_back(*it);
+	    }
+	  // Then we push the row vector into the data vector.
+	  data.push_back(row);
+	}
     }
-  }
   /* 
      Writing to sqlite databases is quite slow, so if the 
      csv-file is large, it will take a while. We use a progress bar 
@@ -1295,151 +1413,168 @@ void MainWindow::importRelTypes() {
   loadProgress->show();
   int counter = 1;
   std::vector<std::vector <std::string> >::iterator it;
-  for (it = data.begin(); it != data.end(); it++) {
-    // We create all the necessary variables and write them to the table.
-    std::vector<std::string> currentRow = *it;
-    QString name = QString::fromStdString(currentRow[0]);
-    QString directedness = QString::fromStdString(currentRow[1]);
-    QString description = QString::fromStdString(currentRow[2]);
-    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    // Let us make sure that we are not creating duplicates.
-    query->prepare("SELECT name FROM relationship_types "
-		   "WHERE name = :name");
-    query->bindValue(":name", name);
-    query->exec();
-    query->first();
-    if (query->isNull(0)) {
-      query->prepare("INSERT INTO relationship_types "
-		     "(name, directedness, description) "
-		     "VALUES "
-		     "(:name, :description, :father)");
+  for (it = data.begin(); it != data.end(); it++) 
+    {
+      // We create all the necessary variables and write them to the table.
+      std::vector<std::string> currentRow = *it;
+      QString name = QString::fromStdString(currentRow[0]);
+      QString directedness = QString::fromStdString(currentRow[1]);
+      QString description = QString::fromStdString(currentRow[2]);
+      QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
+      // Let us make sure that we are not creating duplicates.
+      query->prepare("SELECT name FROM relationship_types "
+		     "WHERE name = :name");
       query->bindValue(":name", name);
-      query->bindValue(":directedness", directedness);
-      query->bindValue(":description", description);
       query->exec();
+      query->first();
+      if (query->isNull(0)) 
+	{
+	  query->prepare("INSERT INTO relationship_types "
+			 "(name, directedness, description) "
+			 "VALUES "
+			 "(:name, :description, :father)");
+	  query->bindValue(":name", name);
+	  query->bindValue(":directedness", directedness);
+	  query->bindValue(":description", description);
+	  query->exec();
+	}
+      counter++;
+      loadProgress->setProgress(counter); // Set progress and report
+      qApp->processEvents(); // Make sure that the progress is visible
+      delete query; // Memory management
     }
-    counter++;
-    loadProgress->setProgress(counter); // Set progress and report
-    qApp->processEvents(); // Make sure that the progress is visible
-    delete query; // Memory management
-  }
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2)); 
   rw->resetTree();
 }
 
-void MainWindow::exportEntityAttributes() {
+void MainWindow::exportEntityAttributes() 
+{
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "name" << ","
+	      << "description" << ","
+	      << "father" << "\n";
+      /* 
+	 The rest is relatively simple. We make a query return almost the entire table
+	 and simply write that to a file.
+      */
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT name, description, father FROM entity_attributes");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QString father = query->value(2).toString();
+	  fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(description).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
+	}
+      delete query;
+      // And that is it.
+      fileOut.close();
     }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // We first write the header of the file.
-    fileOut << "name" << ","
-	    << "description" << ","
-	    << "father" << "\n";
-    /* 
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
-    */
-    QSqlQuery *query = new QSqlQuery;
-    query->exec("SELECT name, description, father FROM entity_attributes");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QString father = query->value(2).toString();
-      fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
-	      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-	      << "\"" << doubleQuote(father).toStdString() << "\"" << "\n";
-    }
-    delete query;
-    // And that is it.
-    fileOut.close();
-  }
 }
 
-void MainWindow::importEntityAttributes() {
-   QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
+void MainWindow::importEntityAttributes() 
+{
+  QString csvName = QFileDialog::getOpenFileName(this, tr("Select csv file"),"",
 						 tr("csv files (*.csv)"));
   // We then create an ifstream object that goes through the file.
   std::ifstream file ((csvName.toStdString()).c_str());
   std::vector<std::vector <std::string> > data; // To store our data in.
   bool headerFound = false; // To be used in a condition further below.
-  while (file) {
-    // The buffer will hold each line of data as we read the file.
-    std::string buffer; 
-    if (!getline(file, buffer)) break; // We get the current line/
-    // We should check and handle any extra line breaks in the file.
-    while (checkLineBreaks(buffer) == true) {
-      std::string extra;
-      getline(file, extra);
-      buffer = buffer + "\n\n" + extra;
-    }
-    // We need an object to keep the separate tokens in a line.
-    std::vector<std::string> tokens; 
-    // We then split the current line into different tokens.
-    splitCsvLine(&tokens, buffer);
-    /* 
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
-    */
-    if (headerFound == false) {
-      if (tokens[0] != "name") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"name\" in first column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[1] != "description") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"description\" "
-				     "in second column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      if (tokens[2] != "father") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Expected \"father\" in third column.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
+  while (file) 
+    {
+      // The buffer will hold each line of data as we read the file.
+      std::string buffer; 
+      if (!getline(file, buffer)) break; // We get the current line/
+      // We should check and handle any extra line breaks in the file.
+      while (checkLineBreaks(buffer) == true) 
+	{
+	  std::string extra;
+	  getline(file, extra);
+	  buffer = buffer + "\n\n" + extra;
+	}
+      // We need an object to keep the separate tokens in a line.
+      std::vector<std::string> tokens; 
+      // We then split the current line into different tokens.
+      splitCsvLine(&tokens, buffer);
       /* 
-	 If we checked all headers and imported the header correctly,
-	 we can set the headerFound bool to true, so that this block 
-	 is skipped in all subsequent line reads.
+	 If we still need to import the header, let's do that first.
+	 We immediately check if the correct headers were used.
+	 If not, we report an error and return, letting the user fix the issue.
       */
-      headerFound = true;
-      // This is the block that is run after the header was already imported.
-    } else { 
-      // We iterate through the tokens and push them into the row vector.
-      std::vector<std::string> row;
-      std::vector<std::string>::iterator it;
-      if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") {
-	QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	errorBox->setText(tr("<b>ERROR</b>"));
-	errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	errorBox->exec();
-	delete errorBox;
-	return;
-      }
-      for (it = tokens.begin(); it != tokens.end(); it++) {
-	row.push_back(*it);
-      }
-      // Then we push the row vector into the data vector.
-      data.push_back(row);
+      if (headerFound == false) 
+	{
+	  if (tokens[0] != "name") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"name\" in first column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[1] != "description") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"description\" "
+					   "in second column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  if (tokens[2] != "father") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Expected \"father\" in third column.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  /* 
+	     If we checked all headers and imported the header correctly,
+	     we can set the headerFound bool to true, so that this block 
+	     is skipped in all subsequent line reads.
+	  */
+	  headerFound = true;
+	  // This is the block that is run after the header was already imported.
+	}
+      else 
+	{ 
+	  // We iterate through the tokens and push them into the row vector.
+	  std::vector<std::string> row;
+	  std::vector<std::string>::iterator it;
+	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
+	    {
+	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setText(tr("<b>ERROR</b>"));
+	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+	      errorBox->exec();
+	      delete errorBox;
+	      return;
+	    }
+	  for (it = tokens.begin(); it != tokens.end(); it++) 
+	    {
+	      row.push_back(*it);
+	    }
+	  // Then we push the row vector into the data vector.
+	  data.push_back(row);
+	}
     }
-  }
   /* 
      Writing to sqlite databases is quite slow, so if the 
      csv-file is large, it will take a while. We use a progress bar 
@@ -1453,39 +1588,42 @@ void MainWindow::importEntityAttributes() {
   loadProgress->show();
   int counter = 1;
   std::vector<std::vector <std::string> >::iterator it;
-  for (it = data.begin(); it != data.end(); it++) {
-    // We create all the necessary variables and write them to the table.
-    std::vector<std::string> currentRow = *it;
-    QString name = QString::fromStdString(currentRow[0]);
-    QString description = QString::fromStdString(currentRow[1]);
-    QString father = QString::fromStdString(currentRow[2]);
-    QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
-    // Let us make sure that we are not creating duplicates.
-    query->prepare("SELECT name FROM entity_attributes "
-		   "WHERE name = :name");
-    query->bindValue(":name", name);
-    query->exec();
-    query->first();
-    if (query->isNull(0)) {
-      query->prepare("INSERT INTO entity_attributes "
-		     "(name, description, father) "
-		     "VALUES "
-		     "(:name, :description, :father)");
+  for (it = data.begin(); it != data.end(); it++) 
+    {
+      // We create all the necessary variables and write them to the table.
+      std::vector<std::string> currentRow = *it;
+      QString name = QString::fromStdString(currentRow[0]);
+      QString description = QString::fromStdString(currentRow[1]);
+      QString father = QString::fromStdString(currentRow[2]);
+      QSqlQuery *query = new QSqlQuery; // For this we use the QSqlQuery object.
+      // Let us make sure that we are not creating duplicates.
+      query->prepare("SELECT name FROM entity_attributes "
+		     "WHERE name = :name");
       query->bindValue(":name", name);
-      query->bindValue(":description", description);
-      query->bindValue(":father", father);
       query->exec();
+      query->first();
+      if (query->isNull(0)) 
+	{
+	  query->prepare("INSERT INTO entity_attributes "
+			 "(name, description, father) "
+			 "VALUES "
+			 "(:name, :description, :father)");
+	  query->bindValue(":name", name);
+	  query->bindValue(":description", description);
+	  query->bindValue(":father", father);
+	  query->exec();
+	}
+      counter++;
+      loadProgress->setProgress(counter); // Set progress and report
+      qApp->processEvents(); // Make sure that the progress is visible
+      delete query; // Memory management
     }
-    counter++;
-    loadProgress->setProgress(counter); // Set progress and report
-    qApp->processEvents(); // Make sure that the progress is visible
-    delete query; // Memory management
-  }
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
 }
 
-void MainWindow::showMenus(bool status) {
+void MainWindow::showMenus(bool status) 
+{
   fileMenu->menuAction()->setVisible(status);
   toolMenu->menuAction()->setVisible(status);
   graphMenu->menuAction()->setVisible(status);

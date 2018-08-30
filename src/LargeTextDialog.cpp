@@ -1,6 +1,7 @@
 #include "../include/LargeTextDialog.h"
 
-LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent) {
+LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent) 
+{
   text = "";
   subText = "";
   exitStatus = 1;
@@ -28,45 +29,53 @@ LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent) {
 }
 
 
-QString LargeTextDialog::getText() {
+QString LargeTextDialog::getText() 
+{
   return text;
 }
 
-void LargeTextDialog::submitText(const QString &submittedText) {
+void LargeTextDialog::submitText(const QString &submittedText) 
+{
   text = submittedText;
   subText = submittedText;
   textField->setText(submittedText);
 }
 
-void LargeTextDialog::setLabel(const QString &submittedLabel) {
+void LargeTextDialog::setLabel(const QString &submittedLabel) 
+{
   textLabel->setText(submittedLabel);
 }
 
-int LargeTextDialog::getExitStatus() {
+int LargeTextDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void LargeTextDialog::cancelAndClose() {
+void LargeTextDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void LargeTextDialog::setEmptyAllowed(bool status) {
+void LargeTextDialog::setEmptyAllowed(bool status) 
+{
   emptyAllowed = status;
 }
 
-void LargeTextDialog::saveAndClose() {
+void LargeTextDialog::saveAndClose() 
+{
   text = textField->toPlainText().trimmed();
-  if (text == "" && !emptyAllowed) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Text required.");
-    warningBox->setInformativeText("You need to enter text to save.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (text == "" && !emptyAllowed) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Text required.");
+      warningBox->setInformativeText("You need to enter text to save.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   exitStatus = 0;
   this->close();
 }

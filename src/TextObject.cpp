@@ -2,18 +2,21 @@
 
 TextObject::TextObject(const QString &text,
 		       QGraphicsTextItem *parent)
-  : QGraphicsTextItem(parent) {
+  : QGraphicsTextItem(parent) 
+{
   setPlainText(text);
   setFlag(QGraphicsTextItem::ItemIsSelectable, true);
   rotation = 0;
   setAcceptHoverEvents(true);
 }
 
-qreal TextObject::getRotationValue() {
+qreal TextObject::getRotationValue() 
+{
   return rotation;
 }
 
-void TextObject::setRotationValue(qreal newRotation) {
+void TextObject::setRotationValue(qreal newRotation) 
+{
   rotation = newRotation;
   QTransform transform;
   QPointF center = boundingRect().center();
@@ -29,23 +32,28 @@ void TextObject::setRotationValue(qreal newRotation) {
   moveBy(offset.x(), offset.y());
 }
 
-QPointF TextObject::getCenter() {
+QPointF TextObject::getCenter() 
+{
   return boundingRect().center();
 }
 
-int TextObject::type() const {
+int TextObject::type() const 
+{
   return Type;
 }
 
-void TextObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void TextObject::mousePressEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
-void TextObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
+void TextObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
+{
   QApplication::restoreOverrideCursor();
   QGraphicsTextItem::mouseReleaseEvent(event);
 }
 
-void TextObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+void TextObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) 
+{
   setCursor(Qt::OpenHandCursor);
 }

@@ -1,6 +1,7 @@
 #include "../include/CaseDialog.h"
 
-CaseDialog::CaseDialog(QWidget *parent) : QDialog(parent) {
+CaseDialog::CaseDialog(QWidget *parent) : QDialog(parent) 
+{
   name = "";
   description = "";
   oldName = "";
@@ -38,44 +39,52 @@ CaseDialog::CaseDialog(QWidget *parent) : QDialog(parent) {
   setWindowTitle("Add/Edit case");
 }
 
-void CaseDialog::setName(const QString &newName) {
+void CaseDialog::setName(const QString &newName) 
+{
   name = newName;
 }
 
-void CaseDialog::setDescription(const QString &newDescription) {
+void CaseDialog::setDescription(const QString &newDescription) 
+{
   description =  newDescription;
   descriptionField->setText(newDescription);
 }
 
-QString CaseDialog::getName() {
+QString CaseDialog::getName() 
+{
   return name;
 }
 
-void CaseDialog::submitName(const QString &submittedName) {
+void CaseDialog::submitName(const QString &submittedName) 
+{
   name = submittedName;
   oldName = submittedName;
   nameField->setText(submittedName);
 }
-
-QString CaseDialog::getDescription() {
+QString CaseDialog::getDescription() 
+{
   return description;
 }
 
-int CaseDialog::getExitStatus() {
+int CaseDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void CaseDialog::cancelAndClose() {
+void CaseDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
 // TO DO: Check for cases with same name.
-void CaseDialog::saveAndClose() {
+void CaseDialog::saveAndClose() 
+{
   description =  descriptionField->toPlainText();
   name = name.trimmed();
   description = description.trimmed();
-  if (description == "") {
+  if (description == "") 
+{
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
@@ -85,7 +94,8 @@ void CaseDialog::saveAndClose() {
     delete warningBox;
     return;
   }
-  if (name == "") {
+  if (name == "") 
+{
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
@@ -103,7 +113,8 @@ void CaseDialog::saveAndClose() {
   query->exec();
   query->first();
   empty = query->isNull(0);
-  if (!empty && name != oldName) {
+  if (!empty && name != oldName) 
+{
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);

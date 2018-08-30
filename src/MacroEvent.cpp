@@ -15,7 +15,8 @@ MacroEvent::MacroEvent(int subWidth,
 		       QString submittedConstraint,
 		       QVector<EventItem*> submittedIncidents,
 		       QGraphicsItem *parent)
-  : QGraphicsItem(parent) {
+  : QGraphicsItem(parent) 
+{
   color = QColor(255, 255, 255);
   width = subWidth;
   description = submittedDescription;
@@ -39,263 +40,335 @@ MacroEvent::MacroEvent(int subWidth,
   copy = false;
 }
 
-QRectF MacroEvent::boundingRect() const {
+QRectF MacroEvent::boundingRect() const 
+{
   return QRectF(-26, -26, width + 12, 52);
 }
 
-QPainterPath MacroEvent::shape() const {
+QPainterPath MacroEvent::shape() const 
+{
   QPainterPath path;
   path.addEllipse(boundingRect());
   return path;
 }
 
-void MacroEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
+void MacroEvent::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) 
+{
   Q_UNUSED(option);
   Q_UNUSED(widget);
   painter->setPen(Qt::NoPen);
   painter->setPen(QPen(Qt::black, 1));
   painter->setBrush(QBrush(color));
   painter->drawEllipse(-20, -20, width, 40);
-  if (isSelected()) {
-    painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
-    painter->setBrush(QBrush(Qt::transparent));
-    painter->drawPath(shape());
-    update();
-  } else {
-    selectionColor = QColor(Qt::black);
-    update();
-  }
+  if (isSelected()) 
+    {
+      painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
+      painter->setBrush(QBrush(Qt::transparent));
+      painter->drawPath(shape());
+      update();
+    }
+  else 
+    {
+      selectionColor = QColor(Qt::black);
+      update();
+    }
 }
 
 // Only to set the cursor to a different graphic.
-void MacroEvent::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-  if (event->button() == Qt::LeftButton) {
-    setSelected(true);
-  }
+void MacroEvent::mousePressEvent(QGraphicsSceneMouseEvent *event) 
+{
+  if (event->button() == Qt::LeftButton) 
+    {
+      setSelected(true);
+    }
 }
 
-void MacroEvent::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
-  if (event->modifiers() & Qt::AltModifier) {
-    setCursor(Qt::SizeAllCursor);
-    QPointF newPos = event->scenePos();
-    this->setPos(newPos);
-    if (label != NULL) {
-      label->setNewPos(newPos);
+void MacroEvent::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
+{
+  if (event->modifiers() & Qt::AltModifier) 
+    {
+      setCursor(Qt::SizeAllCursor);
+      QPointF newPos = event->scenePos();
+      this->setPos(newPos);
+      if (label != NULL) 
+	{
+	  label->setNewPos(newPos);
+	}
+      if (newPos.x() != originalPos.x()) 
+	{
+	  dislodged = true;
+	}
+      else 
+	{
+	  dislodged = false;
+	}
     }
-    if (newPos.x() != originalPos.x()) {
-      dislodged = true;
-    } else {
-      dislodged = false;
+  else 
+    {
+      setCursor(Qt::SizeVerCursor);
+      qreal oldX = originalPos.x();
+      QPointF currentPos = this->scenePos();
+      qreal currentX = currentPos.x();
+      QPointF newPos = event->scenePos();
+      newPos.setX(currentX);
+      this->setPos(newPos);
+      if (label != NULL) 
+	{
+	  label->setNewPos(newPos);
+	}
+      if (newPos.x() == oldX) 
+	{
+	  dislodged = false;
+	}
+      else 
+	{
+	  dislodged = true;
+	}
     }
-  } else {
-    setCursor(Qt::SizeVerCursor);
-    qreal oldX = originalPos.x();
-    QPointF currentPos = this->scenePos();
-    qreal currentX = currentPos.x();
-    QPointF newPos = event->scenePos();
-    newPos.setX(currentX);
-    this->setPos(newPos);
-    if (label != NULL) {
-      label->setNewPos(newPos);
-    }
-    if (newPos.x() == oldX) {
-      dislodged = false;
-    } else {
-      dislodged = true;
-    }
-  }
   Scene *myScene = qobject_cast<Scene*>(scene());
   myScene->relevantChange();
 }
 
-void MacroEvent::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  {
-  if (event->modifiers() & Qt::AltModifier) {
-    QPointF newPos = event->scenePos();
-    this->setPos(newPos);
-    if (label != NULL) {
-      label->setNewPos(newPos);
+void MacroEvent::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  
+{
+  if (event->modifiers() & Qt::AltModifier) 
+    {
+      QPointF newPos = event->scenePos();
+      this->setPos(newPos);
+      if (label != NULL) 
+	{
+	  label->setNewPos(newPos);
+	}
+      if (newPos.x() != originalPos.x()) 
+	{
+	  dislodged = true;
+	}
+      else 
+	{
+	  dislodged = false;
+	}
+      setCursor(Qt::OpenHandCursor);
     }
-    if (newPos.x() != originalPos.x()) {
-      dislodged = true;
-    } else {
-      dislodged = false;
+  else if (event->modifiers() & Qt::ShiftModifier) 
+    {
+      setCursor(Qt::OpenHandCursor);
     }
-    setCursor(Qt::OpenHandCursor);
-  } else if (event->modifiers() & Qt::ShiftModifier) {
-    setCursor(Qt::OpenHandCursor);
-  } else {
-    qreal oldX = originalPos.x();
-    QPointF currentPos = this->scenePos();
-    qreal currentX = currentPos.x();
-    QPointF newPos = event->scenePos();
-    newPos.setX(currentX);
-    this->setPos(newPos);
-    if (label != NULL) {
-      label->setNewPos(newPos);
+  else 
+    {
+      qreal oldX = originalPos.x();
+      QPointF currentPos = this->scenePos();
+      qreal currentX = currentPos.x();
+      QPointF newPos = event->scenePos();
+      newPos.setX(currentX);
+      this->setPos(newPos);
+      if (label != NULL) 
+	{
+	  label->setNewPos(newPos);
+	}
+      if (newPos.x() == oldX) 
+	{
+	  dislodged = false;
+	}
+      else 
+	{
+	  dislodged = true;
+	}
+      setCursor(Qt::OpenHandCursor);
     }
-    if (newPos.x() == oldX) {
-      dislodged = false;
-    } else {
-      dislodged = true;
-    }
-    setCursor(Qt::OpenHandCursor);
-  }
   update();
   QGraphicsItem::mouseReleaseEvent(event);
 }
 
-int MacroEvent::getCorrection() {
+int MacroEvent::getCorrection() 
+{
   return width - 39;
 }
 
-QPointF MacroEvent::getOriginalPos() {
+QPointF MacroEvent::getOriginalPos() 
+{
   return originalPos;
 }
 
-int MacroEvent::getId() {
+int MacroEvent::getId() 
+{
   return id;
 }
 
-void MacroEvent::setOriginalPos(QPointF newPos) {
+void MacroEvent::setOriginalPos(QPointF newPos) 
+{
   originalPos = newPos;
 }
 
-bool MacroEvent::isDislodged() {
+bool MacroEvent::isDislodged() 
+{
   return dislodged;
 }
 
-void MacroEvent::setDislodged(bool state) {
+void MacroEvent::setDislodged(bool state) 
+{
   dislodged = state;
 }
 
-void MacroEvent::setWidth(int newWidth) {
+void MacroEvent::setWidth(int newWidth) 
+{
   prepareGeometryChange();
   width = newWidth;
   update();
 }
 
-int MacroEvent::getWidth() const {
+int MacroEvent::getWidth() const 
+{
   return width;
 }
 
-void MacroEvent::setLabel(MacroLabel *submittedLabel) {
+void MacroEvent::setLabel(MacroLabel *submittedLabel) 
+{
   label = submittedLabel;
 }
 
-MacroLabel* MacroEvent::getLabel() {
+MacroLabel* MacroEvent::getLabel() 
+{
   return label;
 }
 
-void MacroEvent::setColor(const QColor &subColor) {
+void MacroEvent::setColor(const QColor &subColor) 
+{
   color = subColor;
 }
 
-QColor MacroEvent::getColor() {
+QColor MacroEvent::getColor() 
+{
   return color;
 }
 
-void MacroEvent::setSelectionColor(const QColor &subColor) {
+void MacroEvent::setSelectionColor(const QColor &subColor) 
+{
   selectionColor = subColor;
 }
 
-int MacroEvent::type() const {
+int MacroEvent::type() const 
+{
   return Type;
 }
 
-void MacroEvent::setIncidents(QVector<EventItem*> submittedIncidents) {
+void MacroEvent::setIncidents(QVector<EventItem*> submittedIncidents) 
+{
   incidents = submittedIncidents;
 }
 
-QVector<EventItem*> MacroEvent::getIncidents() const {
+QVector<EventItem*> MacroEvent::getIncidents() const 
+{
   return incidents;
 }
 
-void MacroEvent::setDescription(const QString text) {
+void MacroEvent::setDescription(const QString text) 
+{
   description = text;
   QString tip = breakString(description);
   setToolTip(tip);
 }
 
-QString MacroEvent::getDescription() {
+QString MacroEvent::getDescription() 
+{
   return description;
 }
 
-void MacroEvent::setComment(const QString text) {
+void MacroEvent::setComment(const QString text) 
+{
   comment = text;
 }
 
-QString MacroEvent::getComment() {
+QString MacroEvent::getComment() 
+{
   return comment;
 }
 
-void MacroEvent::setMacroEvent(MacroEvent* submittedEvent) {
+void MacroEvent::setMacroEvent(MacroEvent* submittedEvent) 
+{
   macroEvent = submittedEvent;
 }
 
-MacroEvent* MacroEvent::getMacroEvent() {
+MacroEvent* MacroEvent::getMacroEvent() 
+{
   return macroEvent;
 }
 
-void MacroEvent::setOrder(int submittedOrder) {
+void MacroEvent::setOrder(int submittedOrder) 
+{
   order = submittedOrder;
 }
 
-int MacroEvent::getOrder() {
+int MacroEvent::getOrder() 
+{
   return order;
 }
 
-void MacroEvent::insertAttribute(QString attribute) {
+void MacroEvent::insertAttribute(QString attribute) 
+{
   attributes.insert(attribute);
 }
 
-void MacroEvent::removeAttribute(QString attribute) {
+void MacroEvent::removeAttribute(QString attribute) 
+{
   attributes.remove(attribute);
 }
 
-QSet<QString> MacroEvent::getAttributes() {
+QSet<QString> MacroEvent::getAttributes() 
+{
   return attributes;
 }
 
-void MacroEvent::insertValue(QString attribute, QString value) {
+void MacroEvent::insertValue(QString attribute, QString value) 
+{
   values.insert(attribute, value);
 }
 
-void MacroEvent::removeValue(QString attribute) {
+void MacroEvent::removeValue(QString attribute) 
+{
   values.remove(attribute);
 }
 
-QMap<QString, QString> MacroEvent::getValues() {
+QMap<QString, QString> MacroEvent::getValues() 
+{
   return values;
 }
 
-void MacroEvent::setAttributes(QSet<QString> submittedAttributes) {
+void MacroEvent::setAttributes(QSet<QString> submittedAttributes) 
+{
   attributes = submittedAttributes;
 }
 
-void MacroEvent::setValues(QMap<QString, QString> submittedValues) {
+void MacroEvent::setValues(QMap<QString, QString> submittedValues) 
+{
   values = submittedValues;
 }
 
-void MacroEvent::setMode(const QString submittedMode) {
+void MacroEvent::setMode(const QString submittedMode) 
+{
   mode = submittedMode;
 }
 
-QString MacroEvent::getMode() const {
+QString MacroEvent::getMode() const 
+{
   return mode;
 }
 
-QString MacroEvent::getConstraint() const {
+QString MacroEvent::getConstraint() const 
+{
   return constraint;
 }
 
-bool MacroEvent::isCopy() {
+bool MacroEvent::isCopy() 
+{
   return copy;
 }
 
-void MacroEvent::setCopy(bool status) {
+void MacroEvent::setCopy(bool status) 
+{
   copy = status;
 }
 
-void MacroEvent::setNewId(int newId) {
+void MacroEvent::setNewId(int newId) 
+{
   id = newId;
 }

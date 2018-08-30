@@ -9,7 +9,8 @@ const qreal Pi = 3.14;
 UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem,
 			       QString submittedType, QString submittedName,
 			       QGraphicsItem *parent)
-  : QGraphicsLineItem(parent) {
+  : QGraphicsLineItem(parent) 
+{
   start = startItem;
   end = endItem;
   color = Qt::black;
@@ -23,11 +24,13 @@ UndirectedEdge::UndirectedEdge(NetworkNode *startItem, NetworkNode *endItem,
   comment = "";
 }
 
-QRectF UndirectedEdge::boundingRect() const {
+QRectF UndirectedEdge::boundingRect() const 
+{
   return strokePath.controlPointRect(); 
 }
 
-void UndirectedEdge::updatePosition() {
+void UndirectedEdge::updatePosition() 
+{
   calculate();
   QPainterPath myPath;
   myPath.moveTo(ghostLineTwo.p2());
@@ -36,7 +39,8 @@ void UndirectedEdge::updatePosition() {
   strokePath = myPath;
 }
 
-void UndirectedEdge::calculate() {
+void UndirectedEdge::calculate() 
+{
   // Let us first calculate the distance between our two points.
   qreal dX = end->pos().x() - start->pos().x();
   qreal dY = end->pos().y() - start->pos().y();
@@ -80,7 +84,8 @@ void UndirectedEdge::calculate() {
   prepareGeometryChange();
 }
 
-void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
+{
   QPen myPen = pen();
   myPen.setColor(color);
   painter->setPen(myPen);
@@ -99,72 +104,89 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   painter->drawPolygon(arrowHeadTwo);
 }
 
-NetworkNode* UndirectedEdge::startItem() const {
+NetworkNode* UndirectedEdge::startItem() const 
+{
   return start;
 }
 
-NetworkNode* UndirectedEdge::endItem() const {
+NetworkNode* UndirectedEdge::endItem() const 
+{
   return end;
 }
 
-void UndirectedEdge::setColor(const QColor &subColor) {
+void UndirectedEdge::setColor(const QColor &subColor) 
+{
   color = subColor;
 }
 
-QString UndirectedEdge::getType() {
+QString UndirectedEdge::getType() 
+{
   return relType;
 }
 
-void UndirectedEdge::setType(const QString submittedType) {
+void UndirectedEdge::setType(const QString submittedType) 
+{
   relType = submittedType;
 }
 
-void UndirectedEdge::setHeight(int submittedHeight) {
+void UndirectedEdge::setHeight(int submittedHeight) 
+{
   height = submittedHeight;
 }
 
-int UndirectedEdge::getHeight() {
+int UndirectedEdge::getHeight() 
+{
   return height;
 }
 
-int UndirectedEdge::type() const {
+int UndirectedEdge::type() const 
+{
   return Type;
 }
 
-QString UndirectedEdge::getName() {
+QString UndirectedEdge::getName() 
+{
   return name;
 }
 
-void UndirectedEdge::setName(const QString submittedName) {
+void UndirectedEdge::setName(const QString submittedName) 
+{
   name = submittedName;
 }
 
-bool UndirectedEdge::isFiltered() {
+bool UndirectedEdge::isFiltered() 
+{
   return filtered;
 }
 
-void UndirectedEdge::setFiltered(bool state) {
+void UndirectedEdge::setFiltered(bool state) 
+{
   filtered = state;
 }
 
-bool UndirectedEdge::isMassHidden() {
+bool UndirectedEdge::isMassHidden() 
+{
   return massHidden;
 }
 
-void UndirectedEdge::setMassHidden(bool state) {
+void UndirectedEdge::setMassHidden(bool state) 
+{
   massHidden = state;
 }
 
-void UndirectedEdge::setComment(const QString submittedComment) {
+void UndirectedEdge::setComment(const QString submittedComment) 
+{
   comment = submittedComment;
   QString toolTip = breakString(comment);
   this->setToolTip(toolTip);
 }
 
-QString UndirectedEdge::getComment() {
+QString UndirectedEdge::getComment() 
+{
   return comment;
 }
 
-QColor UndirectedEdge::getColor() {
+QColor UndirectedEdge::getColor() 
+{
   return color;
 }

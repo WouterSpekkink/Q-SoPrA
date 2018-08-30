@@ -1,6 +1,7 @@
 #include "../include/HierarchyGraphWidget.h"
                       
-HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {  
+HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) 
+{  
   selectedMacro = NULL;
   selectedIncident = 0;
   showLinkages = false;
@@ -283,67 +284,85 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) {
   legendWidget->hide();
 }
 
-void HierarchyGraphWidget::toggleDetails() {
+void HierarchyGraphWidget::toggleDetails() 
+{
   setComment();
-  if (infoWidget->isHidden()) {
-    infoWidget->show();
-  } else {
-    infoWidget->hide();
-  }
+  if (infoWidget->isHidden()) 
+    {
+      infoWidget->show();
+    }
+  else 
+    {
+      infoWidget->hide();
+    }
 }
 
-void HierarchyGraphWidget::toggleLegend() {
-  if (legendWidget->isHidden()) {
-    legendWidget->show();
-  } else {
-    legendWidget->hide();
-  }
+void HierarchyGraphWidget::toggleLegend() 
+{
+  if (legendWidget->isHidden()) 
+    {
+      legendWidget->show();
+    }
+  else 
+    {
+      legendWidget->hide();
+    }
 }
 
-void HierarchyGraphWidget::showAttributes() {
+void HierarchyGraphWidget::showAttributes() 
+{
   commentWidget->hide();
   attWidget->show();
 }
 
-void HierarchyGraphWidget::showComments() {
+void HierarchyGraphWidget::showComments() 
+{
   attWidget->hide();
   commentWidget->show();
 }
 
-void HierarchyGraphWidget::setCommentBool() {
+void HierarchyGraphWidget::setCommentBool() 
+{
   commentBool = true;
 }
 
-void HierarchyGraphWidget::setComment() {
-  if (commentBool && selectedIncident != 0) {
-    QString comment = commentField->toPlainText();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-    query->bindValue(":incident", selectedIncident);
-    query->exec();
-    query->first();
-    int order = 0;
-    order = query->value(0).toInt();
-    query->prepare("UPDATE incidents SET comment = :comment WHERE ch_order = :order");
-    query->bindValue(":comment", comment);
-    query->bindValue(":order", order);
-    query->exec();
-    commentBool = false;
-    delete query;
-  } else if (commentBool && selectedMacro != NULL) {
-    QString comment = commentField->toPlainText();
-    selectedMacro->setComment(comment);
-    QVectorIterator<MacroEvent*> it(macroVector);
-    while (it.hasNext()) {
-      MacroEvent *macro = it.next();
-      if (macro->getId() == selectedMacro->getId()) {
-	macro->setComment(comment);
-      }
+void HierarchyGraphWidget::setComment() 
+{
+  if (commentBool && selectedIncident != 0) 
+    {
+      QString comment = commentField->toPlainText();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+      query->bindValue(":incident", selectedIncident);
+      query->exec();
+      query->first();
+      int order = 0;
+      order = query->value(0).toInt();
+      query->prepare("UPDATE incidents SET comment = :comment WHERE ch_order = :order");
+      query->bindValue(":comment", comment);
+      query->bindValue(":order", order);
+      query->exec();
+      commentBool = false;
+      delete query;
     }
-  }
+  else if (commentBool && selectedMacro != NULL) 
+    {
+      QString comment = commentField->toPlainText();
+      selectedMacro->setComment(comment);
+      QVectorIterator<MacroEvent*> it(macroVector);
+      while (it.hasNext()) 
+	{
+	  MacroEvent *macro = it.next();
+	  if (macro->getId() == selectedMacro->getId()) 
+	    {
+	      macro->setComment(comment);
+	    }
+	}
+    }
 }
 
-void HierarchyGraphWidget::retrieveData() {
+void HierarchyGraphWidget::retrieveData() 
+{
   setComment();
   valueField->blockSignals(true);
   valueField->setText("");
@@ -351,150 +370,173 @@ void HierarchyGraphWidget::retrieveData() {
   valueField->blockSignals(false);
   valueButton->setEnabled(false);
   attributesTreeView->clearSelection();
-  if (currentData.size() > 0) {
-    currentData.clear();
-  }
-  if (scene->selectedItems().size() > 0) {
-    QListIterator<QGraphicsItem*> it(scene->selectedItems());
-    while (it.hasNext()) {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
-      if (event) {
-	EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
-	currentEvent->setSelectionColor(Qt::black);
-	currentEvent->update();
-	if (currentEvent->isVisible()) {
-	  currentData.push_back(currentEvent);
-	}
-      }	else if (macro) {
-	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	currentMacro->setSelectionColor(Qt::black);
-	currentMacro->update();
-	if (currentMacro->isVisible()) {
-	  currentData.push_back(currentMacro);
-	}
-      } else {
-	it.next();
-      }
-    }
-    if (currentData.size() > 0) {
-      std::sort(currentData.begin(), currentData.end(), eventLessThan);
-      QGraphicsItem *temp = currentData[0];
-      scene->clearSelection();
-      temp->setSelected(true);
+  if (currentData.size() > 0) 
+    {
       currentData.clear();
-      currentData.push_back(temp);
-      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData[0]);
-      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(currentData[0]);
-      if (currentEvent) {
-	selectedMacro = NULL;
-	timeStampLabel->setText("<b>Timing:</b>");
-	sourceLabel->setText("<b>Source:</b>");
-	rawLabel->show();
-	rawField->show();
-	currentEvent->setSelectionColor(Qt::red);
-	currentEvent->update();
-	int id = currentEvent->getId();
-	selectedIncident = id;
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
-		       "WHERE id = :id");
-	query->bindValue(":id", id);
-	query->exec();
-	query->first();
-	if (query->isNull(0)) {
-	  timeStampField->setText("Incident was deleted");
-	  descriptionField->setText("Incident was deleted");
-	  rawField->setText("Incident was deleted");
-	  commentField->setText("Incident was deleted");
-	  sourceField->setText("Incident was deleted");
-	} else {
-	  QString timeStamp = query->value(0).toString();
-	  QString description = query->value(1).toString();
-	  QString raw = query->value(2).toString();
-	  QString comment = query->value(3).toString();
-	  QString source = query->value(4).toString();
-	  timeStampField->setText(timeStamp);
-	  descriptionField->setText(description);
-	  rawField->setText(raw);
-	  commentField->setText(comment);
-	  sourceField->setText(source);
-	  resetFont(attributesTree);
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT attribute FROM attributes_to_incidents "
-			 "WHERE incident = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  while (query->next()) {
-	    QString attribute = query->value(0).toString();
-	    boldSelected(attributesTree, attribute, id, INCIDENT);
-	  }
-	}
-	delete query;
-      } else if (currentMacro) {
-	selectedMacro = currentMacro;
-	selectedIncident = 0;
-	currentMacro->setSelectionColor(Qt::red);
-	currentMacro->update();
-	descriptionField->setText(currentMacro->getDescription());
-	timeStampLabel->setText("<b>Duration:</b>");
-	sourceLabel->setText("<b>Number of components:</b>");
-	int id = currentMacro->getIncidents().first()->getId();
-	rawLabel->hide();
-	rawField->hide();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT timestamp FROM incidents "
-		       "WHERE id = :id");
-	query->bindValue(":id", id);
-	query->exec();
-	query->first();
-	QString begin = query->value(0).toString();
-	id = currentMacro->getIncidents().last()->getId();
-	query->prepare("SELECT timestamp FROM incidents "
-		       "WHERE id = :id");
-	query->bindValue(":id", id);
-	query->exec();
-	query->first();
-	QString end = query->value(0).toString();
-	QString duration =  "From " + begin + " to " + end;
-	int count = currentMacro->getIncidents().size();
-	QVectorIterator<MacroEvent*> it(macroVector);
-	while (it.hasNext()) {
-	  MacroEvent *temp = it.next();
-	  if (temp->getMacroEvent() == currentMacro) {
-	    count++;
-	  }
-	}
-	QString countText = QString::number(count);
-	timeStampField->setText(duration);
-	sourceField->setText(countText);
-	commentField->setText(currentMacro->getComment());
-	delete query;
-	resetFont(attributesTree);
-	QSet<QString> attributes = currentMacro->getAttributes();
-	QSet<QString>::iterator it2;
-	id = currentMacro->getId();
-	for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
-	  QString attribute  = *it2;
-	  boldSelected(attributesTree, attribute, id, MACRO);
-	}
-      }
     }
-  } else {
-    timeStampField->clear();
-    descriptionField->clear();
-    rawField->clear();
-    commentField->blockSignals(true);
-    commentField->clear();
-    commentField->blockSignals(false);
-    sourceField->clear();
-    selectedIncident = 0;
-    selectedMacro = NULL;
-    resetFont(attributesTree);
-  }
+  if (scene->selectedItems().size() > 0) 
+    {
+      QListIterator<QGraphicsItem*> it(scene->selectedItems());
+      while (it.hasNext()) 
+	{
+	  EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+	  if (event) 
+	    {
+	      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	      currentEvent->setSelectionColor(Qt::black);
+	      currentEvent->update();
+	      if (currentEvent->isVisible()) 
+		{
+		  currentData.push_back(currentEvent);
+		}
+	    }	else if (macro) 
+	    {
+	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
+	      currentMacro->setSelectionColor(Qt::black);
+	      currentMacro->update();
+	      if (currentMacro->isVisible()) 
+		{
+		  currentData.push_back(currentMacro);
+		}
+	    }
+	  else 
+	    {
+	      it.next();
+	    }
+	}
+      if (currentData.size() > 0) 
+	{
+	  std::sort(currentData.begin(), currentData.end(), eventLessThan);
+	  QGraphicsItem *temp = currentData[0];
+	  scene->clearSelection();
+	  temp->setSelected(true);
+	  currentData.clear();
+	  currentData.push_back(temp);
+	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(currentData[0]);
+	  MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(currentData[0]);
+	  if (currentEvent) 
+	    {
+	      selectedMacro = NULL;
+	      timeStampLabel->setText("<b>Timing:</b>");
+	      sourceLabel->setText("<b>Source:</b>");
+	      rawLabel->show();
+	      rawField->show();
+	      currentEvent->setSelectionColor(Qt::red);
+	      currentEvent->update();
+	      int id = currentEvent->getId();
+	      selectedIncident = id;
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
+			     "WHERE id = :id");
+	      query->bindValue(":id", id);
+	      query->exec();
+	      query->first();
+	      if (query->isNull(0)) 
+		{
+		  timeStampField->setText("Incident was deleted");
+		  descriptionField->setText("Incident was deleted");
+		  rawField->setText("Incident was deleted");
+		  commentField->setText("Incident was deleted");
+		  sourceField->setText("Incident was deleted");
+		}
+	      else 
+		{
+		  QString timeStamp = query->value(0).toString();
+		  QString description = query->value(1).toString();
+		  QString raw = query->value(2).toString();
+		  QString comment = query->value(3).toString();
+		  QString source = query->value(4).toString();
+		  timeStampField->setText(timeStamp);
+		  descriptionField->setText(description);
+		  rawField->setText(raw);
+		  commentField->setText(comment);
+		  sourceField->setText(source);
+		  resetFont(attributesTree);
+		  QSqlQuery *query = new QSqlQuery;
+		  query->prepare("SELECT attribute FROM attributes_to_incidents "
+				 "WHERE incident = :id");
+		  query->bindValue(":id", id);
+		  query->exec();
+		  while (query->next()) 
+		    {
+		      QString attribute = query->value(0).toString();
+		      boldSelected(attributesTree, attribute, id, INCIDENT);
+		    }
+		}
+	      delete query;
+	    }
+	  else if (currentMacro) 
+	    {
+	      selectedMacro = currentMacro;
+	      selectedIncident = 0;
+	      currentMacro->setSelectionColor(Qt::red);
+	      currentMacro->update();
+	      descriptionField->setText(currentMacro->getDescription());
+	      timeStampLabel->setText("<b>Duration:</b>");
+	      sourceLabel->setText("<b>Number of components:</b>");
+	      int id = currentMacro->getIncidents().first()->getId();
+	      rawLabel->hide();
+	      rawField->hide();
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT timestamp FROM incidents "
+			     "WHERE id = :id");
+	      query->bindValue(":id", id);
+	      query->exec();
+	      query->first();
+	      QString begin = query->value(0).toString();
+	      id = currentMacro->getIncidents().last()->getId();
+	      query->prepare("SELECT timestamp FROM incidents "
+			     "WHERE id = :id");
+	      query->bindValue(":id", id);
+	      query->exec();
+	      query->first();
+	      QString end = query->value(0).toString();
+	      QString duration =  "From " + begin + " to " + end;
+	      int count = currentMacro->getIncidents().size();
+	      QVectorIterator<MacroEvent*> it(macroVector);
+	      while (it.hasNext()) 
+		{
+		  MacroEvent *temp = it.next();
+		  if (temp->getMacroEvent() == currentMacro) 
+		    {
+		      count++;
+		    }
+		}
+	      QString countText = QString::number(count);
+	      timeStampField->setText(duration);
+	      sourceField->setText(countText);
+	      commentField->setText(currentMacro->getComment());
+	      delete query;
+	      resetFont(attributesTree);
+	      QSet<QString> attributes = currentMacro->getAttributes();
+	      QSet<QString>::iterator it2;
+	      id = currentMacro->getId();
+	      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
+		{
+		  QString attribute  = *it2;
+		  boldSelected(attributesTree, attribute, id, MACRO);
+		}
+	    }
+	}
+    }
+  else 
+    {
+      timeStampField->clear();
+      descriptionField->clear();
+      rawField->clear();
+      commentField->blockSignals(true);
+      commentField->clear();
+      commentField->blockSignals(false);
+      sourceField->clear();
+      selectedIncident = 0;
+      selectedMacro = NULL;
+      resetFont(attributesTree);
+    }
 }
 
-void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int layer) {
+void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int layer) 
+{
   MacroEvent *newOrigin = new MacroEvent(40, submittedOrigin->getDescription(), QPointF(0,0),
 					 submittedOrigin->getId(),
 					 submittedOrigin->getConstraint(),
@@ -509,44 +551,52 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   newOrigin->setLabel(macroLabel);
   QTableWidgetItem *item = new QTableWidgetItem(newOrigin->getMode());
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-  if (newOrigin->getMode() != "") {
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT description FROM incident_attributes "
-		   "WHERE name = :name");
-    query->bindValue(":name", newOrigin->getMode());
-    query->exec();
-    query->first();
-    QString description = query->value(0).toString();
-    delete query;
-    QString toolTip = breakString(newOrigin->getMode()  + " - " + description);
-    item->setToolTip(toolTip);
-    item->setData(Qt::DisplayRole, newOrigin->getMode());
-    eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-    eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-    eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(newOrigin->getColor());
-    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-      setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
-	       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-  } else {
-    delete item;
-  }
+  if (newOrigin->getMode() != "") 
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT description FROM incident_attributes "
+		     "WHERE name = :name");
+      query->bindValue(":name", newOrigin->getMode());
+      query->exec();
+      query->first();
+      QString description = query->value(0).toString();
+      delete query;
+      QString toolTip = breakString(newOrigin->getMode()  + " - " + description);
+      item->setToolTip(toolTip);
+      item->setData(Qt::DisplayRole, newOrigin->getMode());
+      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(newOrigin->getColor());
+      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+    }
+  else 
+    {
+      delete item;
+    }
   if (newOrigin->getConstraint() == PATHS ||
-      newOrigin->getConstraint() == PATHSATT) {
-    QString label = "P-" + QString::number(newOrigin->getOrder());
-    macroLabel->setPlainText(label);
-    macroLabel->setTextWidth(macroLabel->boundingRect().width());
-  } else if (newOrigin->getConstraint() == SEMIPATHS ||
-	     newOrigin->getConstraint() == SEMIPATHSATT) {
-    QString label = "S-" + QString::number(newOrigin->getOrder());
-    macroLabel->setPlainText(label);
-    macroLabel->setTextWidth(macroLabel->boundingRect().width());
-  } else if (newOrigin->getConstraint() == NOCONSTRAINT ||
-	     newOrigin->getConstraint() == NOCONSTRAINTATT) {
-    QString label = "N-" + QString::number(newOrigin->getOrder());
-    macroLabel->setPlainText(label);
-    macroLabel->setTextWidth(macroLabel->boundingRect().width());
-  }
+      newOrigin->getConstraint() == PATHSATT) 
+    {
+      QString label = "P-" + QString::number(newOrigin->getOrder());
+      macroLabel->setPlainText(label);
+      macroLabel->setTextWidth(macroLabel->boundingRect().width());
+    }
+  else if (newOrigin->getConstraint() == SEMIPATHS ||
+	   newOrigin->getConstraint() == SEMIPATHSATT) 
+    {
+      QString label = "S-" + QString::number(newOrigin->getOrder());
+      macroLabel->setPlainText(label);
+      macroLabel->setTextWidth(macroLabel->boundingRect().width());
+    }
+  else if (newOrigin->getConstraint() == NOCONSTRAINT ||
+	   newOrigin->getConstraint() == NOCONSTRAINTATT) 
+    {
+      QString label = "N-" + QString::number(newOrigin->getOrder());
+      macroLabel->setPlainText(label);
+      macroLabel->setTextWidth(macroLabel->boundingRect().width());
+    }
   newOrigin->setPos(QPointF(newOrigin->scenePos().x(),
 			    newOrigin->scenePos().y() - layer * 80));
   newOrigin->setOriginalPos(newOrigin->scenePos());
@@ -561,285 +611,101 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
   QVector<QGraphicsItem*> currentLayer;
   QVector<QGraphicsItem*> partners;
   QVectorIterator<MacroEvent*> it(macroVector);
-  while (it.hasNext()) {
-    MacroEvent *macro = it.next();
-    if (macro->getMacroEvent() == submittedOrigin) { 
-      MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0, yPos),
-					    macro->getId(), macro->getConstraint(),
-					    macro->getIncidents());
-      newMacro->setCopy(true);
-      newMacro->setMode(macro->getMode());
-      newMacro->setColor(macro->getColor());
-      newMacro->setAttributes(macro->getAttributes());
-      newMacro->setPos(newMacro->getOriginalPos());
-      newMacro->setOrder(macro->getOrder());
-      newMacro->setZValue(3);
-      bool found = false;
-      if (newMacro->getMode() != "") {
-	for (int i = 0; i < eventListWidget->rowCount(); i++) {
-	  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) {
-	    found = true;
-	  }
+  while (it.hasNext()) 
+    {
+      MacroEvent *macro = it.next();
+      if (macro->getMacroEvent() == submittedOrigin) 
+	{ 
+	  MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0, yPos),
+						macro->getId(), macro->getConstraint(),
+						macro->getIncidents());
+	  newMacro->setCopy(true);
+	  newMacro->setMode(macro->getMode());
+	  newMacro->setColor(macro->getColor());
+	  newMacro->setAttributes(macro->getAttributes());
+	  newMacro->setPos(newMacro->getOriginalPos());
+	  newMacro->setOrder(macro->getOrder());
+	  newMacro->setZValue(3);
+	  bool found = false;
+	  if (newMacro->getMode() != "") 
+	    {
+	      for (int i = 0; i < eventListWidget->rowCount(); i++) 
+		{
+		  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) 
+		    {
+		      found = true;
+		    }
+		}
+	      if (!found) 
+		{
+		  QSqlQuery *query = new QSqlQuery;
+		  query->prepare("SELECT description FROM incident_attributes "
+				 "WHERE name = :name");
+		  query->bindValue(":name", newMacro->getMode());
+		  query->exec();
+		  query->first();
+		  QString description = query->value(0).toString();
+		  delete query;
+		  QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(newMacro->getMode() + " - " + description);
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, newMacro->getMode());
+		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setBackground(newMacro->getColor());
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
+	    }
+	  MacroLabel *newMacroLabel = new MacroLabel(newMacro);
+	  newMacro->setLabel(newMacroLabel);
+	  if (newMacro->getConstraint() == PATHS ||
+	      newMacro->getConstraint() == PATHSATT) 
+	    {
+	      QString label = "P-" + QString::number(newMacro->getOrder());
+	      newMacroLabel->setPlainText(label);
+	      newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	    }
+	  else if (newMacro->getConstraint() == SEMIPATHS ||
+		   newMacro->getConstraint() == SEMIPATHSATT) 
+	    {
+	      QString label = "S-" + QString::number(newMacro->getOrder());
+	      newMacroLabel->setPlainText(label);
+	      newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	    }
+	  else if (newMacro->getConstraint() == NOCONSTRAINT ||
+		   newMacro->getConstraint() == NOCONSTRAINTATT) 
+	    {
+	      QString label = "N-" + QString::number(newMacro->getOrder());
+	      newMacroLabel->setPlainText(label);
+	      newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	    }
+	  qreal xOffset = (newMacro->getWidth() / 2) - 20;
+	  newMacroLabel->setOffset(QPointF(xOffset,0));
+	  newMacroLabel->setNewPos(newMacro->scenePos());
+	  newMacroLabel->setZValue(4);
+	  newMacroLabel->setDefaultTextColor(Qt::black);
+	  currentLayer.push_back(newMacro);
+	  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+	  newArrow->setZValue(2);
+	  newArrow->setStartItem(newMacro);
+	  newArrow->setEndItem(newOrigin);
+	  newArrow->setCopy(true);
+	  newArrow->setColor(QColor(Qt::gray));
+	  scene->addItem(newArrow);
+	  partners.push_back(macro);
 	}
-	if (!found) {
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT description FROM incident_attributes "
-			 "WHERE name = :name");
-	  query->bindValue(":name", newMacro->getMode());
-	  query->exec();
-	  query->first();
-	  QString description = query->value(0).toString();
-	  delete query;
-	  QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
-	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	  QString toolTip = breakString(newMacro->getMode() + " - " + description);
-	  item->setToolTip(toolTip);
-	  item->setData(Qt::DisplayRole, newMacro->getMode());
-	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	    setBackground(newMacro->getColor());
-	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
-		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	}
-      }
-      MacroLabel *newMacroLabel = new MacroLabel(newMacro);
-      newMacro->setLabel(newMacroLabel);
-      if (newMacro->getConstraint() == PATHS ||
-	  newMacro->getConstraint() == PATHSATT) {
-	QString label = "P-" + QString::number(newMacro->getOrder());
-	newMacroLabel->setPlainText(label);
-	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-      } else if (newMacro->getConstraint() == SEMIPATHS ||
-		 newMacro->getConstraint() == SEMIPATHSATT) {
-	QString label = "S-" + QString::number(newMacro->getOrder());
-	newMacroLabel->setPlainText(label);
-	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-      } else if (newMacro->getConstraint() == NOCONSTRAINT ||
-		 newMacro->getConstraint() == NOCONSTRAINTATT) {
-	QString label = "N-" + QString::number(newMacro->getOrder());
-	newMacroLabel->setPlainText(label);
-	newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-      }
-      qreal xOffset = (newMacro->getWidth() / 2) - 20;
-      newMacroLabel->setOffset(QPointF(xOffset,0));
-      newMacroLabel->setNewPos(newMacro->scenePos());
-      newMacroLabel->setZValue(4);
-      newMacroLabel->setDefaultTextColor(Qt::black);
-      currentLayer.push_back(newMacro);
-      Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-      newArrow->setZValue(2);
-      newArrow->setStartItem(newMacro);
-      newArrow->setEndItem(newOrigin);
-      newArrow->setCopy(true);
-      newArrow->setColor(QColor(Qt::gray));
-      scene->addItem(newArrow);
-      partners.push_back(macro);
     }
-  }
   QVectorIterator<EventItem*> it2(eventVector);
-  while (it2.hasNext()) {
-    EventItem *event = it2.next();
-    if (event->getMacroEvent() == submittedOrigin) {
-      EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
-					  QPointF(0, yPos), event->getId(), event->getOrder());
-      newEvent->setCopy(true);
-      newEvent->setMode(event->getMode());
-      newEvent->setColor(event->getColor());
-      newEvent->setPos(newEvent->getOriginalPos());
-      newEvent->setZValue(3);
-      bool found = false;
-      if (newEvent->getMode() != "") {
-	for (int i = 0; i < eventListWidget->rowCount(); i++) {
-	  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newEvent->getMode()) {
-	    found = true;
-	  }
-	}
-	if (!found) {
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT description FROM incident_attributes "
-			 "WHERE name = :name");
-	  query->bindValue(":name", newEvent->getMode());
-	  query->exec();
-	  query->first();
-	  QString description = query->value(0).toString();
-	  delete query;
-	  QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
-	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	  QString toolTip = breakString(newEvent->getMode() + " - " + description);
-	  item->setToolTip(toolTip);
-	  item->setData(Qt::DisplayRole, newEvent->getMode());
-	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	    setBackground(newEvent->getColor());
-	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
-		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	}
-      }
-      QPointer<NodeLabel> text = new NodeLabel(newEvent);
-      newEvent->setLabel(text);
-      text->setPlainText(QString::number(newEvent->getOrder()));
-      text->setTextWidth(text->boundingRect().width());
-      QPointF currentPos = newEvent->scenePos();
-      currentPos.setX(currentPos.x() - (text->textWidth() / 2));
-      currentPos.setY(currentPos.y() -12);
-      text->setPos(currentPos);    
-      text->setZValue(4);
-      text->setDefaultTextColor(Qt::black);
-      currentLayer.push_back(newEvent);
-      Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-      newArrow->setZValue(2);
-      newArrow->setStartItem(newEvent);
-      newArrow->setEndItem(newOrigin);
-      newArrow->setCopy(true);
-      newArrow->setColor(QColor(Qt::gray));
-      scene->addItem(newArrow);
-      partners.push_back(event);
-    }
-  }
-  std::sort(currentLayer.begin(), currentLayer.end(), componentsSort);
-  std::sort(partners.begin(), partners.end(), componentsSort);
-  int layerSize = currentLayer.size();
-  qreal width = 120 * layerSize;
-  qreal startX = 0 - width / 2 - 60;
-  int count = 1;
-  QVector<MacroEvent*> newLayer;
-  QVector<MacroEvent*> partnerLayer;
-  for (QVector<QGraphicsItem*>::size_type it3 = 0; it3 != currentLayer.size(); it3++) {
-    QGraphicsItem *current = currentLayer[it3];
-    qreal xPos = startX + count * 120;
-    current->setPos(xPos, current->scenePos().y());
-    count++;
-    EventItem *event = qgraphicsitem_cast<EventItem*>(current);
-    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
-    if (event) {
-      event->setOriginalPos(event->scenePos());
-      event->getLabel()->setNewPos(event->scenePos());
-      scene->addItem(event);
-      scene->addItem(event->getLabel());
-    } else if (macro) {
-      macro->setOriginalPos(macro->scenePos());
-      macro->getLabel()->setNewPos(macro->scenePos());
-      scene->addItem(macro);
-      scene->addItem(macro->getLabel());
-      MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(partners[it3]);
-      newLayer.push_back(tempMacro);
-      partnerLayer.push_back(qgraphicsitem_cast<MacroEvent*>(current));
-    }
-  }
-  if (newLayer.size() > 0) {
-    addLayer(newLayer, partnerLayer, layer + 1);
-  }
-}
-
-void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
-				    QVector<MacroEvent*> partLayer,
-				    int layer) {
-  qreal yPos = 0 + (layer * 80);
-  QVector<QGraphicsItem*> currentLayer;
-  QVector<QGraphicsItem*> partners;
-  for (QVector<MacroEvent*>::size_type it = 0; it != presentLayer.size(); it++) {
-    MacroEvent *currentFather = presentLayer[it];
-    QVectorIterator<MacroEvent*> it2(macroVector);
-    while (it2.hasNext()) {
-      MacroEvent *macro = it2.next();
-      if (macro->getMacroEvent() == currentFather) { 
-	MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0,yPos),
-					      macro->getId(), macro->getConstraint(),
-					      macro->getIncidents());
-	newMacro->setCopy(true);
-	newMacro->setMode(macro->getMode());
-	newMacro->setColor(macro->getColor());
-	newMacro->setAttributes(macro->getAttributes());
-	newMacro->setPos(newMacro->getOriginalPos());
-	newMacro->setOrder(macro->getOrder());
-	newMacro->setZValue(3);
-	bool found = false;
-	if (newMacro->getMode() != "") {
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT description FROM incident_attributes "
-			 "WHERE name = :name");
-	  query->bindValue(":name", newMacro->getMode());
-	  query->exec();
-	  query->first();
-	  QString description = query->value(0).toString();
-	  delete query;
-	  for (int i = 0; i < eventListWidget->rowCount(); i++) {
-	    if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) {
-	      found = true;
-	    }
-	  }
-	  if (!found) {
-	    QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
-	    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	    QString toolTip = breakString(newMacro->getMode() + " - " + description);
-	    item->setToolTip(toolTip);
-	    item->setData(Qt::DisplayRole, newMacro->getMode());
-	    eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-	    eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-	    eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-	    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	      setBackground(newMacro->getColor());
-	    eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	      setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
-		       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	  }
-	}
-	MacroLabel *newMacroLabel = new MacroLabel(newMacro);
-	newMacro->setLabel(newMacroLabel);
-	if (newMacro->getConstraint() == PATHS ||
-	    newMacro->getConstraint() == PATHSATT) {
-	  QString label = "P-" + QString::number(newMacro->getOrder());
-	  newMacroLabel->setPlainText(label);
-	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-	} else if (newMacro->getConstraint() == SEMIPATHS ||
-		   newMacro->getConstraint() == SEMIPATHSATT) {
-	  QString label = "S-" + QString::number(newMacro->getOrder());
-	  newMacroLabel->setPlainText(label);
-	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-	} else if (newMacro->getConstraint() == NOCONSTRAINT ||
-		   newMacro->getConstraint() == NOCONSTRAINTATT) {
-	  QString label = "N-" + QString::number(newMacro->getOrder());
-	  newMacroLabel->setPlainText(label);
-	  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
-	}
-	qreal xOffset = (newMacro->getWidth() / 2) - 20;
-	newMacroLabel->setOffset(QPointF(xOffset, 0));
-	newMacroLabel->setNewPos(newMacro->scenePos());
-	newMacroLabel->setZValue(4);
-	newMacroLabel->setDefaultTextColor(Qt::black);
-	currentLayer.push_back(newMacro);
-	partners.push_back(macro);
-	Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-	newArrow->setZValue(2);
-	newArrow->setStartItem(newMacro);
-	newArrow->setEndItem(partLayer[it]);
-	newArrow->setCopy(true);
-	newArrow->setColor(QColor(Qt::gray));
-	scene->addItem(newArrow);
-      }
-    }
-    QVectorIterator<EventItem*> it3(eventVector);
-    while (it3.hasNext()) {
-      EventItem *event = it3.next();
-      if (event->getMacroEvent() == currentFather) {
-	QVectorIterator<QGraphicsItem*> it4(partners);
-	bool found = false;
-	while (it4.hasNext()) {
-	  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(it4.next());
-	  if (tempMacro) {
-	    QVector<EventItem*> tempIncidents = tempMacro->getIncidents();
-	    if (tempIncidents.contains(event)) {
-	      found = true;
-	    }
-	  }
-	}
-	if (!found) {
+  while (it2.hasNext()) 
+    {
+      EventItem *event = it2.next();
+      if (event->getMacroEvent() == submittedOrigin) 
+	{
 	  EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
 					      QPointF(0, yPos), event->getId(), event->getOrder());
 	  newEvent->setCopy(true);
@@ -848,36 +714,40 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  newEvent->setPos(newEvent->getOriginalPos());
 	  newEvent->setZValue(3);
 	  bool found = false;
-	  if (newEvent->getMode() != "") {
-	    QSqlQuery *query = new QSqlQuery;
-	    query->prepare("SELECT description FROM incident_attributes "
-			   "WHERE name = :name");
-	    query->bindValue(":name", newEvent->getMode());
-	    query->exec();
-	    query->first();
-	    QString description = query->value(0).toString();
-	    delete query;
-	    for (int i = 0; i < eventListWidget->rowCount(); i++) {
-	      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newEvent->getMode()) {
-		found = true;
-	      }
+	  if (newEvent->getMode() != "") 
+	    {
+	      for (int i = 0; i < eventListWidget->rowCount(); i++) 
+		{
+		  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newEvent->getMode()) 
+		    {
+		      found = true;
+		    }
+		}
+	      if (!found) 
+		{
+		  QSqlQuery *query = new QSqlQuery;
+		  query->prepare("SELECT description FROM incident_attributes "
+				 "WHERE name = :name");
+		  query->bindValue(":name", newEvent->getMode());
+		  query->exec();
+		  query->first();
+		  QString description = query->value(0).toString();
+		  delete query;
+		  QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(newEvent->getMode() + " - " + description);
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, newEvent->getMode());
+		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setBackground(newEvent->getColor());
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
 	    }
-	    if (!found) {
-	      QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
-	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	      QString toolTip = breakString(newEvent->getMode() + " - " + description);
-	      item->setToolTip(toolTip);
-	      item->setData(Qt::DisplayRole, newEvent->getMode());
-	      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-		setBackground(newEvent->getColor());
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-		setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
-			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	    }
-	  }
 	  QPointer<NodeLabel> text = new NodeLabel(newEvent);
 	  newEvent->setLabel(text);
 	  text->setPlainText(QString::number(newEvent->getOrder()));
@@ -889,18 +759,243 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  text->setZValue(4);
 	  text->setDefaultTextColor(Qt::black);
 	  currentLayer.push_back(newEvent);
-	  partners.push_back(event);
 	  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
 	  newArrow->setZValue(2);
 	  newArrow->setStartItem(newEvent);
-	  newArrow->setEndItem(partLayer[it]);
+	  newArrow->setEndItem(newOrigin);
 	  newArrow->setCopy(true);
 	  newArrow->setColor(QColor(Qt::gray));
 	  scene->addItem(newArrow);
+	  partners.push_back(event);
 	}
-      }
     }
-  }
+  std::sort(currentLayer.begin(), currentLayer.end(), componentsSort);
+  std::sort(partners.begin(), partners.end(), componentsSort);
+  int layerSize = currentLayer.size();
+  qreal width = 120 * layerSize;
+  qreal startX = 0 - width / 2 - 60;
+  int count = 1;
+  QVector<MacroEvent*> newLayer;
+  QVector<MacroEvent*> partnerLayer;
+  for (QVector<QGraphicsItem*>::size_type it3 = 0; it3 != currentLayer.size(); it3++) 
+    {
+      QGraphicsItem *current = currentLayer[it3];
+      qreal xPos = startX + count * 120;
+      current->setPos(xPos, current->scenePos().y());
+      count++;
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) 
+	{
+	  event->setOriginalPos(event->scenePos());
+	  event->getLabel()->setNewPos(event->scenePos());
+	  scene->addItem(event);
+	  scene->addItem(event->getLabel());
+	}
+      else if (macro) 
+	{
+	  macro->setOriginalPos(macro->scenePos());
+	  macro->getLabel()->setNewPos(macro->scenePos());
+	  scene->addItem(macro);
+	  scene->addItem(macro->getLabel());
+	  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(partners[it3]);
+	  newLayer.push_back(tempMacro);
+	  partnerLayer.push_back(qgraphicsitem_cast<MacroEvent*>(current));
+	}
+    }
+  if (newLayer.size() > 0) 
+    {
+      addLayer(newLayer, partnerLayer, layer + 1);
+    }
+}
+
+void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
+				    QVector<MacroEvent*> partLayer,
+				    int layer) 
+{
+  qreal yPos = 0 + (layer * 80);
+  QVector<QGraphicsItem*> currentLayer;
+  QVector<QGraphicsItem*> partners;
+  for (QVector<MacroEvent*>::size_type it = 0; it != presentLayer.size(); it++) 
+    {
+      MacroEvent *currentFather = presentLayer[it];
+      QVectorIterator<MacroEvent*> it2(macroVector);
+      while (it2.hasNext()) 
+	{
+	  MacroEvent *macro = it2.next();
+	  if (macro->getMacroEvent() == currentFather) 
+	    { 
+	      MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0,yPos),
+						    macro->getId(), macro->getConstraint(),
+						    macro->getIncidents());
+	      newMacro->setCopy(true);
+	      newMacro->setMode(macro->getMode());
+	      newMacro->setColor(macro->getColor());
+	      newMacro->setAttributes(macro->getAttributes());
+	      newMacro->setPos(newMacro->getOriginalPos());
+	      newMacro->setOrder(macro->getOrder());
+	      newMacro->setZValue(3);
+	      bool found = false;
+	      if (newMacro->getMode() != "") 
+		{
+		  QSqlQuery *query = new QSqlQuery;
+		  query->prepare("SELECT description FROM incident_attributes "
+				 "WHERE name = :name");
+		  query->bindValue(":name", newMacro->getMode());
+		  query->exec();
+		  query->first();
+		  QString description = query->value(0).toString();
+		  delete query;
+		  for (int i = 0; i < eventListWidget->rowCount(); i++) 
+		    {
+		      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) 
+			{
+			  found = true;
+			}
+		    }
+		  if (!found) 
+		    {
+		      QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
+		      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		      QString toolTip = breakString(newMacro->getMode() + " - " + description);
+		      item->setToolTip(toolTip);
+		      item->setData(Qt::DisplayRole, newMacro->getMode());
+		      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+			setBackground(newMacro->getColor());
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+			setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+				 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		    }
+		}
+	      MacroLabel *newMacroLabel = new MacroLabel(newMacro);
+	      newMacro->setLabel(newMacroLabel);
+	      if (newMacro->getConstraint() == PATHS ||
+		  newMacro->getConstraint() == PATHSATT) 
+		{
+		  QString label = "P-" + QString::number(newMacro->getOrder());
+		  newMacroLabel->setPlainText(label);
+		  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+		}
+	      else if (newMacro->getConstraint() == SEMIPATHS ||
+		       newMacro->getConstraint() == SEMIPATHSATT) 
+		{
+		  QString label = "S-" + QString::number(newMacro->getOrder());
+		  newMacroLabel->setPlainText(label);
+		  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+		}
+	      else if (newMacro->getConstraint() == NOCONSTRAINT ||
+		       newMacro->getConstraint() == NOCONSTRAINTATT) 
+		{
+		  QString label = "N-" + QString::number(newMacro->getOrder());
+		  newMacroLabel->setPlainText(label);
+		  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+		}
+	      qreal xOffset = (newMacro->getWidth() / 2) - 20;
+	      newMacroLabel->setOffset(QPointF(xOffset, 0));
+	      newMacroLabel->setNewPos(newMacro->scenePos());
+	      newMacroLabel->setZValue(4);
+	      newMacroLabel->setDefaultTextColor(Qt::black);
+	      currentLayer.push_back(newMacro);
+	      partners.push_back(macro);
+	      Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+	      newArrow->setZValue(2);
+	      newArrow->setStartItem(newMacro);
+	      newArrow->setEndItem(partLayer[it]);
+	      newArrow->setCopy(true);
+	      newArrow->setColor(QColor(Qt::gray));
+	      scene->addItem(newArrow);
+	    }
+	}
+      QVectorIterator<EventItem*> it3(eventVector);
+      while (it3.hasNext()) 
+	{
+	  EventItem *event = it3.next();
+	  if (event->getMacroEvent() == currentFather) 
+	    {
+	      QVectorIterator<QGraphicsItem*> it4(partners);
+	      bool found = false;
+	      while (it4.hasNext()) 
+		{
+		  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(it4.next());
+		  if (tempMacro) 
+		    {
+		      QVector<EventItem*> tempIncidents = tempMacro->getIncidents();
+		      if (tempIncidents.contains(event)) 
+			{
+			  found = true;
+			}
+		    }
+		}
+	      if (!found) 
+		{
+		  EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
+						      QPointF(0, yPos), event->getId(), event->getOrder());
+		  newEvent->setCopy(true);
+		  newEvent->setMode(event->getMode());
+		  newEvent->setColor(event->getColor());
+		  newEvent->setPos(newEvent->getOriginalPos());
+		  newEvent->setZValue(3);
+		  bool found = false;
+		  if (newEvent->getMode() != "") 
+		    {
+		      QSqlQuery *query = new QSqlQuery;
+		      query->prepare("SELECT description FROM incident_attributes "
+				     "WHERE name = :name");
+		      query->bindValue(":name", newEvent->getMode());
+		      query->exec();
+		      query->first();
+		      QString description = query->value(0).toString();
+		      delete query;
+		      for (int i = 0; i < eventListWidget->rowCount(); i++) 
+			{
+			  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newEvent->getMode()) 
+			    {
+			      found = true;
+			    }
+			}
+		      if (!found) 
+			{
+			  QTableWidgetItem *item = new QTableWidgetItem(newEvent->getMode());
+			  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+			  QString toolTip = breakString(newEvent->getMode() + " - " + description);
+			  item->setToolTip(toolTip);
+			  item->setData(Qt::DisplayRole, newEvent->getMode());
+			  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+			  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+			  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+			  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+			    setBackground(newEvent->getColor());
+			  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+			    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+				     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+			}
+		    }
+		  QPointer<NodeLabel> text = new NodeLabel(newEvent);
+		  newEvent->setLabel(text);
+		  text->setPlainText(QString::number(newEvent->getOrder()));
+		  text->setTextWidth(text->boundingRect().width());
+		  QPointF currentPos = newEvent->scenePos();
+		  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
+		  currentPos.setY(currentPos.y() -12);
+		  text->setPos(currentPos);    
+		  text->setZValue(4);
+		  text->setDefaultTextColor(Qt::black);
+		  currentLayer.push_back(newEvent);
+		  partners.push_back(event);
+		  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
+		  newArrow->setZValue(2);
+		  newArrow->setStartItem(newEvent);
+		  newArrow->setEndItem(partLayer[it]);
+		  newArrow->setCopy(true);
+		  newArrow->setColor(QColor(Qt::gray));
+		  scene->addItem(newArrow);
+		}
+	    }
+	}
+    }
   std::sort(currentLayer.begin(), currentLayer.end(), componentsSort);
   std::sort(partners.begin(), partners.end(), componentsSort);
   QVector<MacroEvent*> newLayer;
@@ -909,156 +1004,197 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
   qreal width = 120 * layerSize;
   qreal startX = 0 - width / 2 - 60;
   int count = 1;
-  for (QVector<QGraphicsItem*>::size_type it5 = 0; it5 != currentLayer.size(); it5++) {
-    QGraphicsItem *current = currentLayer[it5];
-    qreal xPos = startX + count * 120;
-    current->setPos(xPos, current->scenePos().y());
-    count++;
-    EventItem *event = qgraphicsitem_cast<EventItem*>(current);
-    MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
-    if (event) {
-      event->setOriginalPos(event->scenePos());
-      event->getLabel()->setNewPos(event->scenePos());
-      scene->addItem(event);
-      scene->addItem(event->getLabel());
-    } else if (macro) {
-      macro->setOriginalPos(macro->scenePos());
-      macro->getLabel()->setNewPos(macro->scenePos());
-      scene->addItem(macro);
-      scene->addItem(macro->getLabel());
-      MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(partners[it5]);
-      newLayer.push_back(tempMacro);
-      partnerLayer.push_back(qgraphicsitem_cast<MacroEvent*>(current));
+  for (QVector<QGraphicsItem*>::size_type it5 = 0; it5 != currentLayer.size(); it5++) 
+    {
+      QGraphicsItem *current = currentLayer[it5];
+      qreal xPos = startX + count * 120;
+      current->setPos(xPos, current->scenePos().y());
+      count++;
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) 
+	{
+	  event->setOriginalPos(event->scenePos());
+	  event->getLabel()->setNewPos(event->scenePos());
+	  scene->addItem(event);
+	  scene->addItem(event->getLabel());
+	}
+      else if (macro) 
+	{
+	  macro->setOriginalPos(macro->scenePos());
+	  macro->getLabel()->setNewPos(macro->scenePos());
+	  scene->addItem(macro);
+	  scene->addItem(macro->getLabel());
+	  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(partners[it5]);
+	  newLayer.push_back(tempMacro);
+	  partnerLayer.push_back(qgraphicsitem_cast<MacroEvent*>(current));
+	}
     }
-  }
-  if (newLayer.size() > 0) {
-    addLayer(newLayer, partnerLayer, layer + 1);
-  }
+  if (newLayer.size() > 0) 
+    {
+      addLayer(newLayer, partnerLayer, layer + 1);
+    }
 }
 
-void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) {
+void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) 
+{
   QGraphicsItem *source = NULL;
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *temp = it.next();
-    if (temp == item) {
-      source = temp;
-    }
-  }
-  if (source != NULL) {
-    qreal currentX = source->scenePos().x();
-    qreal currentY = source->scenePos().y();
-    qreal newX = pos.x();
-    qreal newY = pos.y();
-    qreal xDiff = newX - currentX;
-    qreal yDiff = newY - currentY;
-    MacroEvent *sourceMacro = qgraphicsitem_cast<MacroEvent*>(source);
-    sourceMacro->setPos(source->scenePos().x() + xDiff, source->scenePos().y() + yDiff);
-    sourceMacro->getLabel()->setNewPos(sourceMacro->scenePos());
-    QListIterator<QGraphicsItem*> it2(scene->items());
-    while (it2.hasNext()) {
-      QGraphicsItem *current = it2.next();
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
-      if (arrow && arrow->getType() == "Hierarchy") {
-	MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
-	if (endMacro) {
-	  if (endMacro == qgraphicsitem_cast<MacroEvent*>(source)) {
-	    QGraphicsItem* partner = arrow->startItem();
-	    partner->setPos(partner->scenePos().x() + xDiff, partner->scenePos().y() + yDiff);
-	    EventItem *partnerEvent = qgraphicsitem_cast<EventItem*>(partner);
-	    MacroEvent *partnerMacro = qgraphicsitem_cast<MacroEvent*>(partner);
-	    if (partnerEvent) {
-	      partnerEvent->getLabel()->setNewPos(partnerEvent->scenePos());
-	    } else if (partnerMacro) {
-	      partnerMacro->getLabel()->setNewPos(partnerMacro->scenePos());
-	    }
-	  }
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *temp = it.next();
+      if (temp == item) 
+	{
+	  source = temp;
 	}
-      }
     }
-  }
+  if (source != NULL) 
+    {
+      qreal currentX = source->scenePos().x();
+      qreal currentY = source->scenePos().y();
+      qreal newX = pos.x();
+      qreal newY = pos.y();
+      qreal xDiff = newX - currentX;
+      qreal yDiff = newY - currentY;
+      MacroEvent *sourceMacro = qgraphicsitem_cast<MacroEvent*>(source);
+      sourceMacro->setPos(source->scenePos().x() + xDiff, source->scenePos().y() + yDiff);
+      sourceMacro->getLabel()->setNewPos(sourceMacro->scenePos());
+      QListIterator<QGraphicsItem*> it2(scene->items());
+      while (it2.hasNext()) 
+	{
+	  QGraphicsItem *current = it2.next();
+	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
+	  if (arrow && arrow->getType() == "Hierarchy") 
+	    {
+	      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+	      if (endMacro) 
+		{
+		  if (endMacro == qgraphicsitem_cast<MacroEvent*>(source)) 
+		    {
+		      QGraphicsItem* partner = arrow->startItem();
+		      partner->setPos(partner->scenePos().x() + xDiff, partner->scenePos().y() + yDiff);
+		      EventItem *partnerEvent = qgraphicsitem_cast<EventItem*>(partner);
+		      MacroEvent *partnerMacro = qgraphicsitem_cast<MacroEvent*>(partner);
+		      if (partnerEvent) 
+			{
+			  partnerEvent->getLabel()->setNewPos(partnerEvent->scenePos());
+			}
+		      else if (partnerMacro) 
+			{
+			  partnerMacro->getLabel()->setNewPos(partnerMacro->scenePos());
+			}
+		    }
+		}
+	    }
+	}
+    }
 }
 
   
-void HierarchyGraphWidget::getEdges() {
+void HierarchyGraphWidget::getEdges() 
+{
   QVector<QColor> typeColors;
   QVectorIterator<Arrow*> it(edgeVector);
-  while (it.hasNext()) {
-    Arrow *arrow = it.next();
-    QString originalType = arrow->getType();
-    QColor originalColor = arrow->getColor();
-    if (!presentTypes.contains(originalType)) {
-      presentTypes.push_back(originalType);
-      typeColors.push_back(originalColor);
+  while (it.hasNext()) 
+    {
+      Arrow *arrow = it.next();
+      QString originalType = arrow->getType();
+      QColor originalColor = arrow->getColor();
+      if (!presentTypes.contains(originalType)) 
+	{
+	  presentTypes.push_back(originalType);
+	  typeColors.push_back(originalColor);
+	}
+      QGraphicsItem *source = NULL;
+      QGraphicsItem *target = NULL;
+      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
+      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
+      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(arrow->startItem());
+      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+      QListIterator<QGraphicsItem*> it2(scene->items());
+      while (it2.hasNext()) 
+	{
+	  QGraphicsItem *item = it2.next();
+	  EventItem *event = qgraphicsitem_cast<EventItem*>(item);
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(item);
+	  if (startEvent && event) 
+	    {
+	      if (startEvent->getId() == event->getId()) 
+		{
+		  source = event;
+		}
+	    }
+	  if (endEvent && event) 
+	    {
+	      if (endEvent->getId() == event->getId()) 
+		{
+		  target = event;
+		}
+	    }
+	  if (startMacro && macro) 
+	    {
+	      if (startMacro->getId() == macro->getId()) 
+		{
+		  source = macro;
+		}
+	    }
+	  if (endMacro && macro) 
+	    {
+	      if (endMacro->getId() == macro->getId()) 
+		{
+		  target = macro;
+		}
+	    }
+	}
+      if (source != NULL && target != NULL) 
+	{
+	  bool valid = false;
+	  EventItem *eventSource = qgraphicsitem_cast<EventItem*>(source);
+	  EventItem *eventTarget = qgraphicsitem_cast<EventItem*>(target);
+	  MacroEvent *macroSource = qgraphicsitem_cast<MacroEvent*>(source);
+	  MacroEvent *macroTarget = qgraphicsitem_cast<MacroEvent*>(target);
+	  if (eventSource && eventTarget) 
+	    {
+	      if (eventSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) 
+		{
+		  valid = true;
+		}
+	    }
+	  else if (eventSource && macroTarget) 
+	    {
+	      if (eventSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) 
+		{
+		  valid = true;
+		}
+	    }
+	  else if (macroSource && eventTarget) 
+	    {
+	      if (macroSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) 
+		{
+		  valid = true;
+		}
+	    }
+	  else if (macroSource && macroTarget) 
+	    {
+	      if (macroSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) 
+		{
+		  valid = true;
+		}
+	    }
+	  if (valid) 
+	    {
+	      Arrow *newArrow = new Arrow(originalType, "", 0);
+	      newArrow->setZValue(2);
+	      newArrow->setStartItem(source);
+	      newArrow->setEndItem(target);
+	      newArrow->setColor(originalColor);
+	      newArrow->setCopy(true);
+	      scene->addItem(newArrow);
+	      newArrow->hide();
+	      newArrow->setMassHidden(true);
+	    }
+	}
     }
-    QGraphicsItem *source = NULL;
-    QGraphicsItem *target = NULL;
-    EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
-    EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
-    MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(arrow->startItem());
-    MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
-    QListIterator<QGraphicsItem*> it2(scene->items());
-    while (it2.hasNext()) {
-      QGraphicsItem *item = it2.next();
-      EventItem *event = qgraphicsitem_cast<EventItem*>(item);
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(item);
-      if (startEvent && event) {
-	if (startEvent->getId() == event->getId()) {
-	  source = event;
-	}
-      }
-      if (endEvent && event) {
-	if (endEvent->getId() == event->getId()) {
-	  target = event;
-	}
-      }
-      if (startMacro && macro) {
-	if (startMacro->getId() == macro->getId()) {
-	  source = macro;
-	}
-      }
-      if (endMacro && macro) {
-	if (endMacro->getId() == macro->getId()) {
-	  target = macro;
-	}
-      }
-    }
-    if (source != NULL && target != NULL) {
-      bool valid = false;
-      EventItem *eventSource = qgraphicsitem_cast<EventItem*>(source);
-      EventItem *eventTarget = qgraphicsitem_cast<EventItem*>(target);
-      MacroEvent *macroSource = qgraphicsitem_cast<MacroEvent*>(source);
-      MacroEvent *macroTarget = qgraphicsitem_cast<MacroEvent*>(target);
-      if (eventSource && eventTarget) {
-	if (eventSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) {
-	  valid = true;
-	}
-      } else if (eventSource && macroTarget) {
-	if (eventSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) {
-	  valid = true;
-	}
-      } else if (macroSource && eventTarget) {
-	if (macroSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) {
-	  valid = true;
-	}
-      } else if (macroSource && macroTarget) {
-	if (macroSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) {
-	  valid = true;
-	}
-      }
-      if (valid) {
-	Arrow *newArrow = new Arrow(originalType, "", 0);
-	newArrow->setZValue(2);
-	newArrow->setStartItem(source);
-	newArrow->setEndItem(target);
-	newArrow->setColor(originalColor);
-	newArrow->setCopy(true);
-	scene->addItem(newArrow);
-	newArrow->hide();
-	newArrow->setMassHidden(true);
-      }
-    }
-  }
   QTableWidgetItem *item = new QTableWidgetItem("Hierarchy");
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
   QString toolTip = breakString("Hierarchical - indicates inclusion of events "
@@ -1072,587 +1208,729 @@ void HierarchyGraphWidget::getEdges() {
   linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
     setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
 	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-  for (QVector<QString>::size_type it2 = 0; it2 != presentTypes.size(); it2++) {
-    QString currentType = presentTypes[it2];
-    QColor currentColor = typeColors[it2];
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT description, direction FROM linkage_types "
-		 "WHERE name = :name");
-    query->bindValue(":name", currentType);
-    query->exec();
-    query->first();
-    QString description = query->value(0).toString();
-    QString direction = query->value(1).toString();
-    delete query;
-    QTableWidgetItem *item = new QTableWidgetItem(currentType);
-    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-    QString toolTip = breakString(currentType + " (" + direction + ") - " + description);
-    item->setToolTip(toolTip);
-    item->setData(Qt::DisplayRole, currentType);
-    linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
-    linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
-    linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-    linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(currentColor);
-    linkageListWidget->item(linkageListWidget->rowCount() - 1, 0)->setBackground(QColor(Qt::gray));
-    linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
-      setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
-	       Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-  }
+  for (QVector<QString>::size_type it2 = 0; it2 != presentTypes.size(); it2++) 
+    {
+      QString currentType = presentTypes[it2];
+      QColor currentColor = typeColors[it2];
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT description, direction FROM linkage_types "
+		     "WHERE name = :name");
+      query->bindValue(":name", currentType);
+      query->exec();
+      query->first();
+      QString description = query->value(0).toString();
+      QString direction = query->value(1).toString();
+      delete query;
+      QTableWidgetItem *item = new QTableWidgetItem(currentType);
+      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+      QString toolTip = breakString(currentType + " (" + direction + ") - " + description);
+      item->setToolTip(toolTip);
+      item->setData(Qt::DisplayRole, currentType);
+      linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+      linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+      linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+      linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+      linkageListWidget->item(linkageListWidget->rowCount() - 1, 0)->setBackground(QColor(Qt::gray));
+      linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+	setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
+		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+    }
   updateLinkages();
 }
 
-void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) {
-  if (item->column() == 1) {
-    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-    colorDialog->setCurrentColor(item->background().color());
-    if (colorDialog->exec()) {
-      QColor color = colorDialog->selectedColor();
-      item->setBackground(color);
-      QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
-      QString mode = neighbour->data(Qt::DisplayRole).toString();
-      QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) {
-	EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-	MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
-	if (event) {
-	  event = qgraphicsitem_cast<EventItem*>(it.next());
-	  if (event->getMode() == mode) {
-	    event->setColor(color);
-	  }
-	} else if (macro) {
-	  macro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	  if (macro->getMode() == mode) {
-	    macro->setColor(color);
-	  }
-	} else {
-	  it.next();
+void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) 
+{
+  if (item->column() == 1) 
+    {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setCurrentColor(item->background().color());
+      if (colorDialog->exec()) 
+	{
+	  QColor color = colorDialog->selectedColor();
+	  item->setBackground(color);
+	  QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
+	  QString mode = neighbour->data(Qt::DisplayRole).toString();
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+	      if (event) 
+		{
+		  event = qgraphicsitem_cast<EventItem*>(it.next());
+		  if (event->getMode() == mode) 
+		    {
+		      event->setColor(color);
+		    }
+		}
+	      else if (macro) 
+		{
+		  macro = qgraphicsitem_cast<MacroEvent*>(it.next());
+		  if (macro->getMode() == mode) 
+		    {
+		      macro->setColor(color);
+		    }
+		}
+	      else 
+		{
+		  it.next();
+		}
+	    }
 	}
-      }
     }
-  }
 }
 
-void HierarchyGraphWidget::colorByAttribute() {
+void HierarchyGraphWidget::colorByAttribute() 
+{
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
   attributeColorDialog->exec();
-  if (attributeColorDialog->getExitStatus() == 0) {
-    QColor color = attributeColorDialog->getColor();
-    QColor textColor = attributeColorDialog->getTextColor();
-    QString attribute = attributeColorDialog->getAttribute();
-    QString description = "";
-    QSqlQuery *query = new QSqlQuery;
-    bool entity = attributeColorDialog->isEntity();
-    if (entity) {
-      query->prepare("SELECT description FROM entities "
-		     "WHERE name = :name");
-      query->bindValue(":name", attribute);
-      query->exec();
-      query->first();
-      description = query->value(0).toString();
-    } else {
-      query->prepare("SELECT description FROM incident_attributes "
-		     "WHERE name = :name");
-      query->bindValue(":name", attribute);
-      query->exec();
-      query->first();
-      description = query->value(0).toString();
-    }
-    QVector<QString> attributeVector;
-    attributeVector.push_back(attribute);
-    findChildren(attribute, &attributeVector, entity);
-    QVectorIterator<QString> it(attributeVector);
-    while (it.hasNext()) {
-      QString currentAttribute = it.next();
+  if (attributeColorDialog->getExitStatus() == 0) 
+    {
+      QColor color = attributeColorDialog->getColor();
+      QColor textColor = attributeColorDialog->getTextColor();
+      QString attribute = attributeColorDialog->getAttribute();
+      QString description = "";
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT incident FROM attributes_to_incidents "
-		     "WHERE attribute = :currentAttribute");
-      query->bindValue(":currentAttribute", currentAttribute);
-      query->exec();
-      while (query->next()) {
-	int currentIncident = query->value(0).toInt();
-	QListIterator<QGraphicsItem*> it2(scene->items());
-	while (it2.hasNext()) {
-	  QGraphicsItem *current = it2.next();
-	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-	  if (currentEvent && currentEvent->getId() == currentIncident) {
-	    currentEvent->setColor(color);
-	    currentEvent->setMode(attribute);
-	    currentEvent->getLabel()->setDefaultTextColor(textColor);
-	  }
+      bool entity = attributeColorDialog->isEntity();
+      if (entity) 
+	{
+	  query->prepare("SELECT description FROM entities "
+			 "WHERE name = :name");
+	  query->bindValue(":name", attribute);
+	  query->exec();
+	  query->first();
+	  description = query->value(0).toString();
 	}
-      }
-      QListIterator<QGraphicsItem*> it2(scene->items());
-      while (it2.hasNext()) {
-	QGraphicsItem *current = it2.next();
-	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	if (currentMacro) {
-	  QSet<QString> attributes = currentMacro->getAttributes();
-	  if (attributes.contains(currentAttribute)) {
-	    currentMacro->setColor(color);
-	    currentMacro->setMode(attribute);
-	    currentMacro->getLabel()->setDefaultTextColor(textColor);
-	  }
+      else 
+	{
+	  query->prepare("SELECT description FROM incident_attributes "
+			 "WHERE name = :name");
+	  query->bindValue(":name", attribute);
+	  query->exec();
+	  query->first();
+	  description = query->value(0).toString();
 	}
-      }
+      QVector<QString> attributeVector;
+      attributeVector.push_back(attribute);
+      findChildren(attribute, &attributeVector, entity);
+      QVectorIterator<QString> it(attributeVector);
+      while (it.hasNext()) 
+	{
+	  QString currentAttribute = it.next();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT incident FROM attributes_to_incidents "
+			 "WHERE attribute = :currentAttribute");
+	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->exec();
+	  while (query->next()) 
+	    {
+	      int currentIncident = query->value(0).toInt();
+	      QListIterator<QGraphicsItem*> it2(scene->items());
+	      while (it2.hasNext()) 
+		{
+		  QGraphicsItem *current = it2.next();
+		  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+		  if (currentEvent && currentEvent->getId() == currentIncident) 
+		    {
+		      currentEvent->setColor(color);
+		      currentEvent->setMode(attribute);
+		      currentEvent->getLabel()->setDefaultTextColor(textColor);
+		    }
+		}
+	    }
+	  QListIterator<QGraphicsItem*> it2(scene->items());
+	  while (it2.hasNext()) 
+	    {
+	      QGraphicsItem *current = it2.next();
+	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	      if (currentMacro) 
+		{
+		  QSet<QString> attributes = currentMacro->getAttributes();
+		  if (attributes.contains(currentAttribute)) 
+		    {
+		      currentMacro->setColor(color);
+		      currentMacro->setMode(attribute);
+		      currentMacro->getLabel()->setDefaultTextColor(textColor);
+		    }
+		}
+	    }
+	}
+      bool found = false;
+      for (int i = 0; i < eventListWidget->rowCount(); i++) 
+	{
+	  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) 
+	    {
+	      found = true;
+	      QTableWidgetItem *item = eventListWidget->item(i,0);
+	      QString toolTip = breakString(attribute + " - " + description);
+	      item->setToolTip(toolTip);
+	      eventListWidget->item(i, 1)->setBackground(color);
+	      break;
+	    }
+	}
+      if (!found) 
+	{
+	  QTableWidgetItem *item = new QTableWidgetItem(attribute);
+	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	  QString toolTip = breakString(attribute + " - " + description);
+	  item->setToolTip(toolTip);
+	  item->setData(Qt::DisplayRole, attribute);
+	  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(color);
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	}
+      delete query;
     }
-    bool found = false;
-    for (int i = 0; i < eventListWidget->rowCount(); i++) {
-      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) {
-	found = true;
-	QTableWidgetItem *item = eventListWidget->item(i,0);
-	QString toolTip = breakString(attribute + " - " + description);
-	item->setToolTip(toolTip);
-	eventListWidget->item(i, 1)->setBackground(color);
-	break;
-      }
-    }
-    if (!found) {
-      QTableWidgetItem *item = new QTableWidgetItem(attribute);
-      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-      QString toolTip = breakString(attribute + " - " + description);
-      item->setToolTip(toolTip);
-      item->setData(Qt::DisplayRole, attribute);
-      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(color);
-      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
-		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-    }
-    delete query;
-  }
   delete attributeColorDialog;
 }
 
 
-void HierarchyGraphWidget::removeMode() {
+void HierarchyGraphWidget::removeMode() 
+{
   QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *current = it.next();
-    EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-    MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-    if (currentEvent && currentEvent->getMode() == text) {
-      currentEvent->setColor(Qt::white);
-      currentEvent->getLabel()->setDefaultTextColor(Qt::black);
-      currentEvent->setMode("");
-    } else if (currentMacro && currentMacro->getMode() == text) {
-      currentMacro->setColor(Qt::white);
-      currentMacro->getLabel()->setDefaultTextColor(Qt::black);
-      currentMacro->setMode("");
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *current = it.next();
+      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (currentEvent && currentEvent->getMode() == text) 
+	{
+	  currentEvent->setColor(Qt::white);
+	  currentEvent->getLabel()->setDefaultTextColor(Qt::black);
+	  currentEvent->setMode("");
+	}
+      else if (currentMacro && currentMacro->getMode() == text) 
+	{
+	  currentMacro->setColor(Qt::white);
+	  currentMacro->getLabel()->setDefaultTextColor(Qt::black);
+	  currentMacro->setMode("");
+	}
     }
-  }
-  for (int i = 0; i != eventListWidget->rowCount();) {
-    if (eventListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) {
-      eventListWidget->removeRow(i);
+  for (int i = 0; i != eventListWidget->rowCount();) 
+    {
+      if (eventListWidget->item(i,0)->data(Qt::DisplayRole).toString() == text) 
+	{
+	  eventListWidget->removeRow(i);
+	}
+      if (i != eventListWidget->rowCount()) 
+	{
+	  i++;
+	}
     }
-    if (i != eventListWidget->rowCount()) {
-      i++;
-    }
-  }
   // We also want to restore any other modes that were overruled by the one we just removed.
-  for (int i = 0; i != eventListWidget->rowCount(); i++) {
-    QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-    QColor color = eventListWidget->item(i, 1)->background().color();
-    QVector<QString> attributeVector;
-    attributeVector.push_back(currentMode);
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT name FROM entities WHERE name = :name");
-    query->bindValue(":name", currentMode);
-    query->exec();
-    query->first();
-    bool entity = false;
-    if (!query->isNull(0)) {
-      entity = true;
-    }
-    findChildren(currentMode, &attributeVector, entity);
-    QVectorIterator<QString> it2(attributeVector);
-    while (it2.hasNext()) {
-      QString currentAttribute = it2.next();
-      query->prepare("SELECT incident FROM attributes_to_incidents "
-		     "WHERE attribute = :currentAttribute");
-      query->bindValue(":currentAttribute", currentAttribute);
+  for (int i = 0; i != eventListWidget->rowCount(); i++) 
+    {
+      QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT name FROM entities WHERE name = :name");
+      query->bindValue(":name", currentMode);
       query->exec();
-      while (query->next()) {
-	int currentIncident = query->value(0).toInt();
-	QListIterator<QGraphicsItem*> it3(scene->items());
-	while (it3.hasNext()) {
-	  QGraphicsItem *current = it3.next();
-	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-	  if (currentEvent && currentEvent->getId() == currentIncident) {
-	    currentEvent->setColor(color);
-	    currentEvent->setMode(currentMode);
-	  }
+      query->first();
+      bool entity = false;
+      if (!query->isNull(0)) 
+	{
+	  entity = true;
 	}
-      }
-      QListIterator<QGraphicsItem*> it3(scene->items());
-      while (it3.hasNext()) {
-	QGraphicsItem *current = it3.next();
-	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	if (currentMacro) {
-	  QSet<QString> attributes = currentMacro->getAttributes();
-	  if (attributes.contains(currentAttribute)) {
-	    currentMacro->setColor(color);
-	    currentMacro->setMode(currentMode);
-	  }
+      findChildren(currentMode, &attributeVector, entity);
+      QVectorIterator<QString> it2(attributeVector);
+      while (it2.hasNext()) 
+	{
+	  QString currentAttribute = it2.next();
+	  query->prepare("SELECT incident FROM attributes_to_incidents "
+			 "WHERE attribute = :currentAttribute");
+	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->exec();
+	  while (query->next()) 
+	    {
+	      int currentIncident = query->value(0).toInt();
+	      QListIterator<QGraphicsItem*> it3(scene->items());
+	      while (it3.hasNext()) 
+		{
+		  QGraphicsItem *current = it3.next();
+		  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+		  if (currentEvent && currentEvent->getId() == currentIncident) 
+		    {
+		      currentEvent->setColor(color);
+		      currentEvent->setMode(currentMode);
+		    }
+		}
+	    }
+	  QListIterator<QGraphicsItem*> it3(scene->items());
+	  while (it3.hasNext()) 
+	    {
+	      QGraphicsItem *current = it3.next();
+	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	      if (currentMacro) 
+		{
+		  QSet<QString> attributes = currentMacro->getAttributes();
+		  if (attributes.contains(currentAttribute)) 
+		    {
+		      currentMacro->setColor(color);
+		      currentMacro->setMode(currentMode);
+		    }
+		}
+	    }
 	}
-      }
+      delete query;
     }
-    delete query;
-  }
 }
 
-void HierarchyGraphWidget::setModeButtons(QTableWidgetItem *item) {
+void HierarchyGraphWidget::setModeButtons(QTableWidgetItem *item) 
+{
   QString text = item->data(Qt::DisplayRole).toString();
-  if (text != "") {
-    removeModeButton->setEnabled(true);
-  } else {
-    removeModeButton->setEnabled(false);
-  }
-  if (text != eventListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) {
-    moveModeUpButton->setEnabled(true);
-  } else {
-    moveModeUpButton->setEnabled(false);
-  }
+  if (text != "") 
+    {
+      removeModeButton->setEnabled(true);
+    }
+  else 
+    {
+      removeModeButton->setEnabled(false);
+    }
+  if (text != eventListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) 
+    {
+      moveModeUpButton->setEnabled(true);
+    }
+  else 
+    {
+      moveModeUpButton->setEnabled(false);
+    }
   if (text != eventListWidget->item(eventListWidget->rowCount() - 1, 0)
-      ->data(Qt::DisplayRole).toString()) {
-    moveModeDownButton->setEnabled(true);
-  } else {
-    moveModeDownButton->setEnabled(false);
-  }
+      ->data(Qt::DisplayRole).toString()) 
+    {
+      moveModeDownButton->setEnabled(true);
+    }
+  else 
+    {
+      moveModeDownButton->setEnabled(false);
+    }
 }
 
-void HierarchyGraphWidget::disableModeButtons() {
+void HierarchyGraphWidget::disableModeButtons() 
+{
   removeModeButton->setEnabled(false);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton->setEnabled(false);
 }
 
-void HierarchyGraphWidget::restoreModeColors() {
-  for (int i = 0; i != eventListWidget->rowCount(); i++) {
-    QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-    QColor color = eventListWidget->item(i, 1)->background().color();
-    QVector<QString> attributeVector;
-    attributeVector.push_back(currentMode);
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT name FROM entities WHERE name = :name");
-    query->bindValue(":name", currentMode);
-    query->exec();
-    query->first();
-    bool entity = false;
-    if (!query->isNull(0)) {
-      entity = true;
-    }
-    findChildren(currentMode, &attributeVector, entity);    
-    QVectorIterator<QString> it3(attributeVector);
-    while (it3.hasNext()) {
-      QString currentAttribute = it3.next();
-      query->prepare("SELECT incident FROM attributes_to_incidents "
-		     "WHERE attribute = :currentAttribute");
-      query->bindValue(":currentAttribute", currentAttribute);
+void HierarchyGraphWidget::restoreModeColors() 
+{
+  for (int i = 0; i != eventListWidget->rowCount(); i++) 
+    {
+      QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT name FROM entities WHERE name = :name");
+      query->bindValue(":name", currentMode);
       query->exec();
-      while (query->next()) {
-	int currentIncident = query->value(0).toInt();
-	QListIterator<QGraphicsItem*> it4(scene->items());
-	while (it4.hasNext()) {
-	  QGraphicsItem *current = it4.next();
-	  EventItem* currentEvent = qgraphicsitem_cast<EventItem*>(current);
-	  if (currentEvent && currentEvent->getId() == currentIncident) {
-	    currentEvent->setColor(color);
-	    currentEvent->setMode(currentMode);
-	  }
+      query->first();
+      bool entity = false;
+      if (!query->isNull(0)) 
+	{
+	  entity = true;
 	}
-      }
-      QListIterator<QGraphicsItem*> it4(scene->items());
-      while (it4.hasNext()) {
-	QGraphicsItem *current = it4.next();
-	MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	if (currentMacro) {
-	  QSet<QString> attributes = currentMacro->getAttributes();
-	  if (attributes.contains(currentAttribute)) {
-	    currentMacro->setColor(color);
-	    currentMacro->setMode(currentMode);
-	  }
+      findChildren(currentMode, &attributeVector, entity);    
+      QVectorIterator<QString> it3(attributeVector);
+      while (it3.hasNext()) 
+	{
+	  QString currentAttribute = it3.next();
+	  query->prepare("SELECT incident FROM attributes_to_incidents "
+			 "WHERE attribute = :currentAttribute");
+	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->exec();
+	  while (query->next()) 
+	    {
+	      int currentIncident = query->value(0).toInt();
+	      QListIterator<QGraphicsItem*> it4(scene->items());
+	      while (it4.hasNext()) 
+		{
+		  QGraphicsItem *current = it4.next();
+		  EventItem* currentEvent = qgraphicsitem_cast<EventItem*>(current);
+		  if (currentEvent && currentEvent->getId() == currentIncident) 
+		    {
+		      currentEvent->setColor(color);
+		      currentEvent->setMode(currentMode);
+		    }
+		}
+	    }
+	  QListIterator<QGraphicsItem*> it4(scene->items());
+	  while (it4.hasNext()) 
+	    {
+	      QGraphicsItem *current = it4.next();
+	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	      if (currentMacro) 
+		{
+		  QSet<QString> attributes = currentMacro->getAttributes();
+		  if (attributes.contains(currentAttribute)) 
+		    {
+		      currentMacro->setColor(color);
+		      currentMacro->setMode(currentMode);
+		    }
+		}
+	    }
 	}
-      }
+      delete query;
     }
-    delete query;
-  }
-  for (int i = 0; i < eventListWidget->rowCount(); i++) {
-    QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
-    QColor color = eventListWidget->item(i, 1)->background().color();
-    QListIterator<QGraphicsItem*> it(scene->items());
-    while (it.hasNext()) {
-      QGraphicsItem *current = it.next();
-      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-      if (currentEvent && currentEvent->getMode() == mode) {
-	currentEvent->setColor(color);
-      } else if (currentMacro && currentMacro->getMode() == mode) {
-	currentMacro->setColor(color);
-      }
+  for (int i = 0; i < eventListWidget->rowCount(); i++) 
+    {
+      QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QListIterator<QGraphicsItem*> it(scene->items());
+      while (it.hasNext()) 
+	{
+	  QGraphicsItem *current = it.next();
+	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
+	  MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
+	  if (currentEvent && currentEvent->getMode() == mode) 
+	    {
+	      currentEvent->setColor(color);
+	    }
+	  else if (currentMacro && currentMacro->getMode() == mode) 
+	    {
+	      currentMacro->setColor(color);
+	    }
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::moveModeUp() {
+void HierarchyGraphWidget::moveModeUp() 
+{
   QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
-  if (text != eventListWidget->item(0,0)->data(Qt::DisplayRole).toString()) {
-    int currentRow = eventListWidget->row(eventListWidget->currentItem());
-    QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow,0);
-    QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
-    int newRow = currentRow - 1;
-    QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
-    QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
-    eventListWidget->setItem(newRow, 0, currentItem);
-    eventListWidget->item(newRow, 1)->setBackground(currentColor);
-    eventListWidget->setItem(currentRow, 0, otherItem);
-    eventListWidget->item(currentRow, 1)->setBackground(otherColor);
-    restoreModeColors();
-    QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
-    eventListWidget->setCurrentIndex(newIndex);
-    setModeButtons(eventListWidget->currentItem());
-  }
+  if (text != eventListWidget->item(0,0)->data(Qt::DisplayRole).toString()) 
+    {
+      int currentRow = eventListWidget->row(eventListWidget->currentItem());
+      QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow,0);
+      QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+      int newRow = currentRow - 1;
+      QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
+      QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+      eventListWidget->setItem(newRow, 0, currentItem);
+      eventListWidget->item(newRow, 1)->setBackground(currentColor);
+      eventListWidget->setItem(currentRow, 0, otherItem);
+      eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+      restoreModeColors();
+      QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
+      eventListWidget->setCurrentIndex(newIndex);
+      setModeButtons(eventListWidget->currentItem());
+    }
 }
 
-void HierarchyGraphWidget::moveModeDown() {
+void HierarchyGraphWidget::moveModeDown() 
+{
   QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
   if (text != eventListWidget->item(eventListWidget->rowCount() - 1, 0)->
-      data(Qt::DisplayRole).toString()) {
-    int currentRow = eventListWidget->row(eventListWidget->currentItem());
-    QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow, 0);
-    QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
-    int newRow = currentRow + 1;
-    QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
-    QColor otherColor = eventListWidget->item(newRow, 1)->background().color();;
-    eventListWidget->setItem(newRow, 0, currentItem);
-    eventListWidget->item(newRow, 1)->setBackground(currentColor);
-    eventListWidget->setItem(currentRow, 0, otherItem);
-    eventListWidget->item(currentRow, 1)->setBackground(otherColor);
-    restoreModeColors();
-    QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
-    eventListWidget->setCurrentIndex(newIndex);
-    setModeButtons(eventListWidget->currentItem());
-  }
+      data(Qt::DisplayRole).toString()) 
+    {
+      int currentRow = eventListWidget->row(eventListWidget->currentItem());
+      QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow, 0);
+      QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+      int newRow = currentRow + 1;
+      QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
+      QColor otherColor = eventListWidget->item(newRow, 1)->background().color();;
+      eventListWidget->setItem(newRow, 0, currentItem);
+      eventListWidget->item(newRow, 1)->setBackground(currentColor);
+      eventListWidget->setItem(currentRow, 0, otherItem);
+      eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+      restoreModeColors();
+      QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
+      eventListWidget->setCurrentIndex(newIndex);
+      setModeButtons(eventListWidget->currentItem());
+    }
 }
 
-void HierarchyGraphWidget::findChildren(QString father, QVector<QString> *children, bool entity) {
+void HierarchyGraphWidget::findChildren(QString father, QVector<QString> *children, bool entity) 
+{
   QSqlQuery *query = new QSqlQuery;
-  if (entity) {
-    query->prepare("SELECT name FROM entities WHERE father = :father");
-  } else {
-    query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
-  }
+  if (entity) 
+    {
+      query->prepare("SELECT name FROM entities WHERE father = :father");
+    }
+  else 
+    {
+      query->prepare("SELECT name FROM incident_attributes WHERE father = :father");
+    }
   query->bindValue(":father", father);
   query->exec();
-  while (query->next()) {
-    QString currentChild = query->value(0).toString();
-    children->push_back(currentChild);
-    findChildren(currentChild, children, entity);
-  }
+  while (query->next()) 
+    {
+      QString currentChild = query->value(0).toString();
+      children->push_back(currentChild);
+      findChildren(currentChild, children, entity);
+    }
   delete query;
 }
 
-void HierarchyGraphWidget::setLinkageButtons(QTableWidgetItem *item) {
+void HierarchyGraphWidget::setLinkageButtons(QTableWidgetItem *item) 
+{
   QString text = item->data(Qt::DisplayRole).toString();
-  if (text != "") {
-    QListIterator<QGraphicsItem*> it(scene->items());
-    while (it.hasNext()) {
-      QGraphicsItem *currentItem = it.next();
-      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
-      if (current) {
-	if (current->getType() == text) {
-	  if (current->isMassHidden()) {
-	    hideLinkageTypeButton->setEnabled(false);
-	    showLinkageTypeButton->setEnabled(true);
-	  } else {
-	    hideLinkageTypeButton->setEnabled(true);
-	    showLinkageTypeButton->setEnabled(false);
-	  }
-	  break;
-	}
-      }
-    }
-  } else {
-    hideLinkageTypeButton->setEnabled(false);
-    showLinkageTypeButton->setEnabled(false);
-  }
-}
-
-void HierarchyGraphWidget::changeLinkageColor(QTableWidgetItem *item) {
-  if (item->column() == 1) {
-    QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-    colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-    colorDialog->setCurrentColor(item->background().color());
-    if (colorDialog->exec()) {
-      QColor color = colorDialog->selectedColor();
-      item->setBackground(color);
-      QTableWidgetItem* neighbour = linkageListWidget->item(item->row(), 0);
-      QString type = neighbour->data(Qt::DisplayRole).toString();
+  if (text != "") 
+    {
       QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) {
-	QGraphicsItem *currentItem = it.next();
-	Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
-	if (current) {
-	  if (current->getType() == type) {
-	    current->setColor(color);
-	  }
+      while (it.hasNext()) 
+	{
+	  QGraphicsItem *currentItem = it.next();
+	  Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+	  if (current) 
+	    {
+	      if (current->getType() == text) 
+		{
+		  if (current->isMassHidden()) 
+		    {
+		      hideLinkageTypeButton->setEnabled(false);
+		      showLinkageTypeButton->setEnabled(true);
+		    }
+		  else 
+		    {
+		      hideLinkageTypeButton->setEnabled(true);
+		      showLinkageTypeButton->setEnabled(false);
+		    }
+		  break;
+		}
+	    }
 	}
-      }
     }
-  }
+  else 
+    {
+      hideLinkageTypeButton->setEnabled(false);
+      showLinkageTypeButton->setEnabled(false);
+    }
 }
 
-void HierarchyGraphWidget::disableLinkageButtons() {
+void HierarchyGraphWidget::changeLinkageColor(QTableWidgetItem *item) 
+{
+  if (item->column() == 1) 
+    {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      colorDialog->setCurrentColor(item->background().color());
+      if (colorDialog->exec()) 
+	{
+	  QColor color = colorDialog->selectedColor();
+	  item->setBackground(color);
+	  QTableWidgetItem* neighbour = linkageListWidget->item(item->row(), 0);
+	  QString type = neighbour->data(Qt::DisplayRole).toString();
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      QGraphicsItem *currentItem = it.next();
+	      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+	      if (current) 
+		{
+		  if (current->getType() == type) 
+		    {
+		      current->setColor(color);
+		    }
+		}
+	    }
+	}
+    }
+}
+
+void HierarchyGraphWidget::disableLinkageButtons() 
+{
   hideLinkageTypeButton->setEnabled(false);
   showLinkageTypeButton->setEnabled(false);
 }
 
-void HierarchyGraphWidget::hideLinkage() {
+void HierarchyGraphWidget::hideLinkage() 
+{
   showLinkageTypeButton->setEnabled(true);
   hideLinkageTypeButton->setEnabled(false);
   QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
   linkageListWidget->currentItem()->setBackground(Qt::gray);
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *currentItem = it.next();
-    Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
-    if (current) {
-      if (current->getType() == text) {
-	current->setMassHidden(true);
-	current->hide();
-      }
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *currentItem = it.next();
+      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+      if (current) 
+	{
+	  if (current->getType() == text) 
+	    {
+	      current->setMassHidden(true);
+	      current->hide();
+	    }
+	}
     }
-  }
   setHeights();
 }
 
-void HierarchyGraphWidget::showLinkage() {
+void HierarchyGraphWidget::showLinkage() 
+{
   showLinkageTypeButton->setEnabled(false);
   hideLinkageTypeButton->setEnabled(true);
   QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
   linkageListWidget->currentItem()->setBackground(Qt::transparent);
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *currentItem = it.next();
-    Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
-    if (current) {
-      if (current->getType() == text) {
-	current->setMassHidden(false);
-	current->show();
-      }
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *currentItem = it.next();
+      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+      if (current) 
+	{
+	  if (current->getType() == text) 
+	    {
+	      current->setMassHidden(false);
+	      current->show();
+	    }
+	}
     }
-  }
   setHeights();
 }
 
-void HierarchyGraphWidget::updateLinkages() {
+void HierarchyGraphWidget::updateLinkages() 
+{
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *current = it.next();
-    Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
-    if (arrow) {
-      arrow->updatePosition();
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *current = it.next();
+      Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
+      if (arrow) 
+	{
+	  arrow->updatePosition();
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::setHeights() {
+void HierarchyGraphWidget::setHeights() 
+{
   QVector<QString> finished;
   QVectorIterator<QString> it(presentTypes);
   it.toBack();
-  while (it.hasPrevious()) {
-    QString currentType = it.previous();
-    QVectorIterator<Arrow*> it2(edgeVector);
-    while (it2.hasNext()) {
-      Arrow *currentArrow = it2.next();
-      if (currentArrow->isVisible()) {
-	if (currentArrow->getType() == currentType) {
-	  QGraphicsItem *start = currentArrow->startItem();
-	  QGraphicsItem *end = currentArrow->endItem();
-	  int countFound = 0;
-	  bool found = false;
-	  QVectorIterator<Arrow*> it3(edgeVector);
-	  while (it3.hasNext()) {
-	    Arrow *otherArrow = it3.next();
-	    if (otherArrow->isVisible()) {
-	      if (otherArrow != currentArrow) {
-		if (otherArrow->startItem() == start &&
-		    otherArrow->endItem() == end) {
-		  found = true;
-		  if (!finished.contains(otherArrow->getType())) {
-		    countFound++;
-		  }
-		} else if (otherArrow->startItem() == end && otherArrow->endItem() == start) {
-		  found = true;
+  while (it.hasPrevious()) 
+    {
+      QString currentType = it.previous();
+      QVectorIterator<Arrow*> it2(edgeVector);
+      while (it2.hasNext()) 
+	{
+	  Arrow *currentArrow = it2.next();
+	  if (currentArrow->isVisible()) 
+	    {
+	      if (currentArrow->getType() == currentType) 
+		{
+		  QGraphicsItem *start = currentArrow->startItem();
+		  QGraphicsItem *end = currentArrow->endItem();
+		  int countFound = 0;
+		  bool found = false;
+		  QVectorIterator<Arrow*> it3(edgeVector);
+		  while (it3.hasNext()) 
+		    {
+		      Arrow *otherArrow = it3.next();
+		      if (otherArrow->isVisible()) 
+			{
+			  if (otherArrow != currentArrow) 
+			    {
+			      if (otherArrow->startItem() == start &&
+				  otherArrow->endItem() == end) 
+				{
+				  found = true;
+				  if (!finished.contains(otherArrow->getType())) 
+				    {
+				      countFound++;
+				    }
+				}
+			      else if (otherArrow->startItem() == end && otherArrow->endItem() == start) 
+				{
+				  found = true;
+				}
+			    }
+			}
+		    }
+		  if (countFound > 0) 
+		    {
+		      currentArrow->setHeight((countFound + 1) * 40);
+		    }
+		  else if (found) 
+		    {
+		      currentArrow->setHeight(1 * 40);
+		    }
+		  else 
+		    {
+		      currentArrow->setHeight(0);
+		    }
 		}
-	      }
 	    }
-	  }
-	  if (countFound > 0) {
-	    currentArrow->setHeight((countFound + 1) * 40);
-	  } else if (found) {
-	    currentArrow->setHeight(1 * 40);
-	  } else {
-	    currentArrow->setHeight(0);
-	  }
+	  finished.push_back(currentType);
 	}
-      }
-      finished.push_back(currentType);
     }
-  }
 }
 
-void HierarchyGraphWidget::processHierarchyGraphContextMenu(const QString &action, const QPoint &pos) {
-  if (action == ADDLINE) {
-    addLineObject(false, false, view->mapToScene(pos));
-  } else if (action == ADDSINGLEARROW) {
-    addLineObject(true, false, view->mapToScene(pos));
-  } else if (action == ADDDOUBLEARROW) {
-    addLineObject(true, true, view->mapToScene(pos));
-  } else if (action == ADDTEXT) {
-    addTextObject(view->mapToScene(pos));
-  } else if (action == ADDELLIPSE) {
-    addEllipseObject(view->mapToScene(pos));
-  } else if (action == ADDRECT) {
-    addRectObject(view->mapToScene(pos));
-  }
+void HierarchyGraphWidget::processHierarchyGraphContextMenu(const QString &action, const QPoint &pos) 
+{
+  if (action == ADDLINE) 
+    {
+      addLineObject(false, false, view->mapToScene(pos));
+    }
+  else if (action == ADDSINGLEARROW) 
+    {
+      addLineObject(true, false, view->mapToScene(pos));
+    }
+  else if (action == ADDDOUBLEARROW) 
+    {
+      addLineObject(true, true, view->mapToScene(pos));
+    }
+  else if (action == ADDTEXT) 
+    {
+      addTextObject(view->mapToScene(pos));
+    }
+  else if (action == ADDELLIPSE) 
+    {
+      addEllipseObject(view->mapToScene(pos));
+    }
+  else if (action == ADDRECT) 
+    {
+      addRectObject(view->mapToScene(pos));
+    }
 }
 
-void HierarchyGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF &pos) {
+void HierarchyGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF &pos) 
+{
   LineObject *newLineObject = new LineObject(QPointF(pos.x() - 100, pos.y()),
 					     QPointF(pos.x() + 100, pos.y()));
-  if (arrow1) {
-    newLineObject->setArrow1(true);
-  }
-  if (arrow2) {
-    newLineObject->setArrow2(true);
-  }
+  if (arrow1) 
+    {
+      newLineObject->setArrow1(true);
+    }
+  if (arrow2) 
+    {
+      newLineObject->setArrow2(true);
+    }
   lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
 }
 
-void HierarchyGraphWidget::addTextObject(const QPointF &pos) {
+void HierarchyGraphWidget::addTextObject(const QPointF &pos) 
+{
   QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
   textDialog->setWindowTitle("Set text");
   textDialog->setLabel("Free text:");
   textDialog->exec();
-  if (textDialog->getExitStatus() == 0) {
-    QString text = textDialog->getText();
-    TextObject *newText = new TextObject(text);
-    textVector.push_back(newText);
-    scene->addItem(newText);
-    newText->setPos(pos);
-    newText->setZValue(6);
-    newText->adjustSize();
-  }
+  if (textDialog->getExitStatus() == 0) 
+    {
+      QString text = textDialog->getText();
+      TextObject *newText = new TextObject(text);
+      textVector.push_back(newText);
+      scene->addItem(newText);
+      newText->setPos(pos);
+      newText->setZValue(6);
+      newText->adjustSize();
+    }
   delete textDialog;
 }
 
-void HierarchyGraphWidget::addEllipseObject(const QPointF &pos) {
+void HierarchyGraphWidget::addEllipseObject(const QPointF &pos) 
+{
   EllipseObject *newEllipse = new EllipseObject();
   ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
@@ -1661,7 +1939,8 @@ void HierarchyGraphWidget::addEllipseObject(const QPointF &pos) {
   newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 }
 
-void HierarchyGraphWidget::addRectObject(const QPointF &pos) {
+void HierarchyGraphWidget::addRectObject(const QPointF &pos) 
+{
   RectObject *newRect = new RectObject();
   rectVector.push_back(newRect);
   scene->addItem(newRect);
@@ -1670,910 +1949,1137 @@ void HierarchyGraphWidget::addRectObject(const QPointF &pos) {
   newRect->moveCenter(newRect->mapFromScene(pos));
 }
 
-void HierarchyGraphWidget::processLineContextMenu(const QString &action) {
-  if (action == CHANGELINECOLOR) {
-    changeLineColor();
-  } else if (action == TOGGLEARROW1) {
-    toggleArrow1();
-  } else if (action == TOGGLEARROW2) {
-    toggleArrow2();
-  } else if (action == DELETELINE) {
-    deleteLine();
-  } else if (action == COPYOBJECT) {
-    duplicateLine();
-  }
-}
-
-void HierarchyGraphWidget::changeLineColor() {
-  if (scene->selectedItems().size() == 1) {
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    if (line) {
-      QColor currentColor = line->getColor();
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      if (colorDialog->exec()) {
-	QColor color = colorDialog->selectedColor();
-	line->setColor(color);
-      }
-      delete colorDialog;
+void HierarchyGraphWidget::processLineContextMenu(const QString &action) 
+{
+  if (action == CHANGELINECOLOR) 
+    {
+      changeLineColor();
     }
-  }
-}
-
-void HierarchyGraphWidget::toggleArrow1() {
-  if (scene->selectedItems().size() == 1) {
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    if (line) {
-      line->setArrow1(!line->arrow1());
+  else if (action == TOGGLEARROW1) 
+    {
+      toggleArrow1();
     }
-  }
-}
-
-void HierarchyGraphWidget::toggleArrow2() {
-  if (scene->selectedItems().size() == 1) {
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    if (line) {
-      line->setArrow2(!line->arrow2());
+  else if (action == TOGGLEARROW2) 
+    {
+      toggleArrow2();
     }
-  }
-}
-
-void HierarchyGraphWidget::deleteLine() {
-  if (scene->selectedItems().size() == 1) {
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    if (line) {
-      delete line;
-      lineVector.removeOne(line);
+  else if (action == DELETELINE) 
+    {
+      deleteLine();
     }
-  }
-}
-
-void HierarchyGraphWidget::duplicateLine() {
-  if (scene->selectedItems().size() == 1) {
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    if (line) {
-      QPointF newStartPos = line->getStartPos();
-      QPointF newEndPos = line->getEndPos();
-      newStartPos.setY(newStartPos.y() - 100);
-      newEndPos.setY(newEndPos.y() - 100);
-      LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
-      if (line->arrow1()) {
-	newLineObject->setArrow1(true);
-      }
-      if (line->arrow2()) {
-	newLineObject->setArrow2(true);
-      }
-      newLineObject->setPenWidth(line->getPenWidth());
-      newLineObject->setPenStyle(line->getPenStyle());
-      newLineObject->setColor(line->getColor());
-      lineVector.push_back(newLineObject);
-      scene->addItem(newLineObject);
-      newLineObject->setZValue(5);
+  else if (action == COPYOBJECT) 
+    {
+      duplicateLine();
     }
-  }
 }
 
-void HierarchyGraphWidget::processTextContextMenu(const QString &action) {
-  if (action == CHANGETEXT) {
-    changeText();
-  } else if (action == CHANGETEXTCOLOR) {
-    changeTextColor();
-  } else if (action == DELETETEXT) {
-    deleteText();
-  } else if (action == COPYOBJECT) {
-    duplicateText();
-  }
-}
-
-void HierarchyGraphWidget::changeText() {
-  if (scene->selectedItems().size() == 1) {
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (text) {
-      QString oldText = text->toPlainText();
-      QPointer<LargeTextDialog> textDialog= new LargeTextDialog(this);
-      textDialog->setWindowTitle("Edit text");
-      textDialog->setLabel("Edit free text:");
-      textDialog->submitText(oldText);
-      textDialog->exec();
-      if (textDialog->getExitStatus() == 0) {
-	QString newText = textDialog->getText();
-	text->setPlainText(newText);
-      }
-      delete textDialog;
+void HierarchyGraphWidget::changeLineColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      if (line) 
+	{
+	  QColor currentColor = line->getColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      line->setColor(color);
+	    }
+	  delete colorDialog;
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::changeTextColor() {
-  if (scene->selectedItems().size() == 1) {
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (text) {
-      QColor currentColor = text->defaultTextColor();
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      if (colorDialog->exec()) {
-	QColor color = colorDialog->selectedColor();
-	text->setDefaultTextColor(color);
-      }
-      delete colorDialog;
+void HierarchyGraphWidget::toggleArrow1() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      if (line) 
+	{
+	  line->setArrow1(!line->arrow1());
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::deleteText() {
-  if (scene->selectedItems().size() == 1) {
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (text) {
-      delete text;
-      textVector.removeOne(text);
+void HierarchyGraphWidget::toggleArrow2() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      if (line) 
+	{
+	  line->setArrow2(!line->arrow2());
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::duplicateText() {
-  if (scene->selectedItems().size() == 1) {
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (text) {
-      QString oldText = text->toPlainText();
-      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-      textDialog->setWindowTitle("Set text");
-      textDialog->setLabel("Free text:");
-      textDialog->submitText(oldText);
-      textDialog->exec();
-      if (textDialog->getExitStatus() == 0) {
-	QString alteredText = textDialog->getText();
-	TextObject *newText = new TextObject(alteredText);
-	textVector.push_back(newText);
-	scene->addItem(newText);
-	QPointF pos = text->scenePos();
-	pos.setY(pos.y() - 300);
-	newText->setPos(pos);
-	newText->setZValue(6);
-	newText->setDefaultTextColor(text->defaultTextColor());
-	newText->setRotationValue(text->getRotationValue());
-	newText->setFont(text->font());
-	newText->adjustSize();
-	newText->setTextWidth(newText->textWidth() + 50);
-
-      }
-      delete textDialog;
+void HierarchyGraphWidget::deleteLine() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      if (line) 
+	{
+	  delete line;
+	  lineVector.removeOne(line);
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::processEllipseContextMenu(const QString &action) {
-  if (action == CHANGEELLIPSECOLOR) {
-    changeEllipseColor();
-  } else if (action == CHANGEELLIPSEFILLCOLOR) {
-    changeEllipseFillColor();
-  } else if (action == DELETEELLIPSE) {
-    deleteEllipse();
-  } else if (action == COPYOBJECT) {
-    duplicateEllipse();
-  }
-}
-
-void HierarchyGraphWidget::changeEllipseColor() {
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      QColor currentColor = ellipse->getColor();
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-      if (colorDialog->exec()) {
-	QColor color = colorDialog->selectedColor();
-	ellipse->setColor(color);
-      }
-      delete colorDialog;
+void HierarchyGraphWidget::duplicateLine() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      if (line) 
+	{
+	  QPointF newStartPos = line->getStartPos();
+	  QPointF newEndPos = line->getEndPos();
+	  newStartPos.setY(newStartPos.y() - 100);
+	  newEndPos.setY(newEndPos.y() - 100);
+	  LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
+	  if (line->arrow1()) 
+	    {
+	      newLineObject->setArrow1(true);
+	    }
+	  if (line->arrow2()) 
+	    {
+	      newLineObject->setArrow2(true);
+	    }
+	  newLineObject->setPenWidth(line->getPenWidth());
+	  newLineObject->setPenStyle(line->getPenStyle());
+	  newLineObject->setColor(line->getColor());
+	  lineVector.push_back(newLineObject);
+	  scene->addItem(newLineObject);
+	  newLineObject->setZValue(5);
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::changeEllipseFillColor() {
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      QColor currentColor = ellipse->getFillColor();
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-      if (colorDialog->exec()) {
-	QColor color = colorDialog->selectedColor();
-	ellipse->setFillColor(color);
-      }
-      delete colorDialog;
+void HierarchyGraphWidget::processTextContextMenu(const QString &action) 
+{
+  if (action == CHANGETEXT) 
+    {
+      changeText();
     }
-  }
-}
-
-void HierarchyGraphWidget::deleteEllipse() {
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      delete ellipse;
-      ellipseVector.removeOne(ellipse);
+  else if (action == CHANGETEXTCOLOR) 
+    {
+      changeTextColor();
     }
-  }  
-}
-
-void HierarchyGraphWidget::duplicateEllipse() {
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      EllipseObject *newEllipse = new EllipseObject();
-      newEllipse->setRotationValue(ellipse->getRotationValue());
-      newEllipse->setTopLeft(ellipse->topLeft());
-      newEllipse->setBottomLeft(ellipse->bottomLeft());
-      newEllipse->setTopRight(ellipse->topRight());
-      newEllipse->setBottomRight(ellipse->bottomRight());
-      newEllipse->setColor(ellipse->getColor());
-      newEllipse->setFillColor(ellipse->getFillColor());
-      newEllipse->setPenWidth(ellipse->getPenWidth());
-      newEllipse->setPenStyle(ellipse->getPenStyle());
-      ellipseVector.push_back(newEllipse);
-      newEllipse->setZValue(5);
-      scene->addItem(newEllipse);
-      QPointF pos = ellipse->mapToScene(ellipse->getCenter());
-      pos.setY(pos.y() - 100);
-      pos.setX(pos.x() - 100);
-      newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+  else if (action == DELETETEXT) 
+    {
+      deleteText();
     }
-  }
-}
-
-void HierarchyGraphWidget::processRectContextMenu(const QString &action) {
-  if (action == CHANGERECTCOLOR) {
-    changeRectColor();
-  } else if (action == CHANGERECTFILLCOLOR) {
-    changeRectFillColor();
-  } else if (action == DELETERECT) {
-    deleteRect();
-  } else if (action == COPYOBJECT) {
-    duplicateRect();
-  }
-}
-
-void HierarchyGraphWidget::changeRectColor() {
-  if (scene->selectedItems().size() == 1) {
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    if (rect) {
-      QColor currentColor = rect->getColor();
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(currentColor);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-      if (colorDialog->exec()) {
-	QColor color = colorDialog->selectedColor();
-	rect->setColor(color);
-      }
-      delete colorDialog;
+  else if (action == COPYOBJECT) 
+    {
+      duplicateText();
     }
-  }
 }
 
-void HierarchyGraphWidget::changeRectFillColor() {
-  if (scene->selectedItems().size() == 1) {
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    if (rect) {
-      QColor currentColor = rect->getFillColor();
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setCurrentColor(currentColor);
-      colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-      if (colorDialog->exec()) {
-	QColor color = colorDialog->selectedColor();
-	rect->setFillColor(color);
-      }
-      delete colorDialog;
+void HierarchyGraphWidget::changeText() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (text) 
+	{
+	  QString oldText = text->toPlainText();
+	  QPointer<LargeTextDialog> textDialog= new LargeTextDialog(this);
+	  textDialog->setWindowTitle("Edit text");
+	  textDialog->setLabel("Edit free text:");
+	  textDialog->submitText(oldText);
+	  textDialog->exec();
+	  if (textDialog->getExitStatus() == 0) 
+	    {
+	      QString newText = textDialog->getText();
+	      text->setPlainText(newText);
+	    }
+	  delete textDialog;
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::deleteRect() {
-  if (scene->selectedItems().size() == 1) {
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    if (rect) {
-      delete rect;
-      rectVector.removeOne(rect);
+void HierarchyGraphWidget::changeTextColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (text) 
+	{
+	  QColor currentColor = text->defaultTextColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      text->setDefaultTextColor(color);
+	    }
+	  delete colorDialog;
+	}
     }
-  }  
 }
 
-void HierarchyGraphWidget::duplicateRect() {
-  if (scene->selectedItems().size() == 1) {
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    if (rect) {
-      RectObject *newRect = new RectObject();
-      newRect->setRotationValue(rect->getRotationValue());
-      newRect->setTopLeft(rect->topLeft());
-      newRect->setBottomLeft(rect->bottomLeft());
-      newRect->setTopRight(rect->topRight());
-      newRect->setBottomRight(rect->bottomRight());
-      newRect->setColor(rect->getColor());
-      newRect->setFillColor(rect->getFillColor());
-      newRect->setPenWidth(rect->getPenWidth());
-      newRect->setPenStyle(rect->getPenStyle());
-      rectVector.push_back(newRect);
-      newRect->setZValue(5);
-      scene->addItem(newRect);
-      QPointF pos = rect->mapToScene(rect->getCenter());
-      pos.setY(pos.y() - 100);
-      pos.setX(pos.x() - 100);
-      newRect->moveCenter(newRect->mapFromScene(pos));
+void HierarchyGraphWidget::deleteText() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (text) 
+	{
+	  delete text;
+	  textVector.removeOne(text);
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::objectOneForward() {
+void HierarchyGraphWidget::duplicateText() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (text) 
+	{
+	  QString oldText = text->toPlainText();
+	  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+	  textDialog->setWindowTitle("Set text");
+	  textDialog->setLabel("Free text:");
+	  textDialog->submitText(oldText);
+	  textDialog->exec();
+	  if (textDialog->getExitStatus() == 0) 
+	    {
+	      QString alteredText = textDialog->getText();
+	      TextObject *newText = new TextObject(alteredText);
+	      textVector.push_back(newText);
+	      scene->addItem(newText);
+	      QPointF pos = text->scenePos();
+	      pos.setY(pos.y() - 300);
+	      newText->setPos(pos);
+	      newText->setZValue(6);
+	      newText->setDefaultTextColor(text->defaultTextColor());
+	      newText->setRotationValue(text->getRotationValue());
+	      newText->setFont(text->font());
+	      newText->adjustSize();
+	      newText->setTextWidth(newText->textWidth() + 50);
+
+	    }
+	  delete textDialog;
+	}
+    }
+}
+
+void HierarchyGraphWidget::processEllipseContextMenu(const QString &action) 
+{
+  if (action == CHANGEELLIPSECOLOR) 
+    {
+      changeEllipseColor();
+    }
+  else if (action == CHANGEELLIPSEFILLCOLOR) 
+    {
+      changeEllipseFillColor();
+    }
+  else if (action == DELETEELLIPSE) 
+    {
+      deleteEllipse();
+    }
+  else if (action == COPYOBJECT) 
+    {
+      duplicateEllipse();
+    }
+}
+
+void HierarchyGraphWidget::changeEllipseColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  QColor currentColor = ellipse->getColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      ellipse->setColor(color);
+	    }
+	  delete colorDialog;
+	}
+    }
+}
+
+void HierarchyGraphWidget::changeEllipseFillColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  QColor currentColor = ellipse->getFillColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      ellipse->setFillColor(color);
+	    }
+	  delete colorDialog;
+	}
+    }
+}
+
+void HierarchyGraphWidget::deleteEllipse() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  delete ellipse;
+	  ellipseVector.removeOne(ellipse);
+	}
+    }  
+}
+
+void HierarchyGraphWidget::duplicateEllipse() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  EllipseObject *newEllipse = new EllipseObject();
+	  newEllipse->setRotationValue(ellipse->getRotationValue());
+	  newEllipse->setTopLeft(ellipse->topLeft());
+	  newEllipse->setBottomLeft(ellipse->bottomLeft());
+	  newEllipse->setTopRight(ellipse->topRight());
+	  newEllipse->setBottomRight(ellipse->bottomRight());
+	  newEllipse->setColor(ellipse->getColor());
+	  newEllipse->setFillColor(ellipse->getFillColor());
+	  newEllipse->setPenWidth(ellipse->getPenWidth());
+	  newEllipse->setPenStyle(ellipse->getPenStyle());
+	  ellipseVector.push_back(newEllipse);
+	  newEllipse->setZValue(5);
+	  scene->addItem(newEllipse);
+	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
+	  pos.setY(pos.y() - 100);
+	  pos.setX(pos.x() - 100);
+	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+	}
+    }
+}
+
+void HierarchyGraphWidget::processRectContextMenu(const QString &action) 
+{
+  if (action == CHANGERECTCOLOR) 
+    {
+      changeRectColor();
+    }
+  else if (action == CHANGERECTFILLCOLOR) 
+    {
+      changeRectFillColor();
+    }
+  else if (action == DELETERECT) 
+    {
+      deleteRect();
+    }
+  else if (action == COPYOBJECT) 
+    {
+      duplicateRect();
+    }
+}
+
+void HierarchyGraphWidget::changeRectColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      if (rect) 
+	{
+	  QColor currentColor = rect->getColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      rect->setColor(color);
+	    }
+	  delete colorDialog;
+	}
+    }
+}
+
+void HierarchyGraphWidget::changeRectFillColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      if (rect) 
+	{
+	  QColor currentColor = rect->getFillColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      rect->setFillColor(color);
+	    }
+	  delete colorDialog;
+	}
+    }
+}
+
+void HierarchyGraphWidget::deleteRect() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      if (rect) 
+	{
+	  delete rect;
+	  rectVector.removeOne(rect);
+	}
+    }  
+}
+
+void HierarchyGraphWidget::duplicateRect() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      if (rect) 
+	{
+	  RectObject *newRect = new RectObject();
+	  newRect->setRotationValue(rect->getRotationValue());
+	  newRect->setTopLeft(rect->topLeft());
+	  newRect->setBottomLeft(rect->bottomLeft());
+	  newRect->setTopRight(rect->topRight());
+	  newRect->setBottomRight(rect->bottomRight());
+	  newRect->setColor(rect->getColor());
+	  newRect->setFillColor(rect->getFillColor());
+	  newRect->setPenWidth(rect->getPenWidth());
+	  newRect->setPenStyle(rect->getPenStyle());
+	  rectVector.push_back(newRect);
+	  newRect->setZValue(5);
+	  scene->addItem(newRect);
+	  QPointF pos = rect->mapToScene(rect->getCenter());
+	  pos.setY(pos.y() - 100);
+	  pos.setX(pos.x() - 100);
+	  newRect->moveCenter(newRect->mapFromScene(pos));
+	}
+    }
+}
+
+void HierarchyGraphWidget::objectOneForward() 
+{
   int maxZ = -1;
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *current = it.next();
-    if (maxZ == -1) {
-      maxZ = current->zValue();
-    } else if (maxZ < current->zValue()) {
-      maxZ = current->zValue();
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *current = it.next();
+      if (maxZ == -1) 
+	{
+	  maxZ = current->zValue();
+	}
+      else if (maxZ < current->zValue()) 
+	{
+	  maxZ = current->zValue();
+	}
+    } 
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  int currentZValue = ellipse->zValue();
+	  if (currentZValue < maxZ + 1) 
+	    {
+	      ellipse->setZValue(currentZValue + 1);
+	    }
+	}
+      else if (rect) 
+	{
+	  int currentZValue = rect->zValue();
+	  if (currentZValue < maxZ + 1) 
+	    {
+	      rect->setZValue(currentZValue + 1);
+	    }
+	}
+      else if (line) 
+	{
+	  int currentZValue = line->zValue();
+	  if (currentZValue <  maxZ + 1) 
+	    {
+	      line->setZValue(currentZValue + 1);
+	    }
+	}
+      else if (text) 
+	{
+	  int currentZValue = text->zValue();
+	  if (currentZValue < maxZ + 1) 
+	    {
+	      text->setZValue(currentZValue + 1);
+	    }
+	}
     }
-  } 
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      int currentZValue = ellipse->zValue();
-      if (currentZValue < maxZ + 1) {
-	ellipse->setZValue(currentZValue + 1);
-      }
-    } else if (rect) {
-      int currentZValue = rect->zValue();
-      if (currentZValue < maxZ + 1) {
-	rect->setZValue(currentZValue + 1);
-      }
-    } else if (line) {
-      int currentZValue = line->zValue();
-      if (currentZValue <  maxZ + 1) {
-	line->setZValue(currentZValue + 1);
-      }
-    } else if (text) {
-      int currentZValue = text->zValue();
-      if (currentZValue < maxZ + 1) {
-	text->setZValue(currentZValue + 1);
-      }
-    }
-  }
   fixZValues();
 }
 
-void HierarchyGraphWidget::objectOneBackward() {
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      int currentZValue = ellipse->zValue();
-      if (currentZValue > 1) {
-	ellipse->setZValue(currentZValue - 1);
-	if (ellipse->zValue() == 1) {
-	  QListIterator<QGraphicsItem*> it(scene->items());
-	  while (it.hasNext()) {
-	    QGraphicsItem *current = it.next();
-	    if (current !=  ellipse) {
-	      current->setZValue(current->zValue() + 1);
+void HierarchyGraphWidget::objectOneBackward() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  int currentZValue = ellipse->zValue();
+	  if (currentZValue > 1) 
+	    {
+	      ellipse->setZValue(currentZValue - 1);
+	      if (ellipse->zValue() == 1) 
+		{
+		  QListIterator<QGraphicsItem*> it(scene->items());
+		  while (it.hasNext()) 
+		    {
+		      QGraphicsItem *current = it.next();
+		      if (current !=  ellipse) 
+			{
+			  current->setZValue(current->zValue() + 1);
+			}
+		    }
+		}
 	    }
-	  }
 	}
-      }
-    } else if (rect) {
-      int currentZValue = rect->zValue();
-      if (currentZValue > 1) {
-	rect->setZValue(currentZValue - 1);
-	if (rect->zValue() == 1) {
-	  QListIterator<QGraphicsItem*> it(scene->items());
-	  while (it.hasNext()) {
-	    QGraphicsItem *current = it.next();
-	    if (current !=  rect) {
-	      current->setZValue(current->zValue() + 1);
+      else if (rect) 
+	{
+	  int currentZValue = rect->zValue();
+	  if (currentZValue > 1) 
+	    {
+	      rect->setZValue(currentZValue - 1);
+	      if (rect->zValue() == 1) 
+		{
+		  QListIterator<QGraphicsItem*> it(scene->items());
+		  while (it.hasNext()) 
+		    {
+		      QGraphicsItem *current = it.next();
+		      if (current !=  rect) 
+			{
+			  current->setZValue(current->zValue() + 1);
+			}
+		    }
+		}
 	    }
-	  }
 	}
-      }
-    } else if (line) {
-      int currentZValue = line->zValue();
-      if (currentZValue > 1) {
-	line->setZValue(currentZValue - 1);
-	if (line->zValue() == 1) {
-	  QListIterator<QGraphicsItem*> it(scene->items());
-	  while (it.hasNext()) {
-	    QGraphicsItem *current = it.next();
-	    if (current !=  line) {
-	      current->setZValue(current->zValue() + 1);
+      else if (line) 
+	{
+	  int currentZValue = line->zValue();
+	  if (currentZValue > 1) 
+	    {
+	      line->setZValue(currentZValue - 1);
+	      if (line->zValue() == 1) 
+		{
+		  QListIterator<QGraphicsItem*> it(scene->items());
+		  while (it.hasNext()) 
+		    {
+		      QGraphicsItem *current = it.next();
+		      if (current !=  line) 
+			{
+			  current->setZValue(current->zValue() + 1);
+			}
+		    }
+		}
 	    }
-	  }
 	}
-      }
-    } else if (text) {
-      int currentZValue = text->zValue();
-      if (currentZValue > 1) {
-	text->setZValue(currentZValue - 1);
-	if (text->zValue() == 1) {
-	  QListIterator<QGraphicsItem*> it(scene->items());
-	  while (it.hasNext()) {
-	    QGraphicsItem *current = it.next();
-	    if (current !=  text) {
-	      current->setZValue(current->zValue() + 1);
+      else if (text) 
+	{
+	  int currentZValue = text->zValue();
+	  if (currentZValue > 1) 
+	    {
+	      text->setZValue(currentZValue - 1);
+	      if (text->zValue() == 1) 
+		{
+		  QListIterator<QGraphicsItem*> it(scene->items());
+		  while (it.hasNext()) 
+		    {
+		      QGraphicsItem *current = it.next();
+		      if (current !=  text) 
+			{
+			  current->setZValue(current->zValue() + 1);
+			}
+		    }
+		}
 	    }
-	  }
 	}
-      }
     }
-  }
   fixZValues();
 }
 
-void HierarchyGraphWidget::objectToFront() {
+void HierarchyGraphWidget::objectToFront() 
+{
   int maxZ = -1;
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *current = it.next();
-    if (maxZ == -1) {
-      maxZ = current->zValue();
-    } else if (maxZ < current->zValue()) {
-      maxZ = current->zValue();
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *current = it.next();
+      if (maxZ == -1) 
+	{
+	  maxZ = current->zValue();
+	}
+      else if (maxZ < current->zValue()) 
+	{
+	  maxZ = current->zValue();
+	}
     }
-  }
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      ellipse->setZValue(maxZ + 1);
-    } else if (rect) {
-      rect->setZValue(maxZ + 1);
-    } else if (line) {
-      line->setZValue(maxZ + 1);
-    } else if (text) {
-      text->setZValue(maxZ + 1);
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  ellipse->setZValue(maxZ + 1);
+	}
+      else if (rect) 
+	{
+	  rect->setZValue(maxZ + 1);
+	}
+      else if (line) 
+	{
+	  line->setZValue(maxZ + 1);
+	}
+      else if (text) 
+	{
+	  text->setZValue(maxZ + 1);
+	}
     }
-  }
   fixZValues();
 }
 
-void HierarchyGraphWidget::objectToBack() {
-  if (scene->selectedItems().size() == 1) {
-    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-    RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-    LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-    TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-    if (ellipse) {
-      ellipse->setZValue(1);
-      QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) {
-	QGraphicsItem *current = it.next();
-	if (current != ellipse) {
-	  current->setZValue(current->zValue() + 1);
+void HierarchyGraphWidget::objectToBack() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
+      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
+      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      if (ellipse) 
+	{
+	  ellipse->setZValue(1);
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      QGraphicsItem *current = it.next();
+	      if (current != ellipse) 
+		{
+		  current->setZValue(current->zValue() + 1);
+		}
+	    }
 	}
-      }
-    } else if (rect) {
-      rect->setZValue(1);
-      QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) {
-	QGraphicsItem *current = it.next();
-	if (current != rect) {
-	  current->setZValue(current->zValue() + 1);
+      else if (rect) 
+	{
+	  rect->setZValue(1);
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      QGraphicsItem *current = it.next();
+	      if (current != rect) 
+		{
+		  current->setZValue(current->zValue() + 1);
+		}
+	    }
 	}
-      }
-    } else if (line) {
-      line->setZValue(1);
-      QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) {
-	QGraphicsItem *current = it.next();
-	if (current != line) {
-	  current->setZValue(current->zValue() + 1);
+      else if (line) 
+	{
+	  line->setZValue(1);
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      QGraphicsItem *current = it.next();
+	      if (current != line) 
+		{
+		  current->setZValue(current->zValue() + 1);
+		}
+	    }
 	}
-      }
-    } else if (text) {
-      text->setZValue(1);
-      QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) {
-	QGraphicsItem *current = it.next();
-	if (current != text) {
-	  current->setZValue(current->zValue() + 1);
+      else if (text) 
+	{
+	  text->setZValue(1);
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      QGraphicsItem *current = it.next();
+	      if (current != text) 
+		{
+		  current->setZValue(current->zValue() + 1);
+		}
+	    }
 	}
-      }
     }
-  }
   fixZValues();
 }
 
-void HierarchyGraphWidget::fixZValues() {
+void HierarchyGraphWidget::fixZValues() 
+{
   int maxZ = -1;
   QListIterator<QGraphicsItem*> it(scene->items());
-  while (it.hasNext()) {
-    QGraphicsItem *current = it.next();
-    if (maxZ == -1) {
-      maxZ = current->zValue();
-    } else if (maxZ < current->zValue()) {
-      maxZ = current->zValue();
-    }
-  }
-  for (int i = 4; i != maxZ; i++) {
-    bool currentZFound = false;
-    QListIterator<QGraphicsItem*> it2(scene->items());
-    while (it2.hasNext()) {
-      QGraphicsItem* current = it2.next();
-      if (current->zValue() == i) {
-	currentZFound = true;
-	break;
-      }
-    }
-    if (!currentZFound) {
-      QListIterator<QGraphicsItem*> it3(scene->items());
-      while (it3.hasNext()) {
-	QGraphicsItem* current = it3.next();
-	if (current->zValue() > i) {
-	  current->setZValue(current->zValue() - 1);
+  while (it.hasNext()) 
+    {
+      QGraphicsItem *current = it.next();
+      if (maxZ == -1) 
+	{
+	  maxZ = current->zValue();
 	}
-      }
+      else if (maxZ < current->zValue()) 
+	{
+	  maxZ = current->zValue();
+	}
     }
-  }
+  for (int i = 4; i != maxZ; i++) 
+    {
+      bool currentZFound = false;
+      QListIterator<QGraphicsItem*> it2(scene->items());
+      while (it2.hasNext()) 
+	{
+	  QGraphicsItem* current = it2.next();
+	  if (current->zValue() == i) 
+	    {
+	      currentZFound = true;
+	      break;
+	    }
+	}
+      if (!currentZFound) 
+	{
+	  QListIterator<QGraphicsItem*> it3(scene->items());
+	  while (it3.hasNext()) 
+	    {
+	      QGraphicsItem* current = it3.next();
+	      if (current->zValue() > i) 
+		{
+		  current->setZValue(current->zValue() - 1);
+		}
+	    }
+	}
+    }
 }
 
-void HierarchyGraphWidget::exportSvg() {
+void HierarchyGraphWidget::exportSvg() 
+{
   QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if (!fileName.endsWith(".svg")) {
-      fileName.append(".svg");
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if (!fileName.endsWith(".svg")) 
+	{
+	  fileName.append(".svg");
+	}
+      QSvgGenerator gen;
+      gen.setFileName(fileName);
+      QRectF currentRect = this->scene->itemsBoundingRect();
+      currentRect.setX(currentRect.x());
+      currentRect.setY(currentRect.y());
+      currentRect.setWidth(currentRect.width());
+      currentRect.setHeight(currentRect.height());
+      gen.setSize(QSize(currentRect.width(), currentRect.height()));
+      QPainter painter;
+      painter.begin(&gen);
+      scene->render(&painter);
+      painter.end();
     }
-    QSvgGenerator gen;
-    gen.setFileName(fileName);
-    QRectF currentRect = this->scene->itemsBoundingRect();
-    currentRect.setX(currentRect.x());
-    currentRect.setY(currentRect.y());
-    currentRect.setWidth(currentRect.width());
-    currentRect.setHeight(currentRect.height());
-    gen.setSize(QSize(currentRect.width(), currentRect.height()));
-    QPainter painter;
-    painter.begin(&gen);
-    scene->render(&painter);
-    painter.end();
-  }
 }
 
-void HierarchyGraphWidget::assignAttribute() {
+void HierarchyGraphWidget::assignAttribute() 
+{
   int barPos = rawField->verticalScrollBar()->value();
-  if (selectedIncident != 0) {
-    if (attributesTreeView->currentIndex().isValid()) {
-      QString attribute = attributesTreeView->currentIndex().data().toString();
-      QSqlQuery *query = new QSqlQuery;
-      bool empty = false;
-      query->prepare("SELECT attribute FROM "
-		     "attributes_to_incidents WHERE "
-		     "attribute = :att AND incident = :incident");
-      query->bindValue(":att", attribute);
-      query->bindValue(":incident", selectedIncident);
-      query->exec();
-      query->first();
-      empty = query->isNull(0);
-      QTextCursor cursPos = rawField->textCursor();
-      if (empty) {
-	query->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
-		       "VALUES (:attribute, :incident)");
-	query->bindValue(":attribute", attribute);
-	query->bindValue(":incident", selectedIncident);
-	query->exec();
-	sourceAttributeText(attribute, selectedIncident);
-	boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
-	valueField->setEnabled(true);
-      } else {
-        sourceAttributeText(attribute, selectedIncident);
-        highlightText();
-	rawField->setTextCursor(cursPos);
-      }
-      delete query;
+  if (selectedIncident != 0) 
+    {
+      if (attributesTreeView->currentIndex().isValid()) 
+	{
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  QSqlQuery *query = new QSqlQuery;
+	  bool empty = false;
+	  query->prepare("SELECT attribute FROM "
+			 "attributes_to_incidents WHERE "
+			 "attribute = :att AND incident = :incident");
+	  query->bindValue(":att", attribute);
+	  query->bindValue(":incident", selectedIncident);
+	  query->exec();
+	  query->first();
+	  empty = query->isNull(0);
+	  QTextCursor cursPos = rawField->textCursor();
+	  if (empty) 
+	    {
+	      query->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
+			     "VALUES (:attribute, :incident)");
+	      query->bindValue(":attribute", attribute);
+	      query->bindValue(":incident", selectedIncident);
+	      query->exec();
+	      sourceAttributeText(attribute, selectedIncident);
+	      boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
+	      valueField->setEnabled(true);
+	    }
+	  else 
+	    {
+	      sourceAttributeText(attribute, selectedIncident);
+	      highlightText();
+	      rawField->setTextCursor(cursPos);
+	    }
+	  delete query;
+	  setButtons();
+	}
+    }
+  else if (selectedMacro != NULL) 
+    {
+      if (attributesTreeView->currentIndex().isValid()) 
+	{
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  QSet<QString> attributes = selectedMacro->getAttributes();
+	  if (!attributes.contains(attribute)) 
+	    {
+	      selectedMacro->insertAttribute(attribute);
+	      QVectorIterator<MacroEvent*> it(macroVector);
+	      while (it.hasNext()) 
+		{
+		  MacroEvent *macro = it.next();
+		  if (macro->getId() == selectedMacro->getId()) 
+		    {
+		      macro->insertAttribute(attribute);							 
+		    }
+		} 
+	      boldSelected(attributesTree, attribute, selectedMacro->getId(), MACRO);
+	      valueField->setEnabled(true);
+	    }
+	}
       setButtons();
     }
-  } else if (selectedMacro != NULL) {
-    if (attributesTreeView->currentIndex().isValid()) {
-      QString attribute = attributesTreeView->currentIndex().data().toString();
-      QSet<QString> attributes = selectedMacro->getAttributes();
-      if (!attributes.contains(attribute)) {
-	selectedMacro->insertAttribute(attribute);
-	QVectorIterator<MacroEvent*> it(macroVector);
-	while (it.hasNext()) {
-	  MacroEvent *macro = it.next();
-	  if (macro->getId() == selectedMacro->getId()) {
-	    macro->insertAttribute(attribute);							 
-	  }
-	} 
-	boldSelected(attributesTree, attribute, selectedMacro->getId(), MACRO);
-	valueField->setEnabled(true);
-      }
-    }
-    setButtons();
-  }
   rawField->verticalScrollBar()->setValue(barPos);
 }
 
-void HierarchyGraphWidget::unassignAttribute() {
-  if (selectedIncident != 0) {
-    if (attributesTreeView->currentIndex().isValid()) {
-      QSqlQuery *query = new QSqlQuery;
-      QSqlQuery *query2 = new QSqlQuery;
-      QString attribute = attributesTreeView->currentIndex().data().toString();
-      bool empty = false;
-      query->prepare("SELECT attribute, incident "
-		     "FROM attributes_to_incidents "
-		     "WHERE attribute = :att AND incident = :incident");
-      query->bindValue(":att", attribute);
-      query->bindValue(":incident", selectedIncident);
-      query->exec();
-      query->first();
-      empty = query->isNull(0);
-      if (!empty) {
-	query->prepare("DELETE FROM attributes_to_incidents "
-		       "WHERE attribute = :att AND incident = :incident");
-	query->bindValue(":att", attribute);
-	query->bindValue(":incident", selectedIncident);
-	query->exec();
-	query2->prepare("DELETE FROM attributes_to_incidents_sources "
-			"WHERE attribute = :att AND incident = :incident");
-        query2->bindValue(":att", attribute);
-        query2->bindValue(":inc", selectedIncident);
-	query2->exec();
-	resetFont(attributesTree);
-	query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			"WHERE incident = :incident");
-	query2->bindValue(":incident", selectedIncident);
-	query2->exec();
-	while (query2->next()) {
-	  QString attribute = query2->value(0).toString();
-	  boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
+void HierarchyGraphWidget::unassignAttribute() 
+{
+  if (selectedIncident != 0) 
+    {
+      if (attributesTreeView->currentIndex().isValid()) 
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  QSqlQuery *query2 = new QSqlQuery;
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  bool empty = false;
+	  query->prepare("SELECT attribute, incident "
+			 "FROM attributes_to_incidents "
+			 "WHERE attribute = :att AND incident = :incident");
+	  query->bindValue(":att", attribute);
+	  query->bindValue(":incident", selectedIncident);
+	  query->exec();
+	  query->first();
+	  empty = query->isNull(0);
+	  if (!empty) 
+	    {
+	      query->prepare("DELETE FROM attributes_to_incidents "
+			     "WHERE attribute = :att AND incident = :incident");
+	      query->bindValue(":att", attribute);
+	      query->bindValue(":incident", selectedIncident);
+	      query->exec();
+	      query2->prepare("DELETE FROM attributes_to_incidents_sources "
+			      "WHERE attribute = :att AND incident = :incident");
+	      query2->bindValue(":att", attribute);
+	      query2->bindValue(":inc", selectedIncident);
+	      query2->exec();
+	      resetFont(attributesTree);
+	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			      "WHERE incident = :incident");
+	      query2->bindValue(":incident", selectedIncident);
+	      query2->exec();
+	      while (query2->next()) 
+		{
+		  QString attribute = query2->value(0).toString();
+		  boldSelected(attributesTree, attribute, selectedIncident, INCIDENT);
+		}
+	      valueField->setText("");
+	      valueField->setEnabled(false);
+	      valueButton->setEnabled(false);
+	    }
+	  setButtons();
+	  delete query;
+	  delete query2;
 	}
-	valueField->setText("");
-	valueField->setEnabled(false);
-	valueButton->setEnabled(false);
-      }
+    }
+  else if (selectedMacro != NULL) 
+    {
+      if (attributesTreeView->currentIndex().isValid()) 
+	{
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  QSet<QString> attributes = selectedMacro->getAttributes();
+	  if (attributes.contains(attribute)) 
+	    {
+	      selectedMacro->removeAttribute(attribute);
+	      QVectorIterator<MacroEvent*> it(macroVector);
+	      while (it.hasNext()) 
+		{
+		  MacroEvent *macro = it.next();
+		  if (macro->getId() == selectedMacro->getId()) 
+		    {
+		      macro->removeAttribute(attribute);							 
+		    }
+		} 
+	      QSet<QString>::iterator it2;
+	      resetFont(attributesTree);
+	      attributes = selectedMacro->getAttributes();
+	      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
+		{
+		  QString current = *it2;
+		  boldSelected(attributesTree, current, selectedMacro->getId(), MACRO);	  
+		}
+	      setButtons();
+	      valueField->setText("");
+	      valueField->setEnabled(false);
+	      valueButton->setEnabled(false);
+	    }
+	}
       setButtons();
-      delete query;
-      delete query2;
     }
-  } else if (selectedMacro != NULL) {
-    if (attributesTreeView->currentIndex().isValid()) {
-      QString attribute = attributesTreeView->currentIndex().data().toString();
-      QSet<QString> attributes = selectedMacro->getAttributes();
-      if (attributes.contains(attribute)) {
-	selectedMacro->removeAttribute(attribute);
-	QVectorIterator<MacroEvent*> it(macroVector);
-	while (it.hasNext()) {
-	  MacroEvent *macro = it.next();
-	  if (macro->getId() == selectedMacro->getId()) {
-	    macro->removeAttribute(attribute);							 
-	  }
-	} 
-	QSet<QString>::iterator it2;
-	resetFont(attributesTree);
-	attributes = selectedMacro->getAttributes();
-	for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
-	  QString current = *it2;
-	  boldSelected(attributesTree, current, selectedMacro->getId(), MACRO);	  
-	}
-	setButtons();
-	valueField->setText("");
-	valueField->setEnabled(false);
-	valueButton->setEnabled(false);
-      }
-    }
-    setButtons();
-  }
 }
 
-void HierarchyGraphWidget::newAttribute() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    QString currentParent = treeFilter->
-      mapToSource(attributesTreeView->currentIndex()).data().toString();
-    QString name = "";
-    QString description = "";
-    QModelIndex tempIndex = attributesTreeView->currentIndex();
-    while (tempIndex.parent().isValid()) {
-      tempIndex = tempIndex.parent();
+void HierarchyGraphWidget::newAttribute() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      QString currentParent = treeFilter->
+	mapToSource(attributesTreeView->currentIndex()).data().toString();
+      QString name = "";
+      QString description = "";
+      QModelIndex tempIndex = attributesTreeView->currentIndex();
+      while (tempIndex.parent().isValid()) 
+	{
+	  tempIndex = tempIndex.parent();
+	}
+      QString top = tempIndex.data().toString();
+      if (top == ENTITIES) 
+	{
+	  EntityDialog *entityDialog = new EntityDialog(this);
+	  entityDialog->setRelationshipsWidget(relationshipsWidget);
+	  entityDialog->setNew();
+	  entityDialog->exec();
+	  if (entityDialog->getExitStatus() == 0) 
+	    {
+	      QString name = entityDialog->getName();
+	      QString description = entityDialog->getDescription();
+	      QStandardItem *attribute = new QStandardItem(name);    
+	      attribute->setToolTip(description);
+	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+	      QStandardItem *father = attributesTree->
+		itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+	      father->appendRow(attribute);
+	      attribute->setToolTip(hint);
+	      attribute->setEditable(false);
+	      QString fatherName = currentParent;
+	      if (fatherName == ENTITIES) 
+		{
+		  fatherName = "NONE";
+		}
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("INSERT INTO entities (name, description, father) "
+			     "VALUES (:name, :description, :father)");
+	      query->bindValue(":name", name);
+	      query->bindValue(":description", description);
+	      query->bindValue(":father", fatherName);
+	      query->exec();
+	      delete query;
+	    }
+	  delete entityDialog;
+	  attributesWidget->resetTree();
+	}
+      else 
+	{
+	  QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+	  attributeDialog->exec();
+	  if (attributeDialog->getExitStatus() == 0) 
+	    {
+	      name = attributeDialog->getName();
+	      description = attributeDialog->getDescription();
+	      QStandardItem *attribute = new QStandardItem(name);    
+	      attribute->setToolTip(description);
+	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+	      QStandardItem *father = attributesTree->
+		itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+	      father->appendRow(attribute);
+	      attribute->setToolTip(hint);
+	      attribute->setEditable(false);
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("INSERT INTO incident_attributes (name, description, father) "
+			     "VALUES (:name, :description, :father)");
+	      query->bindValue(":name", name);
+	      query->bindValue(":description", description);
+	      query->bindValue(":father", currentParent);
+	      query->exec();
+	      delete query;
+	      attributesWidget->resetTree();
+	    }
+	  delete attributeDialog;
+	}
     }
-    QString top = tempIndex.data().toString();
-    if (top == ENTITIES) {
-        EntityDialog *entityDialog = new EntityDialog(this);
-	entityDialog->setRelationshipsWidget(relationshipsWidget);
-	entityDialog->setNew();
-	entityDialog->exec();
-	if (entityDialog->getExitStatus() == 0) {
-	  QString name = entityDialog->getName();
-	  QString description = entityDialog->getDescription();
-	  QStandardItem *attribute = new QStandardItem(name);    
-	  attribute->setToolTip(description);
-	  QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-	  QStandardItem *father = attributesTree->
-	    itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-	  father->appendRow(attribute);
-	  attribute->setToolTip(hint);
-	  attribute->setEditable(false);
-	  QString fatherName = currentParent;
-	  if (fatherName == ENTITIES) {
-	    fatherName = "NONE";
-	  }
+  else 
+    {
+      QString name = "";
+      QString description = "";
+      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+      attributeDialog->exec();
+      if (attributeDialog->getExitStatus() == 0) 
+	{
+	  name = attributeDialog->getName();
+	  description = attributeDialog->getDescription();
+	  QString currentParent = "NONE";
 	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("INSERT INTO entities (name, description, father) "
+	  query->prepare("INSERT INTO incident_attributes (name, description, father) "
 			 "VALUES (:name, :description, :father)");
 	  query->bindValue(":name", name);
 	  query->bindValue(":description", description);
-	  query->bindValue(":father", fatherName);
+	  query->bindValue(":father", currentParent);
 	  query->exec();
-	  delete query;
+	  QStandardItem *attribute = new QStandardItem(name);    
+	  attributesTree->appendRow(attribute);
+	  QString hint = breakString(description);
+	  attribute->setToolTip(hint);
+	  attribute->setEditable(false);
+	  attributesWidget->resetTree();
 	}
-	delete entityDialog;
-	attributesWidget->resetTree();
-    } else {
-      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
-      attributeDialog->exec();
-      if (attributeDialog->getExitStatus() == 0) {
-	name = attributeDialog->getName();
-	description = attributeDialog->getDescription();
-	QStandardItem *attribute = new QStandardItem(name);    
-	attribute->setToolTip(description);
-	QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-	QStandardItem *father = attributesTree->
-	  itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-	father->appendRow(attribute);
-	attribute->setToolTip(hint);
-	attribute->setEditable(false);
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("INSERT INTO incident_attributes (name, description, father) "
-		       "VALUES (:name, :description, :father)");
-	query->bindValue(":name", name);
-	query->bindValue(":description", description);
-	query->bindValue(":father", currentParent);
-	query->exec();
-	delete query;
-	attributesWidget->resetTree();
-      }
       delete attributeDialog;
     }
-  } else {
-    QString name = "";
-    QString description = "";
-    QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
-    attributeDialog->exec();
-    if (attributeDialog->getExitStatus() == 0) {
-      name = attributeDialog->getName();
-      description = attributeDialog->getDescription();
-      QString currentParent = "NONE";
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("INSERT INTO incident_attributes (name, description, father) "
-		     "VALUES (:name, :description, :father)");
-      query->bindValue(":name", name);
-      query->bindValue(":description", description);
-      query->bindValue(":father", currentParent);
-      query->exec();
-      QStandardItem *attribute = new QStandardItem(name);    
-      attributesTree->appendRow(attribute);
-      QString hint = breakString(description);
-      attribute->setToolTip(hint);
-      attribute->setEditable(false);
-      attributesWidget->resetTree();
-    }
-    delete attributeDialog;
-  }
   attributesTree->sort(0, Qt::AscendingOrder);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
-void HierarchyGraphWidget::editAttribute() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    QString name = attributesTreeView->currentIndex().data().toString();
-    if (name != ENTITIES) {
-      QModelIndex tempIndex = attributesTreeView->currentIndex();
-      while (tempIndex.parent().isValid()) {
-	tempIndex = tempIndex.parent();
-      }
-      QString top = tempIndex.data().toString();
-      if (top == ENTITIES) {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT description FROM entities WHERE name = :name");
-	query->bindValue(":name", name);
-	query->exec();
-	query->first();
-	QString description = query->value(0).toString();
-	EntityDialog *entityDialog = new EntityDialog(this);
-	entityDialog->setRelationshipsWidget(relationshipsWidget);
-	entityDialog->submitName(name);
-	entityDialog->submitDescription(description);
-	entityDialog->exec();
-	if (entityDialog->getExitStatus() == 0) {
-	  QString newName = entityDialog->getName();
-	  description = entityDialog->getDescription();
-	  QStandardItem *currentAttribute = attributesTree->
-	    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	  currentAttribute->setData(newName);
-	  currentAttribute->setData(newName, Qt::DisplayRole);
-	  QString hint = breakString(description);
-	  currentAttribute->setToolTip(hint);
-	  updateEntityAfterEdit(newName, description, name);
+void HierarchyGraphWidget::editAttribute() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      QString name = attributesTreeView->currentIndex().data().toString();
+      if (name != ENTITIES) 
+	{
+	  QModelIndex tempIndex = attributesTreeView->currentIndex();
+	  while (tempIndex.parent().isValid()) 
+	    {
+	      tempIndex = tempIndex.parent();
+	    }
+	  QString top = tempIndex.data().toString();
+	  if (top == ENTITIES) 
+	    {
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT description FROM entities WHERE name = :name");
+	      query->bindValue(":name", name);
+	      query->exec();
+	      query->first();
+	      QString description = query->value(0).toString();
+	      EntityDialog *entityDialog = new EntityDialog(this);
+	      entityDialog->setRelationshipsWidget(relationshipsWidget);
+	      entityDialog->submitName(name);
+	      entityDialog->submitDescription(description);
+	      entityDialog->exec();
+	      if (entityDialog->getExitStatus() == 0) 
+		{
+		  QString newName = entityDialog->getName();
+		  description = entityDialog->getDescription();
+		  QStandardItem *currentAttribute = attributesTree->
+		    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+		  currentAttribute->setData(newName);
+		  currentAttribute->setData(newName, Qt::DisplayRole);
+		  QString hint = breakString(description);
+		  currentAttribute->setToolTip(hint);
+		  updateEntityAfterEdit(newName, description, name);
+		}
+	      delete query;
+	      delete entityDialog;
+	    }
+	  else 
+	    {
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+	      query->bindValue(":name", name);
+	      query->exec();
+	      query->first();
+	      QString description = query->value(0).toString();
+	      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+	      attributeDialog->submitName(name);
+	      attributeDialog->setDescription(description);
+	      attributeDialog->exec();
+	      if (attributeDialog->getExitStatus() == 0) 
+		{
+		  QString newName = attributeDialog->getName();
+		  description = attributeDialog->getDescription();
+		  QStandardItem *currentAttribute = attributesTree->
+		    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+		  currentAttribute->setData(newName);
+		  currentAttribute->setData(newName, Qt::DisplayRole);
+		  QString hint = breakString(description);
+		  currentAttribute->setToolTip(hint);
+		  query->prepare("UPDATE incident_attributes "
+				 "SET name = :newname, description = :newdescription "
+				 "WHERE name = :oldname");
+		  query->bindValue(":newname", newName);
+		  query->bindValue(":newdescription", description);
+		  query->bindValue(":oldname", name);
+		  query->exec();
+		  query->prepare("UPDATE incident_attributes "
+				 "SET father = :newname "
+				 "WHERE father = :oldname");
+		  query->bindValue(":newname", newName);
+		  query->bindValue(":oldname", name);
+		  query->exec();
+		  query->prepare("UPDATE attributes_to_incidents "
+				 "SET attribute = :newname "
+				 "WHERE attribute = :oldname");
+		  query->bindValue(":newname", newName);
+		  query->bindValue(":oldname", name);
+		  query->exec();
+		  query->prepare("UPDATE attributes_to_incidents_sources "
+				 "SET attribute = :newname "
+				 "WHERE attribute = :oldname");
+		  query->bindValue(":newname", newName);
+		  query->bindValue(":oldname", name);
+		  query->exec();
+		  query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+				 "SET attribute = :newname "
+				 "WHERE attribute = :oldname");
+		  query->bindValue(":newname", newName);
+		  query->bindValue(":oldname", name);
+		  query->exec();
+		  this->setCursor(Qt::WaitCursor);
+		  retrieveData();
+		  this->setCursor(Qt::ArrowCursor);
+		  attributesWidget->resetTree();
+		}
+	      delete query;
+	      delete attributeDialog;
+	    }
 	}
-	delete query;
-	delete entityDialog;
-      } else {
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
-	query->bindValue(":name", name);
-	query->exec();
-	query->first();
-	QString description = query->value(0).toString();
-	QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
-	attributeDialog->submitName(name);
-	attributeDialog->setDescription(description);
-	attributeDialog->exec();
-	if (attributeDialog->getExitStatus() == 0) {
-	  QString newName = attributeDialog->getName();
-	  description = attributeDialog->getDescription();
-	  QStandardItem *currentAttribute = attributesTree->
-	    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-	  currentAttribute->setData(newName);
-	  currentAttribute->setData(newName, Qt::DisplayRole);
-	  QString hint = breakString(description);
-	  currentAttribute->setToolTip(hint);
-	  query->prepare("UPDATE incident_attributes "
-			 "SET name = :newname, description = :newdescription "
-			 "WHERE name = :oldname");
-	  query->bindValue(":newname", newName);
-	  query->bindValue(":newdescription", description);
-	  query->bindValue(":oldname", name);
-	  query->exec();
-	  query->prepare("UPDATE incident_attributes "
-			 "SET father = :newname "
-			 "WHERE father = :oldname");
-	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", name);
-	  query->exec();
-	  query->prepare("UPDATE attributes_to_incidents "
-			 "SET attribute = :newname "
-			 "WHERE attribute = :oldname");
-	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", name);
-	  query->exec();
-	  query->prepare("UPDATE attributes_to_incidents_sources "
-			 "SET attribute = :newname "
-			 "WHERE attribute = :oldname");
-	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", name);
-	  query->exec();
-	  query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
-			 "SET attribute = :newname "
-			 "WHERE attribute = :oldname");
-	  query->bindValue(":newname", newName);
-	  query->bindValue(":oldname", name);
-	  query->exec();
-	  this->setCursor(Qt::WaitCursor);
-	  retrieveData();
-	  this->setCursor(Qt::ArrowCursor);
-	  attributesWidget->resetTree();
-	}
-	delete query;
-	delete attributeDialog;
-      }
+      attributesTree->sort(0, Qt::AscendingOrder);
+      attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
     }
-    attributesTree->sort(0, Qt::AscendingOrder);
-    attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  }
 }
 
 void HierarchyGraphWidget::updateEntityAfterEdit(const QString name,
-						const QString description,
-						const QString former) {
+						 const QString description,
+						 const QString former) 
+{
   QSqlQuery *query = new QSqlQuery;
   // Update the entity itself.
   query->prepare("UPDATE entities "
@@ -2609,174 +3115,196 @@ void HierarchyGraphWidget::updateEntityAfterEdit(const QString name,
     Next up are the relationships in which the entity already participates.
     First, let us update all the relationships where the current entity is a source.
   */
-  if (name != former) {
-    query->prepare("SELECT name, target, type "
-		   "FROM entity_relationships WHERE source = :current");
-    query->bindValue(":current", former);
-    query->exec();
-    while (query->next()) {
-      QString oldRelationship = query->value(0).toString();
-      QString target = query->value(1).toString();
-      QString type = query->value(2).toString();
-      QSqlQuery *query2 = new QSqlQuery();
-      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
-      query2->bindValue(":type", type);
-      query2->exec();
-      query2->first();
-      QString directedness = query2->value(0).toString();
-      QString arrow = "";
-      if (directedness == UNDIRECTED) {
-	arrow = "<-->";
-      } else if (directedness == DIRECTED) {
-	arrow = "--->";
-      }
-      QString newRelationship = name + arrow + target;
-      query2->prepare("UPDATE entity_relationships "
-		      "SET source = :source, name = :name "
-		      "WHERE source = :oldSource AND name = :oldRelationship");
-      query2->bindValue(":source", name);
-      query2->bindValue(":name", newRelationship);
-      query2->bindValue(":oldSource", former);
-      query2->bindValue(":oldRelationship", oldRelationship);
-      query2->exec();
-      query2->prepare("UPDATE relationships_to_incidents "
-		      "SET relationship = :new "
-		      "WHERE relationship = :old");
-      query2->bindValue(":new", newRelationship);
-      query2->bindValue(":old", oldRelationship);
-      query2->exec();
-      query2->prepare("UPDATE relationships_to_incidents_sources "
-		      "SET relationship = :new "
-		      "WHERE relationship = :old");
-      query2->bindValue(":new", newRelationship);
-      query2->bindValue(":old", oldRelationship);
-      query2->exec();
-      delete query2;
+  if (name != former) 
+    {
+      query->prepare("SELECT name, target, type "
+		     "FROM entity_relationships WHERE source = :current");
+      query->bindValue(":current", former);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString oldRelationship = query->value(0).toString();
+	  QString target = query->value(1).toString();
+	  QString type = query->value(2).toString();
+	  QSqlQuery *query2 = new QSqlQuery();
+	  query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+	  query2->bindValue(":type", type);
+	  query2->exec();
+	  query2->first();
+	  QString directedness = query2->value(0).toString();
+	  QString arrow = "";
+	  if (directedness == UNDIRECTED) 
+	    {
+	      arrow = "<-->";
+	    }
+	  else if (directedness == DIRECTED) 
+	    {
+	      arrow = "--->";
+	    }
+	  QString newRelationship = name + arrow + target;
+	  query2->prepare("UPDATE entity_relationships "
+			  "SET source = :source, name = :name "
+			  "WHERE source = :oldSource AND name = :oldRelationship");
+	  query2->bindValue(":source", name);
+	  query2->bindValue(":name", newRelationship);
+	  query2->bindValue(":oldSource", former);
+	  query2->bindValue(":oldRelationship", oldRelationship);
+	  query2->exec();
+	  query2->prepare("UPDATE relationships_to_incidents "
+			  "SET relationship = :new "
+			  "WHERE relationship = :old");
+	  query2->bindValue(":new", newRelationship);
+	  query2->bindValue(":old", oldRelationship);
+	  query2->exec();
+	  query2->prepare("UPDATE relationships_to_incidents_sources "
+			  "SET relationship = :new "
+			  "WHERE relationship = :old");
+	  query2->bindValue(":new", newRelationship);
+	  query2->bindValue(":old", oldRelationship);
+	  query2->exec();
+	  delete query2;
+	}
+      // And then the relationships where the entity is a target.
+      query->prepare("SELECT name, source, type "
+		     "FROM entity_relationships WHERE target = :current");
+      query->bindValue(":current", former);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString oldRelationship = query->value(0).toString();
+	  QString source = query->value(1).toString();
+	  QString type = query->value(2).toString();
+	  QSqlQuery *query2 = new QSqlQuery();
+	  query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+	  query2->bindValue(":type", type);
+	  query2->exec();
+	  query2->first();
+	  QString directedness = query2->value(0).toString();
+	  QString arrow = "";
+	  if (directedness == UNDIRECTED) 
+	    {
+	      arrow = "<-->";
+	    }
+	  else if (directedness == DIRECTED) 
+	    {
+	      arrow = "--->";
+	    }
+	  QString newRelationship = source + arrow + name;
+	  query2->prepare("UPDATE entity_relationships "
+			  "SET target = :target, name = :name "
+			  "WHERE target = :oldTarget AND name = :oldRelationship");
+	  query2->bindValue(":target", name);
+	  query2->bindValue(":name", newRelationship);
+	  query2->bindValue(":oldTarget", former);
+	  query2->bindValue(":oldRelationship", oldRelationship);
+	  query2->exec();
+	  query2->prepare("UPDATE relationships_to_incidents "
+			  "SET relationship = :new "
+			  "WHERE relationship = :old");
+	  query2->bindValue(":new", newRelationship);
+	  query2->bindValue(":old", oldRelationship);
+	  query2->exec();
+	  query2->prepare("UPDATE relationships_to_incidents_sources "
+			  "SET relationship = :new "
+			  "WHERE relationship = :old");
+	  query2->bindValue(":new", newRelationship);
+	  query2->bindValue(":old", oldRelationship);
+	  query2->exec();
+	  delete query2;
+	}
+      delete query;
     }
-    // And then the relationships where the entity is a target.
-    query->prepare("SELECT name, source, type "
-		   "FROM entity_relationships WHERE target = :current");
-    query->bindValue(":current", former);
-    query->exec();
-    while (query->next()) {
-      QString oldRelationship = query->value(0).toString();
-      QString source = query->value(1).toString();
-      QString type = query->value(2).toString();
-      QSqlQuery *query2 = new QSqlQuery();
-      query2->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
-      query2->bindValue(":type", type);
-      query2->exec();
-      query2->first();
-      QString directedness = query2->value(0).toString();
-      QString arrow = "";
-      if (directedness == UNDIRECTED) {
-	arrow = "<-->";
-      } else if (directedness == DIRECTED) {
-	arrow = "--->";
-      }
-      QString newRelationship = source + arrow + name;
-      query2->prepare("UPDATE entity_relationships "
-		      "SET target = :target, name = :name "
-		      "WHERE target = :oldTarget AND name = :oldRelationship");
-      query2->bindValue(":target", name);
-      query2->bindValue(":name", newRelationship);
-      query2->bindValue(":oldTarget", former);
-      query2->bindValue(":oldRelationship", oldRelationship);
-      query2->exec();
-      query2->prepare("UPDATE relationships_to_incidents "
-		      "SET relationship = :new "
-		      "WHERE relationship = :old");
-      query2->bindValue(":new", newRelationship);
-      query2->bindValue(":old", oldRelationship);
-      query2->exec();
-      query2->prepare("UPDATE relationships_to_incidents_sources "
-		      "SET relationship = :new "
-		      "WHERE relationship = :old");
-      query2->bindValue(":new", newRelationship);
-      query2->bindValue(":old", oldRelationship);
-      query2->exec();
-      delete query2;
-    }
-    delete query;
-  }
   relationshipsWidget->resetTree();
 }
 
-void HierarchyGraphWidget::removeUnusedAttributes() {
+void HierarchyGraphWidget::removeUnusedAttributes() 
+{
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
   QSet<QString> takenAttributes;
   QVectorIterator<MacroEvent*> it(macroVector);
-  while (it.hasNext()) {
-    MacroEvent* current = it.next();
-    QSet<QString> attributes = current->getAttributes();
-    QSet<QString>::iterator it2;
-    for (it2 = attributes.begin(); it2 != attributes.end(); it2++) {
-      takenAttributes.insert(*it2);
+  while (it.hasNext()) 
+    {
+      MacroEvent* current = it.next();
+      QSet<QString> attributes = current->getAttributes();
+      QSet<QString>::iterator it2;
+      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
+	{
+	  takenAttributes.insert(*it2);
+	}
     }
-  }
-  while (unfinished) {
-    query->exec("SELECT name FROM incident_attributes "
-		"EXCEPT SELECT attribute FROM attributes_to_incidents "
-		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
-		"EXCEPT SELECT father FROM incident_attributes");
-    QSet<QString> temp;
-    while (query->next()) {
-      QString current = query->value(0).toString();			   
-      temp.insert(current);
+  while (unfinished) 
+    {
+      query->exec("SELECT name FROM incident_attributes "
+		  "EXCEPT SELECT attribute FROM attributes_to_incidents "
+		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		  "EXCEPT SELECT father FROM incident_attributes");
+      QSet<QString> temp;
+      while (query->next()) 
+	{
+	  QString current = query->value(0).toString();			   
+	  temp.insert(current);
+	}
+      QSet<QString>::iterator it3;
+      bool found = false;
+      for (it3 = temp.begin(); it3 != temp.end(); it3++) 
+	{
+	  if (!takenAttributes.contains(*it3)) 
+	    {
+	      found = true;
+	      query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	    }
+	}
+      if (!found) 
+	{
+	  unfinished = false;
+	}
     }
-    QSet<QString>::iterator it3;
-    bool found = false;
-    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
-      if (!takenAttributes.contains(*it3)) {
-	found = true;
-	query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
-	query2->bindValue(":current", *it3);
-	query2->exec();
-      }
-    }
-    if (!found) {
-      unfinished = false;
-    }
-  }
   unfinished =  true;
-  while (unfinished) {
-    query->exec("SELECT name FROM entities "
-		"EXCEPT SELECT source FROM entity_relationships "
-		"EXCEPT SELECT target FROM entity_relationships "
-		"EXCEPT SELECT attribute FROM attributes_to_incidents "
-		"EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
-		"EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
-		"EXCEPT SELECT father FROM entities");
-    QSet<QString> temp;
-    while (query->next()) {
-      QString current = query->value(0).toString();
-      temp.insert(current);
+  while (unfinished) 
+    {
+      query->exec("SELECT name FROM entities "
+		  "EXCEPT SELECT source FROM entity_relationships "
+		  "EXCEPT SELECT target FROM entity_relationships "
+		  "EXCEPT SELECT attribute FROM attributes_to_incidents "
+		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		  "EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
+		  "EXCEPT SELECT father FROM entities");
+      QSet<QString> temp;
+      while (query->next()) 
+	{
+	  QString current = query->value(0).toString();
+	  temp.insert(current);
+	}
+      QSet<QString>::iterator it3;
+      bool found = false;
+      for (it3 = temp.begin(); it3 != temp.end(); it3++) 
+	{
+	  if (!takenAttributes.contains(*it3)) 
+	    {
+	      found = true;
+	      query2->prepare("DELETE FROM entities WHERE name = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	      query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	      query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	      query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	    }
+	}
+      if (!found) 
+	{
+	  unfinished = false;
+	}
     }
-    QSet<QString>::iterator it3;
-    bool found = false;
-    for (it3 = temp.begin(); it3 != temp.end(); it3++) {
-      if (!takenAttributes.contains(*it3)) {
-	found = true;
-	query2->prepare("DELETE FROM entities WHERE name = :current");
-	query2->bindValue(":current", *it3);
-	query2->exec();
-	query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-	query2->bindValue(":current", *it3);
-	query2->exec();
-	query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
-	query2->bindValue(":current", *it3);
-	query2->exec();
-	query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
-	query2->bindValue(":current", *it3);
-	query2->exec();
-      }
-    }
-    if (!found) {
-      unfinished = false;
-    }
-  }
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   resetTree();
@@ -2789,226 +3317,264 @@ void HierarchyGraphWidget::removeUnusedAttributes() {
   delete query2;
 }
 
-void HierarchyGraphWidget::changeFilter(const QString &text) {
+void HierarchyGraphWidget::changeFilter(const QString &text) 
+{
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
 
-void HierarchyGraphWidget::highlightText() {
+void HierarchyGraphWidget::highlightText() 
+{
   int barPos = rawField->verticalScrollBar()->value();
-  if (selectedIncident != 0) {
-    QTextCursor currentPos = rawField->textCursor();
-    if (attributesTreeView->currentIndex().isValid()) {
-      QStandardItem *currentAttribute = attributesTree->
-	itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
-      QString currentName = attributesTreeView->currentIndex().data().toString();
-      if (currentAttribute->font().bold()) {
-	QTextCharFormat format;
-	format.setFontWeight(QFont::Normal);
-	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	rawField->selectAll();
-	rawField->textCursor().mergeCharFormat(format);
-	QTextCursor cursor = rawField->textCursor();
-	cursor.movePosition(QTextCursor::Start);
-	rawField->setTextCursor(cursor);
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("SELECT source_text "
-			"FROM attributes_to_incidents_sources "
-			"WHERE attribute = :attribute AND incident = :id");
-	query->bindValue(":attribute", currentName);
-	query->bindValue(":id", selectedIncident);
-	query->exec();
-	while (query->next()) {
-	  QString currentText = query->value(0).toString();
-	  QVector<QString> blocks = splitLines(currentText);
-	  QVectorIterator<QString> it(blocks);
-	  while (it.hasNext()) {
-	    QString currentLine = it.next();
-	    while (rawField->find(currentLine, QTextDocument::FindWholeWords)) {
-	      format.setFontWeight(QFont::Bold);
-	      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	      format.setUnderlineColor(Qt::blue);
+  if (selectedIncident != 0) 
+    {
+      QTextCursor currentPos = rawField->textCursor();
+      if (attributesTreeView->currentIndex().isValid()) 
+	{
+	  QStandardItem *currentAttribute = attributesTree->
+	    itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+	  QString currentName = attributesTreeView->currentIndex().data().toString();
+	  if (currentAttribute->font().bold()) 
+	    {
+	      QTextCharFormat format;
+	      format.setFontWeight(QFont::Normal);
+	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+	      rawField->selectAll();
 	      rawField->textCursor().mergeCharFormat(format);
+	      QTextCursor cursor = rawField->textCursor();
+	      cursor.movePosition(QTextCursor::Start);
+	      rawField->setTextCursor(cursor);
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT source_text "
+			     "FROM attributes_to_incidents_sources "
+			     "WHERE attribute = :attribute AND incident = :id");
+	      query->bindValue(":attribute", currentName);
+	      query->bindValue(":id", selectedIncident);
+	      query->exec();
+	      while (query->next()) 
+		{
+		  QString currentText = query->value(0).toString();
+		  QVector<QString> blocks = splitLines(currentText);
+		  QVectorIterator<QString> it(blocks);
+		  while (it.hasNext()) 
+		    {
+		      QString currentLine = it.next();
+		      while (rawField->find(currentLine, QTextDocument::FindWholeWords)) 
+			{
+			  format.setFontWeight(QFont::Bold);
+			  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+			  format.setUnderlineColor(Qt::blue);
+			  rawField->textCursor().mergeCharFormat(format);
+			}
+		    }
+		  cursor = rawField->textCursor();
+		  cursor.movePosition(QTextCursor::Start);
+		  rawField->setTextCursor(cursor);
+		}
+	      rawField->setTextCursor(currentPos);
+	      delete query;
 	    }
-	  }
-	  cursor = rawField->textCursor();
+	  else 
+	    {
+	      QString currentSelected = rawField->textCursor().selectedText();
+	      QTextCharFormat format;
+	      format.setFontWeight(QFont::Normal);
+	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+	      rawField->selectAll();
+	      rawField->textCursor().mergeCharFormat(format);
+	      QTextCursor cursor = rawField->textCursor();
+	      cursor.movePosition(QTextCursor::Start);
+	      rawField->setTextCursor(cursor);
+	      rawField->find(currentSelected);
+	      rawField->setTextCursor(currentPos);
+	    }
+	}
+      else 
+	{
+	  QTextCharFormat format;
+	  format.setFontWeight(QFont::Normal);
+	  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+	  rawField->selectAll();
+	  rawField->textCursor().mergeCharFormat(format);
+	  QTextCursor cursor = rawField->textCursor();
 	  cursor.movePosition(QTextCursor::Start);
 	  rawField->setTextCursor(cursor);
+	  rawField->setTextCursor(currentPos);
 	}
-	rawField->setTextCursor(currentPos);
-	delete query;
-      } else {
-	QString currentSelected = rawField->textCursor().selectedText();
-	QTextCharFormat format;
-	format.setFontWeight(QFont::Normal);
-	format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	rawField->selectAll();
-	rawField->textCursor().mergeCharFormat(format);
-	QTextCursor cursor = rawField->textCursor();
-	cursor.movePosition(QTextCursor::Start);
-	rawField->setTextCursor(cursor);
-	rawField->find(currentSelected);
-	rawField->setTextCursor(currentPos);
-      }
-    } else {
-      QTextCharFormat format;
-      format.setFontWeight(QFont::Normal);
-      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-      rawField->selectAll();
-      rawField->textCursor().mergeCharFormat(format);
-      QTextCursor cursor = rawField->textCursor();
-      cursor.movePosition(QTextCursor::Start);
-      rawField->setTextCursor(cursor);
-      rawField->setTextCursor(currentPos);
     }
-  }
   rawField->verticalScrollBar()->setValue(barPos);
 }
 
-void HierarchyGraphWidget::removeText() {
-  if (selectedIncident != 0) {
-    if (attributesTreeView->currentIndex().isValid()) {
-      QString attribute = attributesTreeView->currentIndex().data().toString();
-      if (rawField->textCursor().selectedText().trimmed() != "") {
-	QString sourceText = rawField->textCursor().selectedText().trimmed();
-	QSqlQuery *query = new QSqlQuery;
-	query->prepare("DELETE FROM attributes_to_incidents_sources "
-		       "WHERE attribute = :att AND incident = :inc AND source_text = :text");
-	query->bindValue(":att", attribute);
-	query->bindValue(":inc", selectedIncident);
-	query->bindValue(":text", sourceText);
-	query->exec();
-	delete query;
-      }
-      setButtons();
-      highlightText();
+void HierarchyGraphWidget::removeText() 
+{
+  if (selectedIncident != 0) 
+    {
+      if (attributesTreeView->currentIndex().isValid()) 
+	{
+	  QString attribute = attributesTreeView->currentIndex().data().toString();
+	  if (rawField->textCursor().selectedText().trimmed() != "") 
+	    {
+	      QString sourceText = rawField->textCursor().selectedText().trimmed();
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("DELETE FROM attributes_to_incidents_sources "
+			     "WHERE attribute = :att AND incident = :inc AND source_text = :text");
+	      query->bindValue(":att", attribute);
+	      query->bindValue(":inc", selectedIncident);
+	      query->bindValue(":text", sourceText);
+	      query->exec();
+	      delete query;
+	    }
+	  setButtons();
+	  highlightText();
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::selectText() {
-  if (rawField->textCursor().selectedText().trimmed() != "") {
-    int end = 0;
-    int begin = 0;
-    QTextCursor selectCursor = rawField->textCursor();
-    if (rawField->textCursor().anchor() >= rawField->textCursor().position()) {
-      begin = rawField->textCursor().position();
-      end = rawField->textCursor().anchor();
-    } else {
-      begin = rawField->textCursor().anchor();
-      end = rawField->textCursor().position();
-    }
-    selectCursor.setPosition(begin);
-    selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-    rawField->setTextCursor(selectCursor);
-    while (rawField->textCursor().selectedText()[0].isSpace()) {
-      begin++;
+void HierarchyGraphWidget::selectText() 
+{
+  if (rawField->textCursor().selectedText().trimmed() != "") 
+    {
+      int end = 0;
+      int begin = 0;
+      QTextCursor selectCursor = rawField->textCursor();
+      if (rawField->textCursor().anchor() >= rawField->textCursor().position()) 
+	{
+	  begin = rawField->textCursor().position();
+	  end = rawField->textCursor().anchor();
+	}
+      else 
+	{
+	  begin = rawField->textCursor().anchor();
+	  end = rawField->textCursor().position();
+	}
       selectCursor.setPosition(begin);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);
       rawField->setTextCursor(selectCursor);
-    }
-    while (rawField->textCursor().selectedText()[rawField->textCursor().
-						 selectedText().length() - 1].isSpace()) {
-      end--;
+      while (rawField->textCursor().selectedText()[0].isSpace()) 
+	{
+	  begin++;
+	  selectCursor.setPosition(begin);
+	  selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	  rawField->setTextCursor(selectCursor);
+	}
+      while (rawField->textCursor().selectedText()[rawField->textCursor().
+						   selectedText().length() - 1].isSpace()) 
+	{
+	  end--;
+	  selectCursor.setPosition(begin);
+	  selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	  rawField->setTextCursor(selectCursor);
+	}
       selectCursor.setPosition(begin);
+      selectCursor.movePosition(QTextCursor::StartOfWord);
       selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      if (!rawField->toPlainText()[end].isPunct()) 
+	{
+	  selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+	}
       rawField->setTextCursor(selectCursor);
     }
-    selectCursor.setPosition(begin);
-    selectCursor.movePosition(QTextCursor::StartOfWord);
-    selectCursor.setPosition(end, QTextCursor::KeepAnchor);
-    if (!rawField->toPlainText()[end].isPunct()) {
-      selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
-    }
-    rawField->setTextCursor(selectCursor);
-  }
 }
 				       
 
-void HierarchyGraphWidget::sourceAttributeText(const QString &attribute, const int &incident) {
-  if (rawField->textCursor().selectedText().trimmed() != "") {
-    QString sourceText = rawField->textCursor().selectedText().trimmed();
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
-		   "WHERE attribute = :att AND inc = :incident AND source_text = :text");
-    query->bindValue("att", attribute);
-    query->bindValue("inc", incident);
-    query->bindValue("text", sourceText);
-    query->exec();
-    query->first();
-    if (query->isNull(0)) {
-      query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-		     "VALUES (:att, :inc, :text)");
-      query->bindValue(":att", attribute);
-      query->bindValue(":inc", incident);
-      query->bindValue(":text", sourceText);
+void HierarchyGraphWidget::sourceAttributeText(const QString &attribute, const int &incident) 
+{
+  if (rawField->textCursor().selectedText().trimmed() != "") 
+    {
+      QString sourceText = rawField->textCursor().selectedText().trimmed();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
+		     "WHERE attribute = :att AND inc = :incident AND source_text = :text");
+      query->bindValue("att", attribute);
+      query->bindValue("inc", incident);
+      query->bindValue("text", sourceText);
       query->exec();
-    }
-    delete query;
-  }
-}
-
-void HierarchyGraphWidget::resetTexts() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    if (selectedIncident != 0) {
-      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Yes);
-      warningBox->addButton(QMessageBox::No);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("Resetting source texts cannot be undone. "
-				     "Are you sure you want to proceed?");
-      if (warningBox->exec() == QMessageBox::Yes) {
-	QSqlQuery *query = new QSqlQuery;
-	if (!(query->isNull(0))) {
-	  QString attribute = attributesTreeView->currentIndex().data().toString();
-	  query->prepare("DELETE FROM attributes_to_incidents_sources "
-			 "WHERE attribute = :att AND incident = :inc");
+      query->first();
+      if (query->isNull(0)) 
+	{
+	  query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
+			 "VALUES (:att, :inc, :text)");
 	  query->bindValue(":att", attribute);
-	  query->bindValue(":inc", selectedIncident);
+	  query->bindValue(":inc", incident);
+	  query->bindValue(":text", sourceText);
 	  query->exec();
 	}
-	highlightText();
-	delete query;
-      }
-      setButtons();
-      delete warningBox;
+      delete query;
     }
-  }
 }
 
-void HierarchyGraphWidget::setOrigin(MacroEvent *submittedOrigin) {
+void HierarchyGraphWidget::resetTexts() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      if (selectedIncident != 0) 
+	{
+	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->addButton(QMessageBox::Yes);
+	  warningBox->addButton(QMessageBox::No);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("<h2>Are you sure?</h2>");
+	  warningBox->setInformativeText("Resetting source texts cannot be undone. "
+					 "Are you sure you want to proceed?");
+	  if (warningBox->exec() == QMessageBox::Yes) 
+	    {
+	      QSqlQuery *query = new QSqlQuery;
+	      if (!(query->isNull(0))) 
+		{
+		  QString attribute = attributesTreeView->currentIndex().data().toString();
+		  query->prepare("DELETE FROM attributes_to_incidents_sources "
+				 "WHERE attribute = :att AND incident = :inc");
+		  query->bindValue(":att", attribute);
+		  query->bindValue(":inc", selectedIncident);
+		  query->exec();
+		}
+	      highlightText();
+	      delete query;
+	    }
+	  setButtons();
+	  delete warningBox;
+	}
+    }
+}
+
+void HierarchyGraphWidget::setOrigin(MacroEvent *submittedOrigin) 
+{
   origin = submittedOrigin;
   buildComponents(origin, 1);
 }
 
-void HierarchyGraphWidget::setEvents(QVector<EventItem*> submittedEvents) {
+void HierarchyGraphWidget::setEvents(QVector<EventItem*> submittedEvents) 
+{
   eventVector = submittedEvents;
 }
 
-void HierarchyGraphWidget::setMacros(QVector<MacroEvent*> submittedMacros) {
+void HierarchyGraphWidget::setMacros(QVector<MacroEvent*> submittedMacros) 
+{
   macroVector = submittedMacros;
 }
 
-void HierarchyGraphWidget::setEdges(QVector<Arrow*> submittedEdges) {
+void HierarchyGraphWidget::setEdges(QVector<Arrow*> submittedEdges) 
+{
   edgeVector = submittedEdges;
 }
 
-void HierarchyGraphWidget::setTree() {
+void HierarchyGraphWidget::setTree() 
+{
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
   // First we will fetch the 'normal' attributes.
   query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
-  while (query->next()) {
-    QString name = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QStandardItem *father = new QStandardItem(name);    
-    attributesTree->appendRow(father);
-    QString hint = breakString(description);
-    father->setToolTip(hint);
-    father->setEditable(false);
-    buildHierarchy(father, name);
-  }
+  while (query->next()) 
+    {
+      QString name = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *father = new QStandardItem(name);    
+      attributesTree->appendRow(father);
+      QString hint = breakString(description);
+      father->setToolTip(hint);
+      father->setEditable(false);
+      buildHierarchy(father, name);
+    }
   // And then we will also fetch the entities.
   QStandardItem *entities = new QStandardItem(ENTITIES);
   QString entitiesHint = breakString("You can also assign entities that you have created "
@@ -3020,260 +3586,330 @@ void HierarchyGraphWidget::setTree() {
   entities->setFont(font);
   query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
   int children = 0;
-  while (query->next()) {
-    QString name = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QStandardItem *father = new QStandardItem(name);
-    entities->setChild(children, father);
-    children++;
-    QString hint = breakString(description);
-    father->setToolTip(hint);
-    father->setEditable(false);
-    buildEntities(father, name);
-  }    
+  while (query->next()) 
+    {
+      QString name = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *father = new QStandardItem(name);
+      entities->setChild(children, father);
+      children++;
+      QString hint = breakString(description);
+      father->setToolTip(hint);
+      father->setEditable(false);
+      buildEntities(father, name);
+    }    
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
   delete query;
 }
 
-void HierarchyGraphWidget::resetTree() {
+void HierarchyGraphWidget::resetTree() 
+{
   scene->clearSelection();
   retrieveData();
   delete attributesTree;
   setTree();
 }
 
-void HierarchyGraphWidget::buildHierarchy(QStandardItem *top, QString name) {
+void HierarchyGraphWidget::buildHierarchy(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
   query->bindValue(":father", name);
   query->exec();
   int children = 0;
-  while (query->next()) {
-    QString childName = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QStandardItem *child = new QStandardItem(childName);
-    top->setChild(children, child);
-    QString hint = breakString(description);
-    child->setToolTip(hint);
-    child->setEditable(false);
-    children++;
-    buildHierarchy(child, childName);
-  }
+  while (query->next()) 
+    {
+      QString childName = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *child = new QStandardItem(childName);
+      top->setChild(children, child);
+      QString hint = breakString(description);
+      child->setToolTip(hint);
+      child->setEditable(false);
+      children++;
+      buildHierarchy(child, childName);
+    }
   delete query;
 }
 
-void HierarchyGraphWidget::buildEntities(QStandardItem *top, QString name) {
+void HierarchyGraphWidget::buildEntities(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, description FROM entities WHERE father = :father");
   query->bindValue(":father", name);
   query->exec();
   int children = 0;
-  while (query->next()) {
-    QString childName = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QStandardItem *child = new QStandardItem(childName);
-    top->setChild(children, child);
-    QString hint = breakString(description);
-    child->setToolTip(hint);
-    child->setEditable(false);
-    children++;
-    buildEntities(child, childName);
-  }
+  while (query->next()) 
+    {
+      QString childName = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *child = new QStandardItem(childName);
+      top->setChild(children, child);
+      QString hint = breakString(description);
+      child->setToolTip(hint);
+      child->setEditable(false);
+      children++;
+      buildEntities(child, childName);
+    }
   delete query;
 }
 
-void HierarchyGraphWidget::fixTree() {
+void HierarchyGraphWidget::fixTree() 
+{
   resetFont(attributesTree);
-  if (selectedIncident != 0) {
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT attribute FROM attributes_to_incidents "
-		   "WHERE incident = :id");
-    query->bindValue(":id", selectedIncident);
-    query->exec();
-    while (query->next()) {
-      QString attribute = query->value(0).toString();
-      boldSelected(attributesTree, attribute);
+  if (selectedIncident != 0) 
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT attribute FROM attributes_to_incidents "
+		     "WHERE incident = :id");
+      query->bindValue(":id", selectedIncident);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString attribute = query->value(0).toString();
+	  boldSelected(attributesTree, attribute);
+	}
+      delete query;
     }
-    delete query;
-  } else if (selectedMacro != NULL) {
-    QSet<QString> attributes = selectedMacro->getAttributes();
-    QSet<QString>::iterator it;
-    for (it = attributes.begin(); it != attributes.end(); it++) {
-      boldSelected(attributesTree, *it);
+  else if (selectedMacro != NULL) 
+    {
+      QSet<QString> attributes = selectedMacro->getAttributes();
+      QSet<QString>::iterator it;
+      for (it = attributes.begin(); it != attributes.end(); it++) 
+	{
+	  boldSelected(attributesTree, *it);
+	}
     }
-  }
 }
 
-void HierarchyGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) {
-  for(int i = 0; i != model->rowCount(parent); i++) {
-    QModelIndex index = model->index(i, 0, parent);
-    QString currentName = model->data(index).toString();
-    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
-    QFont font;
-    font.setBold(false);
-    font.setUnderline(false);
-    QFont font2;
-    font2.setItalic(true);
-    font2.setBold(false);
-    font2.setUnderline(false);
-    if (currentName != ENTITIES) {
-      currentAttribute->setFont(font);
-    } else {
-      currentAttribute->setFont(font2);
+void HierarchyGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent) 
+{
+  for(int i = 0; i != model->rowCount(parent); i++) 
+    {
+      QModelIndex index = model->index(i, 0, parent);
+      QString currentName = model->data(index).toString();
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      QFont font;
+      font.setBold(false);
+      font.setUnderline(false);
+      QFont font2;
+      font2.setItalic(true);
+      font2.setBold(false);
+      font2.setUnderline(false);
+      if (currentName != ENTITIES) 
+	{
+	  currentAttribute->setFont(font);
+	}
+      else 
+	{
+	  currentAttribute->setFont(font2);
+	}
+      if (model->hasChildren(index)) 
+	{
+	  resetFont(model, index);
+	}
     }
-    if (model->hasChildren(index)) {
-      resetFont(model, index);
-    }
-  }
 }
 
 void HierarchyGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
-				    int event, QString type, QModelIndex parent) {
-  for(int i = 0; i != model->rowCount(parent); i++) {
-    QModelIndex index = model->index(i, 0, parent);
-    QString currentName = model->data(index).toString();
-    QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
-    QFont font;
-    font.setBold(true);
-    QFont font2;
-    font2.setUnderline(true);
-    QFont font3;
-    font3.setBold(true);
-    font3.setUnderline(true);
-    QFont font4;
-    font4.setItalic(true);
-    QFont font5;
-    font5.setItalic(true);
-    font5.setUnderline(true);
-    if (name != ENTITIES) {
-      if (name == currentName) {
-	if (currentAttribute->font().underline()) {
-	  currentAttribute->setFont(font3);
-	} else {
-	  currentAttribute->setFont(font);
-	}
-	if (currentAttribute->parent()) {
-	  while (currentAttribute->parent()) {
-	    currentAttribute = currentAttribute->parent();
-	    QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
-	    if (parentName != ENTITIES) {
-	      if (type == INCIDENT) {
-		QSqlQuery *query = new QSqlQuery;
-		query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			       "WHERE attribute = :attribute AND incident = :incident");
-		query->bindValue(":attribute", parentName);
-		query->bindValue(":incident", event);
-		query->exec();
-		query->first();
-		if (query->isNull(0)) {
-		  currentAttribute->setFont(font2);      
-		} else {
+					int event, QString type, QModelIndex parent) 
+{
+  for(int i = 0; i != model->rowCount(parent); i++) 
+    {
+      QModelIndex index = model->index(i, 0, parent);
+      QString currentName = model->data(index).toString();
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      QFont font;
+      font.setBold(true);
+      QFont font2;
+      font2.setUnderline(true);
+      QFont font3;
+      font3.setBold(true);
+      font3.setUnderline(true);
+      QFont font4;
+      font4.setItalic(true);
+      QFont font5;
+      font5.setItalic(true);
+      font5.setUnderline(true);
+      if (name != ENTITIES) 
+	{
+	  if (name == currentName) 
+	    {
+	      if (currentAttribute->font().underline()) 
+		{
 		  currentAttribute->setFont(font3);
 		}
-		delete query;
-	      } else if (type == MACRO) {
-		QSet<QString> attributes = selectedMacro->getAttributes();
-		QSet<QString>::iterator it;
-		bool found = false;
-		for (it = attributes.begin(); it != attributes.end(); it++) {
-		  QString current = *it;
-		  if (current == parentName) {
-		    found = true;
-		  }
+	      else 
+		{
+		  currentAttribute->setFont(font);
 		}
-		if (!found) {
-		  currentAttribute->setFont(font2);      
-		} else {
-		  currentAttribute->setFont(font3);
+	      if (currentAttribute->parent()) 
+		{
+		  while (currentAttribute->parent()) 
+		    {
+		      currentAttribute = currentAttribute->parent();
+		      QString parentName = currentAttribute->data(Qt::DisplayRole).toString();
+		      if (parentName != ENTITIES) 
+			{
+			  if (type == INCIDENT) 
+			    {
+			      QSqlQuery *query = new QSqlQuery;
+			      query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+					     "WHERE attribute = :attribute AND incident = :incident");
+			      query->bindValue(":attribute", parentName);
+			      query->bindValue(":incident", event);
+			      query->exec();
+			      query->first();
+			      if (query->isNull(0)) 
+				{
+				  currentAttribute->setFont(font2);      
+				}
+			      else 
+				{
+				  currentAttribute->setFont(font3);
+				}
+			      delete query;
+			    }
+			  else if (type == MACRO) 
+			    {
+			      QSet<QString> attributes = selectedMacro->getAttributes();
+			      QSet<QString>::iterator it;
+			      bool found = false;
+			      for (it = attributes.begin(); it != attributes.end(); it++) 
+				{
+				  QString current = *it;
+				  if (current == parentName) 
+				    {
+				      found = true;
+				    }
+				}
+			      if (!found) 
+				{
+				  currentAttribute->setFont(font2);      
+				}
+			      else 
+				{
+				  currentAttribute->setFont(font3);
+				}
+			    }
+			}
+		      else 
+			{
+			  currentAttribute->setFont(font5);
+			}
+		    }
 		}
-	      }
-	    } else {
-	      currentAttribute->setFont(font5);
 	    }
-	  }
 	}
-      }
-    } else {
-      currentAttribute->setFont(font4);
+      else 
+	{
+	  currentAttribute->setFont(font4);
+	}
+      if (model->hasChildren(index)) 
+	{
+	  boldSelected(model, name, event, type, index);
+	}
     }
-    if (model->hasChildren(index)) {
-      boldSelected(model, name, event, type, index);
-    }
-  }
 }
 
-void HierarchyGraphWidget::setButtons() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    QString currentAttribute = attributesTreeView->currentIndex().data().toString();
-    if (selectedIncident != 0) {
-      QSqlQuery *query = new QSqlQuery;
-      bool empty = false;
-      query->prepare("SELECT attribute, incident FROM "
-		     "attributes_to_incidents "
-		     "WHERE attribute = :att AND incident = :inc  ");
-      query->bindValue(":att", currentAttribute);
-      query->bindValue(":inc", selectedIncident);
-      query->exec();
-      query->first();
-      empty = query->isNull(0);
-      if (!empty) {
-	unassignAttributeButton->setEnabled(true);
-      } else {
-	unassignAttributeButton->setEnabled(false);
-      }
-      query->prepare("SELECT attribute, incident FROM "
-		     "attributes_to_incidents_sources "
-		     "WHERE attribute = :att AND incident = :inc");
-      query->bindValue(":att", currentAttribute);
-      query->bindValue(":inc", selectedIncident);
-      query->exec();
-      query->first();
-      empty = query->isNull(0);
-      if (!empty) {
-	removeTextButton->setEnabled(true);
-	resetTextsButton->setEnabled(true);
-      } else {
-	removeTextButton->setEnabled(false);
-	resetTextsButton->setEnabled(false);
-      }
-      if (currentAttribute != ENTITIES) {
-	assignAttributeButton->setEnabled(true);
-      } else {
-	assignAttributeButton->setEnabled(false);
-      }
-      delete query;
-    } else if (selectedMacro != NULL) {
+void HierarchyGraphWidget::setButtons() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
       QString currentAttribute = attributesTreeView->currentIndex().data().toString();
-      QSet<QString> attributes = selectedMacro->getAttributes();
-      if (attributes.contains(currentAttribute)) {
-	unassignAttributeButton->setEnabled(true);
-      } else {
-	unassignAttributeButton->setEnabled(false);
-      }
-      if (currentAttribute != ENTITIES) {
-	assignAttributeButton->setEnabled(true);
-      } else {
-	assignAttributeButton->setEnabled(false);
-      }
+      if (selectedIncident != 0) 
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  bool empty = false;
+	  query->prepare("SELECT attribute, incident FROM "
+			 "attributes_to_incidents "
+			 "WHERE attribute = :att AND incident = :inc  ");
+	  query->bindValue(":att", currentAttribute);
+	  query->bindValue(":inc", selectedIncident);
+	  query->exec();
+	  query->first();
+	  empty = query->isNull(0);
+	  if (!empty) 
+	    {
+	      unassignAttributeButton->setEnabled(true);
+	    }
+	  else 
+	    {
+	      unassignAttributeButton->setEnabled(false);
+	    }
+	  query->prepare("SELECT attribute, incident FROM "
+			 "attributes_to_incidents_sources "
+			 "WHERE attribute = :att AND incident = :inc");
+	  query->bindValue(":att", currentAttribute);
+	  query->bindValue(":inc", selectedIncident);
+	  query->exec();
+	  query->first();
+	  empty = query->isNull(0);
+	  if (!empty) 
+	    {
+	      removeTextButton->setEnabled(true);
+	      resetTextsButton->setEnabled(true);
+	    }
+	  else 
+	    {
+	      removeTextButton->setEnabled(false);
+	      resetTextsButton->setEnabled(false);
+	    }
+	  if (currentAttribute != ENTITIES) 
+	    {
+	      assignAttributeButton->setEnabled(true);
+	    }
+	  else 
+	    {
+	      assignAttributeButton->setEnabled(false);
+	    }
+	  delete query;
+	}
+      else if (selectedMacro != NULL) 
+	{
+	  QString currentAttribute = attributesTreeView->currentIndex().data().toString();
+	  QSet<QString> attributes = selectedMacro->getAttributes();
+	  if (attributes.contains(currentAttribute)) 
+	    {
+	      unassignAttributeButton->setEnabled(true);
+	    }
+	  else 
+	    {
+	      unassignAttributeButton->setEnabled(false);
+	    }
+	  if (currentAttribute != ENTITIES) 
+	    {
+	      assignAttributeButton->setEnabled(true);
+	    }
+	  else 
+	    {
+	      assignAttributeButton->setEnabled(false);
+	    }
+	  removeTextButton->setEnabled(false);
+	  resetTextsButton->setEnabled(false);
+	}
+      if (currentAttribute != ENTITIES) 
+	{
+	  editAttributeButton->setEnabled(true);
+	}
+      else 
+	{
+	  editAttributeButton->setEnabled(false);
+	}
+    }
+  else 
+    {
+      assignAttributeButton->setEnabled(false);
+      editAttributeButton->setEnabled(false);
+      unassignAttributeButton->setEnabled(false);
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
     }
-    if (currentAttribute != ENTITIES) {
-      editAttributeButton->setEnabled(true);
-    } else {
-      editAttributeButton->setEnabled(false);
-    }
-  } else {
-    assignAttributeButton->setEnabled(false);
-    editAttributeButton->setEnabled(false);
-    unassignAttributeButton->setEnabled(false);
-    removeTextButton->setEnabled(false);
-    resetTextsButton->setEnabled(false);
-  }
 }
 
-void HierarchyGraphWidget::cleanUp() {
+void HierarchyGraphWidget::cleanUp() 
+{
   setComment();
   eventVector.clear();
   macroVector.clear();
@@ -3297,50 +3933,69 @@ void HierarchyGraphWidget::cleanUp() {
   presentTypes.clear();
 }
 
-void HierarchyGraphWidget::switchBack() {
+void HierarchyGraphWidget::switchBack() 
+{
   setComment();
   emit goToEventGraph();
 }
 
-void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) {
+void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *aw) 
+{
   attributesWidget = aw;
 }
 
-void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) {
+void HierarchyGraphWidget::setEventGraph(EventGraphWidget *egw) 
+{
   eventGraph = egw;
 }
 
-void HierarchyGraphWidget::setRelationshipsWidget(RelationshipsWidget *rw) {
+void HierarchyGraphWidget::setRelationshipsWidget(RelationshipsWidget *rw) 
+{
   relationshipsWidget = rw;
 }
 
-void HierarchyGraphWidget::finalBusiness() {
+void HierarchyGraphWidget::finalBusiness() 
+{
   cleanUp();
 }
 
-bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) {
-  if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) {
-    selectText();
-  } else if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) {
-    QMouseEvent *mouseEvent = (QMouseEvent*) event;
-    if (mouseEvent->button() == Qt::LeftButton) {
-      retrieveData();
-      setButtons();
+bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) 
+{
+  if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) 
+    {
+      selectText();
     }
-  } else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) {
-    fixTree();
-  } else if (event->type() == QEvent::Wheel) {
-    QWheelEvent *wheelEvent = (QWheelEvent*) event;
-    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
-    if (textEdit) {
-      if(wheelEvent->modifiers() & Qt::ControlModifier) {
-        if (wheelEvent->angleDelta().y() > 0) {
-	  textEdit->zoomIn(1);
-	} else if (wheelEvent->angleDelta().y() < 0) {
-	  textEdit->zoomOut(1);
+  else if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) 
+    {
+      QMouseEvent *mouseEvent = (QMouseEvent*) event;
+      if (mouseEvent->button() == Qt::LeftButton) 
+	{
+	  retrieveData();
+	  setButtons();
 	}
-      }
     }
-  }
+  else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) 
+    {
+      fixTree();
+    }
+  else if (event->type() == QEvent::Wheel) 
+    {
+      QWheelEvent *wheelEvent = (QWheelEvent*) event;
+      QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+      if (textEdit) 
+	{
+	  if(wheelEvent->modifiers() & Qt::ControlModifier) 
+	    {
+	      if (wheelEvent->angleDelta().y() > 0) 
+		{
+		  textEdit->zoomIn(1);
+		}
+	      else if (wheelEvent->angleDelta().y() < 0) 
+		{
+		  textEdit->zoomOut(1);
+		}
+	    }
+	}
+    }
   return false;
 }

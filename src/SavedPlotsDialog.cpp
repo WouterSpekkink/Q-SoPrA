@@ -1,6 +1,7 @@
 #include "../include/SavedPlotsDialog.h"
 
-SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDialog(parent) {
+SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDialog(parent) 
+{
   selectedPlot = DEFAULT;
   exitStatus = 1;
   type = submittedType;
@@ -11,17 +12,23 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDi
   plotsComboBox->addItem(DEFAULT);
 
   QSqlQuery *query = new QSqlQuery;
-  if (type == EVENTGRAPH) {
-    query->exec("SELECT plot FROM saved_eg_plots");
-  } else if (type == NETWORKGRAPH) {
-    query->exec("SELECT plot FROM saved_ng_plots");
-  } else if (type == OCCURRENCEGRAPH) {
-    query->exec("SELECT plot FROM saved_og_plots");
-  }
-  while (query->next()) {
-    QString currentName = query->value(0).toString();
-    plotsComboBox->addItem(currentName);
-  }
+  if (type == EVENTGRAPH) 
+    {
+      query->exec("SELECT plot FROM saved_eg_plots");
+    }
+  else if (type == NETWORKGRAPH) 
+    {
+      query->exec("SELECT plot FROM saved_ng_plots");
+    }
+  else if (type == OCCURRENCEGRAPH) 
+    {
+      query->exec("SELECT plot FROM saved_og_plots");
+    }
+  while (query->next()) 
+    {
+      QString currentName = query->value(0).toString();
+      plotsComboBox->addItem(currentName);
+    }
   delete query;
 
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
@@ -48,44 +55,55 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDi
   setWindowTitle("Saved plots");
 }
 
-void SavedPlotsDialog::cancelAndClose() {
+void SavedPlotsDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void SavedPlotsDialog::loadPlot() {
+void SavedPlotsDialog::loadPlot() 
+{
   exitStatus = 0;
   selectedPlot = plotsComboBox->currentText();
   this->close();
 }
 
-void SavedPlotsDialog::removePlot() {
-  if (plotsComboBox->currentText() != DEFAULT) {
-    QPointer<QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Yes);
-    warningBox->addButton(QMessageBox::No);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("<h2>Are you sure?</h2>");
-    warningBox->setInformativeText("Removing a plot cannot be undone. "
-				   "Are you sure you want to remove this plot?");
-    if (warningBox->exec() == QMessageBox::Yes) {
-      exitStatus = 2;
-      selectedPlot = plotsComboBox->currentText();
-      delete warningBox;
-      this->close();
-    } else {
-      delete warningBox;
-      return;
+void SavedPlotsDialog::removePlot() 
+{
+  if (plotsComboBox->currentText() != DEFAULT) 
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Removing a plot cannot be undone. "
+				     "Are you sure you want to remove this plot?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  exitStatus = 2;
+	  selectedPlot = plotsComboBox->currentText();
+	  delete warningBox;
+	  this->close();
+	}
+      else 
+	{
+	  delete warningBox;
+	  return;
+	}
     }
-  } else {
-    return;
-  } 
+  else 
+    {
+      return;
+    } 
 }
 
-int SavedPlotsDialog::getExitStatus() {
+int SavedPlotsDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-QString SavedPlotsDialog::getSelectedPlot() {
+QString SavedPlotsDialog::getSelectedPlot() 
+{
   return selectedPlot;
 }

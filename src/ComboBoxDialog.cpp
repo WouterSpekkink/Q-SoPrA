@@ -1,6 +1,7 @@
 #include "../include/ComboBoxDialog.h"
 
-ComboBoxDialog::ComboBoxDialog(QWidget *parent, QVector<QString> contents) : QDialog(parent) {
+ComboBoxDialog::ComboBoxDialog(QWidget *parent, QVector<QString> contents) : QDialog(parent) 
+{
   exitStatus = 1;
 
   selectionLabel = new QLabel(tr("<b>Choose:</b>"), this);
@@ -23,39 +24,47 @@ ComboBoxDialog::ComboBoxDialog(QWidget *parent, QVector<QString> contents) : QDi
   setLayout(mainLayout);
 
   QVectorIterator<QString> it(contents);
-  while (it.hasNext()) {
-    QString current = it.next();
-    selectionComboBox->addItem(current);
-  }
+  while (it.hasNext()) 
+    {
+      QString current = it.next();
+      selectionComboBox->addItem(current);
+    }
 }
 
-void ComboBoxDialog::cancelAndClose() {
+void ComboBoxDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void ComboBoxDialog::saveAndClose() {
+void ComboBoxDialog::saveAndClose() 
+{
   selection = selectionComboBox->currentText();
-  if (selection == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No selection made.");
-    warningBox->setInformativeText("You have to make a selection to proceed.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  } else {
-    exitStatus = 0;
-    this->close();
-  }
+  if (selection == DEFAULT) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("No selection made.");
+      warningBox->setInformativeText("You have to make a selection to proceed.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  else 
+    {
+      exitStatus = 0;
+      this->close();
+    }
 }
 
-QString ComboBoxDialog::getSelection() {
+QString ComboBoxDialog::getSelection() 
+{
   return selection;
 }
 
-int ComboBoxDialog::getExitStatus() {
+int ComboBoxDialog::getExitStatus() 
+{
   return exitStatus;
 }
 

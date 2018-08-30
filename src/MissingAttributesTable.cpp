@@ -1,7 +1,8 @@
 #include "../include/MissingAttributesTable.h"
 
 
-MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent) {
+MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent) 
+{
   model = new EventQueryModel(this);
   tableView = new ZoomableTableView(this);
   tableView->setModel(model);
@@ -30,7 +31,8 @@ MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent
   setMouseTracking(true);
 }
 
-void MissingAttributesTable::updateTable() {
+void MissingAttributesTable::updateTable() 
+{
   model->clear();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT * "
@@ -41,9 +43,10 @@ void MissingAttributesTable::updateTable() {
 	      "ORDER BY ch_order");
   model->setQuery(*query);
   delete query;
-  while (model->canFetchMore()) {
-    model->fetchMore();
-  }
+  while (model->canFetchMore()) 
+    {
+      model->fetchMore();
+    }
   tableView->setColumnHidden(0, true);
   tableView->setColumnHidden(5, true);
   tableView->setColumnWidth(2, qobject_cast<QWidget*>(parent())->width()/15);
@@ -59,7 +62,8 @@ void MissingAttributesTable::updateTable() {
   model->setHeaderData(7, Qt::Horizontal, QObject::tr("Marked"));
 }
 
-void MissingAttributesTable::resetHeader(int header) {
+void MissingAttributesTable::resetHeader(int header) 
+{
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 

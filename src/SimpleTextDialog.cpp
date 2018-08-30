@@ -1,6 +1,7 @@
 #include "../include/SimpleTextDialog.h"
 
-SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent) {
+SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent) 
+{
   text = "";
   subText = "";
   exitStatus = 1;
@@ -29,41 +30,48 @@ SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent) {
 }
 
 
-QString SimpleTextDialog::getText() {
+QString SimpleTextDialog::getText() 
+{
   return text;
 }
 
-void SimpleTextDialog::submitText(const QString &submittedText) {
+void SimpleTextDialog::submitText(const QString &submittedText) 
+{
   text = submittedText;
   subText = submittedText;
   textField->setText(submittedText);
 }
 
-void SimpleTextDialog::setLabel(const QString &submittedLabel) {
+void SimpleTextDialog::setLabel(const QString &submittedLabel) 
+{
   textLabel->setText(submittedLabel);
 }
 
-int SimpleTextDialog::getExitStatus() {
+int SimpleTextDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void SimpleTextDialog::cancelAndClose() {
+void SimpleTextDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void SimpleTextDialog::saveAndClose() {
+void SimpleTextDialog::saveAndClose() 
+{
   text = textField->text().trimmed();
-  if (text == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Text required.");
-    warningBox->setInformativeText("You need to enter text to save.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (text == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Text required.");
+      warningBox->setInformativeText("You need to enter text to save.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   exitStatus = 0;
   this->close();
 }

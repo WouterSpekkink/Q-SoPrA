@@ -1,15 +1,18 @@
 #include "../include/RecordDialog.h"
 
-RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd, const QString type) : QDialog(parent) {
+RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd, const QString type)
+  : QDialog(parent) 
+{
   esd = submittedEsd;
   exitStatus = 1;
-  if (type == NEW) {
-    timeStamp = "";
-    description = "";
-    raw = "";
-    comment = "";
-    source = "";
-  }
+  if (type == NEW) 
+    {
+      timeStamp = "";
+      description = "";
+      raw = "";
+      comment = "";
+      source = "";
+    }
   
   titleLabel = new QLabel("<h1>Set incident details<h1>", this);
   timeStampLabel = new QLabel("<b>Timing:</b>", this);
@@ -72,11 +75,13 @@ RecordDialog::RecordDialog(QWidget *parent, EventSequenceDatabase *submittedEsd,
   setWindowTitle("Set incident data"); 
 }
 
-void RecordDialog::setTimeStamp(const QString &text) {
+void RecordDialog::setTimeStamp(const QString &text) 
+{
   timeStamp = text;
 }
 
-void RecordDialog::initialize() {
+void RecordDialog::initialize() 
+{
   timeStampField->setText(timeStamp);
   sourceField->setText(source);
   descriptionField->setText(description);
@@ -84,103 +89,132 @@ void RecordDialog::initialize() {
   commentField->setText(comment);
 }
 
-void RecordDialog::setSource(const QString &text) {
+void RecordDialog::setSource(const QString &text) 
+{
   source = text;
 }
 
-QString RecordDialog::getTimeStamp() {
+QString RecordDialog::getTimeStamp() 
+{
   return timeStamp;
 }
 
-QString RecordDialog::getSource() {
+QString RecordDialog::getSource() 
+{
   return source;
 }
 
-QString RecordDialog::getDescription() {
+QString RecordDialog::getDescription() 
+{
   return description;
 }
 
-QString RecordDialog::getRaw() {
+QString RecordDialog::getRaw() 
+{
   return raw;
 }
 
-QString RecordDialog::getComment() {
+QString RecordDialog::getComment() 
+{
   return comment;
 }
 
-int RecordDialog::getExitStatus() {
+int RecordDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void RecordDialog::cancelAndClose() {
+void RecordDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void RecordDialog::setTimeStamp(QString &text) {
+void RecordDialog::setTimeStamp(QString &text) 
+{
   timeStamp = text;
 }
 
-void RecordDialog::setSource(QString &text) {
+void RecordDialog::setSource(QString &text) 
+{
   source = text;
 }
 
-void RecordDialog::setDescription(QString &text) {
+void RecordDialog::setDescription(QString &text) 
+{
   description = text;
 }
 
-void RecordDialog::setRaw(QString &text) {
+void RecordDialog::setRaw(QString &text) 
+{
   raw = text;
 }
 
-void RecordDialog::setComment(QString &text) {
+void RecordDialog::setComment(QString &text) 
+{
   comment = text;
 }
 
-void RecordDialog::saveAndClose() {
+void RecordDialog::saveAndClose() 
+{
   description = descriptionField->toPlainText();
   raw = rawField->toPlainText();
-  while (raw.endsWith("\n")) {
-    raw = raw.left(raw.length() - 1);
-  }
+  while (raw.endsWith("\n")) 
+    {
+      raw = raw.left(raw.length() - 1);
+    }
   comment = commentField->toPlainText();
-  if (description == "") {
-    QPointer<QMessageBox> errorBox = new QMessageBox(this);
-    errorBox->setText(tr("<b>ERROR</b>"));
-    errorBox->setInformativeText("A description for the incident is required.");
-    errorBox->exec();
-    return;
-  } else if (timeStamp == "") {
+  if (description == "") 
+    {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
-    errorBox->setText(tr("<b>ERROR</b>"));
-    errorBox->setInformativeText("A time stamp for the incident is required.");
-    errorBox->exec();
-    return;
-  } else if (source == "") {
-    QPointer<QMessageBox> errorBox = new QMessageBox(this);
-    errorBox->setText(tr("<b>ERROR</b>"));
-    errorBox->setInformativeText("A source for the incident is required.");
-    errorBox->exec();
-    return;
-  } else {
-    exitStatus = 0;
-    this->close();
-  }
+      errorBox->setText(tr("<b>ERROR</b>"));
+      errorBox->setInformativeText("A description for the incident is required.");
+      errorBox->exec();
+      return;
+    }
+  else if (timeStamp == "") 
+    {
+      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setText(tr("<b>ERROR</b>"));
+      errorBox->setInformativeText("A time stamp for the incident is required.");
+      errorBox->exec();
+      return;
+    }
+  else if (source == "") 
+    {
+      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setText(tr("<b>ERROR</b>"));
+      errorBox->setInformativeText("A source for the incident is required.");
+      errorBox->exec();
+      return;
+    }
+  else 
+    {
+      exitStatus = 0;
+      this->close();
+    }
 }
 
-bool RecordDialog::eventFilter(QObject *object, QEvent *event) {
-  if (event->type() == QEvent::Wheel) {
-    QWheelEvent *wheelEvent = (QWheelEvent*) event;
-    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
-    if (textEdit) {
-      if(wheelEvent->modifiers() & Qt::ControlModifier) {
-        if (wheelEvent->angleDelta().y() > 0) {
-	  textEdit->zoomIn(1);
-	} else if (wheelEvent->angleDelta().y() < 0) {
-	  textEdit->zoomOut(1);
+bool RecordDialog::eventFilter(QObject *object, QEvent *event) 
+{
+  if (event->type() == QEvent::Wheel) 
+    {
+      QWheelEvent *wheelEvent = (QWheelEvent*) event;
+      QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+      if (textEdit) 
+	{
+	  if(wheelEvent->modifiers() & Qt::ControlModifier) 
+	    {
+	      if (wheelEvent->angleDelta().y() > 0) 
+		{
+		  textEdit->zoomIn(1);
+		}
+	      else if (wheelEvent->angleDelta().y() < 0) 
+		{
+		  textEdit->zoomOut(1);
+		}
+	    }
 	}
-      }
     }
-  }
   return false;
 }

@@ -4,8 +4,8 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
 				       QVector<QString> submittedEntities,
 				       QVector<QString> submittedDescriptions,
 				       QVector<QString> submittedModes)
-  : QDialog(parent) {
-
+  : QDialog(parent) 
+{
   entities = submittedEntities;
   descriptions = submittedDescriptions;
   modes = submittedModes;
@@ -22,16 +22,17 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
   tableWidget->setHorizontalHeaderItem(3, headerFour);
   
   // Now let's fill the table
-  for (QVector<QString>::size_type i = 0; i != entities.length(); i++) {
-    QTableWidgetItem *newId = new QTableWidgetItem(entities[i], 0);
-    QTableWidgetItem *newLabel = new QTableWidgetItem(entities[i], 0);
-    QTableWidgetItem *newDescription = new QTableWidgetItem(descriptions[i], 0);
-    QTableWidgetItem *newMode = new QTableWidgetItem(modes[i], 0);
-    tableWidget->setItem(i, 0, newId);
-    tableWidget->setItem(i, 1, newLabel);
-    tableWidget->setItem(i, 2, newDescription);
-    tableWidget->setItem(i, 3, newMode);
-  }
+  for (QVector<QString>::size_type i = 0; i != entities.length(); i++) 
+    {
+      QTableWidgetItem *newId = new QTableWidgetItem(entities[i], 0);
+      QTableWidgetItem *newLabel = new QTableWidgetItem(entities[i], 0);
+      QTableWidgetItem *newDescription = new QTableWidgetItem(descriptions[i], 0);
+      QTableWidgetItem *newMode = new QTableWidgetItem(modes[i], 0);
+      tableWidget->setItem(i, 0, newId);
+      tableWidget->setItem(i, 1, newLabel);
+      tableWidget->setItem(i, 2, newDescription);
+      tableWidget->setItem(i, 3, newMode);
+    }
 
   // Let's create the other objects now.
   addAttributeButton = new QPushButton(tr("Add attribute"), this);
@@ -64,152 +65,197 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
   this->resize(width, height);
 }
 
-void NodeSettingsDialog::cancelAndClose() {
+void NodeSettingsDialog::cancelAndClose() 
+{
   this->close();
 }
 
-void NodeSettingsDialog::exportAndClose() {
+void NodeSettingsDialog::exportAndClose() 
+{
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) {
-    if(!fileName.endsWith(".csv")) {
-      fileName.append(".csv");
-    }
-    // And we create a file outstream.  
-    std::ofstream fileOut(fileName.toStdString().c_str());
-    // Let us first create the header
-    for (int i = 0; i != tableWidget->columnCount(); i++) {
-      QString currentHeader = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
-      fileOut << "\"" << doubleQuote(currentHeader).toStdString() << "\"";
-      if (i != tableWidget ->columnCount() - 1) {
-	fileOut << ",";
-      } else {
-	fileOut << "\n";
-      }
-    }
-    // Then we write the table contents.
-    for (int i = 0; i != tableWidget->rowCount(); i++) {
-      for (int j = 0; j != tableWidget->columnCount(); j++) {
-	QString currentCell = tableWidget->item(i, j)->data(Qt::DisplayRole).toString();
-	fileOut << "\"" << doubleQuote(currentCell).toStdString() << "\"";
-	if (j != tableWidget->columnCount() - 1) {
-	  fileOut << ",";
-	} else {
-	  fileOut << "\n";
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
 	}
-      }
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // Let us first create the header
+      for (int i = 0; i != tableWidget->columnCount(); i++) 
+	{
+	  QString currentHeader = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
+	  fileOut << "\"" << doubleQuote(currentHeader).toStdString() << "\"";
+	  if (i != tableWidget ->columnCount() - 1) 
+	    {
+	      fileOut << ",";
+	    }
+	  else 
+	    {
+	      fileOut << "\n";
+	    }
+	}
+      // Then we write the table contents.
+      for (int i = 0; i != tableWidget->rowCount(); i++) 
+	{
+	  for (int j = 0; j != tableWidget->columnCount(); j++) 
+	    {
+	      QString currentCell = tableWidget->item(i, j)->data(Qt::DisplayRole).toString();
+	      fileOut << "\"" << doubleQuote(currentCell).toStdString() << "\"";
+	      if (j != tableWidget->columnCount() - 1) 
+		{
+		  fileOut << ",";
+		}
+	      else 
+		{
+		  fileOut << "\n";
+		}
+	    }
+	}
+      // And then we are finished.
+      fileOut.close();
     }
-    // And then we are finished.
-    fileOut.close();
-  }
   this->close();
 }
 
-void NodeSettingsDialog::addAttribute() {
+void NodeSettingsDialog::addAttribute() 
+{
   QPointer<AttributeSelectionDialog> attributeSelectionDialog = new AttributeSelectionDialog(this, ENTITY);
   attributeSelectionDialog->exec();
-  if (attributeSelectionDialog->getExitStatus() == 0) {
-    bool valued = attributeSelectionDialog->getChecked();
-    QString attribute = attributeSelectionDialog->getAttribute();
-    QString headerText = "";
-    if (valued) {
-      headerText = attribute + " (values)";
-    } else {
-      headerText = attribute + " (boolean)";
-    }
-    QTableWidgetItem *newHeader = new QTableWidgetItem(headerText, 0);
-    tableWidget->setColumnCount(tableWidget->columnCount() + 1);
-    tableWidget->setHorizontalHeaderItem(tableWidget->columnCount() - 1, newHeader);
-    QMap<QString, QString> valuesMap;
-    QVector<QString> attributesVec;
-    attributesVec.push_back(attribute);
-    findChildren(attribute, &attributesVec);
-    QVectorIterator<QString> it(attributesVec);
-    while (it.hasNext()) {
-      QString currentAttribute = it.next();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT entity, value FROM attributes_to_entities "
-		     "WHERE attribute = :attribute");
-      query->bindValue(":attribute", currentAttribute);
-      query->exec();
-      while (query->next()) {
-	QString currentEntity = query->value(0).toString();
-	QString currentValue = query->value(1).toString();
-	if (attributesVec.begin() == currentAttribute) {
-	  if (valued && currentValue != "") {
-	    valuesMap[currentEntity] = currentValue;
-	  } else if (!valued) {
-	    valuesMap[currentEntity] = "1";
-	  }
-	} else {
-	  if (!valued) {
-	    valuesMap[currentEntity] = "1";
-	  }
+  if (attributeSelectionDialog->getExitStatus() == 0) 
+    {
+      bool valued = attributeSelectionDialog->getChecked();
+      QString attribute = attributeSelectionDialog->getAttribute();
+      QString headerText = "";
+      if (valued) 
+	{
+	  headerText = attribute + " (values)";
 	}
-      }
-      delete query;
-    }
-    qApp->setOverrideCursor(Qt::WaitCursor);
-    for (int i = 0; i != tableWidget->rowCount(); i++) {
-      if (valuesMap.keys().length() > 0) {
-	for (QVector<QString>::size_type j = 0; j != valuesMap.keys().length(); j++) {
-	  QString currentEntity = valuesMap.keys()[j];
-	  QString currentValue = valuesMap[currentEntity];
-	  if (tableWidget->item(i, 0)->data(Qt::DisplayRole).toString() == currentEntity) {
-	    QTableWidgetItem *newEntry = new QTableWidgetItem(currentValue, 0);
-	    tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
-	    break;
-	  } else {
-	    QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
-	    tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
-	  }
+      else 
+	{
+	  headerText = attribute + " (boolean)";
 	}
-      } else {
-	QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
-	tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
-      }
+      QTableWidgetItem *newHeader = new QTableWidgetItem(headerText, 0);
+      tableWidget->setColumnCount(tableWidget->columnCount() + 1);
+      tableWidget->setHorizontalHeaderItem(tableWidget->columnCount() - 1, newHeader);
+      QMap<QString, QString> valuesMap;
+      QVector<QString> attributesVec;
+      attributesVec.push_back(attribute);
+      findChildren(attribute, &attributesVec);
+      QVectorIterator<QString> it(attributesVec);
+      while (it.hasNext()) 
+	{
+	  QString currentAttribute = it.next();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT entity, value FROM attributes_to_entities "
+			 "WHERE attribute = :attribute");
+	  query->bindValue(":attribute", currentAttribute);
+	  query->exec();
+	  while (query->next()) 
+	    {
+	      QString currentEntity = query->value(0).toString();
+	      QString currentValue = query->value(1).toString();
+	      if (attributesVec.begin() == currentAttribute) 
+		{
+		  if (valued && currentValue != "") 
+		    {
+		      valuesMap[currentEntity] = currentValue;
+		    }
+		  else if (!valued) 
+		    {
+		      valuesMap[currentEntity] = "1";
+		    }
+		}
+	      else 
+		{
+		  if (!valued) 
+		    {
+		      valuesMap[currentEntity] = "1";
+		    }
+		}
+	    }
+	  delete query;
+	}
+      qApp->setOverrideCursor(Qt::WaitCursor);
+      for (int i = 0; i != tableWidget->rowCount(); i++) 
+	{
+	  if (valuesMap.keys().length() > 0) 
+	    {
+	      for (QVector<QString>::size_type j = 0; j != valuesMap.keys().length(); j++) 
+		{
+		  QString currentEntity = valuesMap.keys()[j];
+		  QString currentValue = valuesMap[currentEntity];
+		  if (tableWidget->item(i, 0)->data(Qt::DisplayRole).toString() == currentEntity) 
+		    {
+		      QTableWidgetItem *newEntry = new QTableWidgetItem(currentValue, 0);
+		      tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
+		      break;
+		    }
+		  else 
+		    {
+		      QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
+		      tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
+		    }
+		}
+	    }
+	  else 
+	    {
+	      QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
+	      tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
+	    }
+	}
+      qApp->restoreOverrideCursor();
+      qApp->processEvents();
     }
-    qApp->restoreOverrideCursor();
-    qApp->processEvents();
-  }
 }
 
-void NodeSettingsDialog::removeAttribute() {
+void NodeSettingsDialog::removeAttribute() 
+{
   // Only do this if we actually have attributes added.
-  if (tableWidget->columnCount() > 4) {
-    QVector<QString> attributes;
-    for (int i = 4; i != tableWidget->columnCount(); i++) {
-      QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
-      attributes.push_back(current);
-    }
-    QPointer<ComboBoxDialog> attributeDialog = new ComboBoxDialog(this, attributes);
-    attributeDialog->setWindowTitle("Select attribute to remove");
-    attributeDialog->exec();
-    if (attributeDialog->getExitStatus() == 0) {
-      QString attribute = attributeDialog->getSelection();
-      for (int i = 4; i != tableWidget->columnCount();) {
-	QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
-	if (current == attribute) {
-	  tableWidget->removeColumn(i);
-	  break;
-	} else {
-	  i++;
+  if (tableWidget->columnCount() > 4) 
+    {
+      QVector<QString> attributes;
+      for (int i = 4; i != tableWidget->columnCount(); i++) 
+	{
+	  QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
+	  attributes.push_back(current);
 	}
-      } 
-    }
-  }    
+      QPointer<ComboBoxDialog> attributeDialog = new ComboBoxDialog(this, attributes);
+      attributeDialog->setWindowTitle("Select attribute to remove");
+      attributeDialog->exec();
+      if (attributeDialog->getExitStatus() == 0) 
+	{
+	  QString attribute = attributeDialog->getSelection();
+	  for (int i = 4; i != tableWidget->columnCount();) 
+	    {
+	      QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
+	      if (current == attribute) 
+		{
+		  tableWidget->removeColumn(i);
+		  break;
+		}
+	      else 
+		{
+		  i++;
+		}
+	    } 
+	}
+    }    
 }
 
 
-void NodeSettingsDialog::findChildren(QString father, QVector<QString> *children) {
+void NodeSettingsDialog::findChildren(QString father, QVector<QString> *children) 
+{
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM entity_attributes WHERE father = :father");
   query->bindValue(":father", father);
   query->exec();
-  while (query->next()) {
-    QString currentChild = query->value(0).toString();
-    children->push_back(currentChild);
-    findChildren(currentChild, children);
-  }
+  while (query->next()) 
+    {
+      QString currentChild = query->value(0).toString();
+      children->push_back(currentChild);
+      findChildren(currentChild, children);
+    }
   delete query;
 }

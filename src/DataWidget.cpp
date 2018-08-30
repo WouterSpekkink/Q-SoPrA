@@ -1,6 +1,7 @@
 #include "../include/DataWidget.h"
 
-DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) {
+DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) 
+{
   esd = submittedEsd;
   currentData = "";
   currentRow = 0;
@@ -129,7 +130,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   setLayout(mainLayout);
 }
 
-void DataWidget::setData(const int index, RecordDialog *recordDialog, const QString type) {
+void DataWidget::setData(const int index, RecordDialog *recordDialog, const QString type) 
+{
   int order = index + 1;
   QString timeStamp = recordDialog->getTimeStamp();
   QString description = recordDialog->getDescription();
@@ -137,526 +139,618 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
   QString comment = recordDialog->getComment();
   QString source = recordDialog->getSource();
   QSqlQuery *query = new QSqlQuery;
-  if (type == NEW) {
-    query->prepare("INSERT INTO incidents (ch_order, timestamp, description, "
-		   "raw, comment, source) "
-		   "VALUES (:order, :timestamp, :description, :raw, :comment, :source)");
-    query->bindValue(":order", order);
-    query->bindValue(":timestamp", timeStamp);
-    query->bindValue(":description", description);
-    query->bindValue(":raw", raw);
-    query->bindValue(":comment", comment);
-    query->bindValue(":source", source);
-    query->exec();
-    incidentsModel->select();
-    incidentsModel->sort(1, Qt::AscendingOrder);
-    updateTable();
-  } else {
-    query->prepare("UPDATE incidents "
-		   "SET timestamp = :timestamp, description = :description, raw = :raw, "
-		   "comment = :comment, source = :source WHERE ch_order = :order");
-    query->bindValue(":timestamp", timeStamp);
-    query->bindValue(":description", description);
-    query->bindValue(":raw", raw);
-    query->bindValue(":comment", comment);
-    query->bindValue(":source", source);
-    query->bindValue(":order", order);
-    query->exec();
-    incidentsModel->select();
-    incidentsModel->sort(1, Qt::AscendingOrder);
-    updateTable();
-  }
+  if (type == NEW) 
+    {
+      query->prepare("INSERT INTO incidents (ch_order, timestamp, description, "
+		     "raw, comment, source) "
+		     "VALUES (:order, :timestamp, :description, :raw, :comment, :source)");
+      query->bindValue(":order", order);
+      query->bindValue(":timestamp", timeStamp);
+      query->bindValue(":description", description);
+      query->bindValue(":raw", raw);
+      query->bindValue(":comment", comment);
+      query->bindValue(":source", source);
+      query->exec();
+      incidentsModel->select();
+      incidentsModel->sort(1, Qt::AscendingOrder);
+      updateTable();
+    }
+  else 
+    {
+      query->prepare("UPDATE incidents "
+		     "SET timestamp = :timestamp, description = :description, raw = :raw, "
+		     "comment = :comment, source = :source WHERE ch_order = :order");
+      query->bindValue(":timestamp", timeStamp);
+      query->bindValue(":description", description);
+      query->bindValue(":raw", raw);
+      query->bindValue(":comment", comment);
+      query->bindValue(":source", source);
+      query->bindValue(":order", order);
+      query->exec();
+      incidentsModel->select();
+      incidentsModel->sort(1, Qt::AscendingOrder);
+      updateTable();
+    }
   QModelIndex newIndex = tableView->model()->index(order, 0);
   tableView->setCurrentIndex(newIndex);
   delete query;
 }
 
-void DataWidget::appendRecord() {
+void DataWidget::appendRecord() 
+{
   recordDialog = new RecordDialog(this, esd, NEW);
   recordDialog->exec();
-  if (recordDialog->getExitStatus() == 0) {
-    int max = incidentsModel->rowCount();
-    setData(max, recordDialog, NEW);
-    delete recordDialog;
-  } else {
-    delete recordDialog;
-  }
+  if (recordDialog->getExitStatus() == 0) 
+    {
+      int max = incidentsModel->rowCount();
+      setData(max, recordDialog, NEW);
+      delete recordDialog;
+    }
+  else 
+    {
+      delete recordDialog;
+    }
   updateTable();
   eventGraph->checkCongruency();
   occurrenceGraph->checkCongruency();
 }
 
-void DataWidget::editRecord() {
-  if (tableView->currentIndex().isValid()) {
-    int currentOrder = tableView->currentIndex().row() + 1;
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT timestamp, source, description, raw, comment "
-		   "FROM incidents WHERE ch_order = :order");
-    query->bindValue(":order", currentOrder);
-    query->exec();
-    query->first();
-    QString timeStamp = query->value(0).toString();
-    QString source = query->value(1).toString();
-    QString description = query->value(2).toString();
-    QString raw = query->value(3).toString();
-    QString comment = query->value(4).toString();
-    
-    recordDialog = new RecordDialog(this, esd, OLD);
-    recordDialog->setTimeStamp(timeStamp);
-    recordDialog->setSource(source);
-    recordDialog->setDescription(description);
-    recordDialog->setRaw(raw);
-    recordDialog->setComment(comment);
-    recordDialog->initialize();
-    recordDialog->exec();
-    if (recordDialog->getExitStatus() != 1) {
-      setData(currentOrder - 1, recordDialog, OLD);
-      delete recordDialog;
-    } else {
-      delete recordDialog;
-    }
-    QModelIndex newIndex = tableView->model()->index(currentOrder - 1, 0);
-    tableView->setCurrentIndex(newIndex);
-    delete query;
-  }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
-}
-
-void DataWidget::insertRecordBefore() {
-  if (tableView->currentIndex().isValid()) {
-    int currentRow = tableView->selectionModel()->currentIndex().row();
-    recordDialog = new RecordDialog(this, esd, NEW);    
-    recordDialog->exec();
-    if (recordDialog->getExitStatus() != 1) {
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
-      query->bindValue(":oldOrder", currentRow);
-      query->exec();
-      setData(currentRow, recordDialog, NEW);
-      delete query;
-      delete recordDialog;
-     } else {
-      delete recordDialog;
-    }
-  }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
-}
-
-void DataWidget::insertRecordAfter() {
-  if (tableView->currentIndex().isValid()) {
-    int nextRow = tableView->selectionModel()->currentIndex().row() + 1;
-    recordDialog = new RecordDialog(this, esd, NEW);
-    recordDialog->exec();
-    if (recordDialog->getExitStatus() != 1) {
-      QSqlDatabase::database().transaction();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
-      query->bindValue(":oldOrder", nextRow);
-      query->exec();
-      QSqlDatabase::database().commit();
-      setData(nextRow, recordDialog, NEW);
-      delete query;
-      delete recordDialog;
-    } else {
-      delete recordDialog;
-    }
-  }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
-}
-
-void DataWidget::moveUp() {
-  if (tableView->currentIndex().isValid()) {
-    int currentOrder = tableView->currentIndex().row() + 1;
-    if (currentOrder != 1) {
-      QSqlDatabase::database().transaction();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("UPDATE incidents SET ch_order = 0 WHERE ch_order = :oldOrder");
-      query->bindValue(":oldOrder", currentOrder);
-      query->exec();
-      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = :oldOrder");
-      query->bindValue(":newOrder", currentOrder);
-      query->bindValue(":oldOrder", currentOrder - 1);
-      query->exec();
-      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
-      query->bindValue(":newOrder", currentOrder - 1);
-      query->exec();
-      QSqlDatabase::database().commit();
-      incidentsModel->sort(1, Qt::AscendingOrder);
-      incidentsModel->select();
-      updateTable();
-      tableView->selectRow(currentOrder - 2);
-      delete query;
-    }
-  }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
-}
-
-void DataWidget::moveDown() {
-  if (tableView->currentIndex().isValid()) {
-    int currentOrder = tableView->currentIndex().row() + 1;
-    if (currentOrder != tableView->verticalHeader()->count()) {
-      QSqlDatabase::database().transaction();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("UPDATE incidents SET ch_order = 0 WHERE ch_order = :oldOrder");
-      query->bindValue(":oldOrder", currentOrder);
-      query->exec();
-      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = :oldOrder");
-      query->bindValue(":newOrder", currentOrder);
-      query->bindValue(":oldOrder", currentOrder + 1);
-      query->exec();
-      query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
-      query->bindValue(":newOrder", currentOrder + 1);
-      query->exec();
-      QSqlDatabase::database().commit();
-      incidentsModel->sort(1, Qt::AscendingOrder);
-      incidentsModel->select();
-      updateTable();
-      tableView->selectRow(currentOrder);
-      delete query;
-    }
-  }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
-}
-
-void DataWidget::duplicateRow() {
-  if (tableView->currentIndex().isValid()) {
-    QSqlDatabase::database().transaction();
-    int currentOrder = tableView->selectionModel()->currentIndex().row() + 1;
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT timestamp, source, description, raw, comment "
-		   "FROM incidents WHERE ch_order = :order");
-    query->bindValue(":order", currentOrder);
-    query->exec();
-    query->first();
-    QString timeStamp = query->value(0).toString();
-    QString source = query->value(1).toString();
-    QString description = query->value(2).toString();
-    QString raw = query->value(3).toString();
-    QString comment = query->value(4).toString();
-    recordDialog = new RecordDialog(this, esd, OLD);
-    recordDialog->setTimeStamp(timeStamp);
-    recordDialog->setSource(source);
-    recordDialog->setDescription(description);
-    recordDialog->setRaw(raw);
-    recordDialog->setComment(comment);
-    recordDialog->initialize();
-    recordDialog->exec();
-    if (recordDialog->getExitStatus() == 0) {
-      query->prepare("UPDATE incidents SET ch_order = ch_order + 1 "
-		     "WHERE ch_order > :oldOrder");
-      query->bindValue(":oldOrder", currentOrder);
-      query->exec();
-      setData(currentOrder, recordDialog, NEW);
-      delete recordDialog;
-    } else {
-      delete recordDialog;
-    }
-    delete query;
-    QSqlDatabase::database().commit();
-    updateTable();
-    QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
-    tableView->setCurrentIndex(newIndex);
-  }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
-}
-
-void DataWidget::removeRow() {
-  if (tableView->currentIndex().isValid()) {
-    QPointer<QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Yes);
-    warningBox->addButton(QMessageBox::No);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("<h2>Are you sure?</h2>");
-    warningBox->setInformativeText("Removing an incident cannot be undone. "
-				   "Are you sure you want to remove this incident?");
-    if (warningBox->exec() == QMessageBox::Yes) {
+void DataWidget::editRecord() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
       int currentOrder = tableView->currentIndex().row() + 1;
-      QSqlDatabase::database().transaction();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+      query->prepare("SELECT timestamp, source, description, raw, comment "
+		     "FROM incidents WHERE ch_order = :order");
       query->bindValue(":order", currentOrder);
       query->exec();
       query->first();
-      int id = 0;
-      id = query->value(0).toInt();
-      query->prepare("DELETE FROM incidents WHERE id = :inc");
-      query->bindValue(":inc", id);
-      query->exec();
-      query->prepare("DELETE FROM attributes_to_incidents WHERE incident = :inc");
-      query->bindValue(":inc", id);
-      query->exec();
-      query->prepare("DELETE FROM attributes_to_incidents_sources WHERE incident = :inc");
-      query->bindValue(":inc", id);
-      query->exec();
-      query->prepare("DELETE FROM relationships_to_incidents WHERE incident = :inc");
-      query->bindValue(":inc", id);
-      query->exec();
-      query->prepare("DELETE FROM relationships_to_incidents_sources WHERE incident = :inc");
-      query->bindValue(":inc", id);
-      query->exec();
-      query->prepare("DELETE FROM linkages WHERE tail = :tail");
-      query->bindValue(":tail", id);
-      query->exec();
-      query->prepare("DELETE FROM linkages WHERE head = :head");
-      query->bindValue(":head", id);
-      query->exec();
-      query->prepare("DELETE FROM linkage_comments WHERE tail = :tail");
-      query->bindValue(":tail", id);
-      query->exec();
-      query->prepare("DELETE FROM linkage_comments WHERE head = :head");
-      query->bindValue(":head", id);
-      query->exec();
-      query->prepare("DELETE FROM incidents_to_cases WHERE incident = :inc");
-      query->bindValue(":inc", id);
-      query->exec();
-      query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
-      query->bindValue(":oldOrder", currentOrder - 1);
-      query->exec();
-      incidentsModel->select();
-      updateTable();
+      QString timeStamp = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString description = query->value(2).toString();
+      QString raw = query->value(3).toString();
+      QString comment = query->value(4).toString();
+    
+      recordDialog = new RecordDialog(this, esd, OLD);
+      recordDialog->setTimeStamp(timeStamp);
+      recordDialog->setSource(source);
+      recordDialog->setDescription(description);
+      recordDialog->setRaw(raw);
+      recordDialog->setComment(comment);
+      recordDialog->initialize();
+      recordDialog->exec();
+      if (recordDialog->getExitStatus() != 1) 
+	{
+	  setData(currentOrder - 1, recordDialog, OLD);
+	  delete recordDialog;
+	}
+      else 
+	{
+	  delete recordDialog;
+	}
       QModelIndex newIndex = tableView->model()->index(currentOrder - 1, 0);
       tableView->setCurrentIndex(newIndex);
       delete query;
-      QSqlDatabase::database().commit();
     }
-    delete warningBox;
-  }
   eventGraph->checkCongruency();
   occurrenceGraph->checkCongruency();
 }
 
-void DataWidget::findPrevious() {
-  if (currentFind != "") {
-    // If we have not selected a valid index, default to last row.
-    while (incidentsModel->canFetchMore()) {
-      incidentsModel->fetchMore();
+void DataWidget::insertRecordBefore() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      int currentRow = tableView->selectionModel()->currentIndex().row();
+      recordDialog = new RecordDialog(this, esd, NEW);    
+      recordDialog->exec();
+      if (recordDialog->getExitStatus() != 1) 
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
+	  query->bindValue(":oldOrder", currentRow);
+	  query->exec();
+	  setData(currentRow, recordDialog, NEW);
+	  delete query;
+	  delete recordDialog;
+	}
+      else 
+	{
+	  delete recordDialog;
+	}
     }
-    int currentOrder = incidentsModel->rowCount() - 1;
-    if (tableView->currentIndex().isValid()) {
-      currentOrder = tableView->currentIndex().row() + 1;
-    }
-    QString searchText = "%" + currentFind + "%";
-    QSqlQuery *query = new QSqlQuery;
-    if (findComboBox->currentText() == "Timing") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE timestamp LIKE :text "
-		     "AND ch_order < :order "
-		     "ORDER BY ch_order desc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Source") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE source LIKE :text "
-		     "AND ch_order < :order "
-		     "ORDER BY ch_order desc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Description") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE description LIKE :text "
-		     "AND ch_order < :order "
-		     "ORDER BY ch_order desc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Raw") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE raw LIKE :text "
-		     "AND ch_order < :order "
-		     "ORDER BY ch_order desc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Comment") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE comment LIKE :text "
-		     "AND ch_order < :order "
-		     "ORDER BY ch_order desc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    }
-    delete query;
-  }
+  eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
-void DataWidget::findNext() {
-  if (currentFind != "") {
-    // If we have not selected a valid index, default to the last row.
-    int currentOrder = 1;
-    if (tableView->currentIndex().isValid()) {
-      currentOrder = tableView->currentIndex().row() + 1;
+void DataWidget::insertRecordAfter() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      int nextRow = tableView->selectionModel()->currentIndex().row() + 1;
+      recordDialog = new RecordDialog(this, esd, NEW);
+      recordDialog->exec();
+      if (recordDialog->getExitStatus() != 1) 
+	{
+	  QSqlDatabase::database().transaction();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
+	  query->bindValue(":oldOrder", nextRow);
+	  query->exec();
+	  QSqlDatabase::database().commit();
+	  setData(nextRow, recordDialog, NEW);
+	  delete query;
+	  delete recordDialog;
+	}
+      else 
+	{
+	  delete recordDialog;
+	}
     }
-    QString searchText = "%" + currentFind + "%";
-    QSqlQuery *query = new QSqlQuery;
-    if (findComboBox->currentText() == "Timing") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE timestamp LIKE :text "
-		     "AND ch_order > :order "
-		     "ORDER BY ch_order asc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Source") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE source LIKE :text "
-		     "AND ch_order > :order "
-		     "ORDER BY ch_order asc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Description") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE description LIKE :text "
-		     "AND ch_order > :order "
-		     "ORDER BY ch_order asc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Raw") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE raw LIKE :text "
-		     "AND ch_order > :order "
-		     "ORDER BY ch_order asc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    } else if (findComboBox->currentText() == "Comment") {
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE comment LIKE :text "
-		     "AND ch_order > :order "
-		     "ORDER BY ch_order asc ");
-      query->bindValue(":text", searchText);
-      query->bindValue(":order", currentOrder);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) {
-	int newOrder = query->value(0).toInt();
-	tableView->selectRow(newOrder - 1);
-      }
-    }
-    delete query;
-  }
+  eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
 }
 
-void DataWidget::setFindKey(const QString &text) {
+void DataWidget::moveUp() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      int currentOrder = tableView->currentIndex().row() + 1;
+      if (currentOrder != 1) 
+	{
+	  QSqlDatabase::database().transaction();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("UPDATE incidents SET ch_order = 0 WHERE ch_order = :oldOrder");
+	  query->bindValue(":oldOrder", currentOrder);
+	  query->exec();
+	  query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = :oldOrder");
+	  query->bindValue(":newOrder", currentOrder);
+	  query->bindValue(":oldOrder", currentOrder - 1);
+	  query->exec();
+	  query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
+	  query->bindValue(":newOrder", currentOrder - 1);
+	  query->exec();
+	  QSqlDatabase::database().commit();
+	  incidentsModel->sort(1, Qt::AscendingOrder);
+	  incidentsModel->select();
+	  updateTable();
+	  tableView->selectRow(currentOrder - 2);
+	  delete query;
+	}
+    }
+  eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
+}
+
+void DataWidget::moveDown() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      int currentOrder = tableView->currentIndex().row() + 1;
+      if (currentOrder != tableView->verticalHeader()->count()) 
+	{
+	  QSqlDatabase::database().transaction();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("UPDATE incidents SET ch_order = 0 WHERE ch_order = :oldOrder");
+	  query->bindValue(":oldOrder", currentOrder);
+	  query->exec();
+	  query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = :oldOrder");
+	  query->bindValue(":newOrder", currentOrder);
+	  query->bindValue(":oldOrder", currentOrder + 1);
+	  query->exec();
+	  query->prepare("UPDATE incidents SET ch_order = :newOrder WHERE ch_order = 0");
+	  query->bindValue(":newOrder", currentOrder + 1);
+	  query->exec();
+	  QSqlDatabase::database().commit();
+	  incidentsModel->sort(1, Qt::AscendingOrder);
+	  incidentsModel->select();
+	  updateTable();
+	  tableView->selectRow(currentOrder);
+	  delete query;
+	}
+    }
+  eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
+}
+
+void DataWidget::duplicateRow() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      QSqlDatabase::database().transaction();
+      int currentOrder = tableView->selectionModel()->currentIndex().row() + 1;
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT timestamp, source, description, raw, comment "
+		     "FROM incidents WHERE ch_order = :order");
+      query->bindValue(":order", currentOrder);
+      query->exec();
+      query->first();
+      QString timeStamp = query->value(0).toString();
+      QString source = query->value(1).toString();
+      QString description = query->value(2).toString();
+      QString raw = query->value(3).toString();
+      QString comment = query->value(4).toString();
+      recordDialog = new RecordDialog(this, esd, OLD);
+      recordDialog->setTimeStamp(timeStamp);
+      recordDialog->setSource(source);
+      recordDialog->setDescription(description);
+      recordDialog->setRaw(raw);
+      recordDialog->setComment(comment);
+      recordDialog->initialize();
+      recordDialog->exec();
+      if (recordDialog->getExitStatus() == 0) 
+	{
+	  query->prepare("UPDATE incidents SET ch_order = ch_order + 1 "
+			 "WHERE ch_order > :oldOrder");
+	  query->bindValue(":oldOrder", currentOrder);
+	  query->exec();
+	  setData(currentOrder, recordDialog, NEW);
+	  delete recordDialog;
+	}
+      else 
+	{
+	  delete recordDialog;
+	}
+      delete query;
+      QSqlDatabase::database().commit();
+      updateTable();
+      QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
+      tableView->setCurrentIndex(newIndex);
+    }
+  eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
+}
+
+void DataWidget::removeRow() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Removing an incident cannot be undone. "
+				     "Are you sure you want to remove this incident?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  int currentOrder = tableView->currentIndex().row() + 1;
+	  QSqlDatabase::database().transaction();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  int id = 0;
+	  id = query->value(0).toInt();
+	  query->prepare("DELETE FROM incidents WHERE id = :inc");
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("DELETE FROM attributes_to_incidents WHERE incident = :inc");
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("DELETE FROM attributes_to_incidents_sources WHERE incident = :inc");
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents WHERE incident = :inc");
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents_sources WHERE incident = :inc");
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages WHERE tail = :tail");
+	  query->bindValue(":tail", id);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages WHERE head = :head");
+	  query->bindValue(":head", id);
+	  query->exec();
+	  query->prepare("DELETE FROM linkage_comments WHERE tail = :tail");
+	  query->bindValue(":tail", id);
+	  query->exec();
+	  query->prepare("DELETE FROM linkage_comments WHERE head = :head");
+	  query->bindValue(":head", id);
+	  query->exec();
+	  query->prepare("DELETE FROM incidents_to_cases WHERE incident = :inc");
+	  query->bindValue(":inc", id);
+	  query->exec();
+	  query->prepare("UPDATE incidents SET ch_order = ch_order - 1 WHERE ch_order > :oldOrder");
+	  query->bindValue(":oldOrder", currentOrder - 1);
+	  query->exec();
+	  incidentsModel->select();
+	  updateTable();
+	  QModelIndex newIndex = tableView->model()->index(currentOrder - 1, 0);
+	  tableView->setCurrentIndex(newIndex);
+	  delete query;
+	  QSqlDatabase::database().commit();
+	}
+      delete warningBox;
+    }
+  eventGraph->checkCongruency();
+  occurrenceGraph->checkCongruency();
+}
+
+void DataWidget::findPrevious() 
+{
+  if (currentFind != "") 
+    {
+      // If we have not selected a valid index, default to last row.
+      while (incidentsModel->canFetchMore()) 
+	{
+	  incidentsModel->fetchMore();
+	}
+      int currentOrder = incidentsModel->rowCount() - 1;
+      if (tableView->currentIndex().isValid()) 
+	{
+	  currentOrder = tableView->currentIndex().row() + 1;
+	}
+      QString searchText = "%" + currentFind + "%";
+      QSqlQuery *query = new QSqlQuery;
+      if (findComboBox->currentText() == "Timing") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE timestamp LIKE :text "
+			 "AND ch_order < :order "
+			 "ORDER BY ch_order desc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Source") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE source LIKE :text "
+			 "AND ch_order < :order "
+			 "ORDER BY ch_order desc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Description") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE description LIKE :text "
+			 "AND ch_order < :order "
+			 "ORDER BY ch_order desc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Raw") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE raw LIKE :text "
+			 "AND ch_order < :order "
+			 "ORDER BY ch_order desc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Comment") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE comment LIKE :text "
+			 "AND ch_order < :order "
+			 "ORDER BY ch_order desc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      delete query;
+    }
+}
+
+void DataWidget::findNext() 
+{
+  if (currentFind != "") 
+    {
+      // If we have not selected a valid index, default to the last row.
+      int currentOrder = 1;
+      if (tableView->currentIndex().isValid()) 
+	{
+	  currentOrder = tableView->currentIndex().row() + 1;
+	}
+      QString searchText = "%" + currentFind + "%";
+      QSqlQuery *query = new QSqlQuery;
+      if (findComboBox->currentText() == "Timing") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE timestamp LIKE :text "
+			 "AND ch_order > :order "
+			 "ORDER BY ch_order asc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Source") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE source LIKE :text "
+			 "AND ch_order > :order "
+			 "ORDER BY ch_order asc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Description") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE description LIKE :text "
+			 "AND ch_order > :order "
+			 "ORDER BY ch_order asc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Raw") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE raw LIKE :text "
+			 "AND ch_order > :order "
+			 "ORDER BY ch_order asc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      else if (findComboBox->currentText() == "Comment") 
+	{
+	  query->prepare("SELECT ch_order FROM incidents "
+			 "WHERE comment LIKE :text "
+			 "AND ch_order > :order "
+			 "ORDER BY ch_order asc ");
+	  query->bindValue(":text", searchText);
+	  query->bindValue(":order", currentOrder);
+	  query->exec();
+	  query->first();
+	  if (!query->isNull(0)) 
+	    {
+	      int newOrder = query->value(0).toInt();
+	      tableView->selectRow(newOrder - 1);
+	    }
+	}
+      delete query;
+    }
+}
+
+void DataWidget::setFindKey(const QString &text) 
+{
   currentFind = text;
 }
 
-void DataWidget::resetHeader(int header) {
+void DataWidget::resetHeader(int header) 
+{
 
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 
-void DataWidget::setEventGraph(EventGraphWidget *egw) {
+void DataWidget::setEventGraph(EventGraphWidget *egw) 
+{
   eventGraph = egw;
 }
 
-void DataWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) {
+void DataWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) 
+{
   occurrenceGraph = ogw;
 }
 
-void DataWidget::updateTable() {
-  while (incidentsModel->canFetchMore()) {
-    incidentsModel->fetchMore();
-  }
+void DataWidget::updateTable() 
+{
+  while (incidentsModel->canFetchMore()) 
+    {
+      incidentsModel->fetchMore();
+    }
 }
 
-void DataWidget::saveCurrent(const QModelIndex &index) {
+void DataWidget::saveCurrent(const QModelIndex &index) 
+{
   currentData = tableView->model()->
     index(index.row(), index.column()).data(Qt::DisplayRole).toString();
 }
 
-void DataWidget::checkChange(const QModelIndex &topLeft, const QModelIndex &bottomRight) {
-  if (topLeft == bottomRight) {
-    if (topLeft.column() == 2 ||
-	topLeft.column() == 3 ||
-	topLeft.column() == 6) {
-      if (tableView->model()->index(topLeft.row(),
-				    topLeft.column()).data().toString().trimmed() == "") {
-	tableView->model()->setData(topLeft, currentData);
-      }
+void DataWidget::checkChange(const QModelIndex &topLeft, const QModelIndex &bottomRight) 
+{
+  if (topLeft == bottomRight) 
+    {
+      if (topLeft.column() == 2 ||
+	  topLeft.column() == 3 ||
+	  topLeft.column() == 6) 
+	{
+	  if (tableView->model()->index(topLeft.row(),
+					topLeft.column()).data().toString().trimmed() == "") 
+	    {
+	      tableView->model()->setData(topLeft, currentData);
+	    }
+	}
     }
-  }
 }
 
-void DataWidget::setButtons() {
-  if (tableView->currentIndex().isValid()) {
-    editRecordButton->setEnabled(true);
-    removeRowButton->setEnabled(true);
-    duplicateRowButton->setEnabled(true);
-    insertRecordBeforeButton->setEnabled(true);
-    insertRecordAfterButton->setEnabled(true);
-    if (tableView->currentIndex().row() == 0) {
+void DataWidget::setButtons() 
+{
+  if (tableView->currentIndex().isValid()) 
+    {
+      editRecordButton->setEnabled(true);
+      removeRowButton->setEnabled(true);
+      duplicateRowButton->setEnabled(true);
+      insertRecordBeforeButton->setEnabled(true);
+      insertRecordAfterButton->setEnabled(true);
+      if (tableView->currentIndex().row() == 0) 
+	{
+	  moveUpButton->setEnabled(false);
+	}
+      else 
+	{
+	  moveUpButton->setEnabled(true);;
+	}
+      if (tableView->currentIndex().row() == tableView->verticalHeader()->count() - 1) 
+	{
+	  moveDownButton->setEnabled(false);
+	}
+      else 
+	{
+	  moveDownButton->setEnabled(true);
+	}
+    }
+  else 
+    {
+      editRecordButton->setEnabled(false);
+      removeRowButton->setEnabled(false);
+      duplicateRowButton->setEnabled(false);
+      insertRecordBeforeButton->setEnabled(false);
       moveUpButton->setEnabled(false);
-    } else {
-      moveUpButton->setEnabled(true);;
-    }
-    if (tableView->currentIndex().row() == tableView->verticalHeader()->count() - 1) {
+      insertRecordAfterButton->setEnabled(false);
       moveDownButton->setEnabled(false);
-    } else {
-      moveDownButton->setEnabled(true);
-    }
-  } else {
-    editRecordButton->setEnabled(false);
-    removeRowButton->setEnabled(false);
-    duplicateRowButton->setEnabled(false);
-    insertRecordBeforeButton->setEnabled(false);
-    moveUpButton->setEnabled(false);
-    insertRecordAfterButton->setEnabled(false);
-    moveDownButton->setEnabled(false);
-  }    
+    }    
 }

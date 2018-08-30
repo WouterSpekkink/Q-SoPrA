@@ -1,6 +1,7 @@
 #include "../include/LinkageTypeDialog.h"
 
-LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent) {
+LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent) 
+{
   name = "";
   subName = "";
   description = "";
@@ -71,112 +72,133 @@ LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent) {
   
 }
 
-void LinkageTypeDialog::setName(const QString &newName) {
+void LinkageTypeDialog::setName(const QString &newName) 
+{
   name = newName;
 }
 
-void LinkageTypeDialog::checkPastButton() {
+void LinkageTypeDialog::checkPastButton() 
+{
   futureButton->setChecked(false);
   direction = PAST;
 }
 
-void LinkageTypeDialog::checkFutureButton() {
+void LinkageTypeDialog::checkFutureButton() 
+{
   pastButton->setChecked(false);
   direction = FUTURE;
 }
 
-void LinkageTypeDialog::submitName(const QString &submittedName) {
+void LinkageTypeDialog::submitName(const QString &submittedName) 
+{
   name = submittedName;
   subName = submittedName;
   nameField->setText(name);
 }
 
-void LinkageTypeDialog::submitDescription(const QString &submittedDescription) {
+void LinkageTypeDialog::submitDescription(const QString &submittedDescription) 
+{
   description = submittedDescription;
   descriptionField->setText(description);
 }
 
-void LinkageTypeDialog::submitQuestion(const QString &submittedQuestion) {
+void LinkageTypeDialog::submitQuestion(const QString &submittedQuestion) 
+{
   question = submittedQuestion;
   questionField->setText(question);
 }
 
-void LinkageTypeDialog::submitDirection(const QString &submittedDirection) {
+void LinkageTypeDialog::submitDirection(const QString &submittedDirection) 
+{
   direction = submittedDirection;
-   if (direction == PAST) {
-    pastButton->setChecked(true);
-    futureButton->setChecked(false);
-  } else if (direction == FUTURE) {
-    pastButton->setChecked(false);
-    futureButton->setChecked(true);
-  }
+  if (direction == PAST) 
+    {
+      pastButton->setChecked(true);
+      futureButton->setChecked(false);
+    }
+  else if (direction == FUTURE) 
+    {
+      pastButton->setChecked(false);
+      futureButton->setChecked(true);
+    }
 }
 
-void LinkageTypeDialog::fixDirection() {
+void LinkageTypeDialog::fixDirection() 
+{
   pastButton->setEnabled(false);
   futureButton->setEnabled(false);
 }
 
-QString LinkageTypeDialog::getName() {
+QString LinkageTypeDialog::getName() 
+{
   return name;
 }
 
-QString LinkageTypeDialog::getDescription() {
+QString LinkageTypeDialog::getDescription() 
+{
   return description;
 }
 
 
-QString LinkageTypeDialog::getQuestion() {
+QString LinkageTypeDialog::getQuestion() 
+{
   return question;
 }
 
-QString LinkageTypeDialog::getDirection() {
+QString LinkageTypeDialog::getDirection() 
+{
   return direction;
 }
 
-int LinkageTypeDialog::getExitStatus() {
+int LinkageTypeDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void LinkageTypeDialog::cancelAndClose() {
+void LinkageTypeDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void LinkageTypeDialog::saveAndClose() {
+void LinkageTypeDialog::saveAndClose() 
+{
   description = descriptionField->toPlainText().trimmed();
   question = questionField->toPlainText().trimmed();
   name = name.trimmed();
-  if (description == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Description required.");
-    warningBox->setInformativeText("A linkage type requires a description.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (question == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Question required.");
-    warningBox->setInformativeText("A linkage type requires a question.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
-  if (name == "") {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Name required.");
-    warningBox->setInformativeText("A linkage type requires a name.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (description == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Description required.");
+      warningBox->setInformativeText("A linkage type requires a description.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (question == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Question required.");
+      warningBox->setInformativeText("A linkage type requires a question.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  if (name == "") 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Name required.");
+      warningBox->setInformativeText("A linkage type requires a name.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM linkage_types WHERE name = :name");
@@ -184,16 +206,17 @@ void LinkageTypeDialog::saveAndClose() {
   query->exec();
   query->first();
   empty = query->isNull(0);
-  if (!empty && name != subName) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("Duplicate name.");
-    warningBox->setInformativeText("You cannot create linkage types with identical names.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  }
+  if (!empty && name != subName) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Duplicate name.");
+      warningBox->setInformativeText("You cannot create linkage types with identical names.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   delete query;
   exitStatus = 0;
   this->close();

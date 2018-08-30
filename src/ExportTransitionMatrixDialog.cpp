@@ -1,6 +1,7 @@
 #include "../include/ExportTransitionMatrixDialog.h"
 
-ExportTransitionMatrixDialog::ExportTransitionMatrixDialog(QWidget *parent) : QDialog(parent) {
+ExportTransitionMatrixDialog::ExportTransitionMatrixDialog(QWidget *parent) : QDialog(parent) 
+{
   exitStatus = 1;
 
   typeLabel = new QLabel(tr("<b>Matrix type:</b>"), this);
@@ -58,44 +59,53 @@ ExportTransitionMatrixDialog::ExportTransitionMatrixDialog(QWidget *parent) : QD
   setWindowTitle("Set transition matrix parameters");
 }
 
-void ExportTransitionMatrixDialog::setModes() {
+void ExportTransitionMatrixDialog::setModes() 
+{
   modesButton->setChecked(true);
   attributesButton->setChecked(false);
 }
 
-void ExportTransitionMatrixDialog::setAttributes() {
+void ExportTransitionMatrixDialog::setAttributes() 
+{
   attributesButton->setChecked(true);
   modesButton->setChecked(false);
 }
 
-void ExportTransitionMatrixDialog::setRaw() {
+void ExportTransitionMatrixDialog::setRaw() 
+{
   rawButton->setChecked(true);
   probButton->setChecked(false);
 }
 
-void ExportTransitionMatrixDialog::setProb() {
+void ExportTransitionMatrixDialog::setProb() 
+{
   probButton->setChecked(true);
   rawButton->setChecked(false);
 }
 
-bool ExportTransitionMatrixDialog::isMode() {
+bool ExportTransitionMatrixDialog::isMode() 
+{
   return modesButton->isChecked();
 }
 
-bool ExportTransitionMatrixDialog::isProbability() {
+bool ExportTransitionMatrixDialog::isProbability() 
+{
   return probButton->isChecked();
 }
 
-int ExportTransitionMatrixDialog::getExitStatus() {
+int ExportTransitionMatrixDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-void ExportTransitionMatrixDialog::cancelAndClose() {
+void ExportTransitionMatrixDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void ExportTransitionMatrixDialog::saveAndClose() {
+void ExportTransitionMatrixDialog::saveAndClose() 
+{
   exitStatus = 0;
   this->close();
 }

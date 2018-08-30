@@ -8,7 +8,8 @@ const qreal Pi = 3.14;
 
 DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
 			   QString submittedName, QGraphicsItem *parent)
-  : QGraphicsLineItem(parent) {
+  : QGraphicsLineItem(parent) 
+{
   start = startItem;
   end = endItem;
   color = Qt::black;
@@ -22,11 +23,13 @@ DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString
   comment = "";
 }
 
-QRectF DirectedEdge::boundingRect() const {
+QRectF DirectedEdge::boundingRect() const 
+{
   return strokePath.controlPointRect(); 
 }
 
-void DirectedEdge::updatePosition() {
+void DirectedEdge::updatePosition() 
+{
   calculate();
   QPainterPath myPath;
   myPath.moveTo(start->pos());
@@ -34,7 +37,8 @@ void DirectedEdge::updatePosition() {
   strokePath = myPath;
 }
 
-void DirectedEdge::calculate() {
+void DirectedEdge::calculate() 
+{
   qreal dX = end->pos().x() - start->pos().x();
   qreal dY = end->pos().y() - start->pos().y();
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
@@ -59,7 +63,8 @@ void DirectedEdge::calculate() {
   prepareGeometryChange();
 }
 
-void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
+{
   QPen myPen = pen();
   myPen.setColor(color);
   painter->setPen(myPen);
@@ -75,72 +80,89 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   painter->strokePath(myPath, QPen(color));
 }
 
-NetworkNode* DirectedEdge::startItem() const {
+NetworkNode* DirectedEdge::startItem() const 
+{
   return start;
 }
 
-NetworkNode* DirectedEdge::endItem() const {
+NetworkNode* DirectedEdge::endItem() const 
+{
   return end;
 }
 
-void DirectedEdge::setColor(const QColor &subColor) {
+void DirectedEdge::setColor(const QColor &subColor) 
+{
   color = subColor;
 }
 
-QString DirectedEdge::getType() {
+QString DirectedEdge::getType() 
+{
   return relType;
 }
 
-void DirectedEdge::setType(const QString submittedType) {
+void DirectedEdge::setType(const QString submittedType) 
+{
   relType = submittedType;
 }
 
-void DirectedEdge::setHeight(int submittedHeight) {
+void DirectedEdge::setHeight(int submittedHeight) 
+{
   height = submittedHeight;
 }
 
-int DirectedEdge::getHeight() {
+int DirectedEdge::getHeight() 
+{
   return height;
 }
 
-int DirectedEdge::type() const {
+int DirectedEdge::type() const 
+{
   return Type;
 }
 
-QString DirectedEdge::getName() {
+QString DirectedEdge::getName() 
+{
   return name;
 }
 
-void DirectedEdge::setName(const QString submittedName) {
+void DirectedEdge::setName(const QString submittedName) 
+{
   name = submittedName;
 }
 
-bool DirectedEdge::isFiltered() {
+bool DirectedEdge::isFiltered() 
+{
   return filtered;
 }
 
-void DirectedEdge::setFiltered(bool state) {
+void DirectedEdge::setFiltered(bool state) 
+{
   filtered = state;
 }
 
-bool DirectedEdge::isMassHidden() {
+bool DirectedEdge::isMassHidden() 
+{
   return massHidden;
 }
 
-void DirectedEdge::setMassHidden(bool state) {
+void DirectedEdge::setMassHidden(bool state) 
+{
   massHidden = state;
 }
 
-void DirectedEdge::setComment(const QString submittedComment) {
+void DirectedEdge::setComment(const QString submittedComment) 
+{
   comment = submittedComment;
   QString toolTip = breakString(comment);
   this->setToolTip(toolTip);
 }
 
-QString DirectedEdge::getComment() {
+QString DirectedEdge::getComment() 
+{
   return comment;
 }
 
-QColor DirectedEdge::getColor() {
+QColor DirectedEdge::getColor() 
+{
   return color;
 }

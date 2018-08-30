@@ -1,7 +1,8 @@
 #include "../include/AttributeSelectionDialog.h"
 
 AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString submittedType) :
-  QDialog(parent) {
+  QDialog(parent) 
+{
   type = submittedType;
   exitStatus = 1;
   chosenAttribute = DEFAULT;
@@ -55,174 +56,207 @@ AttributeSelectionDialog::AttributeSelectionDialog(QWidget *parent, QString subm
   setWindowTitle("Select attribute");
 }
 
-void AttributeSelectionDialog::setTree() {
+void AttributeSelectionDialog::setTree() 
+{
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) {
-    query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);    
-      attributesTree->appendRow(father);
-      QString hint = breakString(description);
-      father->setToolTip(hint);
-      father->setEditable(false);
-      buildHierarchy(father, name);
+  if (type == ENTITY) 
+    {
+      query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
+      while (query->next()) 
+	{
+	  QString name = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *father = new QStandardItem(name);    
+	  attributesTree->appendRow(father);
+	  QString hint = breakString(description);
+	  father->setToolTip(hint);
+	  father->setEditable(false);
+	  buildHierarchy(father, name);
+	}
     }
-  } else if (type == INCIDENT) {
-    // First we will fetch the 'normal' attributes.{
-    query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);    
-      attributesTree->appendRow(father);
-      QString hint = breakString(description);
-      father->setToolTip(hint);
-      father->setEditable(false);
-      buildHierarchy(father, name);
+  else if (type == INCIDENT) 
+    {
+      // First we will fetch the 'normal' attributes.
+      {
+	query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
+	while (query->next()) 
+	  {
+	    QString name = query->value(0).toString();
+	    QString description = query->value(1).toString();
+	    QStandardItem *father = new QStandardItem(name);    
+	    attributesTree->appendRow(father);
+	    QString hint = breakString(description);
+	    father->setToolTip(hint);
+	    father->setEditable(false);
+	    buildHierarchy(father, name);
+	  }
+	// And then we will also fetch the entities.
+	QStandardItem *entities = new QStandardItem(ENTITIES);
+	QString entitiesHint = breakString("You can also assign entities that you have created "
+					   "in the relationships widget as attributes.");
+	entities->setToolTip(entitiesHint);
+	QFont font;
+	font.setItalic(true);
+	attributesTree->appendRow(entities);
+	entities->setFont(font);
+	query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
+	int children = 0;
+	while (query->next()) 
+	  {
+	    QString name = query->value(0).toString();
+	    QString description = query->value(1).toString();
+	    QStandardItem *father = new QStandardItem(name);
+	    entities->setChild(children, father);
+	    children++;
+	    QString hint = breakString(description);
+	    father->setToolTip(hint);
+	    father->setEditable(false);
+	    buildEntities(father, name);
+	  }
+      }
     }
-    // And then we will also fetch the entities.
-    QStandardItem *entities = new QStandardItem(ENTITIES);
-    QString entitiesHint = breakString("You can also assign entities that you have created "
-				       "in the relationships widget as attributes.");
-    entities->setToolTip(entitiesHint);
-    QFont font;
-    font.setItalic(true);
-    attributesTree->appendRow(entities);
-    entities->setFont(font);
-    query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
-    int children = 0;
-    while (query->next()) {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);
-      entities->setChild(children, father);
-      children++;
-      QString hint = breakString(description);
-      father->setToolTip(hint);
-      father->setEditable(false);
-      buildEntities(father, name);
-    }
-  }
   treeFilter->setSourceModel(attributesTree);
   attributesTreeView->setModel(treeFilter);
   delete query;
 }
 
-void AttributeSelectionDialog::buildHierarchy(QStandardItem *top, QString name) {
+void AttributeSelectionDialog::buildHierarchy(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) {
-    query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
-    query->bindValue(":father", name);
-    query->exec();
-    int children = 0;
-    while (query->next()) {
-      QString childName = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *child = new QStandardItem(childName);
-      top->setChild(children, child);
-      QString hint = breakString(description);
-      child->setToolTip(hint);
-      child->setEditable(false);
-      children++;
-      buildHierarchy(child, childName);
+  if (type == ENTITY) 
+    {
+      query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
+      query->bindValue(":father", name);
+      query->exec();
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString childName = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *child = new QStandardItem(childName);
+	  top->setChild(children, child);
+	  QString hint = breakString(description);
+	  child->setToolTip(hint);
+	  child->setEditable(false);
+	  children++;
+	  buildHierarchy(child, childName);
+	}
     }
-  } else if (type == INCIDENT) {
-    query->prepare("SELECT name, description FROM incident_attributes WHERE father = :father");
-    query->bindValue(":father", name);
-    query->exec();
-    int children = 0;
-    while (query->next()) {
-      QString childName = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *child = new QStandardItem(childName);
-      top->setChild(children, child);
-      QString hint = breakString(description);
-      child->setToolTip(hint);
-      child->setEditable(false);
-      children++;
-      buildHierarchy(child, childName);
+  else if (type == INCIDENT) 
+    {
+      query->prepare("SELECT name, description FROM incident_attributes WHERE father = :father");
+      query->bindValue(":father", name);
+      query->exec();
+      int children = 0;
+      while (query->next()) 
+	{
+	  QString childName = query->value(0).toString();
+	  QString description = query->value(1).toString();
+	  QStandardItem *child = new QStandardItem(childName);
+	  top->setChild(children, child);
+	  QString hint = breakString(description);
+	  child->setToolTip(hint);
+	  child->setEditable(false);
+	  children++;
+	  buildHierarchy(child, childName);
+	}
     }
-  }
   delete query;
 }
 
-void AttributeSelectionDialog::buildEntities(QStandardItem *top, QString name) {
+void AttributeSelectionDialog::buildEntities(QStandardItem *top, QString name) 
+{
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, description FROM entities WHERE father = :father");
   query->bindValue(":father", name);
   query->exec();
   int children = 0;
-  while (query->next()) {
-    QString childName = query->value(0).toString();
-    QString description = query->value(1).toString();
-    QStandardItem *child = new QStandardItem(childName);
-    top->setChild(children, child);
-    QString hint = breakString(description);
-    child->setToolTip(hint);
-    child->setEditable(false);
-    children++;
-    buildEntities(child, childName);
-  }
+  while (query->next()) 
+    {
+      QString childName = query->value(0).toString();
+      QString description = query->value(1).toString();
+      QStandardItem *child = new QStandardItem(childName);
+      top->setChild(children, child);
+      QString hint = breakString(description);
+      child->setToolTip(hint);
+      child->setEditable(false);
+      children++;
+      buildEntities(child, childName);
+    }
   delete query;
 }
 
-void AttributeSelectionDialog::changeFilter(const QString &text) {
+void AttributeSelectionDialog::changeFilter(const QString &text) 
+{
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
  
-void AttributeSelectionDialog::setAttribute() {
-  if (attributesTreeView->currentIndex().isValid()) {
-    chosenAttribute = attributesTreeView->currentIndex().data().toString();
-  }
+void AttributeSelectionDialog::setAttribute() 
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      chosenAttribute = attributesTreeView->currentIndex().data().toString();
+    }
   QModelIndex currentIndex = attributesTreeView->currentIndex();
-  while (currentIndex.parent().isValid()) {
-    currentIndex = currentIndex.parent();
-  }
-  if (currentIndex.data().toString() == ENTITIES) {
-    entity = true;
-  } else {
-    entity = false;
-  }
+  while (currentIndex.parent().isValid()) 
+    {
+      currentIndex = currentIndex.parent();
+    }
+  if (currentIndex.data().toString() == ENTITIES) 
+    {
+      entity = true;
+    }
+  else 
+    {
+      entity = false;
+    }
 }
 
-void AttributeSelectionDialog::cancelAndClose() {
+void AttributeSelectionDialog::cancelAndClose() 
+{
   exitStatus = 1;
   this->close();
 }
 
-void AttributeSelectionDialog::saveAndClose() {
-  if (chosenAttribute == DEFAULT) {
-    QPointer <QMessageBox> warningBox = new QMessageBox(this);
-    warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("No attribute chosen.");
-    warningBox->setInformativeText("You have to choose an attribute to proceed.");
-    warningBox->exec();
-    delete warningBox;
-    return;
-  } else {
-    exitStatus = 0;
-    checked = includeValuesCheckBox->isChecked();
-    this->close();
-  }
+void AttributeSelectionDialog::saveAndClose() 
+{
+  if (chosenAttribute == DEFAULT) 
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("No attribute chosen.");
+      warningBox->setInformativeText("You have to choose an attribute to proceed.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
+  else 
+    {
+      exitStatus = 0;
+      checked = includeValuesCheckBox->isChecked();
+      this->close();
+    }
 }
 
-QString AttributeSelectionDialog::getAttribute() {
+QString AttributeSelectionDialog::getAttribute() 
+{
   return chosenAttribute;
 }
 
-int AttributeSelectionDialog::getExitStatus() {
+int AttributeSelectionDialog::getExitStatus() 
+{
   return exitStatus;
 }
 
-bool AttributeSelectionDialog::getChecked() {
+bool AttributeSelectionDialog::getChecked() 
+{
   return checked;
 }
 
-bool AttributeSelectionDialog::isEntity() {
+bool AttributeSelectionDialog::isEntity() 
+{
   return entity;
 }

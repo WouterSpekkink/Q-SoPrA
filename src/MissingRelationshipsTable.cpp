@@ -1,7 +1,8 @@
 #include "../include/MissingRelationshipsTable.h"
 
 
-MissingRelationshipsTable::MissingRelationshipsTable(QWidget *parent) : QWidget(parent) {
+MissingRelationshipsTable::MissingRelationshipsTable(QWidget *parent) : QWidget(parent) 
+{
   model = new EventQueryModel(this);
   tableView = new ZoomableTableView(this);
   tableView->setModel(model);
@@ -31,7 +32,8 @@ MissingRelationshipsTable::MissingRelationshipsTable(QWidget *parent) : QWidget(
 }
 
 
-void MissingRelationshipsTable::updateTable() {
+void MissingRelationshipsTable::updateTable() 
+{
   model->clear();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT * "
@@ -42,9 +44,10 @@ void MissingRelationshipsTable::updateTable() {
 	      "ORDER BY ch_order");
   model->setQuery(*query);
   delete query;
-  while (model->canFetchMore()) {
-    model->fetchMore();
-  }
+  while (model->canFetchMore()) 
+    {
+      model->fetchMore();
+    }
   tableView->setColumnHidden(0, true);
   tableView->setColumnHidden(5, true);
   tableView->setColumnWidth(2, qobject_cast<QWidget*>(parent())->width()/15);
@@ -60,7 +63,8 @@ void MissingRelationshipsTable::updateTable() {
   model->setHeaderData(7, Qt::Horizontal, QObject::tr("Marked"));
 }
 
-void MissingRelationshipsTable::resetHeader(int header) {
+void MissingRelationshipsTable::resetHeader(int header) 
+{
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 

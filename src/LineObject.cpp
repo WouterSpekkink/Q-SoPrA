@@ -7,7 +7,8 @@
 LineObject::LineObject(QPointF subStartPos,
 		       QPointF subEndPos,
 		       QGraphicsItem *parent)
-  : QGraphicsLineItem(parent) {
+  : QGraphicsLineItem(parent) 
+{
   startPos = subStartPos;
   endPos = subEndPos;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
@@ -20,7 +21,8 @@ LineObject::LineObject(QPointF subStartPos,
   setAcceptHoverEvents(true);
 }
 
-QRectF LineObject::boundingRect() const {
+QRectF LineObject::boundingRect() const 
+{
   qreal extra = (pen().width() + 40) / 2.0;
   
   return QRectF(startPos, QSizeF(endPos.x() - startPos.x(),
@@ -29,7 +31,8 @@ QRectF LineObject::boundingRect() const {
     .adjusted(-extra, -extra, extra, extra);
 }
 
-QPainterPath LineObject::shape() const {
+QPainterPath LineObject::shape() const 
+{
   static const qreal clickTolerance = 15;
   QPointF vec = endPos - startPos;
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
@@ -42,7 +45,8 @@ QPainterPath LineObject::shape() const {
   return result;
 }
 
-void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) {
+void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
+{
   calculate();
   painter->setPen(QPen(color, penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
 
@@ -54,22 +58,26 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   QPainterPath myPath;
   myPath.moveTo(tempLine2.p2());
   myPath.lineTo(tempLine1.p2());
-  if (arrow1On) {
-    painter->drawPolyline(arrowHead);
-  }
+  if (arrow1On) 
+    {
+      painter->drawPolyline(arrowHead);
+    }
   painter->strokePath(myPath, QPen(color, penWidth, Qt::PenStyle(penStyle),
 				   Qt::RoundCap, Qt::RoundJoin));
-  if (arrow2On) {
-    painter->drawPolyline(arrowHead2);
-  }
-  if (isSelected()) {
-    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-    QPainterPath outline = shape();
-    painter->drawPath(outline);
-  }
+  if (arrow2On) 
+    {
+      painter->drawPolyline(arrowHead2);
+    }
+  if (isSelected()) 
+    {
+      painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+      QPainterPath outline = shape();
+      painter->drawPath(outline);
+    }
 }
 
-void LineObject::calculate() {
+void LineObject::calculate() 
+{
   prepareGeometryChange();
   qreal arrowSize = 20;
   QLineF newLine = QLineF(startPos, endPos);
@@ -95,87 +103,108 @@ void LineObject::calculate() {
   prepareGeometryChange();
 }
 
-void LineObject::setColor(const QColor &subColor) {
+void LineObject::setColor(const QColor &subColor) 
+{
   color = subColor;
 }
 
-QColor LineObject::getColor() {
+QColor LineObject::getColor() 
+{
   return color;
 }
 
-QPointF LineObject::getStartPos() {
+QPointF LineObject::getStartPos() 
+{
   return startPos;
 }
 
-QPointF LineObject::getEndPos() {
+QPointF LineObject::getEndPos() 
+{
   return endPos;
 }
 
-void LineObject::setStartPos(QPointF subPoint) {
+void LineObject::setStartPos(QPointF subPoint) 
+{
   startPos = subPoint;
 }
 
-void LineObject::setEndPos(QPointF subPoint) {
+void LineObject::setEndPos(QPointF subPoint) 
+{
   endPos = subPoint;
 }
 
-void LineObject::setStartPos(qreal x, qreal y) {
+void LineObject::setStartPos(qreal x, qreal y) 
+{
   startPos = QPointF(x, y);
 }
 
-void LineObject::setEndPos(qreal x, qreal y) {
+void LineObject::setEndPos(qreal x, qreal y) 
+{
   endPos = QPointF(x, y);
 }
 
-bool LineObject::arrow1() {
+bool LineObject::arrow1() 
+{
   return arrow1On;
 }
 
-void LineObject::setArrow1(bool status) {
+void LineObject::setArrow1(bool status) 
+{
   arrow1On = status;
 }
 
-bool LineObject::arrow2() {
+bool LineObject::arrow2() 
+{
   return arrow2On;
 }
 
-void LineObject::setArrow2(bool status) {
+void LineObject::setArrow2(bool status) 
+{
   arrow2On = status;
 }
 
-int LineObject::getPenWidth() {
+int LineObject::getPenWidth() 
+{
   return penWidth;
 }
 
-void LineObject::setPenWidth(int width) {
+void LineObject::setPenWidth(int width) 
+{
   penWidth = width;
 }
 
-int LineObject::getPenStyle() {
+int LineObject::getPenStyle() 
+{
   return penStyle;
 }
 
-void LineObject::setPenStyle(int style) {
+void LineObject::setPenStyle(int style) 
+{
   penStyle = style;
 }
 
-int LineObject::type() const {
+int LineObject::type() const 
+{
   return Type;
 }
 
-void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *) {
+void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::setOverrideCursor(Qt::ClosedHandCursor);
 }
 
-void LineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) {
+void LineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
+{
   QApplication::restoreOverrideCursor();
 }
 
-void LineObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) {
+void LineObject::hoverMoveEvent(QGraphicsSceneHoverEvent *) 
+{
   QApplication::setOverrideCursor(Qt::OpenHandCursor);
 }
 
-void LineObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) {
+void LineObject::hoverLeaveEvent(QGraphicsSceneHoverEvent *) 
+{
   QApplication::restoreOverrideCursor();
 }
 
