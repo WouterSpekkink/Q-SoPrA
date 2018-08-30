@@ -4,7 +4,8 @@
 #include <QProgressBar>
 #include <QtWidgets/QDialog>
 
-class ProgressBar : public QDialog {
+class ProgressBar : public QDialog
+{
 
     Q_OBJECT
 

@@ -11,7 +11,8 @@
 #include "SimpleTextDialog.h"
 
 
-class BandlessGraphicsView : public QGraphicsView {
+class BandlessGraphicsView : public QGraphicsView
+{
   Q_OBJECT
   
 public:

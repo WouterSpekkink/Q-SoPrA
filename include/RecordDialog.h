@@ -13,7 +13,8 @@
 #include "EventSequenceDatabase.h"
 #include "Constants.h"
 
-class RecordDialog : public QDialog {
+class RecordDialog : public QDialog
+{
   Q_OBJECT
 
 public:

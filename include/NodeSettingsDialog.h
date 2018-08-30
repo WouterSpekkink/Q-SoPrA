@@ -16,7 +16,8 @@
 #include "AttributeSelectionDialog.h"
 #include "ComboBoxDialog.h"
 
-class NodeSettingsDialog : public QDialog {
+class NodeSettingsDialog : public QDialog
+{
   Q_OBJECT
 
 public:

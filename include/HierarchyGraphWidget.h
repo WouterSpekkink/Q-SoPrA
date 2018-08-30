@@ -40,7 +40,8 @@
 class AttributesWidget;
 class RelationshipsWidget;
 
-class HierarchyGraphWidget : public QDialog {
+class HierarchyGraphWidget : public QDialog
+{
   Q_OBJECT
   friend class MainWindow;
 

@@ -19,7 +19,8 @@
 #include "../include/OccurrenceLabel.h"
 #include "../include/RectObject.h"
 
-class Scene : public QGraphicsScene {
+class Scene : public QGraphicsScene
+{
   Q_OBJECT
 
 public:

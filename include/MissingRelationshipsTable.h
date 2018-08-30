@@ -20,7 +20,8 @@
 #include "ZoomableTableView.h"
 #include "CheckBoxDelegate.h"
 
-class MissingRelationshipsTable : public QWidget {
+class MissingRelationshipsTable : public QWidget
+{
   Q_OBJECT
 
   friend class MainWindow;

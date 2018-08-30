@@ -43,7 +43,8 @@
 #include "RectObject.h"
 #include "TextObject.h"
 
-class NetworkGraphWidget : public QWidget {
+class NetworkGraphWidget : public QWidget
+{
   Q_OBJECT
   friend class MainWindow;
 

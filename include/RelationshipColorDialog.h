@@ -15,7 +15,8 @@
 #include "SupportingFunctions.h"
 #include "RelationshipTreeFilter.h"
 
-class RelationshipColorDialog : public QDialog {
+class RelationshipColorDialog : public QDialog
+{
   Q_OBJECT
 
 public:

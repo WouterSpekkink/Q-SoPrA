@@ -14,7 +14,8 @@
 #include <sstream>
 #include "Constants.h"
 
-class LinkagesIndexDialog : public QDialog {
+class LinkagesIndexDialog : public QDialog
+{
   Q_OBJECT
 
 public:

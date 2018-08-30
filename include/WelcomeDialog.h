@@ -15,7 +15,8 @@
 #include "EventSequenceDatabase.h"
 #include "Constants.h"
 
-class WelcomeDialog : public QDialog {
+class WelcomeDialog : public QDialog
+{
   Q_OBJECT
 
 public:

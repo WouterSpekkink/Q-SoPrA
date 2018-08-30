@@ -4,7 +4,8 @@
 #include <QtSql>
 #include "SupportingFunctions.h"
 
-class JournalTableModel : public QSqlTableModel {
+class JournalTableModel : public QSqlTableModel
+{
   Q_OBJECT
 
 public:

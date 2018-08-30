@@ -4,7 +4,8 @@
 #include <QtSql>
 #include "SupportingFunctions.h"
 
-class EventTableModel : public QSqlTableModel {
+class EventTableModel : public QSqlTableModel
+{
   Q_OBJECT
 
 public:

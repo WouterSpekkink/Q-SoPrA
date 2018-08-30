@@ -4,7 +4,8 @@
 #include <QTableWidget>
 #include <QMouseEvent>
 
-class DeselectableListWidget : public QTableWidget {
+class DeselectableListWidget : public QTableWidget
+{
   Q_OBJECT
 
 public:

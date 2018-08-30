@@ -19,7 +19,8 @@
 #include "ProgressBar.h"
 #include "SimpleTextDialog.h"
 
-class EntitiesAttributesTable : public QWidget {
+class EntitiesAttributesTable : public QWidget
+{
   Q_OBJECT
 
   friend class MainWindow;

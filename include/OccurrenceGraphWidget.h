@@ -42,7 +42,8 @@
 
 class EventGraphWidget;
 
-class OccurrenceGraphWidget : public QWidget {
+class OccurrenceGraphWidget : public QWidget
+{
   Q_OBJECT
   friend class MainWindow;
 

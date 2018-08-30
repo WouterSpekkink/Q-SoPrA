@@ -4,7 +4,8 @@
 #include <QTableView>
 #include <QWheelEvent>
 
-class ZoomableTableView : public QTableView {
+class ZoomableTableView : public QTableView
+{
   Q_OBJECT
 
 public:

@@ -104,7 +104,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   attributesTreeView->installEventFilter(this);
   rawField->viewport()->installEventFilter(this);
   commentField->installEventFilter(this);
-
   /*
     To make possible context menu actions. This also requires the connection of a signal,
     which I do somewhere in the below.
@@ -160,7 +159,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
                                                                                
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
-  QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
+  Qpointer<QVBoxLayout> leftLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> indexLayout = new QHBoxLayout;
   indexLayout->addWidget(indexLabel);
   indexLabel->setAlignment(Qt::AlignHCenter);
@@ -267,7 +266,6 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   rightButtonBottomLayout->addWidget(removeUnusedAttributesButton);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
-
   // I want to set the size of some widgets based on the availabe screen width
   QRect rect = QApplication::desktop()->screenGeometry();
   int width = rect.width();

@@ -15,7 +15,8 @@
 #include "UndirectedEdge.h"
 #include "SupportingFunctions.h"
 
-class MergeRelationshipsDialog : public QDialog {
+class MergeRelationshipsDialog : public QDialog
+{
   Q_OBJECT
 
 public:

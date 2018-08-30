@@ -6,7 +6,8 @@
 
 class NetworkNodeLabel;
 
-class NetworkNode : public QGraphicsItem {
+class NetworkNode : public QGraphicsItem
+{
 
 public:
   NetworkNode(QString submittedName, QString submittedDescription);

@@ -7,7 +7,8 @@
 #include <QSqlQuery>
 #include <QStandardItem>
 
-class DeselectableTreeViewEntities : public QTreeView {
+class DeselectableTreeViewEntities : public QTreeView
+{
   Q_OBJECT
 
   

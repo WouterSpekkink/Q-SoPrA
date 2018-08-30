@@ -49,7 +49,8 @@
 
 class AttributesWidget;
 
-class EventGraphWidget : public QWidget {
+class EventGraphWidget : public QWidget
+{
   Q_OBJECT
   friend class MainWindow;
   

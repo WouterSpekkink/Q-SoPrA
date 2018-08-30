@@ -60,7 +60,8 @@
 #include "MacroEvent.h"
 #include "OccurrenceItem.h"
 
-class Arrow : public QGraphicsLineItem {
+class Arrow : public QGraphicsLineItem
+{
 
 public: 
   Arrow(QString subType, QString subCoder, QGraphicsItem *parent = 0);

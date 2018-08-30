@@ -13,7 +13,8 @@
 class NodeLabel;
 class MacroEvent;
 
-class EventItem : public QGraphicsItem {
+class EventItem : public QGraphicsItem
+{
 
 public:
   EventItem(int subWidth = 40,

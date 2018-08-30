@@ -12,7 +12,8 @@
 #include <QPointer>
 #include <string>
 
-class AttributeIndexDialog : public QDialog {
+class AttributeIndexDialog : public QDialog
+{
   Q_OBJECT
 
 public:

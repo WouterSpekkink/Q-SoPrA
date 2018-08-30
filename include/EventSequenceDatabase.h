@@ -6,7 +6,8 @@
 #include <QMessageBox>
 #include <QPointer>
 
-class EventSequenceDatabase : public QObject {
+class EventSequenceDatabase : public QObject
+{  
   friend class WelcomeDialog;
   friend class MainDialog;
   friend class AddRecordDialog;

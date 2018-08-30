@@ -4,7 +4,8 @@
 #include <QtSql>
 #include "SupportingFunctions.h"
 
-class QueryModel : public QSqlQueryModel {
+class QueryModel : public QSqlQueryModel
+{
   Q_OBJECT
 
 public:

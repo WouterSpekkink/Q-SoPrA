@@ -13,7 +13,8 @@
 #include "Constants.h"
 #include "SupportingFunctions.h"
 
-class ComboBoxDialog : public QDialog {
+class ComboBoxDialog : public QDialog
+{
   Q_OBJECT
   
 public:

@@ -26,7 +26,8 @@
 */
 class EntitiesFilter;
 
-class EditEntityDialog : public QDialog {
+class EditEntityDialog : public QDialog
+{
   Q_OBJECT
   friend class EntitiesFilter;
 

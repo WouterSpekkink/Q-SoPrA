@@ -4,7 +4,8 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 
-class RelationshipTreeFilter : public QSortFilterProxyModel {
+class RelationshipTreeFilter : public QSortFilterProxyModel
+{
   Q_OBJECT
   
 public:

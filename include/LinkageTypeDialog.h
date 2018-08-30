@@ -15,7 +15,8 @@
 #include "Constants.h"
 #include "SupportingFunctions.h"
 
-class LinkageTypeDialog : public QDialog {
+class LinkageTypeDialog : public QDialog
+{
   Q_OBJECT
   
 public:

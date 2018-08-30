@@ -14,7 +14,8 @@
 #include "AttributeTreeFilter.h"
 #include "SupportingFunctions.h"
 
-class SimpleAttributeSelectionDialog : public QDialog {
+class SimpleAttributeSelectionDialog : public QDialog
+{
   Q_OBJECT
 
 public:

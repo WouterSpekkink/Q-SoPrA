@@ -4,7 +4,8 @@
 #include <QSortFilterProxyModel>
 #include "RelationshipsDialog.h"
 
-class EntitiesFilter : public QSortFilterProxyModel {
+class EntitiesFilter : public QSortFilterProxyModel
+{
   Q_OBJECT
 
 public:

@@ -15,7 +15,8 @@
 #include "AttributeTreeFilter.h"
 #include "SupportingFunctions.h"
 
-class AttributeColorDialog : public QDialog {
+class AttributeColorDialog : public QDialog
+{
   Q_OBJECT
 
 public:

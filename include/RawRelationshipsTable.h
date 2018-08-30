@@ -21,7 +21,8 @@
 
 class RelationshipsWidget;
 
-class RawRelationshipsTable : public QWidget {
+class RawRelationshipsTable : public QWidget
+{
   Q_OBJECT
 
   friend class MainWindow;

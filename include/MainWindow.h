@@ -31,7 +31,8 @@
 #include "Constants.h"
 #include "CasingWidget.h"
 
-class MainWindow : public QMainWindow {
+class MainWindow : public QMainWindow
+{
   Q_OBJECT
   
 public:

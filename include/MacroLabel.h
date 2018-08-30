@@ -4,7 +4,8 @@
 #include <QGraphicsTextItem>
 #include "MacroEvent.h"
 
-class MacroLabel : public QGraphicsTextItem {
+class MacroLabel : public QGraphicsTextItem
+{
 
 public:
   MacroLabel(MacroEvent *submittedEvent = NULL);

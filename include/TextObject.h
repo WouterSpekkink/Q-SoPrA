@@ -4,7 +4,8 @@
 #include <QGraphicsTextItem>
 #include <QApplication>
 
-class TextObject : public QGraphicsTextItem {
+class TextObject : public QGraphicsTextItem
+{
 
 public:
   TextObject(const QString &text = QString(),

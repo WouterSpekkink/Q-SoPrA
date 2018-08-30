@@ -25,7 +25,8 @@
 
 class EventGraphWidget;
 
-class LinkagesWidget : public QWidget {
+class LinkagesWidget : public QWidget
+{
   Q_OBJECT
   friend class MainWindow;
 

@@ -4,7 +4,8 @@
 #include <QGraphicsTextItem>
 #include "OccurrenceItem.h"
 
-class OccurrenceLabel : public QGraphicsTextItem {
+class OccurrenceLabel : public QGraphicsTextItem
+{
 
 public:
   OccurrenceLabel(OccurrenceItem *submittedOccurrence =

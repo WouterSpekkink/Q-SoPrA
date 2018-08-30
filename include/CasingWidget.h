@@ -19,7 +19,8 @@
 #include "NetworkGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
 
-class CasingWidget : public QWidget {
+class CasingWidget : public QWidget
+{
   Q_OBJECT
 
   friend class MainWindow;

@@ -10,7 +10,8 @@
 #include <QPointer>
 #include <QtSql>
 
-class SimpleTextDialog : public QDialog {
+class SimpleTextDialog : public QDialog
+{
   Q_OBJECT
 
 public:

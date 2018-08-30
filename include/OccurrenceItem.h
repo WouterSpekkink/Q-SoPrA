@@ -13,7 +13,8 @@
 
 class OccurrenceLabel;
 
-class OccurrenceItem : public QGraphicsItem {
+class OccurrenceItem : public QGraphicsItem
+{
 
 public:
   OccurrenceItem(int subWidth, QString toolTip, QPointF originalPosition, int subId,

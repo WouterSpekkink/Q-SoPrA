@@ -14,7 +14,8 @@
 #include "AttributeTreeFilter.h"
 #include "SupportingFunctions.h"
 
-class MergeAttributesDialog : public QDialog {
+class MergeAttributesDialog : public QDialog
+{
   Q_OBJECT
 
 public:

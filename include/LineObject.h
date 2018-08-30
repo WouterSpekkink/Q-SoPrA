@@ -3,7 +3,8 @@
 
 #include <QGraphicsLineItem>
 
-class LineObject : public QGraphicsLineItem {
+class LineObject : public QGraphicsLineItem
+{
 
 public: 
   LineObject(QPointF subStartPos = QPointF(0, 0),

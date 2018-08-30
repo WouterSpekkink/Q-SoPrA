@@ -14,7 +14,8 @@
 #include "Constants.h"
 #include "SupportingFunctions.h"
 
-class RelationshipComboBoxDialog : public QDialog {
+class RelationshipComboBoxDialog : public QDialog
+{
   Q_OBJECT
   
 public:

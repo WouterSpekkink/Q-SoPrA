@@ -7,7 +7,8 @@
 #include <QApplication>
 #include <QMouseEvent>
 
-class CheckBoxDelegate : public QStyledItemDelegate {
+class CheckBoxDelegate : public QStyledItemDelegate
+{
   Q_OBJECT
 
 public:

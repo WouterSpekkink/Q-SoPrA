@@ -4,7 +4,8 @@
 #include <QtSql>
 #include "SupportingFunctions.h"
 
-class EntityTableModel : public QSqlTableModel {
+class EntityTableModel : public QSqlTableModel
+{
   Q_OBJECT
   friend class RelationshipsDialog;
   

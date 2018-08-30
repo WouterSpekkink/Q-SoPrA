@@ -4,7 +4,8 @@
 #include <QtSql>
 #include "SupportingFunctions.h"
 
-class RelationalTable : public QSqlRelationalTableModel {
+class RelationalTable : public QSqlRelationalTableModel
+{
   Q_OBJECT
 
 public:

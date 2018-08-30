@@ -14,8 +14,9 @@
 class MacroLabel;
 class EventItem;
 
-class MacroEvent : public QGraphicsItem {
-
+class MacroEvent : public QGraphicsItem
+{
+  
 public:
   MacroEvent(int subWidth = 40,
 	     QString submittedDescription = QString(),

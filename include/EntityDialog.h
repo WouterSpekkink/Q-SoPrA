@@ -24,7 +24,8 @@
 
 class RelationshipsWidget;
 
-class EntityDialog : public QDialog {
+class EntityDialog : public QDialog
+{
   Q_OBJECT
 
 public:

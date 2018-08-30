@@ -4,7 +4,8 @@
 #include <QListView>
 #include <QWheelEvent>
 
-class ZoomableListView : public QListView {
+class ZoomableListView : public QListView
+{
   Q_OBJECT
 
 public:

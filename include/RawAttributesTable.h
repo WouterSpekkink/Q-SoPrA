@@ -22,7 +22,8 @@
 
 class AttributesWidget;
 
-class RawAttributesTable : public QWidget {
+class RawAttributesTable : public QWidget
+{
   Q_OBJECT
 
   friend class MainWindow;

@@ -7,7 +7,8 @@
 
 class NetworkNode;
 
-class NetworkNodeLabel : public QGraphicsTextItem {
+class NetworkNodeLabel : public QGraphicsTextItem
+{
   
 public:
   NetworkNodeLabel(NetworkNode *submittedNode = new NetworkNode("", ""));

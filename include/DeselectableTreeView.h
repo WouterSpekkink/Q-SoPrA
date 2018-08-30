@@ -7,7 +7,8 @@
 #include <QStandardItem>
 #include "../include/Constants.h"
 
-class DeselectableTreeView : public QTreeView {
+class DeselectableTreeView : public QTreeView
+{
   Q_OBJECT
 
   

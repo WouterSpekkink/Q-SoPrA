@@ -14,7 +14,8 @@
 #include <QtSql>
 #include "Constants.h"
 
-class CaseDialog : public QDialog {
+class CaseDialog : public QDialog
+{
   Q_OBJECT
   
 public:

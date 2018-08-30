@@ -20,7 +20,8 @@
 #include "SupportingFunctions.h"
 #include "CheckBoxDelegate.h"
 
-class JournalWidget : public QWidget {
+class JournalWidget : public QWidget
+{
   friend class MainWindow;
   Q_OBJECT
 

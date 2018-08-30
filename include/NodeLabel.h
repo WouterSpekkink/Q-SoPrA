@@ -4,7 +4,8 @@
 #include <QGraphicsTextItem>
 #include "EventItem.h"
 
-class NodeLabel : public QGraphicsTextItem {
+class NodeLabel : public QGraphicsTextItem
+{
 
 public:
   NodeLabel(EventItem *submittedNode = new EventItem(30, "", QPointF(0,0), -1, -1));

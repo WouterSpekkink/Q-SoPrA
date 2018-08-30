@@ -5,7 +5,8 @@
 #include <QPainter>
 #include <QPen>
 
-class RectObject : public QGraphicsItem {
+class RectObject : public QGraphicsItem
+{
 
 public:
   RectObject();

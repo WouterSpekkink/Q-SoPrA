@@ -5,7 +5,8 @@
 #include "NetworkNode.h"
 #include "SupportingFunctions.h"
 
-class UndirectedEdge : public QGraphicsLineItem {
+class UndirectedEdge : public QGraphicsLineItem
+{
 
 public:
 

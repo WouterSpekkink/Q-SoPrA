@@ -28,7 +28,8 @@
 
 class AttributesWidget;
 
-class RelationshipsWidget : public QWidget {
+class RelationshipsWidget : public QWidget
+{
   Q_OBJECT
   friend class MainWindow;
   friend class RelationshipsDialog;

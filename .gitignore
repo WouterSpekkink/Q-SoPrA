@@ -8,4 +8,7 @@
 include/.directory
 src/.directory
 .supp
-
+.dumbjump
+GTAGS
+GRTAGS
+GPATH

@@ -12,7 +12,8 @@
 #include "Constants.h"
 #include "SupportingFunctions.h"
 
-class ExportTransitionMatrixDialog : public QDialog {
+class ExportTransitionMatrixDialog : public QDialog
+{
   Q_OBJECT
 
 public:

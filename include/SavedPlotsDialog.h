@@ -12,7 +12,8 @@
 #include <QMessageBox>
 #include "Constants.h"
 
-class SavedPlotsDialog : public QDialog {
+class SavedPlotsDialog : public QDialog
+{
   Q_OBJECT
 
 public:

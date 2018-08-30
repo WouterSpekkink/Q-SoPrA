@@ -19,7 +19,8 @@
 #include "MacroLabel.h"
 #include "Constants.h"
 
-class EventNodeSettingsDialog : public QDialog {
+class EventNodeSettingsDialog : public QDialog
+{
   Q_OBJECT
 
 public:

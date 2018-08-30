@@ -14,7 +14,8 @@
 #include <QtSql>
 #include "Constants.h"
 
-class AttributeDialog : public QDialog {
+class AttributeDialog : public QDialog
+{
   Q_OBJECT
   
 public:

@@ -12,7 +12,8 @@
 #include <QtSql>
 #include "Constants.h"
 
-class LineageColorDialog : public QDialog {
+class LineageColorDialog : public QDialog
+{
   Q_OBJECT
 
 public:

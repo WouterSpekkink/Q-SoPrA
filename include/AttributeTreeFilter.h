@@ -4,7 +4,8 @@
 #include <QSortFilterProxyModel>
 #include <QStandardItemModel>
 
-class AttributeTreeFilter : public QSortFilterProxyModel {
+class AttributeTreeFilter : public QSortFilterProxyModel
+{
   Q_OBJECT
 
   friend class EntityDialog;

@@ -16,7 +16,8 @@
 #include "SupportingFunctions.h"
 #include "SortFunctions.h"
 
-class MultimodeDialog : public QDialog {
+class MultimodeDialog : public QDialog
+{
   Q_OBJECT
 
 public:

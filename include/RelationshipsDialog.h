@@ -26,7 +26,8 @@
 class EntitiesFilter;
 class AttributesWidget;
 
-class RelationshipsDialog : public QDialog {
+class RelationshipsDialog : public QDialog
+{
   Q_OBJECT
   friend class EntitiesFilter;
   friend class RelationshipsWidget;

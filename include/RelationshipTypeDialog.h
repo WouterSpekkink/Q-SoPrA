@@ -18,7 +18,8 @@
 #include <QSqlQuery>
 #include "Constants.h"
 
-class RelationshipTypeDialog : public QDialog {
+class RelationshipTypeDialog : public QDialog
+{
   Q_OBJECT
 
 public:

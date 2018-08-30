@@ -5,7 +5,8 @@
 #include <QPainter>
 #include <QPen>
 
-class EllipseObject : public QGraphicsItem {
+class EllipseObject : public QGraphicsItem
+{
 
 public:
   EllipseObject();
