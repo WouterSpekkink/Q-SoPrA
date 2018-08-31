@@ -1,5 +1,6 @@
 -std=c++11
--include
+-Iinclude
+-I../common
 -I/usr/include/c++/6.3.0/
 -I/usr/include/x86_64-linux-gnu/qt5
 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg

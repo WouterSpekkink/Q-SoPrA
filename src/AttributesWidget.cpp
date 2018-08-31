@@ -15,11 +15,10 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   attributesModel = new QSqlTableModel(this);
   attributesModel->setTable("incident_attributes");
   attributesModel->select();
-
   assignedModel = new QSqlTableModel(this);
   assignedModel->setTable("attributes_to_incidents");
   assignedModel->select();
-
+  
   attributesTreeView = new DeselectableTreeView(this);
   attributesTreeView->setHeaderHidden(true);
   attributesTreeView->setDragEnabled(true);
