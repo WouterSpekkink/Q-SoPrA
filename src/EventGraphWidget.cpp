@@ -8104,97 +8104,110 @@ void EventGraphWidget::exportTransitionMatrix()
 	  QVector<int> currentRow; // Current row of our new matrix.
 	  names.push_back(rowMode); // fill the vector of names.
 	  // Let's first count the number of times an event with this mode occurs.
-	  QVectorIterator<Arrow*> arrowIt(edgeVector);
+	  QVector<QGraphicsItem*> allEvents;
+	  QVectorIterator<EventItem*> eventIt(eventVector);
+	  QVectorIterator<MacroEvent*> macroIt(macroVector);
 	  int occurrence = 0;
-	  while (arrowIt.hasNext()) 
+	  while (eventIt.hasNext())
 	    {
-	      Arrow *currentArrow = arrowIt.next();
-	      if (currentArrow->getType() == type) 
+	      EventItem* currentEvent = eventIt.next();
+	      if (currentEvent->isVisible())
 		{
-		  EventItem *eventStart = qgraphicsitem_cast<EventItem*>(currentArrow->startItem());
-		  MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(currentArrow->startItem());
-		  if (isMode) 
-		    {
-		      if (eventStart) 
-			{
-			  if (eventStart->getMode() == rowMode) 
-			    {
-			      occurrence++;
-			    }
-			}
-		      else if (macroStart) 
-			{
-			  if (macroStart->getMode() == rowMode) 
-			    {
-			      occurrence++;
-			    }
-			}
-		    }
-		  else if (!isMode) 
-		    {
-		      QVector<QString> attributeVector;
-		      attributeVector.push_back(rowMode);
-		      QSqlQuery *query = new QSqlQuery;
-		      query->prepare("SELECT name FROM entities WHERE name = :name");
-		      query->bindValue(":name", rowMode);
-		      query->exec();
-		      query->first();
-		      bool entity = false;
-		      if (!query->isNull(0)) 
-			{
-			  entity = true;
-			}
-		      findChildren(rowMode, &attributeVector, entity);
-		      if (eventStart) 
-			{
-			  bool found = false;
-			  QVectorIterator<QString> attIt(attributeVector);
-			  while (attIt.hasNext()) 
-			    {
-			      QString attribute = attIt.next();
-			      int id = eventStart->getId();
-			      if (eventStart) 
-				{
-				  query->prepare("SELECT attribute FROM attributes_to_incidents "
-						 "WHERE attribute = :attribute AND incident = :id");
-				  query->bindValue(":attribute", attribute);
-				  query->bindValue(":id", id);
-				  query->exec();
-				  query->first();
-				  if (!query->isNull(0)) 
-				    {
-				      found = true;
-				    }
-				}
-			    }
-			  if (found) 
-			    {
-			      occurrence++;
-			    }
-			}
-		      else if (macroStart) 
-			{
-			  bool found = false;
-			  QVectorIterator<QString> attIt(attributeVector);
-			  while (attIt.hasNext()) 
-			    {
-			      QString attribute = attIt.next();
-			      if (macroStart->getAttributes().contains(attribute)) 
-				{
-				  found = true;
-				}
-			    }
-			  if (found) 
-			    {
-			      occurrence++;
-			    }
-			}
-		      delete query;
-		    }
+		  allEvents.push_back(currentEvent);
 		}
 	    }
-	  // And we add the results to the appropriate columns.
+	  while (macroIt.hasNext())
+	    {
+	      MacroEvent* currentMacro = macroIt.next();
+	      if (currentMacro->isVisible())
+		{
+		  allEvents.push_back(currentMacro);
+		}
+	    }
+	  QVectorIterator<QGraphicsItem*> allIt(allEvents);
+	  while (allIt.hasNext())
+	    {
+	      QGraphicsItem* currentEvent = allIt.next();
+	      EventItem *eventItem = qgraphicsitem_cast<EventItem*>(currentEvent);
+	      MacroEvent *macroItem = qgraphicsitem_cast<MacroEvent*>(currentEvent);
+	      if (isMode) 
+		{
+		  if (eventItem) 
+		    {
+		      if (eventItem->getMode() == rowMode) 
+			{
+			  occurrence++;
+			}
+		    }
+		  else if (macroItem) 
+		    {
+		      if (macroItem->getMode() == rowMode) 
+			{
+			  occurrence++;
+			}
+		    }
+		}
+	      else if (!isMode) 
+		{
+		  QVector<QString> attributeVector;
+		  attributeVector.push_back(rowMode);
+		  QSqlQuery *query = new QSqlQuery;
+		  query->prepare("SELECT name FROM entities WHERE name = :name");
+		  query->bindValue(":name", rowMode);
+		  query->exec();
+		  query->first();
+		  bool entity = false;
+		  if (!query->isNull(0)) 
+		    {
+		      entity = true;
+		    }
+		  findChildren(rowMode, &attributeVector, entity);
+		  if (eventItem) 
+		    {
+		      bool found = false;
+		      QVectorIterator<QString> attIt(attributeVector);
+		      while (attIt.hasNext()) 
+			{
+			  QString attribute = attIt.next();
+			  int id = eventItem->getId();
+			  query->prepare("SELECT attribute FROM attributes_to_incidents "
+					 "WHERE attribute = :attribute AND incident = :id");
+			  query->bindValue(":attribute", attribute);
+			  query->bindValue(":id", id);
+			  query->exec();
+			  query->first();
+			  if (!query->isNull(0)) 
+			    {
+			      found = true;
+			    }
+			}
+		      if (found) 
+			{
+			  occurrence++;
+			}
+		    }
+		  else if (macroItem) 
+		    {
+		      bool found = false;
+		      QVectorIterator<QString> attIt(attributeVector);
+		      while (attIt.hasNext()) 
+			{
+			  QString attribute = attIt.next();
+			  if (macroItem->getAttributes().contains(attribute)) 
+			    {
+			      found = true;
+			    }
+			}
+		      if (found) 
+			{
+			  occurrence++;
+			}
+		    }
+		  delete query;
+		}
+	    }
 	  rowMarginals.push_back(occurrence);
+	  // And we add the results to the appropriate columns.
 	  for (int j = 0; j != eventListWidget->rowCount(); j++) 
 	    {
 	      QTableWidgetItem *colItem = eventListWidget->item(j, 0);
