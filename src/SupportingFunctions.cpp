@@ -52,12 +52,13 @@ QString breakString(QString original)
 */
 QString doubleQuote(QString original) 
 {
-  QString copy = original;
-  for (QString::size_type i = 0; i != copy.length(); i++) 
+  QString copy = QString();
+  for (QString::size_type i = 0; i != original.length(); i++) 
     {
-      if (copy[i] == '"') 
+      copy.append(original[i]);
+      if (original[i] == '"') 
 	{
-	  copy[i] = '\"';
+	  copy.append(original[i]);
 	}
     }
   return copy;

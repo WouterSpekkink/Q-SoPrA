@@ -158,7 +158,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
                                                                                
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
-  Qpointer<QVBoxLayout> leftLayout = new QVBoxLayout;
+  QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> indexLayout = new QHBoxLayout;
   indexLayout->addWidget(indexLabel);
   indexLabel->setAlignment(Qt::AlignHCenter);
