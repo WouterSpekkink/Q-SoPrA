@@ -36,6 +36,7 @@ private slots:
   void changeFilter(const QString &text);
   void setFilterColumn();
   void editValue();
+  void exportTable();
   void exportNormalMatrix();
   void exportValuedMatrix();
   void exportMatrix(bool valued);
@@ -51,6 +52,7 @@ private:
   QPointer<QLineEdit> filterField;
 
   QPointer<QPushButton> editValueButton;
+  QPointer<QPushButton> exportTableButton;
   QPointer<QPushButton> exportNormalMatrixButton;
   QPointer<QPushButton> exportValuedMatrixButton;
   

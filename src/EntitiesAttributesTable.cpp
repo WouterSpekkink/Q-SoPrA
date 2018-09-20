@@ -40,6 +40,8 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   filterComboBox->addItem("Values");
 
   editValueButton = new QPushButton(tr("Edit value"), this);
+
+  exportTableButton = new QPushButton(tr("Export table"), this);
   exportNormalMatrixButton = new QPushButton(tr("Export normal matrix"), this);
   exportValuedMatrixButton = new QPushButton(tr("Export valued matrix"), this);
 
@@ -53,6 +55,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setFilterColumn()));
   connect(editValueButton, SIGNAL(clicked()), this, SLOT(editValue()));
+  connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   connect(exportNormalMatrixButton, SIGNAL(clicked()), this, SLOT(exportNormalMatrix()));
   connect(exportValuedMatrixButton, SIGNAL(clicked()), this, SLOT(exportValuedMatrix()));
   
@@ -71,6 +74,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   filterLayout->addWidget(filterFieldLabel);
   filterLayout->addWidget(filterField);
   filterLayout->addWidget(editValueButton);
+  filterLayout->addWidget(exportTableButton);
   filterLayout->addWidget(exportNormalMatrixButton);
   filterLayout->addWidget(exportValuedMatrixButton);
   mainLayout->addLayout(filterLayout);
@@ -145,6 +149,33 @@ void EntitiesAttributesTable::editValue()
 	  query->exec();
 	  updateTable();
 	  delete query;
+	}
+    }
+}
+
+void EntitiesAttributesTable::exportTable()
+{
+  // We will first let the user pick a file name and location
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first need to write the header row.
+      fileOut << "Attribute,Incident,Value\n";
+      // And then we can write the rest of the table.
+      for (int i = 0; i != tableView->verticalHeader()->count(); i++)
+	{
+	  QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+	  QString entity = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+	  QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+	  fileOut << doubleQuote(attribute).toStdString() << ","
+		  << doubleQuote(entity).toStdString() << ","
+		  << value.toStdString() << "\n";
 	}
     }
 }
