@@ -86,6 +86,8 @@ private slots:
   void retrieveData();
   void showAttributes();
   void showComments();
+  void setValueButton();
+  void setValue();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void buildEntities(QStandardItem *top, QString name);

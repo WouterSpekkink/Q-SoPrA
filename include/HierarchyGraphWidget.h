@@ -76,6 +76,8 @@ private slots:
   void retrieveData();
   void showAttributes();
   void showComments();
+  void setValueButton();
+  void setValue();
   void buildComponents(MacroEvent *submittedOrigin, int layer);
   void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
   void processMoveItems(QGraphicsItem *item, QPointF pos);

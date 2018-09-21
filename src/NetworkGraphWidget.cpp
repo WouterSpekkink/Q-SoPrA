@@ -181,9 +181,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(setFilter(const QString &)));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-	  this, SLOT(getValue()));
-  connect(attributesTreeView->selectionModel(),
-	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setButtons()));
   connect(attributesTreeView, SIGNAL(noneSelected()), this, SLOT(setButtons()));
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
@@ -606,12 +603,12 @@ bool NetworkGraphWidget::typesPresent()
 
 void NetworkGraphWidget::retrieveData() 
 {
+  attributesTreeView->resetSelection();
   valueField->blockSignals(true);
   valueField->setText("");
   valueField->blockSignals(false);
   valueField->setEnabled(false);
   valueButton->setEnabled(false);
-  attributesTreeView->clearSelection();
   if (currentData.size() > 0) 
     {
       currentData.clear();
@@ -959,50 +956,6 @@ void NetworkGraphWidget::setValue()
       query->exec();
       valueButton->setEnabled(false);
       delete query;
-    }
-}
-
-void NetworkGraphWidget::getValue() 
-{
-  if (attributesTreeView->currentIndex().isValid()) 
-    {
-      valueField->blockSignals(true);
-      valueField->setText("");
-      valueField->blockSignals(false);
-      QString attribute = attributesTreeView->currentIndex().data().toString();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT attribute, value "
-		     "FROM attributes_to_entities "
-		     "WHERE attribute =:att AND entity = :entity");
-      query->bindValue(":att", attribute);
-      query->bindValue(":entity", selectedEntityName);
-      query->exec();
-      query->first();
-      if (!(query->isNull(0))) 
-	{
-	  valueField->setEnabled(true);
-	}
-      else 
-	{
-	  valueField->setEnabled(false);
-	  valueField->setText("");
-	}
-      if (!(query->isNull(1))) 
-	{
-	  QString value = query->value(1).toString();
-	  valueField->setText(value);
-	}
-      else 
-	{
-	  valueField->setText("");
-	}
-      valueButton->setEnabled(false);
-      delete query;
-    }
-  else 
-    {
-      valueField->setText("");
-      valueButton->setEnabled(false);
     }
 }
 
@@ -5988,12 +5941,17 @@ void NetworkGraphWidget::processHeights()
 
 void NetworkGraphWidget::setButtons() 
 {
+  valueButton->setEnabled(false);
+  valueField->setEnabled(false);
+  valueField->blockSignals(true);
+  valueField->setText("");
+  valueField->blockSignals(false);
   if (attributesTreeView->currentIndex().isValid()) 
     {
       QString currentAttribute = attributesTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
       bool empty = false;
-      query->prepare("SELECT attribute, entity FROM "
+      query->prepare("SELECT attribute, entity, value FROM "
 		     "attributes_to_entities "
 		     "WHERE attribute = :att AND entity = :ent  ");
       query->bindValue(":att", currentAttribute);
@@ -6005,6 +5963,13 @@ void NetworkGraphWidget::setButtons()
 	{
 	  unassignAttributeButton->setEnabled(true);
 	  assignAttributeButton->setEnabled(false);
+	  valueField->setEnabled(true);
+	  if (!query->isNull(2))
+	    {
+	      valueField->blockSignals(true);
+	      valueField->setText(query->value(2).toString());
+	      valueField->blockSignals(false);
+	    }
 	}
       else 
 	{

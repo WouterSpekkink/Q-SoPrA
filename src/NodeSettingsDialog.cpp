@@ -142,7 +142,10 @@ void NodeSettingsDialog::addAttribute()
       QMap<QString, QString> valuesMap;
       QVector<QString> attributesVec;
       attributesVec.push_back(attribute);
-      findChildren(attribute, &attributesVec);
+      if (valued)
+	{
+	  findChildren(attribute, &attributesVec);
+	}
       QVectorIterator<QString> it(attributesVec);
       while (it.hasNext()) 
 	{
@@ -155,24 +158,10 @@ void NodeSettingsDialog::addAttribute()
 	  while (query->next()) 
 	    {
 	      QString currentEntity = query->value(0).toString();
-	      QString currentValue = query->value(1).toString();
-	      if (attributesVec.begin() == currentAttribute) 
+	      QString currentValue = "1";
+	      if (valued)
 		{
-		  if (valued && currentValue != "") 
-		    {
-		      valuesMap[currentEntity] = currentValue;
-		    }
-		  else if (!valued) 
-		    {
-		      valuesMap[currentEntity] = "1";
-		    }
-		}
-	      else 
-		{
-		  if (!valued) 
-		    {
-		      valuesMap[currentEntity] = "1";
-		    }
+		  query->value(1).toString();
 		}
 	    }
 	  delete query;
@@ -182,6 +171,7 @@ void NodeSettingsDialog::addAttribute()
 	{
 	  if (valuesMap.keys().length() > 0) 
 	    {
+	      bool found = false;
 	      for (QVector<QString>::size_type j = 0; j != valuesMap.keys().length(); j++) 
 		{
 		  QString currentEntity = valuesMap.keys()[j];
@@ -190,13 +180,14 @@ void NodeSettingsDialog::addAttribute()
 		    {
 		      QTableWidgetItem *newEntry = new QTableWidgetItem(currentValue, 0);
 		      tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
+		      found = true;
 		      break;
 		    }
-		  else 
-		    {
-		      QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
-		      tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
-		    }
+		}
+	      if (!found)
+		{
+		  QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
+		  tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
 		}
 	    }
 	  else 

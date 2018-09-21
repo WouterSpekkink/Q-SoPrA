@@ -197,6 +197,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(newAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
+  connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
+  connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
@@ -715,6 +717,37 @@ void EventGraphWidget::showComments()
   commentWidget->show();
 }
 
+void EventGraphWidget::setValueButton()
+{
+  valueButton->setEnabled(true);
+}
+
+void EventGraphWidget::setValue()
+{
+  if (attributesTreeView->currentIndex().isValid()) 
+    {
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      if (selectedIncident != 0)
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("UPDATE attributes_to_incidents "
+			 "SET value = :val "
+			 "WHERE attribute = :attribute AND incident = :incident");
+	  query->bindValue(":val", valueField->text());
+	  query->bindValue(":attribute", attribute);
+	  query->bindValue(":incident", selectedIncident);
+	  query->exec();
+	  valueButton->setEnabled(false);
+	  delete query;
+	}
+      else if (selectedMacro != NULL)
+	{
+	  selectedMacro->insertValue(attribute, valueField->text());
+	  valueButton->setEnabled(false);
+	}
+    }
+}
+
 void EventGraphWidget::retrieveData() 
 {
   setComment();
@@ -723,7 +756,7 @@ void EventGraphWidget::retrieveData()
   valueField->setEnabled(false);
   valueField->blockSignals(false);
   valueButton->setEnabled(false);
-  attributesTreeView->clearSelection();
+  attributesTreeView->resetSelection();
   if (currentData.size() > 0) 
     {
       currentData.clear();
@@ -1890,6 +1923,11 @@ void EventGraphWidget::resetTexts()
 
 void EventGraphWidget::setButtons() 
 {
+  valueButton->setEnabled(false);
+  valueField->setEnabled(false);
+  valueField->blockSignals(true);
+  valueField->setText("");
+  valueField->blockSignals(false);
   if (attributesTreeView->currentIndex().isValid()) 
     {
       QString currentAttribute = attributesTreeView->currentIndex().data().toString();
@@ -1897,7 +1935,7 @@ void EventGraphWidget::setButtons()
 	{
 	  QSqlQuery *query = new QSqlQuery;
 	  bool empty = false;
-	  query->prepare("SELECT attribute, incident FROM "
+	  query->prepare("SELECT attribute, incident, value FROM "
 			 "attributes_to_incidents "
 			 "WHERE attribute = :att AND incident = :inc  ");
 	  query->bindValue(":att", currentAttribute);
@@ -1908,6 +1946,13 @@ void EventGraphWidget::setButtons()
 	  if (!empty) 
 	    {
 	      unassignAttributeButton->setEnabled(true);
+	      valueField->setEnabled(true);
+	      if (!query->isNull(2))
+		{
+		  valueField->blockSignals(true);
+		  valueField->setText(query->value(2).toString());
+		  valueField->blockSignals(false);
+		}
 	    }
 	  else 
 	    {
@@ -1945,9 +1990,18 @@ void EventGraphWidget::setButtons()
 	{
 	  QString currentAttribute = attributesTreeView->currentIndex().data().toString();
 	  QSet<QString> attributes = selectedMacro->getAttributes();
+	  QMap<QString, QString> values = selectedMacro->getValues();
 	  if (attributes.contains(currentAttribute)) 
 	    {
 	      unassignAttributeButton->setEnabled(true);
+	      valueField->setEnabled(true);
+	      QString currentValue = values[currentAttribute];
+	      if (currentValue != "")
+		{
+		  valueField->blockSignals(true);
+		  valueField->setText(currentValue);
+		  valueField->blockSignals(false);
+		}
 	    }
 	  else 
 	    {
@@ -6405,7 +6459,8 @@ void EventGraphWidget::exportNodes()
 										 types,
 										 modes,
 										 xCoords,
-										 yCoords);
+										 yCoords,
+										 macroVector);
   settingsDialog->exec();
   delete settingsDialog;
 }

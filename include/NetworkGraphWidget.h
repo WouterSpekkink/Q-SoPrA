@@ -77,7 +77,6 @@ private slots:
 
   void setValueButton();
   void setValue();
-  void getValue();
 
   void assignAttribute();
   void unassignAttribute();

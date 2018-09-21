@@ -150,10 +150,12 @@ void EventNodeSettingsDialog::exportAndClose()
 
 void EventNodeSettingsDialog::addAttribute() 
 {
+  // We first ask the user to select the attribute that is to be added
   QPointer<AttributeSelectionDialog> attributeSelectionDialog = new AttributeSelectionDialog(this, INCIDENT);
   attributeSelectionDialog->exec();
   if (attributeSelectionDialog->getExitStatus() == 0) 
     {
+      // We retrieve the settings from the dialog and set some variables based on the settings
       bool valued = attributeSelectionDialog->getChecked();
       QString attribute = attributeSelectionDialog->getAttribute();
       QString headerText = "";
@@ -165,13 +167,20 @@ void EventNodeSettingsDialog::addAttribute()
 	{
 	  headerText = attribute + " (boolean)";
 	}
+      // We create a header for the new column
       QTableWidgetItem *newHeader = new QTableWidgetItem(headerText, 0);
       tableWidget->setColumnCount(tableWidget->columnCount() + 1);
       tableWidget->setHorizontalHeaderItem(tableWidget->columnCount() - 1, newHeader);
+      // We create a vector to hold our selected attribute and its children (if the valued option was selected)
       QVector<QString> attributesVec;
       attributesVec.push_back(attribute);
-      findChildren(attribute, &attributesVec);
+      if (valued)
+	{
+	  findChildren(attribute, &attributesVec);
+	}
+      // We create a map to pair incidents with values
       QMap<QString, QString> valuesMap;
+      // Let us then iterate through the attribute vector to fill the map
       QVectorIterator<QString> it(attributesVec);
       while (it.hasNext()) 
 	{
@@ -191,35 +200,25 @@ void EventNodeSettingsDialog::addAttribute()
 	      query2->first();
 	      QString currentIncident = query2->value(0).toString();
 	      delete query2;
-	      QString currentValue = query->value(1).toString();
-	      if (attributesVec.begin() == currentAttribute) 
+	      QString currentValue = "1";
+	      if (valued)
 		{
-		  if (valued && currentValue != "") 
-		    {
-		      valuesMap[currentIncident] = currentValue;
-		    }
-		  else if (!valued) 
-		    {
-		      valuesMap[currentIncident] = "1";
-		    }
+		  currentValue = query->value(1).toString();
 		}
-	      else 
-		{
-		  if (!valued) 
-		    {
-		      valuesMap[currentIncident] = "1";
-		    }
-		}
+	      valuesMap[currentIncident] = currentValue;
 	    }
 	  delete query;
 	}
+      // Then we can walk through the table to add the new data
       qApp->setOverrideCursor(Qt::WaitCursor);
       for (int i = 0; i != tableWidget->rowCount(); i++) 
 	{
+	  // If we are dealing with an incident, then we can try to retrieve the value from our map.
 	  if (tableWidget->item(i, 4)->data(Qt::DisplayRole).toString() == INCIDENT) 
 	    {
 	      if (valuesMap.keys().length() > 0) 
 		{
+		  bool found = false;
 		  for (QList<QString>::size_type j = 0; j != valuesMap.keys().length(); j++) 
 		    {
 		      QString currentIncident = valuesMap.keys()[j];
@@ -228,13 +227,14 @@ void EventNodeSettingsDialog::addAttribute()
 			{
 			  QTableWidgetItem *newEntry = new QTableWidgetItem(currentValue, 0);
 			  tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
+			  found = true;
 			  break;
 			}
-		      else 
-			{
-			  QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
-			  tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
-			}
+		    }
+		  if (!found) 
+		    {
+		      QTableWidgetItem *newEntry = new QTableWidgetItem("0", 0);
+		      tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
 		    }
 		}
 	      else 
@@ -243,6 +243,7 @@ void EventNodeSettingsDialog::addAttribute()
 		  tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
 		}
 	    }
+	  // If we are not dealing with an incident, we have a special procedure for (macro) events
 	  else 
 	    {
 	      QString currentName = tableWidget->item(i, 1)->data(Qt::DisplayRole).toString();
