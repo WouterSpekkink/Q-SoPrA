@@ -18,6 +18,7 @@ public:
   GraphicsView(QGraphicsScene *scene);
   qreal panSpeed;
   bool isPanning();
+  void centerMe();
 
 signals:
   void EventGraphContextMenuAction(const QString&, const QPoint&);

@@ -205,6 +205,19 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+void GraphicsView::centerMe() {
+  QPoint newCenter(VIEW_WIDTH, VIEW_HEIGHT);
+  centerOn(mapToScene(newCenter));
+  setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+  Scene *scene = qobject_cast<Scene*>(this->scene());
+  QRectF currentRect = scene->itemsBoundingRect();
+  currentRect.setX(currentRect.x() - 50);
+  currentRect.setY(currentRect.y() - 50);
+  currentRect.setWidth(currentRect.width() + 100);
+  currentRect.setHeight(currentRect.height() + 100);
+  this->scene()->setSceneRect(currentRect);
+}
+
 void GraphicsView::mouseMoveEvent(QMouseEvent *event) 
 {
   if (pan) 
@@ -268,7 +281,6 @@ void GraphicsView::wheelEvent(QWheelEvent* event)
 	    {
 	      this->scale(1.0 / scaleFactor, 1.0 / scaleFactor);
 	    }
-	  emit changedView();
 	}
     }
   else if (event->modifiers() & Qt::ShiftModifier) 

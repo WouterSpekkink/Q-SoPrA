@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QSlider>
 #include <QVector>
 #include <QPointer>
 #include <QtSql>
@@ -231,6 +232,9 @@ private slots:
   void objectToFront();
   void objectToBack();
   void fixZValues();
+  void processZoomSliderChange(int value);
+  void setZoomSlider();
+  void resetZoomSlider();
   
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
@@ -360,6 +364,8 @@ private:
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
 
+  QPointer<QSlider> zoomSlider;
+  
   QVector<QString> presentTypes;
   QVector<QString> checkedCases;
   
@@ -373,6 +379,7 @@ private:
 
   bool labelsVisible;
   bool commentBool;
+  bool zoomSliderHeld;
 };
 
 #endif

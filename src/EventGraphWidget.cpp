@@ -7,6 +7,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   selectedMacro = NULL;
   selectedIncident = 0;
   commentBool = false;
+  zoomSliderHeld = false;
   
   distance = 0;
   vectorPos = 0;
@@ -98,6 +99,11 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
   upperRangeSpinBox->setEnabled(false);
+
+  zoomSlider = new QSlider(Qt::Horizontal, this);
+  zoomSlider->setMinimum(-9);
+  zoomSlider->setMaximum(9);
+  zoomSlider->setValue(0);
 
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -262,6 +268,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
   connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
+  connect(zoomSlider, SIGNAL(sliderPressed()), this, SLOT(setZoomSlider()));
+  connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
+  connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -452,6 +461,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(toggleDetailsButton);
+  toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(increaseDistanceButton);
   drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
@@ -460,6 +470,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addWidget(contractButton);
   expandButton->setMaximumWidth(expandButton->sizeHint().width());
   contractButton->setMaximumWidth(contractButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomSlider);
+  zoomSlider->setMaximumWidth(100);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -476,7 +488,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   attWidget->hide();
   legendWidget->hide();
   updateCases();
-}
+
+  view->centerMe();
+ }
 
 void EventGraphWidget::checkCongruency() 
 {
@@ -666,6 +680,38 @@ void EventGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->hide();
     }
+}
+
+void EventGraphWidget::setZoomSlider()
+{
+  zoomSliderHeld = true;
+}
+
+void EventGraphWidget::processZoomSliderChange(int value)
+{
+  while (zoomSliderHeld)
+    {
+      view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+      if (value < 0)
+	{
+	  double scale = (value * -1) / 250.0;
+	  view->scale(1.0 / (1 + scale), 1.0 / (1 + scale));
+	}
+      else
+	{
+	  double scale = value / 250.0;
+	  view->scale(1 + scale, 1 + scale);
+	}
+      qApp->processEvents();
+    }
+}
+
+void EventGraphWidget::resetZoomSlider()
+{
+  zoomSliderHeld = false;
+  zoomSlider->blockSignals(true);
+  zoomSlider->setValue(0);
+  zoomSlider->blockSignals(false);
 }
 
 void EventGraphWidget::updateCases() 
