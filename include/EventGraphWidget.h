@@ -298,6 +298,7 @@ private:
   QPointer<QLabel> eventLegendLabel;
   QPointer<QLabel> linkageLegendLabel;
   QPointer<QLabel> casesLabel;
+  QPointer<QLabel> zoomLabel;
   
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;

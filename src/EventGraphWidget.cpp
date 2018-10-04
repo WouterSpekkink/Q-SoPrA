@@ -79,6 +79,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
   eventLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   linkageLegendLabel = new QLabel(tr("<b>Linkages:</b>"), legendWidget);
+  zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -101,6 +102,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   upperRangeSpinBox->setEnabled(false);
 
   zoomSlider = new QSlider(Qt::Horizontal, this);
+  zoomSlider->installEventFilter(this);
   zoomSlider->setMinimum(-9);
   zoomSlider->setMaximum(9);
   zoomSlider->setValue(0);
@@ -470,6 +472,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addWidget(contractButton);
   expandButton->setMaximumWidth(expandButton->sizeHint().width());
   contractButton->setMaximumWidth(contractButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomLabel);
+  zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
@@ -10787,6 +10791,10 @@ void EventGraphWidget::finalBusiness()
 
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) 
 {
+  if (event->type() == QEvent::MouseButtonRelease && zoomSliderHeld)
+    {
+      resetZoomSlider();
+    }
   if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) 
     {
       selectText();
@@ -10803,6 +10811,27 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event)
   else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) 
     {
       fixTree();
+    }
+  else if (object == zoomSlider)
+    {
+      if (event->type() == QEvent::Wheel ||
+	  event->type() == QEvent::MouseButtonDblClick)
+	{
+	  event->ignore();
+	  return true;
+	}
+      else if (event->type() == QEvent::MouseButtonPress)
+	{
+	  if (zoomSlider->sliderPosition() == 0)
+	    {
+	      return false;
+	    }
+	  else
+	    {
+	      event->ignore();
+	      return true;
+	    }
+	}
     }
   else if (event->type() == QEvent::Wheel) 
     {

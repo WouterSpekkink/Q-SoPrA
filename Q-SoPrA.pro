@@ -90,7 +90,7 @@ HEADERS += include/Arrow.h \
            include/UndirectedEdge.h \
            include/WelcomeDialog.h \
            include/ZoomableListView.h \
-           include/ZoomableTableView.h
+           include/ZoomableTableView.h 
 SOURCES += main.cpp \
            src/Arrow.cpp \
            src/AttributeColorDialog.cpp \
@@ -173,4 +173,4 @@ SOURCES += main.cpp \
            src/UndirectedEdge.cpp \
            src/WelcomeDialog.cpp \
            src/ZoomableListView.cpp \
-           src/ZoomableTableView.cpp
+           src/ZoomableTableView.cpp 
