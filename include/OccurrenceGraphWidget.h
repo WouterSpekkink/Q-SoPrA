@@ -56,7 +56,8 @@ public:
   bool attributesPresent();
   bool relationshipsPresent();
   void updateCases();
-			     
+  bool eventFilter(QObject *object, QEvent *event);
+		    
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
@@ -84,6 +85,8 @@ private slots:
   void setBackgroundColor();
   void increaseDistance();
   void decreaseDistance();
+  void processZoomSliderChange(int value);
+  void resetZoomSlider();
   
   void processLowerRange(int value);
   void processUpperRange(int value);
@@ -160,7 +163,8 @@ private:
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
   QPointer<QLabel> casesLabel;
-
+  QPointer<QLabel> zoomLabel;
+  
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
@@ -189,6 +193,8 @@ private:
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
 
+  QPointer<QSlider> zoomSlider;
+  
   QVector<QString> presentAttributes;
   QVector<QString> presentRelationships;
   QVector<QString> checkedCases;

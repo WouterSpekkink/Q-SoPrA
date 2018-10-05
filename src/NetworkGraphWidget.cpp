@@ -6,7 +6,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   selectedEntityName = "";
   labelsShown = false;
   massMove = false;
-
+  
   minOrder = 0;
   maxOrder = 0;
   vectorPos = 0;
@@ -58,6 +58,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   changeLabel = new QLabel(tr("*"), this);
   incongruencyLabel = new QLabel(tr(""), this);
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
+  zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
@@ -77,6 +78,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   toggleGraphicsControlsButton->setCheckable(true);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
   toggleDetailsButton->setCheckable(true);
+  expandLayoutButton = new QPushButton(tr("Expand"), this);
+  contractLayoutButton = new QPushButton(tr("Contract"), this);
+  simpleLayoutButton = new QPushButton(tr("Spring layout"), this);
+  circularLayoutButton = new QPushButton(tr("Circular layout"), this);
   previousNodeButton = new QPushButton(tr("<<"), infoWidget);
   previousNodeButton->setEnabled(false);   
   nextNodeButton = new QPushButton(tr(">>"), infoWidget);
@@ -123,10 +128,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
   removeModeButton->setEnabled(false);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
-  simpleLayoutButton = new QPushButton(tr("Spring layout"), graphicsWidget);
-  circularLayoutButton = new QPushButton(tr("Circular layout"), graphicsWidget);
-  expandLayoutButton = new QPushButton(tr("Expand"), graphicsWidget);
-  contractLayoutButton = new QPushButton(tr("Contract"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
@@ -150,6 +151,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
   upperRangeSpinBox->setEnabled(false);
 
+  zoomSlider = new QSlider(Qt::Horizontal, this);
+  zoomSlider->installEventFilter(this);
+  zoomSlider->setMinimum(-9);
+  zoomSlider->setMaximum(9);
+  zoomSlider->setValue(0);
+  
   nodeListWidget = new DeselectableListWidget(legendWidget);
   edgeListWidget = new DeselectableListWidget(legendWidget);
 
@@ -258,6 +265,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
   connect(contractLayoutButton, SIGNAL(clicked()), this, SLOT(contractLayout()));
+  connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
+  connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -351,17 +360,10 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   legendWidget->setMinimumWidth(250);
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
-  screenLayout->addWidget(legendWidget);				   
-  
+  screenLayout->addWidget(legendWidget);				     
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(casesLabel);
   graphicsControlsLayout->addWidget(caseListWidget);
-  graphicsControlsLayout->addWidget(simpleLayoutButton);
-  graphicsControlsLayout->addWidget(circularLayoutButton);
-  QPointer<QHBoxLayout> expansionLayout = new QHBoxLayout;
-  expansionLayout->addWidget(expandLayoutButton);
-  expansionLayout->addWidget(contractLayoutButton);
-  graphicsControlsLayout->addLayout(expansionLayout);
   QPointer<QFrame> sepLine3 = new QFrame();
   sepLine3->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine3);
@@ -404,6 +406,19 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(toggleDetailsButton);
+  toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(simpleLayoutButton);
+  simpleLayoutButton->setMaximumWidth(simpleLayoutButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(circularLayoutButton);
+  circularLayoutButton->setMaximumWidth(circularLayoutButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(expandLayoutButton);
+  expandLayoutButton->setMaximumWidth(expandLayoutButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(contractLayoutButton);
+  contractLayoutButton->setMaximumWidth(contractLayoutButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomLabel);
+  zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomSlider);
+  zoomSlider->setMaximumWidth(100);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -571,6 +586,36 @@ void NetworkGraphWidget::toggleLegend()
       legendWidget->hide();
     }
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+}
+
+void NetworkGraphWidget::processZoomSliderChange(int value)
+{
+  while (zoomSlider->sliderPosition() != 0)
+    {
+      view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+      if (value < 0)
+	{
+	  double scale = (value * -1) / 250.0;
+	  view->scale(1.0 / (1 + scale), 1.0 / (1 + scale));
+	}
+      else
+	{
+	  double scale = value / 250.0;
+	  view->scale(1 + scale, 1 + scale);
+	}
+      qApp->processEvents();
+      if (!zoomSlider->isSliderDown()) {
+	break;
+      }
+    }
+  resetZoomSlider();
+}
+
+void NetworkGraphWidget::resetZoomSlider()
+{
+  zoomSlider->blockSignals(true);
+  zoomSlider->setValue(0);
+  zoomSlider->blockSignals(false);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -6026,6 +6071,10 @@ void NetworkGraphWidget::finalBusiness()
 
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) 
 {
+  if (event->type() == QEvent::MouseButtonRelease)
+    {
+      resetZoomSlider();
+    }
   if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) 
     {
       retrieveData();
@@ -6038,6 +6087,15 @@ bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event)
   else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) 
     {
       fixTree(selectedEntityName);
+    }
+  else if (object == zoomSlider)
+    {
+      if (event->type() == QEvent::Wheel ||
+	  event->type() == QEvent::MouseButtonDblClick)
+	{
+	  event->ignore();
+	  return true;
+	}
     }
   else if (event->type() == QEvent::Wheel) 
     {

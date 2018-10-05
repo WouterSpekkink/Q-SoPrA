@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QSlider>
 #include <QVector>
 #include <QPointer>
 #include <QtSql>
@@ -63,6 +64,8 @@ private slots:
   void toggleGraphicsControls();
   void toggleLegend();
   void checkCases();
+  void processZoomSliderChange(int value);
+  void resetZoomSlider();
 
   void retrieveData();
   void setTree();
@@ -219,6 +222,7 @@ private:
   QPointer<QLabel> changeLabel;
   QPointer<QLabel> incongruencyLabel;
   QPointer<QLabel> casesLabel;
+  QPointer<QLabel> zoomLabel;
   
   QPointer<QComboBox> typeComboBox;
 
@@ -279,6 +283,8 @@ private:
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
 
+  QPointer<QSlider> zoomSlider;
+  
   QVector<QString> presentTypes; 
   QVector<QString> checkedCases;
   

@@ -4,6 +4,7 @@
 #include <QtWidgets>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QSlider>
 #include <QVector>
 #include <QPointer>
 #include <QtSql>
@@ -94,6 +95,8 @@ private slots:
   void highlightText();
   void removeText();
   void resetTexts();
+  void processZoomSliderChange(int value);
+  void resetZoomSlider();
   
   void processHierarchyGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
@@ -181,6 +184,7 @@ private:
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> legendLabel;
+  QPointer<QLabel> zoomLabel;
   
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -215,6 +219,8 @@ private:
 
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<DeselectableListWidget> linkageListWidget;
+
+  QPointer<QSlider> zoomSlider;
   
   MacroEvent *origin;
   QVector<EventItem*> eventVector;

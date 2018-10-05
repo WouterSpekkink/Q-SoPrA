@@ -47,6 +47,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), attWidget);
   valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
   legendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
+  zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
 
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -80,6 +81,12 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   linkageListWidget->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
   linkageListWidget->setStyleSheet("QTableView {gridline-color: black}");
   linkageListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
+  
+  zoomSlider = new QSlider(Qt::Horizontal, this);
+  zoomSlider->installEventFilter(this);
+  zoomSlider->setMinimum(-9);
+  zoomSlider->setMaximum(9);
+  zoomSlider->setValue(0);
   
   exportSvgButton = new QPushButton(tr("Export svg"), this);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
@@ -174,6 +181,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(view, SIGNAL(HierarchyGraphContextMenuAction(const QString &, const QPoint&)),
 	  this, SLOT(processHierarchyGraphContextMenu(const QString &, const QPoint&)));
+  connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
+  connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
   connect(exitButton, SIGNAL(clicked()), this, SLOT(switchBack()));
   
@@ -270,6 +279,11 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(toggleDetailsButton);
+  toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomLabel);
+  zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomSlider);
+  zoomSlider->setMaximumWidth(100);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -323,6 +337,35 @@ void HierarchyGraphWidget::showComments()
   commentWidget->show();
 }
 
+void HierarchyGraphWidget::processZoomSliderChange(int value)
+{
+  while (zoomSlider->sliderPosition() != 0)
+    {
+      view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+      if (value < 0)
+	{
+	  double scale = (value * -1) / 250.0;
+	  view->scale(1.0 / (1 + scale), 1.0 / (1 + scale));
+	}
+      else
+	{
+	  double scale = value / 250.0;
+	  view->scale(1 + scale, 1 + scale);
+	}
+      qApp->processEvents();
+      if (!zoomSlider->isSliderDown()) {
+	break;
+      }
+    }
+  resetZoomSlider();
+}
+
+void HierarchyGraphWidget::resetZoomSlider()
+{
+  zoomSlider->blockSignals(true);
+  zoomSlider->setValue(0);
+  zoomSlider->blockSignals(false);
+}
 
 void HierarchyGraphWidget::setValueButton()
 {
@@ -4016,6 +4059,10 @@ void HierarchyGraphWidget::finalBusiness()
 
 bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event) 
 {
+  if (event->type() == QEvent::MouseButtonRelease)
+    {
+      resetZoomSlider();
+    }
   if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) 
     {
       selectText();
@@ -4032,6 +4079,15 @@ bool HierarchyGraphWidget::eventFilter(QObject *object, QEvent *event)
   else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) 
     {
       fixTree();
+    }
+  else if (object == zoomSlider)
+    {
+      if (event->type() == QEvent::Wheel ||
+	  event->type() == QEvent::MouseButtonDblClick)
+	{
+	  event->ignore();
+	  return true;
+	}
     }
   else if (event->type() == QEvent::Wheel) 
     {

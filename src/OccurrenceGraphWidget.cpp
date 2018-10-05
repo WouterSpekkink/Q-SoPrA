@@ -61,6 +61,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
+  zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -72,6 +73,12 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
   upperRangeSpinBox->setEnabled(false);
+
+  zoomSlider = new QSlider(Qt::Horizontal, this);
+  zoomSlider->installEventFilter(this);
+  zoomSlider->setMinimum(-9);
+  zoomSlider->setMaximum(9);
+  zoomSlider->setValue(0);
   
   toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   toggleLegendButton->setCheckable(true);
@@ -105,6 +112,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(addRelationshipButton, SIGNAL(clicked()), this, SLOT(addRelationship()));
+  connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
+  connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(attributeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setAttributeModeButton(QTableWidgetItem *)));
   connect(attributeListWidget, SIGNAL(noneSelected()),
@@ -186,7 +195,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
-
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(casesLabel);
   graphicsControlsLayout->addWidget(caseListWidget);
@@ -226,6 +234,11 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
   decreaseDistanceButton->setMaximumWidth(decreaseDistanceButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomLabel);
+  zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(zoomSlider);
+  zoomSlider->setMaximumWidth(100);
+
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -516,6 +529,35 @@ void OccurrenceGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->show();
     }
+}
+
+void OccurrenceGraphWidget::processZoomSliderChange(int value)
+{
+  while (zoomSlider->sliderPosition() != 0)
+    {
+      view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
+      if (value < 0)
+	{
+	  double scale = (value * -1) / 250.0;
+	  view->scale(1.0 / (1 + scale), 1.0 / (1 + scale));
+	}
+      else
+	{
+	  double scale = value / 250.0;
+	  view->scale(1 + scale, 1 + scale);
+	}
+      qApp->processEvents();
+      if (!zoomSlider->isSliderDown()) {
+	break;
+      }
+    }
+  resetZoomSlider();
+}
+
+void OccurrenceGraphWidget::resetZoomSlider()
+{
+  zoomSlider->setValue(0);
+  zoomSlider->setSliderPosition(0);
 }
 
 void OccurrenceGraphWidget::updateCases() 
@@ -4149,4 +4191,34 @@ void OccurrenceGraphWidget::cleanUp()
 void OccurrenceGraphWidget::finalBusiness() 
 {
   cleanUp();
+}
+
+bool OccurrenceGraphWidget::eventFilter(QObject *object, QEvent *event) 
+{
+  if (event->type() == QEvent::MouseButtonRelease)
+    {
+      resetZoomSlider();
+    }
+  else if (object == zoomSlider)
+    {
+      if (event->type() == QEvent::Wheel ||
+	  event->type() == QEvent::MouseButtonDblClick)
+	{
+	  event->ignore();
+	  return true;
+	}
+      else if (event->type() == QEvent::MouseButtonPress)
+	{
+	  if (zoomSlider->sliderPosition() == 0)
+	    {
+	      return false;
+	    }
+	  else
+	    {
+	      event->ignore();
+	      return true;
+	    }
+	}
+    }
+  return false;
 }

@@ -233,7 +233,6 @@ private slots:
   void objectToBack();
   void fixZValues();
   void processZoomSliderChange(int value);
-  void setZoomSlider();
   void resetZoomSlider();
   
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
@@ -380,7 +379,6 @@ private:
 
   bool labelsVisible;
   bool commentBool;
-  bool zoomSliderHeld;
 };
 
 #endif

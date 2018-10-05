@@ -7,7 +7,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   selectedMacro = NULL;
   selectedIncident = 0;
   commentBool = false;
-  zoomSliderHeld = false;
   
   distance = 0;
   vectorPos = 0;
@@ -270,7 +269,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
   connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
-  connect(zoomSlider, SIGNAL(sliderPressed()), this, SLOT(setZoomSlider()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -686,14 +684,9 @@ void EventGraphWidget::toggleGraphicsControls()
     }
 }
 
-void EventGraphWidget::setZoomSlider()
-{
-  zoomSliderHeld = true;
-}
-
 void EventGraphWidget::processZoomSliderChange(int value)
 {
-  while (zoomSliderHeld)
+  while (zoomSlider->sliderPosition() != 0)
     {
       view->setTransformationAnchor(QGraphicsView::AnchorViewCenter);
       if (value < 0)
@@ -707,15 +700,17 @@ void EventGraphWidget::processZoomSliderChange(int value)
 	  view->scale(1 + scale, 1 + scale);
 	}
       qApp->processEvents();
+      if (!zoomSlider->isSliderDown()) {
+	break;
+      }
     }
+  resetZoomSlider();
 }
 
 void EventGraphWidget::resetZoomSlider()
 {
-  zoomSliderHeld = false;
-  zoomSlider->blockSignals(true);
   zoomSlider->setValue(0);
-  zoomSlider->blockSignals(false);
+  zoomSlider->setSliderPosition(0);
 }
 
 void EventGraphWidget::updateCases() 
@@ -10791,7 +10786,7 @@ void EventGraphWidget::finalBusiness()
 
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) 
 {
-  if (event->type() == QEvent::MouseButtonRelease && zoomSliderHeld)
+  if (event->type() == QEvent::MouseButtonRelease)
     {
       resetZoomSlider();
     }
