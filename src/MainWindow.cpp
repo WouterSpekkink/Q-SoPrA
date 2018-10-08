@@ -88,19 +88,19 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 				"background: #b2b1b1; "
 				"border: 1px solid #787676}");
   QString treeSheet = QString("QTreeView::branch:has-siblings:!adjoins-item { "
-			      "border-image: url(\"images/vlinecust.png\") 0; } "
+			      "border-image: url(\"images/vlinecust.svg\") 0; } "
 			      "QTreeView::branch:has-siblings:adjoins-item { "
-			      "border-image: url(images/branch_more.png) ; } "
+			      "border-image: url(images/branch_more.svg) ; } "
 			      "QTreeView::branch:!has-children:!has-siblings:adjoins-item { "
-			      "border-image: url(\"images/branch_end.png\") 0; }  "
+			      "border-image: url(\"images/branch_end.svg\") 0; }  "
 			      "QTreeView::branch:has-children:!has-siblings:closed, "
 			      "QTreeView::branch:closed:has-children:has-siblings { "
 			      "border-image: none; "
-			      "image: url(\"images/plus.png\"); } " 
+			      "image: url(\"images/plus.svg\"); } " 
 			      "QTreeView::branch:open:has-children:!has-siblings, "
 			      "QTreeView::branch:open:has-children:has-siblings { "
 			      "border-image: none; "
-			      "image: url(\"images/minus.png\"); }");
+			      "image: url(\"images/minus.svg\"); }");
   aw->setStyleSheet(treeSheet);
   rw->setStyleSheet(treeSheet);
   egw->setStyleSheet(sliderSheet + treeSheet);

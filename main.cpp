@@ -21,6 +21,16 @@ int main(int argc, char *argv[]) {
   } else if (welcome->getExitStatus() == 1) {
     return 0;
     delete welcome;
+  } else if (welcome->getExitStatus() == 2) {
+    QPointer<QMessageBox> messageBox = new QMessageBox(0);
+    messageBox->setText("<h2>Could not open database</h2>");
+    messageBox->setInformativeText("An error occurred while attempting "
+				   "to create/open the selected "
+				   "database file. The program will "
+				   "now exit.");
+    delete welcome;
+    delete messageBox;
+    return 0;
   }
   return QSoPrA.exec();
 }

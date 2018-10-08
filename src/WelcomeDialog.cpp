@@ -3,7 +3,7 @@
 WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEsd) : QDialog(parent) 
 {
   esd = submittedEsd;
-  exitStatus = 2;
+  exitStatus = 1;
   
   titleLabel = new QLabel("<h1>Welcome to Q-SoPrA</h1>", this);
   titleLabel->setAlignment(Qt::AlignHCenter);
@@ -674,14 +674,11 @@ void WelcomeDialog::newDatabase()
 	  qApp->processEvents();
 	}
       exitStatus = 0;
+      this->close();
     }
   else 
     {
       exitStatus = 2;
-    }
-  if (exitStatus == 0) 
-    {
-      this->close();
     }
 }
 
