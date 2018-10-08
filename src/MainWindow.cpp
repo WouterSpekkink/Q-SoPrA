@@ -88,11 +88,13 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 				"background: #b2b1b1; "
 				"border: 1px solid #787676}");
   QString treeSheet = QString("QTreeView::branch:has-siblings:!adjoins-item { "
-			      "border-image: url(\"images/vlinecust.svg\") 0; } "
+			      "border-image: url(\"images/vlinewhole.svg\"); } "
 			      "QTreeView::branch:has-siblings:adjoins-item { "
-			      "border-image: url(images/branch_more.svg) ; } "
+			      "border-image: url(\"images/vlinewhole.svg\"); "
+			      "image: url(\"images/hline.svg\"); } "
 			      "QTreeView::branch:!has-children:!has-siblings:adjoins-item { "
-			      "border-image: url(\"images/branch_end.svg\") 0; }  "
+			      "border-image: url(\"images/vlinehalf.svg\"); "
+			      "image: url(\"images/hline.svg\"); }  "
 			      "QTreeView::branch:has-children:!has-siblings:closed, "
 			      "QTreeView::branch:closed:has-children:has-siblings { "
 			      "border-image: none; "
@@ -106,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   egw->setStyleSheet(sliderSheet + treeSheet);
   ngw->setStyleSheet(sliderSheet);
   hgw->setStyleSheet(sliderSheet + treeSheet);
-  ogw->setStyleSheet(sliderSheet);
+  ogw->setStyleSheet(sliderSheet + treeSheet);
   
   stacked->addWidget(dataWidget); // 0
   stacked->addWidget(attributesWidget); // 1
