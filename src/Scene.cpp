@@ -21,6 +21,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   rotateText = false;
   hierarchyMove = false;
   eventWidthChange = false;
+  moveNetworkNodeLabel = false;
 }
 
 QRectF Scene::itemsBoundingRect() const 
@@ -609,6 +610,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 								      QTransform()));
       NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
 									 QTransform()));
+      NetworkNodeLabel *networkLabel = qgraphicsitem_cast<NetworkNodeLabel*>(itemAt(event->scenePos(),
+										    QTransform()));
       OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
 									      QTransform()));
       OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
@@ -649,6 +652,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	{
 	  clearSelection();
 	  networkNode->setSelected(true);
+	}
+      else if (networkLabel)
+	{
+	  clearSelection();
+	  moveNetworkNodeLabel = true;
+	  selectedNetworkLabel = networkLabel;
+	  lastMousePos = event->scenePos();
 	}
       else if (occurrence) 
 	{
@@ -712,6 +722,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   rotateText = false;
   hierarchyMove = false;
   moveText = false;
+  moveNetworkNodeLabel = false;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
@@ -746,6 +757,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   selectedLine = NULL;
   selectedEllipse = NULL;
   selectedText = NULL;
+  selectedNetworkLabel = NULL;
   QGraphicsScene::mouseReleaseEvent(event);
 }
   
@@ -1119,6 +1131,20 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
       selectedText->setRotationValue(angle);
+      emit relevantChange();
+    }
+  else if (moveNetworkNodeLabel) 
+    {
+      QPointF newPos = event->scenePos();
+      qreal newXDiff = newPos.x() - lastMousePos.x();
+      qreal newYDiff = newPos.y() - lastMousePos.y();
+      selectedNetworkLabel->setPos(selectedNetworkLabel->scenePos() + QPointF(newXDiff, newYDiff));
+      qreal xDist = selectedNetworkLabel->scenePos().x() -
+	selectedNetworkLabel->getNode()->scenePos().x();
+      qreal yDist = selectedNetworkLabel->scenePos().y() -
+	selectedNetworkLabel->getNode()->scenePos().y();
+      selectedNetworkLabel->setOffset(QPointF(xDist, yDist));
+      lastMousePos = event->scenePos();
       emit relevantChange();
     }
   else 

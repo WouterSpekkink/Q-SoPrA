@@ -10,6 +10,7 @@
 #include <QGraphicsView>
 #include <QMenu>
 #include "../include/NetworkNode.h"
+#include "../include/NetworkNodeLabel.h"
 #include "../include/NodeLabel.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/LineObject.h"
@@ -68,10 +69,12 @@ protected:
   bool rotateText;
   bool hierarchyMove;
   bool eventWidthChange;
+  bool moveNetworkNodeLabel;
   QPointF lastMousePos;
   EventItem *selectedEvent;
   MacroEvent *selectedMacro;
   NetworkNode *selectedNode;
+  NetworkNodeLabel *selectedNetworkLabel;
   OccurrenceItem *selectedOccurrence;
   LineObject *selectedLine;
   EllipseObject *selectedEllipse;

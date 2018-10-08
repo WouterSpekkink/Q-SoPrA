@@ -27,11 +27,7 @@ public:
   void decreaseFontSize();
   int getFontSize();
   void setFontSize(int size);
-  
-protected:
-  void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
-  
+    
 private:
   NetworkNode *node;
   qreal xOffset;

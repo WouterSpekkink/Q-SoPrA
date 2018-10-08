@@ -53,44 +53,6 @@ int NetworkNodeLabel::type() const
   return Type;
 }
 
-
-void NetworkNodeLabel::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
-{
-  QPointF newPos = event->scenePos();
-
-  QPointF nodePos = this->getNode()->scenePos();
-
-  qreal xDiff = newPos.x() - nodePos.x();
-  qreal yDiff = newPos.y() - nodePos.y();
-
-  xOffset = xDiff;
-  yOffset = yDiff;
-
-  this->setPos(newPos);
-  
-  update();
-  Scene *myScene = qobject_cast<Scene*>(scene());
-  myScene->relevantChange();
-}
-
-void NetworkNodeLabel::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
-{
-  QPointF newPos = event->scenePos();
-
-  QPointF nodePos = this->getNode()->scenePos();
-
-  qreal xDiff = newPos.x() - nodePos.x();
-  qreal yDiff = newPos.y() - nodePos.y();
-
-  xOffset = xDiff;
-  yOffset = yDiff;
-
-  this->setPos(newPos);
-
-  update();
-  QGraphicsItem::mouseReleaseEvent(event);
-}
-
 void NetworkNodeLabel::increaseFontSize() 
 {
   if (fontSize != 24) 
