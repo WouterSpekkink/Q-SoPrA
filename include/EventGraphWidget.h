@@ -234,6 +234,8 @@ private slots:
   void fixZValues();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
+
+  void setGraphControls(bool status);
   
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);

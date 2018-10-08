@@ -438,6 +438,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   infoWidget->hide();
   graphicsWidget->hide();
   legendWidget->hide();
+  setGraphControls(false);
 }
 
 void NetworkGraphWidget::checkCongruency() 
@@ -616,6 +617,16 @@ void NetworkGraphWidget::resetZoomSlider()
   zoomSlider->blockSignals(true);
   zoomSlider->setValue(0);
   zoomSlider->blockSignals(false);
+}
+
+
+void NetworkGraphWidget::setGraphControls(bool status)
+{
+  zoomSlider->setEnabled(status);
+  expandLayoutButton->setEnabled(status);
+  contractLayoutButton->setEnabled(status);
+  simpleLayoutButton->setEnabled(status);
+  circularLayoutButton->setEnabled(status);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -4135,8 +4146,8 @@ void NetworkGraphWidget::plotNewGraph()
   checkCongruency();
   caseListWidget->setEnabled(true);
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+  setGraphControls(true);
 }
-
 
 void NetworkGraphWidget::addRelationshipType() 
 {
@@ -4224,6 +4235,7 @@ void NetworkGraphWidget::removeRelationshipType()
   if (presentTypes.size() == 0) 
     {
       caseListWidget->setEnabled(false);
+      setGraphControls(false);
     }
   setVisibility();
 }
@@ -6062,6 +6074,7 @@ void NetworkGraphWidget::cleanUp()
   nameField->clear();
   descriptionField->clear();
   resetFont(attributesTree);
+  setGraphControls(false);
 }
 
 void NetworkGraphWidget::finalBusiness() 

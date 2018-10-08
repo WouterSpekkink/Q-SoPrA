@@ -87,6 +87,7 @@ private slots:
   void decreaseDistance();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
+  void setGraphControls(bool status);
   
   void processLowerRange(int value);
   void processUpperRange(int value);

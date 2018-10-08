@@ -254,6 +254,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   setLayout(mainLayout);
   graphicsWidget->hide();
   updateCases();
+  setGraphControls(false);
 }
 
 void OccurrenceGraphWidget::checkCongruency() 
@@ -560,6 +561,13 @@ void OccurrenceGraphWidget::resetZoomSlider()
   zoomSlider->setSliderPosition(0);
 }
 
+void OccurrenceGraphWidget::setGraphControls(bool status)
+{
+  zoomSlider->setEnabled(status);
+  increaseDistanceButton->setEnabled(status);
+  decreaseDistanceButton->setEnabled(status);
+}
+
 void OccurrenceGraphWidget::updateCases() 
 {
   caseListWidget->clear();
@@ -731,6 +739,7 @@ void OccurrenceGraphWidget::addAttribute()
     {
       caseListWidget->setEnabled(true);
     }
+  setGraphControls(true);
 }
 
 void OccurrenceGraphWidget::addRelationship() 
@@ -845,6 +854,7 @@ void OccurrenceGraphWidget::addRelationship()
     {
       caseListWidget->setEnabled(true);
     }
+  setGraphControls(true);
 }
 
 void OccurrenceGraphWidget::setChangeLabel() 
@@ -928,6 +938,7 @@ void OccurrenceGraphWidget::removeAttributeMode()
     {
       savePlotButton->setEnabled(false);
       caseListWidget->setEnabled(false);
+      setGraphControls(false);
     }
   wireLinkages();
   removeAttributeModeButton->setEnabled(false);
@@ -972,6 +983,7 @@ void OccurrenceGraphWidget::removeRelationshipMode()
   else if (presentAttributes.size() == 0 && presentRelationships.size() == 0) 
     {
       savePlotButton->setEnabled(false);
+      setGraphControls(false);
     }
   wireLinkages();
   removeRelationshipModeButton->setEnabled(false);
@@ -4186,6 +4198,7 @@ void OccurrenceGraphWidget::cleanUp()
   presentAttributes.clear();
   presentRelationships.clear();
   checkedCases.clear();
+  setGraphControls(false);
 }
 
 void OccurrenceGraphWidget::finalBusiness() 

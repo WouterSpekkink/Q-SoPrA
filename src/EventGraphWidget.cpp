@@ -491,7 +491,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   legendWidget->hide();
   updateCases();
 
-  view->centerMe();
+  setGraphControls(false);
  }
 
 void EventGraphWidget::checkCongruency() 
@@ -711,6 +711,15 @@ void EventGraphWidget::resetZoomSlider()
 {
   zoomSlider->setValue(0);
   zoomSlider->setSliderPosition(0);
+}
+
+void EventGraphWidget::setGraphControls(bool status)
+{
+  zoomSlider->setEnabled(status);
+  expandButton->setEnabled(status);
+  contractButton->setEnabled(status);
+  increaseDistanceButton->setEnabled(status);
+  decreaseDistanceButton->setEnabled(status);
 }
 
 void EventGraphWidget::updateCases() 
@@ -2915,6 +2924,7 @@ void EventGraphWidget::cleanUp()
   selectedCompare = "";
   selectedIncident = 0;
   selectedMacro = NULL;
+  setGraphControls(false);
 }
 
 void EventGraphWidget::changePos(EventItem *item, qreal &dist) 
@@ -3370,6 +3380,7 @@ void EventGraphWidget::plotGraph()
   plotLabel->setText("Unsaved plot");
   checkCongruency();
   updateLinkages();
+  setGraphControls(true);
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }

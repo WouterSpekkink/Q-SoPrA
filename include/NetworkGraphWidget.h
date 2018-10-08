@@ -58,7 +58,7 @@ public:
   void getTypes();
   bool typesPresent();
   void updateCases();
-		 
+
 private slots:
   void toggleDetails();
   void toggleGraphicsControls();
@@ -67,6 +67,8 @@ private slots:
   void processZoomSliderChange(int value);
   void resetZoomSlider();
 
+  void setGraphControls(bool status);
+  
   void retrieveData();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
