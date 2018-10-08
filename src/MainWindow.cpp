@@ -87,9 +87,25 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 				"QSlider::handle:horizontal:disabled { "
 				"background: #b2b1b1; "
 				"border: 1px solid #787676}");
-  egw->setStyleSheet(sliderSheet);
+  QString treeSheet = QString("QTreeView::branch:has-siblings:!adjoins-item { "
+			      "border-image: url(\"images/vlinecust.png\") 0; } "
+			      "QTreeView::branch:has-siblings:adjoins-item { "
+			      "border-image: url(images/branch_more.png) ; } "
+			      "QTreeView::branch:!has-children:!has-siblings:adjoins-item { "
+			      "border-image: url(\"images/branch_end.png\") 0; }  "
+			      "QTreeView::branch:has-children:!has-siblings:closed, "
+			      "QTreeView::branch:closed:has-children:has-siblings { "
+			      "border-image: none; "
+			      "image: url(\"images/plus.png\"); } " 
+			      "QTreeView::branch:open:has-children:!has-siblings, "
+			      "QTreeView::branch:open:has-children:has-siblings { "
+			      "border-image: none; "
+			      "image: url(\"images/minus.png\"); }");
+  aw->setStyleSheet(treeSheet);
+  rw->setStyleSheet(treeSheet);
+  egw->setStyleSheet(sliderSheet + treeSheet);
   ngw->setStyleSheet(sliderSheet);
-  hgw->setStyleSheet(sliderSheet);
+  hgw->setStyleSheet(sliderSheet + treeSheet);
   ogw->setStyleSheet(sliderSheet);
   
   stacked->addWidget(dataWidget); // 0
