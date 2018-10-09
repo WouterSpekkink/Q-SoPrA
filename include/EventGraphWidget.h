@@ -166,8 +166,6 @@ private slots:
   void disaggregateEvent();
   void updateMacroIds(MacroEvent *macro);
   void updateMacroOrder();
-  //  bool checkConstraints(QVector<EventItem*> incidents, QString constraint);
-  QVector<bool> checkLinkagePresence(QVector<int> incidentIds);
   void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();

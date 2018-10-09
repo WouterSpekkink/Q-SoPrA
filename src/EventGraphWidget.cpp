@@ -6922,40 +6922,6 @@ void EventGraphWidget::colligateEvents(bool single)
     }
 }
 
-QVector<bool> EventGraphWidget::checkLinkagePresence(QVector<int> incidentIds) 
-{
-  QVector<bool> result;
-  QVectorIterator<QString> it(presentTypes);
-  while (it.hasNext()) 
-    {
-      QString currentType = it.next();
-      QVector<int> observed;
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT tail, head FROM linkages "
-		     "WHERE type = :type");
-      query->bindValue(":type", currentType);
-      query->exec();
-      while (query->next()) 
-	{
-	  observed.push_back(query->value(0).toInt());
-	  observed.push_back(query->value(1).toInt());
-	}
-      delete query;
-      QVectorIterator<int> it2(observed);
-      bool status = false;
-      while (it2.hasNext()) 
-	{
-	  int currentObserved = it2.next();
-	  if (incidentIds.contains(currentObserved)) 
-	    {
-	      status = true;
-	    }
-	}
-      result.push_back(status);
-    }
-  return(result);
-}
-
 void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents) 
 {
   QVectorIterator<QString> lit(presentTypes);
