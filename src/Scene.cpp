@@ -1261,7 +1261,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
-	      action4->setEnabled(false);
+	      action5->setEnabled(false);
 	      action6->setEnabled(false);
 	      action7->setEnabled(false);
 	      action9->setEnabled(false);

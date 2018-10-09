@@ -6830,14 +6830,8 @@ void EventGraphWidget::colligateEvents(bool single)
 		      else if (macro) 
 			{
 			  MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
-			  QVectorIterator<EventItem*> it4(item->getIncidents());
-			  bool checkpoint = false;
-			  while (it4.hasNext()) 
-			    {
-			      EventItem *currentIncident = it4.next();
-			      item->setMacroEvent(current);
-			      item->hide();
-			    }
+			  item->setMacroEvent(current);
+			  item->hide();
 			}
 		    }
 		  macroVector.push_back(current);
