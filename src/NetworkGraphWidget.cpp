@@ -4037,13 +4037,15 @@ void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item)
 {
   if (item->column() == 1) 
     {
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setCurrentColor(item->background().color());
-      if (colorDialog->exec()) 
+      QColor currentFill = item->background().color();
+      QColor currentText = QColor("black");
+      QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
+      colorDialog->exec();
+      if (colorDialog->getExitStatus() == 0)
 	{
-	  QColor color = colorDialog->selectedColor();
-	  item->setBackground(color);
+	  QColor fillColor = colorDialog->getFillColor();
+	  QColor textColor = colorDialog->getTextColor();
+	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = nodeListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
 	  QVectorIterator<NetworkNode*> it(nodeVector);
@@ -4052,7 +4054,8 @@ void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item)
 	      NetworkNode *current = it.next();
 	      if (current->getMode() == mode) 
 		{
-		  current->setColor(color);
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
 	}

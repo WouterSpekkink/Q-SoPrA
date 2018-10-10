@@ -150,6 +150,7 @@ OccurrenceLabel* OccurrenceItem::getLabel()
 void OccurrenceItem::setColor(const QColor &subColor) 
 {
   color = subColor;
+  update();
 }
 
 QColor OccurrenceItem::getColor() 

@@ -48,6 +48,7 @@
 #include "EllipseObject.h"
 #include "RectObject.h"
 #include "AbstractionDialog.h"
+#include "ModeColorDialog.h"
 
 class AttributesWidget;
 

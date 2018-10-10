@@ -43,6 +43,7 @@
 #include "EllipseObject.h"
 #include "RectObject.h"
 #include "TextObject.h"
+#include "ModeColorDialog.h"
 
 class NetworkGraphWidget : public QWidget
 {

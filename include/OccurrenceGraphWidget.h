@@ -39,6 +39,7 @@
 #include "RectObject.h"
 #include "TextObject.h"
 #include "RelationshipColorDialog.h"
+#include "ModeColorDialog.h"
 
 class EventGraphWidget;
 

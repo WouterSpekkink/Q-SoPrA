@@ -29,6 +29,7 @@ RelationshipColorDialog::RelationshipColorDialog(QWidget *parent) : QDialog(pare
   pixmapOne.fill(chosenColor);
   colorOneLabel = new QLabel(this);
   colorOneLabel->setMaximumWidth(50);
+  colorOneLabel->setMaximumHeight(colorOneLabel->sizeHint().height());
   colorOneLabel->setPixmap(pixmapOne);
   textColorButton = new QPushButton(tr("Choose text color"), this);
   textColorButton->setMinimumWidth(200);
@@ -36,6 +37,7 @@ RelationshipColorDialog::RelationshipColorDialog(QWidget *parent) : QDialog(pare
   pixmapTwo.fill(chosenTextColor);
   colorTwoLabel = new QLabel(this);
   colorTwoLabel->setMaximumWidth(50);
+  colorTwoLabel->setMaximumHeight(colorTwoLabel->sizeHint().height());
   colorTwoLabel->setPixmap(pixmapTwo);
 
   cancelCloseButton = new QPushButton(tr("Cancel"), this);

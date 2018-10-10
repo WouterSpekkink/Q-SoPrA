@@ -11,7 +11,6 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent)
   ancestorTextColor = QColor(0, 0, 0);
   descendantTextColor = QColor(0, 0, 0);
   unrelatedTextColor = QColor(0, 0, 0);
-
   
   lineageLabel = new QLabel(tr("<b>Choose lineage colors:</b>"), this);
 
@@ -20,48 +19,56 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent)
   pixmapOneA.fill(originFillColor);
   fillColorOneLabel = new QLabel(this);
   fillColorOneLabel->setMaximumWidth(50);
+  fillColorOneLabel->setMaximumHeight(fillColorOneLabel->sizeHint().height());
   fillColorOneLabel->setPixmap(pixmapOneA);
   originTextButton = new QPushButton(tr("Choose origin text color"), this);
   QPixmap pixmapOneB(originTextButton->width(), originTextButton->height());
   pixmapOneB.fill(originTextColor);
   textColorOneLabel = new QLabel(this);
   textColorOneLabel->setMaximumWidth(50);
+  textColorOneLabel->setMaximumHeight(textColorOneLabel->sizeHint().height());
   textColorOneLabel->setPixmap(pixmapOneB);
   ancestorFillButton = new QPushButton(tr("Choose ancestors fill color"), this);
   QPixmap pixmapTwoA(ancestorFillButton->width(), ancestorFillButton->height());
   pixmapTwoA.fill(ancestorFillColor);
   fillColorTwoLabel = new QLabel(this);
   fillColorTwoLabel->setMaximumWidth(50);
+  fillColorTwoLabel->setMaximumHeight(fillColorTwoLabel->sizeHint().height());
   fillColorTwoLabel->setPixmap(pixmapTwoA);
   ancestorTextButton = new QPushButton(tr("Choose ancestors text color"), this);
   QPixmap pixmapTwoB(ancestorTextButton->width(), ancestorTextButton->height());
   pixmapTwoB.fill(ancestorTextColor);
   textColorTwoLabel = new QLabel(this);
   textColorTwoLabel->setMaximumWidth(50);
+  textColorTwoLabel->setMaximumHeight(textColorTwoLabel->sizeHint().height());
   textColorTwoLabel->setPixmap(pixmapTwoB);
   descendantFillButton = new QPushButton(tr("Choose descendants fill color"), this);
   QPixmap pixmapThreeA(descendantFillButton->width(), descendantFillButton->height());
   pixmapThreeA.fill(descendantFillColor);
   fillColorThreeLabel = new QLabel(this);
   fillColorThreeLabel->setMaximumWidth(50);
+  fillColorThreeLabel->setMaximumHeight(fillColorThreeLabel->sizeHint().height());
   fillColorThreeLabel->setPixmap(pixmapThreeA);
   descendantTextButton = new QPushButton(tr("Choose descendants text color"), this);
   QPixmap pixmapThreeB(descendantTextButton->width(), descendantTextButton->height());
   pixmapThreeB.fill(descendantTextColor);
   textColorThreeLabel = new QLabel(this);
   textColorThreeLabel->setMaximumWidth(50);
+  textColorThreeLabel->setMaximumHeight(textColorThreeLabel->sizeHint().height());
   textColorThreeLabel->setPixmap(pixmapThreeB);
   unrelatedFillButton = new QPushButton(tr("Choose unrelated fill color"), this);
   QPixmap pixmapFourA(unrelatedFillButton->width(), unrelatedFillButton->height());
   pixmapFourA.fill(unrelatedFillColor);
   fillColorFourLabel = new QLabel(this);
   fillColorFourLabel->setMaximumWidth(50);
+  fillColorFourLabel->setMaximumHeight(fillColorFourLabel->sizeHint().height());
   fillColorFourLabel->setPixmap(pixmapFourA);
   unrelatedTextButton = new QPushButton(tr("Choose unrelated text color"), this);
   QPixmap pixmapFourB(unrelatedTextButton->width(), unrelatedTextButton->height());
   pixmapFourB.fill(unrelatedTextColor);
   textColorFourLabel = new QLabel(this);
   textColorFourLabel->setMaximumWidth(50);
+  textColorFourLabel->setMaximumHeight(textColorFourLabel->sizeHint().height());
   textColorFourLabel->setPixmap(pixmapFourB);
 
   cancelCloseButton = new QPushButton(tr("Cancel"), this);

@@ -37,6 +37,7 @@
 #include "RectObject.h"
 #include "TextObject.h"
 #include "RelationshipsWidget.h"
+#include "ModeColorDialog.h"
 
 class AttributesWidget;
 class RelationshipsWidget;
