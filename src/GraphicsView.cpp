@@ -28,87 +28,223 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
       this->setDragMode(QGraphicsView::NoDrag);
       QGraphicsView::mousePressEvent(event);
     }
-  else if (event->modifiers() & Qt::ControlModifier) 
+  if (event->button() == Qt::RightButton)
     {
-      if (event->button() == Qt::RightButton) 
+      if (event->modifiers() & Qt::ControlModifier)
 	{
-	  /* 
-	     We only want to add the context menu below for the event graph widget.
-	     I could of course expand the conditionals here to also add context menu actions
-	     to other widgets.
-	  */
-	  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(parent());
+ 	  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(parent());
 	  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(parent());
 	  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(parent());
 	  QPoint mousePos = mapFromGlobal(event->globalPos());
-	  if (egw && egw->getEventItems().size() > 0) 
+	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
+	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
+	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
+	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
+	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
+	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
+	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
+	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
+	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
+	  if (!incident && !nodeLabel && !arrow && !macro &&
+	      !macroLabel && !networkNode && !occurrence &&
+	      !occurrenceLabel && !line && !text && !ellipse && !rect)
 	    {
-	      QMenu menu;
-	      QAction *action1 = new QAction(ADDLINE, this);
-	      QAction *action2 = new QAction(ADDSINGLEARROW, this);
-	      QAction *action3 = new QAction(ADDDOUBLEARROW, this);
-	      QAction *action4 = new QAction(ADDTEXT, this);
-	      QAction *action5 = new QAction(ADDELLIPSE, this);
-	      QAction *action6 = new QAction(ADDRECT, this);
-	      menu.addAction(action1);
-	      menu.addAction(action2);
-	      menu.addAction(action3);
-	      menu.addAction(action4);
-	      menu.addAction(action5);
-	      menu.addAction(action6);
-	      if (QAction *action = menu.exec(event->globalPos())) 
+	      if (egw && egw->getEventItems().size() > 0) 
 		{
-		  emit EventGraphContextMenuAction(action->text(), mousePos);
+		  QMenu menu;
+		  QAction *action1 = new QAction(ADDLINE, this);
+		  QAction *action2 = new QAction(ADDSINGLEARROW, this);
+		  QAction *action3 = new QAction(ADDDOUBLEARROW, this);
+		  QAction *action4 = new QAction(ADDTEXT, this);
+		  QAction *action5 = new QAction(ADDELLIPSE, this);
+		  QAction *action6 = new QAction(ADDRECT, this);
+		  menu.addAction(action1);
+		  menu.addAction(action2);
+		  menu.addAction(action3);
+		  menu.addAction(action4);
+		  menu.addAction(action5);
+		  menu.addAction(action6);
+		  if (QAction *action = menu.exec(event->globalPos())) 
+		    {
+		      emit EventGraphContextMenuAction(action->text(), mousePos);
+		    }
+		}
+	      else if (ngw && ngw->typesPresent()) 
+		{
+		  QMenu menu;
+		  QAction *action1 = new QAction(ADDLINE, this);
+		  QAction *action2 = new QAction(ADDSINGLEARROW, this);
+		  QAction *action3 = new QAction(ADDDOUBLEARROW, this);
+		  QAction *action4 = new QAction(ADDTEXT, this);
+		  QAction *action5 = new QAction(ADDELLIPSE, this);
+		  QAction *action6 = new QAction(ADDRECT, this);
+		  menu.addAction(action1);
+		  menu.addAction(action2);
+		  menu.addAction(action3);
+		  menu.addAction(action4);
+		  menu.addAction(action5);
+		  menu.addAction(action6);
+		  if (QAction *action = menu.exec(event->globalPos())) 
+		    {
+		      emit NetworkGraphContextMenuAction(action->text(), mousePos);
+		    }
+		}
+	      else if (ogw && (ogw->attributesPresent() || ogw->relationshipsPresent())) 
+		{
+		  QMenu menu;
+		  QAction *action1 = new QAction(ADDLINE, this);
+		  QAction *action2 = new QAction(ADDSINGLEARROW, this);
+		  QAction *action3 = new QAction(ADDDOUBLEARROW, this);
+		  QAction *action4 = new QAction(ADDTEXT, this);
+		  QAction *action5 = new QAction(ADDELLIPSE, this);
+		  QAction *action6 = new QAction(ADDRECT, this);
+		  menu.addAction(action1);
+		  menu.addAction(action2);
+		  menu.addAction(action3);
+		  menu.addAction(action4);
+		  menu.addAction(action5);
+		  menu.addAction(action6);
+		  if (QAction *action = menu.exec(event->globalPos())) 
+		    {
+		      emit OccurrenceGraphContextMenuAction(action->text(), mousePos);
+		    }
 		}
 	    }
-	  else if (ngw && ngw->typesPresent()) 
+	  else
 	    {
-	      QMenu menu;
-	      QAction *action1 = new QAction(ADDLINE, this);
-	      QAction *action2 = new QAction(ADDSINGLEARROW, this);
-	      QAction *action3 = new QAction(ADDDOUBLEARROW, this);
-	      QAction *action4 = new QAction(ADDTEXT, this);
-	      QAction *action5 = new QAction(ADDELLIPSE, this);
-	      QAction *action6 = new QAction(ADDRECT, this);
-	      menu.addAction(action1);
-	      menu.addAction(action2);
-	      menu.addAction(action3);
-	      menu.addAction(action4);
-	      menu.addAction(action5);
-	      menu.addAction(action6);
-	      if (QAction *action = menu.exec(event->globalPos())) 
+	      if (nodeLabel) 
 		{
-		  emit NetworkGraphContextMenuAction(action->text(), mousePos);
+		  incident = nodeLabel->getNode();
 		}
-	    }
-	  else if (ogw && (ogw->attributesPresent() || ogw->relationshipsPresent())) 
-	    {
-	      QMenu menu;
-	      QAction *action1 = new QAction(ADDLINE, this);
-	      QAction *action2 = new QAction(ADDSINGLEARROW, this);
-	      QAction *action3 = new QAction(ADDDOUBLEARROW, this);
-	      QAction *action4 = new QAction(ADDTEXT, this);
-	      QAction *action5 = new QAction(ADDELLIPSE, this);
-	      QAction *action6 = new QAction(ADDRECT, this);
-	      menu.addAction(action1);
-	      menu.addAction(action2);
-	      menu.addAction(action3);
-	      menu.addAction(action4);
-	      menu.addAction(action5);
-	      menu.addAction(action6);
-	      if (QAction *action = menu.exec(event->globalPos())) 
+	      if (macroLabel) 
 		{
-		  emit OccurrenceGraphContextMenuAction(action->text(), mousePos);
+		  macro = macroLabel->getMacroEvent();
 		}
+	      if (occurrenceLabel) 
+		{
+		  occurrence = occurrenceLabel->getOccurrence();
+		}
+	      if (incident) 
+		{
+		  incident->setSelected(true);
+		}
+	      else if (macro) 
+		{
+		  macro->setSelected(true);
+		}
+	      else if (arrow) 
+		{
+		  arrow->setSelected(true);
+		}
+	      else if (occurrence) 
+		{
+		  occurrence->setSelected(true);
+		}
+	      else if (networkNode) 
+		{
+		  networkNode->setSelected(true);
+		}
+	      else if (line) 
+		{
+		  line->setSelected(true);
+		}
+	      else if (text) 
+		{
+		  text->setSelected(true);
+		}
+	      else if (ellipse) 
+		{
+		  ellipse->setSelected(true);
+		}
+	      else if (rect) 
+		{
+		  rect->setSelected(true);
+		}
+	      QGraphicsView::mousePressEvent(event);
 	    }
 	}
-      else 
+      else
 	{
-	  this->setDragMode(QGraphicsView::NoDrag);
-	  QGraphicsView::mousePressEvent(event);
+	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
+	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
+	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
+	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
+	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
+	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
+	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
+	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
+	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
+	  if (nodeLabel) 
+	    {
+	      incident = nodeLabel->getNode();
+	    }
+	  if (macroLabel) 
+	    {
+	      macro = macroLabel->getMacroEvent();
+	    }
+	  if (occurrenceLabel) 
+	    {
+	      occurrence = occurrenceLabel->getOccurrence();
+	    }
+	  if (!incident && !macro && !arrow && !networkNode && !occurrence &&
+	      !occurrenceLabel && !line && !text && !ellipse && !rect) 
+	    {
+	      pan = true;
+	      QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+	      lastMousePos = event->pos();
+	      return;
+	    }
+	  else
+	    {
+	      Scene *scene = qobject_cast<Scene*>(this->scene());
+	      scene->clearSelection();
+	      if (incident) 
+		{
+		  incident->setSelected(true);
+		}
+	      else if (macro) 
+		{
+		  macro->setSelected(true);
+		}
+	      else if (arrow) 
+		{
+		  arrow->setSelected(true);
+		}
+	      else if (occurrence) 
+		{
+		  occurrence->setSelected(true);
+		}
+	      else if (networkNode) 
+		{
+		  networkNode->setSelected(true);
+		}
+	      else if (line) 
+		{
+		  line->setSelected(true);
+		}
+	      else if (text) 
+		{
+		  text->setSelected(true);
+		}
+	      else if (ellipse) 
+		{
+		  ellipse->setSelected(true);
+		}
+	      else if (rect) 
+		{
+		  rect->setSelected(true);
+		}
+	      scene->resetItemSelection();
+	    }
 	}
     }
-  else if (event->button() == Qt::RightButton) 
+  else if (event->button() == Qt::LeftButton)
     {
       EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
       NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
@@ -122,71 +258,18 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
       TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-      if (nodeLabel) 
+      if (incident || nodeLabel || arrow || macro ||
+	  macroLabel || networkNode || occurrence ||
+	  occurrenceLabel || line || text || ellipse || rect)
 	{
-	  incident = nodeLabel->getNode();
+	  this->setDragMode(QGraphicsView::NoDrag);
 	}
-      if (macroLabel) 
-	{
-	  macro = macroLabel->getMacroEvent();
-	}
-      if (occurrenceLabel) 
-	{
-	  occurrence = occurrenceLabel->getOccurrence();
-	}
-      if (!incident && !macro && !arrow && !networkNode && !occurrence &&
-	  !occurrenceLabel && !line && !text && !ellipse && !rect) 
-	{
-	  pan = true;
-	  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
-	  lastMousePos = event->pos();
-	  return;
-	}
-      else if (incident) 
-	{
-	  incident->setSelected(true);
-	  return;
-	}
-      else if (macro) 
-	{
-	  macro->setSelected(true);
-	}
-      else if (arrow) 
-	{
-	  arrow->setSelected(true);
-	  return;
-	}
-      else if (occurrence) 
-	{
-	  occurrence->setSelected(true);
-	}
-      else if (networkNode) 
-	{
-	  networkNode->setSelected(true);
-	}
-      else if (line) 
-	{
-	  line->setSelected(true);
-	}
-      else if (text) 
-	{
-	  text->setSelected(true);
-	}
-      else if (ellipse) 
-	{
-	  ellipse->setSelected(true);
-	}
-      else if (rect) 
-	{
-	  rect->setSelected(true);
-	}
-    }
-  else 
-    {
-      pan = false;
       QGraphicsView::mousePressEvent(event);
     }
 }
+
+    
+  
 
 void GraphicsView::mouseReleaseEvent(QMouseEvent *event) 
 {

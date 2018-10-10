@@ -354,355 +354,352 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
-  if (eventWidthChange) 
+  if (event->button() == Qt::LeftButton)
     {
-      eventWidthChange = false;
-    }
-  if (event->modifiers() & Qt::ControlModifier) 
-    {
-      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
-								  QTransform()));
-      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
-								   QTransform()));
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
-								 QTransform()));
-      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+      if (eventWidthChange) 
+	{
+	  eventWidthChange = false;
+	}
+      if (event->modifiers() & Qt::ControlModifier) 
+	{
+	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
 								      QTransform()));
-      NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
-									 QTransform()));
-      OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
-									      QTransform()));
-      TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									 QTransform()));
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(),
-						       QTransform()));
-      if (nodeLabel) 
-	{
-	  incident = nodeLabel->getNode();
-	}
-      if (macroLabel) 
-	{
-	  macro = macroLabel->getMacroEvent();
-	}
-      if (arrow) 
-	{
-	  clearSelection();
-	  arrow->setSelected(true);
-	  if (!arrow->isCopy()) 
+	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								       QTransform()));
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
+								     QTransform()));
+	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+									  QTransform()));
+	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
+									     QTransform()));
+	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
+										  QTransform()));
+	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+									     QTransform()));
+	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(),
+							   QTransform()));
+	  if (nodeLabel) 
 	    {
-	      emit resetItemSelection();
+	      incident = nodeLabel->getNode();
 	    }
-	}
-      if (incident) 
-	{
-	  if (incident->isCopy()) 
+	  if (macroLabel) 
+	    {
+	      macro = macroLabel->getMacroEvent();
+	    }
+	  if (arrow) 
 	    {
 	      clearSelection();
-	      incident->setSelected(true);
-	      selectedEvent = incident;
-	      hierarchyMove = true;
+	      arrow->setSelected(true);
+	      if (!arrow->isCopy()) 
+		{
+		  emit resetItemSelection();
+		}
 	    }
-	  else 
-	    {
-	      emit resetItemSelection();
-	      incident->setSelected(true);
-	      selectedEvent = incident;
-	      moveOn = true;
-	    }
-	}
-      else if (macro) 
-	{
-	  if (macro->isCopy()) 
-	    {
-	      clearSelection();
-	      macro->setSelected(true);
-	      selectedMacro = macro;
-	      hierarchyMove = true;
-	    }
-	  else 
-	    {
-	      emit resetItemSelection();
-	      macro->setSelected(true);
-	      selectedMacro = macro;
-	      moveOn = true;
-	    }
-	}
-      else if (networkNode) 
-	{
-	  networkNode->setSelected(true);
-	  selectedNode = networkNode;
-	  moveOn = true;
-	}
-      else if (occurrence) 
-	{
-	  clearSelection();
-	  occurrence->setSelected(true);
-	  selectedOccurrence = occurrence;
-	  moveOn = true;
-	}
-      else if (text) 
-	{
-	  clearSelection();
-	  text->setSelected(true);
-	  emit resetItemSelection();
-	  selectedText = text;
-	  rotateText = true;
-	  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
-	  qApp->processEvents();
-	}
-      else if (ellipse) 
-	{
-	  clearSelection();
-	  ellipse->setSelected(true);
-	  emit resetItemSelection();
-	  selectedEllipse = ellipse;
-	  rotateEllipse = true;
-	  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
-	  qApp->processEvents();
-	}
-      else if (rect) 
-	{
-	  clearSelection();
-	  rect->setSelected(true);
-	  emit resetItemSelection();
-	  selectedRect = rect;
-	  rotateRect = true;
-	  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
-	  qApp->processEvents();
-	}
-      else 
-	{
-	  clearSelection();
-	  emit resetItemSelection();
-	  selectedMacro = NULL;
-	  selectedEvent = NULL;
-	  selectedNode = NULL;
-	  selectedOccurrence = NULL;
-	  selectedRect = NULL;
-	}
-    }
-  else if (event->modifiers() & Qt::ShiftModifier) 
-    {
-      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
-								  QTransform()));
-      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
-								   QTransform()));
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
-								 QTransform()));
-      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
-								      QTransform()));
-      LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									 QTransform()));
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      if (nodeLabel) 
-	{
-	  incident = nodeLabel->getNode();
-	}
-      if (macroLabel) 
-	{
-	  macro = macroLabel->getMacroEvent();
-	}
-      if (incident) 
-	{
-	  emit resetItemSelection();
-	  if (event->modifiers() & Qt::AltModifier) 
+	  if (incident) 
 	    {
 	      if (incident->isCopy()) 
 		{
-		  incident->setPos(incident->getOriginalPos());
-		  incident->getLabel()->setNewPos(incident->scenePos());
+		  clearSelection();
+		  incident->setSelected(true);
+		  selectedEvent = incident;
+		  hierarchyMove = true;
 		}
 	      else 
 		{
-		  incident->setPos(incident->getOriginalPos().x(), incident->scenePos().y());
-		  incident->getLabel()->setNewPos(incident->scenePos());
-		}
-	    }
-	  else 
-	    {
-	      if (!incident->isCopy()) 
-		{
-		  resizeOnEvent = true;
-		  lastMousePos = event->scenePos();
+		  emit resetItemSelection();
+		  incident->setSelected(true);
 		  selectedEvent = incident;
-		  selectedMacro = NULL;
+		  moveOn = true;
 		}
 	    }
-	}
-      else if (macro) 
-	{
-	  emit resetItemSelection();
-	  if (event->modifiers() & Qt::AltModifier) 
+	  else if (macro) 
 	    {
 	      if (macro->isCopy()) 
 		{
-		  macro->setPos(macro->getOriginalPos());
-		  macro->getLabel()->setNewPos(macro->scenePos());
+		  clearSelection();
+		  macro->setSelected(true);
+		  selectedMacro = macro;
+		  hierarchyMove = true;
 		}
 	      else 
 		{
-		  macro->setPos(macro->getOriginalPos().x(), macro->scenePos().y());
-		  macro->getLabel()->setNewPos(macro->scenePos());
-		}
-	    }
-	  else 
-	    {
-	      if (!macro->isCopy()) 
-		{
-		  resizeOnMacro = true;
-		  lastMousePos = event->scenePos();
+		  emit resetItemSelection();
+		  macro->setSelected(true);
 		  selectedMacro = macro;
-		  selectedEvent = NULL;
+		  moveOn = true;
 		}
 	    }
+	  else if (networkNode) 
+	    {
+	      networkNode->setSelected(true);
+	      selectedNode = networkNode;
+	      moveOn = true;
+	    }
+	  else if (occurrence) 
+	    {
+	      clearSelection();
+	      occurrence->setSelected(true);
+	      selectedOccurrence = occurrence;
+	      moveOn = true;
+	    }
+	  else if (text) 
+	    {
+	      clearSelection();
+	      text->setSelected(true);
+	      emit resetItemSelection();
+	      selectedText = text;
+	      rotateText = true;
+	      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	      qApp->processEvents();
+	    }
+	  else if (ellipse) 
+	    {
+	      clearSelection();
+	      ellipse->setSelected(true);
+	      emit resetItemSelection();
+	      selectedEllipse = ellipse;
+	      rotateEllipse = true;
+	      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	      qApp->processEvents();
+	    }
+	  else if (rect) 
+	    {
+	      clearSelection();
+	      rect->setSelected(true);
+	      emit resetItemSelection();
+	      selectedRect = rect;
+	      rotateRect = true;
+	      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	      qApp->processEvents();
+	    }
 	}
-      else if (line) 
+      else if (event->modifiers() & Qt::ShiftModifier) 
 	{
-	  clearSelection();
-	  selectedLine = line;
-	  line->setSelected(true);
-	  emit resetItemSelection();
-	  moveLineObject = true;
-	  lastMousePos = event->scenePos();
-	  QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	  qApp->processEvents();
-	}
-      else if (ellipse) 
-	{
-	  clearSelection();
-	  selectedEllipse = ellipse;
-	  ellipse->setSelected(true);
-	  emit resetItemSelection();
-	  moveEllipse = true;
-	  lastMousePos = event->scenePos();
-	  QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	  qApp->processEvents();
-	}
-      else if (rect) 
-	{
-	  clearSelection();
-	  selectedRect = rect;
-	  rect->setSelected(true);
-	  emit resetItemSelection();
-	  moveRect = true;
-	  lastMousePos = event->scenePos();
-	  QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	  qApp->processEvents();
-	}
-      return;
-    }
-  else 
-    {
-      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
-								  QTransform()));
-      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
-								   QTransform()));
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
-								 QTransform()));
-      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
 								      QTransform()));
-      NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
-									 QTransform()));
-      NetworkNodeLabel *networkLabel = qgraphicsitem_cast<NetworkNodeLabel*>(itemAt(event->scenePos(),
-										    QTransform()));
-      OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
-									      QTransform()));
-      OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
-										     QTransform()));
-      LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									 QTransform()));
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
-								QTransform()));
-      if (nodeLabel) 
-	{
-	  incident = nodeLabel->getNode();
+	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								       QTransform()));
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
+								     QTransform()));
+	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+									  QTransform()));
+	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+									     QTransform()));
+	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  if (nodeLabel) 
+	    {
+	      incident = nodeLabel->getNode();
+	    }
+	  if (macroLabel) 
+	    {
+	      macro = macroLabel->getMacroEvent();
+	    }
+	  if (incident) 
+	    {
+	      emit resetItemSelection();
+	      if (event->modifiers() & Qt::AltModifier) 
+		{
+		  if (incident->isCopy()) 
+		    {
+		      incident->setPos(incident->getOriginalPos());
+		      incident->getLabel()->setNewPos(incident->scenePos());
+		    }
+		  else 
+		    {
+		      incident->setPos(incident->getOriginalPos().x(), incident->scenePos().y());
+		      incident->getLabel()->setNewPos(incident->scenePos());
+		    }
+		}
+	      else 
+		{
+		  if (!incident->isCopy()) 
+		    {
+		      resizeOnEvent = true;
+		      lastMousePos = event->scenePos();
+		      selectedEvent = incident;
+		      selectedMacro = NULL;
+		    }
+		}
+	    }
+	  else if (macro) 
+	    {
+	      emit resetItemSelection();
+	      if (event->modifiers() & Qt::AltModifier) 
+		{
+		  if (macro->isCopy()) 
+		    {
+		      macro->setPos(macro->getOriginalPos());
+		      macro->getLabel()->setNewPos(macro->scenePos());
+		    }
+		  else 
+		    {
+		      macro->setPos(macro->getOriginalPos().x(), macro->scenePos().y());
+		      macro->getLabel()->setNewPos(macro->scenePos());
+		    }
+		}
+	      else 
+		{
+		  if (!macro->isCopy()) 
+		    {
+		      resizeOnMacro = true;
+		      lastMousePos = event->scenePos();
+		      selectedMacro = macro;
+		      selectedEvent = NULL;
+		    }
+		}
+	    }
+	  else if (line) 
+	    {
+	      clearSelection();
+	      selectedLine = line;
+	      line->setSelected(true);
+	      emit resetItemSelection();
+	      moveLineObject = true;
+	      lastMousePos = event->scenePos();
+	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	      qApp->processEvents();
+	    }
+	  else if (ellipse) 
+	    {
+	      clearSelection();
+	      selectedEllipse = ellipse;
+	      ellipse->setSelected(true);
+	      emit resetItemSelection();
+	      moveEllipse = true;
+	      lastMousePos = event->scenePos();
+	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	      qApp->processEvents();
+	    }
+	  else if (rect) 
+	    {
+	      clearSelection();
+	      selectedRect = rect;
+	      rect->setSelected(true);
+	      emit resetItemSelection();
+	      moveRect = true;
+	      lastMousePos = event->scenePos();
+	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	      qApp->processEvents();
+	    }
+	  return;
 	}
-      if (macroLabel) 
+      else 
 	{
-	  macro = macroLabel->getMacroEvent();
-	}
-      if (occurrenceLabel) 
-	{
-	  occurrence = occurrenceLabel->getOccurrence();
-	}
-      if (incident) 
-	{
-	  clearSelection();
-	  incident->setSelected(true);
+	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(),
+								      QTransform()));
+	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(),
+								       QTransform()));
+	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(),
+								     QTransform()));
+	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(),
+									  QTransform()));
+	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
+									     QTransform()));
+	  NetworkNodeLabel *networkLabel = qgraphicsitem_cast<NetworkNodeLabel*>(itemAt(event->scenePos(),
+											QTransform()));
+	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
+										  QTransform()));
+	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
+											 QTransform()));
+	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
+									     QTransform()));
+	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
+								    QTransform()));
+	  if (nodeLabel) 
+	    {
+	      incident = nodeLabel->getNode();
+	    }
+	  if (macroLabel) 
+	    {
+	      macro = macroLabel->getMacroEvent();
+	    }
+	  if (occurrenceLabel) 
+	    {
+	      occurrence = occurrenceLabel->getOccurrence();
+	    }
+	  if (incident) 
+	    {
+	      clearSelection();
+	      incident->setSelected(true);
+	      emit resetItemSelection();
+	    }
+	  else if (macro) 
+	    {
+	      clearSelection();
+	      macro->setSelected(true);
+	      emit resetItemSelection();
+	    }
+	  else if (networkNode) 
+	    {
+	      clearSelection();
+	      networkNode->setSelected(true);
+	    }
+	  else if (networkLabel)
+	    {
+	      clearSelection();
+	      moveNetworkNodeLabel = true;
+	      selectedNetworkLabel = networkLabel;
+	      lastMousePos = event->scenePos();
+	    }
+	  else if (occurrence) 
+	    {
+	      clearSelection();
+	      occurrence->setSelected(true);
+	      selectedOccurrence = occurrence;
+	    }
+	  else if (line) 
+	    {
+	      clearSelection();
+	      line->setSelected(true);
+	      selectedLine = line;
+	      emit resetItemSelection();
+	      lineMoveOn = true;
+	    }
+	  else if (ellipse) 
+	    {
+	      clearSelection();
+	      selectedEllipse = ellipse;
+	      ellipse->setSelected(true);
+	      emit resetItemSelection();
+	      manipulateEllipse = true;
+	    }
+	  else if (rect) 
+	    {
+	      clearSelection();
+	      rect->setSelected(true);
+	      emit resetItemSelection();
+	      selectedRect = rect;
+	      manipulateRect = true;
+	    }
+	  else if (text) 
+	    {
+	      clearSelection();
+	      text->setSelected(true);
+	      selectedText = text;
+	      lastMousePos = event->scenePos();
+	      moveText = true;
+	    }
+	  selectedEvent = NULL;
+	  selectedMacro = NULL;
+	  selectedNode = NULL;
 	  emit resetItemSelection();
+	  QGraphicsScene::mousePressEvent(event);
 	}
-      else if (macro) 
-	{
-	  clearSelection();
-	  macro->setSelected(true);
-	  emit resetItemSelection();
-	}
-      else if (networkNode) 
-	{
-	  clearSelection();
-	  networkNode->setSelected(true);
-	}
-      else if (networkLabel)
-	{
-	  clearSelection();
-	  moveNetworkNodeLabel = true;
-	  selectedNetworkLabel = networkLabel;
-	  lastMousePos = event->scenePos();
-	}
-      else if (occurrence) 
-	{
-	  clearSelection();
-	  occurrence->setSelected(true);
-	  selectedOccurrence = occurrence;
-	}
-      else if (line) 
-	{
-	  clearSelection();
-	  line->setSelected(true);
-	  selectedLine = line;
-	  emit resetItemSelection();
-	  lineMoveOn = true;
-	}
-      else if (ellipse) 
-	{
-	  clearSelection();
-	  selectedEllipse = ellipse;
-	  ellipse->setSelected(true);
-	  emit resetItemSelection();
-	  manipulateEllipse = true;
-	}
-      else if (rect) 
-	{
-	  clearSelection();
-	  rect->setSelected(true);
-	  emit resetItemSelection();
-	  selectedRect = rect;
-	  manipulateRect = true;
-	}
-      else if (text) 
-	{
-	  clearSelection();
-	  text->setSelected(true);
-	  selectedText = text;
-	  lastMousePos = event->scenePos();
-	  moveText = true;
-	}
-      selectedEvent = NULL;
-      selectedMacro = NULL;
-      selectedNode = NULL;
-      emit resetItemSelection();
-      QGraphicsScene::mousePressEvent(event);
+    }
+  else
+    {
+      Scene::contextMenuEvent((QGraphicsSceneContextMenuEvent*) event);
     }
 }
 

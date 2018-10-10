@@ -171,11 +171,13 @@ private slots:
   void recolorLabels();
   void colorLineage();
   void exportTransitionMatrix();
-  void findAncestors(QColor ancestor,
+  void findAncestors(QColor ancestorFill,
+		     QColor ancestorText,
 		     QGraphicsItem *origin,
 		     QSet<QGraphicsItem*> *pFinished,
 		     QString type);
-  void findDescendants(QColor descendant,
+  void findDescendants(QColor descendantFill,
+		       QColor descendantText,
 		       QGraphicsItem *origin,
 		       QSet<QGraphicsItem*> *pFinished,
 		       QString type);

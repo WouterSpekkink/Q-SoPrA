@@ -7444,31 +7444,39 @@ void EventGraphWidget::colorLineage()
       lineage->exec();
       if (lineage->getExitStatus() == 0) 
 	{
-	  QColor origin = lineage->getOriginColor();
-	  QColor ancestors = lineage->getAncestorColor();
-	  QColor descendants = lineage->getDescendantColor();
-	  QColor unrelated = lineage->getUnrelatedColor();
+	  QColor originFill = lineage->getOriginFillColor();
+	  QColor ancestorsFill = lineage->getAncestorFillColor();
+	  QColor descendantsFill = lineage->getDescendantFillColor();
+	  QColor unrelatedFill = lineage->getUnrelatedFillColor();
+	  QColor originText = lineage->getOriginTextColor();
+	  QColor ancestorsText = lineage->getAncestorTextColor();
+	  QColor descendantsText = lineage->getDescendantTextColor();
+	  QColor unrelatedText = lineage->getUnrelatedTextColor();
 	  QVectorIterator<EventItem*> it(eventVector);
 	  while (it.hasNext()) 
 	    {
 	      EventItem *current = it.next();
-	      current->setColor(unrelated);
+	      current->setColor(unrelatedFill);
+	      current->getLabel()->setDefaultTextColor(unrelatedText);
 	    }
 	  QVectorIterator<MacroEvent*> it2(macroVector);
 	  while (it2.hasNext()) 
 	    {
 	      MacroEvent *current = it2.next();
-	      current->setColor(unrelated);
+	      current->setColor(unrelatedFill);
+	      current->getLabel()->setDefaultTextColor(unrelatedText);
 	    }
 	  EventItem *event = qgraphicsitem_cast<EventItem*>(current);
 	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
 	  if (event) 
 	    {
-	      event->setColor(origin);
+	      event->setColor(originFill);
+	      event->getLabel()->setDefaultTextColor(originText);
 	    }
 	  else if (macro) 
 	    {
-	      macro->setColor(origin);
+	      macro->setColor(originFill);
+	      macro->getLabel()->setDefaultTextColor(originText);
 	    }
 	  if (presentTypes.size() > 1) 
 	    {
@@ -7479,10 +7487,10 @@ void EventGraphWidget::colorLineage()
 		  QString selection = relationshipChooser->getSelection();
 		  QSet<QGraphicsItem*> finished;
 		  finished.insert(current);
-		  findAncestors(ancestors, current, &finished, selection);
+		  findAncestors(ancestorsFill, ancestorsText, current, &finished, selection);
 		  finished.clear();
 		  finished.insert(current);
-		  findDescendants(descendants, current, &finished, selection);
+		  findDescendants(descendantsFill, descendantsText, current, &finished, selection);
 		}
 	    }
 	  else 
@@ -7490,16 +7498,17 @@ void EventGraphWidget::colorLineage()
 	      QString selection = presentTypes[0];
 	      QSet<QGraphicsItem*> finished;
 	      finished.insert(current);
-	      findAncestors(ancestors, current, &finished, selection);
+	      findAncestors(ancestorsFill, ancestorsText, current, &finished, selection);
 	      finished.clear();
 	      finished.insert(current);
-	      findDescendants(descendants, current, &finished, selection);
+	      findDescendants(descendantsFill, descendantsText, current, &finished, selection);
 	    }
 	}
     }
 }
 
-void EventGraphWidget::findAncestors(QColor ancestor,
+void EventGraphWidget::findAncestors(QColor ancestorFill,
+				     QColor ancestorText,
 				     QGraphicsItem *origin,
 				     QSet<QGraphicsItem*> *pFinished,
 				     QString type) 
@@ -7522,16 +7531,18 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
 	      if (event) 
 		{
-		  event->setColor(ancestor);
+		  event->setColor(ancestorFill);
+		  event->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(ancestor);
+		  macro->setColor(ancestorFill);
+		  macro->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      if (!pFinished->contains(edge->endItem())) 
 		{
 		  pFinished->insert(edge->endItem());
-		  findAncestors(ancestor, edge->endItem(), pFinished, type);
+		  findAncestors(ancestorFill, ancestorText, edge->endItem(), pFinished, type);
 		}
 	    }
 	}
@@ -7548,16 +7559,18 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
 	      if (event) 
 		{
-		  event->setColor(ancestor);
+		  event->setColor(ancestorFill);
+		  event->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(ancestor);
+		  macro->setColor(ancestorFill);
+		  macro->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      if (!pFinished->contains(edge->startItem())) 
 		{
 		  pFinished->insert(edge->startItem());
-		  findAncestors(ancestor, edge->startItem(), pFinished, type);
+		  findAncestors(ancestorFill, ancestorText, edge->startItem(), pFinished, type);
 		}
 	    }
 	}
@@ -7566,7 +7579,8 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 }
 
 
-void EventGraphWidget::findDescendants(QColor descendant,
+void EventGraphWidget::findDescendants(QColor descendantFill,
+				       QColor descendantText,
 				       QGraphicsItem *origin,
 				       QSet<QGraphicsItem*> *pFinished,
 				       QString type) 
@@ -7589,16 +7603,18 @@ void EventGraphWidget::findDescendants(QColor descendant,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
 	      if (event) 
 		{
-		  event->setColor(descendant);
+		  event->setColor(descendantFill);
+		  event->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(descendant);
+		  macro->setColor(descendantFill);
+		  macro->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      if (!pFinished->contains(edge->startItem())) 
 		{
 		  pFinished->insert(edge->startItem());
-		  findDescendants(descendant, edge->startItem(), pFinished, type);
+		  findDescendants(descendantFill, descendantText, edge->startItem(), pFinished, type);
 		}
 	    }
 	}
@@ -7615,16 +7631,18 @@ void EventGraphWidget::findDescendants(QColor descendant,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
 	      if (event) 
 		{
-		  event->setColor(descendant);
+		  event->setColor(descendantFill);
+		  event->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(descendant);
+		  macro->setColor(descendantFill);
+		  macro->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      if (!pFinished->contains(edge->endItem())) 
 		{
 		  pFinished->insert(edge->endItem());
-		  findDescendants(descendant, edge->endItem(), pFinished, type);
+		  findDescendants(descendantFill, descendantText, edge->endItem(), pFinished, type);
 		}
 	    }
 	}
