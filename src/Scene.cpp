@@ -1387,21 +1387,19 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  node->setSelected(true);
 	  QMenu menu;
-	  QAction *action1 = new QAction(HIDENODE, this);
+	  QAction *action1 = new QAction(SETPERSISTENT, this);
 	  menu.addAction(action1);
-	  QAction *action2 = new QAction(SETPERSISTENT, this);
+	  QAction *action2 = new QAction(UNSETPERSISTENT, this);
 	  menu.addAction(action2);
-	  QAction *action3 = new QAction(UNSETPERSISTENT, this);
-	  menu.addAction(action3);
 	  if (node->isPersistent()) 
 	    {
-	      action2->setEnabled(false);
-	      action3->setEnabled(true);
+	      action1->setEnabled(false);
+	      action2->setEnabled(true);
 	    }
 	  else 
 	    {
-	      action2->setEnabled(true);
-	      action3->setEnabled(false);
+	      action1->setEnabled(true);
+	      action2->setEnabled(false);
 	    }
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {

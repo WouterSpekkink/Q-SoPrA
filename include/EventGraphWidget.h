@@ -77,6 +77,7 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
+  void rescale();
   void checkCases();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);

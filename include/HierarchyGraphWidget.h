@@ -66,6 +66,7 @@ private slots:
   void setComment();
   void toggleDetails();
   void toggleLegend();
+  void rescale();
   void changeModeColor(QTableWidgetItem *item);
   void colorByAttribute();
   void removeMode();

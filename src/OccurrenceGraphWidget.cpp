@@ -518,6 +518,7 @@ void OccurrenceGraphWidget::toggleLegend()
     {
       legendWidget->show();
     }
+  rescale();
 }
 
 void OccurrenceGraphWidget::toggleGraphicsControls() 
@@ -530,7 +531,14 @@ void OccurrenceGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->show();
     }
+  rescale();
 }
+
+void OccurrenceGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
+} 
 
 void OccurrenceGraphWidget::processZoomSliderChange(int value)
 {

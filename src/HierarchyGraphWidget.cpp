@@ -311,6 +311,7 @@ void HierarchyGraphWidget::toggleDetails()
     {
       infoWidget->hide();
     }
+  rescale();
 }
 
 void HierarchyGraphWidget::toggleLegend() 
@@ -323,6 +324,13 @@ void HierarchyGraphWidget::toggleLegend()
     {
       legendWidget->hide();
     }
+  rescale();
+}
+
+void HierarchyGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
 }
 
 void HierarchyGraphWidget::showAttributes() 

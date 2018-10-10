@@ -127,6 +127,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   multimodeButton = new QPushButton(tr("Multimode transformation"), legendWidget);
   removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
   removeModeButton->setEnabled(false);
+  hideModeButton = new QPushButton(tr("Hide"), legendWidget);
+  hideModeButton->setCheckable(true);
+  hideModeButton->setChecked(false);
+  showModeButton = new QPushButton(tr("Show"), legendWidget);
+  showModeButton->setCheckable(true);
+  showModeButton->setChecked(true);
   mergeButton = new QPushButton(tr("Merge"), legendWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
@@ -239,6 +245,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(unsetFilteredButton, SIGNAL(clicked()), this, SLOT(deactivateFilter()));
   connect(hideTypeButton, SIGNAL(clicked()), this, SLOT(hideType()));
   connect(showTypeButton, SIGNAL(clicked()), this, SLOT(showType()));
+  connect(hideModeButton, SIGNAL(clicked()), this, SLOT(hideMode()));
+  connect(showModeButton, SIGNAL(clicked()), this, SLOT(showMode()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(exportNodesButton, SIGNAL(clicked()), this, SLOT(exportNodes()));
   connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
@@ -341,6 +349,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   legendLayout->addLayout(modeButtonsLayout);
   legendLayout->addWidget(colorByAttributeButton);
   legendLayout->addWidget(multimodeButton);
+  legendLayout->addWidget(hideModeButton);
+  legendLayout->addWidget(showModeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(edgeLegendLabel);
@@ -560,7 +570,7 @@ void NetworkGraphWidget::toggleDetails()
     {
       infoWidget->hide();
     }
-  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+  rescale();
 }
 
 void NetworkGraphWidget::toggleGraphicsControls() 
@@ -573,7 +583,7 @@ void NetworkGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->hide();
     }
-  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+  rescale();
 }
 
 void NetworkGraphWidget::toggleLegend() 
@@ -586,7 +596,13 @@ void NetworkGraphWidget::toggleLegend()
     {
       legendWidget->hide();
     }
-  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+  rescale();
+}
+
+void NetworkGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
 }
 
 void NetworkGraphWidget::processZoomSliderChange(int value)
@@ -1856,11 +1872,7 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
 
 void NetworkGraphWidget::processNetworkNodeContextMenu(const QString &action) 
 {
-  if (action == HIDENODE) 
-    {
-      hideCurrentNode();
-    }
-  else if (action == SETPERSISTENT) 
+  if (action == SETPERSISTENT) 
     {
       setNodePersistence(true);
     }
@@ -1868,78 +1880,6 @@ void NetworkGraphWidget::processNetworkNodeContextMenu(const QString &action)
     {
       setNodePersistence(false);
     }
-}
-
-void NetworkGraphWidget::hideCurrentNode() 
-{
-  if (scene->selectedItems().size() > 0) 
-    {
-      QListIterator<QGraphicsItem*> it(scene->selectedItems());
-      while (it.hasNext()) 
-	{
-	  NetworkNode *currentNode = qgraphicsitem_cast<NetworkNode*>(it.peekNext());
-	  if (currentNode) 
-	    {
-	      NetworkNode *selectedNode = qgraphicsitem_cast<NetworkNode*>(it.next());
-	      QVectorIterator<DirectedEdge*> it2(directedVector);
-	      while (it2.hasNext()) 
-		{
-		  DirectedEdge *currentDirected = it2.next();
-		  if (currentDirected->startItem() == selectedNode ||
-		      currentDirected->endItem() == selectedNode) 
-		    {
-		      currentDirected->hide();
-		    }
-		}
-	      QVectorIterator<UndirectedEdge*> it3(undirectedVector);
-	      while (it3.hasNext()) 
-		{
-		  UndirectedEdge *currentUndirected = it3.next();
-		  if (currentUndirected->startItem() == selectedNode ||
-		      currentUndirected->endItem() == selectedNode) 
-		    {
-		      currentUndirected->hide();
-		    }
-		}
-	      selectedNode->hide();
-	      selectedNode->getLabel()->hide();
-	    }
-	}
-    }
-  QVectorIterator<NetworkNode*> it2(nodeVector);
-  while (it2.hasNext()) 
-    {
-      NetworkNode *currentNode = it2.next();
-      bool connected = false;
-      QVectorIterator<DirectedEdge*> it3(directedVector);
-      while (it3.hasNext()) 
-	{
-	  DirectedEdge *currentDirected = it3.next();
-	  if (currentDirected->isVisible() &&
-	      (currentDirected->startItem() == currentNode ||
-	       currentDirected->endItem() == currentNode)) 
-	    {
-	      connected = true;
-	    }
-	}
-      QVectorIterator<UndirectedEdge*> it4(undirectedVector);
-      while (it4.hasNext()) 
-	{
-	  UndirectedEdge *currentUndirected = it4.next();
-	  if (currentUndirected->isVisible() &&
-	      (currentUndirected->startItem() == currentNode ||
-	       currentUndirected->endItem() == currentNode)) 
-	    {
-	      connected = true;
-	    }
-	}
-      if (!connected) 
-	{
-	  currentNode->hide();
-	  currentNode->getLabel()->hide();
-	}
-    }
-  updateEdges();
 }
 
 void NetworkGraphWidget::setNodePersistence(bool state) 
@@ -3425,10 +3365,14 @@ void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item)
   if (text != "") 
     {
       removeModeButton->setEnabled(true);
+      hideModeButton->setEnabled(true);
+      showModeButton->setEnabled(true);
     }
   else 
     {
       removeModeButton->setEnabled(false);
+      hideModeButton->setEnabled(false);
+      showModeButton->setEnabled(false);
     }
   if (text != nodeListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) 
     {
@@ -3447,6 +3391,28 @@ void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item)
     {
       moveModeDownButton->setEnabled(false);
     }
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  bool hidden = false;
+  while (it.hasNext()) 
+    {
+      NetworkNode *current = it.next();
+      QString mode = current->getMode();
+      if (text == mode) 
+	{
+	  hidden = current->isMassHidden();
+	  break;
+	}
+    }
+  if (hidden) 
+    {
+      hideModeButton->setChecked(true);
+      showModeButton->setChecked(false);
+    }
+  else 
+    {
+      hideModeButton->setChecked(false);
+      showModeButton->setChecked(true);
+    }
 }
 
 void NetworkGraphWidget::disableModeButtons() 
@@ -3454,6 +3420,8 @@ void NetworkGraphWidget::disableModeButtons()
   removeModeButton->setEnabled(false);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton->setEnabled(false);
+  hideModeButton->setEnabled(false);
+  showModeButton->setEnabled(false);
 }
 
 void NetworkGraphWidget::restoreModeColors() 
@@ -3946,6 +3914,46 @@ void NetworkGraphWidget::showType()
 	  current->setMassHidden(false);
 	}
     }
+  setVisibility();
+}
+
+void NetworkGraphWidget::hideMode() 
+{
+  hideModeButton->setChecked(true);
+  showModeButton->setChecked(false);
+  QString text = nodeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  nodeListWidget->currentItem()->setBackground(Qt::gray);
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while (it.hasNext()) 
+    {
+      NetworkNode *current = it.next();
+      QString mode = current->getMode();
+      if (text == mode) 
+	{
+	  current->setMassHidden(true);
+	}
+    }
+  updateEdges();
+  setVisibility();
+}
+
+void NetworkGraphWidget::showMode() 
+{
+  hideModeButton->setChecked(false);
+  showModeButton->setChecked(true);
+  QString text = nodeListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  nodeListWidget->currentItem()->setBackground(Qt::transparent);
+  QVectorIterator<NetworkNode*> it(nodeVector);
+  while (it.hasNext()) 
+    {
+      NetworkNode *current = it.next();
+      QString type = current->getMode();
+      if (text == type) 
+	{
+	  current->setMassHidden(false);
+	}
+    }
+  updateEdges();
   setVisibility();
 }
 
@@ -5742,6 +5750,10 @@ void NetworkGraphWidget::setVisibility()
 	{
 	  currentNode->show();
 	}
+      if (currentNode->isMassHidden())
+	{
+	  currentNode->hide();
+	}
     }
   QVectorIterator<DirectedEdge*> it2(directedVector);
   while (it2.hasNext()) 
@@ -5813,9 +5825,17 @@ void NetworkGraphWidget::setVisibility()
 	}
       if (show) 
 	{
-	  currentDirected->show();
-	  currentDirected->startItem()->show();
-	  currentDirected->endItem()->show();
+	  if (!currentDirected->startItem()->isMassHidden() &&
+	      !currentDirected->endItem()->isMassHidden())
+	    {
+	      currentDirected->show();
+	      currentDirected->startItem()->show();
+	      currentDirected->endItem()->show();
+	    }
+	  else
+	    {
+	      currentDirected->hide();
+	    }
 	}
       else 
 	{
@@ -5897,9 +5917,17 @@ void NetworkGraphWidget::setVisibility()
 	}
       if (show) 
 	{
-	  currentUndirected->show();
-	  currentUndirected->startItem()->show();
-	  currentUndirected->endItem()->show();
+	  if (!currentUndirected->startItem()->isMassHidden() &&
+	      !currentUndirected->startItem()->isMassHidden())
+	    {
+	      currentUndirected->show();
+	      currentUndirected->startItem()->show();
+	      currentUndirected->endItem()->show();
+	    }
+	  else
+	    {
+	      currentUndirected->hide();
+	    }
 	}
       else 
 	{

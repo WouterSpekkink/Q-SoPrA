@@ -26,6 +26,7 @@ NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : 
   setFlag(QGraphicsItem::ItemIsMovable);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   persistent = false;
+  massHidden = false;
 }
 
 /*
@@ -241,4 +242,15 @@ void NetworkNode::setPersistent(bool state)
 {
   persistent = state;
 }
+
+bool NetworkNode::isMassHidden() 
+{
+  return massHidden; 
+}
+
+void NetworkNode::setMassHidden(bool state) 
+{
+  massHidden = state;
+}
+
 

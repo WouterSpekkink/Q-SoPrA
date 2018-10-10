@@ -106,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   aw->setStyleSheet(treeSheet);
   rw->setStyleSheet(treeSheet);
   egw->setStyleSheet(sliderSheet + treeSheet);
-  ngw->setStyleSheet(sliderSheet);
+  ngw->setStyleSheet(sliderSheet + treeSheet);
   hgw->setStyleSheet(sliderSheet + treeSheet);
   ogw->setStyleSheet(sliderSheet + treeSheet);
   

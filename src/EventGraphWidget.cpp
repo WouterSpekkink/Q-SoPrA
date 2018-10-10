@@ -657,6 +657,7 @@ void EventGraphWidget::toggleLegend()
     {
       legendWidget->hide();
     }
+  rescale();
 }
 
 void EventGraphWidget::toggleDetails() 
@@ -670,6 +671,7 @@ void EventGraphWidget::toggleDetails()
     {
       infoWidget->hide();
     }
+  rescale();
 }
 
 void EventGraphWidget::toggleGraphicsControls() 
@@ -682,6 +684,13 @@ void EventGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->hide();
     }
+  rescale();
+}
+
+void EventGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
 }
 
 void EventGraphWidget::processZoomSliderChange(int value)

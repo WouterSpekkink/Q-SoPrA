@@ -62,6 +62,7 @@ public:
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
+  void rescale();
   void checkCases();
   
   void addAttribute();
