@@ -820,6 +820,7 @@ void MainWindow::switchToEventGraphView()
   egw->checkCongruency();
   showMenus(true);
   menuBar->setEnabled(true);
+  egw->scene->resetItemSelection();
   stacked->setCurrentWidget(eventGraphWidget);
   egw->attributesTreeView->clearSelection();
   const QModelIndex index;
@@ -841,6 +842,7 @@ void MainWindow::switchToNetworkGraphView()
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
   ngw->getTypes();
   ngw->checkCongruency();
+  ngw->scene->resetItemSelection();
   stacked->setCurrentWidget(networkGraphWidget);
 }
 
@@ -857,6 +859,7 @@ void MainWindow::switchToOccurrenceGraphView()
   egw->setComment();
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
   ogw->checkCongruency();
+  ogw->scene->resetItemSelection();
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 

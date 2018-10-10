@@ -89,8 +89,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   removeUnusedAttributesButton = new QPushButton("Remove unused attributes", this);
   valueButton = new QPushButton("Store value", this);
   valueButton->setEnabled(false);
-  expandTreeButton = new QPushButton("+", this);
-  collapseTreeButton = new QPushButton("-", this);
+  expandTreeButton = new QPushButton("Expand all", this);
+  collapseTreeButton = new QPushButton("Collapse all", this);
   previousCodedButton = new QPushButton("Previous coded", this);
   previousCodedButton->setEnabled(false);
   nextCodedButton = new QPushButton("Next coded", this);
@@ -2027,11 +2027,13 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
     {
       QMenu menu;
       QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
-      QAction *action2 = new QAction(AUTOASSIGNALLACTION, this);
-      QAction *action3 = new QAction(UNASSIGNALLACTION, this);
+      QAction *action2 = new QAction(EDITATTRIBUTEACTION, this);
+      QAction *action3 = new QAction(AUTOASSIGNALLACTION, this);
+      QAction *action4 = new QAction(UNASSIGNALLACTION, this);
       menu.addAction(action1);
       menu.addAction(action2);
       menu.addAction(action3);
+      menu.addAction(action4);
       QSqlQuery *query = new QSqlQuery;
       QSqlQuery *query2 = new QSqlQuery;
       query->exec("SELECT name FROM entities");
@@ -2051,7 +2053,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	}
       if (!found) 
 	{
-	  action3->setEnabled(false);
+	  action4->setEnabled(false);
 	}
       delete query;
       delete query2;
@@ -2060,6 +2062,10 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  if (action->text() == ADDATTRIBUTEACTION) 
 	    {
 	      newAttribute();
+	    }
+	  else if (action->text() == EDITATTRIBUTEACTION)
+	    {
+	      editAttribute();
 	    }
 	  else if (action->text() == AUTOASSIGNALLACTION) 
 	    {
@@ -2083,15 +2089,17 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	{
 	  QMenu menu;
 	  QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
-	  QAction *action2 = new QAction(ASSIGNATTRIBUTEACTION, this);
-	  QAction *action3 = new QAction(UNASSIGNATTRIBUTEACTION, this);
-	  QAction *action4 = new QAction(AUTOASSIGNSPECIFICACTION, this);
-	  QAction *action5 = new QAction(UNASSIGNALLACTION, this);
+	  QAction *action2 = new QAction(EDITATTRIBUTEACTION, this);
+	  QAction *action3 = new QAction(ASSIGNATTRIBUTEACTION, this);
+	  QAction *action4 = new QAction(UNASSIGNATTRIBUTEACTION, this);
+	  QAction *action5 = new QAction(AUTOASSIGNSPECIFICACTION, this);
+	  QAction *action6 = new QAction(UNASSIGNALLACTION, this);
 	  menu.addAction(action1);
 	  menu.addAction(action2);
 	  menu.addAction(action3);
 	  menu.addAction(action4);
 	  menu.addAction(action5);
+	  menu.addAction(action6);
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
 			 "WHERE attribute = :selected");
@@ -2100,7 +2108,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  query->first();
 	  if (query->isNull(0)) 
 	    {
-	      action5->setEnabled(false);
+	      action6->setEnabled(false);
 	    }
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->exec("SELECT attributes_record FROM save_data");
@@ -2119,7 +2127,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  query2->first();
 	  if (query2->isNull(0)) 
 	    {
-	      action3->setEnabled(false);
+	      action4->setEnabled(false);
 	    }
 	  delete query;
 	  delete query2;
@@ -2128,6 +2136,10 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	      if (action->text() == ADDATTRIBUTEACTION) 
 		{
 		  newAttribute();
+		}
+	      else if (action->text() == EDITATTRIBUTEACTION)
+		{
+		  editAttribute();
 		}
 	      else if (action->text() == ASSIGNATTRIBUTEACTION) 
 		{
@@ -2151,15 +2163,17 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	{
 	  QMenu menu;
 	  QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
-	  QAction *action2 = new QAction(ASSIGNATTRIBUTEACTION, this);
-	  QAction *action3 = new QAction(UNASSIGNATTRIBUTEACTION, this);
-	  QAction *action4 = new QAction(UNASSIGNALLACTION, this);
-	  QAction *action5 = new QAction(MERGEATTRIBUTESACTION, this);
+	  QAction *action2 = new QAction(EDITATTRIBUTEACTION, this);
+	  QAction *action3 = new QAction(ASSIGNATTRIBUTEACTION, this);
+	  QAction *action4 = new QAction(UNASSIGNATTRIBUTEACTION, this);
+	  QAction *action5 = new QAction(UNASSIGNALLACTION, this);
+	  QAction *action6 = new QAction(MERGEATTRIBUTESACTION, this);
 	  menu.addAction(action1);
 	  menu.addAction(action2);
 	  menu.addAction(action3);
 	  menu.addAction(action4);
 	  menu.addAction(action5);
+	  menu.addAction(action6);
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
 			 "WHERE attribute = :selected");
@@ -2168,7 +2182,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  query->first();
 	  if (query->isNull(0)) 
 	    {
-	      action4->setEnabled(false);
+	      action5->setEnabled(false);
 	    }
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->exec("SELECT attributes_record FROM save_data");
@@ -2187,7 +2201,7 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  query2->first();
 	  if (query2->isNull(0)) 
 	    {
-	      action3->setEnabled(false);
+	      action4->setEnabled(false);
 	    }
 	  delete query;
 	  delete query2;
@@ -2196,6 +2210,10 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	      if (action->text() == ADDATTRIBUTEACTION) 
 		{
 		  newAttribute();
+		}
+	      else if (action->text() == EDITATTRIBUTEACTION)
+		{
+		  editAttribute();
 		}
 	      else if (action->text() == ASSIGNATTRIBUTEACTION) 
 		{

@@ -81,6 +81,7 @@ QString COPYDESCRIPTIONTOTEXTACTION = "Copy description to text";
 QString COPYOBJECT = "Duplicate object";
 QString ADDRELATIONSHIPACTION = "Add relationship";
 QString ADDATTRIBUTEACTION = "Add attribute";
+QString EDITATTRIBUTEACTION = "Edit attribute";
 QString ASSIGNATTRIBUTEACTION = "Assign attribute";
 QString UNASSIGNATTRIBUTEACTION = "Unassign attribute";
 QString ASSIGNRELATIONSHIPACTION = "Assign relationship";

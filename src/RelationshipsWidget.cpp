@@ -99,8 +99,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   assignRelationshipButton->setEnabled(false);
   unassignRelationshipButton = new QPushButton("Unassign relationship", this);
   unassignRelationshipButton->setEnabled(false);
-  expandTreeButton = new QPushButton("+", this);
-  collapseTreeButton = new QPushButton("-", this);
+  expandTreeButton = new QPushButton("Expand all", this);
+  collapseTreeButton = new QPushButton("Collapse all", this);
   removeTextButton = new QPushButton("Remove text", this);
   removeTextButton->setEnabled(false);
   resetTextsButton = new QPushButton("Reset texts", this);
