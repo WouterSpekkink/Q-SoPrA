@@ -203,41 +203,55 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  else
 	    {
 	      Scene *scene = qobject_cast<Scene*>(this->scene());
-	      scene->clearSelection();
 	      if (incident) 
 		{
-		  incident->setSelected(true);
+		  if (!incident->isSelected())
+		    {
+		      scene->clearSelection();
+		      incident->setSelected(true);
+		    }
 		}
 	      else if (macro) 
 		{
-		  macro->setSelected(true);
+		  if (!macro->isSelected())
+		    {
+		      scene->clearSelection();
+		      macro->setSelected(true);
+		    }
 		}
 	      else if (arrow) 
 		{
+		  scene->clearSelection();
 		  arrow->setSelected(true);
 		}
 	      else if (occurrence) 
 		{
+		  scene->clearSelection();
 		  occurrence->setSelected(true);
 		}
 	      else if (networkNode) 
 		{
+		  scene->clearSelection();
 		  networkNode->setSelected(true);
 		}
 	      else if (line) 
 		{
+		  scene->clearSelection();
 		  line->setSelected(true);
 		}
 	      else if (text) 
 		{
+		  scene->clearSelection();
 		  text->setSelected(true);
 		}
 	      else if (ellipse) 
 		{
+		  scene->clearSelection();
 		  ellipse->setSelected(true);
 		}
 	      else if (rect) 
 		{
+		  scene->clearSelection();
 		  rect->setSelected(true);
 		}
 	      scene->resetItemSelection();
