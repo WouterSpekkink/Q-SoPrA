@@ -643,6 +643,10 @@ void NetworkGraphWidget::setGraphControls(bool status)
   contractLayoutButton->setEnabled(status);
   simpleLayoutButton->setEnabled(status);
   circularLayoutButton->setEnabled(status);
+  lowerRangeDial->setEnabled(status);
+  upperRangeDial->setEnabled(status);
+  lowerRangeSpinBox->setEnabled(status);
+  upperRangeSpinBox->setEnabled(status);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -1309,39 +1313,6 @@ void NetworkGraphWidget::getDirectedEdges()
     {
       QString type = query->value(0).toString();
       QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT DISTINCT relationship, incident "
-		      "FROM relationships_to_incidents "
-		      "WHERE type = :type");
-      query2->bindValue(":type", type);
-      query2->exec();
-      while (query2->next()) 
-	{
-	  QString relationship = query2->value(0).toString();
-	  int incident = query2->value(1).toInt();
-	  QSqlQuery *query3 = new QSqlQuery;
-	  query3->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query3->bindValue(":incident", incident);
-	  query3->exec();
-	  query3->first();
-	  int order = query3->value(0).toInt();
-	  if (minOrder == 0) 
-	    {
-	      minOrder = order;
-	    }
-	  else if (order < minOrder) 
-	    {
-	      minOrder = order;
-	    }
-	  if (maxOrder == 0) 
-	    {
-	      maxOrder = order;
-	    }
-	  else if (order > maxOrder) 
-	    {
-	      maxOrder = order;
-	    }
-	  delete query3;
-	}
       query2->prepare("SELECT name, source, target, comment "
 		      "FROM entity_relationships "
 		      "WHERE type = :type");
@@ -1394,39 +1365,6 @@ void NetworkGraphWidget::getUndirectedEdges()
     {
       QString type = query->value(0).toString();
       QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT DISTINCT relationship, incident "
-		      "FROM relationships_to_incidents "
-		      "WHERE type = :type");
-      query2->bindValue(":type", type);
-      query2->exec();
-      while (query2->next()) 
-	{
-	  QString relationship = query2->value(0).toString();
-	  int incident = query2->value(1).toInt();
-	  QSqlQuery *query3 = new QSqlQuery;
-	  query3->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
-	  query3->bindValue(":incident", incident);
-	  query3->exec();
-	  query3->first();
-	  int order = query3->value(0).toInt();
-	  if (minOrder == 0) 
-	    {
-	      minOrder = order;
-	    }
-	  else if (order < minOrder) 
-	    {
-	      minOrder = order;
-	    }
-	  if (maxOrder == 0) 
-	    {
-	      maxOrder = order;
-	    }
-	  else if (order > maxOrder) 
-	    {
-	      maxOrder = order;
-	    }
-	  delete query3;
-	}
       query2->prepare("SELECT name, source, target, comment "
 		      "FROM entity_relationships "
 		      "WHERE type = :type");
@@ -2936,7 +2874,6 @@ void NetworkGraphWidget::multimodeTransformation()
 	}
       delete colorDialog;    
       QString description = multimodeDialog->getDescription();
-
       QVectorIterator<DirectedEdge*> it(directedVector);
       while (it.hasNext()) 
 	{
@@ -3328,6 +3265,10 @@ void NetworkGraphWidget::multimodeTransformation()
       edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
 	setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags()
 		 ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+      lowerRangeDial->setEnabled(false);
+      upperRangeDial->setEnabled(false);
+      lowerRangeSpinBox->setEnabled(false);
+      upperRangeSpinBox->setEnabled(false);
       setVisibility();
     }
 }
@@ -3589,7 +3530,8 @@ void NetworkGraphWidget::mergeRelationships()
 	      DirectedEdge* directed = it.next();
 	      if (types.contains(directed->getType())) 
 		{
-		  DirectedEdge *newDirected = new DirectedEdge(directed->startItem(), directed->endItem(),
+		  DirectedEdge *newDirected = new DirectedEdge(directed->startItem(),
+							       directed->endItem(),
 							       name, CREATED, 0);
 		  newDirected->setZValue(2);
 		  newDirected->setColor(color);
@@ -3701,6 +3643,10 @@ void NetworkGraphWidget::mergeRelationships()
 	      i++;
 	    }
 	}
+      lowerRangeDial->setEnabled(false);
+      upperRangeDial->setEnabled(false);
+      lowerRangeSpinBox->setEnabled(false);
+      upperRangeSpinBox->setEnabled(false);
       setVisibility();
     }
 }
@@ -4128,7 +4074,6 @@ void NetworkGraphWidget::plotNewGraph()
   plotUndirectedEdges(selectedType, color);
   simpleLayout();
   presentTypes.push_back(selectedType);
-  
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
 		 "WHERE name = :name");
@@ -4179,7 +4124,7 @@ void NetworkGraphWidget::addRelationshipType()
   plotDirectedEdges(selectedType, color);
   plotUndirectedEdges(selectedType, color);
   presentTypes.push_back(selectedType);
-  setRangeControls();
+  updateRangeControls();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
 		 "WHERE name = :name");
@@ -4205,6 +4150,7 @@ void NetworkGraphWidget::addRelationshipType()
   setChangeLabel();
   simpleLayout();
   updateEdges();
+  setVisibility();
 }
 
 void NetworkGraphWidget::removeRelationshipType() 
@@ -4298,6 +4244,46 @@ void NetworkGraphWidget::decreaseLabelSize()
 
 void NetworkGraphWidget::setRangeControls() 
 {
+  QVectorIterator<QString> it(presentTypes);
+  while (it.hasNext())
+    {
+      QString currentType = it.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT DISTINCT relationship, incident "
+		     "FROM relationships_to_incidents "
+		     "WHERE type = :type");
+      query->bindValue(":type", currentType);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString relationship = query->value(0).toString();
+	  int incident = query->value(1).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  if (minOrder == 0) 
+	    {
+	      minOrder = order;
+	    }
+	  else if (order < minOrder) 
+	    {
+	      minOrder = order;
+	    }
+	  if (maxOrder == 0) 
+	    {
+	      maxOrder = order;
+	    }
+	  else if (order > maxOrder) 
+	    {
+	      maxOrder = order;
+	    }
+	  delete query2;
+	}
+      delete query;
+    }
   lowerRangeDial->setEnabled(true);
   upperRangeDial->setEnabled(true);
   lowerRangeSpinBox->setEnabled(true);
@@ -4310,6 +4296,64 @@ void NetworkGraphWidget::setRangeControls()
   lowerRangeSpinBox->setValue(minOrder);
   upperRangeDial->setValue(maxOrder);
   upperRangeSpinBox->setValue(maxOrder);
+}
+
+void NetworkGraphWidget::updateRangeControls() 
+{
+  QVectorIterator<QString> it(presentTypes);
+  while (it.hasNext())
+    {
+      QString currentType = it.next();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT DISTINCT relationship, incident "
+		     "FROM relationships_to_incidents "
+		     "WHERE type = :type");
+      query->bindValue(":type", currentType);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString relationship = query->value(0).toString();
+	  int incident = query->value(1).toInt();
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+	  query2->bindValue(":incident", incident);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  if (minOrder == 0) 
+	    {
+	      minOrder = order;
+	    }
+	  else if (order < minOrder) 
+	    {
+	      minOrder = order;
+	    }
+	  if (maxOrder == 0) 
+	    {
+	      maxOrder = order;
+	    }
+	  else if (order > maxOrder) 
+	    {
+	      maxOrder = order;
+	    }
+	  delete query2;
+	}
+      delete query;
+    }
+  int currentLower = lowerRangeDial->value();
+  int currentUpper = upperRangeDial->value();
+  lowerRangeDial->setEnabled(true);
+  upperRangeDial->setEnabled(true);
+  lowerRangeSpinBox->setEnabled(true);
+  upperRangeSpinBox->setEnabled(true);
+  lowerRangeDial->setRange(minOrder, maxOrder - 1);
+  upperRangeDial->setRange(minOrder + 1, maxOrder);
+  lowerRangeSpinBox->setRange(minOrder, maxOrder - 1);
+  upperRangeSpinBox->setRange(minOrder + 1, maxOrder);
+  lowerRangeDial->setValue(currentLower);
+  lowerRangeSpinBox->setValue(currentLower);
+  upperRangeDial->setValue(currentUpper);
+  upperRangeSpinBox->setValue(currentUpper);
 }
 
 void NetworkGraphWidget::exportSvg() 

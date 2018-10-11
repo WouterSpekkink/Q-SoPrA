@@ -133,6 +133,7 @@ private slots:
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
+  void updateRangeControls();
 
   void exportSvg();
   void exportNodes();

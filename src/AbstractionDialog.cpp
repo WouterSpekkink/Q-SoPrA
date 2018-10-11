@@ -505,9 +505,6 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 
 void AbstractionDialog::evaluateConstraints()
 {
-  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
-  semiPathsBasedCheckBox->setCheckState(Qt::Unchecked);
-  noConstraintsCheckBox->setCheckState(Qt::Unchecked);
   if (pathsAllowed)
     {
       pathsBasedCheckBox->setEnabled(true);
@@ -515,6 +512,10 @@ void AbstractionDialog::evaluateConstraints()
   else
     {
       pathsBasedCheckBox->setEnabled(false);
+      if (pathsBasedCheckBox->checkState() == Qt::Checked)
+	{
+	  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
+	}
     }
   if (semiPathsAllowed)
     {
@@ -523,6 +524,10 @@ void AbstractionDialog::evaluateConstraints()
   else
     {
       semiPathsBasedCheckBox->setEnabled(false);
+      if (semiPathsBasedCheckBox->checkState() == Qt::Checked)
+	{
+	  semiPathsBasedCheckBox->setCheckState(Qt::Unchecked);
+	}
     }
 }
 
