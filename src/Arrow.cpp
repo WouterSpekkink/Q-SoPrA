@@ -51,40 +51,43 @@ void Arrow::updatePosition()
 void Arrow::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
   calculate();
-  arrowHead.clear();
-  arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
-  QPainterPath myPath;
-  myPath.moveTo(newLine.p1());
-  myPath.quadTo(controlPoint, ghostLine.p2());
-  strokePath = myPath;
-  painter->setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  painter->setBrush(color);
-  painter->drawPolygon(arrowHead);
-  QPen myPen = QPen(color, penWidth, Qt::PenStyle(penStyle), Qt::RoundCap, Qt::RoundJoin);
-  painter->strokePath(myPath, myPen);
-  if (penStyle == 1 && isSelected())
+  if (line().length() > 0)
     {
-    painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
-    painter->setBrush(Qt::transparent);
-    painter->drawPath(shape());
-    }
-  else if (penStyle == 4)
-    {
-    painter->setPen(QPen(QColor(Qt::darkRed), 1, Qt::DashLine));
-    painter->setBrush(Qt::transparent);
-    painter->drawPath(shape());
-    }
-  else if (penStyle == 3)
-    {
-    painter->setPen(QPen(QColor(Qt::darkBlue), 1, Qt::DashLine));
-    painter->setBrush(Qt::transparent);
-    painter->drawPath(shape());
-    }
-  else if (penStyle == 2)
-    {
-    painter->setPen(QPen(QColor(Qt::darkGreen), 1, Qt::DashLine));
-    painter->setBrush(Qt::transparent);
-    painter->drawPath(shape());
+      arrowHead.clear();
+      arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
+      QPainterPath myPath;
+      myPath.moveTo(newLine.p1());
+      myPath.quadTo(controlPoint, ghostLine.p2());
+      strokePath = myPath;
+      painter->setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      painter->setBrush(color);
+      painter->drawPolygon(arrowHead);
+      QPen myPen = QPen(color, penWidth, Qt::PenStyle(penStyle), Qt::RoundCap, Qt::RoundJoin);
+      painter->strokePath(myPath, myPen);
+      if (penStyle == 1 && isSelected())
+	{
+	  painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
+	  painter->setBrush(Qt::transparent);
+	  painter->drawPath(shape());
+	}
+      else if (penStyle == 4)
+	{
+	  painter->setPen(QPen(QColor(Qt::darkRed), 1, Qt::DashLine));
+	  painter->setBrush(Qt::transparent);
+	  painter->drawPath(shape());
+	}
+      else if (penStyle == 3)
+	{
+	  painter->setPen(QPen(QColor(Qt::darkBlue), 1, Qt::DashLine));
+	  painter->setBrush(Qt::transparent);
+	  painter->drawPath(shape());
+	}
+      else if (penStyle == 2)
+	{
+	  painter->setPen(QPen(QColor(Qt::darkGreen), 1, Qt::DashLine));
+	  painter->setBrush(Qt::transparent);
+	  painter->drawPath(shape());
+	}
     }
 }
 
