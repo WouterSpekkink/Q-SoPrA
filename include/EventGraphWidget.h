@@ -164,7 +164,7 @@ private slots:
   void hideLinkageType();
   void showLinkageType();
   void processEventItemContextMenu(const QString &action);
-  void colligateEvents(bool single);
+  void colligateEvents();
   void disaggregateEvent();
   void updateMacroIds(MacroEvent *macro);
   void updateMacroOrder();

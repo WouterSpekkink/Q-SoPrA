@@ -660,12 +660,6 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
 		      "description text)");
-	  query->exec("INSERT INTO cases "
-		      "(name, "
-		      "description) "
-		      "VALUES ('Complete dataset', "
-		      "'Default case that contains all incidents "
-		      "in the dataset.')");
 	  query->exec("CREATE TABLE incidents_to_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "incident integer, "

@@ -6659,7 +6659,7 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action)
   retrieveData();
   if (action == COLLIGATEACTION) 
     {
-      colligateEvents(false);
+      colligateEvents();
     }
   else if (action == DISAGGREGATEACTION) 
     {
@@ -6667,7 +6667,7 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action)
     }
   else if (action == MAKEMACROACTION) 
     {
-      colligateEvents(true);
+      colligateEvents();
     }
   else if (action == RECOLOREVENTSACTION) 
     {
@@ -6723,217 +6723,195 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action)
     }
 }
 
-void EventGraphWidget::colligateEvents(bool single) 
+void EventGraphWidget::colligateEvents() 
 {
-  if (!single)
+  if (currentData.size() > 0) 
     {
-      if (currentData.size() > 0) 
+      QPointer<AbstractionDialog> abstractionDialog = new AbstractionDialog(this,
+									    eventVector,
+									    macroVector,
+									    currentData,
+									    presentTypes,
+									    selectedCoder);
+      abstractionDialog->exec();
+      if (abstractionDialog->getExitStatus() == 0)
 	{
-	  QPointer<AbstractionDialog> abstractionDialog = new AbstractionDialog(this, eventVector,
-										macroVector,
-										currentData,
-										presentTypes,
-										selectedCoder);
-	  abstractionDialog->exec();
-	  if (abstractionDialog->getExitStatus() == 0)
+	  QVector<EventItem*> tempIncidents = abstractionDialog->getCollectedIncidents();
+	  QString chosenAttribute = abstractionDialog->getAttribute();
+	  if (tempIncidents.size() > 0) 
 	    {
-	      QVector<EventItem*> tempIncidents = abstractionDialog->getCollectedIncidents();
-	      QString chosenAttribute = abstractionDialog->getAttribute();
-	      if (tempIncidents.size() > 0) 
+	      std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
+	      qreal lowestX = 0.0;
+	      qreal highestX = 0.0;
+	      qreal lowestY = 0.0;
+	      qreal highestY = 0.0;
+	      QVectorIterator<EventItem*> it2(tempIncidents);
+	      while (it2.hasNext()) 
 		{
-		  std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
-		  qreal lowestX = 0.0;
-		  qreal highestX = 0.0;
-		  qreal lowestY = 0.0;
-		  qreal highestY = 0.0;
-		  QVectorIterator<EventItem*> it2(tempIncidents);
-		  while (it2.hasNext()) 
+		  EventItem *current = it2.next();
+		  if (lowestX == 0.0) 
 		    {
-		      EventItem *current = it2.next();
-		      if (lowestX == 0.0) 
-			{
-			  lowestX = current->scenePos().x();
-			}
-		      if (highestX == 0.0) 
-			{
-			  highestX = current->scenePos().x();
-			}
-		      if (lowestY == 0.0) 
-			{
-			  lowestY = current->scenePos().y();
-			}
-		      if (highestY == 0.0) 
-			{
-			  highestY = current->scenePos().y();
-			}
-		      if (current->scenePos().x() < lowestX) 
-			{
-			  lowestX = current->scenePos().x();
-			}
-		      if (current->scenePos().x() > highestX) 
-			{
-			  highestX = current->scenePos().x();
-			}
-		      if (current->scenePos().y() < lowestY) 
-			{
-			  lowestY = current->scenePos().y();
-			}
-		      if (current->scenePos().y() > highestY) 
-			{
-			  highestY = current->scenePos().y();
-			}
+		      lowestX = current->scenePos().x();
 		    }
-		  int width = highestX - lowestX + tempIncidents.last()->getWidth();
-		  qreal xPos = lowestX;
-		  qreal yPos = lowestY + ((highestY - lowestY) / 2);
-		  QPointF originalPos = QPointF(xPos, yPos);
-		  QString description = abstractionDialog->getDescription();
-		  MacroEvent* current = new MacroEvent(width, description, originalPos,
-						       macroVector.size() + 1,
-						       abstractionDialog->getConstraint(),
-						       tempIncidents);
-		  current->setPos(originalPos);
-		  current->setZValue(3);
-		  QVectorIterator<QGraphicsItem*> it3(currentData);
-		  while (it3.hasNext()) 
+		  if (highestX == 0.0) 
 		    {
-		      EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
-		      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
-		      if (event) 
+		      highestX = current->scenePos().x();
+		    }
+		  if (lowestY == 0.0) 
+		    {
+		      lowestY = current->scenePos().y();
+		    }
+		  if (highestY == 0.0) 
+		    {
+		      highestY = current->scenePos().y();
+		    }
+		  if (current->scenePos().x() < lowestX) 
+		    {
+		      lowestX = current->scenePos().x();
+		    }
+		  if (current->scenePos().x() > highestX) 
+		    {
+		      highestX = current->scenePos().x();
+		    }
+		  if (current->scenePos().y() < lowestY) 
+		    {
+		      lowestY = current->scenePos().y();
+		    }
+		  if (current->scenePos().y() > highestY) 
+		    {
+		      highestY = current->scenePos().y();
+		    }
+		}
+	      int width = highestX - lowestX + tempIncidents.last()->getWidth();
+	      qreal xPos = lowestX;
+	      qreal yPos = lowestY + ((highestY - lowestY) / 2);
+	      QPointF originalPos = QPointF(xPos, yPos);
+	      QString description = abstractionDialog->getDescription();
+	      MacroEvent* current = new MacroEvent(width, description, originalPos,
+						   macroVector.size() + 1,
+						   abstractionDialog->getConstraint(),
+						   tempIncidents);
+	      current->setPos(originalPos);
+	      current->setZValue(3);
+	      QVectorIterator<QGraphicsItem*> it3(currentData);
+	      while (it3.hasNext()) 
+		{
+		  EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
+		  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
+		  if (event) 
+		    {
+		      EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
+		      if (chosenAttribute != DEFAULT2) 
 			{
-			  EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
-			  if (chosenAttribute != DEFAULT2) 
+			  bool hasAttribute = false;
+			  QVector<QString> attributes;
+			  attributes.push_back(chosenAttribute);
+			  findChildren(chosenAttribute, &attributes,
+				       abstractionDialog->isEntity());
+			  QVectorIterator<QString> it4(attributes);
+			  while (it4.hasNext()) 
 			    {
-			      bool hasAttribute = false;
-			      QVector<QString> attributes;
-			      attributes.push_back(chosenAttribute);
-			      findChildren(chosenAttribute, &attributes,
-					   abstractionDialog->isEntity());
-			      QVectorIterator<QString> it4(attributes);
-			      while (it4.hasNext()) 
+			      QString currentAttribute = it4.next();
+			      int id = item->getId();
+			      QSqlQuery *query = new QSqlQuery;
+			      query->prepare("SELECT incident FROM attributes_to_incidents "
+					     "WHERE attribute = :attribute AND incident = :id");
+			      query->bindValue(":attribute", currentAttribute);
+			      query->bindValue(":id", id);
+			      query->exec();
+			      query->first();
+			      if (!query->isNull(0)) 
 				{
-				  QString currentAttribute = it4.next();
-				  int id = item->getId();
-				  QSqlQuery *query = new QSqlQuery;
-				  query->prepare("SELECT incident FROM attributes_to_incidents "
-						 "WHERE attribute = :attribute AND incident = :id");
-				  query->bindValue(":attribute", currentAttribute);
-				  query->bindValue(":id", id);
-				  query->exec();
-				  query->first();
-				  if (!query->isNull(0)) 
-				    {
-				      hasAttribute = true;
-				      break;
-				    }
-				  delete query;
+				  hasAttribute = true;
+				  break;
 				}
-			      if (hasAttribute) 
-				{
-				  item->setMacroEvent(current);
-				  item->hide();
-				}
+			      delete query;
 			    }
-			  else 
+			  if (hasAttribute) 
 			    {
 			      item->setMacroEvent(current);
 			      item->hide();
 			    }
 			}
-		      else if (macro) 
+		      else 
 			{
-			  MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
 			  item->setMacroEvent(current);
 			  item->hide();
 			}
 		    }
-		  macroVector.push_back(current);
-		  scene->addItem(current);
-		  MacroLabel *macroLabel = new MacroLabel(current);
-		  current->setLabel(macroLabel);
-		  qreal xOffset = (current->getWidth() / 2) - 20;
-		  macroLabel->setOffset(QPointF(xOffset,0));
-		  macroLabel->setNewPos(current->scenePos());
-		  macroLabel->setZValue(4);
-		  macroLabel->setDefaultTextColor(Qt::black);
-		  macroLabelVector.push_back(macroLabel);
-		  scene->addItem(macroLabel);
-		  rewireLinkages(current, tempIncidents);
-		  updateMacroOrder();
-		  updateLinkages();
-		  setVisibility();
-		  currentData.clear();
-		  current->setSelected(true);
-		  retrieveData();
-		  setChangeLabel();
-		  addLinkageTypeButton->setEnabled(false);
-		  compareButton->setEnabled(false);
+		  else if (macro) 
+		    {
+		      MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
+		      if (chosenAttribute != DEFAULT2)
+			{
+			  bool hasAttribute = false;
+			  QVector<QString> attributes;
+			  attributes.push_back(chosenAttribute);
+			  findChildren(chosenAttribute, &attributes,
+				       abstractionDialog->isEntity());
+			  QVectorIterator<QString> it5(attributes);
+			  while (it5.hasNext())
+			    {
+			      QString currentAttribute = it5.next();
+			      QSet<QString> macroAttributes = macro->getAttributes();
+			      QSetIterator<QString> it6(macroAttributes);
+			      while (it6.hasNext())
+				{
+				  QString macroAttribute = it6.next();
+				  if (macroAttribute == currentAttribute)
+				    {
+				      hasAttribute = true;
+				    }
+				}
+			    }
+			  if (hasAttribute)
+			    {
+			      item->setMacroEvent(current);
+			      item->hide();
+			    }
+			}
+		      else
+			{
+			  item->setMacroEvent(current);
+			  item->hide();
+			}
+		    }
 		}
-	      delete abstractionDialog;
+	      macroVector.push_back(current);
+	      scene->addItem(current);
+	      MacroLabel *macroLabel = new MacroLabel(current);
+	      current->setLabel(macroLabel);
+	      qreal xOffset = (current->getWidth() / 2) - 20;
+	      macroLabel->setOffset(QPointF(xOffset,0));
+	      macroLabel->setNewPos(current->scenePos());
+	      macroLabel->setZValue(4);
+	      macroLabel->setDefaultTextColor(Qt::black);
+	      macroLabelVector.push_back(macroLabel);
+	      scene->addItem(macroLabel);
+	      rewireLinkages(current, tempIncidents);
+	      updateMacroOrder();
+	      updateLinkages();
+	      setVisibility();
+	      currentData.clear();
+	      current->setSelected(true);
+	      retrieveData();
+	      setChangeLabel();
+	      addLinkageTypeButton->setEnabled(false);
+	      compareButton->setEnabled(false);
 	    }
-	  else 
-	    {
-	      delete abstractionDialog;
-	      return;
-	    }
+	  delete abstractionDialog;
+	}
+      else 
+	{
+	  delete abstractionDialog;
+	  return;
 	}
     }
   else
     {
-      EventItem *selectedIncident = qgraphicsitem_cast<EventItem*>(currentData[0]);
-      if (selectedIncident)
-	{
-	  QVector<EventItem*> tempIncidents;
-	  tempIncidents.push_back(selectedIncident);
-	  int width = selectedIncident->getWidth();
-	  QPointF originalPos = selectedIncident->scenePos();
-	  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-	  textDialog->setWindowTitle("Event description");
-	  textDialog->setLabel("Event description:");
-	  textDialog->exec();
-	  if (textDialog->getExitStatus() == 0) 
-		{
-		  QString description = textDialog->getText();
-		  MacroEvent* current = new MacroEvent(width, description, originalPos,
-						       macroVector.size() + 1,
-						       PATHS, tempIncidents);
-		  current->setPos(originalPos);
-		  current->setZValue(3);
-		  selectedIncident->setMacroEvent(current);
-		  selectedIncident->hide();
-		  macroVector.push_back(current);
-		  scene->addItem(current);
-		  MacroLabel *macroLabel = new MacroLabel(current);
-		  current->setLabel(macroLabel);
-		  qreal xOffset = (current->getWidth() / 2) - 20;
-		  macroLabel->setOffset(QPointF(xOffset,0));
-		  macroLabel->setNewPos(current->scenePos());
-		  macroLabel->setZValue(4);
-		  macroLabel->setDefaultTextColor(Qt::black);
-		  macroLabelVector.push_back(macroLabel);
-		  scene->addItem(macroLabel);
-		  rewireLinkages(current, tempIncidents);
-		  updateMacroOrder();
-		  updateLinkages();
-		  setVisibility();
-		  currentData.clear();
-		  current->setSelected(true);
-		  retrieveData();
-		  setChangeLabel();
-		  addLinkageTypeButton->setEnabled(false);
-		  compareButton->setEnabled(false);
-		}
-	  else
-	    {
-	      return;
-	    }
-	}
-      else
-	{
-	  return;
-	}
+      return;
     }
-}
+ }
 
 void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents) 
 {

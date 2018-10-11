@@ -32,13 +32,16 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   noConstraintsCheckBox = new QCheckBox("No constraints", this);
   
   eventDescriptionField = new QTextEdit(this);
-  
+
   setAttributeButton = new QPushButton(tr("Set attribute"), this);
   clearAttributeButton = new QPushButton(tr("Clear attribute"), this);
   clearAttributeButton->setEnabled(false);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Create abstract event"), this);
-
+  if (currentData.size() == 1)
+    {
+      setAttributeButton->setEnabled(false);
+    }
   connect(pathsBasedCheckBox, SIGNAL(clicked()), this, SLOT(processPathsCheck()));
   connect(semiPathsBasedCheckBox, SIGNAL(clicked()), this, SLOT(processSemipathsCheck()));
   connect(noConstraintsCheckBox, SIGNAL(clicked()), this, SLOT(processNoPathsCheck()));
@@ -101,63 +104,9 @@ void AbstractionDialog::selectAttribute()
       chosenAttributeLabel->setText(selectedAttribute);
       attributeIsEntity = attributeSelection->isEntity();
       QVectorIterator<QGraphicsItem*> it(currentData);
-      while (it.hasNext()) 
-	{
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
-	  if (macro) 
-	    {
-	      MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it.next());
-	      QVectorIterator<EventItem*> it2(item->getIncidents());
-	      while (it2.hasNext()) 
-		{
-		  EventItem *currentIncident = it2.next();
-		  QVector<QString> attributes;
-		  attributes.push_back(selectedAttribute);
-		  findChildren(selectedAttribute, &attributes, attributeIsEntity);
-		  bool hasAttribute = false;
-		  QVectorIterator<QString> it3(attributes);
-		  while (it3.hasNext()) 
-		    {
-		      QString currentAttribute = it3.next();
-		      QSqlQuery *query = new QSqlQuery;
-		      int id = currentIncident->getId();
-		      query->prepare("SELECT incident FROM attributes_to_incidents "
-				     "WHERE attribute = :attribute AND incident = :id");
-		      query->bindValue(":attribute", currentAttribute);
-		      query->bindValue(":id", id);
-		      query->exec();
-		      query->first();
-		      if (!query->isNull(0)) 
-			{
-			  hasAttribute = true;
-			  break;
-			}
-		      delete query;
-		    }
-		  if (!hasAttribute) 
-		    {
-		      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		      warningBox->addButton(QMessageBox::Ok);
-		      warningBox->setIcon(QMessageBox::Warning);
-		      warningBox->setText("<b>Invalid abstract event</b>");
-		      warningBox->setInformativeText("At least one of the abstract events included "
-						     "in the selection contains incidents that do "
-						     "not have the selected attribute.");
-		      warningBox->exec();
-		      delete warningBox;
-		      selectedAttribute = DEFAULT2;
-		      chosenAttributeLabel->setText(DEFAULT2);
-		      attributeIsEntity = false;
-		      prepareEvents();
-		      clearAttributeButton->setEnabled(false);
-		      return;
-		    }
-		}
-	    }
-	  prepareEvents();
-	  clearAttributeButton->setEnabled(true);
-	  return;
-	}
+      prepareEvents();
+      clearAttributeButton->setEnabled(true);
+      return;
     }
   else 
     {
@@ -182,7 +131,8 @@ void AbstractionDialog::prepareEvents()
   if (currentData.size() > 0) 
     {
       collectedIncidents.clear();
-      semiPathsAllowed =  true;      
+      QVector<EventItem*> allIncidents;
+      semiPathsAllowed = true;      
       pathsAllowed = true;
       QVectorIterator<QGraphicsItem*> it(currentData);
       while (it.hasNext()) 
@@ -192,6 +142,7 @@ void AbstractionDialog::prepareEvents()
 	  if (event) 
 	    {
 	      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
+	      allIncidents.push_back(currentEvent);
 	      int id = currentEvent->getId();
 	      if (selectedAttribute != DEFAULT2) 
 		{
@@ -234,6 +185,7 @@ void AbstractionDialog::prepareEvents()
 	      while (it2.hasNext()) 
 		{
 		  EventItem *currentIncident = it2.next();
+		  allIncidents.push_back(currentIncident);
 		  if (selectedAttribute != DEFAULT2) 
 		    {
 		      QVector<QString> attributes;
@@ -271,9 +223,10 @@ void AbstractionDialog::prepareEvents()
 		}
 	    }
 	}
-      if (collectedIncidents.size() > 0) 
+      if (collectedIncidents.size() > 0)
 	{
 	  std::sort(collectedIncidents.begin(), collectedIncidents.end(), eventLessThan);
+	  std::sort(allIncidents.begin(), allIncidents.end(), eventLessThan);
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  QVector<QGraphicsItem*> allEvents;
 	  QVectorIterator<EventItem*> evIt(eventVector);
@@ -287,8 +240,8 @@ void AbstractionDialog::prepareEvents()
 	      allEvents.push_back(maIt.next());
 	    }
 	  std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-	  EventItem *first = collectedIncidents.first();
-	  EventItem *last = collectedIncidents.last();
+	  EventItem *first = allIncidents.first();
+	  EventItem *last = allIncidents.last();
 	  QSet<int> markOne;
 	  QSet<int> markTwo;
 	  QVectorIterator<QString> lit(presentTypes);
@@ -318,11 +271,11 @@ void AbstractionDialog::prepareEvents()
 		  QGraphicsItem *temp = it4.next();
 		  EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
 		  MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
-		  if (eventTemp) 
+		  if (eventTemp)
 		    {
 		      if (markOne.contains(eventTemp->getId()) &&
 			  markTwo.contains(eventTemp->getId()) &&
-			  !collectedIncidents.contains(eventTemp)) 
+			  !allIncidents.contains(eventTemp)) 
 			{
 			  semiPathsAllowed = false;
 			}
@@ -336,7 +289,7 @@ void AbstractionDialog::prepareEvents()
 			  eventTemp = it5.next();
 			  if (markOne.contains(eventTemp->getId()) &&
 			      markTwo.contains(eventTemp->getId()) &&
-			      !collectedIncidents.contains(eventTemp)) 
+			      !allIncidents.contains(eventTemp)) 
 			    {
 			      semiPathsAllowed = false;
 			    }
@@ -346,8 +299,8 @@ void AbstractionDialog::prepareEvents()
 	    }
 	  QApplication::restoreOverrideCursor();
 	  qApp->processEvents();
-	  std::sort(collectedIncidents.begin(), collectedIncidents.end(), componentsSort);
-	  checkConstraints(collectedIncidents);
+	  std::sort(allIncidents.begin(), allIncidents.end(), componentsSort);
+	  checkConstraints(allIncidents);
 	}
       else 
 	{
@@ -552,6 +505,9 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 
 void AbstractionDialog::evaluateConstraints()
 {
+  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
+  semiPathsBasedCheckBox->setCheckState(Qt::Unchecked);
+  noConstraintsCheckBox->setCheckState(Qt::Unchecked);
   if (pathsAllowed)
     {
       pathsBasedCheckBox->setEnabled(true);
@@ -782,7 +738,7 @@ void AbstractionDialog::findTailsUpperBound(QSet<int> *pMark, int currentInciden
       query2->exec();
       query2->first();
       int order = query2->value(0).toInt();
-      if (order <=  upperLimit && !pMark->contains(currentHead)) 
+      if (order <=  upperLimit && !pMark->contains(currentTail)) 
 	{
 	  results.push_back(currentTail);
 	}
@@ -821,7 +777,7 @@ void AbstractionDialog::findTailsLowerBound(QSet<int> *pMark, int currentInciden
       query2->exec();
       query2->first();
       int order = query2->value(0).toInt();
-      if (order >=  lowerLimit && !pMark->contains(currentHead)) 
+      if (order >=  lowerLimit && !pMark->contains(currentTail)) 
 	{
 	  results.push_back(currentTail);
 	}
