@@ -42,7 +42,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(rawAttributesTableWidget);
   RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(rawRelationshipsTableWidget);
   CasingWidget *cw = qobject_cast<CasingWidget*>(casingWidget);
-  
+
   dw->setEventGraph(egw);
   dw->setOccurrenceGraph(ogw);
   aw->setEventGraph(egw);
@@ -68,7 +68,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   cw->setEventGraphWidget(egw);
   cw->setNetworkGraphWidget(ngw);
   cw->setOccurrenceGraphWidget(ogw);
-
+  
   QString sliderSheet = QString("QSlider::groove:horizontal { "
 				"border: 1px solid #999999; "
 				"height: 6px; "
@@ -88,12 +88,12 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 				"background: #b2b1b1; "
 				"border: 1px solid #787676}");
   QString treeSheet = QString("QTreeView::branch:has-siblings:!adjoins-item { "
-			      "border-image: url(\"images/vlinewhole.svg\"); } "
+			      "border-image: url(\"images/vlinewhole.svg\") 0; } "
 			      "QTreeView::branch:has-siblings:adjoins-item { "
-			      "border-image: url(\"images/vlinewhole.svg\"); "
+			      "border-image: url(\"images/vlinewhole.svg\") 0; "
 			      "image: url(\"images/hline.svg\"); } "
 			      "QTreeView::branch:!has-children:!has-siblings:adjoins-item { "
-			      "border-image: url(\"images/vlinehalf.svg\"); "
+			      "border-image: url(\"images/vlinehalf.svg\") 0; "
 			      "image: url(\"images/hline.svg\"); }  "
 			      "QTreeView::branch:has-children:!has-siblings:closed, "
 			      "QTreeView::branch:closed:has-children:has-siblings { "
@@ -103,13 +103,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 			      "QTreeView::branch:open:has-children:has-siblings { "
 			      "border-image: none; "
 			      "image: url(\"images/minus.svg\"); }");
-  aw->setStyleSheet(treeSheet);
-  rw->setStyleSheet(treeSheet);
-  egw->setStyleSheet(sliderSheet + treeSheet);
-  ngw->setStyleSheet(sliderSheet + treeSheet);
-  hgw->setStyleSheet(sliderSheet + treeSheet);
-  ogw->setStyleSheet(sliderSheet + treeSheet);
-  
+
   stacked->addWidget(dataWidget); // 0
   stacked->addWidget(attributesWidget); // 1
   stacked->addWidget(relationshipsWidget); // 2
@@ -125,8 +119,8 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(entitiesAttributesTableWidget); // 12
   stacked->addWidget(missingAttributesTableWidget); // 13
   stacked->addWidget(missingRelationshipsTableWidget); // 14
-  stacked->addWidget(casingWidget); // 15
-  
+  stacked->addWidget(casingWidget); // 15  
+
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
 	  this, SLOT(switchToHierarchyView(MacroEvent *)));
@@ -150,6 +144,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Q-SoPrA");
+  
   stacked->showMaximized();
 }
 

@@ -181,44 +181,46 @@ void AbstractionDialog::prepareEvents()
 	  if (macro) 
 	    {
 	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	      QVectorIterator<EventItem*> it2(currentMacro->getIncidents());
-	      while (it2.hasNext()) 
+	      if (selectedAttribute != DEFAULT2)
 		{
-		  EventItem *currentIncident = it2.next();
-		  allIncidents.push_back(currentIncident);
-		  if (selectedAttribute != DEFAULT2) 
+		  QSet<QString> macroAttributes = currentMacro->getAttributes();
+		  QVector<QString> attributes;
+		  attributes.push_back(selectedAttribute);
+		  findChildren(selectedAttribute, &attributes, attributeIsEntity);
+		  bool hasAttribute = false;
+		  QVectorIterator<QString> it2(attributes);
+		  while (it2.hasNext())
 		    {
-		      QVector<QString> attributes;
-		      attributes.push_back(selectedAttribute);
-		      findChildren(selectedAttribute, &attributes, attributeIsEntity);
-		      bool hasAttribute = false;
-		      QVectorIterator<QString> it3(attributes);
-		      while (it3.hasNext()) 
+		      QString currentAttribute = it2.next();
+		      if (macroAttributes.contains(currentAttribute))
 			{
-			  QString currentAttribute = it3.next();
-			  QSqlQuery *query = new QSqlQuery;
-			  int id = currentIncident->getId();
-			  query->prepare("SELECT incident FROM attributes_to_incidents "
-					 "WHERE attribute = :attribute AND incident = :id");
-			  query->bindValue(":attribute", currentAttribute);
-			  query->bindValue(":id", id);
-			  query->exec();
-			  query->first();
-			  if (!query->isNull(0)) 
-			    {
-			      hasAttribute = true;
-			      break;
-			    }
-			  delete query;
-			}
-		      if (hasAttribute) 
-			{
-			  collectedIncidents.push_back(currentIncident);
+			  hasAttribute = true;
+			  break;
 			}
 		    }
-		  else 
+		  QVectorIterator<EventItem*> it3(currentMacro->getIncidents());
+		  while (it3.hasNext())
 		    {
-		      collectedIncidents.push_back(currentIncident);
+		      EventItem* currentEvent = it3.next();
+		      if (hasAttribute) 
+			{
+			  allIncidents.push_back(currentEvent);
+			  collectedIncidents.push_back(currentEvent);			  
+			}
+		      else
+			{
+			  allIncidents.push_back(currentEvent);
+			}
+		    }
+		}
+	      else 
+		{
+		  QVectorIterator<EventItem*> it3(currentMacro->getIncidents());
+		  while (it3.hasNext())
+		    {
+		      EventItem *currentEvent = it3.next();
+		      allIncidents.push_back(currentEvent);
+		      collectedIncidents.push_back(currentEvent);			  
 		    }
 		}
 	    }

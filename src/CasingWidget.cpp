@@ -43,11 +43,19 @@ void CasingWidget::createTable()
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT COUNT(id) FROM incidents");
   query->first();
-  int count = query->value(0).toInt();
+  int count = 0;
+  if (!query->isNull(0))
+    {
+      count = query->value(0).toInt();
+    }
   tableWidget->setRowCount(count);
   query->exec("SELECT COUNT(id) FROM cases");
   query->first();
-  count = query->value(0).toInt();
+  count = 0;
+  if (!query->isNull(0))
+    {
+      count = query->value(0).toInt();
+    }
   tableWidget->setColumnCount(count + 3);
   // We have a few columns that are always there
   QTableWidgetItem *headerOne = new QTableWidgetItem("Timing", 0);

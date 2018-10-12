@@ -1615,15 +1615,18 @@ void AttributesWidget::retrieveData()
   valueField->blockSignals(false);
   valueButton->setEnabled(false);
   attributesTreeView->clearSelection();
-  QSqlQueryModel *query = new QSqlQueryModel(this);
-  query->setQuery("SELECT * FROM save_data");
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT attributes_record FROM save_data");
+  query->first();
   int order = 0;
-  order = query->record(0).value("attributes_record").toInt();
+  if (!query->isNull(0))
+    {
+      order = query->value(0).toInt();
+    }
   incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   int total = incidentsModel->rowCount();
-
   QString indexText = "<b>Incident (" + QString::number(order) + " / " +
     QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
@@ -1633,7 +1636,7 @@ void AttributesWidget::retrieveData()
   query2->bindValue(":order", order);
   query2->exec();
   query2->first();
-  if (!(query2->isNull(0))) 
+  if (!query2->isNull(0)) 
     {
       int id = query2->value(0).toInt();
       QString timeStamp = query2->value(1).toString();
