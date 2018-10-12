@@ -4596,9 +4596,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_ng_plots_network_nodes "
 		     "(plot, entity, description, mode, curxpos, curypos, "
-		     "red, green, blue, alpha, hidden, persistent) "
+		     "red, green, blue, alpha, hidden, persistent, masshidden) "
 		     "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
-		     ":red, :green, :blue, :alpha, :hidden, :persistent)");
+		     ":red, :green, :blue, :alpha, :hidden, :persistent, :masshidden)");
       QVectorIterator<NetworkNode*> it(nodeVector);
       while (it.hasNext()) 
 	{
@@ -4614,6 +4614,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int alpha = current->getColor().alpha();
 	  int hidden = 1;
 	  int persistent = 0;
+	  int masshidden = 0;
 	  if (current->isVisible()) 
 	    {
 	      hidden = 0;
@@ -4621,6 +4622,10 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  if (current->isPersistent()) 
 	    {
 	      persistent = 1;
+	    }
+	  if (current->isMassHidden())
+	    {
+	      masshidden = 1;
 	    }
 	  query->bindValue(":plot", name);
 	  query->bindValue(":entity", entity);
@@ -4634,6 +4639,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":alpha", alpha);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":persistent", persistent);
+	  query->bindValue(":masshidden", masshidden);	 
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -4697,8 +4703,8 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, name, tip, "
-		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
+		     "red, green, blue, alpha, hidden) "
+		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
       for (int i = 0; i != nodeListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = nodeListWidget->item(i, 0);
@@ -4709,6 +4715,11 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
+	  int hidden = 0;
+	  if (nodeListWidget->item(i, 0)->background() == QColor(Qt::gray)) 
+	    {
+	      hidden = 1;
+	    }
 	  query->bindValue(":plot", name);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
@@ -4716,6 +4727,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -5163,7 +5175,7 @@ void NetworkGraphWidget::seePlots()
       int blue = query->value(2).toInt();
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       query->prepare("SELECT entity, description, mode, curxpos, curypos, "
-		     "red, green, blue, alpha, hidden, persistent "
+		     "red, green, blue, alpha, hidden, persistent, masshidden "
 		     "FROM saved_ng_plots_network_nodes "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5181,6 +5193,7 @@ void NetworkGraphWidget::seePlots()
 	  int alpha = query->value(8).toInt();
 	  int hidden = query->value(9).toInt();
 	  int persistent = query->value(10).toInt();
+	  int masshidden = query->value(11).toInt();
 	  QPointF currentPos = QPointF(currentX, currentY);
 	  NetworkNode *node = new NetworkNode(entity, description);
 	  node->setColor(QColor(red, green, blue, alpha));
@@ -5205,6 +5218,14 @@ void NetworkGraphWidget::seePlots()
 	      node->setPersistent(false);
 	    }
 	  nodeVector.push_back(node);
+	  if (masshidden == 1)
+	    {
+	      node->setMassHidden(true);
+	    }
+	  else
+	    {
+	      node->setMassHidden(false);
+	    }
 	}
       query->prepare("SELECT entity, curxpos, curypos, xoffset, yoffset, fontsize, "
 		     "red, green, blue, alpha, hidden "
@@ -5220,7 +5241,7 @@ void NetworkGraphWidget::seePlots()
 	  qreal yOffset = query->value(4).toReal();
 	  int fontSize = query->value(5).toInt();
 	  int red = query->value(6).toInt();
-	  ;      int green = query->value(7).toInt();
+	  int green = query->value(7).toInt();
 	  int blue = query->value(8).toInt();
 	  int alpha = query->value(9).toInt();
 	  int hidden = query->value(10).toInt();
@@ -5253,7 +5274,7 @@ void NetworkGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->prepare("SELECT name, tip, red, green, blue, alpha "
+      query->prepare("SELECT name, tip, red, green, blue, alpha, hidden "
 		     "FROM saved_ng_plots_nodelegend "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5266,6 +5287,7 @@ void NetworkGraphWidget::seePlots()
 	  int green = query->value(3).toInt();
 	  int blue = query->value(4).toInt();
 	  int alpha = query->value(5).toInt();
+	  int hidden = query->value(6).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  QTableWidgetItem *item = new QTableWidgetItem(name);
 	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -5278,6 +5300,10 @@ void NetworkGraphWidget::seePlots()
 	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
 	    setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	  if (hidden == 1) 
+	    {
+	      nodeListWidget->item(nodeListWidget->rowCount() - 1, 0)->setBackground(Qt::gray);
+	    }
 	}
       query->prepare("SELECT name, tip, red, green, blue, alpha, hidden "
 		     "FROM saved_ng_plots_edgelegend "

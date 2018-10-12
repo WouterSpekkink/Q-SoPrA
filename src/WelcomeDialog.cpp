@@ -403,7 +403,8 @@ void WelcomeDialog::newDatabase()
 		      "red integer, "
 		      "blue integer, "
 		      "green integer, "
-		      "alpha integer)");
+		      "alpha integer, "
+		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_edgelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1050,7 +1051,8 @@ void WelcomeDialog::openDatabase()
 		      "red integer, "
 		      "blue integer, "
 		      "green integer, "
-		      "alpha integer)");
+		      "alpha integer, "
+		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_edgelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
