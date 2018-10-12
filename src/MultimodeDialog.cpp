@@ -22,11 +22,11 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   modeTwoLabel->setToolTip(breakString("Nodes of this mode will "
 				       "be used to determine which nodes of mode "
 				       "one should be related."));
-  relationshipOneLabel = new QLabel(tr("<b>Relationship ego:</b>"), this);
-  relationshipOneLabel->setToolTip(breakString("What relationship does the ego (mode one) "
+  relationshipOneLabel = new QLabel(tr("<b>Relationship source:</b>"), this);
+  relationshipOneLabel->setToolTip(breakString("What relationship does the source (mode one) "
 					       "have to nodes of mode two?"));
-  relationshipTwoLabel = new QLabel(tr("<b>Relationship alter:</b>"), this);
-  relationshipTwoLabel->setToolTip(breakString("What relationship does the alter (mode one) "
+  relationshipTwoLabel = new QLabel(tr("<b>Relationship target:</b>"), this);
+  relationshipTwoLabel->setToolTip(breakString("What relationship does the target (mode one) "
 					       "have to nodes of mode two?"));
   nameLabel = new QLabel(tr("<b>New relationship:</b>"), this);
   descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
@@ -48,12 +48,12 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   relationshipOneComboBox = new QComboBox(this);
   relationshipOneComboBox->addItem(DEFAULT);
   relationshipOneComboBox->setEnabled(false);
-  relationshipOneComboBox->setToolTip(breakString("What relationship does the ego (mode one) "
+  relationshipOneComboBox->setToolTip(breakString("What relationship does the source (mode one) "
 						  "have to nodes of mode two?"));
   relationshipTwoComboBox = new QComboBox(this);
   relationshipTwoComboBox->addItem(DEFAULT);
   relationshipTwoComboBox->setEnabled(false);
-  relationshipTwoComboBox->setToolTip(breakString("What relationship does the alter (mode one) "
+  relationshipTwoComboBox->setToolTip(breakString("What relationship does the target (mode one) "
 						  "have to nodes of mode two?"));
   directedButton = new QPushButton(tr("Directed"), this);
   directedButton->setCheckable(true);
