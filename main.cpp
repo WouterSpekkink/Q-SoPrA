@@ -6,7 +6,7 @@
 int main(int argc, char *argv[]) {
   QApplication QSoPrA(argc, argv);
   QSoPrA.setWindowIcon(QIcon("./images/Q-SoPrA.png"));
-  QString version = QString("0.8.9.4");
+  QString version = QString("0.8.9.5");
   QSoPrA.setApplicationVersion(version);
 
   QSharedPointer<EventSequenceDatabase> esd(new EventSequenceDatabase);

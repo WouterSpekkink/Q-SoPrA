@@ -39,6 +39,7 @@
 #include "RectObject.h"
 #include "TextObject.h"
 #include "RelationshipColorDialog.h"
+#include "ModeColorDialog.h"
 
 class EventGraphWidget;
 
@@ -61,6 +62,7 @@ public:
 private slots:
   void toggleLegend();
   void toggleGraphicsControls();
+  void rescale();
   void checkCases();
   
   void addAttribute();

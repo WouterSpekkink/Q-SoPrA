@@ -518,6 +518,7 @@ void OccurrenceGraphWidget::toggleLegend()
     {
       legendWidget->show();
     }
+  rescale();
 }
 
 void OccurrenceGraphWidget::toggleGraphicsControls() 
@@ -530,7 +531,14 @@ void OccurrenceGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->show();
     }
+  rescale();
 }
+
+void OccurrenceGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
+} 
 
 void OccurrenceGraphWidget::processZoomSliderChange(int value)
 {
@@ -1029,14 +1037,15 @@ void OccurrenceGraphWidget::changeAttributeModeColor(QTableWidgetItem *item)
 {
   if (item->column() == 1) 
     {
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(item->background().color());
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setModal(true);
-      if (colorDialog->exec()) 
+      QColor currentFill = item->background().color();
+      QColor currentText = QColor("black");
+      QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
+      colorDialog->exec();
+      if (colorDialog->getExitStatus() == 0)
 	{
-	  QColor color = colorDialog->selectedColor();
-	  item->setBackground(color);
+	  QColor fillColor = colorDialog->getFillColor();
+	  QColor textColor = colorDialog->getTextColor();
+	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = attributeListWidget->item(item->row(), 0);
 	  QString attribute = neighbour->data(Qt::DisplayRole).toString();
 	  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
@@ -1045,7 +1054,8 @@ void OccurrenceGraphWidget::changeAttributeModeColor(QTableWidgetItem *item)
 	      OccurrenceItem *current = it.next();
 	      if (current->getAttribute() == attribute) 
 		{
-		  current->setColor(color);
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
 	}
@@ -1056,14 +1066,15 @@ void OccurrenceGraphWidget::changeRelationshipModeColor(QTableWidgetItem *item)
 {
   if (item->column() == 1) 
     {
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setCurrentColor(item->background().color());
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setModal(true);
-      if (colorDialog->exec()) 
+      QColor currentFill = item->background().color();
+      QColor currentText = QColor("black");
+      QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
+      colorDialog->exec();
+      if (colorDialog->getExitStatus() == 0)
 	{
-	  QColor color = colorDialog->selectedColor();
-	  item->setBackground(color);
+	  QColor fillColor = colorDialog->getFillColor();
+	  QColor textColor = colorDialog->getTextColor();
+	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = relationshipListWidget->item(item->row(), 0);
 	  QString relationship = neighbour->data(Qt::DisplayRole).toString();
 	  QVectorIterator<OccurrenceItem*> it(relationshipOccurrenceVector);
@@ -1072,7 +1083,8 @@ void OccurrenceGraphWidget::changeRelationshipModeColor(QTableWidgetItem *item)
 	      OccurrenceItem *current = it.next();
 	      if (current->getAttribute() == relationship) 
 		{
-		  current->setColor(color);
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
 	}

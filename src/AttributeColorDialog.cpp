@@ -31,6 +31,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   pixmapOne.fill(chosenColor);
   colorOneLabel = new QLabel(this);
   colorOneLabel->setMaximumWidth(50);
+  colorOneLabel->setMaximumHeight(colorOneLabel->sizeHint().height());
   colorOneLabel->setPixmap(pixmapOne);
   textColorButton = new QPushButton(tr("Choose text color"), this);
   textColorButton->setMinimumWidth(200);
@@ -38,6 +39,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   pixmapTwo.fill(chosenTextColor);
   colorTwoLabel = new QLabel(this);
   colorTwoLabel->setMaximumWidth(50);
+  colorTwoLabel->setMaximumHeight(colorTwoLabel->sizeHint().height());
   colorTwoLabel->setPixmap(pixmapTwo);
 
   cancelCloseButton = new QPushButton(tr("Cancel"), this);

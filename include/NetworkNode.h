@@ -25,6 +25,8 @@ public:
   void move(QPointF newPos);
   bool isPersistent();
   void setPersistent(bool state);
+  bool isMassHidden();
+  void setMassHidden(bool state);
   
   void setLabel(NetworkNodeLabel *newLabel);
   NetworkNodeLabel* getLabel();
@@ -49,6 +51,7 @@ private:
   QString mode;
 
   bool persistent;
+  bool massHidden;
 };
 
 #endif

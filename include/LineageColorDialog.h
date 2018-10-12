@@ -20,38 +20,58 @@ public:
   LineageColorDialog(QWidget *parent = 0);
   ~LineageColorDialog() {};
 
-  QColor getOriginColor();
-  QColor getAncestorColor();
-  QColor getDescendantColor();
-  QColor getUnrelatedColor();
+  QColor getOriginFillColor();
+  QColor getAncestorFillColor();
+  QColor getDescendantFillColor();
+  QColor getUnrelatedFillColor();
+  QColor getOriginTextColor();
+  QColor getAncestorTextColor();
+  QColor getDescendantTextColor();
+  QColor getUnrelatedTextColor();
   int getExitStatus();
 			    
 private slots:
-  void setOriginColor();
-  void setAncestorColor();
-  void setDescendantColor();
-  void setUnrelatedColor();
+  void setOriginFillColor();
+  void setAncestorFillColor();
+  void setDescendantFillColor();
+  void setUnrelatedFillColor();
+  void setOriginTextColor();
+  void setAncestorTextColor();
+  void setDescendantTextColor();
+  void setUnrelatedTextColor();
   void cancelAndClose();
   void saveAndClose();
     
 private:
   QPointer<QLabel> lineageLabel;
-  QPointer<QLabel> colorOneLabel;
-  QPointer<QLabel> colorTwoLabel;
-  QPointer<QLabel> colorThreeLabel;
-  QPointer<QLabel> colorFourLabel;
+  QPointer<QLabel> fillColorOneLabel;
+  QPointer<QLabel> fillColorTwoLabel;
+  QPointer<QLabel> fillColorThreeLabel;
+  QPointer<QLabel> fillColorFourLabel;
+  QPointer<QLabel> textColorOneLabel;
+  QPointer<QLabel> textColorTwoLabel;
+  QPointer<QLabel> textColorThreeLabel;
+  QPointer<QLabel> textColorFourLabel;
   
-  QPointer<QPushButton> originButton;
-  QPointer<QPushButton> ancestorButton;
-  QPointer<QPushButton> descendantButton;
-  QPointer<QPushButton> unrelatedButton;
+  QPointer<QPushButton> originFillButton;
+  QPointer<QPushButton> ancestorFillButton;
+  QPointer<QPushButton> descendantFillButton;
+  QPointer<QPushButton> unrelatedFillButton;
+  QPointer<QPushButton> originTextButton;
+  QPointer<QPushButton> ancestorTextButton;
+  QPointer<QPushButton> descendantTextButton;
+  QPointer<QPushButton> unrelatedTextButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
 
-  QColor originColor;
-  QColor ancestorColor;
-  QColor descendantColor;
-  QColor unrelatedColor;
+  QColor originFillColor;
+  QColor ancestorFillColor;
+  QColor descendantFillColor;
+  QColor unrelatedFillColor;
+  QColor originTextColor;
+  QColor ancestorTextColor;
+  QColor descendantTextColor;
+  QColor unrelatedTextColor;
 
   int exitStatus;
 };

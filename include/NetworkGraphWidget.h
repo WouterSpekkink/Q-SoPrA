@@ -43,6 +43,7 @@
 #include "EllipseObject.h"
 #include "RectObject.h"
 #include "TextObject.h"
+#include "ModeColorDialog.h"
 
 class NetworkGraphWidget : public QWidget
 {
@@ -63,6 +64,7 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
+  void rescale();
   void checkCases();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
@@ -94,6 +96,8 @@ private slots:
   void setModeButtons(QTableWidgetItem *item);
   void disableModeButtons();
   void restoreModeColors();
+  void hideMode();
+  void showMode();
   void moveModeUp();
   void moveModeDown();
   
@@ -129,6 +133,7 @@ private slots:
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
+  void updateRangeControls();
 
   void exportSvg();
   void exportNodes();
@@ -145,7 +150,6 @@ private slots:
   void processMoveItems(QGraphicsItem *item, QPointF pos);
 
   void processNetworkNodeContextMenu(const QString &action);
-  void hideCurrentNode();
   void setNodePersistence(bool status);
 
   void processNetworkGraphContextMenu(const QString &action, const QPoint &pos);
@@ -266,6 +270,8 @@ private:
   QPointer<QPushButton> unsetFilteredButton;
   QPointer<QPushButton> hideTypeButton;
   QPointer<QPushButton> showTypeButton;
+  QPointer<QPushButton> hideModeButton;
+  QPointer<QPushButton> showModeButton;
   QPointer<QPushButton> multimodeButton;
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> mergeButton;

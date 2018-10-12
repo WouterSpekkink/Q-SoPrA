@@ -47,6 +47,8 @@
 #include "TextObject.h"
 #include "EllipseObject.h"
 #include "RectObject.h"
+#include "AbstractionDialog.h"
+#include "ModeColorDialog.h"
 
 class AttributesWidget;
 
@@ -75,6 +77,7 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
+  void rescale();
   void checkCases();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
@@ -161,22 +164,22 @@ private slots:
   void hideLinkageType();
   void showLinkageType();
   void processEventItemContextMenu(const QString &action);
-  void colligateEvents(QString constraint);
+  void colligateEvents();
   void disaggregateEvent();
   void updateMacroIds(MacroEvent *macro);
   void updateMacroOrder();
-  bool checkConstraints(QVector<EventItem*> incidents, QString constraint);
-  QVector<bool> checkLinkagePresence(QVector<int> incidentIds);
   void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();
   void colorLineage();
   void exportTransitionMatrix();
-  void findAncestors(QColor ancestor,
+  void findAncestors(QColor ancestorFill,
+		     QColor ancestorText,
 		     QGraphicsItem *origin,
 		     QSet<QGraphicsItem*> *pFinished,
 		     QString type);
-  void findDescendants(QColor descendant,
+  void findDescendants(QColor descendantFill,
+		       QColor descendantText,
 		       QGraphicsItem *origin,
 		       QSet<QGraphicsItem*> *pFinished,
 		       QString type);
@@ -239,8 +242,6 @@ private slots:
   
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
-  void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems,
-			   int lowerLimit, int upperLimit, QString type);
   void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
   void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   bool eventFilter(QObject *object, QEvent *event);

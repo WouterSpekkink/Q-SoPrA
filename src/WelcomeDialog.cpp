@@ -379,7 +379,8 @@ void WelcomeDialog::newDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer, "
-		      "persistent integer)");
+		      "persistent integer, "
+		      "masshidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -659,12 +660,6 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
 		      "description text)");
-	  query->exec("INSERT INTO cases "
-		      "(name, "
-		      "description) "
-		      "VALUES ('Complete dataset', "
-		      "'Default case that contains all incidents "
-		      "in the dataset.')");
 	  query->exec("CREATE TABLE incidents_to_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "incident integer, "
@@ -1031,7 +1026,8 @@ void WelcomeDialog::openDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer, "
-		      "peristent integer)");
+		      "peristent integer, "
+		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "

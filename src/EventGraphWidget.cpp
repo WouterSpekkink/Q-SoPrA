@@ -657,6 +657,7 @@ void EventGraphWidget::toggleLegend()
     {
       legendWidget->hide();
     }
+  rescale();
 }
 
 void EventGraphWidget::toggleDetails() 
@@ -670,6 +671,7 @@ void EventGraphWidget::toggleDetails()
     {
       infoWidget->hide();
     }
+  rescale();
 }
 
 void EventGraphWidget::toggleGraphicsControls() 
@@ -682,6 +684,13 @@ void EventGraphWidget::toggleGraphicsControls()
     {
       graphicsWidget->hide();
     }
+  rescale();
+}
+
+void EventGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
 }
 
 void EventGraphWidget::processZoomSliderChange(int value)
@@ -5748,13 +5757,15 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item)
 {
   if (item->column() == 1) 
     {
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setCurrentColor(item->background().color());
-      if (colorDialog->exec()) 
+      QColor currentFill = item->background().color();
+      QColor currentText = QColor("black");
+      QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
+      colorDialog->exec();
+      if (colorDialog->getExitStatus() == 0)
 	{
-	  QColor color = colorDialog->selectedColor();
-	  item->setBackground(color);
+	  QColor fillColor = colorDialog->getFillColor();
+	  QColor textColor = colorDialog->getTextColor();
+	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
 	  QVectorIterator<EventItem*> it(eventVector);
@@ -5763,7 +5774,8 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item)
 	      EventItem *current = it.next();
 	      if (current->getMode() == mode) 
 		{
-		  current->setColor(color);
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
 	  QVectorIterator<MacroEvent*> it2(macroVector);
@@ -5772,7 +5784,8 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item)
 	      MacroEvent *current = it2.next();
 	      if (current->getMode() == mode) 
 		{
-		  current->setColor(color);
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
 	}
@@ -6644,29 +6657,9 @@ void EventGraphWidget::exportEdges()
 void EventGraphWidget::processEventItemContextMenu(const QString &action) 
 {
   retrieveData();
-  if (action == COLLIGATEPATHSACTION) 
+  if (action == COLLIGATEACTION) 
     {
-      colligateEvents(PATHS);
-    }
-  else if (action == COLLIGATEPATHSATTACTION) 
-    {
-      colligateEvents(PATHSATT);
-    }
-  else if (action == COLLIGATESEMIPATHSACTION) 
-    {
-      colligateEvents(SEMIPATHS);
-    }
-  else if (action == COLLIGATESEMIPATHSATTACTION) 
-    {
-      colligateEvents(SEMIPATHSATT);
-    }
-  else if (action == COLLIGATEFREEACTION) 
-    {
-      colligateEvents(NOCONSTRAINT);
-    }
-  else if (action == COLLIGATEFREEATTACTION) 
-    {
-      colligateEvents(NOCONSTRAINTATT);
+      colligateEvents();
     }
   else if (action == DISAGGREGATEACTION) 
     {
@@ -6674,7 +6667,7 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action)
     }
   else if (action == MAKEMACROACTION) 
     {
-      colligateEvents(PATHS);
+      colligateEvents();
     }
   else if (action == RECOLOREVENTSACTION) 
     {
@@ -6730,225 +6723,24 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action)
     }
 }
 
-void EventGraphWidget::colligateEvents(QString constraint) 
+void EventGraphWidget::colligateEvents() 
 {
   if (currentData.size() > 0) 
     {
-      QString attribute = "";
-      bool entity = false;
-      if (constraint == PATHSATT || constraint == SEMIPATHSATT || constraint  == NOCONSTRAINTATT) 
+      QPointer<AbstractionDialog> abstractionDialog = new AbstractionDialog(this,
+									    eventVector,
+									    macroVector,
+									    currentData,
+									    presentTypes,
+									    selectedCoder);
+      abstractionDialog->exec();
+      if (abstractionDialog->getExitStatus() == 0)
 	{
-	  QPointer<SimpleAttributeSelectionDialog> attributeSelection =
-	    new SimpleAttributeSelectionDialog(this, INCIDENT);
-	  attributeSelection->exec();
-	  if (attributeSelection->getExitStatus() == 0) 
+	  QVector<EventItem*> tempIncidents = abstractionDialog->getCollectedIncidents();
+	  QString chosenAttribute = abstractionDialog->getAttribute();
+	  if (tempIncidents.size() > 0) 
 	    {
-	      attribute = attributeSelection->getAttribute();
-	      entity = attributeSelection->isEntity();
-	    }
-	  else 
-	    {
-	      delete attributeSelection;
-	      return;
-	    }
-	}
-      QVector<EventItem*> tempIncidents;
-      QVectorIterator<QGraphicsItem*> it(currentData);
-      while (it.hasNext()) 
-	{
-	  EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
-	  if (event) 
-	    {
-	      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
-	      int id = currentEvent->getId();
-	      if (attribute != "") 
-		{
-		  QVector<QString> attributes;
-		  attributes.push_back(attribute);
-		  findChildren(attribute, &attributes, entity);
-		  bool hasAttribute = false;
-		  QVectorIterator<QString> it2(attributes);
-		  while (it2.hasNext()) 
-		    {
-		      QString currentAttribute = it2.next();
-		      QSqlQuery *query = new QSqlQuery;
-		      query->prepare("SELECT incident FROM attributes_to_incidents "
-				     "WHERE attribute = :attribute AND incident = :id");
-		      query->bindValue(":attribute", currentAttribute);
-		      query->bindValue(":id", id);
-		      query->exec();
-		      query->first();
-		      if (!query->isNull(0)) 
-			{
-			  hasAttribute = true;
-			  break;
-			}
-		      delete query;
-		    }
-		  if (hasAttribute) 
-		    {
-		      tempIncidents.push_back(currentEvent);
-		    }
-		}
-	      else 
-		{
-		  tempIncidents.push_back(currentEvent);
-		}
-	    }
-	  if (macro) 
-	    {
-	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	      QVectorIterator<EventItem*> it2(currentMacro->getIncidents());
-	      while (it2.hasNext()) 
-		{
-		  EventItem *currentIncident = it2.next();
-		  if (attribute != "") 
-		    {
-		      QVector<QString> attributes;
-		      attributes.push_back(attribute);
-		      findChildren(attribute, &attributes, entity);
-		      bool hasAttribute = false;
-		      QVectorIterator<QString> it3(attributes);
-		      while (it3.hasNext()) 
-			{
-			  QString currentAttribute = it3.next();
-			  QSqlQuery *query = new QSqlQuery;
-			  int id = currentIncident->getId();
-			  query->prepare("SELECT incident FROM attributes_to_incidents "
-					 "WHERE attribute = :attribute AND incident = :id");
-			  query->bindValue(":attribute", currentAttribute);
-			  query->bindValue(":id", id);
-			  query->exec();
-			  query->first();
-			  if (!query->isNull(0)) 
-			    {
-			      hasAttribute = true;
-			      break;
-			    }
-			  delete query;
-			}
-		      if (hasAttribute) 
-			{
-			  tempIncidents.push_back(currentIncident);
-			}
-		      else 
-			{
-			  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-			  warningBox->addButton(QMessageBox::Ok);
-			  warningBox->setIcon(QMessageBox::Warning);
-			  warningBox->setText("<b>Invalid abstract event</b>");
-			  warningBox->setInformativeText("At least one of the selected abstract events "
-							 "contains incidents that do not have the selected "
-							 "attribute.");
-			  warningBox->exec();
-			  delete warningBox;
-			  return;
-			}
-		    }
-		  else 
-		    {
-		      tempIncidents.push_back(currentIncident);
-		    }
-		}
-	    }
-	}
-      if (tempIncidents.size() > 0) 
-	{
-	  std::sort(tempIncidents.begin(), tempIncidents.end(), eventLessThan);
-	  if (constraint == SEMIPATHS || constraint == SEMIPATHSATT) 
-	    {
-	      QApplication::setOverrideCursor(Qt::WaitCursor);
-	      QVector<QGraphicsItem*> allEvents;
-	      QVectorIterator<EventItem*> evIt(eventVector);
-	      while (evIt.hasNext()) 
-		{
-		  allEvents.push_back(evIt.next());
-		}
-	      QVectorIterator<MacroEvent*> maIt(macroVector);
-	      while (maIt.hasNext()) 
-		{
-		  allEvents.push_back(maIt.next());
-		}
-	      std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-	      EventItem *first = tempIncidents.first();
-	      EventItem *last = tempIncidents.last();
-	      QSet<int> markOne;
-	      QSet<int> markTwo;
-	      QVectorIterator<QString> lit(presentTypes);
-	      while (lit.hasNext()) 
-		{
-		  QString currentLinkage = lit.next();
-		  QSqlQuery *query = new QSqlQuery;
-		  query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
-		  query->bindValue(":name", currentLinkage);
-		  query->exec();
-		  query->first();
-		  QString direction = query->value(0).toString();
-		  delete query;
-		  if (direction == PAST) 
-		    {
-		      findTailsUpperBound(&markOne, first->getId(), last->getOrder(), currentLinkage);
-		      findHeadsLowerBound(&markTwo, last->getId(), first->getOrder(), currentLinkage);
-		    }
-		  else if (direction == FUTURE) 
-		    {
-		      findTailsLowerBound(&markOne, first->getId(), first->getOrder(), currentLinkage);
-		      findHeadsUpperBound(&markTwo, last->getId(), last->getOrder(), currentLinkage);
-		    }
-		  QVectorIterator<QGraphicsItem*> it4(allEvents);
-		  while (it4.hasNext()) 
-		    {
-		      QGraphicsItem *temp = it4.next();
-		      EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
-		      MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
-		      if (eventTemp) 
-			{
-			  if (markOne.contains(eventTemp->getId()) &&
-			      markTwo.contains(eventTemp->getId()) &&
-			      !tempIncidents.contains(eventTemp)) 
-			    {
-			      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-			      warningBox->addButton(QMessageBox::Ok);
-			      warningBox->setIcon(QMessageBox::Warning);
-			      warningBox->setText("<b>Constraints not met.</b>");
-			      warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-							     "that were set for abstraction.");
-			      warningBox->exec();
-			      delete warningBox;
-			      return;
-			    }
-			  else if (macroTemp) 
-			    {
-			      QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
-			      QVectorIterator<EventItem*> it5(macroIncidents);
-			      while (it5.hasNext()) 
-				{
-				  eventTemp = it5.next();
-				  if (markOne.contains(eventTemp->getId()) &&
-				      markTwo.contains(eventTemp->getId()) &&
-				      !tempIncidents.contains(eventTemp)) 
-				    {
-				      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				      warningBox->addButton(QMessageBox::Ok);
-				      warningBox->setIcon(QMessageBox::Warning);
-				      warningBox->setText("<b>Constraints not met.</b>");
-				      warningBox->setInformativeText("Abstracting these incidents breaks the "
-								     "constraints that were set for abstraction.");
-				      warningBox->exec();
-				      delete warningBox;
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	    }
-	  std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
-	  if (checkConstraints(tempIncidents, constraint)) 
-	    {
+	      std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
 	      qreal lowestX = 0.0;
 	      qreal highestX = 0.0;
 	      qreal lowestY = 0.0;
@@ -6994,462 +6786,132 @@ void EventGraphWidget::colligateEvents(QString constraint)
 	      qreal xPos = lowestX;
 	      qreal yPos = lowestY + ((highestY - lowestY) / 2);
 	      QPointF originalPos = QPointF(xPos, yPos);
-	      QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-	      textDialog->setWindowTitle("Event description");
-	      textDialog->setLabel("Event description:");
-	      textDialog->exec();
-	      if (textDialog->getExitStatus() == 0) 
+	      QString description = abstractionDialog->getDescription();
+	      MacroEvent* current = new MacroEvent(width, description, originalPos,
+						   macroVector.size() + 1,
+						   abstractionDialog->getConstraint(),
+						   tempIncidents);
+	      current->setPos(originalPos);
+	      current->setZValue(3);
+	      QVectorIterator<QGraphicsItem*> it3(currentData);
+	      while (it3.hasNext()) 
 		{
-		  QString description = textDialog->getText();
-		  MacroEvent* current = new MacroEvent(width, description, originalPos,
-						       macroVector.size() + 1, constraint, tempIncidents);
-		  current->setPos(originalPos);
-		  current->setZValue(3);
-		  QVectorIterator<QGraphicsItem*> it3(currentData);
-		  while (it3.hasNext()) 
+		  EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
+		  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
+		  if (event) 
 		    {
-		      EventItem *event = qgraphicsitem_cast<EventItem*>(it3.peekNext());
-		      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it3.peekNext());
-		      if (event) 
+		      EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
+		      if (chosenAttribute != DEFAULT2) 
 			{
-			  EventItem *item = qgraphicsitem_cast<EventItem*>(it3.next());
-			  if (attribute != "") 
-			    {
-			      bool hasAttribute = false;
-			      QVector<QString> attributes;
-			      attributes.push_back(attribute);
-			      findChildren(attribute, &attributes, entity);
-			      QVectorIterator<QString> it4(attributes);
-			      while (it4.hasNext()) 
-				{
-				  QString currentAttribute = it4.next();
-				  int id = item->getId();
-				  QSqlQuery *query = new QSqlQuery;
-				  query->prepare("SELECT incident FROM attributes_to_incidents "
-						 "WHERE attribute = :attribute AND incident = :id");
-				  query->bindValue(":attribute", currentAttribute);
-				  query->bindValue(":id", id);
-				  query->exec();
-				  query->first();
-				  if (!query->isNull(0)) 
-				    {
-				      hasAttribute = true;
-				      break;
-				    }
-				  delete query;
-				}
-			      if (hasAttribute) 
-				{
-				  item->setMacroEvent(current);
-				  item->hide();
-				}
-			    }
-			  else 
-			    {
-			      item->setMacroEvent(current);
-			      item->hide();
-			    }
-			}
-		      else if (macro) 
-			{
-			  MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
-			  QVectorIterator<EventItem*> it4(item->getIncidents());
-			  bool checkpoint = false;
+			  bool hasAttribute = false;
+			  QVector<QString> attributes;
+			  attributes.push_back(chosenAttribute);
+			  findChildren(chosenAttribute, &attributes,
+				       abstractionDialog->isEntity());
+			  QVectorIterator<QString> it4(attributes);
 			  while (it4.hasNext()) 
 			    {
-			      EventItem *currentIncident = it4.next();
-			      if (attribute != "") 
+			      QString currentAttribute = it4.next();
+			      int id = item->getId();
+			      QSqlQuery *query = new QSqlQuery;
+			      query->prepare("SELECT incident FROM attributes_to_incidents "
+					     "WHERE attribute = :attribute AND incident = :id");
+			      query->bindValue(":attribute", currentAttribute);
+			      query->bindValue(":id", id);
+			      query->exec();
+			      query->first();
+			      if (!query->isNull(0)) 
 				{
-				  QVector<QString> attributes;
-				  attributes.push_back(attribute);
-				  findChildren(attribute, &attributes, entity);
-				  bool hasAttribute = false;
-				  QVectorIterator<QString> it5(attributes);
-				  while (it5.hasNext()) 
-				    {
-				      QString currentAttribute = it5.next();
-				      QSqlQuery *query = new QSqlQuery;
-				      int id = currentIncident->getId();
-				      query->prepare("SELECT incident FROM attributes_to_incidents "
-						     "WHERE attribute = :attribute AND incident = :id");
-				      query->bindValue(":attribute", currentAttribute);
-				      query->bindValue(":id", id);
-				      query->exec();
-				      query->first();
-				      if (!query->isNull(0)) 
-					{
-					  hasAttribute = true;
-					  break;
-					}
-				      delete query;
-				    }
-				  if (hasAttribute) 
-				    {
-				      checkpoint = true;
-				    }
-				  else 
-				    {
-				      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				      warningBox->addButton(QMessageBox::Ok);
-				      warningBox->setIcon(QMessageBox::Warning);
-				      warningBox->setText("<b>Invalid abstract event</b>");
-				      warningBox->setInformativeText("At least one of the selected abstract events "
-								     "contains incidents that do not have the selected "
-								     "attribute.");
-				      warningBox->exec();
-				      delete warningBox;
-				      return;
-				    }
+				  hasAttribute = true;
+				  break;
 				}
-			      else 
-				{
-				  checkpoint = true;
-				}
+			      delete query;
 			    }
-			  if (checkpoint) 
+			  if (hasAttribute) 
 			    {
 			      item->setMacroEvent(current);
 			      item->hide();
 			    }
 			}
+		      else 
+			{
+			  item->setMacroEvent(current);
+			  item->hide();
+			}
 		    }
-		  macroVector.push_back(current);
-		  scene->addItem(current);
-		  MacroLabel *macroLabel = new MacroLabel(current);
-		  current->setLabel(macroLabel);
-		  qreal xOffset = (current->getWidth() / 2) - 20;
-		  macroLabel->setOffset(QPointF(xOffset,0));
-		  macroLabel->setNewPos(current->scenePos());
-		  macroLabel->setZValue(4);
-		  macroLabel->setDefaultTextColor(Qt::black);
-		  macroLabelVector.push_back(macroLabel);
-		  scene->addItem(macroLabel);
-		  rewireLinkages(current, tempIncidents);
-		  updateMacroOrder();
-		  updateLinkages();
-		  setVisibility();
-		  currentData.clear();
-		  current->setSelected(true);
-		  retrieveData();
-		  setChangeLabel();
-		  addLinkageTypeButton->setEnabled(false);
-		  compareButton->setEnabled(false);
+		  else if (macro) 
+		    {
+		      MacroEvent *item = qgraphicsitem_cast<MacroEvent*>(it3.next());
+		      if (chosenAttribute != DEFAULT2)
+			{
+			  bool hasAttribute = false;
+			  QVector<QString> attributes;
+			  attributes.push_back(chosenAttribute);
+			  findChildren(chosenAttribute, &attributes,
+				       abstractionDialog->isEntity());
+			  QVectorIterator<QString> it5(attributes);
+			  while (it5.hasNext())
+			    {
+			      QString currentAttribute = it5.next();
+			      QSet<QString> macroAttributes = macro->getAttributes();
+			      QSetIterator<QString> it6(macroAttributes);
+			      while (it6.hasNext())
+				{
+				  QString macroAttribute = it6.next();
+				  if (macroAttribute == currentAttribute)
+				    {
+				      hasAttribute = true;
+				    }
+				}
+			    }
+			  if (hasAttribute)
+			    {
+			      item->setMacroEvent(current);
+			      item->hide();
+			    }
+			}
+		      else
+			{
+			  item->setMacroEvent(current);
+			  item->hide();
+			}
+		    }
 		}
-	      delete textDialog;
+	      macroVector.push_back(current);
+	      scene->addItem(current);
+	      MacroLabel *macroLabel = new MacroLabel(current);
+	      current->setLabel(macroLabel);
+	      qreal xOffset = (current->getWidth() / 2) - 20;
+	      macroLabel->setOffset(QPointF(xOffset,0));
+	      macroLabel->setNewPos(current->scenePos());
+	      macroLabel->setZValue(4);
+	      macroLabel->setDefaultTextColor(Qt::black);
+	      macroLabelVector.push_back(macroLabel);
+	      scene->addItem(macroLabel);
+	      rewireLinkages(current, tempIncidents);
+	      updateMacroOrder();
+	      updateLinkages();
+	      setVisibility();
+	      currentData.clear();
+	      current->setSelected(true);
+	      retrieveData();
+	      setChangeLabel();
+	      addLinkageTypeButton->setEnabled(false);
+	      compareButton->setEnabled(false);
 	    }
-	  else 
-	    {
-	      return;
-	    }
+	  delete abstractionDialog;
 	}
       else 
 	{
-	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	  warningBox->addButton(QMessageBox::Ok);
-	  warningBox->setIcon(QMessageBox::Warning);
-	  warningBox->setText("<b>No incidents selected</b>");
-	  warningBox->setInformativeText("None of the selected incidents have the selected "
-					 "attribute.");
-	  warningBox->exec();
-	  delete warningBox;
+	  delete abstractionDialog;
+	  return;
 	}
     }
-  else 
+  else
     {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<b>At least two incidents required</b>");
-      warningBox->setInformativeText("You should select at least two incidents to "
-				     "be able to perform this action.");
-      warningBox->exec();
-      delete warningBox;
+      return;
     }
-}
-
-bool EventGraphWidget::checkConstraints(QVector<EventItem*> incidents, QString constraint) 
-{
-  QApplication::setOverrideCursor(Qt::WaitCursor);
-  if (constraint == NOCONSTRAINT || constraint == NOCONSTRAINTATT) 
-    {
-      QApplication::restoreOverrideCursor();
-      qApp->processEvents();
-      return true;
-    }
-  /* 
-     Check whether colligating these events breaks constrains set for colligation
-     First we check internal consistency.
-  */
-  QVector<int> incidentId;
-  QVectorIterator<EventItem*> it(incidents);
-  while (it.hasNext()) 
-    {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it.next());
-      if (event) 
-	{
-	  incidentId.push_back(event->getId());
-	}
-    }
-  QVector<bool> linkagePresence = checkLinkagePresence(incidentId);
-  for (QVector<QString>::size_type lit = 0; lit != presentTypes.size(); lit++) 
-    {
-      QString currentType = presentTypes[lit];
-      if (linkagePresence[lit] == true) 
-	{
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-	  query->bindValue(":type", currentType);
-	  query->exec();
-	  query->first();
-	  QString direction = query->value(0).toString();
-	  QVectorIterator<EventItem*> dit(incidents);
-	  while (dit.hasNext()) 
-	    {
-	      QSet<int> markOne;
-	      EventItem *departure = dit.next();
-	      // First we check the internal consistency;
-	      if (constraint == PATHS) 
-		{
-		  if (direction == PAST) 
-		    {
-		      findHeadsLowerBound(&markOne, departure->getId(), incidents.first()->getOrder(),
-					  currentType);
-		    }
-		  else if (direction == FUTURE) 
-		    {
-		      findHeadsUpperBound(&markOne, departure->getId(), incidents.last()->getOrder(),
-					  currentType);
-		    }
-		}
-	      else if (constraint == SEMIPATHS) 
-		{
-		  QSet<int> items;
-		  items.insert(departure->getId());
-		  int lowerLimit = incidents.first()->getOrder();
-		  int upperLimit = incidents.last()->getOrder();
-		  findUndirectedPaths(&markOne, &items, lowerLimit, upperLimit, currentType);
-		}
-	      QVectorIterator<EventItem*> cit(incidents);
-	      while (cit.hasNext()) 
-		{
-		  EventItem *current = cit.next();
-		  bool found = false;
-		  if (current != departure) 
-		    {
-		      if (markOne.contains(current->getId())) 
-			{
-			  found = true;
-			}
-		      if (constraint == PATHS) 
-			{
-			  if (direction == PAST) 
-			    {
-			      if (!found && current->getOrder() < departure->getOrder()) 
-				{
-				  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				  warningBox->addButton(QMessageBox::Ok);
-				  warningBox->setIcon(QMessageBox::Warning);
-				  warningBox->setText("<b>Constraints not met.</b>");
-				  warningBox->setInformativeText("Abstracting these incidents breaks the constraints "
-								 "that were set for abstraction.");
-				  warningBox->exec();
-				  delete warningBox;
-				  delete query;
-				  QApplication::restoreOverrideCursor();
-				  qApp->processEvents();
-				  return false;
-				}
-			    }
-			  else if (direction == FUTURE) 
-			    {
-			      if (!found && current->getOrder() > departure->getOrder()) 
-				{
-				  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				  warningBox->addButton(QMessageBox::Ok);
-				  warningBox->setIcon(QMessageBox::Warning);
-				  warningBox->setText("<b>Constraints not met.</b>");
-				  warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-								 "that were set for colligation.");
-				  warningBox->exec();
-				  delete warningBox;
-				  delete query;
-				  QApplication::restoreOverrideCursor();
-				  qApp->processEvents();
-				  return false;
-				}
-			    }
-			}
-		      else if (constraint == SEMIPATHS) 
-			{
-			  if (!found) 
-			    {
-			      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-			      warningBox->addButton(QMessageBox::Ok);
-			      warningBox->setIcon(QMessageBox::Warning);
-			      warningBox->setText("<b>Constraints not met.</b>");
-			      warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-							     "that were set for colligation.");
-			      warningBox->exec();
-			      delete warningBox;
-			      delete query;
-			      QApplication::restoreOverrideCursor();
-			      qApp->processEvents();
-			      return false;
-			    }
-			}
-		    }
-		}
-	      if (constraint == PATHS) 
-		{
-		  // Then we check the external consistency.
-		  query->prepare("SELECT tail FROM linkages "
-				 "WHERE head = :head AND type = :type AND coder = :coder");
-		  query->bindValue(":head", departure->getId());
-		  query->bindValue(":type", currentType);
-		  query->bindValue(":coder", selectedCoder);
-		  query->exec();
-		  while (query->next()) 
-		    {
-		      QSet<int> markTwo;
-		      int currentTail = query->value(0).toInt();
-		      if (!(incidentId.contains(currentTail))) 
-			{
-			  if (direction == PAST) 
-			    {
-			      findHeadsLowerBound(&markTwo, currentTail, incidents.first()->getOrder(),
-						  currentType);
-			    }
-			  else if (direction ==  FUTURE) 
-			    {
-			      findHeadsUpperBound(&markTwo, currentTail, incidents.last()->getOrder(),
-						  currentType);
-			    }
-			  QVectorIterator<EventItem*> kit(incidents);
-			  while (kit.hasNext()) 
-			    {
-			      EventItem *current = kit.next();
-			      bool found = false;
-			      if (markTwo.contains(current->getId())) 
-				{
-				  found = true;
-				}
-			      if (!found) 
-				{
-				  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				  warningBox->addButton(QMessageBox::Ok);
-				  warningBox->setIcon(QMessageBox::Warning);
-				  warningBox->setText("<b>Constraints not met.</b>");
-				  warningBox->setInformativeText("Colligating these incidents breaks the constraints "
-								 "that were set for colligation.");
-				  warningBox->exec();
-				  delete warningBox;
-				  QApplication::restoreOverrideCursor();
-				  qApp->processEvents();
-				  delete query;
-				  return false;
-				}
-			    }
-			}
-		    }
-		  query->prepare("SELECT head FROM linkages "
-				 "WHERE tail = :tail AND type = :type AND coder = :coder");
-		  query->bindValue(":tail", departure->getId());
-		  query->bindValue(":type", currentType);
-		  query->bindValue(":coder", selectedCoder);
-		  query->exec();
-		  while (query->next()) 
-		    {
-		      int currentHead = query->value(0).toInt();
-		      if (!(incidentId.contains(currentHead))) 
-			{
-			  QVectorIterator<EventItem*> lit(incidents);
-			  while (lit.hasNext()) 
-			    {
-			      EventItem *current = lit.next();
-			      if (current != departure) 
-				{
-				  QSet<int> markTwo;
-				  QSqlQuery *query2 = new QSqlQuery;
-				  query2->prepare("SELECT ch_order FROM incidents WHERE id = :currentHead");
-				  query2->bindValue(":currentHead", currentHead);
-				  query2->exec();
-				  query2->first();
-				  int headOrder = query2->value(0).toInt();
-				  if (direction == PAST) 
-				    {
-				      findHeadsLowerBound(&markTwo, current->getId(), headOrder, currentType);
-				    }
-				  else if (direction == FUTURE) 
-				    {
-				      findHeadsUpperBound(&markTwo, current->getId(), headOrder, currentType);
-				    }
-				  bool found = false;
-				  if (markTwo.contains(currentHead)) 
-				    {
-				      found = true;
-				    }
-				  if (!found) 
-				    {
-				      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				      warningBox->addButton(QMessageBox::Ok);
-				      warningBox->setIcon(QMessageBox::Warning);
-				      warningBox->setText("<b>Constraints not met.</b>");
-				      warningBox->setInformativeText("Abstracting these incidents breaks the "
-								     "constraints that were set for abstraction.");
-				      warningBox->exec();
-				      delete warningBox;
-				      delete query;
-				      QApplication::restoreOverrideCursor();
-				      qApp->processEvents();
-				      return false;
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
-	  delete query;
-	}
-    }
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  return true;
-}
-
-QVector<bool> EventGraphWidget::checkLinkagePresence(QVector<int> incidentIds) 
-{
-  QVector<bool> result;
-  QVectorIterator<QString> it(presentTypes);
-  while (it.hasNext()) 
-    {
-      QString currentType = it.next();
-      QVector<int> observed;
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT tail, head FROM linkages "
-		     "WHERE type = :type");
-      query->bindValue(":type", currentType);
-      query->exec();
-      while (query->next()) 
-	{
-	  observed.push_back(query->value(0).toInt());
-	  observed.push_back(query->value(1).toInt());
-	}
-      delete query;
-      QVectorIterator<int> it2(observed);
-      bool status = false;
-      while (it2.hasNext()) 
-	{
-	  int currentObserved = it2.next();
-	  if (incidentIds.contains(currentObserved)) 
-	    {
-	      status = true;
-	    }
-	}
-      result.push_back(status);
-    }
-  return(result);
-}
+ }
 
 void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents) 
 {
@@ -7973,31 +7435,39 @@ void EventGraphWidget::colorLineage()
       lineage->exec();
       if (lineage->getExitStatus() == 0) 
 	{
-	  QColor origin = lineage->getOriginColor();
-	  QColor ancestors = lineage->getAncestorColor();
-	  QColor descendants = lineage->getDescendantColor();
-	  QColor unrelated = lineage->getUnrelatedColor();
+	  QColor originFill = lineage->getOriginFillColor();
+	  QColor ancestorsFill = lineage->getAncestorFillColor();
+	  QColor descendantsFill = lineage->getDescendantFillColor();
+	  QColor unrelatedFill = lineage->getUnrelatedFillColor();
+	  QColor originText = lineage->getOriginTextColor();
+	  QColor ancestorsText = lineage->getAncestorTextColor();
+	  QColor descendantsText = lineage->getDescendantTextColor();
+	  QColor unrelatedText = lineage->getUnrelatedTextColor();
 	  QVectorIterator<EventItem*> it(eventVector);
 	  while (it.hasNext()) 
 	    {
 	      EventItem *current = it.next();
-	      current->setColor(unrelated);
+	      current->setColor(unrelatedFill);
+	      current->getLabel()->setDefaultTextColor(unrelatedText);
 	    }
 	  QVectorIterator<MacroEvent*> it2(macroVector);
 	  while (it2.hasNext()) 
 	    {
 	      MacroEvent *current = it2.next();
-	      current->setColor(unrelated);
+	      current->setColor(unrelatedFill);
+	      current->getLabel()->setDefaultTextColor(unrelatedText);
 	    }
 	  EventItem *event = qgraphicsitem_cast<EventItem*>(current);
 	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
 	  if (event) 
 	    {
-	      event->setColor(origin);
+	      event->setColor(originFill);
+	      event->getLabel()->setDefaultTextColor(originText);
 	    }
 	  else if (macro) 
 	    {
-	      macro->setColor(origin);
+	      macro->setColor(originFill);
+	      macro->getLabel()->setDefaultTextColor(originText);
 	    }
 	  if (presentTypes.size() > 1) 
 	    {
@@ -8008,10 +7478,10 @@ void EventGraphWidget::colorLineage()
 		  QString selection = relationshipChooser->getSelection();
 		  QSet<QGraphicsItem*> finished;
 		  finished.insert(current);
-		  findAncestors(ancestors, current, &finished, selection);
+		  findAncestors(ancestorsFill, ancestorsText, current, &finished, selection);
 		  finished.clear();
 		  finished.insert(current);
-		  findDescendants(descendants, current, &finished, selection);
+		  findDescendants(descendantsFill, descendantsText, current, &finished, selection);
 		}
 	    }
 	  else 
@@ -8019,16 +7489,17 @@ void EventGraphWidget::colorLineage()
 	      QString selection = presentTypes[0];
 	      QSet<QGraphicsItem*> finished;
 	      finished.insert(current);
-	      findAncestors(ancestors, current, &finished, selection);
+	      findAncestors(ancestorsFill, ancestorsText, current, &finished, selection);
 	      finished.clear();
 	      finished.insert(current);
-	      findDescendants(descendants, current, &finished, selection);
+	      findDescendants(descendantsFill, descendantsText, current, &finished, selection);
 	    }
 	}
     }
 }
 
-void EventGraphWidget::findAncestors(QColor ancestor,
+void EventGraphWidget::findAncestors(QColor ancestorFill,
+				     QColor ancestorText,
 				     QGraphicsItem *origin,
 				     QSet<QGraphicsItem*> *pFinished,
 				     QString type) 
@@ -8051,16 +7522,18 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
 	      if (event) 
 		{
-		  event->setColor(ancestor);
+		  event->setColor(ancestorFill);
+		  event->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(ancestor);
+		  macro->setColor(ancestorFill);
+		  macro->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      if (!pFinished->contains(edge->endItem())) 
 		{
 		  pFinished->insert(edge->endItem());
-		  findAncestors(ancestor, edge->endItem(), pFinished, type);
+		  findAncestors(ancestorFill, ancestorText, edge->endItem(), pFinished, type);
 		}
 	    }
 	}
@@ -8077,16 +7550,18 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
 	      if (event) 
 		{
-		  event->setColor(ancestor);
+		  event->setColor(ancestorFill);
+		  event->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(ancestor);
+		  macro->setColor(ancestorFill);
+		  macro->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      if (!pFinished->contains(edge->startItem())) 
 		{
 		  pFinished->insert(edge->startItem());
-		  findAncestors(ancestor, edge->startItem(), pFinished, type);
+		  findAncestors(ancestorFill, ancestorText, edge->startItem(), pFinished, type);
 		}
 	    }
 	}
@@ -8095,7 +7570,8 @@ void EventGraphWidget::findAncestors(QColor ancestor,
 }
 
 
-void EventGraphWidget::findDescendants(QColor descendant,
+void EventGraphWidget::findDescendants(QColor descendantFill,
+				       QColor descendantText,
 				       QGraphicsItem *origin,
 				       QSet<QGraphicsItem*> *pFinished,
 				       QString type) 
@@ -8118,16 +7594,18 @@ void EventGraphWidget::findDescendants(QColor descendant,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
 	      if (event) 
 		{
-		  event->setColor(descendant);
+		  event->setColor(descendantFill);
+		  event->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(descendant);
+		  macro->setColor(descendantFill);
+		  macro->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      if (!pFinished->contains(edge->startItem())) 
 		{
 		  pFinished->insert(edge->startItem());
-		  findDescendants(descendant, edge->startItem(), pFinished, type);
+		  findDescendants(descendantFill, descendantText, edge->startItem(), pFinished, type);
 		}
 	    }
 	}
@@ -8144,16 +7622,18 @@ void EventGraphWidget::findDescendants(QColor descendant,
 	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
 	      if (event) 
 		{
-		  event->setColor(descendant);
+		  event->setColor(descendantFill);
+		  event->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      else if (macro) 
 		{
-		  macro->setColor(descendant);
+		  macro->setColor(descendantFill);
+		  macro->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      if (!pFinished->contains(edge->endItem())) 
 		{
 		  pFinished->insert(edge->endItem());
-		  findDescendants(descendant, edge->endItem(), pFinished, type);
+		  findDescendants(descendantFill, descendantText, edge->endItem(), pFinished, type);
 		}
 	    }
 	}
@@ -10604,74 +10084,6 @@ void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident
     {
       pMark->insert(*it);
       findHeadsUpperBound(pMark, *it, upperLimit, type);
-    }
-}
-
-void EventGraphWidget::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submittedItems,
-					   int lowerLimit, int upperLimit, QString type) 
-{
-  QSet<int> temp = *submittedItems;
-  QSetIterator<int> it(temp);
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
-  QSqlQuery *query3 = new QSqlQuery;
-  query3->prepare("SELECT tail FROM linkages "
-		  "WHERE head = :head AND type = :type AND coder = :coder");
-  QSqlQuery *query4 = new QSqlQuery;
-  query4->prepare("SELECT ch_order FROM incidents WHERE id = :tail");
-  while (it.hasNext()) 
-    {
-      int current = it.next();
-      pMark->insert(current);  
-      query->bindValue(":tail", current);
-      query->bindValue(":type", type);
-      query->bindValue(":coder", selectedCoder);
-      query->exec();
-      while (query->next()) 
-	{
-	  int currentHead = query->value(0).toInt();
-	  query2->bindValue(":head", currentHead);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerLimit && order <= upperLimit) 
-	    {
-	      submittedItems->insert(currentHead);
-	    }
-	}
-      query3->bindValue(":head", current);
-      query3->bindValue(":type", type);
-      query3->bindValue(":coder", selectedCoder);
-      query3->exec();
-      while (query3->next()) 
-	{
-	  int currentTail = query3->value(0).toInt();
-	  query4->bindValue(":tail", currentTail);
-	  query4->exec();
-	  query4->first();
-	  int order = query4->value(0).toInt();
-	  if (order >= lowerLimit && order <= upperLimit && !pMark->contains(currentTail)) 
-	    {
-	      submittedItems->insert(currentTail);
-	    }
-	}
-    }
-  delete query;
-  delete query2;
-  delete query3;
-  delete query4;
-  QSqlDatabase::database().commit();
-  if (submittedItems->size() > temp.size()) 
-    {
-      findUndirectedPaths(pMark, submittedItems, lowerLimit, upperLimit, type);
-    }
-  else 
-    {
-      return;
     }
 }
 

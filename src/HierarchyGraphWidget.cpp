@@ -311,6 +311,7 @@ void HierarchyGraphWidget::toggleDetails()
     {
       infoWidget->hide();
     }
+  rescale();
 }
 
 void HierarchyGraphWidget::toggleLegend() 
@@ -323,6 +324,13 @@ void HierarchyGraphWidget::toggleLegend()
     {
       legendWidget->hide();
     }
+  rescale();
+}
+
+void HierarchyGraphWidget::rescale()
+{
+  view->scale(2.0, 2.0);
+  view->scale(0.5, 0.5);
 }
 
 void HierarchyGraphWidget::showAttributes() 
@@ -1317,41 +1325,37 @@ void HierarchyGraphWidget::getEdges()
 
 void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) 
 {
-  if (item->column() == 1) 
+   if (item->column() == 1) 
     {
-      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-      colorDialog->setCurrentColor(item->background().color());
-      if (colorDialog->exec()) 
+      QColor currentFill = item->background().color();
+      QColor currentText = QColor("black");
+      QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
+      colorDialog->exec();
+      if (colorDialog->getExitStatus() == 0)
 	{
-	  QColor color = colorDialog->selectedColor();
-	  item->setBackground(color);
+	  QColor fillColor = colorDialog->getFillColor();
+	  QColor textColor = colorDialog->getTextColor();
+	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
-	  QListIterator<QGraphicsItem*> it(scene->items());
+	  QVectorIterator<EventItem*> it(eventVector);
 	  while (it.hasNext()) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
-	      if (event) 
+	      EventItem *current = it.next();
+	      if (current->getMode() == mode) 
 		{
-		  event = qgraphicsitem_cast<EventItem*>(it.next());
-		  if (event->getMode() == mode) 
-		    {
-		      event->setColor(color);
-		    }
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
-	      else if (macro) 
+	    }
+	  QVectorIterator<MacroEvent*> it2(macroVector);
+	  while (it2.hasNext()) 
+	    {
+	      MacroEvent *current = it2.next();
+	      if (current->getMode() == mode) 
 		{
-		  macro = qgraphicsitem_cast<MacroEvent*>(it.next());
-		  if (macro->getMode() == mode) 
-		    {
-		      macro->setColor(color);
-		    }
-		}
-	      else 
-		{
-		  it.next();
+		  current->setColor(fillColor);
+		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
 	}
