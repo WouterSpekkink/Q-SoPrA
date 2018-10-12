@@ -104,6 +104,13 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 			      "border-image: none; "
 			      "image: url(\"images/minus.svg\"); }");
 
+  aw->setStyleSheet(treeSheet);
+  rw->setStyleSheet(treeSheet);
+  egw->setStyleSheet(sliderSheet + treeSheet);
+  ngw->setStyleSheet(sliderSheet + treeSheet);
+  hgw->setStyleSheet(sliderSheet + treeSheet);
+  ogw->setStyleSheet(sliderSheet + treeSheet);
+  
   stacked->addWidget(dataWidget); // 0
   stacked->addWidget(attributesWidget); // 1
   stacked->addWidget(relationshipsWidget); // 2
