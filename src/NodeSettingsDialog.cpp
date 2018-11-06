@@ -142,7 +142,7 @@ void NodeSettingsDialog::addAttribute()
       QMap<QString, QString> valuesMap;
       QVector<QString> attributesVec;
       attributesVec.push_back(attribute);
-      if (valued)
+      if (!valued)
 	{
 	  findChildren(attribute, &attributesVec);
 	}
@@ -161,8 +161,9 @@ void NodeSettingsDialog::addAttribute()
 	      QString currentValue = "1";
 	      if (valued)
 		{
-		  query->value(1).toString();
+		  currentValue = query->value(1).toString();
 		}
+	      valuesMap[currentEntity] = currentValue;
 	    }
 	  delete query;
 	}

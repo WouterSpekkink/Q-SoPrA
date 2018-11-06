@@ -171,10 +171,11 @@ void EventNodeSettingsDialog::addAttribute()
       QTableWidgetItem *newHeader = new QTableWidgetItem(headerText, 0);
       tableWidget->setColumnCount(tableWidget->columnCount() + 1);
       tableWidget->setHorizontalHeaderItem(tableWidget->columnCount() - 1, newHeader);
-      // We create a vector to hold our selected attribute and its children (if the valued option was selected)
+      // We create a vector to hold our selected attribute and its children
+      // (if the valued option was selected)
       QVector<QString> attributesVec;
       attributesVec.push_back(attribute);
-      if (valued)
+      if (!valued)
 	{
 	  findChildren(attribute, &attributesVec);
 	}
