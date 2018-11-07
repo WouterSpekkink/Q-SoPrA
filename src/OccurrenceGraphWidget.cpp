@@ -269,6 +269,8 @@ void OccurrenceGraphWidget::checkCongruency()
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT ch_order FROM incidents "
 		      "WHERE id = :incident");
+      QSqlQuery *query3 = new QSqlQuery;
+      query3->prepare("SELECT name FROM entities WHERE name = :name");
       QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
@@ -278,9 +280,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	    {
 	      int order = current->getOrder();
 	      QString attribute = current->getAttribute();
-	      QSqlQuery *query3 = new QSqlQuery;
 	      bool entity = false;
-	      query3->prepare("SELECT name FROM entities WHERE name = :name");
 	      query3->bindValue(":name", attribute);
 	      query3->exec();
 	      query3->first();
@@ -312,6 +312,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->processEvents();
 		  delete query;
 		  delete query2;
+		  delete query3;
 		  return;
 		}
 	      query2->bindValue(":incident", id);
@@ -324,6 +325,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->processEvents();
 		  delete query;
 		  delete query2;
+		  delete query3;
 		  return;
 		}
 	      else if (query2->value(0).toInt() != order) 
@@ -333,6 +335,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->processEvents();
 		  delete query;
 		  delete query2;
+		  delete query3;
 		  return;
 		}
 	    }
@@ -423,7 +426,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->processEvents();
 		  delete query;
 		  delete query2;
-		  return;
+				  return;
 		}
 	      query2->bindValue(":incident", id);
 	      query2->exec();
@@ -742,7 +745,7 @@ void OccurrenceGraphWidget::addAttribute()
   scene->update();
   view->update();
   updateLinkages();
-  checkCongruency();
+  //  checkCongruency();
   if (!caseListWidget->isEnabled()) 
     {
       caseListWidget->setEnabled(true);
@@ -857,7 +860,7 @@ void OccurrenceGraphWidget::addRelationship()
   scene->update();
   view->update();
   updateLinkages();
-  checkCongruency();
+  //  checkCongruency();
   if (!caseListWidget->isEnabled()) 
     {
       caseListWidget->setEnabled(true);

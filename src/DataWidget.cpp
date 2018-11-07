@@ -185,14 +185,14 @@ void DataWidget::appendRecord()
       int max = incidentsModel->rowCount();
       setData(max, recordDialog, NEW);
       delete recordDialog;
+      updateTable();
+      eventGraph->checkCongruency();
+      occurrenceGraph->checkCongruency();
     }
   else 
     {
       delete recordDialog;
     }
-  updateTable();
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::editRecord() 
