@@ -876,7 +876,6 @@ void EventGraphWidget::retrieveData()
 	    {
 	      selectedMacro = NULL;
 	      seeComponentsButton->setEnabled(false);
-	      timeStampLabel->setText("<b>Timing:</b>");
 	      sourceLabel->setText("<b>Source:</b>");
 	      rawLabel->show();
 	      rawField->show();
@@ -934,7 +933,7 @@ void EventGraphWidget::retrieveData()
 	      currentMacro->update();
 	      seeComponentsButton->setEnabled(true);
 	      descriptionField->setText(currentMacro->getDescription());
-	      timeStampLabel->setText("<b>Duration:</b>");
+	      timeStampLabel->setText("<b>Timing:</b>");
 	      sourceLabel->setText("<b>Number of incidents:</b>");
 	      int id = currentMacro->getIncidents().first()->getId();
 	      rawLabel->hide();
@@ -953,9 +952,9 @@ void EventGraphWidget::retrieveData()
 	      query->exec();
 	      query->first();
 	      QString end = query->value(0).toString();
-	      QString duration =  "From " + begin + " to " + end;
+	      QString timing = currentMacro->getTiming();
 	      QString countText = QString::number(currentMacro->getIncidents().size());
-	      timeStampField->setText(duration);
+	      timeStampField->setText(timing);
 	      sourceField->setText(countText);
 	      commentField->setText(currentMacro->getComment());
 	      delete query;
@@ -1284,7 +1283,6 @@ void EventGraphWidget::nextDataItem()
 	{
 	  selectedMacro = NULL;
 	  seeComponentsButton->setEnabled(false);
-	  timeStampLabel->setText("<b>Timing:</b>");
 	  sourceLabel->setText("<b>Source:</b>");
 	  rawLabel->show();
 	  rawField->show();
@@ -1336,7 +1334,6 @@ void EventGraphWidget::nextDataItem()
 	  selectedIncident = 0;
 	  seeComponentsButton->setEnabled(true);
 	  descriptionField->setText(currentMacro->getDescription());
-	  timeStampLabel->setText("<b>Duration:</b>");
 	  sourceLabel->setText("<b>Number of incidents:</b>");
 	  int id = currentMacro->getIncidents().first()->getId();
 	  rawLabel->hide();
@@ -1355,9 +1352,9 @@ void EventGraphWidget::nextDataItem()
 	  query->exec();
 	  query->first();
 	  QString end = query->value(0).toString();
-	  QString duration =  "From " + begin + " to " + end;
+	  QString timing =  currentMacro->getTiming();
 	  QString countText = QString::number(currentMacro->getIncidents().size());
-	  timeStampField->setText(duration);
+	  timeStampField->setText(timing);
 	  sourceField->setText(countText);
 	  commentField->setText(currentMacro->getComment());
 	  delete query;
@@ -1459,7 +1456,6 @@ void EventGraphWidget::nextDataItem()
 	  selectedIncident = 0;
 	  seeComponentsButton->setEnabled(true);
 	  descriptionField->setText(currentMacro->getDescription());
-	  timeStampLabel->setText("<b>Duration:</b>");
 	  sourceLabel->setText("<b>Number of incidents:</b>");
 	  int id = currentMacro->getIncidents().first()->getId();
 	  rawLabel->hide();
@@ -1478,9 +1474,9 @@ void EventGraphWidget::nextDataItem()
 	  query->exec();
 	  query->first();
 	  QString end = query->value(0).toString();
-	  QString duration =  "From " + begin + " to " + end;
+	  QString timing =  currentMacro->getTiming();
 	  QString countText = QString::number(currentMacro->getIncidents().size());
-	  timeStampField->setText(duration);
+	  timeStampField->setText(timing);
 	  sourceField->setText(countText);
 	  commentField->setText(currentMacro->getComment());
 	  delete query;
@@ -3944,11 +3940,11 @@ void EventGraphWidget::saveCurrentPlot()
 		      "VALUES(:plot, :attribute, :macro, :value)");
       QSqlQuery *query3 = new QSqlQuery;
       query3->prepare("INSERT INTO saved_eg_plots_macro_events "
-		      "(plot, eventid, ch_order, colligation, description, comment, width, "
+		      "(plot, eventid, ch_order, colligation, timing, description, comment, width, "
 		      "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
 		      "red, green, blue, alpha, hidden) "
-		      "VALUES (:plot, :eventid, :ch_order, :colligation, :description, :comment, "
-		      ":width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
+		      "VALUES (:plot, :eventid, :ch_order, :colligation, :timing, :description, "
+		      ":comment, :width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
 		      ":red, :green, :blue, :alpha, :hidden)");;
       QVectorIterator<MacroEvent*> it4(macroVector);
       while (it4.hasNext()) 
@@ -3977,6 +3973,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      query2->bindValue(":value", value);
 	      query2->exec();
 	    }
+	  QString timing = currentMacro->getTiming();
 	  QString description = currentMacro->getDescription();
 	  QString comment = currentMacro->getComment();
 	  int width = currentMacro->getWidth();
@@ -4004,6 +4001,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query3->bindValue(":eventid", currentMacro->getId());
 	  query3->bindValue(":ch_order", currentMacro->getOrder());
 	  query3->bindValue(":colligation", currentMacro->getConstraint());
+	  query3->bindValue(":timing", timing);
 	  query3->bindValue(":description", description);
 	  query3->bindValue(":comment", comment);
 	  query3->bindValue(":width", width);
@@ -4553,8 +4551,9 @@ void EventGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->prepare("SELECT eventid, ch_order, colligation, description, comment, width, mode, "
-		     "curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, hidden "
+      query->prepare("SELECT eventid, ch_order, colligation, timing, description, comment, width, "
+		     "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
+		     "hidden "
 		     "FROM saved_eg_plots_macro_events "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -4564,20 +4563,21 @@ void EventGraphWidget::seePlots()
 	  int id = query->value(0).toInt();
 	  int order = query->value(1).toInt();
 	  QString constraint = query->value(2).toString();
-	  QString description = query->value(3).toString();
-	  QString comment = query->value(4).toString();
-	  int width = query->value(5).toInt();
-	  QString mode = query->value(6).toString();
-	  qreal currentX = query->value(7).toReal();
-	  qreal currentY = query->value(8).toReal();
-	  qreal originalX = query->value(9).toReal();
-	  qreal originalY = query->value(10).toReal();
-	  int dislodged = query->value(11).toInt();
-	  int red = query->value(12).toInt();
-	  int green = query->value(13).toInt();
-	  int blue = query->value(14).toInt();
-	  int alpha = query->value(15).toInt();
-	  int hidden = query->value(16).toInt();
+	  QString timing = query->value(3).toString();
+	  QString description = query->value(4).toString();
+	  QString comment = query->value(5).toString();
+	  int width = query->value(6).toInt();
+	  QString mode = query->value(7).toString();
+	  qreal currentX = query->value(8).toReal();
+	  qreal currentY = query->value(9).toReal();
+	  qreal originalX = query->value(10).toReal();
+	  qreal originalY = query->value(11).toReal();
+	  int dislodged = query->value(12).toInt();
+	  int red = query->value(13).toInt();
+	  int green = query->value(14).toInt();
+	  int blue = query->value(15).toInt();
+	  int alpha = query->value(16).toInt();
+	  int hidden = query->value(17).toInt();
 	  QPointF currentPos = QPointF(currentX, currentY);
 	  QPointF originalPos = QPointF(originalX, originalY);
 	  QColor color = QColor(red, green, blue, alpha);
@@ -4626,6 +4626,7 @@ void EventGraphWidget::seePlots()
 	      EventItem *currentEvent = it.next();
 	      currentEvent->hide();
 	    }
+	  newMacro->setTiming(timing);
 	  newMacro->setOriginalPos(originalPos);
 	  newMacro->setPos(currentPos);
 	  newMacro->setZValue(3);
@@ -6878,6 +6879,7 @@ void EventGraphWidget::colligateEvents()
 		    }
 		}
 	      macroVector.push_back(current);
+	      current->setTiming(abstractionDialog->getTiming());
 	      scene->addItem(current);
 	      if (abstractionDialog->isInheriting())
 		{

@@ -20,6 +20,7 @@ MacroEvent::MacroEvent(int subWidth,
   color = QColor(255, 255, 255);
   width = subWidth;
   description = submittedDescription;
+  timing = "";
   QString tip = breakString(description);
   setToolTip(tip);
   originalPos = originalPosition;
@@ -371,4 +372,14 @@ void MacroEvent::setCopy(bool status)
 void MacroEvent::setNewId(int newId) 
 {
   id = newId;
+}
+
+void MacroEvent::setTiming(QString submittedTiming)
+{
+  timing = submittedTiming;
+}
+
+QString MacroEvent::getTiming()
+{
+  return timing;
 }

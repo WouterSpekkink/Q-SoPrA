@@ -222,6 +222,7 @@ void WelcomeDialog::newDatabase()
 		      "eventid integer, "
 		      "ch_order integer, "
 		      "colligation text, "
+		      "timing text, "
 		      "description text, "
 		      "comment text, "
 		      "width integer, "

@@ -18,6 +18,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   chosenConstraint = "";
   eventDescription = "";
   inheritance = false;
+  eventTiming = "";
   
   constraintsLabel = new QLabel(tr("<b>Available constraints:</b>"), this);
   attributeOptionsLabel = new QLabel(tr("<b>Group on attribute:</b>"), this);
@@ -26,6 +27,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   chosenAttributeLabel = new QLabel(DEFAULT2, this);
   chosenAttributeLabel->setStyleSheet("color: red");
   descriptionLabel = new QLabel(tr("<b>Event description:</b>"), this);
+  timingLabel = new QLabel(tr("<b>Timing:</b>"), this);
 
   pathsBasedCheckBox = new QCheckBox("Paths-based constraints", this);
   pathsBasedCheckBox->setEnabled(false);
@@ -34,6 +36,8 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   noConstraintsCheckBox = new QCheckBox("No constraints", this);
   
   eventDescriptionField = new QTextEdit(this);
+
+  timingField = new QLineEdit(this);
 
   setAttributeButton = new QPushButton(tr("Set attribute"), this);
   clearAttributeButton = new QPushButton(tr("Clear attribute"), this);
@@ -90,6 +94,10 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   leftLayout->addLayout(inheritanceLayout);
   
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
+  QPointer<QHBoxLayout> timingLayout = new QHBoxLayout;
+  timingLayout->addWidget(timingLabel);
+  timingLayout->addWidget(timingField);
+  rightLayout->addLayout(timingLayout);
   rightLayout->addWidget(descriptionLabel);
   rightLayout->addWidget(eventDescriptionField);
   dualLayout->addLayout(rightLayout);
@@ -389,6 +397,19 @@ void AbstractionDialog::prepareEvents()
       semiPathsAllowed = false;
       pathsAllowed = false;
     }
+  std::sort(collectedIncidents.begin(), collectedIncidents.end(), componentsSort);
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT timestamp FROM incidents WHERE id = :id");
+  query->bindValue(":id", collectedIncidents.first()->getId());
+  query->exec();
+  query->first();
+  QString timingBegin = query->value(0).toString();
+  query->bindValue(":id", collectedIncidents.last()->getId());
+  query->exec();
+  query->first();
+  QString timingEnd = query->value(0).toString();
+  delete query;
+  timingField->setText("From " + timingBegin + " to " + timingEnd);
   evaluateConstraints();
 }
 
@@ -932,6 +953,17 @@ void AbstractionDialog::saveAndClose()
       delete warningBox;
       return;
     }
+  else if (timingField->text() == "")
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<b>No timing given</b>");
+      warningBox->setInformativeText("A timing for the event must be given.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   else
     {
       exitStatus = 0;
@@ -948,6 +980,7 @@ void AbstractionDialog::saveAndClose()
 	  chosenConstraint = NOCONSTRAINT;
 	}
       eventDescription = eventDescriptionField->toPlainText();
+      eventTiming = timingField->text();
       this->close();
     }
 }
@@ -970,6 +1003,11 @@ QVector<EventItem*> AbstractionDialog::getCollectedIncidents()
 QString AbstractionDialog::getDescription()
 {
   return eventDescription;
+}
+
+QString AbstractionDialog::getTiming()
+{
+  return eventTiming;
 }
 
 QString AbstractionDialog::getAttribute()

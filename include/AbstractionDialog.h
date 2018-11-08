@@ -27,6 +27,7 @@ public:
   QVector<EventItem*> getCollectedIncidents();
   QString getConstraint();
   QString getDescription();
+  QString getTiming();
   QString getAttribute();
   bool isEntity();
   bool isInheriting();
@@ -69,12 +70,15 @@ private:
   QPointer<QLabel> attributeInheritanceLabel;
   QPointer<QLabel> chosenAttributeLabel;
   QPointer<QLabel> descriptionLabel;
+  QPointer<QLabel> timingLabel;
 
   QPointer<QCheckBox> pathsBasedCheckBox;
   QPointer<QCheckBox> semiPathsBasedCheckBox;
   QPointer<QCheckBox> noConstraintsCheckBox;
 
   QPointer<QTextEdit> eventDescriptionField;
+
+  QPointer<QLineEdit> timingField;
   
   QPointer<QPushButton> setAttributeButton;
   QPointer<QPushButton> clearAttributeButton;
@@ -86,6 +90,7 @@ private:
   QString selectedCoder;
   QString chosenConstraint;
   QString eventDescription;
+  QString eventTiming;
   bool attributeIsEntity;
   int exitStatus;
   bool semiPathsAllowed;

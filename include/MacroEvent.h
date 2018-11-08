@@ -65,6 +65,8 @@ public:
   bool isCopy();
   void setCopy(bool status);
   void setNewId(int newId);
+  void setTiming(QString submittedTiming);
+  QString getTiming();
   
   QPainterPath shape() const override;
   
@@ -93,6 +95,7 @@ private:
   QString comment;
   QString mode;
   QString constraint;
+  QString timing;
   bool copy;
 };
 
