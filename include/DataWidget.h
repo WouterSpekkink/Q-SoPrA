@@ -49,6 +49,7 @@ private slots:
   void findPrevious();
   void findNext();
   void setFindKey(const QString &text);
+  bool eventFilter(QObject *object, QEvent *event);
   
 private:
   QPointer<EventSequenceDatabase> esd;

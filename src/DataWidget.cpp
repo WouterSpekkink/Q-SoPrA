@@ -37,7 +37,8 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
   tableView->setItemDelegateForColumn(7, new CheckBoxDelegate(tableView));
-
+  tableView->viewport()->installEventFilter(this);
+  
   // Let's set up our search field
   findSelectLabel = new QLabel("<b>Set search field:</b>", this);
   
@@ -753,4 +754,18 @@ void DataWidget::setButtons()
       insertRecordAfterButton->setEnabled(false);
       moveDownButton->setEnabled(false);
     }    
+}
+
+bool DataWidget::eventFilter(QObject *object, QEvent *event)
+{
+  if (object == tableView->viewport() && event->type() == QEvent::MouseButtonDblClick)
+    {
+      QPoint globalCursorPos = tableView->viewport()->mapFromGlobal(QCursor::pos());
+      QModelIndex index = tableView->indexAt(globalCursorPos);
+      if (index.column() == 7)
+	{
+	  return true;
+	}
+    }
+  return false;
 }
