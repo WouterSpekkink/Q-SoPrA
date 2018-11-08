@@ -38,6 +38,7 @@ private slots:
   void selectAttribute();
   void clearAttribute();
   void inheritAttributes();
+  void inheritSharedAttributes();
   void prepareEvents();
   void checkConstraints(QVector<EventItem*> submittedIncidents);
   void evaluateConstraints();
@@ -83,6 +84,7 @@ private:
   QPointer<QPushButton> setAttributeButton;
   QPointer<QPushButton> clearAttributeButton;
   QPointer<QPushButton> inheritAttributesButton;
+  QPointer<QPushButton> inheritSharedAttributesButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
   

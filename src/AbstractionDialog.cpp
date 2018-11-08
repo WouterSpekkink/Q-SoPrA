@@ -42,7 +42,8 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   setAttributeButton = new QPushButton(tr("Set attribute"), this);
   clearAttributeButton = new QPushButton(tr("Clear attribute"), this);
   clearAttributeButton->setEnabled(false);
-  inheritAttributesButton = new QPushButton(tr("set attribute inheritance"));
+  inheritAttributesButton = new QPushButton(tr("inherit attributes any"));
+  inheritSharedAttributesButton = new QPushButton(tr("inherit attributes shared"));
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Create abstract event"), this);
   if (currentData.size() == 1)
@@ -55,6 +56,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   connect(setAttributeButton, SIGNAL(clicked()), this, SLOT(selectAttribute()));
   connect(clearAttributeButton, SIGNAL(clicked()), this, SLOT(clearAttribute()));
   connect(inheritAttributesButton, SIGNAL(clicked()), this, SLOT(inheritAttributes()));
+  connect(inheritSharedAttributesButton, SIGNAL(clicked()), this, SLOT(inheritSharedAttributes()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
@@ -91,6 +93,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   QPointer<QVBoxLayout> inheritanceLayout = new QVBoxLayout;
   inheritanceLayout->addWidget(attributeInheritanceLabel);
   inheritanceLayout->addWidget(inheritAttributesButton);
+  inheritanceLayout->addWidget(inheritSharedAttributesButton);
   leftLayout->addLayout(inheritanceLayout);
   
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
@@ -186,6 +189,74 @@ void AbstractionDialog::inheritAttributes()
       // Now we have a set of attributes that we could inherit
       // Let's now give the user the option to select the ones that must be inherited
       QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this, collectedAttributes);
+      inheritanceDialog->exec();
+      if (inheritanceDialog->getExitStatus() == 0)
+	{
+	  QVector<QString> selectedAttributes = inheritanceDialog->getSelected();
+	  if (selectedAttributes.size() != 0)
+	    {
+	      inheritance = true;
+	      inheritedAttributes = selectedAttributes;
+	    }
+	}
+    }
+}
+
+void AbstractionDialog::inheritSharedAttributes()
+{
+  // identify attributes assigned to collected incidents and their macro parents
+  if (collectedIncidents.size() != 0)
+    {
+      QSet<QString> previousAttributes;
+      QSet<QString> sharedAttributes;
+      QVectorIterator<EventItem*> it(collectedIncidents);
+      while (it.hasNext())
+	{
+	  sharedAttributes.clear();
+	  EventItem *currentIncident = it.next();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			 "WHERE incident = :incident");
+	  query->bindValue(":incident", currentIncident->getId());
+	  query->exec();
+	  while (query->next())
+	    {
+	      QString currentAttribute = query->value(0).toString();
+	      if (currentIncident == collectedIncidents.first())
+		{
+		  previousAttributes.insert(currentAttribute);		  
+		}
+	      else
+		{
+		  if (previousAttributes.contains(currentAttribute))
+		    {
+		      sharedAttributes.insert(currentAttribute);
+		    }
+		}
+	    }
+	  delete query;
+	  MacroEvent *macro = currentIncident->getMacroEvent();
+	  if (macro != NULL)
+	    {
+	      QSet<QString> macroAttributes = macro->getAttributes();
+	      QSetIterator<QString> it2(macroAttributes);
+	      while(it2.hasNext())
+		{
+		  QString currentAttribute = it2.next();
+		  if (previousAttributes.contains(currentAttribute))
+		    {
+		      sharedAttributes.insert(currentAttribute);
+		    }
+		}
+	    }
+	  if (currentIncident != collectedIncidents.first())
+	    {
+	      previousAttributes = sharedAttributes;
+	    }
+	}
+      // Now we have a set of attributes that we could inherit
+      // Let's now give the user the option to select the ones that must be inherited
+      QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this, sharedAttributes);
       inheritanceDialog->exec();
       if (inheritanceDialog->getExitStatus() == 0)
 	{
