@@ -17,10 +17,12 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   attributeIsEntity = false;
   chosenConstraint = "";
   eventDescription = "";
-
+  inheritance = false;
+  
   constraintsLabel = new QLabel(tr("<b>Available constraints:</b>"), this);
   attributeOptionsLabel = new QLabel(tr("<b>Group on attribute:</b>"), this);
   attributeLabel = new QLabel(tr("<b>Selected attribute:</b>"), this);
+  attributeInheritanceLabel = new QLabel(tr("<b>Inherit attributes:</b>"), this);
   chosenAttributeLabel = new QLabel(DEFAULT2, this);
   chosenAttributeLabel->setStyleSheet("color: red");
   descriptionLabel = new QLabel(tr("<b>Event description:</b>"), this);
@@ -36,6 +38,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   setAttributeButton = new QPushButton(tr("Set attribute"), this);
   clearAttributeButton = new QPushButton(tr("Clear attribute"), this);
   clearAttributeButton->setEnabled(false);
+  inheritAttributesButton = new QPushButton(tr("set attribute inheritance"));
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Create abstract event"), this);
   if (currentData.size() == 1)
@@ -46,7 +49,8 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   connect(semiPathsBasedCheckBox, SIGNAL(clicked()), this, SLOT(processSemipathsCheck()));
   connect(noConstraintsCheckBox, SIGNAL(clicked()), this, SLOT(processNoPathsCheck()));
   connect(setAttributeButton, SIGNAL(clicked()), this, SLOT(selectAttribute()));
-  connect(clearAttributeButton, SIGNAL(clicked()), this, SLOT( clearAttribute()));
+  connect(clearAttributeButton, SIGNAL(clicked()), this, SLOT(clearAttribute()));
+  connect(inheritAttributesButton, SIGNAL(clicked()), this, SLOT(inheritAttributes()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
@@ -76,6 +80,15 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   leftLayout->addLayout(attributeLayoutBottom);
   dualLayout->addLayout(leftLayout);
 
+  QPointer<QFrame> sepLineTwo = new QFrame;
+  sepLineTwo->setFrameShape(QFrame::HLine);
+  leftLayout->addWidget(sepLineTwo);
+
+  QPointer<QVBoxLayout> inheritanceLayout = new QVBoxLayout;
+  inheritanceLayout->addWidget(attributeInheritanceLabel);
+  inheritanceLayout->addWidget(inheritAttributesButton);
+  leftLayout->addLayout(inheritanceLayout);
+  
   QPointer<QVBoxLayout> rightLayout = new QVBoxLayout;
   rightLayout->addWidget(descriptionLabel);
   rightLayout->addWidget(eventDescriptionField);
@@ -106,6 +119,8 @@ void AbstractionDialog::selectAttribute()
       QVectorIterator<QGraphicsItem*> it(currentData);
       prepareEvents();
       clearAttributeButton->setEnabled(true);
+      inheritance = false;
+      inheritedAttributes.clear();
       return;
     }
   else 
@@ -124,6 +139,56 @@ void AbstractionDialog::clearAttribute()
   selectedAttribute = DEFAULT2;
   chosenAttributeLabel->setText(DEFAULT2);
   clearAttributeButton->setEnabled(false);
+  inheritance = false;
+  inheritedAttributes.clear();
+}
+
+void AbstractionDialog::inheritAttributes()
+{
+  // identify attributes assigned to collected incidents and their macro parents
+  if (collectedIncidents.size() != 0)
+    {
+      QSet<QString> collectedAttributes;
+      QVectorIterator<EventItem*> it(collectedIncidents);
+      while (it.hasNext())
+	{
+	  EventItem *currentIncident = it.next();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+			 "WHERE incident = :incident");
+	  query->bindValue(":incident", currentIncident->getId());
+	  query->exec();
+	  while (query->next())
+	    {
+	      QString currentAttribute = query->value(0).toString();
+	      collectedAttributes.insert(currentAttribute);
+	    }
+	  delete query;
+	  MacroEvent *macro = currentIncident->getMacroEvent();
+	  if (macro != NULL)
+	    {
+	      QSet<QString> macroAttributes = macro->getAttributes();
+	      QSetIterator<QString> it2(macroAttributes);
+	      while(it2.hasNext())
+		{
+		  collectedAttributes.insert(it2.next());
+		}
+	    }
+	}
+      // Now we have a set of attributes that we could inherit
+      // Let's now give the user the option to select the ones that must be inherited
+      QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this, collectedAttributes);
+      inheritanceDialog->exec();
+      if (inheritanceDialog->getExitStatus() == 0)
+	{
+	  QVector<QString> selectedAttributes = inheritanceDialog->getSelected();
+	  if (selectedAttributes.size() != 0)
+	    {
+	      inheritance = true;
+	      inheritedAttributes = selectedAttributes;
+	    }
+	}
+    }
 }
 
 void AbstractionDialog::prepareEvents() 
@@ -915,4 +980,14 @@ QString AbstractionDialog::getAttribute()
 bool AbstractionDialog::isEntity()
 {
   return attributeIsEntity;
+}
+
+bool AbstractionDialog::isInheriting()
+{
+  return inheritance;
+}
+
+QVector<QString> AbstractionDialog::getInheritance()
+{
+  return inheritedAttributes;
 }

@@ -6879,6 +6879,15 @@ void EventGraphWidget::colligateEvents()
 		}
 	      macroVector.push_back(current);
 	      scene->addItem(current);
+	      if (abstractionDialog->isInheriting())
+		{
+		  QVector<QString> inheritance = abstractionDialog->getInheritance();
+		  QVectorIterator<QString> it7(inheritance);
+		  while (it7.hasNext())
+		    {
+		      current->insertAttribute(it7.next());
+		    }
+		}
 	      MacroLabel *macroLabel = new MacroLabel(current);
 	      current->setLabel(macroLabel);
 	      qreal xOffset = (current->getWidth() / 2) - 20;

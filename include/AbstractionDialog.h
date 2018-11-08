@@ -9,6 +9,7 @@
 #include <QtWidgets/QVBoxLayout>
 #include "../include/SortFunctions.h"
 #include "../include/EventGraphWidget.h"
+#include "../include/InheritanceDialog.h"
 
 class AbstractionDialog : public QDialog
 {
@@ -28,11 +29,14 @@ public:
   QString getDescription();
   QString getAttribute();
   bool isEntity();
+  bool isInheriting();
+  QVector<QString> getInheritance();
   int getExitStatus();
 		     
 private slots:
   void selectAttribute();
   void clearAttribute();
+  void inheritAttributes();
   void prepareEvents();
   void checkConstraints(QVector<EventItem*> submittedIncidents);
   void evaluateConstraints();
@@ -47,7 +51,7 @@ private slots:
   void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
   void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   QVector<bool> checkLinkagePresence(QVector<int> incidentIds);
-  
+
   void cancelAndClose();
   void saveAndClose();
   
@@ -57,10 +61,12 @@ private:
   QVector<QGraphicsItem*> currentData;
   QVector<QString> presentTypes;
   QVector<EventItem*> collectedIncidents;
+  QVector<QString> inheritedAttributes;
 
   QPointer<QLabel> constraintsLabel;
   QPointer<QLabel> attributeOptionsLabel;
   QPointer<QLabel> attributeLabel;
+  QPointer<QLabel> attributeInheritanceLabel;
   QPointer<QLabel> chosenAttributeLabel;
   QPointer<QLabel> descriptionLabel;
 
@@ -72,6 +78,7 @@ private:
   
   QPointer<QPushButton> setAttributeButton;
   QPointer<QPushButton> clearAttributeButton;
+  QPointer<QPushButton> inheritAttributesButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
   
@@ -83,7 +90,8 @@ private:
   int exitStatus;
   bool semiPathsAllowed;
   bool pathsAllowed;
-
+  bool inheritance;
+  
 };
 
 #endif
