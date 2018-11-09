@@ -178,7 +178,7 @@ void EventNodeSettingsDialog::addAttribute()
       tableWidget->setColumnCount(tableWidget->columnCount() + 1);
       tableWidget->setHorizontalHeaderItem(tableWidget->columnCount() - 1, newHeader);
       // We create a vector to hold our selected attribute and its children
-      // (if the valued option was selected)
+      // (if the valued option was not selected)
       QVector<QString> attributesVec;
       attributesVec.push_back(attribute);
       if (!valued)
