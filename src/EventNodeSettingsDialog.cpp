@@ -3,6 +3,7 @@
 EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
 						 QVector<QString> submittedIds,
 						 QVector<QString> submittedLabels,
+						 QVector<QString> submittedTimings,
 						 QVector<QString> submittedDescriptions,
 						 QVector<QString> submittedComments,
 						 QVector<QString> submittedTypes,
@@ -15,6 +16,7 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
 
   ids = submittedIds;
   labels = submittedLabels;
+  timings = submittedTimings;
   descriptions = submittedDescriptions;
   comments = submittedComments;
   types = submittedTypes;
@@ -27,12 +29,13 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
   tableWidget->setColumnCount(8); // default size
   QTableWidgetItem *headerOne = new QTableWidgetItem("Id", 0);
   QTableWidgetItem *headerTwo = new QTableWidgetItem("Label", 1);
-  QTableWidgetItem *headerThree = new QTableWidgetItem("Description", 2);
-  QTableWidgetItem *headerFour = new QTableWidgetItem("Comment", 3);
-  QTableWidgetItem *headerFive = new QTableWidgetItem("Type", 4);
-  QTableWidgetItem *headerSix = new QTableWidgetItem("Mode", 5);
-  QTableWidgetItem *headerSeven = new QTableWidgetItem("X", 6);
-  QTableWidgetItem *headerEight = new QTableWidgetItem("Y", 7);
+  QTableWidgetItem *headerThree = new QTableWidgetItem("Timing", 2);
+  QTableWidgetItem *headerFour = new QTableWidgetItem("Description", 3);
+  QTableWidgetItem *headerFive = new QTableWidgetItem("Comment", 4);
+  QTableWidgetItem *headerSix = new QTableWidgetItem("Type", 5);
+  QTableWidgetItem *headerSeven = new QTableWidgetItem("Mode", 6);
+  QTableWidgetItem *headerEight = new QTableWidgetItem("X", 7);
+  QTableWidgetItem *headerNine = new QTableWidgetItem("Y", 8);
   tableWidget->setHorizontalHeaderItem(0, headerOne);
   tableWidget->setHorizontalHeaderItem(1, headerTwo);
   tableWidget->setHorizontalHeaderItem(2, headerThree);
@@ -41,6 +44,7 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
   tableWidget->setHorizontalHeaderItem(5, headerSix);
   tableWidget->setHorizontalHeaderItem(6, headerSeven);
   tableWidget->setHorizontalHeaderItem(7, headerEight);
+  tableWidget->setHorizontalHeaderItem(8, headerNine);
   
   // Now let's fill the table
   for (QVector<QString>::size_type i = 0; i != ids.length(); i++) 
@@ -48,6 +52,7 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
       QTableWidgetItem *newId = new QTableWidgetItem(ids[i], 0);
       QTableWidgetItem *newLabel = new QTableWidgetItem(labels[i], 0);
       QTableWidgetItem *newDescription = new QTableWidgetItem(descriptions[i], 0);
+      QTableWidgetItem *newTiming = new QTableWidgetItem(timings[i], 0);
       QTableWidgetItem *newComment = new QTableWidgetItem(comments[i], 0);
       QTableWidgetItem *newType = new QTableWidgetItem(types[i], 0);
       QTableWidgetItem *newMode = new QTableWidgetItem(modes[i], 0);
@@ -55,12 +60,13 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
       QTableWidgetItem *newY = new QTableWidgetItem(yCoords[i], 0);
       tableWidget->setItem(i, 0, newId);
       tableWidget->setItem(i, 1, newLabel);
-      tableWidget->setItem(i, 2, newDescription);
-      tableWidget->setItem(i, 3, newComment);
-      tableWidget->setItem(i, 4, newType);
-      tableWidget->setItem(i, 5, newMode);
-      tableWidget->setItem(i, 6, newX);
-      tableWidget->setItem(i, 7, newY);
+      tableWidget->setItem(i, 2, newTiming);
+      tableWidget->setItem(i, 3, newDescription);
+      tableWidget->setItem(i, 4, newComment);
+      tableWidget->setItem(i, 5, newType);
+      tableWidget->setItem(i, 6, newMode);
+      tableWidget->setItem(i, 7, newX);
+      tableWidget->setItem(i, 8, newY);
     }
 
   // Let's create the other objects now.
@@ -215,7 +221,7 @@ void EventNodeSettingsDialog::addAttribute()
       for (int i = 0; i != tableWidget->rowCount(); i++) 
 	{
 	  // If we are dealing with an incident, then we can try to retrieve the value from our map.
-	  if (tableWidget->item(i, 4)->data(Qt::DisplayRole).toString() == INCIDENT) 
+	  if (tableWidget->item(i, 5)->data(Qt::DisplayRole).toString() == INCIDENT) 
 	    {
 	      if (valuesMap.keys().length() > 0) 
 		{
@@ -297,10 +303,10 @@ void EventNodeSettingsDialog::addAttribute()
 void EventNodeSettingsDialog::removeAttribute() 
 {
   // Only do this if we actually have attributes added.
-  if (tableWidget->columnCount() > 8) 
+  if (tableWidget->columnCount() > 9) 
     {
       QVector<QString> attributes;
-      for (int i = 8; i != tableWidget->columnCount(); i++) 
+      for (int i = 9; i != tableWidget->columnCount(); i++) 
 	{
 	  QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
 	  attributes.push_back(current);
@@ -311,7 +317,7 @@ void EventNodeSettingsDialog::removeAttribute()
       if (attributeDialog->getExitStatus() == 0) 
 	{
 	  QString attribute = attributeDialog->getSelection();
-	  for (int i = 8; i != tableWidget->columnCount();) 
+	  for (int i = 9; i != tableWidget->columnCount();) 
 	    {
 	      QString current = tableWidget->horizontalHeaderItem(i)->data(Qt::DisplayRole).toString();
 	      if (current == attribute) 

@@ -503,7 +503,6 @@ void HierarchyGraphWidget::retrieveData()
 	  if (currentEvent) 
 	    {
 	      selectedMacro = NULL;
-	      timeStampLabel->setText("<b>Timing:</b>");
 	      sourceLabel->setText("<b>Source:</b>");
 	      rawLabel->show();
 	      rawField->show();
@@ -558,26 +557,11 @@ void HierarchyGraphWidget::retrieveData()
 	      currentMacro->setSelectionColor(Qt::red);
 	      currentMacro->update();
 	      descriptionField->setText(currentMacro->getDescription());
-	      timeStampLabel->setText("<b>Duration:</b>");
 	      sourceLabel->setText("<b>Number of components:</b>");
 	      int id = currentMacro->getIncidents().first()->getId();
 	      rawLabel->hide();
 	      rawField->hide();
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT timestamp FROM incidents "
-			     "WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      QString begin = query->value(0).toString();
-	      id = currentMacro->getIncidents().last()->getId();
-	      query->prepare("SELECT timestamp FROM incidents "
-			     "WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      QString end = query->value(0).toString();
-	      QString duration =  "From " + begin + " to " + end;
+	      QString timestamp = currentMacro->getTiming();
 	      int count = currentMacro->getIncidents().size();
 	      QVectorIterator<MacroEvent*> it(macroVector);
 	      while (it.hasNext()) 
@@ -589,10 +573,9 @@ void HierarchyGraphWidget::retrieveData()
 		    }
 		}
 	      QString countText = QString::number(count);
-	      timeStampField->setText(duration);
+	      timeStampField->setText(timestamp);
 	      sourceField->setText(countText);
 	      commentField->setText(currentMacro->getComment());
-	      delete query;
 	      resetFont(attributesTree);
 	      QSet<QString> attributes = currentMacro->getAttributes();
 	      QSet<QString>::iterator it2;

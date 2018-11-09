@@ -933,31 +933,15 @@ void EventGraphWidget::retrieveData()
 	      currentMacro->update();
 	      seeComponentsButton->setEnabled(true);
 	      descriptionField->setText(currentMacro->getDescription());
-	      timeStampLabel->setText("<b>Timing:</b>");
 	      sourceLabel->setText("<b>Number of incidents:</b>");
 	      int id = currentMacro->getIncidents().first()->getId();
 	      rawLabel->hide();
 	      rawField->hide();
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT timestamp FROM incidents "
-			     "WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      QString begin = query->value(0).toString();
-	      id = currentMacro->getIncidents().last()->getId();
-	      query->prepare("SELECT timestamp FROM incidents "
-			     "WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      QString end = query->value(0).toString();
 	      QString timing = currentMacro->getTiming();
 	      QString countText = QString::number(currentMacro->getIncidents().size());
 	      timeStampField->setText(timing);
 	      sourceField->setText(countText);
 	      commentField->setText(currentMacro->getComment());
-	      delete query;
 	      resetFont(attributesTree);
 	      QSet<QString> attributes = currentMacro->getAttributes();
 	      QSet<QString>::iterator it2;
@@ -1033,7 +1017,6 @@ void EventGraphWidget::previousDataItem()
 	{
 	  selectedMacro = NULL;
 	  seeComponentsButton->setEnabled(false);
-	  timeStampLabel->setText("<b>Timing:</b>");
 	  sourceLabel->setText("<b>Source:</b>");
 	  rawLabel->show();
 	  rawField->show();
@@ -1085,32 +1068,16 @@ void EventGraphWidget::previousDataItem()
 	  selectedIncident = 0;
 	  seeComponentsButton->setEnabled(true);
 	  descriptionField->setText(currentMacro->getDescription());
-	  timeStampLabel->setText("<b>Duration:</b>");
 	  sourceLabel->setText("<b>Number of incidents:</b>");
 	  int id = currentMacro->getIncidents().first()->getId();
 	  rawLabel->hide();
 	  rawField->hide();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString begin = query->value(0).toString();
-	  id = currentMacro->getIncidents().last()->getId();
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString end = query->value(0).toString();
-	  QString duration =  "From " + begin + " to " + end;
+	  QString timestamp = currentMacro->getTiming();
 	  QVectorIterator<MacroEvent*> it(macroVector);
 	  QString countText = QString::number(currentMacro->getIncidents().size());
-	  timeStampField->setText(duration);
+	  timeStampField->setText(timestamp);
 	  sourceField->setText(countText);
 	  commentField->setText(currentMacro->getComment());
-	  delete query;
 	  resetFont(attributesTree);
 	  QSet<QString> attributes = currentMacro->getAttributes();
 	  QSet<QString>::iterator it2;
@@ -1156,7 +1123,6 @@ void EventGraphWidget::previousDataItem()
 	{
 	  selectedMacro = 0;
 	  seeComponentsButton->setEnabled(false);
-	  timeStampLabel->setText("<b>Timing:</b>");
 	  sourceLabel->setText("<b>Source:</b>");
 	  rawLabel->show();
 	  rawField->show();
@@ -1208,31 +1174,14 @@ void EventGraphWidget::previousDataItem()
 	  selectedIncident = 0;
 	  seeComponentsButton->setEnabled(true);
 	  descriptionField->setText(currentMacro->getDescription());
-	  timeStampLabel->setText("<b>Duration:</b>");
 	  sourceLabel->setText("<b>Number of incidents:</b>");
 	  int id = currentMacro->getIncidents().first()->getId();
 	  rawLabel->hide();
 	  rawField->hide();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString begin = query->value(0).toString();
-	  id = currentMacro->getIncidents().last()->getId();
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString end = query->value(0).toString();
-	  QString duration =  "From " + begin + " to " + end;
+	  QString timestamp = currentMacro->getTiming();
 	  QString countText = QString::number(currentMacro->getIncidents().size());
-	  timeStampField->setText(duration);
 	  sourceField->setText(countText);
 	  commentField->setText(currentMacro->getComment());
-	  delete query;
 	  resetFont(attributesTree);
 	  QSet<QString> attributes = currentMacro->getAttributes();
 	  QSet<QString>::iterator it2;
@@ -1310,7 +1259,6 @@ void EventGraphWidget::nextDataItem()
 	      QString raw = query->value(2).toString();
 	      QString comment = query->value(3).toString();
 	      QString source = query->value(4).toString();
-	      timeStampField->setText(timeStamp);
 	      descriptionField->setText(description);
 	      rawField->setText(raw);
 	      commentField->setText(comment);
@@ -1338,26 +1286,11 @@ void EventGraphWidget::nextDataItem()
 	  int id = currentMacro->getIncidents().first()->getId();
 	  rawLabel->hide();
 	  rawField->hide();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString begin = query->value(0).toString();
-	  id = currentMacro->getIncidents().last()->getId();
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString end = query->value(0).toString();
-	  QString timing =  currentMacro->getTiming();
+	  QString timestamp =  currentMacro->getTiming();
 	  QString countText = QString::number(currentMacro->getIncidents().size());
-	  timeStampField->setText(timing);
+	  timeStampField->setText(timestamp);
 	  sourceField->setText(countText);
 	  commentField->setText(currentMacro->getComment());
-	  delete query;
 	  resetFont(attributesTree);
 	  QSet<QString> attributes = currentMacro->getAttributes();
 	  QSet<QString>::iterator it2;
@@ -1460,26 +1393,11 @@ void EventGraphWidget::nextDataItem()
 	  int id = currentMacro->getIncidents().first()->getId();
 	  rawLabel->hide();
 	  rawField->hide();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString begin = query->value(0).toString();
-	  id = currentMacro->getIncidents().last()->getId();
-	  query->prepare("SELECT timestamp FROM incidents "
-			 "WHERE id = :id");
-	  query->bindValue(":id", id);
-	  query->exec();
-	  query->first();
-	  QString end = query->value(0).toString();
-	  QString timing =  currentMacro->getTiming();
+ 	  QString timestamp =  currentMacro->getTiming();
 	  QString countText = QString::number(currentMacro->getIncidents().size());
-	  timeStampField->setText(timing);
+	  timeStampField->setText(timestamp);
 	  sourceField->setText(countText);
 	  commentField->setText(currentMacro->getComment());
-	  delete query;
 	  resetFont(attributesTree);
 	  QSet<QString> attributes = currentMacro->getAttributes();
 	  QSet<QString>::iterator it2;
@@ -6321,6 +6239,7 @@ void EventGraphWidget::exportTable()
 	    }
 	  else if (macro) 
 	    {
+	      QString timing = macro->getTiming();
 	      QString description = macro->getDescription();
 	      QString raw = "";
 	      QString comment = macro->getComment();
@@ -6347,20 +6266,6 @@ void EventGraphWidget::exportTable()
 	      QVector<EventItem*> incidents = macro->getIncidents();
 	      int incidentId = macro->getIncidents().first()->getId();
 	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT timestamp FROM incidents "
-			     "WHERE id = :id");
-	      query->bindValue(":id", incidentId);
-	      query->exec();
-	      query->first();
-	      QString begin = query->value(0).toString();
-	      incidentId = macro->getIncidents().last()->getId();
-	      query->prepare("SELECT timestamp FROM incidents "
-			     "WHERE id = :id");
-	      query->bindValue(":id", incidentId);
-	      query->exec();
-	      query->first();
-	      QString end = query->value(0).toString();
-	      QString duration =  "From " + begin + " to " + end;
 	      delete query;
 	      QVectorIterator<EventItem*> it4(incidents);
 	      while (it4.hasNext()) 
@@ -6398,7 +6303,7 @@ void EventGraphWidget::exportTable()
 		}
 	      fileOut << row << ","
 		      << "\"" << id.toStdString() << "\"" << ","
-		      << "\"" << doubleQuote(duration).toStdString() << "\"" << ","
+		      << "\"" << doubleQuote(timing).toStdString() << "\"" << ","
 		      << "\"" << doubleQuote(description).toStdString() << "\"" ","
 		      << "" << ","
 		      << "\"" << doubleQuote(comment).toStdString() << "\"" << ","
@@ -6441,6 +6346,7 @@ void EventGraphWidget::exportNodes()
   QVector<QString> ids;
   QVector<QString> labels;
   QVector<QString> descriptions;
+  QVector<QString> timings;
   QVector<QString> comments;
   QVector<QString> types;
   QVector<QString> modes;
@@ -6455,13 +6361,14 @@ void EventGraphWidget::exportNodes()
 	{
 	  int id = event->getId();
 	  QString label = event->getLabel()->toPlainText();
+	  QString timing = "";
 	  QString description = "";
 	  QString comment = "";
 	  QString mode = event->getMode();
 	  QString xCoord = QString::number(event->scenePos().x());
 	  QString yCoord = QString::number(event->scenePos().y());
 	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT description, comment FROM incidents "
+	  query->prepare("SELECT description, timestamp, comment FROM incidents "
 			 "WHERE id = :id");
 	  query->bindValue(":id", id);
 	  query->exec();
@@ -6469,11 +6376,13 @@ void EventGraphWidget::exportNodes()
 	  if (!(query->isNull(0))) 
 	    {
 	      description = query->value(0).toString();
-	      comment = query->value(1).toString();
+	      timing = query->value(1).toString();
+	      comment = query->value(2).toString();
 	    }
 	  delete query;
 	  ids.push_back("i" + label);
 	  labels.push_back(label);
+	  timings.push_back(timing);
 	  descriptions.push_back(description);
 	  comments.push_back(comment);
 	  types.push_back(INCIDENT);
@@ -6484,6 +6393,7 @@ void EventGraphWidget::exportNodes()
       else if (macro) 
 	{
 	  QString label = macro->getLabel()->toPlainText();
+	  QString timing = macro->getTiming();
 	  QString description = macro->getDescription();
 	  QString comment = macro->getComment();
 	  QString mode = macro->getMode();
@@ -6513,6 +6423,7 @@ void EventGraphWidget::exportNodes()
 	  QString id = identifier + QString::number(macro->getOrder());
 	  ids.push_back(id);
 	  labels.push_back(label);
+	  timings.push_back(timing);
 	  descriptions.push_back(description);
 	  comments.push_back(comment);
 	  types.push_back(type);
@@ -6524,6 +6435,7 @@ void EventGraphWidget::exportNodes()
   QPointer<EventNodeSettingsDialog> settingsDialog = new EventNodeSettingsDialog(this,
 										 ids,
 										 labels,
+										 timings,
 										 descriptions,
 										 comments,
 										 types,

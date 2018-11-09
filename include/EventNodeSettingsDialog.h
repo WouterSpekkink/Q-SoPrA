@@ -27,6 +27,7 @@ public:
   EventNodeSettingsDialog(QWidget *parent = 0,
 			  QVector<QString> submittedIds = QVector<QString>(),
 			  QVector<QString> submittedLabels = QVector<QString>(),
+			  QVector<QString> submittedTimings = QVector<QString>(),
 			  QVector<QString> submittedDescriptions = QVector<QString>(),
 			  QVector<QString> submittedComments = QVector<QString>(),
 			  QVector<QString> submittedTypes = QVector<QString>(),
@@ -53,6 +54,7 @@ private:
 
   QVector<QString> ids;
   QVector<QString> labels;
+  QVector<QString> timings;
   QVector<QString> descriptions;
   QVector<QString> comments;
   QVector<QString> types;
