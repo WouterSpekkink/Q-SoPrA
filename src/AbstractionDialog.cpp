@@ -42,8 +42,8 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   setAttributeButton = new QPushButton(tr("Set attribute"), this);
   clearAttributeButton = new QPushButton(tr("Clear attribute"), this);
   clearAttributeButton->setEnabled(false);
-  inheritAttributesButton = new QPushButton(tr("inherit attributes any"));
-  inheritSharedAttributesButton = new QPushButton(tr("inherit attributes shared"));
+  inheritAttributesButton = new QPushButton(tr("Inherit attributes any"));
+  inheritSharedAttributesButton = new QPushButton(tr("Inherit attributes shared"));
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Create abstract event"), this);
   if (currentData.size() == 1)

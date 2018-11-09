@@ -2239,12 +2239,12 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 
 void AttributesWidget::autoAssignAll() 
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   QSqlQuery *query = new QSqlQuery;
   QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) 
     {
+      QApplication::setOverrideCursor(Qt::WaitCursor);
       QString selectedRelationship = comboDialog->getSelection();
       bool tail = comboDialog->tailSelected();
       bool head = comboDialog->headSelected();
