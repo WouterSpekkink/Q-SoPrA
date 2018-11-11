@@ -263,14 +263,24 @@ void OccurrenceGraphWidget::checkCongruency()
   if (attributeOccurrenceVector.size() > 0) 
     {
       QSqlDatabase::database().transaction();
+      QVector<QPair<int, QString>> attributePairs;
+      QVector<QPair<int, int>> orderPairs;
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-		     "WHERE attribute = :attribute AND incident = :incident");
-      QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT ch_order FROM incidents "
-		      "WHERE id = :incident");
-      QSqlQuery *query3 = new QSqlQuery;
-      query3->prepare("SELECT name FROM entities WHERE name = :name");
+      query->exec("SELECT attribute, incident FROM attributes_to_incidents");
+      while (query->next())
+	{
+	  QString attribute = query->value(0).toString();
+	  int incident = query->value(1).toInt();
+	  attributePairs.push_back(QPair<int, QString>(incident, attribute));
+	}
+      query->exec("SELECT id, ch_order FROM incidents");
+      while (query->next())
+	{
+	  int incident = query->value(0).toInt();
+	  int order = query->value(1).toInt();
+	  orderPairs.push_back(QPair<int, int>(incident, order));
+	}
+      query->prepare("SELECT name FROM entities WHERE name = :name");
       QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
@@ -281,10 +291,10 @@ void OccurrenceGraphWidget::checkCongruency()
 	      int order = current->getOrder();
 	      QString attribute = current->getAttribute();
 	      bool entity = false;
-	      query3->bindValue(":name", attribute);
-	      query3->exec();
-	      query3->first();
-	      if (!query3->isNull(0)) 
+	      query->bindValue(":name", attribute);
+	      query->exec();
+	      query->first();
+	      if (!query->isNull(0)) 
 		{
 		  entity = true;
 		}
@@ -296,11 +306,8 @@ void OccurrenceGraphWidget::checkCongruency()
 	      while (it2.hasNext()) 
 		{
 		  QString currentAttribute = it2.next();
-		  query->bindValue(":attribute", currentAttribute);
-		  query->bindValue(":incident", id);
-		  query->exec();
-		  query->first();
-		  if (!query->isNull(0)) 
+		  QPair<int, QString> currentPair = QPair<int, QString>(id, currentAttribute);
+		  if (attributePairs.contains(currentPair)) 
 		    {
 		      found = true;
 		    }
@@ -311,31 +318,15 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
-		  delete query2;
-		  delete query3;
 		  return;
 		}
-	      query2->bindValue(":incident", id);
-	      query2->exec();
-	      query2->first();
-	      if (query2->isNull(0)) 
+	      QPair<int, int> currentPair = QPair<int, int>(id, order);
+	      if (!orderPairs.contains(currentPair))
 		{
 		  incongruencyLabel->setText("Incongruency detected");
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
-		  delete query2;
-		  delete query3;
-		  return;
-		}
-	      else if (query2->value(0).toInt() != order) 
-		{
-		  incongruencyLabel->setText("Incongruency detected");
-		  qApp->restoreOverrideCursor();
-		  qApp->processEvents();
-		  delete query;
-		  delete query2;
-		  delete query3;
 		  return;
 		}
 	    }
@@ -368,13 +359,11 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
-		  delete query2;
 		  return;
 		}
 	    }
 	}
       delete query;
-      delete query2;
       incongruencyLabel->setText("");
       QSqlDatabase::database().commit();
     }
@@ -426,7 +415,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		  qApp->processEvents();
 		  delete query;
 		  delete query2;
-				  return;
+		  return;
 		}
 	      query2->bindValue(":incident", id);
 	      query2->exec();
