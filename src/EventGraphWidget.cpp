@@ -7891,8 +7891,8 @@ void EventGraphWidget::exportTransitionMatrix()
 		  QString currentName = it2.next();
 		  fileOut << "," << "\"" << doubleQuote(currentName).toStdString() << "\"";
 		}
-	      // Add row marginals label and end the header with a newline symbol.
-	      fileOut << "," << "row marginals" << "\n"; 
+	      // Add occurrence label and end the header with a newline symbol.
+	      fileOut << "," << "Occurrence" << "\n"; 
 	      int counter = 0;
 	      QVectorIterator<QVector<int>> it3(matrix);
 	      while (it3.hasNext()) 
