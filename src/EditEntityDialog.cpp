@@ -263,24 +263,71 @@ void EditEntityDialog::removeEntities()
 {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
-  query->exec("SELECT name FROM entities EXCEPT SELECT source "
-	      "FROM entity_relationships EXCEPT SELECT target "
-	      "FROM entity_relationships");
-  while (query->next()) 
+  bool unfinished = true;
+  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QSet<QString> takenAttributes;
+  QVectorIterator<MacroEvent*> it(macroVector);
+  while (it.hasNext()) 
     {
-      QString current = query->value(0).toString();
-      query2->prepare("DELETE FROM entities WHERE name = :current");
-      query2->bindValue(":current", current);
-      query2->exec();
-      query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-      query2->bindValue(":current", current);
-      query2->exec();
+      MacroEvent* current = it.next();
+      QSet<QString> attributes = current->getAttributes();
+      QSet<QString>::iterator it2;
+      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
+	{
+	  takenAttributes.insert(*it2);
+	}
     }
-  entitiesTable->select();
-  updateTable();
+  while (unfinished) 
+    {
+      query->exec("SELECT name FROM entities "
+		  "EXCEPT SELECT source FROM entity_relationships "
+		  "EXCEPT SELECT target FROM entity_relationships "
+		  "EXCEPT SELECT attribute FROM attributes_to_incidents "
+		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		  "EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
+		  "EXCEPT SELECT father FROM entities");
+      QSet<QString> temp;
+      while (query->next()) 
+	{
+	  QString current = query->value(0).toString();			   
+	  temp.insert(current);
+	}
+      QSet<QString>::iterator it3;
+      bool found = false;
+      for (it3 = temp.begin(); it3 != temp.end(); it3++) 
+	{
+	  if (!takenAttributes.contains(*it3)) 
+	    {
+	      found = true;
+	      query2->prepare("DELETE FROM entities WHERE name = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	      query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	      query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	      query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
+	      query2->bindValue(":current", *it3);
+	      query2->exec();
+	    }
+	}
+      if (!found) 
+	{
+	  unfinished = false;
+	}
+    }
   delete query;  
   delete query2;
+  //  occurrenceGraph->checkCongruency(); // Does not seem necessary
+  entitiesTable->select();
+  updateTable();
+  filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
+  // Also remove the entities from attribute trees.
+  eventGraph->resetTree();
+  attributesWidget->resetTree();
 }
 
 void EditEntityDialog::closeThis() 
@@ -317,4 +364,12 @@ int EditEntityDialog::getEntityEdited()
   return entityEdited;
 }
 
+void EditEntityDialog::setEventGraph(EventGraphWidget *egw)
+{
+  eventGraph = egw;
+}
 
+void EditEntityDialog::setAttributesWidget(AttributesWidget *aw)
+{
+  attributesWidget = aw;
+}

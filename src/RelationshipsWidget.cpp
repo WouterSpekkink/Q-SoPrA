@@ -737,6 +737,8 @@ void RelationshipsWidget::editType()
 void RelationshipsWidget::entitiesOverview() 
 {
   QPointer<EditEntityDialog> entityDialog = new EditEntityDialog(this);
+  entityDialog->setEventGraph(eventGraph);
+  entityDialog->setAttributesWidget(attributesWidget);
   entityDialog->exec();
   if (entityDialog->getEntityEdited() == 1) 
     {

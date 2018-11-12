@@ -39,7 +39,9 @@ public:
   QString getName();
   QString getLeftEntity();
   QString getRightEntity();
-					       
+  void setEventGraph(EventGraphWidget *egw);
+  void setAttributesWidget(AttributesWidget *aw);
+			  
 private slots:
   void filterEntity(const QString &text);
   void addEntity();
@@ -51,6 +53,9 @@ private slots:
   void closeThis();
   
 private:
+  EventGraphWidget *eventGraph;
+  AttributesWidget *attributesWidget;
+  
   QPointer<QLabel> filterLabel;
 
   QPointer<EntityTableModel> entitiesTable;
