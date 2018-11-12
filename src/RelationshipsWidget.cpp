@@ -1240,16 +1240,35 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
 	    }
 	}
     }
-  else 
+  else if (targetIndex.isValid())
     {
       QMenu menu;
       QAction *action1 = new QAction(ADDRELATIONSHIPACTION, this);
+      QAction *action2 = new QAction(EDITRELATIONSHIPTYPEACTION, this);
       menu.addAction(action1);
+      menu.addAction(action2);
       if (QAction *action = menu.exec(globalPos)) 
 	{
 	  if (action->text() == ADDRELATIONSHIPACTION) 
 	    {
 	      newRelationship();
+	    }
+	  else if (action->text() == EDITRELATIONSHIPTYPEACTION)
+	    {
+	      editType();
+	    }
+	}
+    }
+  else
+    {
+      QMenu menu;
+      QAction *action1 = new QAction(ADDRELATIONSHIPTYPEACTION, this);
+      menu.addAction(action1);
+      if (QAction *action = menu.exec(globalPos)) 
+	{
+	  if (action->text() == ADDRELATIONSHIPTYPEACTION) 
+	    {
+	      newType();
 	    }
 	}
     }
