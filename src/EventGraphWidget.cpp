@@ -6464,7 +6464,8 @@ void EventGraphWidget::exportEdges()
 	      << "Target" << ","
 	      << "Type" << ","
 	      << "Description" << ","
-	      << "Coder" << "\n";
+	      << "Coder" << ","
+	      << "Comments" << "\n";
       // Then we iterate through our edges.
       QVectorIterator<Arrow*> it(edgeVector);
       while (it.hasNext()) 
@@ -6480,6 +6481,23 @@ void EventGraphWidget::exportEdges()
 	      QString coder = selectedCoder;
 	      QString source = "";
 	      QString target = "";
+	      QString comment = "";	      
+	      if (eventStart && eventEnd)
+		{
+		  QSqlQuery *query = new QSqlQuery;
+		  query->prepare("SELECT comment, coder FROM linkage_comments "
+				 "WHERE type = :type AND tail = :tail AND head = :head");
+		  query->bindValue(":type", description);
+		  query->bindValue(":tail", eventStart->getId());
+		  query->bindValue(":head", eventEnd->getId());
+		  query->exec();
+		  query->first();
+		  if (!query->isNull(0))
+		    {
+		      comment = query->value(1).toString() + ": " + query->value(0).toString();
+		    }
+		  delete query;
+		}
 	      if (eventStart && eventEnd) 
 		{
 		  source = "i" + QString::number(eventStart->getOrder());
@@ -6559,7 +6577,8 @@ void EventGraphWidget::exportEdges()
 		      << doubleQuote(target).toStdString() << ","
 		      << "Directed" << ","
 		      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-		      << "\"" << doubleQuote(coder).toStdString() << "\"" << "\n";
+		      << "\"" << doubleQuote(coder).toStdString() << "\"" << ","
+		      << "\"" << doubleQuote(comment).toStdString() << "\"" << "\n";
 	    }
 	}
       // And that should be it!
@@ -8208,15 +8227,17 @@ void EventGraphWidget::closeGap()
 
 void EventGraphWidget::changeEventDescription() 
 {
-  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-  textDialog->setWindowTitle("Event description");
-  textDialog->setLabel("Event description:");
+  QPointer<EventTextDialog> textDialog = new EventTextDialog(this);
   textDialog->submitText(selectedMacro->getDescription());
+  textDialog->submitTiming(selectedMacro->getTiming());
   textDialog->exec();
   if (textDialog->getExitStatus() == 0) 
     {
       QString description = textDialog->getText();
+      QString timing = textDialog->getTiming();
       selectedMacro->setDescription(description);
+      selectedMacro->setTiming(timing);
+      retrieveData();
     }
   delete textDialog;
 }

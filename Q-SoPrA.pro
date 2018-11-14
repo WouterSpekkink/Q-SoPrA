@@ -40,6 +40,7 @@ HEADERS += include/AbstractionDialog.h \
            include/EventQueryModel.h \
            include/EventSequenceDatabase.h \
            include/EventTableModel.h \
+           include/EventTextDialog.h \
            include/ExportTransitionMatrixDialog.h \
            include/GraphicsView.h \
            include/HierarchyGraphWidget.h \
@@ -126,6 +127,7 @@ SOURCES += main.cpp \
            src/EventQueryModel.cpp \
            src/EventSequenceDatabase.cpp \
            src/EventTableModel.cpp \
+           src/EventTextDialog.cpp \
            src/ExportTransitionMatrixDialog.cpp \
            src/GraphicsView.cpp \
            src/HierarchyGraphWidget.cpp \

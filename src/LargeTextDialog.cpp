@@ -25,7 +25,6 @@ LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent)
   mainLayout->addLayout(optionsLayout);
 
   setLayout(mainLayout);
-  setWindowTitle("Add / Edit Coder");
 }
 
 

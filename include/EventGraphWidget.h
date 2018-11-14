@@ -1,5 +1,5 @@
-#ifndef EVENTGRAPHWIDGET
-#define EVENTGRAPHWIDGET
+#ifndef EVENTGRAPHWIDGET_H
+#define EVENTGRAPHWIDGET_H
 
 #include <QtWidgets>
 #include <QtWidgets/QHBoxLayout>
@@ -49,6 +49,7 @@
 #include "RectObject.h"
 #include "AbstractionDialog.h"
 #include "ModeColorDialog.h"
+#include "EventTextDialog.h"
 
 class AttributesWidget;
 
