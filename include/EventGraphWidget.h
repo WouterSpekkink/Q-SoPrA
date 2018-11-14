@@ -184,6 +184,7 @@ private slots:
 		       QGraphicsItem *origin,
 		       QSet<QGraphicsItem*> *pFinished,
 		       QString type);
+  void setEventOriginalPosition();
   void settleEvent();
   void makeParallel();
   void normalizeDistance();

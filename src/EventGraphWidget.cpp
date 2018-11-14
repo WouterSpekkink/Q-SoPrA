@@ -6613,6 +6613,10 @@ void EventGraphWidget::processEventItemContextMenu(const QString &action)
     {
       colorLineage();
     }
+  else if (action == ORIGINALPOSACTION)
+    {
+      setEventOriginalPosition();
+    }
   else if (action == SETTLEACTION) 
     {
       settleEvent();
@@ -7965,6 +7969,26 @@ void EventGraphWidget::exportTransitionMatrix()
 	      // And that is it.
 	      fileOut.close();
 	    }
+	}
+    }
+}
+
+void EventGraphWidget::setEventOriginalPosition()
+{
+ if (currentData.size() == 1) 
+    {
+      QGraphicsItem *current = currentData[0];
+      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
+      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      if (event) 
+	{
+	  event->setPos(event->getOriginalPos().x(), event->scenePos().y());
+	  event->getLabel()->setNewPos(event->scenePos());
+	}
+      else if (macro) 
+	{
+	  macro->setPos(macro->getOriginalPos().x(), macro->scenePos().y());
+	  macro->getLabel()->setNewPos(macro->scenePos());
 	}
     }
 }

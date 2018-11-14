@@ -1227,59 +1227,73 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       if (incident && !incident->isCopy()) 
 	{
 	  QMenu menu;
+	  QMenu colligationMenu("Abstraction");
+	  QMenu colorMenu("Colouring");
+	  QMenu posMenu("Positioning");
+	  QMenu selectionMenu("Selection");
+	  QMenu linkageMenu("Linkages");
+	  QMenu descMenu("Description");
+	  menu.addMenu(&colligationMenu);
+	  menu.addMenu(&colorMenu);
+	  menu.addMenu(&posMenu);
+	  menu.addMenu(&selectionMenu);
+	  menu.addMenu(&linkageMenu);
+	  menu.addMenu(&descMenu);
 	  QAction *action1 = new QAction(COLLIGATEACTION, this);
-	  menu.addAction(action1);
+	  colligationMenu.addAction(action1);
 	  QAction *action2 = new QAction(MAKEMACROACTION, this);
-	  menu.addAction(action2);
+	  colligationMenu.addAction(action2);
 	  QAction *action3= new QAction(RECOLOREVENTSACTION, this);
-	  menu.addAction(action3);
+	  colorMenu.addAction(action3);
 	  QAction *action4 = new QAction(RECOLORLABELSACTION, this);
-	  menu.addAction(action4);
+	  colorMenu.addAction(action4);
 	  QAction *action5 = new QAction(COLORLINEAGEACTION, this);
-	  menu.addAction(action5);
+	  colorMenu.addAction(action5);
 	  QAction *action6 = new QAction(SETWIDTHACTION, this);
-	  menu.addAction(action6);
-	  QAction *action7= new QAction(SETTLEACTION, this);
-	  menu.addAction(action7);
-	  QAction *action8 = new QAction(PARALLELACTION, this);
-	  menu.addAction(action8);
-	  QAction *action9 = new QAction(NORMALIZEACTION, this);
-	  menu.addAction(action9);
-	  QAction *action10 = new QAction(CLOSEGAPACTION, this);
-	  menu.addAction(action10);
-	  QAction *action11 = new QAction(ADDLINKAGEACTION, this);
-	  menu.addAction(action11);
-	  QAction *action12 = new QAction(SELECTFOLLOWERSACTION, this);
-	  menu.addAction(action12);
-	  QAction *action13 = new QAction(SELECTPREDECESSORSACTION, this);
-	  menu.addAction(action13);
-	  QAction *action14 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
-	  menu.addAction(action14);
+	  posMenu.addAction(action6);
+	  QAction *action7 = new QAction(ORIGINALPOSACTION, this);
+	  posMenu.addAction(action7);
+	  QAction *action8= new QAction(SETTLEACTION, this);
+	  posMenu.addAction(action8);
+	  QAction *action9 = new QAction(PARALLELACTION, this);
+	  posMenu.addAction(action9);
+	  QAction *action10 = new QAction(NORMALIZEACTION, this);
+	  posMenu.addAction(action10);
+	  QAction *action11 = new QAction(CLOSEGAPACTION, this);
+	  posMenu.addAction(action11);
+	  QAction *action12 = new QAction(ADDLINKAGEACTION, this);
+	  linkageMenu.addAction(action12);
+	  QAction *action13 = new QAction(SELECTFOLLOWERSACTION, this);
+	  selectionMenu.addAction(action13);
+	  QAction *action14 = new QAction(SELECTPREDECESSORSACTION, this);
+	  selectionMenu.addAction(action14);
+	  QAction *action15 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+	  descMenu.addAction(action15);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
 	      action5->setEnabled(false);
 	      action6->setEnabled(false);
-	      action7->setEnabled(false);
-	      action9->setEnabled(false);
+	      action8->setEnabled(false);
 	      action10->setEnabled(false);
-	      action12->setEnabled(false);
+	      action11->setEnabled(false);
 	      action13->setEnabled(false);
 	      action14->setEnabled(false);
+	      action15->setEnabled(false);
 	    }
 	  if (selectedItems().size() == 1) 
 	    {
 	      action1->setEnabled(false);
-	      action8->setEnabled(false);
+	      action9->setEnabled(false);
 	    }
-	  action11->setEnabled(false);
+	  action12->setEnabled(false);
 	  if (selectedItems().size() == 2) 
 	    {
 	      EventItem *eventOne = qgraphicsitem_cast<EventItem*>(selectedItems()[0]);
 	      EventItem *eventTwo = qgraphicsitem_cast<EventItem*>(selectedItems()[1]);
 	      if (eventOne && eventTwo) 
 		{
-		  action11->setEnabled(true);
+		  action12->setEnabled(true);
 		}
 	    }
 	  if (QAction *action = menu.exec(event->screenPos())) 
@@ -1291,34 +1305,44 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       else if (macro && !macro->isCopy()) 
 	{
 	  QMenu menu;
+	  QMenu colligationMenu("Abstraction");
+	  QMenu colorMenu("Colouring");
+	  QMenu posMenu("Positioning");
+	  QMenu selectionMenu("Selection");
+	  QMenu descMenu("Description");
+	  menu.addMenu(&colligationMenu);
+	  menu.addMenu(&colorMenu);
+	  menu.addMenu(&posMenu);
+	  menu.addMenu(&selectionMenu);
+	  menu.addMenu(&descMenu);
 	  QAction *action1 = new QAction(COLLIGATEACTION, this);
-	  menu.addAction(action1);
+	  colligationMenu.addAction(action1);
 	  QAction *action2 = new QAction(DISAGGREGATEACTION, this);
-	  menu.addAction(action2);
-	  QAction *action3 = new QAction(RECOLOREVENTSACTION, this);
-	  menu.addAction(action3);
+	  colligationMenu.addAction(action2);
+	  QAction *action3= new QAction(RECOLOREVENTSACTION, this);
+	  colorMenu.addAction(action3);
 	  QAction *action4 = new QAction(RECOLORLABELSACTION, this);
-	  menu.addAction(action4);
+	  colorMenu.addAction(action4);
 	  QAction *action5 = new QAction(COLORLINEAGEACTION, this);
-	  menu.addAction(action5);
+	  colorMenu.addAction(action5);
 	  QAction *action6 = new QAction(SETWIDTHACTION, this);
-	  menu.addAction(action6);
-	  QAction *action7 = new QAction(SETTLEACTION, this);
-	  menu.addAction(action7);
+	  posMenu.addAction(action6);
+	  QAction *action7= new QAction(SETTLEACTION, this);
+	  posMenu.addAction(action7);
 	  QAction *action8 = new QAction(PARALLELACTION, this);
-	  menu.addAction(action8);
+	  posMenu.addAction(action8);
 	  QAction *action9 = new QAction(NORMALIZEACTION, this);
-	  menu.addAction(action9);
+	  posMenu.addAction(action9);
 	  QAction *action10 = new QAction(CLOSEGAPACTION, this);
-	  menu.addAction(action10);
+	  posMenu.addAction(action10);
 	  QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
-	  menu.addAction(action11);
+	  descMenu.addAction(action11);
 	  QAction *action12 = new QAction(SELECTFOLLOWERSACTION, this);
-	  menu.addAction(action12);
+	  selectionMenu.addAction(action12);
 	  QAction *action13 = new QAction(SELECTPREDECESSORSACTION, this);
-	  menu.addAction(action13);
+	  selectionMenu.addAction(action13);
 	  QAction *action14 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
-	  menu.addAction(action14);
+	  descMenu.addAction(action14);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
@@ -1411,24 +1435,28 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  line->setSelected(true);
 	  QMenu menu;
+	  QMenu editMenu("Edit");
+	  QMenu positionMenu("Position");
+	  menu.addMenu(&editMenu);
+	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(CHANGELINECOLOR, this);
-	  menu.addAction(action1);
+	  editMenu.addAction(action1);
 	  QAction *action2 = new QAction(TOGGLEARROW1, this);
-	  menu.addAction(action2);
+	  editMenu.addAction(action2);
 	  QAction *action3 = new QAction(TOGGLEARROW2, this);
-	  menu.addAction(action3);
+	  editMenu.addAction(action3);
 	  QAction *action4 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action4);
 	  QAction *action5 = new QAction(DELETELINE, this);
 	  menu.addAction(action5);
 	  QAction *action6 = new QAction(ONEFORWARD, this);
-	  menu.addAction(action6);
+	  positionMenu.addAction(action6);
 	  QAction *action7 = new QAction(ONEBACKWARD, this);
-	  menu.addAction(action7);
+	  positionMenu.addAction(action7);
 	  QAction *action8 = new QAction(BRINGFORWARD, this);
-	  menu.addAction(action8);
+	  positionMenu.addAction(action8);
 	  QAction *action9 = new QAction(BRINGBACKWARD, this);
-	  menu.addAction(action9);
+	  positionMenu.addAction(action9);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit LineContextMenuAction(action->text());
@@ -1439,22 +1467,26 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  text->setSelected(true);
 	  QMenu menu;
+	  QMenu editMenu("Edit");
+	  QMenu positionMenu("Position");
+	  menu.addMenu(&editMenu);
+	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(CHANGETEXT, this);
-	  menu.addAction(action1);
+	  editMenu.addAction(action1);
 	  QAction *action2 = new QAction(CHANGETEXTCOLOR, this);
-	  menu.addAction(action2);
+	  editMenu.addAction(action2);
 	  QAction *action3 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action3);
 	  QAction *action4 = new QAction(DELETETEXT, this);
 	  menu.addAction(action4);
 	  QAction *action5 = new QAction(ONEFORWARD, this);
-	  menu.addAction(action5);
+	  positionMenu.addAction(action5);
 	  QAction *action6 = new QAction(ONEBACKWARD, this);
-	  menu.addAction(action6);
+	  positionMenu.addAction(action6);
 	  QAction *action7 = new QAction(BRINGFORWARD, this);
-	  menu.addAction(action7);
+	  positionMenu.addAction(action7);
 	  QAction *action8 = new QAction(BRINGBACKWARD, this);
-	  menu.addAction(action8);
+	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit TextContextMenuAction(action->text());
@@ -1465,22 +1497,26 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  ellipse->setSelected(true);
 	  QMenu menu;
+	  QMenu editMenu("Edit");
+	  QMenu positionMenu("Position");
+	  menu.addMenu(&editMenu);
+	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
-	  menu.addAction(action1);
+	  editMenu.addAction(action1);
 	  QAction *action2 = new QAction(CHANGEELLIPSEFILLCOLOR, this);
-	  menu.addAction(action2);
+	  editMenu.addAction(action2);
 	  QAction *action3 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action3);
 	  QAction *action4 = new QAction(DELETEELLIPSE, this);
 	  menu.addAction(action4);
 	  QAction *action5 = new QAction(ONEFORWARD, this);
-	  menu.addAction(action5);
+	  positionMenu.addAction(action5);
 	  QAction *action6 = new QAction(ONEBACKWARD, this);
-	  menu.addAction(action6);
+	  positionMenu.addAction(action6);
 	  QAction *action7 = new QAction(BRINGFORWARD, this);
-	  menu.addAction(action7);
+	  positionMenu.addAction(action7);
 	  QAction *action8 = new QAction(BRINGBACKWARD, this);
-	  menu.addAction(action8);
+	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit EllipseContextMenuAction(action->text());
@@ -1491,22 +1527,26 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  rect->setSelected(true);
 	  QMenu menu;
+	  QMenu editMenu("Edit");
+	  QMenu positionMenu("Position");
+	  menu.addMenu(&editMenu);
+	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(CHANGERECTCOLOR, this);
-	  menu.addAction(action1);
+	  editMenu.addAction(action1);
 	  QAction *action2 = new QAction(CHANGERECTFILLCOLOR, this);
-	  menu.addAction(action2);
+	  editMenu.addAction(action2);
 	  QAction *action3 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action3);
 	  QAction *action4 = new QAction(DELETERECT, this);
 	  menu.addAction(action4);
 	  QAction *action5 = new QAction(ONEFORWARD, this);
-	  menu.addAction(action5);
+	  positionMenu.addAction(action5);
 	  QAction *action6 = new QAction(ONEBACKWARD, this);
-	  menu.addAction(action6);
+	  positionMenu.addAction(action6);
 	  QAction *action7 = new QAction(BRINGFORWARD, this);
-	  menu.addAction(action7);
+	  positionMenu.addAction(action7);
 	  QAction *action8 = new QAction(BRINGBACKWARD, this);
-	  menu.addAction(action8);
+	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit RectContextMenuAction(action->text());

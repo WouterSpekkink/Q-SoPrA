@@ -32,6 +32,7 @@ QString REMOVELINKAGEACTION = "Remove linkage";
 QString KEEPLINKAGEACTION = "Keep linkage";
 QString ACCEPTLINKAGEACTION = "Accept linkage";
 QString REJECTLINKAGEACTION = "Reject linkage";
+QString ORIGINALPOSACTION = "Return to default position";
 QString SETTLEACTION = "Settle in current position";
 QString PARALLELACTION = "Make parallel";
 QString NORMALIZEACTION = "Normalize distance";
