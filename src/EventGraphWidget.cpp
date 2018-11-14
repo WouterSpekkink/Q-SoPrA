@@ -7657,6 +7657,41 @@ void EventGraphWidget::exportTransitionMatrix()
 		  allEvents.push_back(currentMacro);
 		}
 	    }
+	  // If we want to look at attributes instead of mode, it is better
+	  // to identify the relevant attributes before we iterate through
+	  // all events.
+	  QVector<int> incidents;
+	  QVector<QString> attributeVector; 
+	  if (!isMode)
+	    {
+	      attributeVector.push_back(rowMode);
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT name FROM entities WHERE name = :name");
+	      query->bindValue(":name", rowMode);
+	      query->exec();
+	      query->first();
+	      bool entity = false;
+	      if (!query->isNull(0)) 
+		{
+		  entity = true;
+		}
+	      findChildren(rowMode, &attributeVector, entity);
+
+	      QVectorIterator<QString> attIt(attributeVector);
+	      while (attIt.hasNext()) 
+		{
+		  QString attribute = attIt.next();
+		  query->prepare("SELECT incident FROM attributes_to_incidents "
+				 "WHERE attribute = :attribute");
+		  query->bindValue(":attribute", attribute);
+		  query->exec();
+		  while (query->next())
+		    {
+		      incidents.push_back(query->value(0).toInt());
+		    }
+		}
+	      delete query;
+	    }
 	  QVectorIterator<QGraphicsItem*> allIt(allEvents);
 	  while (allIt.hasNext())
 	    {
@@ -7682,39 +7717,9 @@ void EventGraphWidget::exportTransitionMatrix()
 		}
 	      else if (!isMode) 
 		{
-		  QVector<QString> attributeVector;
-		  attributeVector.push_back(rowMode);
-		  QSqlQuery *query = new QSqlQuery;
-		  query->prepare("SELECT name FROM entities WHERE name = :name");
-		  query->bindValue(":name", rowMode);
-		  query->exec();
-		  query->first();
-		  bool entity = false;
-		  if (!query->isNull(0)) 
-		    {
-		      entity = true;
-		    }
-		  findChildren(rowMode, &attributeVector, entity);
 		  if (eventItem) 
 		    {
-		      bool found = false;
-		      QVectorIterator<QString> attIt(attributeVector);
-		      while (attIt.hasNext()) 
-			{
-			  QString attribute = attIt.next();
-			  int id = eventItem->getId();
-			  query->prepare("SELECT attribute FROM attributes_to_incidents "
-					 "WHERE attribute = :attribute AND incident = :id");
-			  query->bindValue(":attribute", attribute);
-			  query->bindValue(":id", id);
-			  query->exec();
-			  query->first();
-			  if (!query->isNull(0)) 
-			    {
-			      found = true;
-			    }
-			}
-		      if (found) 
+		      if (incidents.contains(eventItem->getId())) 
 			{
 			  occurrence++;
 			}
@@ -7736,18 +7741,68 @@ void EventGraphWidget::exportTransitionMatrix()
 			  occurrence++;
 			}
 		    }
-		  delete query;
 		}
 	    }
 	  rowMarginals.push_back(occurrence);
 	  // And we add the results to the appropriate columns.
-	  for (int j = 0; j != eventListWidget->rowCount(); j++) 
+	  for (int j = 0; j != eventListWidget->rowCount(); j++)
 	    {
 	      QTableWidgetItem *colItem = eventListWidget->item(j, 0);
 	      QString colMode = colItem->data(Qt::DisplayRole).toString();
 	      // Now we need to iterate through our edges.
 	      QVectorIterator<Arrow*> it(edgeVector);
 	      int count = 0;
+	      QVector<QString> rowVector;
+	      rowVector.push_back(rowMode);
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT name FROM entities WHERE name = :name");
+	      query->bindValue(":name", rowMode);
+	      query->exec();
+	      query->first();
+	      bool entity = false;
+	      if (!query->isNull(0)) 
+		{
+		  entity = true;
+		}
+	      findChildren(rowMode, &rowVector, entity);
+	      QVector<QString> colVector;
+	      colVector.push_back(colMode);
+	      query->prepare("SELECT name FROM entities WHERE name = :name");
+	      query->bindValue(":name", colMode);
+	      query->exec();
+	      query->first();
+	      entity = false;
+	      if (!query->isNull(0)) 
+		{
+		  entity = true;
+		}
+	      findChildren(colMode, &colVector, entity);
+	      QSet<int> rowIncidents;
+	      QSet<int> colIncidents;
+	      QVectorIterator<QString> rit(rowVector);
+	      QVectorIterator<QString> cit(colVector);
+	      query->prepare("SELECT incident FROM attributes_to_incidents "
+			     "WHERE attribute = :attribute");
+	      while (rit.hasNext())
+		{
+		  QString currentAttribute = rit.next();
+		  query->bindValue(":attribute", currentAttribute);
+		  query->exec();
+		  while (query->next())
+		    {
+		      rowIncidents.insert(query->value(0).toInt());
+		    }
+		}
+	      while (cit.hasNext())
+		{
+		  QString currentAttribute = cit.next();
+		  query->bindValue(":attribute", currentAttribute);
+		  query->exec();
+		  while (query->next())
+		    {
+		      colIncidents.insert(query->value(0).toInt());
+		    }
+		}
 	      while (it.hasNext()) 
 		{
 		  Arrow *edge = it.next();
@@ -7785,50 +7840,17 @@ void EventGraphWidget::exportTransitionMatrix()
 				  transitions++;
 				  count++;
 				}
-			      // If we are counting all occurrences of variables.
 			    }
+			  // If we are counting all occurrences of variables.
 			  else if (!isMode) 
 			    {
 			      bool rowFound = false;
 			      bool colFound = false;
-			      QVector<QString> rowVector;
-			      rowVector.push_back(rowMode);
-			      QSqlQuery *query = new QSqlQuery;
-			      query->prepare("SELECT name FROM entities WHERE name = :name");
-			      query->bindValue(":name", rowMode);
-			      query->exec();
-			      query->first();
-			      bool entity = false;
-			      if (!query->isNull(0)) 
-				{
-				  entity = true;
-				}
-			      findChildren(rowMode, &rowVector, entity);
-			      QVector<QString> colVector;
-			      colVector.push_back(colMode);
-			      query->prepare("SELECT name FROM entities WHERE name = :name");
-			      query->bindValue(":name", colMode);
-			      query->exec();
-			      query->first();
-			      entity = false;
-			      if (!query->isNull(0)) 
-				{
-				  entity = true;
-				}
-			      findChildren(colMode, &colVector, entity);
 			      if (startEvent) 
 				{
-				  int id = startEvent->getId();
-				  query->prepare("SELECT attribute FROM attributes_to_incidents "
-						 "WHERE incident = :id");
-				  query->bindValue(":id", id);
-				  query->exec();
-				  while (query->next()) 
+				  if (rowIncidents.contains(startEvent->getId()))
 				    {
-				      if (rowVector.contains(query->value(0).toString())) 
-					{
-					  rowFound = true;
-					}
+				      rowFound = true;
 				    }
 				}
 			      else if (startMacro) 
@@ -7840,22 +7862,15 @@ void EventGraphWidget::exportTransitionMatrix()
 				      if (rowVector.contains(currentAttribute)) 
 					{
 					  rowFound = true;
+					  break;
 					}
 				    }
 				}
 			      if (endEvent) 
 				{
-				  int id = endEvent->getId();
-				  query->prepare("SELECT attribute FROM attributes_to_incidents "
-						 "WHERE incident = :id");
-				  query->bindValue(":id", id);
-				  query->exec();
-				  while (query->next()) 
+				  if (colIncidents.contains(endEvent->getId()))
 				    {
-				      if (colVector.contains(query->value(0).toString())) 
-					{
-					  colFound = true;
-					}
+				      colFound = true;
 				    }
 				}
 			      else if (endMacro) 
@@ -7867,10 +7882,10 @@ void EventGraphWidget::exportTransitionMatrix()
 				      if (colVector.contains(currentAttribute)) 
 					{
 					  colFound = true;
+					  break;
 					}
 				    }
 				}
-			      delete query;
 			      if (rowFound && colFound) 
 				{
 				  transitions++;
@@ -7882,6 +7897,7 @@ void EventGraphWidget::exportTransitionMatrix()
 		}
 	      // We push the current cell value to our row vector.
 	      currentRow.push_back(count);
+	      delete query;
 	    }
 	  // We push the number of transitions observed into the appropriate row.
 	  transitionsRow.push_back(transitions);
