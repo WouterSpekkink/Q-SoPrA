@@ -536,6 +536,8 @@ EventGraphWidget::~EventGraphWidget()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  delete view;
+  delete scene;
 }
 
 void EventGraphWidget::checkCongruency() 
@@ -603,8 +605,8 @@ void EventGraphWidget::checkCongruency()
 		  while (it3.hasNext()) 
 		    {
 		      Linkage *current = it3.next();
-		      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(current->startItem());
-		      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(current->endItem());
+		      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(current->getStart());
+		      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(current->getEnd());
 		      if (startEvent && endEvent) 
 			{
 			  if (startEvent->getId() == tailId &&
@@ -627,8 +629,8 @@ void EventGraphWidget::checkCongruency()
 	{
 	  Linkage *current = it3.next();
 	  QString currentType = current->getType();
-	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->startItem());
-	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->endItem());
+	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(current->getStart());
+	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(current->getEnd());
 	  if (startEvent && endEvent) 
 	    {
 	      int currentTail = startEvent->getId();
@@ -2792,10 +2794,10 @@ void EventGraphWidget::layoutGraph()
 	    {
 	      Linkage *edge = it6.next();
 	      // Basically we just ask whether the current events are linked.
-	      if ((edge->startItem() == current &&
-		   edge->endItem() == second) ||
-		  (edge->endItem() == current &&
-		   edge->startItem() == second)) 
+	      if ((edge->getStart() == current &&
+		   edge->getEnd() == second) ||
+		  (edge->getEnd() == current &&
+		   edge->getStart() == second)) 
 		{
 		  partners.push_back(second);
 		}
@@ -3509,8 +3511,8 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type)
 		{
 		  Linkage *currentEdge = it2.next();
 		  edgeColor = currentEdge->getColor();
-		  EventItem *tempS = qgraphicsitem_cast<EventItem *>(currentEdge->startItem());
-		  EventItem *tempT = qgraphicsitem_cast<EventItem *>(currentEdge->endItem());
+		  EventItem *tempS = qgraphicsitem_cast<EventItem *>(currentEdge->getStart());
+		  EventItem *tempT = qgraphicsitem_cast<EventItem *>(currentEdge->getEnd());
 		  if (tempSource == tempS && tempTarget == tempT) 
 		    {
 		      currentEdge->setPenStyle(2);
@@ -3831,10 +3833,10 @@ void EventGraphWidget::saveCurrentPlot()
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
-	  EventItem *eventTail = qgraphicsitem_cast<EventItem *>(currentEdge->startItem());
-	  EventItem *eventHead = qgraphicsitem_cast<EventItem *>(currentEdge->endItem());
-	  MacroEvent *macroTail = qgraphicsitem_cast<MacroEvent*>(currentEdge->startItem());
-	  MacroEvent *macroHead = qgraphicsitem_cast<MacroEvent*>(currentEdge->endItem());
+	  EventItem *eventTail = qgraphicsitem_cast<EventItem *>(currentEdge->getStart());
+	  EventItem *eventHead = qgraphicsitem_cast<EventItem *>(currentEdge->getEnd());
+	  MacroEvent *macroTail = qgraphicsitem_cast<MacroEvent*>(currentEdge->getStart());
+	  MacroEvent *macroHead = qgraphicsitem_cast<MacroEvent*>(currentEdge->getEnd());
 	  QString linkage = currentEdge->getType();
 	  int tail = 0;
 	  int head = 0;
@@ -6032,8 +6034,8 @@ void EventGraphWidget::setVisibility()
 	}
       else 
 	{
-	  QGraphicsItem *tail = currentEdge->startItem();
-	  QGraphicsItem *head = currentEdge->endItem();
+	  QGraphicsItem *tail = currentEdge->getStart();
+	  QGraphicsItem *head = currentEdge->getEnd();
 	  if (tail->isVisible() && head->isVisible()) 
 	    {
 	      currentEdge->setVisible(true);
@@ -6104,8 +6106,8 @@ void EventGraphWidget::setHeights()
 	    {
 	      if (currentLinkage->getType() == currentType) 
 		{
-		  QGraphicsItem *start = currentLinkage->startItem();
-		  QGraphicsItem *end = currentLinkage->endItem();
+		  QGraphicsItem *start = currentLinkage->getStart();
+		  QGraphicsItem *end = currentLinkage->getEnd();
 		  int countFound = 0;
 		  bool found = false;
 		  QVectorIterator<Linkage*> it3(_edgeVector);
@@ -6116,8 +6118,8 @@ void EventGraphWidget::setHeights()
 			{
 			  if (otherLinkage != currentLinkage) 
 			    {
-			      if (otherLinkage->startItem() == start &&
-				  otherLinkage->endItem() == end) 
+			      if (otherLinkage->getStart() == start &&
+				  otherLinkage->getEnd() == end) 
 				{
 				  found = true;
 				  if (!finished.contains(otherLinkage->getType())) 
@@ -6125,7 +6127,7 @@ void EventGraphWidget::setHeights()
 				      countFound++;
 				    }
 				}
-			      else if (otherLinkage->startItem() == end && otherLinkage->endItem() == start) 
+			      else if (otherLinkage->getStart() == end && otherLinkage->getEnd() == start) 
 				{
 				  found = true;
 				}
@@ -6517,10 +6519,10 @@ void EventGraphWidget::exportEdges()
 	  Linkage *edge = it.next();
 	  if (edge->isVisible()) 
 	    {
-	      EventItem *eventStart = qgraphicsitem_cast<EventItem *>(edge->startItem());
-	      EventItem *eventEnd = qgraphicsitem_cast<EventItem *>(edge->endItem());
-	      MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
-	      MacroEvent *macroEnd = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	      EventItem *eventStart = qgraphicsitem_cast<EventItem *>(edge->getStart());
+	      EventItem *eventEnd = qgraphicsitem_cast<EventItem *>(edge->getEnd());
+	      MacroEvent *macroStart = qgraphicsitem_cast<MacroEvent*>(edge->getStart());
+	      MacroEvent *macroEnd = qgraphicsitem_cast<MacroEvent*>(edge->getEnd());
 	      QString description = edge->getType();
 	      QString coder = _selectedCoder;
 	      QString source = "";
@@ -6997,7 +6999,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem *> in
 			      Linkage*temp = it3.next();
 			      if (temp->getType() == currentType) 
 				{
-				  if (temp->startItem() == tempSource && temp->endItem() == tempTarget) 
+				  if (temp->getStart() == tempSource && temp->getEnd() == tempTarget) 
 				    {
 				      found = true;
 				    }
@@ -7076,7 +7078,7 @@ void EventGraphWidget::rewireLinkages(MacroEvent *macro, QVector<EventItem *> in
 			      Linkage *temp = it5.next();
 			      if (temp->getType() == currentType) 
 				{
-				  if (temp->startItem() == tempSource && temp->endItem() == tempTarget) 
+				  if (temp->getStart() == tempSource && temp->getEnd() == tempTarget) 
 				    {
 				      found = true;
 				    }
@@ -7240,8 +7242,8 @@ void EventGraphWidget::disaggregateEvent()
   for (it8 = _edgeVector.begin(); it8 != _edgeVector.end();) 
     {
       Linkage *current = *it8;
-      if(current->startItem() == _selectedMacro ||
-	 current->endItem() == _selectedMacro) 
+      if(current->getStart() == _selectedMacro ||
+	 current->getEnd() == _selectedMacro) 
 	{
 	  delete current;
 	  _edgeVector.removeOne(current);
@@ -7506,10 +7508,10 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
       while (it.hasNext()) 
 	{
 	  Linkage *edge = it.next();
-	  if (edge->startItem() == origin) 
+	  if (edge->getStart() == origin) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->endItem());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->getEnd());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->getEnd());
 	      if (event) 
 		{
 		  event->setColor(ancestorFill);
@@ -7520,10 +7522,10 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
 		  macro->setColor(ancestorFill);
 		  macro->getLabel()->setDefaultTextColor(ancestorText);
 		}
-	      if (!pFinished->contains(edge->endItem())) 
+	      if (!pFinished->contains(edge->getEnd())) 
 		{
-		  pFinished->insert(edge->endItem());
-		  findAncestors(ancestorFill, ancestorText, edge->endItem(), pFinished, type);
+		  pFinished->insert(edge->getEnd());
+		  findAncestors(ancestorFill, ancestorText, edge->getEnd(), pFinished, type);
 		}
 	    }
 	}
@@ -7534,10 +7536,10 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
       while (it.hasNext()) 
 	{
 	  Linkage *edge = it.next();
-	  if (edge->endItem() == origin) 
+	  if (edge->getEnd() == origin) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->startItem());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->getStart());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->getStart());
 	      if (event) 
 		{
 		  event->setColor(ancestorFill);
@@ -7548,10 +7550,10 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
 		  macro->setColor(ancestorFill);
 		  macro->getLabel()->setDefaultTextColor(ancestorText);
 		}
-	      if (!pFinished->contains(edge->startItem())) 
+	      if (!pFinished->contains(edge->getStart())) 
 		{
-		  pFinished->insert(edge->startItem());
-		  findAncestors(ancestorFill, ancestorText, edge->startItem(), pFinished, type);
+		  pFinished->insert(edge->getStart());
+		  findAncestors(ancestorFill, ancestorText, edge->getStart(), pFinished, type);
 		}
 	    }
 	}
@@ -7578,10 +7580,10 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
       while (it.hasNext()) 
 	{
 	  Linkage *edge = it.next();
-	  if (edge->endItem() == origin) 
+	  if (edge->getEnd() == origin) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->startItem());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->getStart());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->getStart());
 	      if (event) 
 		{
 		  event->setColor(descendantFill);
@@ -7592,10 +7594,10 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
 		  macro->setColor(descendantFill);
 		  macro->getLabel()->setDefaultTextColor(descendantText);
 		}
-	      if (!pFinished->contains(edge->startItem())) 
+	      if (!pFinished->contains(edge->getStart())) 
 		{
-		  pFinished->insert(edge->startItem());
-		  findDescendants(descendantFill, descendantText, edge->startItem(), pFinished, type);
+		  pFinished->insert(edge->getStart());
+		  findDescendants(descendantFill, descendantText, edge->getStart(), pFinished, type);
 		}
 	    }
 	}
@@ -7606,10 +7608,10 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
       while (it.hasNext()) 
 	{
 	  Linkage *edge = it.next();
-	  if (edge->startItem() == origin) 
+	  if (edge->getStart() == origin) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->endItem());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->getEnd());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->getEnd());
 	      if (event) 
 		{
 		  event->setColor(descendantFill);
@@ -7620,10 +7622,10 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
 		  macro->setColor(descendantFill);
 		  macro->getLabel()->setDefaultTextColor(descendantText);
 		}
-	      if (!pFinished->contains(edge->endItem())) 
+	      if (!pFinished->contains(edge->getEnd())) 
 		{
-		  pFinished->insert(edge->endItem());
-		  findDescendants(descendantFill, descendantText, edge->endItem(), pFinished, type);
+		  pFinished->insert(edge->getEnd());
+		  findDescendants(descendantFill, descendantText, edge->getEnd(), pFinished, type);
 		}
 	    }
 	}
@@ -7858,10 +7860,10 @@ void EventGraphWidget::exportTransitionMatrix()
 		    {
 		      if (edge->isVisible()) 
 			{
-			  EventItem *startEvent = qgraphicsitem_cast<EventItem *>(edge->startItem());
-			  EventItem *endEvent = qgraphicsitem_cast<EventItem *>(edge->endItem());
-			  MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
-			  MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+			  EventItem *startEvent = qgraphicsitem_cast<EventItem *>(edge->getStart());
+			  EventItem *endEvent = qgraphicsitem_cast<EventItem *>(edge->getEnd());
+			  MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(edge->getStart());
+			  MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(edge->getEnd());
 			  // If we are only counting modes.
 			  if (isMode) 
 			    {
@@ -8546,10 +8548,10 @@ void EventGraphWidget::selectAncestors(QGraphicsItem *origin,
       Linkage *edge = it.next();
       if (edge->getType() == type) 
 	{
-	  if (edge->endItem() == origin) 
+	  if (edge->getEnd() == origin) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->startItem());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->startItem());
+	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->getStart());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->getStart());
 	      if (event) 
 		{
 		  event->setSelected(true);
@@ -8558,10 +8560,10 @@ void EventGraphWidget::selectAncestors(QGraphicsItem *origin,
 		{
 		  macro->setSelected(true);
 		}
-	      if (!pFinished->contains(edge->startItem())) 
+	      if (!pFinished->contains(edge->getStart())) 
 		{
-		  pFinished->insert(edge->startItem());
-		  selectAncestors(edge->startItem(), pFinished, type);
+		  pFinished->insert(edge->getStart());
+		  selectAncestors(edge->getStart(), pFinished, type);
 		}
 	    }
 	}
@@ -8578,10 +8580,10 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
       Linkage *edge = it.next();
       if (edge->getType() == type) 
 	{
-	  if (edge->startItem() == origin) 
+	  if (edge->getStart() == origin) 
 	    {
-	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->endItem());
-	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->endItem());
+	      EventItem *event = qgraphicsitem_cast<EventItem *>(edge->getEnd());
+	      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(edge->getEnd());
 	      if (event) 
 		{
 		  event->setSelected(true);
@@ -8590,10 +8592,10 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
 		{
 		  macro->setSelected(true);
 		}
-	      if (!pFinished->contains(edge->endItem())) 
+	      if (!pFinished->contains(edge->getEnd())) 
 		{
-		  pFinished->insert(edge->endItem());
-		  selectDescendants(edge->endItem(), pFinished, type);
+		  pFinished->insert(edge->getEnd());
+		  selectDescendants(edge->getEnd(), pFinished, type);
 		}
 	    }
 	}
@@ -8674,8 +8676,8 @@ void EventGraphWidget::removeNormalLinkage()
 	  warningBox->setInformativeText("Are you sure you want to remove this linkage?");
 	  if (warningBox->exec() == QMessageBox::Yes) 
 	    {
-	      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(linkage->startItem());
-	      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(linkage->endItem());
+	      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(linkage->getStart());
+	      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(linkage->getEnd());
 	      if (startEvent && endEvent) 
 		{
 		  int tail = startEvent->getId();
@@ -8724,10 +8726,10 @@ void EventGraphWidget::changeLinkageComment()
       int tail = 0;
       int head = 0;
       QString type = linkage->getType();
-      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(linkage->startItem());
-      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(linkage->endItem());
-      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(linkage->startItem());
-      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(linkage->endItem());
+      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(linkage->getStart());
+      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(linkage->getEnd());
+      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(linkage->getStart());
+      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(linkage->getEnd());
       if (startEvent) 
 	{
 	  tail = startEvent->getId();
@@ -8855,7 +8857,7 @@ void EventGraphWidget::keepLinkage()
 	  if (linkage) 
 	    {
 	      Linkage *currentEdge = qgraphicsitem_cast<Linkage*>(it.next());
-	      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(linkage->startItem());
+	      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(linkage->getStart());
 	      int tail = startEvent->getId();
 	      currentEdge->setPenStyle(1);
 	      QString type = currentEdge->getType();
@@ -8975,8 +8977,8 @@ void EventGraphWidget::acceptLinkage()
 	    {
 	      Linkage *currentEdge = qgraphicsitem_cast<Linkage*>(it.next());;
 	      QString type = currentEdge->getType();
-	      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(currentEdge->startItem());
-	      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(currentEdge->endItem());
+	      EventItem *startEvent = qgraphicsitem_cast<EventItem *>(currentEdge->getStart());
+	      EventItem *endEvent = qgraphicsitem_cast<EventItem *>(currentEdge->getEnd());
 	      int tail = startEvent->getId();
 	      int head = endEvent->getId();
 	      currentEdge->setPenStyle(0);

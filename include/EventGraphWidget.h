@@ -75,6 +75,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 // Need a forward declaration here
 class AttributesWidget;
+class OccurrenceGraphWidget;
 
 class EventGraphWidget : public QWidget
 {
@@ -88,9 +89,9 @@ public:
   ~EventGraphWidget();
 
   // Setters
-  void setAttributesWidget(AttributesWidget* aw);
-  void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
-  void setRelationshipsWidget(RelationshipsWidget *rw);
+  void setAttributesWidget(AttributesWidget* attributesWidget);
+  void setOccurrenceGraph(OccurrenceGraphWidget* occurrenceGraphWidget);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
 
   // Getters
   QVector<MacroEvent*> getMacros();

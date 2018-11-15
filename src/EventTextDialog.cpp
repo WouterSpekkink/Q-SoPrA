@@ -1,12 +1,34 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/EventTextDialog.h"
 
 EventTextDialog::EventTextDialog(QWidget *parent) : QDialog(parent) 
 {
-  text = "";
-  subText = "";
-  timing = "";
-  subTiming = "";
-  exitStatus = 1;
+  _text = "";
+  _subText = "";
+  _timing = "";
+  _subTiming = "";
+  _exitStatus = 1;
 
   timingLabel = new QLabel(tr("<b>Timing:</b>"), this);
   textLabel = new QLabel(tr("<b>Event description:</b>"), this);
@@ -41,44 +63,44 @@ EventTextDialog::EventTextDialog(QWidget *parent) : QDialog(parent)
 
 QString EventTextDialog::getText() 
 {
-  return text;
+  return _text;
 }
 
 QString EventTextDialog::getTiming() 
 {
-  return timing;
+  return _timing;
 }
 
-void EventTextDialog::submitText(const QString &submittedText) 
+void EventTextDialog::submitText(const QString &text) 
 {
-  text = submittedText;
-  subText = submittedText;
-  textField->setText(submittedText);
+  _text = text;
+  _subText = text;
+  textField->setText(text);
 }
 
-void EventTextDialog::submitTiming(const QString &submittedTiming) 
+void EventTextDialog::submitTiming(const QString &timing) 
 {
-  timing = submittedTiming;
-  subTiming = submittedTiming;
-  timingField->setText(submittedTiming);
+  _timing = timing;
+  _subTiming = timing;
+  timingField->setText(timing);
 }
 
 int EventTextDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void EventTextDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void EventTextDialog::saveAndClose() 
 {
-  text = textField->toPlainText().trimmed();
-  timing = timingField->text();
-  if (text == "") 
+  _text = textField->toPlainText().trimmed();
+  _timing = timingField->text();
+  if (_text == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -89,7 +111,7 @@ void EventTextDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (timing == "")
+  if (_timing == "")
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -101,7 +123,7 @@ void EventTextDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 

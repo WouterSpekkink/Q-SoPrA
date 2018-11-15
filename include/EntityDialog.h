@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef ENTITYDIALOG_H
 #define ENTITYDIALOG_H
 
@@ -29,20 +51,27 @@ class EntityDialog : public QDialog
   Q_OBJECT
 
 public:
+  // Constructor and destructor
   EntityDialog(QWidget *parent = 0);
   ~EntityDialog() {};
 
+  // Setters
+  void submitName(const QString &name);
+  void submitDescription(const QString &description);
+  void setNew();
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  
+  // Getters
   QString getName();
   QString getDescription();
   int getExitStatus();
-  void submitName(const QString &newName);
-  void submitDescription(const QString &newDescription);
-  void setNew();
+
+  // Public functions
   void clearSelection();
   void resetTree();
-  void setRelationshipsWidget(RelationshipsWidget *rw);
 
 private slots:
+  // Private member functions
   void setValueButton();
   void setValue();
   void getValue();
@@ -66,19 +95,17 @@ private slots:
   bool eventFilter(QObject *object, QEvent *event);
 
 private:
+  // Interface elements
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeViewEntities> attributesTreeView;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<AttributeTreeFilter> treeFilter;
   QPointer<AttributeDialog> attributeDialog;
-  RelationshipsWidget *relationshipsWidget;
-  
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
   QPointer<QLabel> attributesLabel;
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
-
   QPointer<QPushButton> valueButton; 
   QPointer<QPushButton> assignAttributeButton;
   QPointer<QPushButton> unassignAttributeButton;
@@ -90,22 +117,25 @@ private:
   QPointer<QPushButton> saveCloseButton;
   QPointer<QPushButton> expandButton;
   QPointer<QPushButton> collapseButton;
-
   QPointer<QLineEdit> nameField;
   QPointer<QLineEdit> valueField;
   QPointer<QLineEdit> attributesFilterField;
-
   QPointer<QTextEdit> descriptionField;
 
-  QString name;
-  QString description;
-  QString oldName;
-  QVector<QString> attributes;
+  // Private variables
+  QString _name;
+  QString _description;
+  QString _oldName;
+  int _exitStatus;
+  bool _isNew;
+  bool _fresh; // Qt's selection behaviour forced me to do this.
+  
+  // Private data vector
+  QVector<QString> _attributes;
 
-  int exitStatus;
-
-  bool isNew;
-  bool fresh; // Qt's selection behaviour forced me to do this. 
+  // Pointer to other widget
+  // Do not delete
+  QPointer<RelationshipsWidget> _relationshipsWidget;
 };
 
 #endif

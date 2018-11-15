@@ -63,7 +63,6 @@ private:
   qreal _scaleFact;
   qreal _panSpeed;
   QPoint _lastMousePos;  
-  
 };
 
 

@@ -1,63 +1,95 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+***********
+
+The technique for drawing arrowhead polygons is based upon examples 
+provided by the Qt Company under the BSD license, 
+with the copyright shown below:
+
+** Copyright (C) 2016 The Qt Company Ltd.
+** Contact: https://www.qt.io/licensing/
+
+http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-cpp.html
+http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
+
+*/
+
 #include "../include/DirectedEdge.h"
 #include <math.h>
 #include <QPen>
 #include <QPainter>
 #include <QtCore>
 
-const qreal Pi = 3.14;
-
-DirectedEdge::DirectedEdge(NetworkNode *startItem, NetworkNode *endItem, QString submittedType,
-			   QString submittedName, QGraphicsItem *parent)
+DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
+			   QString name, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) 
 {
-  start = startItem;
-  end = endItem;
-  color = Qt::black;
-  setPen(QPen(color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-  height = 20;
-  relType = submittedType;
-  name = submittedName;
-  filtered = true;
-  massHidden = false;
+  _start = start;
+  _end = end;
+  _color = Qt::black;
+  setPen(QPen(_color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  _height = 20;
+  _relType = type;
+  _name = name;
+  _filtered = true;
+  _massHidden = false;
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  comment = "";
+  _comment = "";
 }
 
 QRectF DirectedEdge::boundingRect() const 
 {
-  return strokePath.controlPointRect(); 
+  return _strokePath.controlPointRect(); 
 }
 
 void DirectedEdge::updatePosition() 
 {
   calculate();
   QPainterPath myPath;
-  myPath.moveTo(start->pos());
-  myPath.quadTo(controlPoint, ghostLine.p2());
-  strokePath = myPath;
+  myPath.moveTo(_start->pos());
+  myPath.quadTo(_controlPoint, _ghostLine.p2());
+  _strokePath = myPath;
 }
 
 void DirectedEdge::calculate() 
 {
-  qreal dX = end->pos().x() - start->pos().x();
-  qreal dY = end->pos().y() - start->pos().y();
+  qreal dX = _end->pos().x() - _start->pos().x();
+  qreal dY = _end->pos().y() - _start->pos().y();
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
-  QLineF newLine = QLineF(start->pos(), end->pos());
+  QLineF newLine = QLineF(_start->pos(), _end->pos());
   newLine.setLength(newLine.length() - 18);
-  qreal mX = (start->pos().x() + newLine.p2().x()) / 2;
-  qreal mY = (start->pos().y() + newLine.p2().y()) / 2;
-  qreal cX = height * (-1 * (dY / distance)) + mX;
-  qreal cY = height * (dX / distance) + mY;
-  controlPoint = QPointF(cX, cY);
-  ghostLine = QLineF(controlPoint, end->pos());
-  ghostLine.setLength(ghostLine.length() - 18);
-  double angle = ::acos(ghostLine.dx() / ghostLine.length());
-  if (ghostLine.dy() >= 0)
+  qreal mX = (_start->pos().x() + newLine.p2().x()) / 2;
+  qreal mY = (_start->pos().y() + newLine.p2().y()) / 2;
+  qreal cX = _height * (-1 * (dY / distance)) + mX;
+  qreal cY = _height * (dX / distance) + mY;
+  _controlPoint = QPointF(cX, cY);
+  _ghostLine = QLineF(_controlPoint, _end->pos());
+  _ghostLine.setLength(_ghostLine.length() - 18);
+  double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
+  if (_ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
   qreal arrowSize = 10;
-  arrowP1 = ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
+  _arrowP1 = _ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
 				     cos(angle + Pi / 3) * arrowSize);
-  arrowP2 = ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
+  _arrowP2 = _ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 				     cos(angle + Pi - Pi / 3) * arrowSize);
   setLine(newLine);
   prepareGeometryChange();
@@ -66,53 +98,53 @@ void DirectedEdge::calculate()
 void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
   QPen myPen = pen();
-  myPen.setColor(color);
+  myPen.setColor(_color);
   painter->setPen(myPen);
-  painter->setBrush(color);
+  painter->setBrush(_color);
   calculate();
-  arrowHead.clear();
-  arrowHead << ghostLine.p2() << arrowP1 << arrowP2;
+  _arrowHead.clear();
+  _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
   QPainterPath myPath;
-  myPath.moveTo(start->pos());
-  myPath.quadTo(controlPoint, ghostLine.p2());
-  strokePath = myPath;
-  painter->drawPolygon(arrowHead);
-  painter->strokePath(myPath, QPen(color));
+  myPath.moveTo(_start->pos());
+  myPath.quadTo(_controlPoint, _ghostLine.p2());
+  _strokePath = myPath;
+  painter->drawPolygon(_arrowHead);
+  painter->strokePath(myPath, QPen(_color));
 }
 
-NetworkNode* DirectedEdge::startItem() const 
+NetworkNode* DirectedEdge::getStart() const 
 {
-  return start;
+  return _start;
 }
 
-NetworkNode* DirectedEdge::endItem() const 
+NetworkNode* DirectedEdge::getEnd() const 
 {
-  return end;
+  return _end;
 }
 
-void DirectedEdge::setColor(const QColor &subColor) 
+void DirectedEdge::setColor(const QColor &color) 
 {
-  color = subColor;
+  _color = color;
 }
 
 QString DirectedEdge::getType() 
 {
-  return relType;
+  return _relType;
 }
 
-void DirectedEdge::setType(const QString submittedType) 
+void DirectedEdge::setType(const QString &type) 
 {
-  relType = submittedType;
+  _relType = type;
 }
 
-void DirectedEdge::setHeight(int submittedHeight) 
+void DirectedEdge::setHeight(const int &height) 
 {
-  height = submittedHeight;
+  _height = height;
 }
 
 int DirectedEdge::getHeight() 
 {
-  return height;
+  return _height;
 }
 
 int DirectedEdge::type() const 
@@ -122,47 +154,47 @@ int DirectedEdge::type() const
 
 QString DirectedEdge::getName() 
 {
-  return name;
+  return _name;
 }
 
-void DirectedEdge::setName(const QString submittedName) 
+void DirectedEdge::setName(const QString &name) 
 {
-  name = submittedName;
+  _name = name;
 }
 
 bool DirectedEdge::isFiltered() 
 {
-  return filtered;
+  return _filtered;
 }
 
 void DirectedEdge::setFiltered(bool state) 
 {
-  filtered = state;
+  _filtered = state;
 }
 
 bool DirectedEdge::isMassHidden() 
 {
-  return massHidden;
+  return _massHidden;
 }
 
 void DirectedEdge::setMassHidden(bool state) 
 {
-  massHidden = state;
+  _massHidden = state;
 }
 
-void DirectedEdge::setComment(const QString submittedComment) 
+void DirectedEdge::setComment(const QString &comment) 
 {
-  comment = submittedComment;
-  QString toolTip = breakString(comment);
-  this->setToolTip(toolTip);
+  _comment = comment;
+  QString toolTip = breakString(_comment);
+  setToolTip(toolTip);
 }
 
 QString DirectedEdge::getComment() 
 {
-  return comment;
+  return _comment;
 }
 
 QColor DirectedEdge::getColor() 
 {
-  return color;
+  return _color;
 }

@@ -1,10 +1,7 @@
 #include "../include/MainWindow.h"
 
-MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : QMainWindow(parent) 
+MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) 
 {
-  // We make sure that the sql database is set.
-  esd = submittedEsd;
-
   // We set the windows size to the maximum possible.
   QSize availableSize = qApp->desktop()->availableGeometry().size();
   int width = availableSize.width();
@@ -13,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
 
   // Creating the stack and te  widgets it can display.
   stacked = new QStackedWidget(this);
-  dataWidget = new DataWidget(this, esd);
+  dataWidget = new DataWidget(this);
   attributesWidget = new AttributesWidget(this);
   relationshipsWidget = new RelationshipsWidget(this);
   linkagesWidget = new LinkagesWidget(this);
@@ -31,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   missingRelationshipsTableWidget = new MissingRelationshipsTable(this);
 
   // Some of these widgets need some pointers to each other to communicate properly.
-  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
+  //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
   LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(linkagesWidget);
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
@@ -43,8 +40,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(rawRelationshipsTableWidget);
   CasingWidget *cw = qobject_cast<CasingWidget*>(casingWidget);
 
-  dw->setEventGraph(egw);
-  dw->setOccurrenceGraph(ogw);
   aw->setEventGraph(egw);
   aw->setRelationshipsWidget(rw);
   lw->setEventGraph(egw);
@@ -53,7 +48,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   egw->setOccurrenceGraph(ogw);
   egw->setRelationshipsWidget(rw);
   hgw->setAttributesWidget(aw);
-  hgw->setEventGraph(egw);
   hgw->setRelationshipsWidget(rw);
   rw->setNetworkGraph(ngw);
   rw->setEventGraph(egw);
@@ -125,7 +119,7 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   stacked->addWidget(entitiesAttributesTableWidget); // 12
   stacked->addWidget(missingAttributesTableWidget); // 13
   stacked->addWidget(missingRelationshipsTableWidget); // 14
-  stacked->addWidget(casingWidget); // 15  
+  stacked->addWidget(casingWidget); // 15
 
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
@@ -152,6 +146,44 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   setWindowTitle("Q-SoPrA");
   
   stacked->showMaximized();
+}
+
+MainWindow::~MainWindow()
+{
+  stacked->removeWidget(dataWidget); 
+  stacked->removeWidget(attributesWidget); 
+  stacked->removeWidget(relationshipsWidget);  
+  stacked->removeWidget(linkagesWidget);
+  stacked->removeWidget(journalWidget); 
+  stacked->removeWidget(eventGraphWidget);
+  stacked->removeWidget(networkGraphWidget);
+  stacked->removeWidget(occurrenceGraphWidget);
+  stacked->removeWidget(hierarchyGraphWidget); 
+  stacked->removeWidget(rawAttributesTableWidget); 
+  stacked->removeWidget(rawRelationshipsTableWidget);
+  stacked->removeWidget(incidentsAttributesTableWidget);
+  stacked->removeWidget(entitiesAttributesTableWidget);
+  stacked->removeWidget(missingAttributesTableWidget);
+  stacked->removeWidget(missingRelationshipsTableWidget);
+  stacked->removeWidget(casingWidget); 
+
+  delete dataWidget;
+  delete attributesWidget;
+  delete relationshipsWidget;
+  delete linkagesWidget;
+  delete casingWidget;
+  delete journalWidget;
+  delete eventGraphWidget;
+  delete networkGraphWidget;
+  delete occurrenceGraphWidget;
+  delete hierarchyGraphWidget;
+  delete rawAttributesTableWidget;
+  delete rawRelationshipsTableWidget;
+  delete incidentsAttributesTableWidget;
+  delete entitiesAttributesTableWidget;
+  delete missingAttributesTableWidget;
+  delete missingRelationshipsTableWidget;
+  delete stacked;
 }
 
 void MainWindow::createActions() 

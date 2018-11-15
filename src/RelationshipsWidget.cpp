@@ -310,9 +310,8 @@ void RelationshipsWidget::setComment()
       incidentsModel->select();
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       query->prepare("UPDATE incidents SET comment = :comment WHERE ch_order = :order");
       query->bindValue(":comment", comment);
       query->bindValue(":order", order);
@@ -324,10 +323,10 @@ void RelationshipsWidget::setComment()
 
 void RelationshipsWidget::retrieveData() 
 {
-  QSqlQueryModel *query = new QSqlQueryModel(this);
-  query->setQuery("SELECT * FROM save_data");
-  int order = 0;
-  order = query->record(0).value("relationships_record").toInt();
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT relationships_record FROM save_data");
+  query->first();
+  int order = query->value(0).toInt();
   incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
@@ -335,21 +334,20 @@ void RelationshipsWidget::retrieveData()
   QString indexText = "<b>Incident (" + QString::number(order)
     + " / " + QString::number(total) + ")<b>";
   indexLabel->setText(indexText);
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
+  query->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
 		  "FROM incidents WHERE ch_order = :order");
-  query2->bindValue(":order", order);
-  query2->exec();
-  query2->first();
-  if (!(query2->isNull(0))) 
+  query->bindValue(":order", order);
+  query->exec();
+  query->first();
+  if (!(query->isNull(0))) 
     {
-      int id = query2->value(0).toInt();
-      QString timeStamp = query2->value(1).toString();
-      QString source = query2->value(2).toString();
-      QString description = query2->value(3).toString();
-      QString raw = query2->value(4).toString();
-      QString comment = query2->value(5).toString();
-      int mark = query2->value(6).toInt();
+      int id = query->value(0).toInt();
+      QString timeStamp = query->value(1).toString();
+      QString source = query->value(2).toString();
+      QString description = query->value(3).toString();
+      QString raw = query->value(4).toString();
+      QString comment = query->value(5).toString();
+      int mark = query->value(6).toInt();
       timeStampField->setText(timeStamp);
       sourceField->setText(source);
       descriptionField->setText(description);
@@ -366,12 +364,12 @@ void RelationshipsWidget::retrieveData()
 	  markLabel->setText("MARKED");
 	}
       resetFont(relationshipsTree);
-      query2->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
-      while (query2->next()) 
+      query->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+      while (query->next()) 
 	{
-	  QString relationship = query2->value(0).toString();
-	  QString type = query2->value(1).toString();
-	  int incident = query2->value(2).toInt();
+	  QString relationship = query->value(0).toString();
+	  QString type = query->value(1).toString();
+	  int incident = query->value(2).toInt();
 	  if (incident == id) 
 	    {
 	      boldSelected(relationshipsTree, relationship, type);
@@ -390,7 +388,6 @@ void RelationshipsWidget::retrieveData()
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
       delete query;
-      delete query2;
     }
 }
 
@@ -485,19 +482,18 @@ void RelationshipsWidget::highlightText()
 	{
 	  QStandardItem *typeItem = currentRelationship->parent();
 	  QString currentType = typeItem->data(Qt::DisplayRole).toString();
-	  QSqlQueryModel *query = new QSqlQueryModel(this);
+	  QSqlQuery *query = new QSqlQuery;
 	  if (currentRelationship->font().bold()) 
 	    {
-	      query->setQuery("SELECT * FROM save_data");
-	      int order = 0; 
-	      order = query->record(0).value("relationships_record").toInt();
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	      query2->bindValue(":order", order);
-	      query2->exec();
-	      query2->first();
+	      query->exec("SELECT relationships_record FROM save_data");
+	      query->first();
+	      int order = query->value(0).toInt();
+	      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+	      query->bindValue(":order", order);
+	      query->exec();
+	      query->first();
 	      int id = 0;
-	      id = query2->value(0).toInt();
+	      id = query->value(0).toInt();
 	      QTextCharFormat format;
 	      format.setFontWeight(QFont::Normal);
 	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
@@ -506,15 +502,15 @@ void RelationshipsWidget::highlightText()
 	      QTextCursor cursor = rawField->textCursor();
 	      cursor.movePosition(QTextCursor::Start);
 	      rawField->setTextCursor(cursor);
-	      query2->prepare("SELECT source_text FROM relationships_to_incidents_sources "
+	      query->prepare("SELECT source_text FROM relationships_to_incidents_sources "
 			      "WHERE relationship = :relationship AND type = :type AND incident = :id");
-	      query2->bindValue(":relationship", currentName);
-	      query2->bindValue(":type", currentType);
-	      query2->bindValue(":id", id);
-	      query2->exec();
-	      while(query2->next()) 
+	      query->bindValue(":relationship", currentName);
+	      query->bindValue(":type", currentType);
+	      query->bindValue(":id", id);
+	      query->exec();
+	      while(query->next()) 
 		{
-		  QString currentText = query2->value(0).toString();
+		  QString currentText = query->value(0).toString();
 		  QVector<QString> blocks = splitLines(currentText);
 		  QVectorIterator<QString> it(blocks);
 		  while (it.hasNext()) 
@@ -533,7 +529,6 @@ void RelationshipsWidget::highlightText()
 		  rawField->setTextCursor(cursor);
 		}
 	      rawField->setTextCursor(currentPos);
-	      delete query2;
 	    }
 	  else 
 	    {
@@ -762,39 +757,39 @@ void RelationshipsWidget::assignRelationship()
 	{
 	  QStandardItem *typeItem = currentItem->parent();
 	  QString currentType = typeItem->data(Qt::DisplayRole).toString();
-	  QSqlQueryModel *query = new QSqlQueryModel(this);
+	  QSqlQuery *query = new QSqlQuery;
 	  QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
-	  query->setQuery("SELECT * FROM save_data");
+	  query->exec("SELECT relationships_record FROM save_data");
+	  query->first();
 	  int order = 0; 
-	  order = query->record(0).value("relationships_record").toInt();
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
-	  query2->bindValue(":order", order);
-	  query2->exec();
-	  query2->first();
-	  if (!(query2->isNull(0))) 
+	  order = query->value(0).toInt();
+	  query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
+	  query->bindValue(":order", order);
+	  query->exec();
+	  query->first();
+	  if (!(query->isNull(0))) 
 	    {
 	      int id = 0;
-	      id = query2->value(0).toInt();
+	      id = query->value(0).toInt();
 	      assignedModel->select();
 	      bool empty = false;
-	      query2->prepare("SELECT relationship, incident FROM relationships_to_incidents "
+	      query->prepare("SELECT relationship, incident FROM relationships_to_incidents "
 			      "WHERE relationship = :rel AND type = :type AND incident = :inc");
-	      query2->bindValue(":rel", currentRelationship);
-	      query2->bindValue(":type", currentType);
-	      query2->bindValue(":inc", id);
-	      query2->exec();
-	      query2->first();
-	      empty = query2->isNull(0);
+	      query->bindValue(":rel", currentRelationship);
+	      query->bindValue(":type", currentType);
+	      query->bindValue(":inc", id);
+	      query->exec();
+	      query->first();
+	      empty = query->isNull(0);
 	      QTextCursor cursorPos = rawField->textCursor();
 	      if (empty) 
 		{
-		  query2->prepare("INSERT INTO relationships_to_incidents (relationship, type, incident) "
+		  query->prepare("INSERT INTO relationships_to_incidents (relationship, type, incident) "
 				  "VALUES (:relationship, :type, :incident)");
-		  query2->bindValue(":relationship", currentRelationship);
-		  query2->bindValue(":type", currentType);
-		  query2->bindValue(":incident", id);
-		  query2->exec();
+		  query->bindValue(":relationship", currentRelationship);
+		  query->bindValue(":type", currentType);
+		  query->bindValue(":incident", id);
+		  query->exec();
 		  sourceRelationshipText(currentRelationship, currentType, id);
 		  rawField->setTextCursor(cursorPos);
 		  boldSelected(relationshipsTree, currentRelationship, currentType);
@@ -809,7 +804,6 @@ void RelationshipsWidget::assignRelationship()
 	      setButtons();
 	    }
 	  delete query;
-	  delete query2;
 	}
     }
   rawField->verticalScrollBar()->setValue(barPos);
@@ -1334,9 +1328,8 @@ void RelationshipsWidget::previousIncident()
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
-  int order = 0;
   query->first();
-  order = query->value(0).toInt();
+  int order = query->value(0).toInt();
   if (order != 1) 
     {
       order--;
@@ -1381,9 +1374,8 @@ void RelationshipsWidget::nextIncident()
   incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
-  int order = 0;
   query->first();
-  order = query->value(0).toInt();
+  int order = query->value(0).toInt();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount()) 
@@ -1403,8 +1395,7 @@ void RelationshipsWidget::toggleMark()
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
   query->first();
-  int order = 0;
-  order = query->value(0).toInt();
+  int order = query->value(0).toInt();
   query->prepare("SELECT mark FROM incidents WHERE ch_order = :order");
   query->bindValue(":order", order);
   query->exec();
@@ -1437,9 +1428,8 @@ void RelationshipsWidget::previousMarked()
   setComment();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
-  int order = 0;
   query->first();
-  order = query->value(0).toInt();
+  int order = query->value(0).toInt();
   query->prepare("SELECT ch_order FROM incidents "
 		 "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
   query->bindValue(":order", order);
@@ -1465,9 +1455,8 @@ void RelationshipsWidget::nextMarked()
   setComment();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT relationships_record FROM save_data");
-  int order = 0;
   query->first();
-  order = query->value(0).toInt();
+  int order = query->value(0).toInt();
   query->prepare("SELECT ch_order FROM incidents "
 		 "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
   query->bindValue(":order", order);
@@ -1503,9 +1492,8 @@ void RelationshipsWidget::previousDescription()
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       QString searchText = "%" + descriptionFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE description LIKE :text "
@@ -1535,9 +1523,8 @@ void RelationshipsWidget::nextDescription()
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       QString searchText = "%" + descriptionFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE description LIKE :text "
@@ -1572,9 +1559,8 @@ void RelationshipsWidget::previousRaw()
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       QString searchText = "%" + rawFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE raw LIKE :text "
@@ -1604,9 +1590,8 @@ void RelationshipsWidget::nextRaw()
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       QString searchText = "%" + rawFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE raw LIKE :text "
@@ -1641,9 +1626,8 @@ void RelationshipsWidget::previousComment()
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       QString searchText = "%" + commentFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE comment LIKE :text "
@@ -1673,9 +1657,8 @@ void RelationshipsWidget::nextComment()
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
-      int order = 0;
       query->first();
-      order = query->value(0).toInt();
+      int order = query->value(0).toInt();
       QString searchText = "%" + commentFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE comment LIKE :text "
@@ -1814,8 +1797,7 @@ void RelationshipsWidget::setButtons()
 	  QSqlQuery *query = new QSqlQuery;
 	  query->exec("SELECT relationships_record FROM save_data");
 	  query->first();
-	  int order = 0; 
-	  order = query->value(0).toInt();
+	  int order = query->value(0).toInt();
 	  query->prepare("SELECT id FROM incidents WHERE ch_order = :order ");
 	  query->bindValue(":order", order);
 	  query->exec();

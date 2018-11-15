@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef EVENTNODESETTINGSDIALOG_H
 #define EVENTNODESETTINGSDIALOG_H
 
@@ -24,20 +46,22 @@ class EventNodeSettingsDialog : public QDialog
   Q_OBJECT
 
 public:
+  // Constructor and destructors
   EventNodeSettingsDialog(QWidget *parent = 0,
-			  QVector<QString> submittedIds = QVector<QString>(),
-			  QVector<QString> submittedLabels = QVector<QString>(),
-			  QVector<QString> submittedTimings = QVector<QString>(),
-			  QVector<QString> submittedDescriptions = QVector<QString>(),
-			  QVector<QString> submittedComments = QVector<QString>(),
-			  QVector<QString> submittedTypes = QVector<QString>(),
-			  QVector<QString> submittedModes = QVector<QString>(),
-			  QVector<QString> submittedX = QVector<QString>(),
-			  QVector<QString> submittedY = QVector<QString>(),
-			  QVector<MacroEvent*> submittedMacros = QVector<MacroEvent*>());
+			  QVector<QString> ids = QVector<QString>(),
+			  QVector<QString> labels = QVector<QString>(),
+			  QVector<QString> timings = QVector<QString>(),
+			  QVector<QString> descriptions = QVector<QString>(),
+			  QVector<QString> comments = QVector<QString>(),
+			  QVector<QString> types = QVector<QString>(),
+			  QVector<QString> modes = QVector<QString>(),
+			  QVector<QString> xCoords = QVector<QString>(),
+			  QVector<QString> yCoords = QVector<QString>(),
+			  QVector<MacroEvent*> macros = QVector<MacroEvent*>());
   ~EventNodeSettingsDialog() {};
   
 private slots:
+  // Private member functions
   void cancelAndClose();
   void exportAndClose();
   void addAttribute();
@@ -45,23 +69,24 @@ private slots:
   void findChildren(QString father, QVector<QString> *children);
   
 private:
+  // Interface elements
   QPointer<QTableWidget> tableWidget;
-  
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> removeAttributeButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> exportCloseButton;
 
-  QVector<QString> ids;
-  QVector<QString> labels;
-  QVector<QString> timings;
-  QVector<QString> descriptions;
-  QVector<QString> comments;
-  QVector<QString> types;
-  QVector<QString> modes;
-  QVector<QString> xCoords;
-  QVector<QString> yCoords;
-  QVector<MacroEvent*> macros;
+  // Private data vectors
+  QVector<QString> _ids;
+  QVector<QString> _labels;
+  QVector<QString> _timings;
+  QVector<QString> _descriptions;
+  QVector<QString> _comments;
+  QVector<QString> _types;
+  QVector<QString> _modes;
+  QVector<QString> _xCoords;
+  QVector<QString> _yCoords;
+  QVector<MacroEvent*> _macros;
 };
 
 #endif

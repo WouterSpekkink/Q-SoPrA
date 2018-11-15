@@ -1,12 +1,35 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/EntityDialog.h"
 #include "../include/RelationshipsWidget.h"
 
 EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent) 
 {
-  name = "";
-  oldName = "";
-  exitStatus = 1;
-  isNew = false;
+  _name = "";
+  _oldName = "";
+  _exitStatus = 1;
+  _isNew = false;
+  _fresh = false;
   
   // I have to build these as well.
   incidentsModel = new QSqlTableModel(this);  
@@ -142,7 +165,7 @@ EntityDialog::EntityDialog(QWidget *parent) : QDialog(parent)
   setLayout(mainLayout);
   setWindowTitle("Add /Edit Entity");
   setFixedHeight(sizeHint().height());
-  fresh = true;
+  _fresh = true;
 }
 
 void EntityDialog::setValueButton() 
@@ -156,7 +179,7 @@ void EntityDialog::setValue()
     {
       QSqlQuery *query = new QSqlQuery;
       QString attribute = attributesTreeView->currentIndex().data().toString();
-      if (isNew) 
+      if (_isNew) 
 	{
 	  query->prepare("UPDATE attributes_to_entities SET value = :val "
 			 "WHERE attribute = :attribute AND new = :new");
@@ -171,7 +194,7 @@ void EntityDialog::setValue()
 			 "WHERE attribute = :attribute AND entity = :oldName");
 	  query->bindValue(":val", valueField->text());
 	  query->bindValue(":attribute", attribute);
-	  query->bindValue(":oldName", oldName);
+	  query->bindValue(":oldName", _oldName);
 	  query->exec();
 	}
       valueButton->setEnabled(false);
@@ -185,7 +208,7 @@ void EntityDialog::getValue()
     {
       QString attribute = attributesTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
-      if (isNew) 
+      if (_isNew) 
 	{
 	  query->prepare("SELECT attribute, value FROM "
 			 "attributes_to_entities "
@@ -218,7 +241,7 @@ void EntityDialog::getValue()
 	  query->prepare("SELECT attribute, value FROM attributes_to_entities "
 			 "WHERE attribute =:att AND entity = :oldName");
 	  query->bindValue(":att", attribute);
-	  query->bindValue(":oldName", oldName);
+	  query->bindValue(":oldName", _oldName);
 	  query->exec();
 	  query->first();
 	  if (!(query->isNull(0))) 
@@ -262,7 +285,7 @@ void EntityDialog::assignAttribute()
     {
       QString attribute = attributesTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
-      if (isNew) 
+      if (_isNew) 
 	{
 	  bool empty = false;
 	  query->prepare("SELECT attribute, new FROM attributes_to_entities "
@@ -290,7 +313,7 @@ void EntityDialog::assignAttribute()
 	  query->prepare("SELECT attribute, new FROM attributes_to_entities "
 			 "WHERE attribute = :att AND entity = :oldName");
 	  query->bindValue(":att", attribute);
-	  query->bindValue(":oldName", oldName);
+	  query->bindValue(":oldName", _oldName);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
@@ -300,7 +323,7 @@ void EntityDialog::assignAttribute()
 	      query2->prepare("INSERT INTO attributes_to_entities (attribute, entity) "
 			      "VALUES (:attribute, :entity)");
 	      query2->bindValue(":attribute", attribute);
-	      query2->bindValue(":entity", oldName);
+	      query2->bindValue(":entity", _oldName);
 	      query2->exec();
 	      boldSelected(attributesTree, attribute);
 	      valueField->setEnabled(true);
@@ -319,7 +342,7 @@ void EntityDialog::unassignAttribute()
       QSqlQuery *query2 = new QSqlQuery;
       QString attribute = attributesTreeView->currentIndex().data().toString();
       bool empty = false;
-      if (isNew) 
+      if (_isNew) 
 	{
 	  query->prepare("SELECT attribute FROM attributes_to_entities "
 			 "WHERE attribute = :att AND new = 1");
@@ -354,7 +377,7 @@ void EntityDialog::unassignAttribute()
 	  query->prepare("SELECT attribute, entity FROM attributes_to_entities "
 			 "WHERE attribute = :att AND entity = :oldName");
 	  query->bindValue(":att", attribute);
-	  query->bindValue(":oldName", oldName);
+	  query->bindValue(":oldName", _oldName);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
@@ -363,7 +386,7 @@ void EntityDialog::unassignAttribute()
 	      query->prepare("DELETE FROM attributes_to_entities "
 			     "WHERE attribute = :att AND entity = :oldName");
 	      query->bindValue(":att", attribute);
-	      query->bindValue(":oldName", oldName);
+	      query->bindValue(":oldName", _oldName);
 	      query->exec();
 	      resetFont(attributesTree);
 	      query2->exec("SELECT attribute, entity FROM attributes_to_entities");
@@ -371,7 +394,7 @@ void EntityDialog::unassignAttribute()
 		{
 		  QString attribute = query2->value(0).toString();
 		  QString entity = query2->value(1).toString();
-		  if (entity == oldName) 
+		  if (entity == _oldName) 
 		    {
 		      boldSelected(attributesTree, attribute);
 		    }
@@ -389,7 +412,7 @@ void EntityDialog::unassignAttribute()
 
 void EntityDialog::addAttribute() 
 {
-  if (attributesTreeView->currentIndex().isValid() && !fresh) 
+  if (attributesTreeView->currentIndex().isValid() && !_fresh) 
     {
       QString currentParent = treeFilter->
 	mapToSource(attributesTreeView->currentIndex()).data().toString();
@@ -416,7 +439,7 @@ void EntityDialog::addAttribute()
 	  query->bindValue(":father", currentParent);
 	  query->exec();
 	  delete query;
-	  relationshipsWidget->networkGraph->resetTree();
+	  _relationshipsWidget->networkGraph->resetTree();
 	}
       delete attributeDialog;
     }
@@ -443,7 +466,7 @@ void EntityDialog::addAttribute()
 	  attribute->setToolTip(description);
 	  attribute->setEditable(false);
 	  // The entity dialog does not necessarily have the relationships widget as its parent.
-	  relationshipsWidget->networkGraph->resetTree();
+	  _relationshipsWidget->networkGraph->resetTree();
 	}
       delete attributeDialog;
     }
@@ -453,7 +476,7 @@ void EntityDialog::addAttribute()
 
 void EntityDialog::editAttribute() 
 {
-  if (attributesTreeView->currentIndex().isValid() && !fresh) 
+  if (attributesTreeView->currentIndex().isValid() && !_fresh) 
     {
       QString name = attributesTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
@@ -490,7 +513,7 @@ void EntityDialog::editAttribute()
 	  query->bindValue(":newname", newName);
 	  query->bindValue(":oldname", name);
 	  query->exec();
-	  relationshipsWidget->networkGraph->resetTree();
+	  _relationshipsWidget->networkGraph->resetTree();
 	}
       delete attributeDialog;
       delete query;
@@ -501,7 +524,7 @@ void EntityDialog::editAttribute()
 
 void EntityDialog::mergeAttributes() 
 {
-  if (attributesTreeView->currentIndex().isValid() && !fresh) 
+  if (attributesTreeView->currentIndex().isValid() && !_fresh) 
     {
       QString origin = attributesTreeView->currentIndex().data().toString();
       QPointer<MergeAttributesDialog> mergeDialog = new MergeAttributesDialog(this, origin, ENTITY);
@@ -607,7 +630,7 @@ void EntityDialog::removeUnusedAttributes()
 	  unfinished = false;
 	}
     }
-  relationshipsWidget->networkGraph->resetTree();
+  _relationshipsWidget->networkGraph->resetTree();
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   delete attributesTree;
@@ -621,38 +644,38 @@ void EntityDialog::removeUnusedAttributes()
 
 QString EntityDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
 QString EntityDialog::getDescription() 
 {
-  return description;
+  return _description;
 }
 
 int EntityDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void EntityDialog::setNew() 
 {
-  isNew = true;
+  _isNew = true;
   delete attributesTree;
   setTree();
 }
 
-void EntityDialog::submitName(const QString &newName) 
+void EntityDialog::submitName(const QString &name) 
 {
-  nameField->setText(newName);
-  name = newName;
-  oldName = newName;
+  nameField->setText(name);
+  _name = name;
+  _oldName = name;
   delete attributesTree;
   setTree();
 }
 
-void EntityDialog::submitDescription(const QString &newDescription) 
+void EntityDialog::submitDescription(const QString &description) 
 {
-  description = newDescription;
+  _description = description;
   descriptionField->setText(description);
 }
 
@@ -663,19 +686,19 @@ void EntityDialog::setTree()
   query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
   while (query->next()) 
     {
-      QString name = query->value(0).toString();
-      QString description = query->value(1).toString();
-      QStandardItem *father = new QStandardItem(name);    
+      QString newName = query->value(0).toString();
+      QString newDescription = query->value(1).toString();
+      QStandardItem *father = new QStandardItem(newName);    
       attributesTree->appendRow(father);
-      father->setToolTip(description);
+      father->setToolTip(newDescription);
       father->setEditable(false);
-      buildHierarchy(father, name);
+      buildHierarchy(father, newName);
     }
-  if (isNew == false) 
+  if (_isNew == false) 
     {
       query->prepare("SELECT attribute FROM attributes_to_entities "
 		     "WHERE entity = :name");
-      query->bindValue(":name", oldName);
+      query->bindValue(":name", _oldName);
       query->exec();
       while (query->next()) 
 	{
@@ -711,17 +734,17 @@ void EntityDialog::buildHierarchy(QStandardItem *top, QString name)
 
 void EntityDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
   
 void EntityDialog::saveAndClose() 
 {
-  description =  descriptionField->toPlainText();
-  name = nameField->text();
-  description = description.trimmed();
-  name = name.trimmed();
-  if (name.contains("(") || name.contains(")")) 
+  _description =  descriptionField->toPlainText();
+  _name = nameField->text();
+  _description = _description.trimmed();
+  _name = _name.trimmed();
+  if (_name.contains("(") || _name.contains(")")) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -733,7 +756,7 @@ void EntityDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (description == "") 
+  if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -744,7 +767,7 @@ void EntityDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == "") 
+  if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -755,7 +778,7 @@ void EntityDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == DEFAULT) 
+  if (_name == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -766,7 +789,7 @@ void EntityDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == ENTITIES) 
+  if (_name == ENTITIES) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -780,11 +803,11 @@ void EntityDialog::saveAndClose()
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM entities WHERE name = :name");
-  query->bindValue(":name", name);
+  query->bindValue(":name", _name);
   query->exec();
   query->first();
   empty = query->isNull(0);
-  if (!empty && name != oldName) 
+  if (!empty && _name != _oldName) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -796,7 +819,7 @@ void EntityDialog::saveAndClose()
       return;
     }
   query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
-  query->bindValue(":name", name);
+  query->bindValue(":name", _name);
   query->exec();
   query->first();
   empty = query->isNull(0);
@@ -811,20 +834,20 @@ void EntityDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (isNew) 
+  if (_isNew) 
     {
       query->prepare("UPDATE attributes_to_entities SET entity = :entity, new = 0 WHERE new = 1");
-      query->bindValue(":entity", name);
+      query->bindValue(":entity", _name);
       query->exec();
     }
   else 
     {
       query->prepare("UPDATE attributes_to_entities SET entity = :entity WHERE name = :oldName");
-      query->bindValue(":entity", name);
-      query->bindValue(":oldName", oldName);
+      query->bindValue(":entity", _name);
+      query->bindValue(":oldName", _oldName);
       query->exec();
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   delete query;
   this->close();
 }
@@ -881,7 +904,7 @@ void EntityDialog::boldSelected(QAbstractItemModel *model, QString name, QModelI
 		  query->prepare("SELECT attribute, entity FROM attributes_to_entities "
 				 "WHERE attribute = :attribute AND entity = :entity");
 		  query->bindValue(":attribute", parentName);
-		  query->bindValue(":entity", oldName);
+		  query->bindValue(":entity", _oldName);
 		  query->exec();
 		  query->first();
 		  if (query->isNull(0)) 
@@ -916,7 +939,7 @@ void EntityDialog::fixTree()
 {
   resetFont(attributesTree);
   QSqlQuery *query = new QSqlQuery;
-  if (isNew) 
+  if (_isNew) 
     {
       query->exec("SELECT attribute, new FROM attributes_to_entities");
       while (query->next()) 
@@ -936,7 +959,7 @@ void EntityDialog::fixTree()
 	{
 	  QString attribute = query->value(0).toString();
 	  QString entity = query->value(1).toString();
-	  if (entity == oldName) 
+	  if (entity == _oldName) 
 	    {
 	      boldSelected(attributesTree, attribute);
 	    }
@@ -947,15 +970,15 @@ void EntityDialog::fixTree()
 
 void EntityDialog::setButtons() 
 {
-  if (fresh) 
+  if (_fresh) 
     {
-      fresh = false;
+      _fresh = false;
     }
   if (attributesTreeView->currentIndex().isValid()) 
     {
       QString currentAttribute = attributesTreeView->currentIndex().data().toString();
       QSqlQuery *query = new QSqlQuery;
-      if (isNew) 
+      if (_isNew) 
 	{
 	  bool empty = false;
 	  query->prepare("SELECT attribute, new FROM attributes_to_entities "
@@ -979,7 +1002,7 @@ void EntityDialog::setButtons()
 	  query->prepare("SELECT attribute FROM attributes_to_entities "
 			 "WHERE attribute = :att AND entity = :oldName");
 	  query->bindValue(":att", currentAttribute);
-	  query->bindValue(":oldName", oldName);
+	  query->bindValue(":oldName", _oldName);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
@@ -1040,7 +1063,7 @@ void EntityDialog::resetTree()
   setTree();
 }
 
-void EntityDialog::setRelationshipsWidget(RelationshipsWidget *rw) 
+void EntityDialog::setRelationshipsWidget(RelationshipsWidget *relationshipsWidget) 
 {
-  relationshipsWidget = rw;
+  _relationshipsWidget = relationshipsWidget;
 }

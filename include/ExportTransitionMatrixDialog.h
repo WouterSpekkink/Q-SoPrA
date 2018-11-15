@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef EXPORTTRANSITIONMATRIXDIALOG_H
 #define EXPORTTRANSITIONMATRIXDIALOG_H
 
@@ -17,26 +39,28 @@ class ExportTransitionMatrixDialog : public QDialog
   Q_OBJECT
 
 public:
+  // Constructor and deconstructor
   ExportTransitionMatrixDialog(QWidget *parent = 0);
   ~ExportTransitionMatrixDialog() {};
 
+  // Getters
   bool isMode();
   bool isProbability();
   int getExitStatus();
 		      
 private slots:
+  // Private member functions
   void setModes();
   void setAttributes();
   void setRaw();
   void setProb();
-  
   void cancelAndClose();
   void saveAndClose();
 
 private:
+  // Interface elements
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> probLabel;
-
   QPointer<QPushButton> modesButton;
   QPointer<QPushButton> attributesButton;
   QPointer<QPushButton> rawButton;
@@ -44,7 +68,8 @@ private:
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
 
-  int exitStatus;
+  // Private variables
+  int _exitStatus;
 };
 
 #endif

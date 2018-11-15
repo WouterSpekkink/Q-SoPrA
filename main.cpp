@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
   WelcomeDialog *welcome = new WelcomeDialog(0, esd.data());
   welcome->exec();
   if (welcome->getExitStatus() == 0) {
-    MainWindow *window = new MainWindow(0, esd.data());
+    MainWindow *window = new MainWindow(0);
     window->setAttribute(Qt::WA_DeleteOnClose);
     window->show();
     delete welcome;

@@ -1,14 +1,36 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QtWidgets>
 #include "../include/EllipseObject.h"
 
 EllipseObject::EllipseObject() 
 {
-  drawRect = QRectF(0, 0, 100, 100);
-  color = QColor(0, 0, 0, 255);
-  fillColor = QColor(Qt::transparent);
-  rotation = 0;
-  penWidth = 1;
-  penStyle = 1;
+  _drawRect = QRectF(0, 0, 100, 100);
+  _color = QColor(0, 0, 0, 255);
+  _fillColor = QColor(Qt::transparent);
+  _rotation = 0;
+  _penWidth = 1;
+  _penStyle = 1;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   setAcceptHoverEvents(true);
 }
@@ -16,12 +38,15 @@ EllipseObject::EllipseObject()
 void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
   prepareGeometryChange();
-  painter->setBrush(fillColor);
-  painter->setPen(QPen(color, penWidth, Qt::PenStyle(penStyle)));
-  painter->drawEllipse(drawRect);
+  painter->setBrush(_fillColor);
+  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(_penStyle)));
+  painter->drawEllipse(_drawRect);
   if (isSelected()) 
     {
-      QRectF selectRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
+      QRectF selectRect = _drawRect.adjusted(-_penWidth / 2,
+					     -_penWidth / 2,
+					     _penWidth / 2,
+					     _penWidth / 2);
       painter->setBrush(QColor(Qt::transparent));
       painter->setPen(QPen(QColor(169, 169, 169, 255), 1, Qt::DashLine));
       QPainterPath outline;
@@ -33,110 +58,110 @@ void EllipseObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, Q
 
 QColor EllipseObject::getColor() 
 {
-  return color;
+  return _color;
 }
 
-void EllipseObject::setColor(const QColor &subColor) 
+void EllipseObject::setColor(const QColor &color) 
 {
-  color = subColor;
+  _color = color;
 }
 
 QColor EllipseObject::getFillColor() 
 {
-  return fillColor;
+  return _fillColor;
 }
 
-void EllipseObject::setFillColor(const QColor &subColor) 
+void EllipseObject::setFillColor(const QColor &color) 
 {
-  fillColor = subColor;
+  _fillColor = color;
 }
 
 qreal EllipseObject::getLeft() 
 {
-  return drawRect.left();
+  return _drawRect.left();
 }
 
-void EllipseObject::setLeft(qreal newLeft) 
+void EllipseObject::setLeft(const qreal &newLeft) 
 {
-  drawRect.setLeft(newLeft);
-  drawRect = drawRect.normalized();
+  _drawRect.setLeft(newLeft);
+  _drawRect = _drawRect.normalized();
 }
 
 qreal EllipseObject::getRight() 
 {
-  return drawRect.right();
+  return _drawRect.right();
 }
 
-void EllipseObject::setRight(qreal newRight) 
+void EllipseObject::setRight(const qreal &newRight) 
 {
-  drawRect.setRight(newRight);
-  drawRect = drawRect.normalized();
+  _drawRect.setRight(newRight);
+  _drawRect = _drawRect.normalized();
 }
 
 qreal EllipseObject::getTop() 
 {
-  return drawRect.top();
+  return _drawRect.top();
 }
 
-void EllipseObject::setTop(qreal newTop) 
+void EllipseObject::setTop(const qreal &newTop) 
 {
-  drawRect.setTop(newTop);
-  drawRect = drawRect.normalized();
+  _drawRect.setTop(newTop);
+  _drawRect = _drawRect.normalized();
 }
 
 qreal EllipseObject::getBottom() 
 {
-  return drawRect.bottom();
+  return _drawRect.bottom();
 }
 
-void EllipseObject::setBottom(qreal newBottom) 
+void EllipseObject::setBottom(const qreal &newBottom) 
 {
-  drawRect.setBottom(newBottom);
-  drawRect = drawRect.normalized();
+  _drawRect.setBottom(newBottom);
+  _drawRect = _drawRect.normalized();
 }
 
 QPointF EllipseObject::topLeft() 
 {
-  return drawRect.topLeft();
+  return _drawRect.topLeft();
 }
 
 QPointF EllipseObject::topRight() 
 {
-  return drawRect.topRight();
+  return _drawRect.topRight();
 }
 
 QPointF EllipseObject::bottomLeft() 
 {
-  return drawRect.bottomLeft();
+  return _drawRect.bottomLeft();
 }
 
 QPointF EllipseObject::bottomRight() 
 {
-  return drawRect.bottomRight();
+  return _drawRect.bottomRight();
 }
 
-void EllipseObject::setTopLeft(QPointF topLeft) 
+void EllipseObject::setTopLeft(const QPointF &topLeft) 
 {
-  drawRect.setTopLeft(topLeft);
-  drawRect = drawRect.normalized();
+  _drawRect.setTopLeft(topLeft);
+  _drawRect = _drawRect.normalized();
 }
 
-void EllipseObject::setTopRight(QPointF topRight) 
+void EllipseObject::setTopRight(const QPointF &topRight) 
 {
-  drawRect.setTopRight(topRight);
-  drawRect = drawRect.normalized();
+  _drawRect.setTopRight(topRight);
+  _drawRect = _drawRect.normalized();
 }
 
-void EllipseObject::setBottomLeft(QPointF bottomLeft) 
+void EllipseObject::setBottomLeft(const QPointF &bottomLeft) 
 {
-  drawRect.setBottomLeft(bottomLeft);
-  drawRect = drawRect.normalized();
+  _drawRect.setBottomLeft(bottomLeft);
+  _drawRect = _drawRect.normalized();
 }
 
-void EllipseObject::setBottomRight(QPointF bottomRight) 
+void EllipseObject::setBottomRight(const QPointF &bottomRight) 
 {
-  drawRect.setBottomRight(bottomRight);
-  drawRect = drawRect.normalized();
+  _drawRect.setBottomRight(bottomRight);
+  _drawRect = _drawRect.normalized();
 }
 
 QPointF EllipseObject::getCenter() 
@@ -144,38 +169,38 @@ QPointF EllipseObject::getCenter()
   return boundingRect().center();
 }
 
-void EllipseObject::moveCenter(QPointF newCenter) 
+void EllipseObject::moveCenter(const QPointF &newCenter) 
 {
-  drawRect.moveCenter(newCenter);
-  drawRect = drawRect.normalized();
+  _drawRect.moveCenter(newCenter);
+  _drawRect = _drawRect.normalized();
 }
 
 qreal EllipseObject::getRotationValue() 
 {
-  return rotation;
+  return _rotation;
 }
 
-void EllipseObject::setRotationValue(qreal newRotation) 
+void EllipseObject::setRotationValue(const qreal &rotation) 
 {
-  rotation = newRotation;
+  _rotation = rotation;
   QTransform transform;
-  QPointF center = drawRect.center();
-  QPointF oldC = mapToScene(drawRect.center());
+  QPointF center = _drawRect.center();
+  QPointF oldC = mapToScene(_drawRect.center());
   
   transform.translate(center.x(), center.y());
-  transform.rotate(rotation);
+  transform.rotate(_rotation);
   transform.translate(-center.x(), -center.y());
   setTransform(transform);
-  drawRect = drawRect.normalized();
+  _drawRect = _drawRect.normalized();
 
-  QPointF newC = mapToScene(drawRect.center());
+  QPointF newC = mapToScene(_drawRect.center());
   QPointF offset = oldC - newC;
   moveBy(offset.x(), offset.y());
 }
 
 QRectF EllipseObject::boundingRect() const 
 {
-  QRectF myRect = drawRect.normalized().adjusted(-10,-10, 10, 10);
+  QRectF myRect = _drawRect.normalized().adjusted(-10,-10, 10, 10);
   return myRect;
 }
 
@@ -183,9 +208,9 @@ QPainterPath EllipseObject::shape() const
 {
   QPainterPath path;
   QPainterPathStroker stroker;
-  stroker.setWidth(penWidth + 15);
-  QRectF myRect = drawRect.adjusted(-penWidth / 2, -penWidth / 2, penWidth / 2, penWidth / 2);
-  QRectF myRectTwo = drawRect.adjusted(1, 1, -1, -1);
+  stroker.setWidth(_penWidth + 15);
+  QRectF myRect = _drawRect.adjusted(-_penWidth / 2, -_penWidth / 2, _penWidth / 2, _penWidth / 2);
+  QRectF myRectTwo = _drawRect.adjusted(1, 1, -1, -1);
   path.addRect(myRect);
   path.addEllipse(myRectTwo);
   path.setFillRule(Qt::OddEvenFill); 
@@ -194,22 +219,22 @@ QPainterPath EllipseObject::shape() const
 
 int EllipseObject::getPenWidth() 
 {
-  return penWidth;
+  return _penWidth;
 }
 
-void EllipseObject::setPenWidth(int width) 
+void EllipseObject::setPenWidth(const int &width) 
 {
-  penWidth = width;
+  _penWidth = width;
 }
 
 int EllipseObject::getPenStyle() 
 {
-  return penStyle;
+  return _penStyle;
 }
 
-void EllipseObject::setPenStyle(int style) 
+void EllipseObject::setPenStyle(const int &style) 
 {
-  penStyle = style;
+  _penStyle = style;
 }
 
 int EllipseObject::type() const 

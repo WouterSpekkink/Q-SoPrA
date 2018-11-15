@@ -1,10 +1,31 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/DataWidget.h"
 
-DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : QWidget(parent) 
+DataWidget::DataWidget(QWidget *parent) : QWidget(parent) 
 {
-  esd = submittedEsd;
-  currentData = "";
-  currentRow = 0;
+  _currentData = "";
+  _currentFind = "";
   
   // This widget uses a table model.
   incidentsModel = new EventTableModel(this);
@@ -131,14 +152,14 @@ DataWidget::DataWidget(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   setLayout(mainLayout);
 }
 
-void DataWidget::setData(const int index, RecordDialog *recordDialog, const QString type) 
+void DataWidget::setData(const int index, QVector<QString> data, const QString type) 
 {
   int order = index + 1;
-  QString timeStamp = recordDialog->getTimeStamp();
-  QString description = recordDialog->getDescription();
-  QString raw = recordDialog->getRaw();
-  QString comment = recordDialog->getComment();
-  QString source = recordDialog->getSource();
+  QString timeStamp = data[0];
+  QString description = data[1];
+  QString raw = data[2];
+  QString comment = data[3];
+  QString source = data[4];
   QSqlQuery *query = new QSqlQuery;
   if (type == NEW) 
     {
@@ -179,16 +200,20 @@ void DataWidget::setData(const int index, RecordDialog *recordDialog, const QStr
 
 void DataWidget::appendRecord() 
 {
-  recordDialog = new RecordDialog(this, esd, NEW);
+  QPointer<RecordDialog> recordDialog = new RecordDialog(this);
   recordDialog->exec();
   if (recordDialog->getExitStatus() == 0) 
     {
+      QVector<QString> data;
+      data.push_back(recordDialog->getTimeStamp());
+      data.push_back(recordDialog->getDescription());
+      data.push_back(recordDialog->getRaw());
+      data.push_back(recordDialog->getComment());
+      data.push_back(recordDialog->getSource());
       int max = incidentsModel->rowCount();
-      setData(max, recordDialog, NEW);
+      setData(max, data, NEW);
       delete recordDialog;
       updateTable();
-      eventGraph->checkCongruency();
-      occurrenceGraph->checkCongruency();
     }
   else 
     {
@@ -212,8 +237,8 @@ void DataWidget::editRecord()
       QString description = query->value(2).toString();
       QString raw = query->value(3).toString();
       QString comment = query->value(4).toString();
-    
-      recordDialog = new RecordDialog(this, esd, OLD);
+
+      QPointer<RecordDialog> recordDialog = new RecordDialog(this);
       recordDialog->setTimeStamp(timeStamp);
       recordDialog->setSource(source);
       recordDialog->setDescription(description);
@@ -221,9 +246,15 @@ void DataWidget::editRecord()
       recordDialog->setComment(comment);
       recordDialog->initialize();
       recordDialog->exec();
-      if (recordDialog->getExitStatus() != 1) 
+      if (recordDialog->getExitStatus() == 0) 
 	{
-	  setData(currentOrder - 1, recordDialog, OLD);
+	  QVector<QString> data;
+	  data.push_back(recordDialog->getTimeStamp());
+	  data.push_back(recordDialog->getDescription());
+	  data.push_back(recordDialog->getRaw());
+	  data.push_back(recordDialog->getComment());
+	  data.push_back(recordDialog->getSource());
+	  setData(currentOrder - 1, data, OLD);
 	  delete recordDialog;
 	}
       else 
@@ -234,8 +265,6 @@ void DataWidget::editRecord()
       tableView->setCurrentIndex(newIndex);
       delete query;
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::insertRecordBefore() 
@@ -243,15 +272,21 @@ void DataWidget::insertRecordBefore()
   if (tableView->currentIndex().isValid()) 
     {
       int currentRow = tableView->selectionModel()->currentIndex().row();
-      recordDialog = new RecordDialog(this, esd, NEW);    
+      QPointer<RecordDialog> recordDialog = new RecordDialog(this);    
       recordDialog->exec();
-      if (recordDialog->getExitStatus() != 1) 
+      if (recordDialog->getExitStatus() == 0) 
 	{
+	  QVector<QString> data;
+	  data.push_back(recordDialog->getTimeStamp());
+	  data.push_back(recordDialog->getDescription());
+	  data.push_back(recordDialog->getRaw());
+	  data.push_back(recordDialog->getComment());
+	  data.push_back(recordDialog->getSource());
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
 	  query->bindValue(":oldOrder", currentRow);
 	  query->exec();
-	  setData(currentRow, recordDialog, NEW);
+	  setData(currentRow, data, NEW);
 	  delete query;
 	  delete recordDialog;
 	}
@@ -260,8 +295,6 @@ void DataWidget::insertRecordBefore()
 	  delete recordDialog;
 	}
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::insertRecordAfter() 
@@ -269,17 +302,23 @@ void DataWidget::insertRecordAfter()
   if (tableView->currentIndex().isValid()) 
     {
       int nextRow = tableView->selectionModel()->currentIndex().row() + 1;
-      recordDialog = new RecordDialog(this, esd, NEW);
+      QPointer<RecordDialog> recordDialog = new RecordDialog(this);
       recordDialog->exec();
-      if (recordDialog->getExitStatus() != 1) 
+      if (recordDialog->getExitStatus() == 0) 
 	{
+	  QVector<QString> data;
+	  data.push_back(recordDialog->getTimeStamp());
+	  data.push_back(recordDialog->getDescription());
+	  data.push_back(recordDialog->getRaw());
+	  data.push_back(recordDialog->getComment());
+	  data.push_back(recordDialog->getSource());
 	  QSqlDatabase::database().transaction();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("UPDATE incidents SET ch_order = ch_order + 1 WHERE ch_order > :oldOrder");
 	  query->bindValue(":oldOrder", nextRow);
 	  query->exec();
 	  QSqlDatabase::database().commit();
-	  setData(nextRow, recordDialog, NEW);
+	  setData(nextRow, data, NEW);
 	  delete query;
 	  delete recordDialog;
 	}
@@ -288,8 +327,6 @@ void DataWidget::insertRecordAfter()
 	  delete recordDialog;
 	}
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::moveUp() 
@@ -297,7 +334,7 @@ void DataWidget::moveUp()
   if (tableView->currentIndex().isValid()) 
     {
       int currentOrder = tableView->currentIndex().row() + 1;
-      if (currentOrder != 1) 
+      if (currentOrder != 0) 
 	{
 	  QSqlDatabase::database().transaction();
 	  QSqlQuery *query = new QSqlQuery;
@@ -319,8 +356,6 @@ void DataWidget::moveUp()
 	  delete query;
 	}
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::moveDown() 
@@ -350,8 +385,6 @@ void DataWidget::moveDown()
 	  delete query;
 	}
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::duplicateRow() 
@@ -371,7 +404,7 @@ void DataWidget::duplicateRow()
       QString description = query->value(2).toString();
       QString raw = query->value(3).toString();
       QString comment = query->value(4).toString();
-      recordDialog = new RecordDialog(this, esd, OLD);
+      QPointer<RecordDialog> recordDialog = new RecordDialog(this);
       recordDialog->setTimeStamp(timeStamp);
       recordDialog->setSource(source);
       recordDialog->setDescription(description);
@@ -381,11 +414,17 @@ void DataWidget::duplicateRow()
       recordDialog->exec();
       if (recordDialog->getExitStatus() == 0) 
 	{
+	  QVector<QString> data;
+	  data.push_back(recordDialog->getTimeStamp());
+	  data.push_back(recordDialog->getDescription());
+	  data.push_back(recordDialog->getRaw());
+	  data.push_back(recordDialog->getComment());
+	  data.push_back(recordDialog->getSource());
 	  query->prepare("UPDATE incidents SET ch_order = ch_order + 1 "
 			 "WHERE ch_order > :oldOrder");
 	  query->bindValue(":oldOrder", currentOrder);
 	  query->exec();
-	  setData(currentOrder, recordDialog, NEW);
+	  setData(currentOrder, data, NEW);
 	  delete recordDialog;
 	}
       else 
@@ -398,8 +437,6 @@ void DataWidget::duplicateRow()
       QModelIndex newIndex = tableView->model()->index(currentOrder, 0);
       tableView->setCurrentIndex(newIndex);
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::removeRow() 
@@ -466,13 +503,11 @@ void DataWidget::removeRow()
 	}
       delete warningBox;
     }
-  eventGraph->checkCongruency();
-  occurrenceGraph->checkCongruency();
 }
 
 void DataWidget::findPrevious() 
 {
-  if (currentFind != "") 
+  if (_currentFind != "") 
     {
       // If we have not selected a valid index, default to last row.
       while (incidentsModel->canFetchMore()) 
@@ -484,7 +519,7 @@ void DataWidget::findPrevious()
 	{
 	  currentOrder = tableView->currentIndex().row() + 1;
 	}
-      QString searchText = "%" + currentFind + "%";
+      QString searchText = "%" + _currentFind + "%";
       QSqlQuery *query = new QSqlQuery;
       if (findComboBox->currentText() == "Timing") 
 	{
@@ -572,7 +607,7 @@ void DataWidget::findPrevious()
 
 void DataWidget::findNext() 
 {
-  if (currentFind != "") 
+  if (_currentFind != "") 
     {
       // If we have not selected a valid index, default to the last row.
       int currentOrder = 1;
@@ -580,7 +615,7 @@ void DataWidget::findNext()
 	{
 	  currentOrder = tableView->currentIndex().row() + 1;
 	}
-      QString searchText = "%" + currentFind + "%";
+      QString searchText = "%" + _currentFind + "%";
       QSqlQuery *query = new QSqlQuery;
       if (findComboBox->currentText() == "Timing") 
 	{
@@ -668,23 +703,13 @@ void DataWidget::findNext()
 
 void DataWidget::setFindKey(const QString &text) 
 {
-  currentFind = text;
+  _currentFind = text;
 }
 
 void DataWidget::resetHeader(int header) 
 {
 
   tableView->verticalHeader()->resizeSection(header, 30);
-}
-
-void DataWidget::setEventGraph(EventGraphWidget *egw) 
-{
-  eventGraph = egw;
-}
-
-void DataWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) 
-{
-  occurrenceGraph = ogw;
 }
 
 void DataWidget::updateTable() 
@@ -697,7 +722,7 @@ void DataWidget::updateTable()
 
 void DataWidget::saveCurrent(const QModelIndex &index) 
 {
-  currentData = tableView->model()->
+  _currentData = tableView->model()->
     index(index.row(), index.column()).data(Qt::DisplayRole).toString();
 }
 
@@ -712,7 +737,7 @@ void DataWidget::checkChange(const QModelIndex &topLeft, const QModelIndex &bott
 	  if (tableView->model()->index(topLeft.row(),
 					topLeft.column()).data().toString().trimmed() == "") 
 	    {
-	      tableView->model()->setData(topLeft, currentData);
+	      tableView->model()->setData(topLeft, _currentData);
 	    }
 	}
     }

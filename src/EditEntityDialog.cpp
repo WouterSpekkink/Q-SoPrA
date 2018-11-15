@@ -1,10 +1,33 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/EditEntityDialog.h"
 
 EditEntityDialog::EditEntityDialog(QWidget *parent) : QDialog(parent) 
 {
   // First we declare the entities of this dialog.
-  entityEdited = 0;
-  fresh = true;
+  _entityEdited = 0;
+  _fresh = true;
+  _relationshipsWidget = qobject_cast<RelationshipsWidget*>(parent);
   
   filterLabel = new QLabel(tr("<b>Filter:</b>"), this);
   entitiesTable = new EntityTableModel(this);
@@ -79,6 +102,7 @@ void EditEntityDialog::filterEntity(const QString &text)
 void EditEntityDialog::addEntity() 
 {
   EntityDialog *entityDialog = new EntityDialog(this);
+  entityDialog->setRelationshipsWidget(_relationshipsWidget);
   entityDialog->setNew();
   entityDialog->exec();
   if (entityDialog->getExitStatus() == 0) 
@@ -114,6 +138,7 @@ void EditEntityDialog::editEntity()
       query->first();
       QString description = query->value(0).toString();
       EntityDialog *entityDialog = new EntityDialog(this);
+      entityDialog->setRelationshipsWidget(_relationshipsWidget);
       entityDialog->submitName(selected);
       entityDialog->submitDescription(description);
       entityDialog->exec();
@@ -135,7 +160,7 @@ void EditEntityDialog::updateAfterEdit(const QString name,
 				       const QString description,
 				       const QString former) 
 {
-  entityEdited = 1;
+  _entityEdited = 1;
   QSqlQuery *query = new QSqlQuery;
   // Update the entity itself.
   query->prepare("UPDATE entities "
@@ -264,7 +289,7 @@ void EditEntityDialog::removeEntities()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QVector<MacroEvent*> macroVector = _eventGraph->getMacros();
   QSet<QString> takenAttributes;
   QVectorIterator<MacroEvent*> it(macroVector);
   while (it.hasNext()) 
@@ -326,8 +351,8 @@ void EditEntityDialog::removeEntities()
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
   // Also remove the entities from attribute trees.
-  eventGraph->resetTree();
-  attributesWidget->resetTree();
+  _eventGraph->resetTree();
+  _attributesWidget->resetTree();
 }
 
 void EditEntityDialog::closeThis() 
@@ -337,9 +362,9 @@ void EditEntityDialog::closeThis()
 
 void EditEntityDialog::setButtons() 
 {
-  if (fresh) 
+  if (_fresh) 
     {
-      fresh = false;
+      _fresh = false;
     }
   if (entitiesView->currentIndex().isValid()) 
     {
@@ -361,15 +386,16 @@ void EditEntityDialog::updateTable()
 
 int EditEntityDialog::getEntityEdited() 
 {
-  return entityEdited;
+  return _entityEdited;
 }
 
-void EditEntityDialog::setEventGraph(EventGraphWidget *egw)
+void EditEntityDialog::setEventGraph(EventGraphWidget *eventGraphWidget)
 {
-  eventGraph = egw;
+  _eventGraph = eventGraphWidget;
 }
 
-void EditEntityDialog::setAttributesWidget(AttributesWidget *aw)
+void EditEntityDialog::setAttributesWidget(AttributesWidget *attributesWidget)
 {
-  attributesWidget = aw;
+  _attributesWidget = attributesWidget;
 }
+

@@ -1378,8 +1378,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  QAction *action5 = new QAction(IGNOREMEACTION, this);
 	  QAction *action6 = new QAction(REMOVENORMALLINKAGEACTION, this);
 	  QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
-	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(linkage->startItem());
-	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(linkage->endItem());
+	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(linkage->getStart());
+	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(linkage->getEnd());
 	  if (linkage->getPenStyle() == 3) 
 	    {
 	      menu.addAction(action1);

@@ -19,8 +19,8 @@ public:
   void updatePosition();
   void setColor(const QColor &subColor);
   QColor getColor();
-  NetworkNode *startItem() const; 
-  NetworkNode *endItem() const;
+  NetworkNode *getStart() const; 
+  NetworkNode *getEnd() const;
   void calculate();
   QString getType();
   void setType(const QString submittedType);

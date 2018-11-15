@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef DATAWIDGET_H
 #define DATAWIDGET_H
 #include <QtWidgets/QPushButton>
@@ -16,25 +38,23 @@
 #include "OccurrenceGraphWidget.h"
 #include "CheckBoxDelegate.h"
 
-class EventGraphWidget;
-class OccurrenceGraphWidget;
-
 class DataWidget : public QWidget
 {
   Q_OBJECT
 
+  // MainWindow needs access to private members
   friend class MainWindow;
   
 public:
-  DataWidget(QWidget *parent = 0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
+  // Constructor and destructor
+  DataWidget(QWidget *parent = 0);
   ~DataWidget() {};
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
-		  
+
 private slots:
+  // Private member functions
   void updateTable();
   void resetHeader(int header);
-  void setData(const int index, RecordDialog *recordDialog, const QString type);
+  void setData(const int index, QVector<QString> data, const QString type);
   void appendRecord();
   void editRecord();
   void insertRecordBefore();
@@ -52,20 +72,13 @@ private slots:
   bool eventFilter(QObject *object, QEvent *event);
   
 private:
-  QPointer<EventSequenceDatabase> esd;
-  QPointer<RecordDialog> recordDialog;
+  // Interface elements
   QPointer<EventTableModel> incidentsModel;
   QPointer<ZoomableTableView> tableView;
-  EventGraphWidget *eventGraph;
-  OccurrenceGraphWidget *occurrenceGraph;
-
   QPointer<QLabel> findSelectLabel;
   QPointer<QLabel> findFieldLabel;
-  
   QPointer<QComboBox> findComboBox;
-  
   QPointer<QLineEdit> findField;
-  
   QPointer<QPushButton> appendRecordButton;
   QPointer<QPushButton> editRecordButton;
   QPointer<QPushButton> insertRecordBeforeButton;
@@ -77,10 +90,9 @@ private:
   QPointer<QPushButton> findPreviousButton;
   QPointer<QPushButton> findNextButton;
 
-  QString currentData;
-  QString currentFind;
-
-  int currentRow;
+  // Private variables.
+  QString _currentData;
+  QString _currentFind;
 };
 
 

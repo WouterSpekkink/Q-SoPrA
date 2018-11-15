@@ -3020,8 +3020,8 @@ void OccurrenceGraphWidget::setVisibility()
   while (it4.hasNext()) 
     {
       Linkage *currentEdge = it4.next();
-      OccurrenceItem *tail = qgraphicsitem_cast<OccurrenceItem*>(currentEdge->startItem());
-      OccurrenceItem *head = qgraphicsitem_cast<OccurrenceItem*>(currentEdge->endItem());
+      OccurrenceItem *tail = qgraphicsitem_cast<OccurrenceItem*>(currentEdge->getStart());
+      OccurrenceItem *head = qgraphicsitem_cast<OccurrenceItem*>(currentEdge->getEnd());
       bool show = true;
       if (tail) 
 	{

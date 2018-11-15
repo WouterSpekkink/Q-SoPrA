@@ -66,13 +66,13 @@ public:
   void setStartItem(QGraphicsItem *start);
   void setEndItem(QGraphicsItem *end);
   void setCopy(bool status);
-  void setHeight(int height);
+  void setHeight(const int &height);
   void setMassHidden(bool state);
   void setColor(const QColor &color);
   
   // Getters
-  QGraphicsItem *startItem() const;
-  QGraphicsItem *endItem() const;
+  QGraphicsItem *getStart() const;
+  QGraphicsItem *getEnd() const;
   bool isCopy();
   int getHeight();
   QString getType();

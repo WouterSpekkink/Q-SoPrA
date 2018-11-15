@@ -104,12 +104,12 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   painter->drawPolygon(arrowHeadTwo);
 }
 
-NetworkNode* UndirectedEdge::startItem() const 
+NetworkNode* UndirectedEdge::getStart() const 
 {
   return start;
 }
 
-NetworkNode* UndirectedEdge::endItem() const 
+NetworkNode* UndirectedEdge::getEnd() const 
 {
   return end;
 }

@@ -1,9 +1,32 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/ComboBoxDialog.h"
 
 ComboBoxDialog::ComboBoxDialog(QWidget *parent, QVector<QString> contents) : QDialog(parent) 
 {
-  exitStatus = 1;
-
+  _exitStatus = 1;
+  _selection = DEFAULT;
+  
   selectionLabel = new QLabel(tr("<b>Choose:</b>"), this);
 
   selectionComboBox = new QComboBox(this);
@@ -33,14 +56,14 @@ ComboBoxDialog::ComboBoxDialog(QWidget *parent, QVector<QString> contents) : QDi
 
 void ComboBoxDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void ComboBoxDialog::saveAndClose() 
 {
-  selection = selectionComboBox->currentText();
-  if (selection == DEFAULT) 
+  _selection = selectionComboBox->currentText();
+  if (_selection == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -53,19 +76,19 @@ void ComboBoxDialog::saveAndClose()
     }
   else 
     {
-      exitStatus = 0;
+      _exitStatus = 0;
       this->close();
     }
 }
 
 QString ComboBoxDialog::getSelection() 
 {
-  return selection;
+  return _selection;
 }
 
 int ComboBoxDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 				    

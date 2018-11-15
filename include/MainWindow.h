@@ -36,9 +36,8 @@ class MainWindow : public QMainWindow
   Q_OBJECT
   
 public:
-  MainWindow(QWidget *parent=0, EventSequenceDatabase *submittedEsd = new EventSequenceDatabase);
-
-  ~MainWindow() {};
+  MainWindow(QWidget *parent = 0);
+  ~MainWindow();
 
   QPointer<QStackedWidget> getStacked();
 				       
@@ -138,8 +137,6 @@ private:
   QPointer<QAction> importRelTypesAct;
   QPointer<QAction> exportEntityAttributesAct;
   QPointer<QAction> importEntityAttributesAct;
-  
-  QPointer<EventSequenceDatabase> esd;
 };
 
 #endif

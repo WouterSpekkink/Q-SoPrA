@@ -1,62 +1,97 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef DIRECTEDEDGE_H
 #define DIRECTEDEDGE_H
 
 #include <QGraphicsLineItem>
 #include "NetworkNode.h"
 #include "SupportingFunctions.h"
+#include "Constants.h"
 
 class DirectedEdge : public QGraphicsLineItem
 {
 
 public:
-
-  DirectedEdge(NetworkNode *startItem = NULL, NetworkNode *endItem = NULL,
-	       QString submittedType = QString(), QString submittedName = QString(),
+  // Constructor and destructor
+  DirectedEdge(NetworkNode *start = NULL, NetworkNode *end = NULL,
+	       QString type = QString(), QString name = QString(),
 	       QGraphicsItem *parent = 0);
   ~DirectedEdge() {};
 
+  // Overrides of public functions
   QRectF boundingRect() const override;
-  void updatePosition();
-  void setColor(const QColor &subColor);
+
+  // Setters
+  void setColor(const QColor &color);
+  void setType(const QString &type);
+  void setHeight(const int &height);
+  void setName(const QString &name);
+  void setFiltered(bool state);
+  void setMassHidden(bool state);
+  void setComment(const QString &comment);
+
+  // Getters;
   QColor getColor();
-  NetworkNode *startItem() const;
-  NetworkNode *endItem() const;
+  NetworkNode* getStart() const;
+  NetworkNode* getEnd() const;
   void calculate();
   QString getType();
-  void setType(const QString submittedType);
-  void setHeight(int submittedHeight);
   int getHeight();
   QString getName();
-  void setName(const QString submittedName);
   bool isFiltered();
-  void setFiltered(bool state);
   bool isMassHidden();
-  void setMassHidden(bool state);
-  void setComment(const QString submittedComment);
   QString getComment();
   
+  // New function for correct drawing
+  void updatePosition();
+
+  // Type check
   enum {Type = UserType + 4};
   int type() const;
   
 protected:
+  // Override of the pain function
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
 private:
-  NetworkNode *start;
-  NetworkNode *end;
-  QColor color;
-  QPolygonF arrowHead;
-  QPainterPath strokePath;
-  int height;
-  QLineF ghostLine;
-  QPointF arrowP1;
-  QPointF arrowP2;
-  QPointF controlPoint;
-  QString relType;
-  QString name;
-  QString comment;
-  bool filtered;
-  bool massHidden;
+  QColor _color;
+  QPolygonF _arrowHead;
+  QPainterPath _strokePath;
+  int _height;
+  QLineF _ghostLine;
+  QPointF _arrowP1;
+  QPointF _arrowP2;
+  QPointF _controlPoint;
+  QString _relType;
+  QString _name;
+  QString _comment;
+  bool _filtered;
+  bool _massHidden;
+
+  // Pointers to objects managed by other class.
+  // Do not delete.
+  NetworkNode *_start;
+  NetworkNode *_end;
 };
 
 #endif

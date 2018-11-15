@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef HIERARCHYGRAPHWIDGET_H
 #define HIERARCHYGRAPHWIDGET_H
 
@@ -45,23 +67,31 @@ class RelationshipsWidget;
 class HierarchyGraphWidget : public QDialog
 {
   Q_OBJECT
+  // MainWindow needs access to this class
   friend class MainWindow;
 
 public:
+  // Constructor and destructor
   HierarchyGraphWidget(QWidget *parent = 0);
-  ~HierarchyGraphWidget() {};
-  void setOrigin(MacroEvent *submittedOrigin);
-  void setEvents(QVector<EventItem*> submittedEvents);
-  void setMacros(QVector<MacroEvent*> submittedMacros);
-  void setEdges(QVector<Linkage*> submittedEvents);
+  ~HierarchyGraphWidget();
+
+  // Setters
+  void setOrigin(MacroEvent *origin);
+  void setEvents(QVector<EventItem*> eventVector);
+  void setMacros(QVector<MacroEvent*> macroVector);
+  void setEdges(QVector<Linkage*> edgeVector);
+  void setAttributesWidget(AttributesWidget *attributesWidget);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+
+  // Getters
   void getEdges();
+  
+  // Some functions that need to be exposed
   void cleanUp();
-  void setAttributesWidget(AttributesWidget *aw);
-  void setEventGraph(EventGraphWidget *egw);
-  void setRelationshipsWidget(RelationshipsWidget *rw);
   void resetTree();
 					   
 private slots:
+  // Private member functions
   void setCommentBool();
   void setComment();
   void toggleDetails();
@@ -81,7 +111,7 @@ private slots:
   void showComments();
   void setValueButton();
   void setValue();
-  void buildComponents(MacroEvent *submittedOrigin, int layer);
+  void buildComponents(MacroEvent *origin, int layer);
   void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void exportSvg();
@@ -99,7 +129,6 @@ private slots:
   void resetTexts();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
-  
   void processHierarchyGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
@@ -126,13 +155,11 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
-
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
   void objectToBack();
   void fixZValues();
-  
   void setLinkageButtons(QTableWidgetItem *item);
   void changeLinkageColor(QTableWidgetItem *item);
   void hideLinkage();
@@ -140,7 +167,6 @@ private slots:
   void disableLinkageButtons();
   void updateLinkages();
   void setHeights();
-  
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void buildEntities(QStandardItem *top, QString name);
@@ -157,26 +183,16 @@ signals:
   void goToEventGraph();
   
 private:
+  // Interface elements
   QPointer<Scene> scene;
   QPointer<BandlessGraphicsView> view;
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
-  QVector<QGraphicsItem*> currentData;
-  AttributesWidget *attributesWidget;
-  EventGraphWidget *eventGraph;
-  RelationshipsWidget *relationshipsWidget;
-
-  QVector<LineObject*> lineVector;
-  QVector<TextObject*> textVector;
-  QVector<EllipseObject*> ellipseVector;
-  QVector<RectObject*> rectVector;
-  
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
   QPointer<QWidget> legendWidget;
-  
   QPointer<QLabel> timeStampLabel;
   QPointer<QLabel> sourceLabel;
   QPointer<QLabel> descriptionLabel;
@@ -187,16 +203,13 @@ private:
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> legendLabel;
   QPointer<QLabel> zoomLabel;
-  
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> attributesFilterField;
   QPointer<QLineEdit> valueField;
-
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
-  
   QPointer<QPushButton> toggleDetailsButton;
   QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> seeAttributesButton;
@@ -218,23 +231,32 @@ private:
   QPointer<QPushButton> moveModeDownButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
-
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<DeselectableListWidget> linkageListWidget;
-
   QPointer<QSlider> zoomSlider;
-  
-  MacroEvent *origin;
-  QVector<EventItem*> eventVector;
-  QVector<MacroEvent*> macroVector;
-  QVector<Linkage*> edgeVector;
-  QVector<QString> presentTypes;
-  
-  MacroEvent *selectedMacro;
-  int selectedIncident;
-  bool commentBool;
-  bool showLinkages;
-  bool showHierarchy;
+
+  // Private variables
+  MacroEvent *_origin;
+  MacroEvent *_selectedMacro;
+  int _selectedIncident;
+  bool _commentBool;
+
+  // Private data vectors
+  QVector<EventItem*> _eventVector;
+  QVector<MacroEvent*> _macroVector;
+  QVector<Linkage*> _edgeVector;
+  QVector<QString> _presentTypes;
+  QVector<LineObject*> _lineVector;
+  QVector<TextObject*> _textVector;
+  QVector<EllipseObject*> _ellipseVector;
+  QVector<RectObject*> _rectVector;
+  QVector<QGraphicsItem*> _currentData;
+
+  // Pointers to other widgets
+  // Do not delete
+  AttributesWidget *_attributesWidget;
+  RelationshipsWidget *_relationshipsWidget;
+
 };
 
 #endif

@@ -1,31 +1,54 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+
 #include "../include/EventNodeSettingsDialog.h"
 
 EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
-						 QVector<QString> submittedIds,
-						 QVector<QString> submittedLabels,
-						 QVector<QString> submittedTimings,
-						 QVector<QString> submittedDescriptions,
-						 QVector<QString> submittedComments,
-						 QVector<QString> submittedTypes,
-						 QVector<QString> submittedModes,
-						 QVector<QString> submittedX,
-						 QVector<QString> submittedY,
-						 QVector<MacroEvent*> submittedMacros)
+						 QVector<QString> ids,
+						 QVector<QString> labels,
+						 QVector<QString> timings,
+						 QVector<QString> descriptions,
+						 QVector<QString> comments,
+						 QVector<QString> types,
+						 QVector<QString> modes,
+						 QVector<QString> xCoords,
+						 QVector<QString> yCoords,
+						 QVector<MacroEvent*> macros)
   : QDialog(parent) 
 {
 
-  ids = submittedIds;
-  labels = submittedLabels;
-  timings = submittedTimings;
-  descriptions = submittedDescriptions;
-  comments = submittedComments;
-  types = submittedTypes;
-  modes = submittedModes;
-  xCoords = submittedX;
-  yCoords = submittedY;
-  macros = submittedMacros;
+  _ids = ids;
+  _labels = labels;
+  _timings = timings;
+  _descriptions = descriptions;
+  _comments = comments;
+  _types = types;
+  _modes = modes;
+  _xCoords = xCoords;
+  _yCoords = yCoords;
+  _macros = macros;
   tableWidget = new QTableWidget(this);
-  tableWidget->setRowCount(ids.length());
+  tableWidget->setRowCount(_ids.length());
   tableWidget->setColumnCount(8); // default size
   QTableWidgetItem *headerOne = new QTableWidgetItem("Id", 0);
   QTableWidgetItem *headerTwo = new QTableWidgetItem("Label", 1);
@@ -47,17 +70,17 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
   tableWidget->setHorizontalHeaderItem(8, headerNine);
   
   // Now let's fill the table
-  for (QVector<QString>::size_type i = 0; i != ids.length(); i++) 
+  for (QVector<QString>::size_type i = 0; i != _ids.length(); i++) 
     {
-      QTableWidgetItem *newId = new QTableWidgetItem(ids[i], 0);
-      QTableWidgetItem *newLabel = new QTableWidgetItem(labels[i], 0);
-      QTableWidgetItem *newDescription = new QTableWidgetItem(descriptions[i], 0);
-      QTableWidgetItem *newTiming = new QTableWidgetItem(timings[i], 0);
-      QTableWidgetItem *newComment = new QTableWidgetItem(comments[i], 0);
-      QTableWidgetItem *newType = new QTableWidgetItem(types[i], 0);
-      QTableWidgetItem *newMode = new QTableWidgetItem(modes[i], 0);
-      QTableWidgetItem *newX = new QTableWidgetItem(xCoords[i], 0);
-      QTableWidgetItem *newY = new QTableWidgetItem(yCoords[i], 0);
+      QTableWidgetItem *newId = new QTableWidgetItem(_ids[i], 0);
+      QTableWidgetItem *newLabel = new QTableWidgetItem(_labels[i], 0);
+      QTableWidgetItem *newDescription = new QTableWidgetItem(_descriptions[i], 0);
+      QTableWidgetItem *newTiming = new QTableWidgetItem(_timings[i], 0);
+      QTableWidgetItem *newComment = new QTableWidgetItem(_comments[i], 0);
+      QTableWidgetItem *newType = new QTableWidgetItem(_types[i], 0);
+      QTableWidgetItem *newMode = new QTableWidgetItem(_modes[i], 0);
+      QTableWidgetItem *newX = new QTableWidgetItem(_xCoords[i], 0);
+      QTableWidgetItem *newY = new QTableWidgetItem(_yCoords[i], 0);
       tableWidget->setItem(i, 0, newId);
       tableWidget->setItem(i, 1, newLabel);
       tableWidget->setItem(i, 2, newTiming);
@@ -254,7 +277,7 @@ void EventNodeSettingsDialog::addAttribute()
 	  else 
 	    {
 	      QString currentName = tableWidget->item(i, 1)->data(Qt::DisplayRole).toString();
-	      QVectorIterator<MacroEvent*> it2(macros);
+	      QVectorIterator<MacroEvent*> it2(_macros);
 	      while (it2.hasNext()) 
 		{
 		  MacroEvent *currentMacro = it2.next();

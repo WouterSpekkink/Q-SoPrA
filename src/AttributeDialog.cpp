@@ -163,17 +163,17 @@ void AttributeDialog::saveAndClose()
       query->bindValue(":name", _name);
       query->exec();
       query->first();
-    }
-  if (!query->isNull(0)) 
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("Entity name.");
-      warningBox->setInformativeText("Attributes and entities cannot share names.");
-      warningBox->exec();
-      delete warningBox;
-      return;
+      if (!query->isNull(0)) 
+	{
+	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->addButton(QMessageBox::Ok);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("Entity name.");
+	  warningBox->setInformativeText("Attributes and entities cannot share names.");
+	  warningBox->exec();
+	  delete warningBox;
+	  return;
+	}
     }
   if (_name == ENTITIES) 
     { 

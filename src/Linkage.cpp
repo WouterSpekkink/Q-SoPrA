@@ -292,12 +292,12 @@ QColor Linkage::getColor()
   return _color;
 }
 
-QGraphicsItem* Linkage::startItem() const
+QGraphicsItem* Linkage::getStart() const
 {
   return _start;
 }
 
-QGraphicsItem* Linkage::endItem() const
+QGraphicsItem* Linkage::getEnd() const
 {
   return _end;
 }
@@ -342,7 +342,7 @@ int Linkage::getPenStyle()
   return _penStyle;
 }
 
-void Linkage::setHeight(int height)
+void Linkage::setHeight(const int &height)
 {
   _height = height;
 }

@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef EDITENTITYDIALOG_H
 #define EDITENTITYDIALOG_H
 
@@ -20,10 +42,6 @@
 #include "ZoomableListView.h"
 #include "SupportingFunctions.h"
 
-/*
-  I need to forward declare the class here because this header is also included in the
-  EntitiesFilter header.
-*/
 class EntitiesFilter;
 
 class EditEntityDialog : public QDialog
@@ -32,17 +50,23 @@ class EditEntityDialog : public QDialog
   friend class EntitiesFilter;
 
 public:
+  // Constructor and destructor
   EditEntityDialog(QWidget *parent = 0);
   ~EditEntityDialog() {};
 
+  // Setters
+  void setEventGraph(EventGraphWidget *eventGraphWidget);
+  void setAttributesWidget(AttributesWidget *attributesWidget);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  
+  // Getters
   int getEntityEdited();
   QString getName();
   QString getLeftEntity();
   QString getRightEntity();
-  void setEventGraph(EventGraphWidget *egw);
-  void setAttributesWidget(AttributesWidget *aw);
-			  
+  			  
 private slots:
+  // Private member functions
   void filterEntity(const QString &text);
   void addEntity();
   void editEntity();
@@ -53,25 +77,26 @@ private slots:
   void closeThis();
   
 private:
-  EventGraphWidget *eventGraph;
-  AttributesWidget *attributesWidget;
-  
+  // Interface elements
   QPointer<QLabel> filterLabel;
-
   QPointer<EntityTableModel> entitiesTable;
   QPointer<ZoomableListView> entitiesView;
   QPointer<EntitiesFilter> entitiesFilter;
-    
   QPointer<QPushButton> newEntityButton;
   QPointer<QPushButton> editEntityButton;
   QPointer<QPushButton> removeEntitiesButton;
   QPointer<QPushButton> closeButton;
-  
   QPointer<QLineEdit> entityFilterField;
 
-  int entityEdited;
+  // Private variables
+  int _entityEdited;
+  bool _fresh;
 
-  bool fresh;
+  // Pointers to other widgets
+  // Do not delete
+  QPointer<EventGraphWidget> _eventGraph;
+  QPointer<AttributesWidget> _attributesWidget;
+  QPointer<RelationshipsWidget> _relationshipsWidget;
 };
 
 #endif

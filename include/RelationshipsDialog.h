@@ -25,6 +25,8 @@
 
 class EntitiesFilter;
 class AttributesWidget;
+class EventGraphWidget;
+class OccurrenceGraphWidget;
 
 class RelationshipsDialog : public QDialog
 {

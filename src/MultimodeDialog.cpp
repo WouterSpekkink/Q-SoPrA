@@ -153,14 +153,14 @@ void MultimodeDialog::setModeOne(const QString &name)
       while (it.hasNext()) 
 	{
 	  DirectedEdge *directed = it.next();
-	  if (directed->startItem()->getMode() == modeOne &&
-	      directed->endItem()->getMode() == modeTwo &&
+	  if (directed->getStart()->getMode() == modeOne &&
+	      directed->getEnd()->getMode() == modeTwo &&
 	      directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
 	    }
-	  else if (directed->startItem()->getMode() == modeTwo &&
-		   directed->endItem()->getMode() == modeOne &&
+	  else if (directed->getStart()->getMode() == modeTwo &&
+		   directed->getEnd()->getMode() == modeOne &&
 		   directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
@@ -171,14 +171,14 @@ void MultimodeDialog::setModeOne(const QString &name)
       while (it2.hasNext()) 
 	{
 	  UndirectedEdge *undirected = it2.next();
-	  if (undirected->startItem()->getMode() == modeOne &&
-	      undirected->endItem()->getMode() == modeTwo &&
+	  if (undirected->getStart()->getMode() == modeOne &&
+	      undirected->getEnd()->getMode() == modeTwo &&
 	      undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
 	    }
-	  else if (undirected->startItem()->getMode() == modeTwo &&
-		   undirected->endItem()->getMode() == modeOne &&
+	  else if (undirected->getStart()->getMode() == modeTwo &&
+		   undirected->getEnd()->getMode() == modeOne &&
 		   undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
@@ -220,14 +220,14 @@ void MultimodeDialog::setModeTwo(const QString &name)
       while (it.hasNext()) 
 	{
 	  DirectedEdge *directed = it.next();
-	  if (directed->startItem()->getMode() == modeOne &&
-	      directed->endItem()->getMode() == modeTwo &&
+	  if (directed->getStart()->getMode() == modeOne &&
+	      directed->getEnd()->getMode() == modeTwo &&
 	      directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
 	    }
-	  else if (directed->startItem()->getMode() == modeTwo &&
-		   directed->endItem()->getMode() == modeOne &&
+	  else if (directed->getStart()->getMode() == modeTwo &&
+		   directed->getEnd()->getMode() == modeOne &&
 		   directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
@@ -237,14 +237,14 @@ void MultimodeDialog::setModeTwo(const QString &name)
       while (it2.hasNext()) 
 	{
 	  UndirectedEdge *undirected = it2.next();
-	  if (undirected->startItem()->getMode() == modeOne &&
-	      undirected->endItem()->getMode() == modeTwo &&
+	  if (undirected->getStart()->getMode() == modeOne &&
+	      undirected->getEnd()->getMode() == modeTwo &&
 	      undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
 	    }
-	  else if (undirected->startItem()->getMode() == modeTwo &&
-		   undirected->endItem()->getMode() == modeOne &&
+	  else if (undirected->getStart()->getMode() == modeTwo &&
+		   undirected->getEnd()->getMode() == modeOne &&
 		   undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
