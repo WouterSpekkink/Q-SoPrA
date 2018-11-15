@@ -10,7 +10,6 @@ QT += widgets sql svg
 
 # Input
 HEADERS += include/AbstractionDialog.h \
-           include/Arrow.h \
            include/AttributeColorDialog.h \
            include/AttributeDialog.h \
            include/AttributeIndexDialog.h \
@@ -51,6 +50,7 @@ HEADERS += include/AbstractionDialog.h \
            include/LargeTextDialog.h \
            include/LineageColorDialog.h \
            include/LineObject.h \
+           include/Linkage.h \
            include/LinkagesIndexDialog.h \
            include/LinkagesWidget.h \
            include/LinkageTypeDialog.h \
@@ -97,7 +97,6 @@ HEADERS += include/AbstractionDialog.h \
            include/ZoomableTableView.h
 SOURCES += main.cpp \
            src/AbstractionDialog.cpp \
-           src/Arrow.cpp \
            src/AttributeColorDialog.cpp \
            src/AttributeDialog.cpp \
            src/AttributeIndexDialog.cpp \
@@ -138,6 +137,7 @@ SOURCES += main.cpp \
            src/LargeTextDialog.cpp \
            src/LineageColorDialog.cpp \
            src/LineObject.cpp \
+           src/Linkage.cpp \
            src/LinkagesIndexDialog.cpp \
            src/LinkagesWidget.cpp \
            src/LinkageTypeDialog.cpp \

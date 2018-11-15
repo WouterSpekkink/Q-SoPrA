@@ -1,13 +1,35 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/AttributeColorDialog.h"
 
-AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedType) : QDialog(parent) 
+AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString type) : QDialog(parent) 
 {
-  type = submittedType;
-  exitStatus = 1;
-  chosenColor = QColor(Qt::darkGreen);
-  chosenTextColor = QColor(Qt::black);
-  chosenAttribute = DEFAULT;
-  entity = false;
+  _type = type;
+  _exitStatus = 1;
+  _chosenColor = QColor(Qt::darkGreen);
+  _chosenTextColor = QColor(Qt::black);
+  _chosenAttribute = DEFAULT;
+  _entity = false;
 
   attributeLabel = new QLabel(tr("<b>Choose attribute:</b>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -28,7 +50,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   colorButton = new QPushButton(tr("Choose node color"), this);
   colorButton->setMinimumWidth(200);
   QPixmap pixmapOne(colorButton->width(), colorButton->height());
-  pixmapOne.fill(chosenColor);
+  pixmapOne.fill(_chosenColor);
   colorOneLabel = new QLabel(this);
   colorOneLabel->setMaximumWidth(50);
   colorOneLabel->setMaximumHeight(colorOneLabel->sizeHint().height());
@@ -36,7 +58,7 @@ AttributeColorDialog::AttributeColorDialog(QWidget *parent, QString submittedTyp
   textColorButton = new QPushButton(tr("Choose text color"), this);
   textColorButton->setMinimumWidth(200);
   QPixmap pixmapTwo(textColorButton->width(), textColorButton->height());
-  pixmapTwo.fill(chosenTextColor);
+  pixmapTwo.fill(_chosenTextColor);
   colorTwoLabel = new QLabel(this);
   colorTwoLabel->setMaximumWidth(50);
   colorTwoLabel->setMaximumHeight(colorTwoLabel->sizeHint().height());
@@ -85,7 +107,7 @@ void AttributeColorDialog::setTree()
 {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) 
+  if (_type == ENTITY) 
     {
       query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
       while (query->next()) 
@@ -100,7 +122,7 @@ void AttributeColorDialog::setTree()
 	  buildHierarchy(father, name);
 	}
     }
-  else if (type == INCIDENT) 
+  else if (_type == INCIDENT) 
     {
       // First we will fetch the 'normal' attributes.
       query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
@@ -147,7 +169,7 @@ void AttributeColorDialog::setTree()
 void AttributeColorDialog::buildHierarchy(QStandardItem *top, QString name) 
 {
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) 
+  if (_type == ENTITY) 
     {
       query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
       query->bindValue(":father", name);
@@ -166,7 +188,7 @@ void AttributeColorDialog::buildHierarchy(QStandardItem *top, QString name)
 	  buildHierarchy(child, childName);
 	}
     }
-  else if (type == INCIDENT) 
+  else if (_type == INCIDENT) 
     {
       query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
       query->bindValue(":father", name);
@@ -222,10 +244,10 @@ void AttributeColorDialog::setColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      chosenColor = colorDialog->selectedColor();
+      _chosenColor = colorDialog->selectedColor();
     }
   QPixmap pixmapOne(100, colorButton->height());
-  pixmapOne.fill(chosenColor);
+  pixmapOne.fill(_chosenColor);
   colorOneLabel->setPixmap(pixmapOne);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -237,10 +259,10 @@ void AttributeColorDialog::setTextColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      chosenTextColor = colorDialog->selectedColor();
+      _chosenTextColor = colorDialog->selectedColor();
     }
   QPixmap pixmapTwo(100, textColorButton->height());
-  pixmapTwo.fill(chosenTextColor);
+  pixmapTwo.fill(_chosenTextColor);
   colorTwoLabel->setPixmap(pixmapTwo);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -250,7 +272,7 @@ void AttributeColorDialog::setAttribute()
 {
   if (attributesTreeView->currentIndex().isValid()) 
     {
-      chosenAttribute = attributesTreeView->currentIndex().data().toString();
+      _chosenAttribute = attributesTreeView->currentIndex().data().toString();
     }
   QModelIndex currentIndex = attributesTreeView->currentIndex();
   while (currentIndex.parent().isValid()) 
@@ -259,19 +281,19 @@ void AttributeColorDialog::setAttribute()
     }
   if (currentIndex.data().toString() == ENTITIES) 
     {
-      entity = true;
+      _entity = true;
     }
 }
 
 void AttributeColorDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void AttributeColorDialog::saveAndClose() 
 {
-  if (chosenAttribute == DEFAULT) 
+  if (_chosenAttribute == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -284,33 +306,33 @@ void AttributeColorDialog::saveAndClose()
     }
   else 
     {
-      exitStatus = 0;
+      _exitStatus = 0;
       this->close();
     }
 }
 
 QColor AttributeColorDialog::getColor() 
 {
-  return chosenColor;
+  return _chosenColor;
 }
 
 QColor AttributeColorDialog::getTextColor() 
 {
-  return chosenTextColor;
+  return _chosenTextColor;
 }
 
 QString AttributeColorDialog::getAttribute() 
 {
-  return chosenAttribute;
+  return _chosenAttribute;
 }
 
 bool AttributeColorDialog::isEntity() 
 {
-  return entity;
+  return _entity;
 }
 
 int AttributeColorDialog::getExitStatus() 
 {  
-  return exitStatus;
+  return _exitStatus;
 }
 

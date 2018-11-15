@@ -125,7 +125,7 @@ void NodeSettingsDialog::addAttribute()
   attributeSelectionDialog->exec();
   if (attributeSelectionDialog->getExitStatus() == 0) 
     {
-      bool valued = attributeSelectionDialog->getChecked();
+      bool valued = attributeSelectionDialog->isChecked();
       QString attribute = attributeSelectionDialog->getAttribute();
       QString headerText = "";
       if (valued) 

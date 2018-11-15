@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef EVENTGRAPHWIDGET_H
 #define EVENTGRAPHWIDGET_H
 
@@ -20,7 +42,7 @@
 #include "NodeLabel.h"
 #include "GraphicsView.h"
 #include "EventItem.h"
-#include "Arrow.h"
+#include "Linkage.h"
 #include "Scene.h"
 #include "Constants.h"
 #include "SimpleTextDialog.h"
@@ -51,28 +73,37 @@
 #include "ModeColorDialog.h"
 #include "EventTextDialog.h"
 
+// Need a forward declaration here
 class AttributesWidget;
 
 class EventGraphWidget : public QWidget
 {
   Q_OBJECT
+  // MainWindow needs access to this class
   friend class MainWindow;
   
 public:
+  // Constructor and deconstructor
   EventGraphWidget(QWidget *parent = 0);
-  ~EventGraphWidget() {};
+  ~EventGraphWidget();
 
-  QVector<MacroEvent*> getMacros();
-  QVector<EventItem*> getEventItems();
-  QVector<Arrow*> getEdgeVector();
-  void resetTree();
-  void checkCongruency();
+  // Setters
   void setAttributesWidget(AttributesWidget* aw);
   void setOccurrenceGraph(OccurrenceGraphWidget* ogw);
   void setRelationshipsWidget(RelationshipsWidget *rw);
+
+  // Getters
+  QVector<MacroEvent*> getMacros();
+  QVector<EventItem*> getEventItems();
+  QVector<Linkage*> getEdgeVector();
+
+  // Functions that need to be exposed
+  void resetTree();
+  void checkCongruency();
   void updateCases();
 
 private slots:
+  // Private member functions
   void setCommentBool();
   void setComment();
   void toggleDetails();
@@ -124,13 +155,13 @@ private slots:
   void getLabels();
   void addLabels();
   void cleanUp();	     
-  void changePos(EventItem *item, qreal &dist);
-  void changePos(MacroEvent *item, qreal &dist);
+  void changePos(EventItem* item, qreal &dist);
+  void changePos(MacroEvent* item, qreal &dist);
   void increaseDistance();
   void decreaseDistance();
   void expandGraph();
   void contractGraph();
-  void processMoveItems(QGraphicsItem *item, QPointF pos);
+  void processMoveItems(QGraphicsItem* item, QPointF pos);
   void setPlotButtons();
   void getLinkageDetails();
   void plotGraph();
@@ -167,9 +198,9 @@ private slots:
   void processEventItemContextMenu(const QString &action);
   void colligateEvents();
   void disaggregateEvent();
-  void updateMacroIds(MacroEvent *macro);
+  void updateMacroIds(MacroEvent* macro);
   void updateMacroOrder();
-  void rewireLinkages(MacroEvent *macro, QVector<EventItem*> incidents);
+  void rewireLinkages(MacroEvent* macro, QVector<EventItem*> incidents);
   void recolorEvents();
   void recolorLabels();
   void colorLineage();
@@ -196,7 +227,7 @@ private slots:
   void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void setEventWidth();
-  void processArrowContextMenu(const QString &action);
+  void processLinkageContextMenu(const QString &action);
   void removeLinkage();
   void keepLinkage();
   void acceptLinkage();
@@ -231,7 +262,6 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
-
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
@@ -239,9 +269,7 @@ private slots:
   void fixZValues();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
-
   void setGraphControls(bool status);
-  
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
   void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
@@ -250,10 +278,11 @@ private slots:
   void finalBusiness();
   
 signals:
-  void seeHierarchy(MacroEvent *);
-  void changeEventWidth(QGraphicsItem *);
+  void seeHierarchy(MacroEvent*);
+  void changeEventWidth(QGraphicsItem*);
   
 private:
+  // Interface elements
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;
   QPointer<QWidget> infoWidget;
@@ -261,27 +290,10 @@ private:
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
   QPointer<QWidget> legendWidget;
-  QVector<EventItem*> eventVector;
-  QVector<MacroEvent*> macroVector;
-  QVector<QGraphicsItem*> currentData;
-  QVector<Arrow*> edgeVector;
-  QVector<Arrow*> compareVector;
-  QVector<NodeLabel*> nodeLabelVector;
-  QVector<MacroLabel*> macroLabelVector;
-  QVector<LineObject*> lineVector;
-  QVector<TextObject*> textVector;
-  QVector<EllipseObject*> ellipseVector;
-  QVector<RectObject*> rectVector;
-  AttributesWidget *attributesWidget;
-  OccurrenceGraphWidget *occurrenceGraph;
-  RelationshipsWidget *relationshipsWidget;
-  
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
-
   QPointer<DeselectableListWidget> linkageListWidget;
-  
   QPointer<QLabel> coderLabel;
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> plotLabel;
@@ -303,7 +315,6 @@ private:
   QPointer<QLabel> linkageLegendLabel;
   QPointer<QLabel> casesLabel;
   QPointer<QLabel> zoomLabel;
-  
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
   QPointer<QPushButton> removeLinkageTypeButton;
@@ -346,44 +357,55 @@ private:
   QPointer<QPushButton> moveModeDownButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
-  
   QPointer<DeselectableListWidget> eventListWidget;
-
   QPointer<QListWidget> caseListWidget;
-  
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> attributesFilterField;
   QPointer<QLineEdit> valueField;
-
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
-
   QPointer<QComboBox> coderComboBox;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> compareComboBox;
-
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
-
   QPointer<QSlider> zoomSlider;
-  
-  QVector<QString> presentTypes;
-  QVector<QString> checkedCases;
-  
-  QString selectedCoder;
-  QString selectedCompare;
-  MacroEvent *selectedMacro;
-  
-  qreal distance;
-  int vectorPos;
-  int selectedIncident;
 
-  bool labelsVisible;
-  bool commentBool;
+  // Private variables
+  QString _selectedCoder;
+  QString _selectedCompare;
+  MacroEvent* _selectedMacro;
+  qreal _distance;
+  int _vectorPos;
+  int _selectedIncident;
+  bool _labelsVisible;
+  bool _commentBool;
+
+  // Private data vectors
+  QVector<EventItem*> _eventVector;
+  QVector<MacroEvent*> _macroVector;
+  QVector<QGraphicsItem*> _currentData;
+  QVector<Linkage*> _edgeVector;
+  QVector<Linkage*> _compareVector;
+  QVector<NodeLabel*> _nodeLabelVector;
+  QVector<MacroLabel*> _macroLabelVector;
+  QVector<LineObject*> _lineVector;
+  QVector<TextObject*> _textVector;
+  QVector<EllipseObject*> _ellipseVector;
+  QVector<RectObject*> _rectVector;
+  QVector<QString> _presentTypes;
+  QVector<QString> _checkedCases;
+  
+  // Pointers to other widgets
+  // Do not delete
+  QPointer<AttributesWidget> _attributesWidget;
+  QPointer<OccurrenceGraphWidget> _occurrenceGraph;
+  QPointer<RelationshipsWidget> _relationshipsWidget;
+    
 };
 
 #endif

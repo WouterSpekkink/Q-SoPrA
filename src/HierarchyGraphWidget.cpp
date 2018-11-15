@@ -758,13 +758,13 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 	  newMacroLabel->setZValue(4);
 	  newMacroLabel->setDefaultTextColor(Qt::black);
 	  currentLayer.push_back(newMacro);
-	  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-	  newArrow->setZValue(2);
-	  newArrow->setStartItem(newMacro);
-	  newArrow->setEndItem(newOrigin);
-	  newArrow->setCopy(true);
-	  newArrow->setColor(QColor(Qt::gray));
-	  scene->addItem(newArrow);
+	  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+	  newLinkage->setZValue(2);
+	  newLinkage->setStartItem(newMacro);
+	  newLinkage->setEndItem(newOrigin);
+	  newLinkage->setCopy(true);
+	  newLinkage->setColor(QColor(Qt::gray));
+	  scene->addItem(newLinkage);
 	  partners.push_back(macro);
 	}
     }
@@ -827,13 +827,13 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *submittedOrigin, int laye
 	  text->setZValue(4);
 	  text->setDefaultTextColor(Qt::black);
 	  currentLayer.push_back(newEvent);
-	  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-	  newArrow->setZValue(2);
-	  newArrow->setStartItem(newEvent);
-	  newArrow->setEndItem(newOrigin);
-	  newArrow->setCopy(true);
-	  newArrow->setColor(QColor(Qt::gray));
-	  scene->addItem(newArrow);
+	  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+	  newLinkage->setZValue(2);
+	  newLinkage->setStartItem(newEvent);
+	  newLinkage->setEndItem(newOrigin);
+	  newLinkage->setCopy(true);
+	  newLinkage->setColor(QColor(Qt::gray));
+	  scene->addItem(newLinkage);
 	  partners.push_back(event);
 	}
     }
@@ -968,13 +968,13 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	      newMacroLabel->setDefaultTextColor(Qt::black);
 	      currentLayer.push_back(newMacro);
 	      partners.push_back(macro);
-	      Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-	      newArrow->setZValue(2);
-	      newArrow->setStartItem(newMacro);
-	      newArrow->setEndItem(partLayer[it]);
-	      newArrow->setCopy(true);
-	      newArrow->setColor(QColor(Qt::gray));
-	      scene->addItem(newArrow);
+	      Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+	      newLinkage->setZValue(2);
+	      newLinkage->setStartItem(newMacro);
+	      newLinkage->setEndItem(partLayer[it]);
+	      newLinkage->setCopy(true);
+	      newLinkage->setColor(QColor(Qt::gray));
+	      scene->addItem(newLinkage);
 	    }
 	}
       QVectorIterator<EventItem*> it3(eventVector);
@@ -1053,13 +1053,13 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 		  text->setDefaultTextColor(Qt::black);
 		  currentLayer.push_back(newEvent);
 		  partners.push_back(event);
-		  Arrow *newArrow = new Arrow("Hierarchy", "", 0);
-		  newArrow->setZValue(2);
-		  newArrow->setStartItem(newEvent);
-		  newArrow->setEndItem(partLayer[it]);
-		  newArrow->setCopy(true);
-		  newArrow->setColor(QColor(Qt::gray));
-		  scene->addItem(newArrow);
+		  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+		  newLinkage->setZValue(2);
+		  newLinkage->setStartItem(newEvent);
+		  newLinkage->setEndItem(partLayer[it]);
+		  newLinkage->setCopy(true);
+		  newLinkage->setColor(QColor(Qt::gray));
+		  scene->addItem(newLinkage);
 		}
 	    }
 	}
@@ -1131,15 +1131,15 @@ void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
       while (it2.hasNext()) 
 	{
 	  QGraphicsItem *current = it2.next();
-	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
-	  if (arrow && arrow->getType() == "Hierarchy") 
+	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(current);
+	  if (linkage && linkage->getType() == "Hierarchy") 
 	    {
-	      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+	      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(linkage->endItem());
 	      if (endMacro) 
 		{
 		  if (endMacro == qgraphicsitem_cast<MacroEvent*>(source)) 
 		    {
-		      QGraphicsItem* partner = arrow->startItem();
+		      QGraphicsItem* partner = linkage->startItem();
 		      partner->setPos(partner->scenePos().x() + xDiff, partner->scenePos().y() + yDiff);
 		      EventItem *partnerEvent = qgraphicsitem_cast<EventItem*>(partner);
 		      MacroEvent *partnerMacro = qgraphicsitem_cast<MacroEvent*>(partner);
@@ -1162,12 +1162,12 @@ void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
 void HierarchyGraphWidget::getEdges() 
 {
   QVector<QColor> typeColors;
-  QVectorIterator<Arrow*> it(edgeVector);
+  QVectorIterator<Linkage*> it(edgeVector);
   while (it.hasNext()) 
     {
-      Arrow *arrow = it.next();
-      QString originalType = arrow->getType();
-      QColor originalColor = arrow->getColor();
+      Linkage *linkage = it.next();
+      QString originalType = linkage->getType();
+      QColor originalColor = linkage->getColor();
       if (!presentTypes.contains(originalType)) 
 	{
 	  presentTypes.push_back(originalType);
@@ -1175,10 +1175,10 @@ void HierarchyGraphWidget::getEdges()
 	}
       QGraphicsItem *source = NULL;
       QGraphicsItem *target = NULL;
-      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
-      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
-      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(arrow->startItem());
-      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(arrow->endItem());
+      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(linkage->startItem());
+      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(linkage->endItem());
+      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(linkage->startItem());
+      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(linkage->endItem());
       QListIterator<QGraphicsItem*> it2(scene->items());
       while (it2.hasNext()) 
 	{
@@ -1251,15 +1251,15 @@ void HierarchyGraphWidget::getEdges()
 	    }
 	  if (valid) 
 	    {
-	      Arrow *newArrow = new Arrow(originalType, "", 0);
-	      newArrow->setZValue(2);
-	      newArrow->setStartItem(source);
-	      newArrow->setEndItem(target);
-	      newArrow->setColor(originalColor);
-	      newArrow->setCopy(true);
-	      scene->addItem(newArrow);
-	      newArrow->hide();
-	      newArrow->setMassHidden(true);
+	      Linkage *newLinkage = new Linkage(originalType, "", 0);
+	      newLinkage->setZValue(2);
+	      newLinkage->setStartItem(source);
+	      newLinkage->setEndItem(target);
+	      newLinkage->setColor(originalColor);
+	      newLinkage->setCopy(true);
+	      scene->addItem(newLinkage);
+	      newLinkage->hide();
+	      newLinkage->setMassHidden(true);
 	    }
 	}
     }
@@ -1743,7 +1743,7 @@ void HierarchyGraphWidget::setLinkageButtons(QTableWidgetItem *item)
       while (it.hasNext()) 
 	{
 	  QGraphicsItem *currentItem = it.next();
-	  Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+	  Linkage *current = qgraphicsitem_cast<Linkage*>(currentItem);
 	  if (current) 
 	    {
 	      if (current->getType() == text) 
@@ -1787,7 +1787,7 @@ void HierarchyGraphWidget::changeLinkageColor(QTableWidgetItem *item)
 	  while (it.hasNext()) 
 	    {
 	      QGraphicsItem *currentItem = it.next();
-	      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+	      Linkage *current = qgraphicsitem_cast<Linkage*>(currentItem);
 	      if (current) 
 		{
 		  if (current->getType() == type) 
@@ -1816,7 +1816,7 @@ void HierarchyGraphWidget::hideLinkage()
   while (it.hasNext()) 
     {
       QGraphicsItem *currentItem = it.next();
-      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+      Linkage *current = qgraphicsitem_cast<Linkage*>(currentItem);
       if (current) 
 	{
 	  if (current->getType() == text) 
@@ -1839,7 +1839,7 @@ void HierarchyGraphWidget::showLinkage()
   while (it.hasNext()) 
     {
       QGraphicsItem *currentItem = it.next();
-      Arrow *current = qgraphicsitem_cast<Arrow*>(currentItem);
+      Linkage *current = qgraphicsitem_cast<Linkage*>(currentItem);
       if (current) 
 	{
 	  if (current->getType() == text) 
@@ -1858,10 +1858,10 @@ void HierarchyGraphWidget::updateLinkages()
   while (it.hasNext()) 
     {
       QGraphicsItem *current = it.next();
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(current);
-      if (arrow) 
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(current);
+      if (linkage) 
 	{
-	  arrow->updatePosition();
+	  linkage->updatePosition();
 	}
     }
 }
@@ -1874,36 +1874,36 @@ void HierarchyGraphWidget::setHeights()
   while (it.hasPrevious()) 
     {
       QString currentType = it.previous();
-      QVectorIterator<Arrow*> it2(edgeVector);
+      QVectorIterator<Linkage*> it2(edgeVector);
       while (it2.hasNext()) 
 	{
-	  Arrow *currentArrow = it2.next();
-	  if (currentArrow->isVisible()) 
+	  Linkage *currentLinkage = it2.next();
+	  if (currentLinkage->isVisible()) 
 	    {
-	      if (currentArrow->getType() == currentType) 
+	      if (currentLinkage->getType() == currentType) 
 		{
-		  QGraphicsItem *start = currentArrow->startItem();
-		  QGraphicsItem *end = currentArrow->endItem();
+		  QGraphicsItem *start = currentLinkage->startItem();
+		  QGraphicsItem *end = currentLinkage->endItem();
 		  int countFound = 0;
 		  bool found = false;
-		  QVectorIterator<Arrow*> it3(edgeVector);
+		  QVectorIterator<Linkage*> it3(edgeVector);
 		  while (it3.hasNext()) 
 		    {
-		      Arrow *otherArrow = it3.next();
-		      if (otherArrow->isVisible()) 
+		      Linkage *otherLinkage = it3.next();
+		      if (otherLinkage->isVisible()) 
 			{
-			  if (otherArrow != currentArrow) 
+			  if (otherLinkage != currentLinkage) 
 			    {
-			      if (otherArrow->startItem() == start &&
-				  otherArrow->endItem() == end) 
+			      if (otherLinkage->startItem() == start &&
+				  otherLinkage->endItem() == end) 
 				{
 				  found = true;
-				  if (!finished.contains(otherArrow->getType())) 
+				  if (!finished.contains(otherLinkage->getType())) 
 				    {
 				      countFound++;
 				    }
 				}
-			      else if (otherArrow->startItem() == end && otherArrow->endItem() == start) 
+			      else if (otherLinkage->startItem() == end && otherLinkage->endItem() == start) 
 				{
 				  found = true;
 				}
@@ -1912,15 +1912,15 @@ void HierarchyGraphWidget::setHeights()
 		    }
 		  if (countFound > 0) 
 		    {
-		      currentArrow->setHeight((countFound + 1) * 40);
+		      currentLinkage->setHeight((countFound + 1) * 40);
 		    }
 		  else if (found) 
 		    {
-		      currentArrow->setHeight(1 * 40);
+		      currentLinkage->setHeight(1 * 40);
 		    }
 		  else 
 		    {
-		      currentArrow->setHeight(0);
+		      currentLinkage->setHeight(0);
 		    }
 		}
 	    }
@@ -3083,7 +3083,7 @@ void HierarchyGraphWidget::editAttribute()
 	      QString description = query->value(0).toString();
 	      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
 	      attributeDialog->submitName(name);
-	      attributeDialog->setDescription(description);
+	      attributeDialog->submitDescription(description);
 	      attributeDialog->exec();
 	      if (attributeDialog->getExitStatus() == 0) 
 		{
@@ -3617,7 +3617,7 @@ void HierarchyGraphWidget::setMacros(QVector<MacroEvent*> submittedMacros)
   macroVector = submittedMacros;
 }
 
-void HierarchyGraphWidget::setEdges(QVector<Arrow*> submittedEdges) 
+void HierarchyGraphWidget::setEdges(QVector<Linkage*> submittedEdges) 
 {
   edgeVector = submittedEdges;
 }

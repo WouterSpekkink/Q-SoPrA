@@ -1,14 +1,30 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef EVENTITEM_H
 #define EVENTITEM_H
 
 #include <QGraphicsItem>
 #include <QWheelEvent>
-
-/*
-  So graphics items are things that can be draw. They are classes, and 
-  here we subclass one.
-*/
-
 
 class NodeLabel;
 class MacroEvent;
@@ -17,58 +33,75 @@ class EventItem : public QGraphicsItem
 {
 
 public:
-  EventItem(int subWidth = 40,
+  // Constructor and destructor
+  EventItem(int width = 40,
 	    QString toolTip = QString(),
 	    QPointF originalPosition = QPointF(),
-	    int subId = -1,
-	    int subOrder = -1,
+	    int id = -1,
+	    int order = -1,
 	    QGraphicsItem *parent = 0);
+  // Although this class does have pointers
+  // we don't want to delete these, because they may still be
+  // in use by others.
+  // The memory addressed they point to are not allocated
+  // by this class.
+  ~EventItem() {};
 
+  // Overrides
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-  QColor getColor();
-  void setColor(const QColor &subColor); 
-  void setSelectionColor(const QColor &subColor);
-  int getCorrection();
-  QPointF getOriginalPos() const;
-  void setOriginalPos(QPointF newPos);
-  int getId() const;
-  int getOrder() const;
-  void setWidth(int newWidth);
-  int getWidth() const;
-  bool isDislodged();
-  void setDislodged(bool state);
-  void setLabel(NodeLabel *submittedLabel);
-  NodeLabel* getLabel();
-  void setMacroEvent(MacroEvent* submittedEvent);
-  MacroEvent* getMacroEvent();
-  void setMode(const QString submittedMode);
-  QString getMode() const;
-  bool isCopy();
-  void setCopy(bool status);
-
   QPainterPath shape() const override;
   
+  // Setters
+  void setColor(const QColor &color); 
+  void setSelectionColor(const QColor &color);
+  void setOriginalPos(QPointF originalPos);
+  void setWidth(int width);
+  void setDislodged(bool state);
+  void setLabel(NodeLabel *labelPtr);
+  void setMacroEvent(MacroEvent* eventPtr);
+  void setMode(const QString mode);
+  void setCopy(bool state);
+  
+  // Getters
+  QColor getColor();
+  int getCorrection();
+  QPointF getOriginalPos() const;
+  int getId() const;
+  int getOrder() const;
+  int getWidth() const;
+  bool isDislodged();
+  NodeLabel* getLabel();
+  MacroEvent* getMacroEvent();
+  QString getMode() const;
+  bool isCopy();
+
+  // Type recognition
   enum {Type = UserType + 1};
   int type() const;
   
 protected:
+  // Override of events
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
   
 private:
-  MacroEvent *macroEvent;
-  NodeLabel *label;
-  QColor color;
-  QColor selectionColor;
-  QPointF originalPos;
-  int id;
-  int width;
-  bool dislodged;
-  int order;
-  QString mode;
-  bool copy;
+  // Private variables
+  QColor _color;
+  QColor _selectionColor;
+  QPointF _originalPos;
+  int _id;
+  int _width;
+  bool _dislodged;
+  int _order;
+  QString _mode;
+  bool _copy;
+
+  // Pointers to memory allocated by other classes
+  // Do not delete.
+  MacroEvent *_macroEventPtr;
+  NodeLabel *_labelPtr;
 };
 
 #endif

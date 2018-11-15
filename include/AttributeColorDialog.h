@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef ATTRIBUTECOLORDIALOG_H
 #define ATTRIBUTECOLORDIALOG_H
 
@@ -20,9 +42,11 @@ class AttributeColorDialog : public QDialog
   Q_OBJECT
 
 public:
-  AttributeColorDialog(QWidget *parent = 0, QString submittedType = DEFAULT);
+  // Constructor and desconstructor
+  AttributeColorDialog(QWidget *parent = 0, QString type = DEFAULT);
   ~AttributeColorDialog() {};
 
+  // Getters
   QColor getColor();
   QColor getTextColor();
   QString getAttribute();
@@ -30,6 +54,7 @@ public:
   int getExitStatus();
 			    
 private slots:
+  // Private members functions
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void buildEntities(QStandardItem *top, QString name);
@@ -41,30 +66,27 @@ private slots:
   void saveAndClose();
     
 private:
-  QPointer<QLabel> attributeLabel;
-
+  // Interface elements
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
+  QPointer<QLabel> attributeLabel;
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> colorOneLabel;
   QPointer<QLabel> colorTwoLabel;
-  
   QPointer<QLineEdit> attributesFilterField;
-  
   QPointer<QPushButton> colorButton;
   QPointer<QPushButton> textColorButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
-  
-  QColor chosenColor;
-  QColor chosenTextColor;
-  QString chosenAttribute;
 
-  QString type;
-  bool entity;
-
-  int exitStatus;
+  // Private variables
+  QColor _chosenColor;
+  QColor _chosenTextColor;
+  QString _chosenAttribute;
+  QString _type;
+  bool _entity;
+  int _exitStatus;
 };
 
 #endif

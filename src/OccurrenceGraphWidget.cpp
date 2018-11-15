@@ -903,10 +903,10 @@ void OccurrenceGraphWidget::setChangeLabel()
 
 void OccurrenceGraphWidget::updateLinkages() 
 {
-  QVectorIterator<Arrow*> it(edgeVector);
+  QVectorIterator<Linkage*> it(edgeVector);
   while (it.hasNext()) 
     {
-      Arrow *current = it.next();
+      Linkage *current = it.next();
       current->updatePosition();
     }
 }
@@ -1290,13 +1290,13 @@ void OccurrenceGraphWidget::wireLinkages()
 	    }
 	  if (tempTarget != NULL) 
 	    {
-	      Arrow *newArrow = new Arrow(tempSource->getAttribute(), "");
-	      newArrow->setZValue(2);
-	      newArrow->setStartItem(tempSource);
-	      newArrow->setEndItem(tempTarget);
-	      newArrow->setCopy(true);
-	      edgeVector.push_back(newArrow);
-	      scene->addItem(newArrow);
+	      Linkage *newLinkage = new Linkage(tempSource->getAttribute(), "");
+	      newLinkage->setZValue(2);
+	      newLinkage->setStartItem(tempSource);
+	      newLinkage->setEndItem(tempTarget);
+	      newLinkage->setCopy(true);
+	      edgeVector.push_back(newLinkage);
+	      scene->addItem(newLinkage);
 	    }
 	}
     }
@@ -1335,13 +1335,13 @@ void OccurrenceGraphWidget::wireLinkages()
 	    }
 	  if (tempTarget != NULL) 
 	    {
-	      Arrow *newArrow = new Arrow(tempSource->getAttribute(), "");
-	      newArrow->setZValue(2);
-	      newArrow->setStartItem(tempSource);
-	      newArrow->setEndItem(tempTarget);
-	      newArrow->setCopy(true);
-	      edgeVector.push_back(newArrow);
-	      scene->addItem(newArrow);
+	      Linkage *newLinkage = new Linkage(tempSource->getAttribute(), "");
+	      newLinkage->setZValue(2);
+	      newLinkage->setStartItem(tempSource);
+	      newLinkage->setEndItem(tempTarget);
+	      newLinkage->setCopy(true);
+	      edgeVector.push_back(newLinkage);
+	      scene->addItem(newLinkage);
 	    }
 	}
     }
@@ -3016,10 +3016,10 @@ void OccurrenceGraphWidget::setVisibility()
 	}
     }
   wireLinkages();
-  QVectorIterator<Arrow*> it4(edgeVector);
+  QVectorIterator<Linkage*> it4(edgeVector);
   while (it4.hasNext()) 
     {
-      Arrow *currentEdge = it4.next();
+      Linkage *currentEdge = it4.next();
       OccurrenceItem *tail = qgraphicsitem_cast<OccurrenceItem*>(currentEdge->startItem());
       OccurrenceItem *head = qgraphicsitem_cast<OccurrenceItem*>(currentEdge->endItem());
       bool show = true;

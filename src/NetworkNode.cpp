@@ -147,7 +147,7 @@ void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
       QGraphicsItem *item = scene()->items()[i];
       NetworkNode *currentItem = qgraphicsitem_cast<NetworkNode*>(item);
-      Arrow *no = qgraphicsitem_cast<Arrow*>(item);
+      Linkage *no = qgraphicsitem_cast<Linkage*>(item);
       if (currentItem && !(no) && item != this) 
 	{
 	  qreal dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));

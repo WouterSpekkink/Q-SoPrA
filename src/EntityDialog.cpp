@@ -464,7 +464,7 @@ void EntityDialog::editAttribute()
       QString description = query->value(0).toString();
       attributeDialog = new AttributeDialog(this, ENTITY);
       attributeDialog->submitName(name);
-      attributeDialog->setDescription(description);
+      attributeDialog->submitDescription(description);
       attributeDialog->exec();
       if (attributeDialog->getExitStatus() == 0) 
 	{
@@ -541,7 +541,7 @@ void EntityDialog::mergeAttributes()
 	      QString description = query->value(0).toString();
 	      attributeDialog = new AttributeDialog(this, ENTITY);
 	      attributeDialog->submitName(partner);
-	      attributeDialog->setDescription(description);
+	      attributeDialog->submitDescription(description);
 	      attributeDialog->exec();
 	      if (attributeDialog->getExitStatus() == 0) 
 		{

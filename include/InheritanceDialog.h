@@ -13,6 +13,7 @@
 #include <QPointer>
 #include <QSet>
 #include <QList>
+#include <QScrollArea>
 
 class InheritanceDialog : public QDialog
 {
@@ -35,6 +36,9 @@ private slots:
   
 private:
   QVector<QCheckBox*> checkBoxVector;
+  QPointer<QWidget> checkBoxWidget;
+  QPointer<QScrollArea> scrollArea;
+
 
   QPointer<QLabel> titleLabel;
 

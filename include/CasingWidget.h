@@ -23,9 +23,11 @@ class CasingWidget : public QWidget
 {
   Q_OBJECT
 
+  // MainWindow needs access to private member functions
   friend class MainWindow;
 
 public:
+  // Constructor and destructor
   CasingWidget(QWidget *parent = 0);
   ~CasingWidget() {};
 
@@ -47,18 +49,21 @@ private slots:
   void setCellState(QTableWidgetItem *item);
   
 private:
-  EventGraphWidget *eventGraph;
-  NetworkGraphWidget *networkGraph;
-  OccurrenceGraphWidget *occurrenceGraph;
-  
+  // Interface elements
   QPointer<QTableWidget> tableWidget;
-
   QPointer<QPushButton> addCaseButton;
   QPointer<QPushButton> editCaseButton;
   QPointer<QPushButton> removeCaseButton;
   QPointer<QPushButton> selectAllButton;
   QPointer<QPushButton> deselectAllButton;
   QPointer<QPushButton> attributeSelectButton;
+
+  // Pointers to other widgets
+  // Do not delete.
+  EventGraphWidget *eventGraph;
+  NetworkGraphWidget *networkGraph;
+  OccurrenceGraphWidget *occurrenceGraph;
+
 };
 
 #endif

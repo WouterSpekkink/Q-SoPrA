@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QtWidgets>
 #include "../include/EventItem.h"
 #include "../include/Scene.h"
@@ -8,35 +30,35 @@
   in real applications.
 */
 
-EventItem::EventItem(int subWidth,
+EventItem::EventItem(int width,
 		     QString toolTip,
 		     QPointF originalPosition,
-		     int subId,
-		     int subOrder,
+		     int id,
+		     int order,
 		     QGraphicsItem *parent)
   : QGraphicsItem(parent) 
 {
-  color = QColor(255, 255, 255);
-  width = subWidth;
+  _color = QColor(255, 255, 255);
+  _width = width;
+  _originalPos = originalPosition;
+  _mode = "";
+  _selectionColor = QColor(Qt::black);
+  _id = id;
+  _order = order;
+  _dislodged = false;
+  _labelPtr = NULL;
+  _macroEventPtr = NULL;
+  _copy = false;
   setToolTip(toolTip);
-  originalPos = originalPosition;
-  mode = "";
-  selectionColor = QColor(Qt::black);
-  id = subId;
-  order = subOrder;
-  dislodged = false;
-  label = NULL;
-  macroEvent = NULL;
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
-  copy = false;
 }
 
 QRectF EventItem::boundingRect() const 
 {
-  return QRectF(-26, -26, width + 12, 52);
+  return QRectF(-26, -26, _width + 12, 52);
 }
 
 QPainterPath EventItem::shape() const 
@@ -52,18 +74,18 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
   Q_UNUSED(widget);
   painter->setPen(Qt::NoPen);
   painter->setPen(QPen(Qt::black, 1));
-  painter->setBrush(QBrush(color));
-  painter->drawEllipse(-20, -20, width, 40);
+  painter->setBrush(QBrush(_color));
+  painter->drawEllipse(-20, -20, _width, 40);
   if (isSelected()) 
     {
-      painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
+      painter->setPen(QPen(_selectionColor, 1, Qt::DashLine));
       painter->setBrush(QBrush(Qt::transparent));
       painter->drawPath(shape());
       update();
     }
   else 
     {
-      selectionColor = QColor(Qt::black);
+      _selectionColor = QColor(Qt::black);
       update();
     }
 }
@@ -85,39 +107,39 @@ void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       setCursor(Qt::SizeAllCursor);
       QPointF newPos = event->scenePos();
       this->setPos(newPos);
-      if (label != NULL) 
+      if (_labelPtr != NULL) 
 	{
-	  label->setNewPos(newPos);
+	  _labelPtr->setNewPos(newPos);
 	}
-      if (newPos.x() != originalPos.x()) 
+      if (newPos.x() != _originalPos.x()) 
 	{
-	  dislodged = true;
+	  _dislodged = true;
 	}
       else 
 	{
-	  dislodged = false;
+	  _dislodged = false;
 	}
     }
   else 
     {
       setCursor(Qt::SizeVerCursor);
-      qreal oldX = originalPos.x();
+      qreal oldX = _originalPos.x();
       QPointF currentPos = this->scenePos();
       qreal currentX = currentPos.x();
       QPointF newPos = event->scenePos();
       newPos.setX(currentX);
       this->setPos(newPos);
-      if (label != NULL) 
+      if (_labelPtr != NULL) 
 	{
-	  label->setNewPos(newPos);
+	  _labelPtr->setNewPos(newPos);
 	}
       if (newPos.x() == oldX) 
 	{
-	  dislodged = false;
+	  _dislodged = false;
 	}
       else 
 	{
-	  dislodged = true;
+	  _dislodged = true;
 	}
     }
   Scene *myScene = qobject_cast<Scene*>(scene());
@@ -130,38 +152,38 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
       QPointF newPos = event->scenePos();
       this->setPos(newPos);
-      if (label != NULL) 
+      if (_labelPtr != NULL) 
 	{
-	  label->setNewPos(newPos);
+	  _labelPtr->setNewPos(newPos);
 	}
-      if (newPos.x() != originalPos.x()) 
+      if (newPos.x() != _originalPos.x()) 
 	{
-	  dislodged = true;
+	  _dislodged = true;
 	}
       else 
 	{
-	  dislodged = false;
+	  _dislodged = false;
 	}
     }
   else 
     {
-      qreal oldX = originalPos.x();
+      qreal oldX = _originalPos.x();
       QPointF currentPos = this->scenePos();
       qreal currentX = currentPos.x();
       QPointF newPos = event->scenePos();
       newPos.setX(currentX);
       this->setPos(newPos);
-      if (label != NULL) 
+      if (_labelPtr != NULL) 
 	{
-	  label->setNewPos(newPos);
+	  _labelPtr->setNewPos(newPos);
 	}
       if (newPos.x() == oldX) 
 	{
-	  dislodged = false;
+	  _dislodged = false;
 	}
       else 
 	{
-	  dislodged = true;
+	  _dislodged = true;
 	}
     }
   setCursor(Qt::OpenHandCursor);
@@ -171,74 +193,74 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 int EventItem::getCorrection() 
 {
-  return width - 39;
+  return _width - 39;
 }
 
 QPointF EventItem::getOriginalPos() const 
 {
-  return originalPos;
+  return _originalPos;
 }
 
 int EventItem::getId() const 
 {
-  return id;
+  return _id;
 }
 
 int EventItem::getOrder() const 
 {
-  return order;
+  return _order;
 }
 
-void EventItem::setOriginalPos(QPointF newPos) 
+void EventItem::setOriginalPos(QPointF originalPos) 
 {
-  originalPos = newPos;
+  _originalPos = originalPos;
 }
 
 bool EventItem::isDislodged() 
 {
-  return dislodged;
+  return _dislodged;
 }
 
 void EventItem::setDislodged(bool state) 
 {
-  dislodged = state;
+  _dislodged = state;
 }
 
-void EventItem::setWidth(int newWidth) 
+void EventItem::setWidth(int width) 
 {
   prepareGeometryChange();
-  width = newWidth;
+  _width = width;
   update();
 }
 
 int EventItem::getWidth() const 
 {
-  return width;
+  return _width;
 }
 
-void EventItem::setLabel(NodeLabel *submittedLabel) 
+void EventItem::setLabel(NodeLabel *labelPtr) 
 {
-  label = submittedLabel;
+  _labelPtr = labelPtr;
 }
 
 NodeLabel* EventItem::getLabel() 
 {
-  return label;
+  return _labelPtr;
 }
 
-void EventItem::setColor(const QColor &subColor) 
+void EventItem::setColor(const QColor &color) 
 {
-  color = subColor;
+  _color = color;
 }
 
 QColor EventItem::getColor() 
 {
-  return color;
+  return _color;
 }
 
-void EventItem::setSelectionColor(const QColor &subColor) 
+void EventItem::setSelectionColor(const QColor &color) 
 {
-  selectionColor = subColor;
+  _selectionColor = color;
 }
 
 int EventItem::type() const 
@@ -246,32 +268,32 @@ int EventItem::type() const
   return Type;
 }
 
-void EventItem::setMacroEvent(MacroEvent* submittedEvent) 
+void EventItem::setMacroEvent(MacroEvent* eventPtr) 
 {
-  macroEvent = submittedEvent;
+  _macroEventPtr = eventPtr;
 }
 
 MacroEvent* EventItem::getMacroEvent() 
 {
-  return macroEvent;
+  return _macroEventPtr;
 }
 
-void EventItem::setMode(const QString submittedMode) 
+void EventItem::setMode(const QString mode) 
 {
-  mode = submittedMode;
+  _mode = mode;
 }
 
 QString EventItem::getMode() const 
 {
-  return mode;
+  return _mode;
 }
 
 bool EventItem::isCopy() 
 {
-  return copy;
+  return _copy;
 }
 
-void EventItem::setCopy(bool status) 
+void EventItem::setCopy(bool state) 
 {
-  copy = status;
+  _copy = state;
 }

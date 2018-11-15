@@ -162,7 +162,7 @@ void EventNodeSettingsDialog::addAttribute()
   if (attributeSelectionDialog->getExitStatus() == 0) 
     {
       // We retrieve the settings from the dialog and set some variables based on the settings
-      bool valued = attributeSelectionDialog->getChecked();
+      bool valued = attributeSelectionDialog->isChecked();
       QString attribute = attributeSelectionDialog->getAttribute();
       QString headerText = "";
       if (valued) 

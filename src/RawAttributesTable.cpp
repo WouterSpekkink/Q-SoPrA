@@ -306,7 +306,7 @@ void RawAttributesTable::editAttribute()
 	  QString description = query->value(0).toString();
 	  QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
 	  attributeDialog->submitName(attribute);
-	  attributeDialog->setDescription(description);
+	  attributeDialog->submitDescription(description);
 	  attributeDialog->exec();
 	  if (attributeDialog->getExitStatus() == 0) 
 	    {

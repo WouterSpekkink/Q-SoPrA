@@ -38,7 +38,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  QPoint mousePos = mapFromGlobal(event->globalPos());
 	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
 	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
-	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
+	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
 	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
 	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
 	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
@@ -48,7 +48,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-	  if (!incident && !nodeLabel && !arrow && !macro &&
+	  if (!incident && !nodeLabel && !linkage && !macro &&
 	      !macroLabel && !networkNode && !occurrence &&
 	      !occurrenceLabel && !line && !text && !ellipse && !rect)
 	    {
@@ -135,9 +135,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		{
 		  macro->setSelected(true);
 		}
-	      else if (arrow) 
+	      else if (linkage) 
 		{
-		  arrow->setSelected(true);
+		  linkage->setSelected(true);
 		}
 	      else if (occurrence) 
 		{
@@ -170,7 +170,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	{
 	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
 	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
-	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
+	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
 	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
 	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
 	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
@@ -192,7 +192,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	    {
 	      occurrence = occurrenceLabel->getOccurrence();
 	    }
-	  if (!incident && !macro && !arrow && !networkNode && !occurrence &&
+	  if (!incident && !macro && !linkage && !networkNode && !occurrence &&
 	      !occurrenceLabel && !line && !text && !ellipse && !rect) 
 	    {
 	      pan = true;
@@ -219,10 +219,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		      macro->setSelected(true);
 		    }
 		}
-	      else if (arrow) 
+	      else if (linkage) 
 		{
 		  scene->clearSelection();
-		  arrow->setSelected(true);
+		  linkage->setSelected(true);
 		}
 	      else if (occurrence) 
 		{
@@ -262,7 +262,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     {
       EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
       NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
       MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
       NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
@@ -272,7 +272,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
       TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-      if (incident || nodeLabel || arrow || macro ||
+      if (incident || nodeLabel || linkage || macro ||
 	  macroLabel || networkNode || occurrence ||
 	  occurrenceLabel || line || text || ellipse || rect)
 	{

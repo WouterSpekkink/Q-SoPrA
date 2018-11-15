@@ -15,7 +15,7 @@
 #include "NodeLabel.h"
 #include "BandlessGraphicsView.h"
 #include "EventItem.h"
-#include "Arrow.h"
+#include "Linkage.h"
 #include "Scene.h"
 #include "Constants.h"
 #include "SimpleTextDialog.h"
@@ -53,7 +53,7 @@ public:
   void setOrigin(MacroEvent *submittedOrigin);
   void setEvents(QVector<EventItem*> submittedEvents);
   void setMacros(QVector<MacroEvent*> submittedMacros);
-  void setEdges(QVector<Arrow*> submittedEvents);
+  void setEdges(QVector<Linkage*> submittedEvents);
   void getEdges();
   void cleanUp();
   void setAttributesWidget(AttributesWidget *aw);
@@ -227,7 +227,7 @@ private:
   MacroEvent *origin;
   QVector<EventItem*> eventVector;
   QVector<MacroEvent*> macroVector;
-  QVector<Arrow*> edgeVector;
+  QVector<Linkage*> edgeVector;
   QVector<QString> presentTypes;
   
   MacroEvent *selectedMacro;

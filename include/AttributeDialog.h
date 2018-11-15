@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef ATTRIBUTEDIALOG_H
 #define ATTRIBUTEDIALOG_H
 
@@ -19,37 +41,40 @@ class AttributeDialog : public QDialog
   Q_OBJECT
   
 public:
-  AttributeDialog(QWidget *parent = 0, QString submittedType = DEFAULT);
+  // Constructor and destructor
+  AttributeDialog(QWidget *parent = 0, QString type = DEFAULT);
   ~AttributeDialog() {};
- 
-  void submitName(const QString &submittedName);
-  void setDescription(const QString &newDescription);				      
+
+  // Setters
+  void submitName(const QString &name);
+  void submitDescription(const QString &description);
+
+  // Getters
   QString getName();
   QString getDescription();		   
   int getExitStatus();
 			  
 private slots:
-  void setName(const QString &newName);
+  // Private members functions
+  void setName(const QString &name);
   void cancelAndClose();
   void saveAndClose();
 
 private:
+  // Interface elements
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
-
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
-
   QPointer<QLineEdit> nameField;
-
   QPointer<QTextEdit> descriptionField;
 
-  QString name;
-  QString oldName;
-  QString description;
-  QString type;
-
-  int exitStatus;
+  // Private variables
+  QString _name;
+  QString _oldName;
+  QString _description;
+  QString _type;
+  int _exitStatus;
 };
 
 #endif

@@ -1,3 +1,26 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+
 #include "../include/BandlessGraphicsView.h"
 #include "../include/Scene.h"
 #include "../include/NodeLabel.h"
@@ -13,9 +36,10 @@
 
 BandlessGraphicsView::BandlessGraphicsView(QGraphicsScene *scene) : QGraphicsView(scene) 
 {
-  panSpeed = 4;
-  scaleFact = 1;
-  pan = false;
+  _panSpeed = 4;
+  _scaleFact = 1;
+  _pan = false;
+  _lastMousePos = QPoint(0, 0);
 }
 
 void BandlessGraphicsView::resizeEvent(QResizeEvent *) 
@@ -60,7 +84,7 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
     { 
       EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
       NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->pos()));
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
       MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
       NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
@@ -82,12 +106,12 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
 	{
 	  occurrence = occurrenceLabel->getOccurrence();
 	}
-      if (!incident && !macro && !arrow && !networkNode && !occurrence && !occurrenceLabel &&
+      if (!incident && !macro && !linkage && !networkNode && !occurrence && !occurrenceLabel &&
 	  !line && !text && !ellipse && !rect) 
 	{
-	  pan = true;
+	  _pan = true;
 	  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
-	  lastMousePos = event->pos();
+	  _lastMousePos = event->pos();
 	  return;
 	}
       else if (incident) 
@@ -99,9 +123,9 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
 	{
 	  macro->setSelected(true);
 	}
-      else if (arrow) 
+      else if (linkage) 
 	{
-	  arrow->setSelected(true);
+	  linkage->setSelected(true);
 	  return;
 	}
       else if (occurrence) 
@@ -131,19 +155,19 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
     }
   else 
     {
-      pan = false;
+      _pan = false;
       QGraphicsView::mousePressEvent(event);
     }
 }
 
 void BandlessGraphicsView::mouseReleaseEvent(QMouseEvent *event) 
 {
-  pan = false;
+  _pan = false;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   if (event->button() == Qt::RightButton) 
     {
-      lastMousePos = event->pos();
+      _lastMousePos = event->pos();
       return;
     }
   else 
@@ -154,17 +178,17 @@ void BandlessGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 
 void BandlessGraphicsView::mouseMoveEvent(QMouseEvent *event) 
 {
-  if (pan) 
+  if (_pan) 
     {
-      QPointF mouseDelta = mapToScene(event->pos()) - mapToScene(lastMousePos);
+      QPointF mouseDelta = mapToScene(event->pos()) - mapToScene(_lastMousePos);
     
-      mouseDelta *= scaleFact;
-      mouseDelta *= panSpeed;
+      mouseDelta *= _scaleFact;
+      mouseDelta *= _panSpeed;
     
       setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
       QPoint newCenter(VIEW_WIDTH / 2 - mouseDelta.x(),  VIEW_HEIGHT / 2 - mouseDelta.y());
       centerOn(mapToScene(newCenter));
-      lastMousePos = event->pos();
+      _lastMousePos = event->pos();
       setTransformationAnchor(QGraphicsView::AnchorViewCenter);
       Scene *scene = qobject_cast<Scene*>(this->scene());
       QRectF currentRect = scene->itemsBoundingRect();
@@ -255,5 +279,5 @@ void BandlessGraphicsView::wheelEvent(QWheelEvent* event)
    
 bool BandlessGraphicsView::isPanning() 
 {
-  return pan;
+  return _pan;
 }

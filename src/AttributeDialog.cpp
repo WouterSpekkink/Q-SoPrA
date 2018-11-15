@@ -1,12 +1,34 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/AttributeDialog.h"
 
-AttributeDialog::AttributeDialog(QWidget *parent, QString submittedType) : QDialog(parent) 
+AttributeDialog::AttributeDialog(QWidget *parent, QString type) : QDialog(parent) 
 {
-  name = "";
-  description = "";
-  oldName = "";
-  exitStatus = 1;
-  type = submittedType;
+  _name = "";
+  _description = "";
+  _oldName = "";
+  _exitStatus = 1;
+  _type = type;
   
   nameLabel = new QLabel("<b>Name:</b>", this);
   descriptionLabel = new QLabel("<b>Description:</b>", this);
@@ -40,52 +62,53 @@ AttributeDialog::AttributeDialog(QWidget *parent, QString submittedType) : QDial
   setLayout(mainLayout);
 }
 
-void AttributeDialog::setName(const QString &newName) 
+void AttributeDialog::setName(const QString &name) 
 {
-  name = newName;
-}
-
-void AttributeDialog::setDescription(const QString &newDescription) 
-{
-  description =  newDescription;
-  descriptionField->setText(newDescription);
+  _name = name;
 }
 
 QString AttributeDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
-void AttributeDialog::submitName(const QString &submittedName) 
+void AttributeDialog::submitName(const QString &name) 
 {
-  name = submittedName;
-  oldName = submittedName;
-  nameField->setText(submittedName);
+  _name = name;
+  _oldName = name;
+  nameField->setText(name);
 }
+
+void AttributeDialog::submitDescription(const QString &description) 
+{
+  _description =  description;
+  descriptionField->setText(description);
+}
+
 
 QString AttributeDialog::getDescription() 
 {
-  return description;
+  return _description;
 }
 
 int AttributeDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void AttributeDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 // TO DO: Check for attributes with same name.
 void AttributeDialog::saveAndClose() 
 {
-  description =  descriptionField->toPlainText();
-  name = name.trimmed();
-  description = description.trimmed();
-  if (description == "") 
+  _description =  descriptionField->toPlainText();
+  _name = _name.trimmed();
+  _description = _description.trimmed();
+  if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -96,7 +119,7 @@ void AttributeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == "") 
+  if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -107,24 +130,23 @@ void AttributeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  bool empty = false;
+  //  bool empty = false;
   QSqlQuery *query = new QSqlQuery;
-  if (type == INCIDENT) 
+  if (_type == INCIDENT) 
     {
       query->prepare("SELECT name FROM incident_attributes WHERE name = :name");
-      query->bindValue(":name", name);
+      query->bindValue(":name", _name);
       query->exec();
       query->first();
     }
-  else if (type == ENTITY) 
+  else if (_type == ENTITY) 
     {
       query->prepare("SELECT name FROM entity_attributes WHERE name = :name");
-      query->bindValue(":name", name);
+      query->bindValue(":name", _name);
       query->exec();
       query->first();
     }
-  empty = query->isNull(0);
-  if (!empty && name != oldName) 
+  if (!query->isNull(0) && _name != _oldName) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -135,15 +157,14 @@ void AttributeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (type == INCIDENT) 
+  if (_type == INCIDENT) 
     {
       query->prepare("SELECT name FROM entities WHERE name = :name");
-      query->bindValue(":name", name);
+      query->bindValue(":name", _name);
       query->exec();
       query->first();
     }
-  empty = query->isNull(0);
-  if (!empty) 
+  if (!query->isNull(0)) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -154,7 +175,7 @@ void AttributeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == ENTITIES) 
+  if (_name == ENTITIES) 
     { 
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -165,7 +186,7 @@ void AttributeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   delete query;
   this->close();
 }

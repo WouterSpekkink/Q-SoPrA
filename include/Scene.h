@@ -3,7 +3,7 @@
 
 #include <QGraphicsScene>
 #include "EventItem.h"
-#include "Arrow.h"
+#include "Linkage.h"
 #include "NetworkNode.h"
 #include "Constants.h"
 #include <QGraphicsSceneWheelEvent>
@@ -37,7 +37,7 @@ signals:
   void relevantChange();
   void resetItemSelection();
   void EventItemContextMenuAction(const QString&);
-  void ArrowContextMenuAction(const QString&);
+  void LinkageContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
   void LineContextMenuAction(const QString&);
   void TextContextMenuAction(const QString&);

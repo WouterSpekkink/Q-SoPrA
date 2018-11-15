@@ -1,11 +1,34 @@
+
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/AttributesWidget.h"
 
 AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) 
 {
-  descriptionFilter = "";
-  rawFilter = "";
-  commentFilter = "";
-  commentBool = false;
+  _descriptionFilter = "";
+  _rawFilter = "";
+  _commentFilter = "";
+  _commentBool = false;
   
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
@@ -285,12 +308,12 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
 
 void AttributesWidget::setCommentBool() 
 {
-  commentBool = true;
+  _commentBool = true;
 }
 
 void AttributesWidget::setComment() 
 {
-  if (commentBool) 
+  if (_commentBool) 
     {
       QString comment = commentField->toPlainText();
       incidentsModel->select();
@@ -303,7 +326,7 @@ void AttributesWidget::setComment()
       query->bindValue(":comment", comment);
       query->bindValue(":order", order);
       query->exec();
-      commentBool = false;
+      _commentBool = false;
       delete query;
     }
 }
@@ -473,20 +496,20 @@ void AttributesWidget::nextMarked()
 
 void AttributesWidget::setDescriptionFilter(const QString &text) 
 {
-  descriptionFilter = text;
+  _descriptionFilter = text;
 }
 
 void AttributesWidget::previousDescription() 
 {
   setComment();
-  if (descriptionFilter != "") 
+  if (_descriptionFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");
       int order = 0;
       query->first();
       order = query->value(0).toInt();
-      QString searchText = "%" + descriptionFilter + "%";
+      QString searchText = "%" + _descriptionFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE description LIKE :text "
 		     "AND ch_order < :order "
@@ -510,14 +533,14 @@ void AttributesWidget::previousDescription()
 void AttributesWidget::nextDescription() 
 {
   setComment();
-  if (descriptionFilter != "") 
+  if (_descriptionFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");
       int order = 0;
       query->first();
       order = query->value(0).toInt();
-      QString searchText = "%" + descriptionFilter + "%";
+      QString searchText = "%" + _descriptionFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE description LIKE :text "
 		     "AND ch_order > :order "
@@ -541,20 +564,20 @@ void AttributesWidget::nextDescription()
 
 void AttributesWidget::setRawFilter(const QString &text) 
 {
-  rawFilter = text;
+  _rawFilter = text;
 }
 
 void AttributesWidget::previousRaw() 
 {
   setComment();
-  if (rawFilter != "") 
+  if (_rawFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");
       int order = 0;
       query->first();
       order = query->value(0).toInt();
-      QString searchText = "%" + rawFilter + "%";
+      QString searchText = "%" + _rawFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE raw LIKE :text "
 		     "AND ch_order < :order "
@@ -579,14 +602,14 @@ void AttributesWidget::previousRaw()
 void AttributesWidget::nextRaw() 
 {
   setComment();
-  if (rawFilter != "") 
+  if (_rawFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");
       int order = 0;
       query->first();
       order = query->value(0).toInt();
-      QString searchText = "%" + rawFilter + "%";
+      QString searchText = "%" + _rawFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE raw LIKE :text "
 		     "AND ch_order > :order "
@@ -610,20 +633,20 @@ void AttributesWidget::nextRaw()
 
 void AttributesWidget::setCommentFilter(const QString &text) 
 {
-  commentFilter = text;
+  _commentFilter = text;
 }
 
 void AttributesWidget::previousComment() 
 {
   setComment();
-  if (commentFilter != "") 
+  if (_commentFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");
       int order = 0;
       query->first();
       order = query->value(0).toInt();
-      QString searchText = "%" + commentFilter + "%";
+      QString searchText = "%" + _commentFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE comment LIKE :text "
 		     "AND ch_order < :order "
@@ -648,14 +671,14 @@ void AttributesWidget::previousComment()
 void AttributesWidget::nextComment() 
 {
   setComment();
-  if (commentFilter != "") 
+  if (_commentFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT attributes_record FROM save_data");
       int order = 0;
       query->first();
       order = query->value(0).toInt();
-      QString searchText = "%" + commentFilter + "%";
+      QString searchText = "%" + _commentFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE comment LIKE :text "
 		     "AND ch_order > :order "
@@ -700,7 +723,7 @@ void AttributesWidget::newAttribute()
       if (top == ENTITIES) 
 	{
 	  EntityDialog *entityDialog = new EntityDialog(this);
-	  entityDialog->setRelationshipsWidget(relationshipsWidget);
+	  entityDialog->setRelationshipsWidget(_relationshipsWidget);
 	  entityDialog->setNew();
 	  entityDialog->exec();
 	  if (entityDialog->getExitStatus() == 0) 
@@ -730,7 +753,7 @@ void AttributesWidget::newAttribute()
 	      delete query;
 	    }
 	  delete entityDialog;
-	  eventGraph->resetTree();
+	  _eventGraph->resetTree();
 	}
       else 
 	{
@@ -756,7 +779,7 @@ void AttributesWidget::newAttribute()
 	      query->bindValue(":father", currentParent);
 	      query->exec();
 	      delete query;
-	      eventGraph->resetTree();
+	      _eventGraph->resetTree();
 	    }
 	  delete attributeDialog;
 	}
@@ -784,7 +807,7 @@ void AttributesWidget::newAttribute()
 	  QString hint = breakString(description);
 	  attribute->setToolTip(hint);
 	  attribute->setEditable(false);
-	  eventGraph->resetTree();
+	  _eventGraph->resetTree();
 	}
       delete attributeDialog;
     }
@@ -814,7 +837,7 @@ void AttributesWidget::editAttribute()
 	      query->first();
 	      QString description = query->value(0).toString();
 	      EntityDialog *entityDialog = new EntityDialog(this);
-	      entityDialog->setRelationshipsWidget(relationshipsWidget);
+	      entityDialog->setRelationshipsWidget(_relationshipsWidget);
 	      entityDialog->submitName(name);
 	      entityDialog->submitDescription(description);
 	      entityDialog->exec();
@@ -843,7 +866,7 @@ void AttributesWidget::editAttribute()
 	      QString description = query->value(0).toString();
 	      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
 	      attributeDialog->submitName(name);
-	      attributeDialog->setDescription(description);
+	      attributeDialog->submitDescription(description);
 	      attributeDialog->exec();
 	      if (attributeDialog->getExitStatus() == 0) 
 		{
@@ -889,7 +912,7 @@ void AttributesWidget::editAttribute()
 		  this->setCursor(Qt::WaitCursor);
 		  retrieveData();
 		  this->setCursor(Qt::ArrowCursor);
-		  eventGraph->resetTree();
+		  _eventGraph->resetTree();
 		}
 	      delete query;
 	      delete attributeDialog;
@@ -1045,8 +1068,8 @@ void AttributesWidget::updateEntityAfterEdit(const QString name,
      is reconstructed every time it is switched to, so we do not need to reset it
      explicitly.
   */
-  relationshipsWidget->resetTree();
-  eventGraph->resetTree();
+  _relationshipsWidget->resetTree();
+  _eventGraph->resetTree();
 }
 
 void AttributesWidget::selectText() 
@@ -1266,7 +1289,6 @@ void AttributesWidget::assignAttribute()
       delete query;
       rawField->verticalScrollBar()->setValue(barPos);
     }
-  occurrenceGraph->checkCongruency();
 }
 
 void AttributesWidget::unassignAttribute() 
@@ -1341,7 +1363,6 @@ void AttributesWidget::unassignAttribute()
       rawField->verticalScrollBar()->setValue(barPos);
     }
   setButtons();
-  occurrenceGraph->checkCongruency();
 }
 
 void AttributesWidget::removeText() 
@@ -1422,7 +1443,7 @@ void AttributesWidget::removeUnusedAttributes()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QVector<MacroEvent*> macroVector = _eventGraph->getMacros();
   QSet<QString> takenAttributes;
   QVectorIterator<MacroEvent*> it(macroVector);
   while (it.hasNext()) 
@@ -1509,8 +1530,7 @@ void AttributesWidget::removeUnusedAttributes()
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   resetTree();
-  eventGraph->resetTree();
-  occurrenceGraph->checkCongruency();
+  _eventGraph->resetTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
@@ -2380,7 +2400,6 @@ void AttributesWidget::autoAssignAll()
   delete query;
   setButtons();
   highlightText();
-  occurrenceGraph->checkCongruency();
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -2517,7 +2536,6 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
   delete query;
   setButtons();
   highlightText();
-  occurrenceGraph->checkCongruency();
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -2678,7 +2696,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
 		  QString description = query->value(0).toString();
 		  QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
 		  attributeDialog->submitName(partner);
-		  attributeDialog->setDescription(description);
+		  attributeDialog->submitDescription(description);
 		  attributeDialog->exec();
 		  if (attributeDialog->getExitStatus() == 0) 
 		    {
@@ -2724,7 +2742,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
 		      this->setCursor(Qt::WaitCursor);
 		      retrieveData();
 		      this->setCursor(Qt::ArrowCursor);
-		      eventGraph->resetTree();
+		      _eventGraph->resetTree();
 		    }
 		  delete query;
 		  delete attributeDialog;
@@ -2732,7 +2750,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
 		  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 		  resetTree();
 		  fixTree();
-		  eventGraph->resetTree();
+		  _eventGraph->resetTree();
 		}
 	    }
 	}
@@ -2891,19 +2909,14 @@ void AttributesWidget::finalBusiness()
   setComment();
 }
 
-void AttributesWidget::setEventGraph(EventGraphWidget *egw) 
+void AttributesWidget::setEventGraph(EventGraphWidget *eventGraph) 
 {
-  eventGraph = egw;
+  _eventGraph = eventGraph;
 }
 
-void AttributesWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) 
+void AttributesWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidget) 
 {
-  occurrenceGraph = ogw;
-}
-
-void AttributesWidget::setRelationshipsWidget(RelationshipsWidget *rw) 
-{
-  relationshipsWidget = rw;
+  _relationshipsWidget = relationshipsWidget;
 }
 
 void AttributesWidget::resetTree() 

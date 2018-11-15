@@ -9,16 +9,21 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
   QList<QString> attributeList = attributes.toList();
   std::sort(attributeList.begin(), attributeList.end());
   QListIterator<QString> it(attributeList);
+
+  checkBoxWidget = new QWidget(this);
+  
   while (it.hasNext())
     {
       QString currentAttribute = it.next();
-      QCheckBox *currentCheckBox = new QCheckBox(currentAttribute);
+      QCheckBox *currentCheckBox = new QCheckBox(currentAttribute, checkBoxWidget);
       checkBoxVector.push_back(currentCheckBox);
     }
 
   // Then we can create our other interface elements
   titleLabel = new QLabel(tr("<b>Select attributes to inherit:</b>"), this);
 
+  scrollArea = new QScrollArea(this);
+  
   selectAllButton = new QPushButton(tr("Set all selected"), this);
   deselectAllButton = new QPushButton(tr("Set all unselected"), this);
   saveCloseButton = new QPushButton(tr("Inherit selected attributes"), this);
@@ -32,12 +37,16 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
   // Lets' build the interface now
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(titleLabel);
+  QPointer<QVBoxLayout> checkBoxLayout = new QVBoxLayout;
   QVectorIterator<QCheckBox*> it2(checkBoxVector);
   while (it2.hasNext())
     {
       QCheckBox* current = it2.next();
-      mainLayout->addWidget(current);
+      checkBoxLayout->addWidget(current);
     }
+  checkBoxWidget->setLayout(checkBoxLayout);
+  scrollArea->setWidget(checkBoxWidget);
+  mainLayout->addWidget(scrollArea);
 
   QPointer<QFrame> sepLine = new QFrame;
   sepLine->setFrameShape(QFrame::HLine);
@@ -57,6 +66,9 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
   optionsLayout->addWidget(cancelCloseButton);
   mainLayout->addLayout(optionsLayout);
 
+  setMaximumHeight(600);
+  setMinimumWidth(500);
+  
   // Final steps
   setLayout(mainLayout);
   setWindowTitle("Set attribute inheritance");
@@ -65,7 +77,7 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
 
 InheritanceDialog::~InheritanceDialog()
 {
-  qDeleteAll(checkBoxVector.begin(), checkBoxVector.end());
+  qDeleteAll(checkBoxVector);
   checkBoxVector.clear();
 }
 

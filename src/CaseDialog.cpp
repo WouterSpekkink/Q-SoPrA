@@ -1,11 +1,33 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/CaseDialog.h"
 
 CaseDialog::CaseDialog(QWidget *parent) : QDialog(parent) 
 {
-  name = "";
-  description = "";
-  oldName = "";
-  exitStatus = 1;
+  _name = "";
+  _description = "";
+  _oldName = "";
+  _exitStatus = 1;
   
   nameLabel = new QLabel("<b>Name:</b>", this);
   descriptionLabel = new QLabel("<b>Description:</b>", this);
@@ -39,51 +61,51 @@ CaseDialog::CaseDialog(QWidget *parent) : QDialog(parent)
   setWindowTitle("Add/Edit case");
 }
 
-void CaseDialog::setName(const QString &newName) 
+void CaseDialog::setName(const QString &name) 
 {
-  name = newName;
+  _name = name;
 }
 
-void CaseDialog::setDescription(const QString &newDescription) 
+void CaseDialog::setDescription(const QString &description) 
 {
-  description =  newDescription;
-  descriptionField->setText(newDescription);
+  _description =  description;
+  descriptionField->setText(description);
 }
 
 QString CaseDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
-void CaseDialog::submitName(const QString &submittedName) 
+void CaseDialog::submitName(const QString &name) 
 {
-  name = submittedName;
-  oldName = submittedName;
-  nameField->setText(submittedName);
+  _name = name;
+  _oldName = name;
+  nameField->setText(name);
 }
 QString CaseDialog::getDescription() 
 {
-  return description;
+  return _description;
 }
 
 int CaseDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void CaseDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 // TO DO: Check for cases with same name.
 void CaseDialog::saveAndClose() 
 {
-  description =  descriptionField->toPlainText();
-  name = name.trimmed();
-  description = description.trimmed();
-  if (description == "") 
+  _description =  descriptionField->toPlainText();
+  _name = _name.trimmed();
+  _description = _description.trimmed();
+  if (_description == "") 
 {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
@@ -94,7 +116,7 @@ void CaseDialog::saveAndClose()
     delete warningBox;
     return;
   }
-  if (name == "") 
+  if (_name == "") 
 {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
@@ -105,16 +127,14 @@ void CaseDialog::saveAndClose()
     delete warningBox;
     return;
   }
-  bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM cases "
 		 "WHERE name = :name");
-  query->bindValue(":name", name);
+  query->bindValue(":name", _name);
   query->exec();
   query->first();
-  empty = query->isNull(0);
-  if (!empty && name != oldName) 
-{
+  if (!query->isNull(0) && _name != _oldName) 
+    {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
@@ -125,7 +145,7 @@ void CaseDialog::saveAndClose()
     delete warningBox;
     return;
   }
-  exitStatus = 0;
+  _exitStatus = 0;
   delete query;
   this->close();
 }

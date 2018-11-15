@@ -1,24 +1,46 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/AbstractionDialog.h"
 
 AbstractionDialog::AbstractionDialog(QWidget *parent,
-				     QVector<EventItem*> submittedEvents,
-				     QVector<MacroEvent*> submittedMacros,
-				     QVector<QGraphicsItem*> submittedData,
-				     QVector<QString> submittedTypes,
-				     QString submittedCoder) : QDialog(parent)
+				     QVector<EventItem*> eventVector,
+				     QVector<MacroEvent*> macroVector,
+				     QVector<QGraphicsItem*> currentData,
+				     QVector<QString> presentTypes,
+				     QString selectedCoder) : QDialog(parent)
 {
-  exitStatus = 1;
-  eventVector = submittedEvents;
-  macroVector = submittedMacros;
-  currentData = submittedData;
-  presentTypes = submittedTypes;
-  selectedAttribute = DEFAULT2;
-  selectedCoder = submittedCoder;
-  attributeIsEntity = false;
-  chosenConstraint = "";
-  eventDescription = "";
-  inheritance = false;
-  eventTiming = "";
+  _exitStatus = 1;
+  _eventVector = eventVector;
+  _macroVector = macroVector;
+  _currentData = currentData;
+  _presentTypes = presentTypes;
+  _selectedAttribute = DEFAULT2;
+  _selectedCoder = selectedCoder;
+  _attributeIsEntity = false;
+  _chosenConstraint = "";
+  _eventDescription = "";
+  _inheritance = false;
+  _eventTiming = "";
   
   constraintsLabel = new QLabel(tr("<b>Available constraints:</b>"), this);
   attributeOptionsLabel = new QLabel(tr("<b>Group on attribute:</b>"), this);
@@ -46,7 +68,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   inheritSharedAttributesButton = new QPushButton(tr("Inherit attributes shared"));
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Create abstract event"), this);
-  if (currentData.size() == 1)
+  if (_currentData.size() == 1)
     {
       setAttributeButton->setEnabled(false);
     }
@@ -117,6 +139,16 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   prepareEvents();
 }
 
+AbstractionDialog::~AbstractionDialog()
+{
+  // We want to clear these vectors, but we don't want to
+  // delete the pointers they contain.
+  _eventVector.clear();
+  _macroVector.clear();
+  _collectedIncidents.clear();
+  _currentData.clear();
+}
+
 void AbstractionDialog::selectAttribute()
 {
   QPointer<SimpleAttributeSelectionDialog> attributeSelection =
@@ -124,21 +156,21 @@ void AbstractionDialog::selectAttribute()
   attributeSelection->exec();
   if (attributeSelection->getExitStatus() == 0) 
     {
-      selectedAttribute = attributeSelection->getAttribute();
-      chosenAttributeLabel->setText(selectedAttribute);
-      attributeIsEntity = attributeSelection->isEntity();
-      QVectorIterator<QGraphicsItem*> it(currentData);
+      _selectedAttribute = attributeSelection->getAttribute();
+      chosenAttributeLabel->setText(_selectedAttribute);
+      _attributeIsEntity = attributeSelection->isEntity();
+      QVectorIterator<QGraphicsItem*> it(_currentData);
       prepareEvents();
       clearAttributeButton->setEnabled(true);
-      inheritance = false;
-      inheritedAttributes.clear();
+      _inheritance = false;
+      _inheritedAttributes.clear();
       return;
     }
   else 
     {
-      selectedAttribute = DEFAULT2;
+      _selectedAttribute = DEFAULT2;
       chosenAttributeLabel->setText(DEFAULT2);
-      attributeIsEntity = false;
+      _attributeIsEntity = false;
       prepareEvents();
       clearAttributeButton->setEnabled(false);
       return;
@@ -147,20 +179,20 @@ void AbstractionDialog::selectAttribute()
 
 void AbstractionDialog::clearAttribute()
 {
-  selectedAttribute = DEFAULT2;
+  _selectedAttribute = DEFAULT2;
   chosenAttributeLabel->setText(DEFAULT2);
   clearAttributeButton->setEnabled(false);
-  inheritance = false;
-  inheritedAttributes.clear();
+  _inheritance = false;
+  _inheritedAttributes.clear();
 }
 
 void AbstractionDialog::inheritAttributes()
 {
   // identify attributes assigned to collected incidents and their macro parents
-  if (collectedIncidents.size() != 0)
+  if (_collectedIncidents.size() != 0)
     {
       QSet<QString> collectedAttributes;
-      QVectorIterator<EventItem*> it(collectedIncidents);
+      QVectorIterator<EventItem*> it(_collectedIncidents);
       while (it.hasNext())
 	{
 	  EventItem *currentIncident = it.next();
@@ -188,16 +220,30 @@ void AbstractionDialog::inheritAttributes()
 	}
       // Now we have a set of attributes that we could inherit
       // Let's now give the user the option to select the ones that must be inherited
-      QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this, collectedAttributes);
-      inheritanceDialog->exec();
-      if (inheritanceDialog->getExitStatus() == 0)
+      if (collectedAttributes.size() > 0)
 	{
-	  QVector<QString> selectedAttributes = inheritanceDialog->getSelected();
-	  if (selectedAttributes.size() != 0)
+	  QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this,
+										collectedAttributes);
+	  inheritanceDialog->exec();
+	  if (inheritanceDialog->getExitStatus() == 0)
 	    {
-	      inheritance = true;
-	      inheritedAttributes = selectedAttributes;
+	      QVector<QString> selectedAttributes = inheritanceDialog->getSelected();
+	      if (selectedAttributes.size() != 0)
+		{
+		  _inheritance = true;
+		  _inheritedAttributes = selectedAttributes;
+		}
 	    }
+	}
+      else
+	{
+	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->addButton(QMessageBox::Ok);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("<b>No attributes detected</b>");
+	  warningBox->setInformativeText("No attributes to inherit.");
+	  warningBox->exec();
+	  delete warningBox;
 	}
     }
 }
@@ -205,11 +251,11 @@ void AbstractionDialog::inheritAttributes()
 void AbstractionDialog::inheritSharedAttributes()
 {
   // identify attributes assigned to collected incidents and their macro parents
-  if (collectedIncidents.size() != 0)
+  if (_collectedIncidents.size() != 0)
     {
       QSet<QString> previousAttributes;
       QSet<QString> sharedAttributes;
-      QVectorIterator<EventItem*> it(collectedIncidents);
+      QVectorIterator<EventItem*> it(_collectedIncidents);
       while (it.hasNext())
 	{
 	  sharedAttributes.clear();
@@ -222,7 +268,7 @@ void AbstractionDialog::inheritSharedAttributes()
 	  while (query->next())
 	    {
 	      QString currentAttribute = query->value(0).toString();
-	      if (currentIncident == collectedIncidents.first())
+	      if (currentIncident == _collectedIncidents.first())
 		{
 		  previousAttributes.insert(currentAttribute);		  
 		}
@@ -249,36 +295,49 @@ void AbstractionDialog::inheritSharedAttributes()
 		    }
 		}
 	    }
-	  if (currentIncident != collectedIncidents.first())
+	  if (currentIncident != _collectedIncidents.first())
 	    {
 	      previousAttributes = sharedAttributes;
 	    }
 	}
       // Now we have a set of attributes that we could inherit
       // Let's now give the user the option to select the ones that must be inherited
-      QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this, sharedAttributes);
-      inheritanceDialog->exec();
-      if (inheritanceDialog->getExitStatus() == 0)
+      if (sharedAttributes.size() > 0)
 	{
-	  QVector<QString> selectedAttributes = inheritanceDialog->getSelected();
-	  if (selectedAttributes.size() != 0)
+	  QPointer<InheritanceDialog> inheritanceDialog = new InheritanceDialog(this, sharedAttributes);
+	  inheritanceDialog->exec();
+	  if (inheritanceDialog->getExitStatus() == 0)
 	    {
-	      inheritance = true;
-	      inheritedAttributes = selectedAttributes;
+	      QVector<QString> selectedAttributes = inheritanceDialog->getSelected();
+	      if (selectedAttributes.size() != 0)
+		{
+		  _inheritance = true;
+		  _inheritedAttributes = selectedAttributes;
+		}
 	    }
 	}
+      else
+	{
+	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->addButton(QMessageBox::Ok);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("<b>No attributes detected</b>");
+	  warningBox->setInformativeText("No shared attributes to inherit.");
+	  warningBox->exec();
+	  delete warningBox;
+	 }
     }
 }
 
 void AbstractionDialog::prepareEvents() 
 {
-  if (currentData.size() > 0) 
+  if (_currentData.size() > 0) 
     {
-      collectedIncidents.clear();
+      _collectedIncidents.clear();
       QVector<EventItem*> allIncidents;
-      semiPathsAllowed = true;      
-      pathsAllowed = true;
-      QVectorIterator<QGraphicsItem*> it(currentData);
+      _semiPathsAllowed = true;      
+      _pathsAllowed = true;
+      QVectorIterator<QGraphicsItem*> it(_currentData);
       while (it.hasNext()) 
 	{
 	  EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
@@ -288,11 +347,11 @@ void AbstractionDialog::prepareEvents()
 	      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
 	      allIncidents.push_back(currentEvent);
 	      int id = currentEvent->getId();
-	      if (selectedAttribute != DEFAULT2) 
+	      if (_selectedAttribute != DEFAULT2) 
 		{
 		  QVector<QString> attributes;
-		  attributes.push_back(selectedAttribute);
-		  findChildren(selectedAttribute, &attributes, attributeIsEntity);
+		  attributes.push_back(_selectedAttribute);
+		  findChildren(_selectedAttribute, &attributes, _attributeIsEntity);
 		  bool hasAttribute = false;
 		  QVectorIterator<QString> it2(attributes);
 		  while (it2.hasNext()) 
@@ -314,23 +373,23 @@ void AbstractionDialog::prepareEvents()
 		    }
 		  if (hasAttribute) 
 		    {
-		      collectedIncidents.push_back(currentEvent);
+		      _collectedIncidents.push_back(currentEvent);
 		    }
 		}
 	      else 
 		{
-		  collectedIncidents.push_back(currentEvent);
+		  _collectedIncidents.push_back(currentEvent);
 		}
 	    }
 	  if (macro) 
 	    {
 	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	      if (selectedAttribute != DEFAULT2)
+	      if (_selectedAttribute != DEFAULT2)
 		{
 		  QSet<QString> macroAttributes = currentMacro->getAttributes();
 		  QVector<QString> attributes;
-		  attributes.push_back(selectedAttribute);
-		  findChildren(selectedAttribute, &attributes, attributeIsEntity);
+		  attributes.push_back(_selectedAttribute);
+		  findChildren(_selectedAttribute, &attributes, _attributeIsEntity);
 		  bool hasAttribute = false;
 		  QVectorIterator<QString> it2(attributes);
 		  while (it2.hasNext())
@@ -349,7 +408,7 @@ void AbstractionDialog::prepareEvents()
 		      if (hasAttribute) 
 			{
 			  allIncidents.push_back(currentEvent);
-			  collectedIncidents.push_back(currentEvent);			  
+			  _collectedIncidents.push_back(currentEvent);			  
 			}
 		      else
 			{
@@ -364,23 +423,23 @@ void AbstractionDialog::prepareEvents()
 		    {
 		      EventItem *currentEvent = it3.next();
 		      allIncidents.push_back(currentEvent);
-		      collectedIncidents.push_back(currentEvent);			  
+		      _collectedIncidents.push_back(currentEvent);			  
 		    }
 		}
 	    }
 	}
-      if (collectedIncidents.size() > 0)
+      if (_collectedIncidents.size() > 0)
 	{
-	  std::sort(collectedIncidents.begin(), collectedIncidents.end(), eventLessThan);
+	  std::sort(_collectedIncidents.begin(), _collectedIncidents.end(), eventLessThan);
 	  std::sort(allIncidents.begin(), allIncidents.end(), eventLessThan);
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  QVector<QGraphicsItem*> allEvents;
-	  QVectorIterator<EventItem*> evIt(eventVector);
+	  QVectorIterator<EventItem*> evIt(_eventVector);
 	  while (evIt.hasNext()) 
 	    {
 	      allEvents.push_back(evIt.next());
 	    }
-	  QVectorIterator<MacroEvent*> maIt(macroVector);
+	  QVectorIterator<MacroEvent*> maIt(_macroVector);
 	  while (maIt.hasNext()) 
 	    {
 	      allEvents.push_back(maIt.next());
@@ -390,7 +449,7 @@ void AbstractionDialog::prepareEvents()
 	  EventItem *last = allIncidents.last();
 	  QSet<int> markOne;
 	  QSet<int> markTwo;
-	  QVectorIterator<QString> lit(presentTypes);
+	  QVectorIterator<QString> lit(_presentTypes);
 	  while (lit.hasNext()) 
 	    {
 	      QString currentLinkage = lit.next();
@@ -423,7 +482,7 @@ void AbstractionDialog::prepareEvents()
 			  markTwo.contains(eventTemp->getId()) &&
 			  !allIncidents.contains(eventTemp)) 
 			{
-			  semiPathsAllowed = false;
+			  _semiPathsAllowed = false;
 			}
 		    }
 		  else if (macroTemp) 
@@ -437,7 +496,7 @@ void AbstractionDialog::prepareEvents()
 			      markTwo.contains(eventTemp->getId()) &&
 			      !allIncidents.contains(eventTemp)) 
 			    {
-			      semiPathsAllowed = false;
+			      _semiPathsAllowed = false;
 			    }
 			}
 		    }
@@ -458,24 +517,24 @@ void AbstractionDialog::prepareEvents()
 					 "attribute.");
 	  warningBox->exec();
 	  delete warningBox;
-	  selectedAttribute = DEFAULT2;
+	  _selectedAttribute = DEFAULT2;
 	  chosenAttributeLabel->setText(DEFAULT2);
 	  prepareEvents();
 	}
     }
   else 
     {
-      semiPathsAllowed = false;
-      pathsAllowed = false;
+      _semiPathsAllowed = false;
+      _pathsAllowed = false;
     }
-  std::sort(collectedIncidents.begin(), collectedIncidents.end(), componentsSort);
+  std::sort(_collectedIncidents.begin(), _collectedIncidents.end(), componentsSort);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT timestamp FROM incidents WHERE id = :id");
-  query->bindValue(":id", collectedIncidents.first()->getId());
+  query->bindValue(":id", _collectedIncidents.first()->getId());
   query->exec();
   query->first();
   QString timingBegin = query->value(0).toString();
-  query->bindValue(":id", collectedIncidents.last()->getId());
+  query->bindValue(":id", _collectedIncidents.last()->getId());
   query->exec();
   query->first();
   QString timingEnd = query->value(0).toString();
@@ -498,9 +557,9 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 	}
     }
   QVector<bool> linkagePresence = checkLinkagePresence(incidentId);
-  for (QVector<QString>::size_type lit = 0; lit != presentTypes.size(); lit++) 
+  for (QVector<QString>::size_type lit = 0; lit != _presentTypes.size(); lit++) 
     {
-      QString currentType = presentTypes[lit];
+      QString currentType = _presentTypes[lit];
       if (linkagePresence[lit] == true) 
 	{
 	  QSqlQuery *query = new QSqlQuery;
@@ -551,19 +610,19 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 			{
 			  if (!pathsFound && current->getOrder() < departure->getOrder()) 
 			    {
-			      pathsAllowed = false;
+			      _pathsAllowed = false;
 			    }
 			}
 		      else if (direction == FUTURE) 
 			{
 			  if (!pathsFound && current->getOrder() > departure->getOrder()) 
 			    {
-			      pathsAllowed = false;
+			      _pathsAllowed = false;
 			    }
 			}
 		      if (!semiPathsFound) 
 			{
-			  semiPathsAllowed = false;
+			  _semiPathsAllowed = false;
 			}
 		    }
 		}
@@ -572,7 +631,7 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 			     "WHERE head = :head AND type = :type AND coder = :coder");
 	      query->bindValue(":head", departure->getId());
 	      query->bindValue(":type", currentType);
-	      query->bindValue(":coder", selectedCoder);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -601,7 +660,7 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 			    }
 			  if (!pathsFoundTwo) 
 			    {
-			      pathsAllowed = false;
+			      _pathsAllowed = false;
 			    }
 			}
 		    }
@@ -610,7 +669,7 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 			     "WHERE tail = :tail AND type = :type AND coder = :coder");
 	      query->bindValue(":tail", departure->getId());
 	      query->bindValue(":type", currentType);
-	      query->bindValue(":coder", selectedCoder);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -648,7 +707,7 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 				}
 			      if (!pathsFoundThree) 
 				{
-				  pathsAllowed = false;
+				  _pathsAllowed = false;
 				}
 			    }
 			}
@@ -664,7 +723,7 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 
 void AbstractionDialog::evaluateConstraints()
 {
-  if (pathsAllowed)
+  if (_pathsAllowed)
     {
       pathsBasedCheckBox->setEnabled(true);
     }
@@ -676,7 +735,7 @@ void AbstractionDialog::evaluateConstraints()
 	  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
 	}
     }
-  if (semiPathsAllowed)
+  if (_semiPathsAllowed)
     {
       semiPathsBasedCheckBox->setEnabled(true);
     }
@@ -746,7 +805,7 @@ void AbstractionDialog::findHeadsLowerBound(QSet<int> *pMark, int currentInciden
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
   query->bindValue(":tail", currentTail);
   query->bindValue(":type", type);
-  query->bindValue(":coder", selectedCoder);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   std::vector<int> results;
   while (query->next()) 
@@ -785,7 +844,7 @@ void AbstractionDialog::findHeadsUpperBound(QSet<int> *pMark, int currentInciden
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
   query->bindValue(":tail", currentTail);
   query->bindValue(":type", type);
-  query->bindValue(":coder", selectedCoder);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   std::vector<int> results;
   while (query->next()) 
@@ -834,7 +893,7 @@ void AbstractionDialog::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitt
       pMark->insert(current);  
       query->bindValue(":tail", current);
       query->bindValue(":type", type);
-      query->bindValue(":coder", selectedCoder);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -850,7 +909,7 @@ void AbstractionDialog::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submitt
 	}
       query3->bindValue(":head", current);
       query3->bindValue(":type", type);
-      query3->bindValue(":coder", selectedCoder);
+      query3->bindValue(":coder", _selectedCoder);
       query3->exec();
       while (query3->next()) 
 	{
@@ -892,7 +951,7 @@ void AbstractionDialog::findTailsUpperBound(QSet<int> *pMark, int currentInciden
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
   query->bindValue(":head", currentHead);
   query->bindValue(":type", type);
-  query->bindValue(":coder", selectedCoder);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   std::vector<int> results;
   while (query->next()) 
@@ -931,7 +990,7 @@ void AbstractionDialog::findTailsLowerBound(QSet<int> *pMark, int currentInciden
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
   query->bindValue(":head", currentHead);
   query->bindValue(":type", type);
-  query->bindValue(":coder", selectedCoder);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   std::vector<int> results;
   while (query->next()) 
@@ -961,7 +1020,7 @@ void AbstractionDialog::findTailsLowerBound(QSet<int> *pMark, int currentInciden
 QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds) 
 {
   QVector<bool> result;
-  QVectorIterator<QString> it(presentTypes);
+  QVectorIterator<QString> it(_presentTypes);
   while (it.hasNext()) 
     {
       QString currentType = it.next();
@@ -1037,66 +1096,66 @@ void AbstractionDialog::saveAndClose()
     }
   else
     {
-      exitStatus = 0;
+      _exitStatus = 0;
       if (pathsBasedCheckBox->checkState() == Qt::Checked)
 	{
-	  chosenConstraint = PATHS;
+	  _chosenConstraint = PATHS;
 	}
       else if (semiPathsBasedCheckBox->checkState() == Qt::Checked)
 	{
-	  chosenConstraint = SEMIPATHS;
+	  _chosenConstraint = SEMIPATHS;
 	}
       else if (noConstraintsCheckBox->checkState() == Qt::Checked)
 	{
-	  chosenConstraint = NOCONSTRAINT;
+	  _chosenConstraint = NOCONSTRAINT;
 	}
-      eventDescription = eventDescriptionField->toPlainText();
-      eventTiming = timingField->text();
+      _eventDescription = eventDescriptionField->toPlainText();
+      _eventTiming = timingField->text();
       this->close();
     }
 }
 
 int AbstractionDialog::getExitStatus()
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 QString AbstractionDialog::getConstraint()
 {
-  return chosenConstraint;
+  return _chosenConstraint;
 }
 
 QVector<EventItem*> AbstractionDialog::getCollectedIncidents()
 {
-  return collectedIncidents;
+  return _collectedIncidents;
 }
 
 QString AbstractionDialog::getDescription()
 {
-  return eventDescription;
+  return _eventDescription;
 }
 
 QString AbstractionDialog::getTiming()
 {
-  return eventTiming;
+  return _eventTiming;
 }
 
 QString AbstractionDialog::getAttribute()
 {
-  return selectedAttribute;
+  return _selectedAttribute;
 }
 
 bool AbstractionDialog::isEntity()
 {
-  return attributeIsEntity;
+  return _attributeIsEntity;
 }
 
 bool AbstractionDialog::isInheriting()
 {
-  return inheritance;
+  return _inheritance;
 }
 
 QVector<QString> AbstractionDialog::getInheritance()
 {
-  return inheritedAttributes;
+  return _inheritedAttributes;
 }

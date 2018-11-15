@@ -17,7 +17,7 @@
 #include "OccurrenceLabel.h"
 #include "GraphicsView.h"
 #include "OccurrenceItem.h"
-#include "Arrow.h"
+#include "Linkage.h"
 #include "Scene.h"
 #include "Constants.h"
 #include "SimpleTextDialog.h"
@@ -149,7 +149,7 @@ private:
   QPointer<QWidget> legendWidget;
   QVector<OccurrenceItem*> attributeOccurrenceVector;
   QVector<OccurrenceItem*> relationshipOccurrenceVector;
-  QVector<Arrow*> edgeVector;
+  QVector<Linkage*> edgeVector;
   QVector<OccurrenceLabel*> attributeLabelVector;
   QVector<OccurrenceLabel*> relationshipLabelVector;
   QVector<LineObject*> lineVector;

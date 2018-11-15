@@ -380,7 +380,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 									     QTransform()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
 								    QTransform()));
-	  Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(),
+	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(),
 							   QTransform()));
 	  if (nodeLabel) 
 	    {
@@ -390,11 +390,11 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      macro = macroLabel->getMacroEvent();
 	    }
-	  if (arrow) 
+	  if (linkage) 
 	    {
 	      clearSelection();
-	      arrow->setSelected(true);
-	      if (!arrow->isCopy()) 
+	      linkage->setSelected(true);
+	      if (!linkage->isCopy()) 
 		{
 		  emit resetItemSelection();
 		}
@@ -1206,7 +1206,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
   if (!(event->modifiers() & Qt::ControlModifier)) 
     {
       EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->scenePos(), QTransform()));
-      Arrow *arrow = qgraphicsitem_cast<Arrow*>(itemAt(event->scenePos(), QTransform()));
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(), QTransform()));
       NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->scenePos(), QTransform()));
       MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->scenePos(), QTransform()));
       MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->scenePos(), QTransform()));
@@ -1366,10 +1366,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	      emit EventItemContextMenuAction(action->text());
 	    }
 	}
-      else if (arrow && !arrow->isCopy()) 
+      else if (linkage && !linkage->isCopy()) 
 	{
 	  clearSelection();
-	  arrow->setSelected(true);
+	  linkage->setSelected(true);
 	  QMenu menu;
 	  QAction *action1 = new QAction(REMOVELINKAGEACTION, this);
 	  QAction *action2 = new QAction(KEEPLINKAGEACTION, this);
@@ -1378,32 +1378,32 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  QAction *action5 = new QAction(IGNOREMEACTION, this);
 	  QAction *action6 = new QAction(REMOVENORMALLINKAGEACTION, this);
 	  QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
-	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(arrow->startItem());
-	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(arrow->endItem());
-	  if (arrow->getPenStyle() == 3) 
+	  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(linkage->startItem());
+	  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(linkage->endItem());
+	  if (linkage->getPenStyle() == 3) 
 	    {
 	      menu.addAction(action1);
 	      menu.addAction(action2);
 	    }
-	  else if (arrow->getPenStyle() == 4) 
+	  else if (linkage->getPenStyle() == 4) 
 	    {
 	      menu.addAction(action3);
 	      menu.addAction(action4);
 	    }
-	  else if (arrow->getPenStyle() == 2) 
+	  else if (linkage->getPenStyle() == 2) 
 	    {
 	      menu.addAction(action1);
 	      menu.addAction(action2);
 	      menu.addAction(action5);
 	    }
-	  else if (arrow->getPenStyle() == 1 && startEvent && endEvent) 
+	  else if (linkage->getPenStyle() == 1 && startEvent && endEvent) 
 	    {
 	      menu.addAction(action6);
 	      menu.addAction(action7);
 	    }
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
-	      emit ArrowContextMenuAction(action->text());
+	      emit LinkageContextMenuAction(action->text());
 	    }
 	}
       else if (node) 

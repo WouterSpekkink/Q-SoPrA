@@ -46,7 +46,6 @@ MainWindow::MainWindow(QWidget *parent, EventSequenceDatabase *submittedEsd) : Q
   dw->setEventGraph(egw);
   dw->setOccurrenceGraph(ogw);
   aw->setEventGraph(egw);
-  aw->setOccurrenceGraph(ogw);
   aw->setRelationshipsWidget(rw);
   lw->setEventGraph(egw);
   ogw->setEventGraph(egw);
