@@ -288,7 +288,7 @@ void RawAttributesTable::editAttribute()
 	      query->bindValue(":newname", newName);
 	      query->bindValue(":oldname", attribute);
 	      query->exec();
-	      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+	      query->prepare("UPDATE saved_eg_plots_attributes_to_abstract_nodes "
 			     "SET attribute = :newname "
 			     "WHERE attribute = :oldname");
 	      query->bindValue(":newname", newName);
@@ -337,7 +337,7 @@ void RawAttributesTable::editAttribute()
 	      query->bindValue(":newname", newName);
 	      query->bindValue(":oldname", attribute);
 	      query->exec();
-	      query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+	      query->prepare("UPDATE saved_eg_plots_attributes_to_abstract_nodes "
 			     "SET attribute = :newname "
 			     "WHERE attribute = :oldname");
 	      query->bindValue(":newname", newName);

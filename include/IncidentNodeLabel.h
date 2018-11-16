@@ -1,17 +1,17 @@
-#ifndef NODELABEL_H
-#define NODELABEL_H
+#ifndef INCIDENTNODELABEL_H
+#define INCIDENTNODELABEL_H
 
 #include <QGraphicsTextItem>
-#include "EventItem.h"
+#include "IncidentNode.h"
 
-class NodeLabel : public QGraphicsTextItem
+class IncidentNodeLabel : public QGraphicsTextItem
 {
 
 public:
-  NodeLabel(EventItem *submittedNode = new EventItem(30, "", QPointF(0,0), -1, -1));
-  ~NodeLabel() {};
+  IncidentNodeLabel(IncidentNode *submittedNode = new IncidentNode(30, "", QPointF(0,0), -1, -1));
+  ~IncidentNodeLabel() {};
 
-  EventItem* getNode();
+  IncidentNode* getNode();
   void setNewPos(QPointF nodePos, qreal xOffsetIncrement = 0, qreal yOffsetIncrement = 0);
 
   enum {Type = UserType + 3};
@@ -21,7 +21,7 @@ public:
   void setOffset(QPointF offset);
   
 private:
-  EventItem *node;
+  IncidentNode *node;
   qreal xOffset;
   qreal yOffset;
 };

@@ -4521,7 +4521,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":name", name);
 	  query->exec();
-	  // saved_ng_plots_event_items
+	  // saved_ng_plots_network_nodes
 	  query->prepare("DELETE FROM saved_ng_plots_network_nodes "
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);

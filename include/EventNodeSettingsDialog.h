@@ -37,8 +37,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ProgressBar.h"
 #include "AttributeSelectionDialog.h"
 #include "ComboBoxDialog.h"
-#include "MacroEvent.h"
-#include "MacroLabel.h"
+#include "AbstractNode.h"
+#include "AbstractNodeLabel.h"
 #include "Constants.h"
 
 class EventNodeSettingsDialog : public QDialog
@@ -57,7 +57,7 @@ public:
 			  QVector<QString> modes = QVector<QString>(),
 			  QVector<QString> xCoords = QVector<QString>(),
 			  QVector<QString> yCoords = QVector<QString>(),
-			  QVector<MacroEvent*> macros = QVector<MacroEvent*>());
+			  QVector<AbstractNode*> abstractNodes = QVector<AbstractNode*>());
   ~EventNodeSettingsDialog() {};
   
 private slots:
@@ -86,7 +86,7 @@ private:
   QVector<QString> _modes;
   QVector<QString> _xCoords;
   QVector<QString> _yCoords;
-  QVector<MacroEvent*> _macros;
+  QVector<AbstractNode*> _abstractNodes;
 };
 
 #endif

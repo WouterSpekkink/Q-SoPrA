@@ -18,7 +18,7 @@
 #include <QStandardItemModel>
 #include <fstream>
 #include "DeselectableTreeViewEntities.h"
-#include "NodeLabel.h"
+#include "IncidentNodeLabel.h"
 #include "GraphicsView.h"
 #include "NetworkNode.h"
 #include "DirectedEdge.h"

@@ -467,12 +467,12 @@ void RelationshipsDialog::removeEntities()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<MacroEvent*> macroVector = eventGraph->getMacros();
+  QVector<AbstractNode*> abstractNodeVector = eventGraph->getAbstractNodes();
   QSet<QString> takenAttributes;
-  QVectorIterator<MacroEvent*> it(macroVector);
+  QVectorIterator<AbstractNode*> it(abstractNodeVector);
   while (it.hasNext()) 
     {
-      MacroEvent* current = it.next();
+      AbstractNode* current = it.next();
       QSet<QString> attributes = current->getAttributes();
       QSet<QString>::iterator it2;
       for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
@@ -486,7 +486,7 @@ void RelationshipsDialog::removeEntities()
 		  "EXCEPT SELECT source FROM entity_relationships "
 		  "EXCEPT SELECT target FROM entity_relationships "
 		  "EXCEPT SELECT attribute FROM attributes_to_incidents "
-		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
 		  "EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
 		  "EXCEPT SELECT father FROM entities");
       QSet<QString> temp;

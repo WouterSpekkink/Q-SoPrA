@@ -40,15 +40,15 @@ class AbstractionDialog : public QDialog
 public:
   // Constructor and destructor
   AbstractionDialog(QWidget *parent = 0,
-		    QVector<EventItem*> eventVector = QVector<EventItem*>(),
-		    QVector<MacroEvent*> macroVector = QVector<MacroEvent*>(),
+		    QVector<IncidentNode*> eventVector = QVector<IncidentNode*>(),
+		    QVector<AbstractNode*> abstractNodeVector = QVector<AbstractNode*>(),
 		    QVector<QGraphicsItem*> currentData = QVector<QGraphicsItem*>(),
 		    QVector<QString> presentTypes = QVector<QString>(),
 		    QString selectedCoder = QString());
   ~AbstractionDialog();
 
   // Getters
-  QVector<EventItem*> getCollectedIncidents();
+  QVector<IncidentNode*> getCollectedIncidents();
   QString getConstraint();
   QString getDescription();
   QString getTiming();
@@ -65,7 +65,7 @@ private slots:
   void inheritAttributes();
   void inheritSharedAttributes();
   void prepareEvents();
-  void checkConstraints(QVector<EventItem*> submittedIncidents);
+  void checkConstraints(QVector<IncidentNode*> submittedIncidents);
   void evaluateConstraints();
   void processPathsCheck();
   void processSemipathsCheck();
@@ -103,9 +103,9 @@ private:
   QPointer<QPushButton> saveCloseButton;
 
   // Private data vectors (these take their addresses from submitted vectors)
-  QVector<EventItem*> _eventVector;
-  QVector<MacroEvent*> _macroVector;
-  QVector<EventItem*> _collectedIncidents;
+  QVector<IncidentNode*> _eventVector;
+  QVector<AbstractNode*> _abstractNodeVector;
+  QVector<IncidentNode*> _collectedIncidents;
   QVector<QGraphicsItem*> _currentData;
   QVector<QString> _presentTypes;
   QVector<QString> _inheritedAttributes;

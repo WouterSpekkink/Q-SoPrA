@@ -23,8 +23,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../include/BandlessGraphicsView.h"
 #include "../include/Scene.h"
-#include "../include/NodeLabel.h"
-#include "../include/MacroLabel.h"
+#include "../include/IncidentNodeLabel.h"
+#include "../include/AbstractNodeLabel.h"
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/OccurrenceLabel.h"
@@ -82,11 +82,11 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
     }
   else if (event->button() == Qt::RightButton) 
     { 
-      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
-      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+      IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
+      IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
-      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->pos()));
+      AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->pos()));
       NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
       OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
       OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
@@ -94,19 +94,19 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
       TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-      if (nodeLabel) 
+      if (incidentNodeLabel) 
 	{
-	  incident = nodeLabel->getNode();
+	  incident = incidentNodeLabel->getNode();
 	}
-      if (macroLabel) 
+      if (abstractNodeLabel) 
 	{
-	  macro = macroLabel->getMacroEvent();
+	  abstractNode = abstractNodeLabel->getAbstractNode();
 	}
       if (occurrenceLabel) 
 	{
 	  occurrence = occurrenceLabel->getOccurrence();
 	}
-      if (!incident && !macro && !linkage && !networkNode && !occurrence && !occurrenceLabel &&
+      if (!incident && !abstractNode && !linkage && !networkNode && !occurrence && !occurrenceLabel &&
 	  !line && !text && !ellipse && !rect) 
 	{
 	  _pan = true;
@@ -119,9 +119,9 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
 	  incident->setSelected(true);
 	  return;
 	}
-      else if (macro) 
+      else if (abstractNode) 
 	{
-	  macro->setSelected(true);
+	  abstractNode->setSelected(true);
 	}
       else if (linkage) 
 	{

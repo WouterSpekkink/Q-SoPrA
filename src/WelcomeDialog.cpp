@@ -171,7 +171,7 @@ void WelcomeDialog::newDatabase()
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_event_items " // We'll get information from incidents
+	  query->exec("CREATE TABLE saved_eg_plots_incident_nodes " // We'll get information from incidents
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
@@ -193,8 +193,8 @@ void WelcomeDialog::newDatabase()
 		      "plot text, "
 		      "tail integer, "
 		      "head integer , "
-		      "tailmacro integer, "
-		      "headmacro integer, "
+		      "tailabstractnode integer, "
+		      "headabstractnode integer, "
 		      "linkage text, "
 		      "red integer, "
 		      "green integer, "
@@ -202,7 +202,7 @@ void WelcomeDialog::newDatabase()
 		      "alpha integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_event_labels "
+	  query->exec("CREATE TABLE saved_eg_plots_incident_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
@@ -216,7 +216,7 @@ void WelcomeDialog::newDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_macro_events "
+	  query->exec("CREATE TABLE saved_eg_plots_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "eventid integer, "
@@ -237,28 +237,28 @@ void WelcomeDialog::newDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_incidents_to_macro_events "
+	  query->exec("CREATE TABLE saved_eg_plots_incidents_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
-		      "macro integer)");
+		      "abstractnode integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_embedded_incidents "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
-		      "macro integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_macros_to_macros "
+		      "abstractnode integer)");
+	  query->exec("CREATE TABLE saved_eg_plots_abstract_nodes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "son integer, "
 		      "father integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_attributes_to_macro_events "
+	  query->exec("CREATE TABLE saved_eg_plots_attributes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "attribute text, "
-		      "macro integer, "
+		      "abstractnode integer, "
 		      "value text)");
-	  query->exec("CREATE TABLE saved_eg_plots_macro_labels "
+	  query->exec("CREATE TABLE saved_eg_plots_abstract_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "eventid integer, "
@@ -820,7 +820,7 @@ void WelcomeDialog::openDatabase()
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_event_items " 
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incident_nodes " 
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer , "
@@ -842,8 +842,8 @@ void WelcomeDialog::openDatabase()
 		      "plot text, "
 		      "tail integer, "
 		      "head integer, "
-		      "tailmacro integer, "
-		      "headmacro integer, "
+		      "tailabstractnode integer, "
+		      "headabstractnode integer, "
 		      "linkage text, "
 		      "red integer, "
 		      "green integer, "
@@ -851,7 +851,7 @@ void WelcomeDialog::openDatabase()
 		      "alpha integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_event_labels "
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incident_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
@@ -865,7 +865,7 @@ void WelcomeDialog::openDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_macro_events "
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "eventid integer, "
@@ -886,28 +886,28 @@ void WelcomeDialog::openDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incidents_to_macro_events "
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incidents_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
-		      "macro integer)");
+		      "abstractnode integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_embedded_incidents "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
-		      "macro integer)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_macros_to_macros "
+		      "abstractnode integer)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_nodes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "son integer, "
 		      "father integer)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_attributes_to_macro_events "
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_attributes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "attribute text, "
-		      "macro integer, "
+		      "abstractnode integer, "
 		      "value text)");
-	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_macro_labels "
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "eventid integer, "

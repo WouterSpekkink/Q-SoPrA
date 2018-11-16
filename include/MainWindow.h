@@ -55,7 +55,7 @@ private slots:
   void switchToEventGraphView();
   void switchToNetworkGraphView();
   void switchToOccurrenceGraphView();
-  void switchToHierarchyView(MacroEvent *selectedMacro);
+  void switchToHierarchyView(AbstractNode *selectedMacro);
   void switchToRawAttributesTableView();
   void switchToRawRelationshipsTableView();
   void switchToIncidentsAttributesTableView();

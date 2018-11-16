@@ -2,7 +2,7 @@
 #define SCENE_H
 
 #include <QGraphicsScene>
-#include "EventItem.h"
+#include "IncidentNode.h"
 #include "Linkage.h"
 #include "NetworkNode.h"
 #include "Constants.h"
@@ -11,12 +11,12 @@
 #include <QMenu>
 #include "../include/NetworkNode.h"
 #include "../include/NetworkNodeLabel.h"
-#include "../include/NodeLabel.h"
+#include "../include/IncidentNodeLabel.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/LineObject.h"
 #include "../include/TextObject.h"
 #include "../include/EllipseObject.h"
-#include "../include/MacroLabel.h"
+#include "../include/AbstractNodeLabel.h"
 #include "../include/OccurrenceLabel.h"
 #include "../include/RectObject.h"
 
@@ -30,13 +30,13 @@ public:
   OccurrenceItem* getSelectedOccurrence();
 
 signals:
-  void posChanged(EventItem *, qreal &dist);
-  void posChanged(MacroEvent *, qreal &dist);
+  void posChanged(IncidentNode *, qreal &dist);
+  void posChanged(AbstractNode *, qreal &dist);
   void moveItems(QGraphicsItem *, QPointF);
   void moveLine(QGraphicsItem *, QPointF);
   void relevantChange();
   void resetItemSelection();
-  void EventItemContextMenuAction(const QString&);
+  void IncidentNodeContextMenuAction(const QString&);
   void LinkageContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
   void LineContextMenuAction(const QString&);
@@ -54,8 +54,8 @@ protected:
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
   void contextMenuEvent(QGraphicsSceneContextMenuEvent *event) override;
   
-  bool resizeOnEvent;
-  bool resizeOnMacro;
+  bool resizeOnIncidentNode;
+  bool resizeOnAbstractNode;
   bool moveOn;
   bool lineMoveOn;
   bool moveLineObject;
@@ -71,8 +71,8 @@ protected:
   bool eventWidthChange;
   bool moveNetworkNodeLabel;
   QPointF lastMousePos;
-  EventItem *selectedEvent;
-  MacroEvent *selectedMacro;
+  IncidentNode *selectedIncidentNode;
+  AbstractNode *selectedAbstractNode;
   NetworkNode *selectedNode;
   NetworkNodeLabel *selectedNetworkLabel;
   OccurrenceItem *selectedOccurrence;

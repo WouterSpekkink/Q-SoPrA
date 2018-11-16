@@ -21,16 +21,16 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <QtWidgets>
-#include "../include/EventItem.h"
+#include "../include/IncidentNode.h"
 #include "../include/Scene.h"
-#include "../include/NodeLabel.h"
+#include "../include/IncidentNodeLabel.h"
 
 /*
   In this case we assign a random colour. I will want to change that
   in real applications.
 */
 
-EventItem::EventItem(int width,
+IncidentNode::IncidentNode(int width,
 		     QString toolTip,
 		     QPointF originalPosition,
 		     int id,
@@ -47,7 +47,7 @@ EventItem::EventItem(int width,
   _order = order;
   _dislodged = false;
   _labelPtr = NULL;
-  _macroEventPtr = NULL;
+  _abstractNodePtr = NULL;
   _copy = false;
   setToolTip(toolTip);
   setCursor(Qt::OpenHandCursor);
@@ -56,19 +56,19 @@ EventItem::EventItem(int width,
   setFlag(QGraphicsItem::ItemIsMovable);
 }
 
-QRectF EventItem::boundingRect() const 
+QRectF IncidentNode::boundingRect() const 
 {
   return QRectF(-26, -26, _width + 12, 52);
 }
 
-QPainterPath EventItem::shape() const 
+QPainterPath IncidentNode::shape() const 
 {
   QPainterPath path;
   path.addEllipse(boundingRect());
   return path;
 }
 
-void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) 
+void IncidentNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) 
 {
   Q_UNUSED(option);
   Q_UNUSED(widget);
@@ -91,7 +91,7 @@ void EventItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 // Only to set the cursor to a different graphic.
-void EventItem::mousePressEvent(QGraphicsSceneMouseEvent *event) 
+void IncidentNode::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
   if (event->button() == Qt::LeftButton) 
     {
@@ -99,7 +99,7 @@ void EventItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
-void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
+void IncidentNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
 {
   if ((event->modifiers() & Qt::AltModifier) ||
       (isCopy() && (event->modifiers() & Qt::ControlModifier))) 
@@ -146,7 +146,7 @@ void EventItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   myScene->relevantChange();
 }
 
-void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  
+void IncidentNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  
 {
   if (event->modifiers() & Qt::AltModifier) 
     {
@@ -191,109 +191,109 @@ void EventItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   QGraphicsItem::mouseReleaseEvent(event);
 }
 
-int EventItem::getCorrection() 
+int IncidentNode::getCorrection() 
 {
   return _width - 39;
 }
 
-QPointF EventItem::getOriginalPos() const 
+QPointF IncidentNode::getOriginalPos() const 
 {
   return _originalPos;
 }
 
-int EventItem::getId() const 
+int IncidentNode::getId() const 
 {
   return _id;
 }
 
-int EventItem::getOrder() const 
+int IncidentNode::getOrder() const 
 {
   return _order;
 }
 
-void EventItem::setOriginalPos(QPointF originalPos) 
+void IncidentNode::setOriginalPos(QPointF originalPos) 
 {
   _originalPos = originalPos;
 }
 
-bool EventItem::isDislodged() 
+bool IncidentNode::isDislodged() 
 {
   return _dislodged;
 }
 
-void EventItem::setDislodged(bool state) 
+void IncidentNode::setDislodged(bool state) 
 {
   _dislodged = state;
 }
 
-void EventItem::setWidth(int width) 
+void IncidentNode::setWidth(int width) 
 {
   prepareGeometryChange();
   _width = width;
   update();
 }
 
-int EventItem::getWidth() const 
+int IncidentNode::getWidth() const 
 {
   return _width;
 }
 
-void EventItem::setLabel(NodeLabel *labelPtr) 
+void IncidentNode::setLabel(IncidentNodeLabel *labelPtr) 
 {
   _labelPtr = labelPtr;
 }
 
-NodeLabel* EventItem::getLabel() 
+IncidentNodeLabel* IncidentNode::getLabel() 
 {
   return _labelPtr;
 }
 
-void EventItem::setColor(const QColor &color) 
+void IncidentNode::setColor(const QColor &color) 
 {
   _color = color;
 }
 
-QColor EventItem::getColor() 
+QColor IncidentNode::getColor() 
 {
   return _color;
 }
 
-void EventItem::setSelectionColor(const QColor &color) 
+void IncidentNode::setSelectionColor(const QColor &color) 
 {
   _selectionColor = color;
 }
 
-int EventItem::type() const 
+int IncidentNode::type() const 
 {
   return Type;
 }
 
-void EventItem::setMacroEvent(MacroEvent* eventPtr) 
+void IncidentNode::setAbstractNode(AbstractNode* eventPtr) 
 {
-  _macroEventPtr = eventPtr;
+  _abstractNodePtr = eventPtr;
 }
 
-MacroEvent* EventItem::getMacroEvent() 
+AbstractNode* IncidentNode::getAbstractNode() 
 {
-  return _macroEventPtr;
+  return _abstractNodePtr;
 }
 
-void EventItem::setMode(const QString mode) 
+void IncidentNode::setMode(const QString mode) 
 {
   _mode = mode;
 }
 
-QString EventItem::getMode() const 
+QString IncidentNode::getMode() const 
 {
   return _mode;
 }
 
-bool EventItem::isCopy() 
+bool IncidentNode::isCopy() 
 {
   return _copy;
 }
 
-void EventItem::setCopy(bool state) 
+void IncidentNode::setCopy(bool state) 
 {
   _copy = state;
 }

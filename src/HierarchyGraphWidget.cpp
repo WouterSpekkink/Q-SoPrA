@@ -24,7 +24,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
                       
 HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent) 
 {  
-  _selectedMacro = NULL;
+  _selectedAbstractNode = NULL;
   _selectedIncident = 0;
   
   scene = new Scene(this);
@@ -424,9 +424,9 @@ void HierarchyGraphWidget::setValue()
 	  valueButton->setEnabled(false);
 	  delete query;
 	}
-      else if (_selectedMacro != NULL)
+      else if (_selectedAbstractNode != NULL)
 	{
-	  _selectedMacro->insertValue(attribute, valueField->text());
+	  _selectedAbstractNode->insertValue(attribute, valueField->text());
 	  valueButton->setEnabled(false);
 	}
     }
@@ -456,17 +456,17 @@ void HierarchyGraphWidget::setComment()
       _commentBool = false;
       delete query;
     }
-  else if (_commentBool && _selectedMacro != NULL) 
+  else if (_commentBool && _selectedAbstractNode != NULL) 
     {
       QString comment = commentField->toPlainText();
-      _selectedMacro->setComment(comment);
-      QVectorIterator<MacroEvent*> it(_macroVector);
+      _selectedAbstractNode->setComment(comment);
+      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
       while (it.hasNext()) 
 	{
-	  MacroEvent *macro = it.next();
-	  if (macro->getId() == _selectedMacro->getId()) 
+	  AbstractNode *abstractNode = it.next();
+	  if (abstractNode->getId() == _selectedAbstractNode->getId()) 
 	    {
-	      macro->setComment(comment);
+	      abstractNode->setComment(comment);
 	    }
 	}
     }
@@ -490,25 +490,25 @@ void HierarchyGraphWidget::retrieveData()
       QListIterator<QGraphicsItem*> it(scene->selectedItems());
       while (it.hasNext()) 
 	{
-	  EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+	  IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(it.peekNext());
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it.peekNext());
 	  if (event) 
 	    {
-	      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
-	      currentEvent->setSelectionColor(Qt::black);
-	      currentEvent->update();
-	      if (currentEvent->isVisible()) 
+	      IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(it.next());
+	      currentIncidentNode->setSelectionColor(Qt::black);
+	      currentIncidentNode->update();
+	      if (currentIncidentNode->isVisible()) 
 		{
-		  _currentData.push_back(currentEvent);
+		  _currentData.push_back(currentIncidentNode);
 		}
-	    }	else if (macro) 
+	    }	else if (abstractNode) 
 	    {
-	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
-	      currentMacro->setSelectionColor(Qt::black);
-	      currentMacro->update();
-	      if (currentMacro->isVisible()) 
+	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(it.next());
+	      currentAbstractNode->setSelectionColor(Qt::black);
+	      currentAbstractNode->update();
+	      if (currentAbstractNode->isVisible()) 
 		{
-		  _currentData.push_back(currentMacro);
+		  _currentData.push_back(currentAbstractNode);
 		}
 	    }
 	  else 
@@ -524,17 +524,17 @@ void HierarchyGraphWidget::retrieveData()
 	  temp->setSelected(true);
 	  _currentData.clear();
 	  _currentData.push_back(temp);
-	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(_currentData[0]);
-	  MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(_currentData[0]);
-	  if (currentEvent) 
+	  IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(_currentData[0]);
+	  AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(_currentData[0]);
+	  if (currentIncidentNode) 
 	    {
-	      _selectedMacro = NULL;
+	      _selectedAbstractNode = NULL;
 	      sourceLabel->setText("<b>Source:</b>");
 	      rawLabel->show();
 	      rawField->show();
-	      currentEvent->setSelectionColor(Qt::red);
-	      currentEvent->update();
-	      int id = currentEvent->getId();
+	      currentIncidentNode->setSelectionColor(Qt::red);
+	      currentIncidentNode->update();
+	      int id = currentIncidentNode->getId();
 	      _selectedIncident = id;
 	      QSqlQuery *query = new QSqlQuery;
 	      query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
@@ -576,24 +576,24 @@ void HierarchyGraphWidget::retrieveData()
 		}
 	      delete query;
 	    }
-	  else if (currentMacro) 
+	  else if (currentAbstractNode) 
 	    {
-	      _selectedMacro = currentMacro;
+	      _selectedAbstractNode = currentAbstractNode;
 	      _selectedIncident = 0;
-	      currentMacro->setSelectionColor(Qt::red);
-	      currentMacro->update();
-	      descriptionField->setText(currentMacro->getDescription());
+	      currentAbstractNode->setSelectionColor(Qt::red);
+	      currentAbstractNode->update();
+	      descriptionField->setText(currentAbstractNode->getDescription());
 	      sourceLabel->setText("<b>Number of components:</b>");
-	      int id = currentMacro->getIncidents().first()->getId();
+	      int id = currentAbstractNode->getIncidents().first()->getId();
 	      rawLabel->hide();
 	      rawField->hide();
-	      QString timestamp = currentMacro->getTiming();
-	      int count = currentMacro->getIncidents().size();
-	      QVectorIterator<MacroEvent*> it(_macroVector);
+	      QString timestamp = currentAbstractNode->getTiming();
+	      int count = currentAbstractNode->getIncidents().size();
+	      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
 	      while (it.hasNext()) 
 		{
-		  MacroEvent *temp = it.next();
-		  if (temp->getMacroEvent() == currentMacro) 
+		  AbstractNode *temp = it.next();
+		  if (temp->getAbstractNode() == currentAbstractNode) 
 		    {
 		      count++;
 		    }
@@ -601,15 +601,15 @@ void HierarchyGraphWidget::retrieveData()
 	      QString countText = QString::number(count);
 	      timeStampField->setText(timestamp);
 	      sourceField->setText(countText);
-	      commentField->setText(currentMacro->getComment());
+	      commentField->setText(currentAbstractNode->getComment());
 	      resetFont(attributesTree);
-	      QSet<QString> attributes = currentMacro->getAttributes();
+	      QSet<QString> attributes = currentAbstractNode->getAttributes();
 	      QSet<QString>::iterator it2;
-	      id = currentMacro->getId();
+	      id = currentAbstractNode->getId();
 	      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
 		{
 		  QString attribute  = *it2;
-		  boldSelected(attributesTree, attribute, id, MACRO);
+		  boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
 		}
 	    }
 	}
@@ -624,14 +624,14 @@ void HierarchyGraphWidget::retrieveData()
       commentField->blockSignals(false);
       sourceField->clear();
       _selectedIncident = 0;
-      _selectedMacro = NULL;
+      _selectedAbstractNode = NULL;
       resetFont(attributesTree);
     }
 }
 
-void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer) 
+void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer) 
 {
-  MacroEvent *newOrigin = new MacroEvent(40, origin->getDescription(), QPointF(0,0),
+  AbstractNode *newOrigin = new AbstractNode(40, origin->getDescription(), QPointF(0,0),
 					 origin->getId(),
 					 origin->getConstraint(),
 					 origin->getIncidents());
@@ -641,8 +641,8 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
   newOrigin->setAttributes(origin->getAttributes());
   newOrigin->setOrder(origin->getOrder());
   newOrigin->setZValue(3);
-  MacroLabel *macroLabel = new MacroLabel(newOrigin);
-  newOrigin->setLabel(macroLabel);
+  AbstractNodeLabel *abstractNodeLabel = new AbstractNodeLabel(newOrigin);
+  newOrigin->setLabel(abstractNodeLabel);
   QTableWidgetItem *item = new QTableWidgetItem(newOrigin->getMode());
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
   if (newOrigin->getMode() != "") 
@@ -674,58 +674,60 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
       newOrigin->getConstraint() == PATHSATT) 
     {
       QString label = "P-" + QString::number(newOrigin->getOrder());
-      macroLabel->setPlainText(label);
-      macroLabel->setTextWidth(macroLabel->boundingRect().width());
+      abstractNodeLabel->setPlainText(label);
+      abstractNodeLabel->setTextWidth(abstractNodeLabel->boundingRect().width());
     }
   else if (newOrigin->getConstraint() == SEMIPATHS ||
 	   newOrigin->getConstraint() == SEMIPATHSATT) 
     {
       QString label = "S-" + QString::number(newOrigin->getOrder());
-      macroLabel->setPlainText(label);
-      macroLabel->setTextWidth(macroLabel->boundingRect().width());
+      abstractNodeLabel->setPlainText(label);
+      abstractNodeLabel->setTextWidth(abstractNodeLabel->boundingRect().width());
     }
   else if (newOrigin->getConstraint() == NOCONSTRAINT ||
 	   newOrigin->getConstraint() == NOCONSTRAINTATT) 
     {
       QString label = "N-" + QString::number(newOrigin->getOrder());
-      macroLabel->setPlainText(label);
-      macroLabel->setTextWidth(macroLabel->boundingRect().width());
+      abstractNodeLabel->setPlainText(label);
+      abstractNodeLabel->setTextWidth(abstractNodeLabel->boundingRect().width());
     }
   newOrigin->setPos(QPointF(newOrigin->scenePos().x(),
 			    newOrigin->scenePos().y() - layer * 80));
   newOrigin->setOriginalPos(newOrigin->scenePos());
   qreal xOffset = (newOrigin->getWidth() / 2) - 20;
-  macroLabel->setOffset(QPointF(xOffset,0));
-  macroLabel->setNewPos(newOrigin->scenePos());
-  macroLabel->setZValue(4);
-  macroLabel->setDefaultTextColor(Qt::black);
+  abstractNodeLabel->setOffset(QPointF(xOffset,0));
+  abstractNodeLabel->setNewPos(newOrigin->scenePos());
+  abstractNodeLabel->setZValue(4);
+  abstractNodeLabel->setDefaultTextColor(Qt::black);
   scene->addItem(newOrigin);
-  scene->addItem(macroLabel);
+  scene->addItem(abstractNodeLabel);
   qreal yPos = 0 + (layer * 80);
   QVector<QGraphicsItem*> currentLayer;
   QVector<QGraphicsItem*> partners;
-  QVectorIterator<MacroEvent*> it(_macroVector);
+  QVectorIterator<AbstractNode*> it(_abstractNodeVector);
   while (it.hasNext()) 
     {
-      MacroEvent *macro = it.next();
-      if (macro->getMacroEvent() == origin) 
+      AbstractNode *abstractNode = it.next();
+      if (abstractNode->getAbstractNode() == origin) 
 	{ 
-	  MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0, yPos),
-						macro->getId(), macro->getConstraint(),
-						macro->getIncidents());
-	  newMacro->setCopy(true);
-	  newMacro->setMode(macro->getMode());
-	  newMacro->setColor(macro->getColor());
-	  newMacro->setAttributes(macro->getAttributes());
-	  newMacro->setPos(newMacro->getOriginalPos());
-	  newMacro->setOrder(macro->getOrder());
-	  newMacro->setZValue(3);
+	  AbstractNode *newAbstractNode = new AbstractNode(40, abstractNode->getDescription(),
+							   QPointF(0, yPos),
+							   abstractNode->getId(),
+							   abstractNode->getConstraint(),
+							   abstractNode->getIncidents());
+	  newAbstractNode->setCopy(true);
+	  newAbstractNode->setMode(abstractNode->getMode());
+	  newAbstractNode->setColor(abstractNode->getColor());
+	  newAbstractNode->setAttributes(abstractNode->getAttributes());
+	  newAbstractNode->setPos(newAbstractNode->getOriginalPos());
+	  newAbstractNode->setOrder(abstractNode->getOrder());
+	  newAbstractNode->setZValue(3);
 	  bool found = false;
-	  if (newMacro->getMode() != "") 
+	  if (newAbstractNode->getMode() != "") 
 	    {
 	      for (int i = 0; i < eventListWidget->rowCount(); i++) 
 		{
-		  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) 
+		  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newAbstractNode->getMode()) 
 		    {
 		      found = true;
 		    }
@@ -735,72 +737,72 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
 		  QSqlQuery *query = new QSqlQuery;
 		  query->prepare("SELECT description FROM incident_attributes "
 				 "WHERE name = :name");
-		  query->bindValue(":name", newMacro->getMode());
+		  query->bindValue(":name", newAbstractNode->getMode());
 		  query->exec();
 		  query->first();
 		  QString description = query->value(0).toString();
 		  delete query;
-		  QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
+		  QTableWidgetItem *item = new QTableWidgetItem(newAbstractNode->getMode());
 		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-		  QString toolTip = breakString(newMacro->getMode() + " - " + description);
+		  QString toolTip = breakString(newAbstractNode->getMode() + " - " + description);
 		  item->setToolTip(toolTip);
-		  item->setData(Qt::DisplayRole, newMacro->getMode());
+		  item->setData(Qt::DisplayRole, newAbstractNode->getMode());
 		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
 		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
 		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-		    setBackground(newMacro->getColor());
+		    setBackground(newAbstractNode->getColor());
 		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		}
 	    }
-	  MacroLabel *newMacroLabel = new MacroLabel(newMacro);
-	  newMacro->setLabel(newMacroLabel);
-	  if (newMacro->getConstraint() == PATHS ||
-	      newMacro->getConstraint() == PATHSATT) 
+	  AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
+	  newAbstractNode->setLabel(newAbstractNodeLabel);
+	  if (newAbstractNode->getConstraint() == PATHS ||
+	      newAbstractNode->getConstraint() == PATHSATT) 
 	    {
-	      QString label = "P-" + QString::number(newMacro->getOrder());
-	      newMacroLabel->setPlainText(label);
-	      newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	      QString label = "P-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	      newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 	    }
-	  else if (newMacro->getConstraint() == SEMIPATHS ||
-		   newMacro->getConstraint() == SEMIPATHSATT) 
+	  else if (newAbstractNode->getConstraint() == SEMIPATHS ||
+		   newAbstractNode->getConstraint() == SEMIPATHSATT) 
 	    {
-	      QString label = "S-" + QString::number(newMacro->getOrder());
-	      newMacroLabel->setPlainText(label);
-	      newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	      QString label = "S-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	      newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 	    }
-	  else if (newMacro->getConstraint() == NOCONSTRAINT ||
-		   newMacro->getConstraint() == NOCONSTRAINTATT) 
+	  else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
+		   newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
 	    {
-	      QString label = "N-" + QString::number(newMacro->getOrder());
-	      newMacroLabel->setPlainText(label);
-	      newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+	      QString label = "N-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	      newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 	    }
-	  qreal xOffset = (newMacro->getWidth() / 2) - 20;
-	  newMacroLabel->setOffset(QPointF(xOffset,0));
-	  newMacroLabel->setNewPos(newMacro->scenePos());
-	  newMacroLabel->setZValue(4);
-	  newMacroLabel->setDefaultTextColor(Qt::black);
-	  currentLayer.push_back(newMacro);
+	  qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
+	  newAbstractNodeLabel->setOffset(QPointF(xOffset,0));
+	  newAbstractNodeLabel->setNewPos(newAbstractNode->scenePos());
+	  newAbstractNodeLabel->setZValue(4);
+	  newAbstractNodeLabel->setDefaultTextColor(Qt::black);
+	  currentLayer.push_back(newAbstractNode);
 	  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
 	  newLinkage->setZValue(2);
-	  newLinkage->setStartItem(newMacro);
+	  newLinkage->setStartItem(newAbstractNode);
 	  newLinkage->setEndItem(newOrigin);
 	  newLinkage->setCopy(true);
 	  newLinkage->setColor(QColor(Qt::gray));
 	  scene->addItem(newLinkage);
-	  partners.push_back(macro);
+	  partners.push_back(abstractNode);
 	}
     }
-  QVectorIterator<EventItem*> it2(_eventVector);
+  QVectorIterator<IncidentNode*> it2(_eventVector);
   while (it2.hasNext()) 
     {
-      EventItem *event = it2.next();
-      if (event->getMacroEvent() == origin) 
+      IncidentNode *event = it2.next();
+      if (event->getAbstractNode() == origin) 
 	{
-	  EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
+	  IncidentNode *newEvent = new IncidentNode(40, event->data(Qt::ToolTipRole).toString(),
 					      QPointF(0, yPos), event->getId(), event->getOrder());
 	  newEvent->setCopy(true);
 	  newEvent->setMode(event->getMode());
@@ -842,7 +844,7 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
 			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		}
 	    }
-	  QPointer<NodeLabel> text = new NodeLabel(newEvent);
+	  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
 	  newEvent->setLabel(text);
 	  text->setPlainText(QString::number(newEvent->getOrder()));
 	  text->setTextWidth(text->boundingRect().width());
@@ -869,16 +871,16 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
   qreal width = 120 * layerSize;
   qreal startX = 0 - width / 2 - 60;
   int count = 1;
-  QVector<MacroEvent*> newLayer;
-  QVector<MacroEvent*> partnerLayer;
+  QVector<AbstractNode*> newLayer;
+  QVector<AbstractNode*> partnerLayer;
   for (QVector<QGraphicsItem*>::size_type it3 = 0; it3 != currentLayer.size(); it3++) 
     {
       QGraphicsItem *current = currentLayer[it3];
       qreal xPos = startX + count * 120;
       current->setPos(xPos, current->scenePos().y());
       count++;
-      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(current);
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       if (event) 
 	{
 	  event->setOriginalPos(event->scenePos());
@@ -886,15 +888,15 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
 	  scene->addItem(event);
 	  scene->addItem(event->getLabel());
 	}
-      else if (macro) 
+      else if (abstractNode) 
 	{
-	  macro->setOriginalPos(macro->scenePos());
-	  macro->getLabel()->setNewPos(macro->scenePos());
-	  scene->addItem(macro);
-	  scene->addItem(macro->getLabel());
-	  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(partners[it3]);
-	  newLayer.push_back(tempMacro);
-	  partnerLayer.push_back(qgraphicsitem_cast<MacroEvent*>(current));
+	  abstractNode->setOriginalPos(abstractNode->scenePos());
+	  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+	  scene->addItem(abstractNode);
+	  scene->addItem(abstractNode->getLabel());
+	  AbstractNode *tempAbstractNode = qgraphicsitem_cast<AbstractNode*>(partners[it3]);
+	  newLayer.push_back(tempAbstractNode);
+	  partnerLayer.push_back(qgraphicsitem_cast<AbstractNode*>(current));
 	}
     }
   if (newLayer.size() > 0) 
@@ -903,120 +905,123 @@ void HierarchyGraphWidget::buildComponents(MacroEvent *origin, int layer)
     }
 }
 
-void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
-				    QVector<MacroEvent*> partLayer,
+void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
+				    QVector<AbstractNode*> partLayer,
 				    int layer) 
 {
   qreal yPos = 0 + (layer * 80);
   QVector<QGraphicsItem*> currentLayer;
   QVector<QGraphicsItem*> partners;
-  for (QVector<MacroEvent*>::size_type it = 0; it != presentLayer.size(); it++) 
+  for (QVector<AbstractNode*>::size_type it = 0; it != presentLayer.size(); it++) 
     {
-      MacroEvent *currentFather = presentLayer[it];
-      QVectorIterator<MacroEvent*> it2(_macroVector);
+      AbstractNode *currentFather = presentLayer[it];
+      QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
       while (it2.hasNext()) 
 	{
-	  MacroEvent *macro = it2.next();
-	  if (macro->getMacroEvent() == currentFather) 
+	  AbstractNode *abstractNode = it2.next();
+	  if (abstractNode->getAbstractNode() == currentFather) 
 	    { 
-	      MacroEvent *newMacro = new MacroEvent(40, macro->getDescription(), QPointF(0,yPos),
-						    macro->getId(), macro->getConstraint(),
-						    macro->getIncidents());
-	      newMacro->setCopy(true);
-	      newMacro->setMode(macro->getMode());
-	      newMacro->setColor(macro->getColor());
-	      newMacro->setAttributes(macro->getAttributes());
-	      newMacro->setPos(newMacro->getOriginalPos());
-	      newMacro->setOrder(macro->getOrder());
-	      newMacro->setZValue(3);
+	      AbstractNode *newAbstractNode = new AbstractNode(40,
+							       abstractNode->getDescription(),
+							       QPointF(0,yPos),
+							       abstractNode->getId(),
+							       abstractNode->getConstraint(),
+							       abstractNode->getIncidents());
+	      newAbstractNode->setCopy(true);
+	      newAbstractNode->setMode(abstractNode->getMode());
+	      newAbstractNode->setColor(abstractNode->getColor());
+	      newAbstractNode->setAttributes(abstractNode->getAttributes());
+	      newAbstractNode->setPos(newAbstractNode->getOriginalPos());
+	      newAbstractNode->setOrder(abstractNode->getOrder());
+	      newAbstractNode->setZValue(3);
 	      bool found = false;
-	      if (newMacro->getMode() != "") 
+	      if (newAbstractNode->getMode() != "") 
 		{
 		  QSqlQuery *query = new QSqlQuery;
 		  query->prepare("SELECT description FROM incident_attributes "
 				 "WHERE name = :name");
-		  query->bindValue(":name", newMacro->getMode());
+		  query->bindValue(":name", newAbstractNode->getMode());
 		  query->exec();
 		  query->first();
 		  QString description = query->value(0).toString();
 		  delete query;
 		  for (int i = 0; i < eventListWidget->rowCount(); i++) 
 		    {
-		      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newMacro->getMode()) 
+		      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == newAbstractNode->getMode()) 
 			{
 			  found = true;
 			}
 		    }
 		  if (!found) 
 		    {
-		      QTableWidgetItem *item = new QTableWidgetItem(newMacro->getMode());
+		      QTableWidgetItem *item = new QTableWidgetItem(newAbstractNode->getMode());
 		      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-		      QString toolTip = breakString(newMacro->getMode() + " - " + description);
+		      QString toolTip = breakString(newAbstractNode->getMode() + " - " + description);
 		      item->setToolTip(toolTip);
-		      item->setData(Qt::DisplayRole, newMacro->getMode());
+		      item->setData(Qt::DisplayRole, newAbstractNode->getMode());
 		      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
 		      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
 		      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
-			setBackground(newMacro->getColor());
+			setBackground(newAbstractNode->getColor());
 		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 			setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 				 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		    }
 		}
-	      MacroLabel *newMacroLabel = new MacroLabel(newMacro);
-	      newMacro->setLabel(newMacroLabel);
-	      if (newMacro->getConstraint() == PATHS ||
-		  newMacro->getConstraint() == PATHSATT) 
+	      AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
+	      newAbstractNode->setLabel(newAbstractNodeLabel);
+	      if (newAbstractNode->getConstraint() == PATHS ||
+		  newAbstractNode->getConstraint() == PATHSATT) 
 		{
-		  QString label = "P-" + QString::number(newMacro->getOrder());
-		  newMacroLabel->setPlainText(label);
-		  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+		  QString label = "P-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		  newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 		}
-	      else if (newMacro->getConstraint() == SEMIPATHS ||
-		       newMacro->getConstraint() == SEMIPATHSATT) 
+	      else if (newAbstractNode->getConstraint() == SEMIPATHS ||
+		       newAbstractNode->getConstraint() == SEMIPATHSATT) 
 		{
-		  QString label = "S-" + QString::number(newMacro->getOrder());
-		  newMacroLabel->setPlainText(label);
-		  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+		  QString label = "S-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		  newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 		}
-	      else if (newMacro->getConstraint() == NOCONSTRAINT ||
-		       newMacro->getConstraint() == NOCONSTRAINTATT) 
+	      else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
+		       newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
 		{
-		  QString label = "N-" + QString::number(newMacro->getOrder());
-		  newMacroLabel->setPlainText(label);
-		  newMacroLabel->setTextWidth(newMacroLabel->boundingRect().width());
+		  QString label = "N-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		  newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 		}
-	      qreal xOffset = (newMacro->getWidth() / 2) - 20;
-	      newMacroLabel->setOffset(QPointF(xOffset, 0));
-	      newMacroLabel->setNewPos(newMacro->scenePos());
-	      newMacroLabel->setZValue(4);
-	      newMacroLabel->setDefaultTextColor(Qt::black);
-	      currentLayer.push_back(newMacro);
-	      partners.push_back(macro);
+	      qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
+	      newAbstractNodeLabel->setOffset(QPointF(xOffset, 0));
+	      newAbstractNodeLabel->setNewPos(newAbstractNode->scenePos());
+	      newAbstractNodeLabel->setZValue(4);
+	      newAbstractNodeLabel->setDefaultTextColor(Qt::black);
+	      currentLayer.push_back(newAbstractNode);
+	      partners.push_back(abstractNode);
 	      Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
 	      newLinkage->setZValue(2);
-	      newLinkage->setStartItem(newMacro);
+	      newLinkage->setStartItem(newAbstractNode);
 	      newLinkage->setEndItem(partLayer[it]);
 	      newLinkage->setCopy(true);
 	      newLinkage->setColor(QColor(Qt::gray));
 	      scene->addItem(newLinkage);
 	    }
 	}
-      QVectorIterator<EventItem*> it3(_eventVector);
+      QVectorIterator<IncidentNode*> it3(_eventVector);
       while (it3.hasNext()) 
 	{
-	  EventItem *event = it3.next();
-	  if (event->getMacroEvent() == currentFather) 
+	  IncidentNode *event = it3.next();
+	  if (event->getAbstractNode() == currentFather) 
 	    {
 	      QVectorIterator<QGraphicsItem*> it4(partners);
 	      bool found = false;
 	      while (it4.hasNext()) 
 		{
-		  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(it4.next());
-		  if (tempMacro) 
+		  AbstractNode *tempAbstractNode = qgraphicsitem_cast<AbstractNode*>(it4.next());
+		  if (tempAbstractNode) 
 		    {
-		      QVector<EventItem*> tempIncidents = tempMacro->getIncidents();
+		      QVector<IncidentNode*> tempIncidents = tempAbstractNode->getIncidents();
 		      if (tempIncidents.contains(event)) 
 			{
 			  found = true;
@@ -1025,7 +1030,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 		}
 	      if (!found) 
 		{
-		  EventItem *newEvent = new EventItem(40, event->data(Qt::ToolTipRole).toString(),
+		  IncidentNode *newEvent = new IncidentNode(40, event->data(Qt::ToolTipRole).toString(),
 						      QPointF(0, yPos), event->getId(), event->getOrder());
 		  newEvent->setCopy(true);
 		  newEvent->setMode(event->getMode());
@@ -1067,7 +1072,7 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 				     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 			}
 		    }
-		  QPointer<NodeLabel> text = new NodeLabel(newEvent);
+		  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
 		  newEvent->setLabel(text);
 		  text->setPlainText(QString::number(newEvent->getOrder()));
 		  text->setTextWidth(text->boundingRect().width());
@@ -1092,8 +1097,8 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
     }
   std::sort(currentLayer.begin(), currentLayer.end(), componentsSort);
   std::sort(partners.begin(), partners.end(), componentsSort);
-  QVector<MacroEvent*> newLayer;
-  QVector<MacroEvent*> partnerLayer;
+  QVector<AbstractNode*> newLayer;
+  QVector<AbstractNode*> partnerLayer;
   int layerSize = currentLayer.size();
   qreal width = 120 * layerSize;
   qreal startX = 0 - width / 2 - 60;
@@ -1104,8 +1109,8 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
       qreal xPos = startX + count * 120;
       current->setPos(xPos, current->scenePos().y());
       count++;
-      EventItem *event = qgraphicsitem_cast<EventItem*>(current);
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(current);
+      IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(current);
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       if (event) 
 	{
 	  event->setOriginalPos(event->scenePos());
@@ -1113,15 +1118,15 @@ void HierarchyGraphWidget::addLayer(QVector<MacroEvent*> presentLayer,
 	  scene->addItem(event);
 	  scene->addItem(event->getLabel());
 	}
-      else if (macro) 
+      else if (abstractNode) 
 	{
-	  macro->setOriginalPos(macro->scenePos());
-	  macro->getLabel()->setNewPos(macro->scenePos());
-	  scene->addItem(macro);
-	  scene->addItem(macro->getLabel());
-	  MacroEvent *tempMacro = qgraphicsitem_cast<MacroEvent*>(partners[it5]);
-	  newLayer.push_back(tempMacro);
-	  partnerLayer.push_back(qgraphicsitem_cast<MacroEvent*>(current));
+	  abstractNode->setOriginalPos(abstractNode->scenePos());
+	  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+	  scene->addItem(abstractNode);
+	  scene->addItem(abstractNode->getLabel());
+	  AbstractNode *tempAbstractNode = qgraphicsitem_cast<AbstractNode*>(partners[it5]);
+	  newLayer.push_back(tempAbstractNode);
+	  partnerLayer.push_back(qgraphicsitem_cast<AbstractNode*>(current));
 	}
     }
   if (newLayer.size() > 0) 
@@ -1150,9 +1155,9 @@ void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
       qreal newY = pos.y();
       qreal xDiff = newX - currentX;
       qreal yDiff = newY - currentY;
-      MacroEvent *sourceMacro = qgraphicsitem_cast<MacroEvent*>(source);
-      sourceMacro->setPos(source->scenePos().x() + xDiff, source->scenePos().y() + yDiff);
-      sourceMacro->getLabel()->setNewPos(sourceMacro->scenePos());
+      AbstractNode *sourceAbstractNode = qgraphicsitem_cast<AbstractNode*>(source);
+      sourceAbstractNode->setPos(source->scenePos().x() + xDiff, source->scenePos().y() + yDiff);
+      sourceAbstractNode->getLabel()->setNewPos(sourceAbstractNode->scenePos());
       QListIterator<QGraphicsItem*> it2(scene->items());
       while (it2.hasNext()) 
 	{
@@ -1160,22 +1165,22 @@ void HierarchyGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
 	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(current);
 	  if (linkage && linkage->getType() == "Hierarchy") 
 	    {
-	      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(linkage->getEnd());
-	      if (endMacro) 
+	      AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getEnd());
+	      if (endAbstractNode) 
 		{
-		  if (endMacro == qgraphicsitem_cast<MacroEvent*>(source)) 
+		  if (endAbstractNode == qgraphicsitem_cast<AbstractNode*>(source)) 
 		    {
 		      QGraphicsItem* partner = linkage->getStart();
 		      partner->setPos(partner->scenePos().x() + xDiff, partner->scenePos().y() + yDiff);
-		      EventItem *partnerEvent = qgraphicsitem_cast<EventItem*>(partner);
-		      MacroEvent *partnerMacro = qgraphicsitem_cast<MacroEvent*>(partner);
+		      IncidentNode *partnerEvent = qgraphicsitem_cast<IncidentNode*>(partner);
+		      AbstractNode *partnerAbstractNode = qgraphicsitem_cast<AbstractNode*>(partner);
 		      if (partnerEvent) 
 			{
 			  partnerEvent->getLabel()->setNewPos(partnerEvent->scenePos());
 			}
-		      else if (partnerMacro) 
+		      else if (partnerAbstractNode) 
 			{
-			  partnerMacro->getLabel()->setNewPos(partnerMacro->scenePos());
+			  partnerAbstractNode->getLabel()->setNewPos(partnerAbstractNode->scenePos());
 			}
 		    }
 		}
@@ -1201,52 +1206,52 @@ void HierarchyGraphWidget::getEdges()
 	}
       QGraphicsItem *source = NULL;
       QGraphicsItem *target = NULL;
-      EventItem *startEvent = qgraphicsitem_cast<EventItem*>(linkage->getStart());
-      EventItem *endEvent = qgraphicsitem_cast<EventItem*>(linkage->getEnd());
-      MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(linkage->getStart());
-      MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(linkage->getEnd());
+      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getStart());
+      IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getEnd());
+      AbstractNode *startAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getStart());
+      AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getEnd());
       QListIterator<QGraphicsItem*> it2(scene->items());
       while (it2.hasNext()) 
 	{
 	  QGraphicsItem *item = it2.next();
-	  EventItem *event = qgraphicsitem_cast<EventItem*>(item);
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(item);
-	  if (startEvent && event) 
+	  IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(item);
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(item);
+	  if (startIncidentNode && event) 
 	    {
-	      if (startEvent->getId() == event->getId()) 
+	      if (startIncidentNode->getId() == event->getId()) 
 		{
 		  source = event;
 		}
 	    }
-	  if (endEvent && event) 
+	  if (endIncidentNode && event) 
 	    {
-	      if (endEvent->getId() == event->getId()) 
+	      if (endIncidentNode->getId() == event->getId()) 
 		{
 		  target = event;
 		}
 	    }
-	  if (startMacro && macro) 
+	  if (startAbstractNode && abstractNode) 
 	    {
-	      if (startMacro->getId() == macro->getId()) 
+	      if (startAbstractNode->getId() == abstractNode->getId()) 
 		{
-		  source = macro;
+		  source = abstractNode;
 		}
 	    }
-	  if (endMacro && macro) 
+	  if (endAbstractNode && abstractNode) 
 	    {
-	      if (endMacro->getId() == macro->getId()) 
+	      if (endAbstractNode->getId() == abstractNode->getId()) 
 		{
-		  target = macro;
+		  target = abstractNode;
 		}
 	    }
 	}
       if (source != NULL && target != NULL) 
 	{
 	  bool valid = false;
-	  EventItem *eventSource = qgraphicsitem_cast<EventItem*>(source);
-	  EventItem *eventTarget = qgraphicsitem_cast<EventItem*>(target);
-	  MacroEvent *macroSource = qgraphicsitem_cast<MacroEvent*>(source);
-	  MacroEvent *macroTarget = qgraphicsitem_cast<MacroEvent*>(target);
+	  IncidentNode *eventSource = qgraphicsitem_cast<IncidentNode*>(source);
+	  IncidentNode *eventTarget = qgraphicsitem_cast<IncidentNode*>(target);
+	  AbstractNode *abstractNodeSource = qgraphicsitem_cast<AbstractNode*>(source);
+	  AbstractNode *abstractNodeTarget = qgraphicsitem_cast<AbstractNode*>(target);
 	  if (eventSource && eventTarget) 
 	    {
 	      if (eventSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) 
@@ -1254,23 +1259,23 @@ void HierarchyGraphWidget::getEdges()
 		  valid = true;
 		}
 	    }
-	  else if (eventSource && macroTarget) 
+	  else if (eventSource && abstractNodeTarget) 
 	    {
-	      if (eventSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) 
+	      if (eventSource->getOriginalPos().y() == abstractNodeTarget->getOriginalPos().y()) 
 		{
 		  valid = true;
 		}
 	    }
-	  else if (macroSource && eventTarget) 
+	  else if (abstractNodeSource && eventTarget) 
 	    {
-	      if (macroSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) 
+	      if (abstractNodeSource->getOriginalPos().y() == eventTarget->getOriginalPos().y()) 
 		{
 		  valid = true;
 		}
 	    }
-	  else if (macroSource && macroTarget) 
+	  else if (abstractNodeSource && abstractNodeTarget) 
 	    {
-	      if (macroSource->getOriginalPos().y() == macroTarget->getOriginalPos().y()) 
+	      if (abstractNodeSource->getOriginalPos().y() == abstractNodeTarget->getOriginalPos().y()) 
 		{
 		  valid = true;
 		}
@@ -1347,20 +1352,20 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item)
 	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
-	  QVectorIterator<EventItem*> it(_eventVector);
+	  QVectorIterator<IncidentNode*> it(_eventVector);
 	  while (it.hasNext()) 
 	    {
-	      EventItem *current = it.next();
+	      IncidentNode *current = it.next();
 	      if (current->getMode() == mode) 
 		{
 		  current->setColor(fillColor);
 		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
-	  QVectorIterator<MacroEvent*> it2(_macroVector);
+	  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
 	  while (it2.hasNext()) 
 	    {
-	      MacroEvent *current = it2.next();
+	      AbstractNode *current = it2.next();
 	      if (current->getMode() == mode) 
 		{
 		  current->setColor(fillColor);
@@ -1420,12 +1425,12 @@ void HierarchyGraphWidget::colorByAttribute()
 	      while (it2.hasNext()) 
 		{
 		  QGraphicsItem *current = it2.next();
-		  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-		  if (currentEvent && currentEvent->getId() == currentIncident) 
+		  IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(current);
+		  if (currentIncidentNode && currentIncidentNode->getId() == currentIncident) 
 		    {
-		      currentEvent->setColor(color);
-		      currentEvent->setMode(attribute);
-		      currentEvent->getLabel()->setDefaultTextColor(textColor);
+		      currentIncidentNode->setColor(color);
+		      currentIncidentNode->setMode(attribute);
+		      currentIncidentNode->getLabel()->setDefaultTextColor(textColor);
 		    }
 		}
 	    }
@@ -1433,15 +1438,15 @@ void HierarchyGraphWidget::colorByAttribute()
 	  while (it2.hasNext()) 
 	    {
 	      QGraphicsItem *current = it2.next();
-	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	      if (currentMacro) 
+	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+	      if (currentAbstractNode) 
 		{
-		  QSet<QString> attributes = currentMacro->getAttributes();
+		  QSet<QString> attributes = currentAbstractNode->getAttributes();
 		  if (attributes.contains(currentAttribute)) 
 		    {
-		      currentMacro->setColor(color);
-		      currentMacro->setMode(attribute);
-		      currentMacro->getLabel()->setDefaultTextColor(textColor);
+		      currentAbstractNode->setColor(color);
+		      currentAbstractNode->setMode(attribute);
+		      currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
 		    }
 		}
 	    }
@@ -1487,19 +1492,19 @@ void HierarchyGraphWidget::removeMode()
   while (it.hasNext()) 
     {
       QGraphicsItem *current = it.next();
-      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-      if (currentEvent && currentEvent->getMode() == text) 
+      IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(current);
+      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+      if (currentIncidentNode && currentIncidentNode->getMode() == text) 
 	{
-	  currentEvent->setColor(Qt::white);
-	  currentEvent->getLabel()->setDefaultTextColor(Qt::black);
-	  currentEvent->setMode("");
+	  currentIncidentNode->setColor(Qt::white);
+	  currentIncidentNode->getLabel()->setDefaultTextColor(Qt::black);
+	  currentIncidentNode->setMode("");
 	}
-      else if (currentMacro && currentMacro->getMode() == text) 
+      else if (currentAbstractNode && currentAbstractNode->getMode() == text) 
 	{
-	  currentMacro->setColor(Qt::white);
-	  currentMacro->getLabel()->setDefaultTextColor(Qt::black);
-	  currentMacro->setMode("");
+	  currentAbstractNode->setColor(Qt::white);
+	  currentAbstractNode->getLabel()->setDefaultTextColor(Qt::black);
+	  currentAbstractNode->setMode("");
 	}
     }
   for (int i = 0; i != eventListWidget->rowCount();) 
@@ -1546,11 +1551,11 @@ void HierarchyGraphWidget::removeMode()
 	      while (it3.hasNext()) 
 		{
 		  QGraphicsItem *current = it3.next();
-		  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-		  if (currentEvent && currentEvent->getId() == currentIncident) 
+		  IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(current);
+		  if (currentIncidentNode && currentIncidentNode->getId() == currentIncident) 
 		    {
-		      currentEvent->setColor(color);
-		      currentEvent->setMode(currentMode);
+		      currentIncidentNode->setColor(color);
+		      currentIncidentNode->setMode(currentMode);
 		    }
 		}
 	    }
@@ -1558,14 +1563,14 @@ void HierarchyGraphWidget::removeMode()
 	  while (it3.hasNext()) 
 	    {
 	      QGraphicsItem *current = it3.next();
-	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	      if (currentMacro) 
+	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+	      if (currentAbstractNode) 
 		{
-		  QSet<QString> attributes = currentMacro->getAttributes();
+		  QSet<QString> attributes = currentAbstractNode->getAttributes();
 		  if (attributes.contains(currentAttribute)) 
 		    {
-		      currentMacro->setColor(color);
-		      currentMacro->setMode(currentMode);
+		      currentAbstractNode->setColor(color);
+		      currentAbstractNode->setMode(currentMode);
 		    }
 		}
 	    }
@@ -1645,11 +1650,11 @@ void HierarchyGraphWidget::restoreModeColors()
 	      while (it4.hasNext()) 
 		{
 		  QGraphicsItem *current = it4.next();
-		  EventItem* currentEvent = qgraphicsitem_cast<EventItem*>(current);
-		  if (currentEvent && currentEvent->getId() == currentIncident) 
+		  IncidentNode* currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(current);
+		  if (currentIncidentNode && currentIncidentNode->getId() == currentIncident) 
 		    {
-		      currentEvent->setColor(color);
-		      currentEvent->setMode(currentMode);
+		      currentIncidentNode->setColor(color);
+		      currentIncidentNode->setMode(currentMode);
 		    }
 		}
 	    }
@@ -1657,14 +1662,14 @@ void HierarchyGraphWidget::restoreModeColors()
 	  while (it4.hasNext()) 
 	    {
 	      QGraphicsItem *current = it4.next();
-	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	      if (currentMacro) 
+	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+	      if (currentAbstractNode) 
 		{
-		  QSet<QString> attributes = currentMacro->getAttributes();
+		  QSet<QString> attributes = currentAbstractNode->getAttributes();
 		  if (attributes.contains(currentAttribute)) 
 		    {
-		      currentMacro->setColor(color);
-		      currentMacro->setMode(currentMode);
+		      currentAbstractNode->setColor(color);
+		      currentAbstractNode->setMode(currentMode);
 		    }
 		}
 	    }
@@ -1679,15 +1684,15 @@ void HierarchyGraphWidget::restoreModeColors()
       while (it.hasNext()) 
 	{
 	  QGraphicsItem *current = it.next();
-	  EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(current);
-	  MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(current);
-	  if (currentEvent && currentEvent->getMode() == mode) 
+	  IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(current);
+	  AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+	  if (currentIncidentNode && currentIncidentNode->getMode() == mode) 
 	    {
-	      currentEvent->setColor(color);
+	      currentIncidentNode->setColor(color);
 	    }
-	  else if (currentMacro && currentMacro->getMode() == mode) 
+	  else if (currentAbstractNode && currentAbstractNode->getMode() == mode) 
 	    {
-	      currentMacro->setColor(color);
+	      currentAbstractNode->setColor(color);
 	    }
 	}
     }
@@ -2837,25 +2842,25 @@ void HierarchyGraphWidget::assignAttribute()
 	  setButtons();
 	}
     }
-  else if (_selectedMacro != NULL) 
+  else if (_selectedAbstractNode != NULL) 
     {
       if (attributesTreeView->currentIndex().isValid()) 
 	{
 	  QString attribute = attributesTreeView->currentIndex().data().toString();
-	  QSet<QString> attributes = _selectedMacro->getAttributes();
+	  QSet<QString> attributes = _selectedAbstractNode->getAttributes();
 	  if (!attributes.contains(attribute)) 
 	    {
-	      _selectedMacro->insertAttribute(attribute);
-	      QVectorIterator<MacroEvent*> it(_macroVector);
+	      _selectedAbstractNode->insertAttribute(attribute);
+	      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
 	      while (it.hasNext()) 
 		{
-		  MacroEvent *macro = it.next();
-		  if (macro->getId() == _selectedMacro->getId()) 
+		  AbstractNode *abstractNode = it.next();
+		  if (abstractNode->getId() == _selectedAbstractNode->getId()) 
 		    {
-		      macro->insertAttribute(attribute);							 
+		      abstractNode->insertAttribute(attribute);							 
 		    }
 		} 
-	      boldSelected(attributesTree, attribute, _selectedMacro->getId(), MACRO);
+	      boldSelected(attributesTree, attribute, _selectedAbstractNode->getId(), ABSTRACTNODE);
 	      valueField->setEnabled(true);
 	    }
 	}
@@ -2913,31 +2918,31 @@ void HierarchyGraphWidget::unassignAttribute()
 	  delete query2;
 	}
     }
-  else if (_selectedMacro != NULL) 
+  else if (_selectedAbstractNode != NULL) 
     {
       if (attributesTreeView->currentIndex().isValid()) 
 	{
 	  QString attribute = attributesTreeView->currentIndex().data().toString();
-	  QSet<QString> attributes = _selectedMacro->getAttributes();
+	  QSet<QString> attributes = _selectedAbstractNode->getAttributes();
 	  if (attributes.contains(attribute)) 
 	    {
-	      _selectedMacro->removeAttribute(attribute);
-	      QVectorIterator<MacroEvent*> it(_macroVector);
+	      _selectedAbstractNode->removeAttribute(attribute);
+	      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
 	      while (it.hasNext()) 
 		{
-		  MacroEvent *macro = it.next();
-		  if (macro->getId() == _selectedMacro->getId()) 
+		  AbstractNode *abstractNode = it.next();
+		  if (abstractNode->getId() == _selectedAbstractNode->getId()) 
 		    {
-		      macro->removeAttribute(attribute);							 
+		      abstractNode->removeAttribute(attribute);							 
 		    }
 		} 
 	      QSet<QString>::iterator it2;
 	      resetFont(attributesTree);
-	      attributes = _selectedMacro->getAttributes();
+	      attributes = _selectedAbstractNode->getAttributes();
 	      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
 		{
 		  QString current = *it2;
-		  boldSelected(attributesTree, current, _selectedMacro->getId(), MACRO);	  
+		  boldSelected(attributesTree, current, _selectedAbstractNode->getId(), ABSTRACTNODE);	  
 		}
 	      setButtons();
 	      valueField->setText("");
@@ -3146,7 +3151,7 @@ void HierarchyGraphWidget::editAttribute()
 		  query->bindValue(":newname", newName);
 		  query->bindValue(":oldname", name);
 		  query->exec();
-		  query->prepare("UPDATE saved_eg_plots_attributes_to_macro_events "
+		  query->prepare("UPDATE saved_eg_plots_attributes_to_abstract_nodes "
 				 "SET attribute = :newname "
 				 "WHERE attribute = :oldname");
 		  query->bindValue(":newname", newName);
@@ -3313,10 +3318,10 @@ void HierarchyGraphWidget::removeUnusedAttributes()
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
   QSet<QString> takenAttributes;
-  QVectorIterator<MacroEvent*> it(_macroVector);
+  QVectorIterator<AbstractNode*> it(_abstractNodeVector);
   while (it.hasNext()) 
     {
-      MacroEvent* current = it.next();
+      AbstractNode* current = it.next();
       QSet<QString> attributes = current->getAttributes();
       QSet<QString>::iterator it2;
       for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
@@ -3328,7 +3333,7 @@ void HierarchyGraphWidget::removeUnusedAttributes()
     {
       query->exec("SELECT name FROM incident_attributes "
 		  "EXCEPT SELECT attribute FROM attributes_to_incidents "
-		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
 		  "EXCEPT SELECT father FROM incident_attributes");
       QSet<QString> temp;
       while (query->next()) 
@@ -3360,7 +3365,7 @@ void HierarchyGraphWidget::removeUnusedAttributes()
 		  "EXCEPT SELECT source FROM entity_relationships "
 		  "EXCEPT SELECT target FROM entity_relationships "
 		  "EXCEPT SELECT attribute FROM attributes_to_incidents "
-		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_macro_events "
+		  "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
 		  "EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
 		  "EXCEPT SELECT father FROM entities");
       QSet<QString> temp;
@@ -3627,20 +3632,20 @@ void HierarchyGraphWidget::resetTexts()
     }
 }
 
-void HierarchyGraphWidget::setOrigin(MacroEvent *origin) 
+void HierarchyGraphWidget::setOrigin(AbstractNode *origin) 
 {
   _origin = origin;
   buildComponents(_origin, 1);
 }
 
-void HierarchyGraphWidget::setEvents(QVector<EventItem*> eventVector) 
+void HierarchyGraphWidget::setEvents(QVector<IncidentNode*> eventVector) 
 {
   _eventVector = eventVector;
 }
 
-void HierarchyGraphWidget::setMacros(QVector<MacroEvent*> macroVector) 
+void HierarchyGraphWidget::setAbstractNodes(QVector<AbstractNode*> abstractNodeVector) 
 {
-  _macroVector = macroVector;
+  _abstractNodeVector = abstractNodeVector;
 }
 
 void HierarchyGraphWidget::setEdges(QVector<Linkage*> edgeVector) 
@@ -3762,9 +3767,9 @@ void HierarchyGraphWidget::fixTree()
 	}
       delete query;
     }
-  else if (_selectedMacro != NULL) 
+  else if (_selectedAbstractNode != NULL) 
     {
-      QSet<QString> attributes = _selectedMacro->getAttributes();
+      QSet<QString> attributes = _selectedAbstractNode->getAttributes();
       QSet<QString>::iterator it;
       for (it = attributes.begin(); it != attributes.end(); it++) 
 	{
@@ -3861,9 +3866,9 @@ void HierarchyGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 				}
 			      delete query;
 			    }
-			  else if (type == MACRO) 
+			  else if (type == ABSTRACTNODE) 
 			    {
-			      QSet<QString> attributes = _selectedMacro->getAttributes();
+			      QSet<QString> attributes = _selectedAbstractNode->getAttributes();
 			      QSet<QString>::iterator it;
 			      bool found = false;
 			      for (it = attributes.begin(); it != attributes.end(); it++) 
@@ -3968,11 +3973,11 @@ void HierarchyGraphWidget::setButtons()
 	    }
 	  delete query;
 	}
-      else if (_selectedMacro != NULL) 
+      else if (_selectedAbstractNode != NULL) 
 	{
 	  QString currentAttribute = attributesTreeView->currentIndex().data().toString();
-	  QSet<QString> attributes = _selectedMacro->getAttributes();
-	  QMap<QString, QString> values = _selectedMacro->getValues();
+	  QSet<QString> attributes = _selectedAbstractNode->getAttributes();
+	  QMap<QString, QString> values = _selectedAbstractNode->getValues();
 	  if (attributes.contains(currentAttribute)) 
 	    {
 	      unassignAttributeButton->setEnabled(true);
@@ -4023,12 +4028,12 @@ void HierarchyGraphWidget::cleanUp()
 {
   setComment();
   _eventVector.clear();
-  _macroVector.clear();
+  _abstractNodeVector.clear();
   _edgeVector.clear();
   _origin = NULL;
   scene->clear();
   _currentData.clear();
-  _selectedMacro = NULL;
+  _selectedAbstractNode = NULL;
   _selectedIncident = 0;
   qDeleteAll(_lineVector);
   _lineVector.clear();

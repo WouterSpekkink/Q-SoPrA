@@ -2,7 +2,7 @@
 
 /*
   Notes:
-  I want to fetch the macro events from saved event graph plots later,
+  I want to fetch the abstractNode events from saved event graph plots later,
   and then group occurrence in the events that are visible.
 */
 
@@ -1432,13 +1432,13 @@ void OccurrenceGraphWidget::getEvents()
 {
   reset();
   matched = true;
-  QVector<EventItem*> incidents = eventGraph->getEventItems();
+  QVector<IncidentNode*> incidents = eventGraph->getIncidentNodes();
   if (incidents.size() > 0) 
     {
-      QVectorIterator<EventItem*> it(incidents);
+      QVectorIterator<IncidentNode*> it(incidents);
       while (it.hasNext()) 
 	{
-	  EventItem *incident = it.next();
+	  IncidentNode *incident = it.next();
 	  // We first do this for the attributes-oriented occurrences.
 	  QVectorIterator<OccurrenceItem*> it2(attributeOccurrenceVector);
 	  while (it2.hasNext()) 
@@ -1446,30 +1446,30 @@ void OccurrenceGraphWidget::getEvents()
 	      OccurrenceItem *occurrence = it2.next();
 	      if (incident->getId() == occurrence->getId()) 
 		{
-		  if (incident->getMacroEvent() != NULL) 
+		  if (incident->getAbstractNode() != NULL) 
 		    {
-		      MacroEvent *macro = incident->getMacroEvent();
-		      while (macro->getMacroEvent() != NULL) 
+		      AbstractNode *abstractNode = incident->getAbstractNode();
+		      while (abstractNode->getAbstractNode() != NULL) 
 			{
-			  macro = macro->getMacroEvent();
+			  abstractNode = abstractNode->getAbstractNode();
 			}
 		      QString type = "";
-		      if (macro->getConstraint() == PATHS ||
-			  macro->getConstraint() == PATHSATT) 
+		      if (abstractNode->getConstraint() == PATHS ||
+			  abstractNode->getConstraint() == PATHSATT) 
 			{
 			  type = "P";
 			}
-		      else if (macro->getConstraint() == SEMIPATHS ||
-			       macro->getConstraint() == SEMIPATHSATT) 
+		      else if (abstractNode->getConstraint() == SEMIPATHS ||
+			       abstractNode->getConstraint() == SEMIPATHSATT) 
 			{
 			  type = "S";
 			}
-		      else if (macro->getConstraint() == NOCONSTRAINT ||
-			       macro->getConstraint() == NOCONSTRAINTATT) 
+		      else if (abstractNode->getConstraint() == NOCONSTRAINT ||
+			       abstractNode->getConstraint() == NOCONSTRAINTATT) 
 			{
 			  type = "N";
 			}
-		      QString text = type + QString::number(macro->getOrder()) + " - " +
+		      QString text = type + QString::number(abstractNode->getOrder()) + " - " +
 			occurrence->getAttribute();
 		      QColor textColor = occurrence->getLabel()->defaultTextColor();
 		      delete occurrence->getLabel();
@@ -1481,7 +1481,7 @@ void OccurrenceGraphWidget::getEvents()
 		      newLabel->setTextWidth(occurrence->getLabel()->boundingRect().width());
 		      occurrence->show();
 		      occurrence->getLabel()->show();
-		      occurrence->setPos(macro->scenePos().x(), 0);
+		      occurrence->setPos(abstractNode->scenePos().x(), 0);
 		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 		      scene->addItem(occurrence->getLabel());
 		      attributeLabelVector.push_back(occurrence->getLabel());
@@ -1500,30 +1500,30 @@ void OccurrenceGraphWidget::getEvents()
 	      OccurrenceItem *occurrence = it3.next();
 	      if (incident->getId() == occurrence->getId()) 
 		{
-		  if (incident->getMacroEvent() != NULL) 
+		  if (incident->getAbstractNode() != NULL) 
 		    {
-		      MacroEvent *macro = incident->getMacroEvent();
-		      while (macro->getMacroEvent() != NULL) 
+		      AbstractNode *abstractNode = incident->getAbstractNode();
+		      while (abstractNode->getAbstractNode() != NULL) 
 			{
-			  macro = macro->getMacroEvent();
+			  abstractNode = abstractNode->getAbstractNode();
 			}
 		      QString type = "";
-		      if (macro->getConstraint() == PATHS ||
-			  macro->getConstraint() == PATHSATT) 
+		      if (abstractNode->getConstraint() == PATHS ||
+			  abstractNode->getConstraint() == PATHSATT) 
 			{
 			  type = "P";
 			}
-		      else if (macro->getConstraint() == SEMIPATHS ||
-			       macro->getConstraint() == SEMIPATHSATT) 
+		      else if (abstractNode->getConstraint() == SEMIPATHS ||
+			       abstractNode->getConstraint() == SEMIPATHSATT) 
 			{
 			  type = "S";
 			}
-		      else if (macro->getConstraint() == NOCONSTRAINT ||
-			       macro->getConstraint() == NOCONSTRAINTATT) 
+		      else if (abstractNode->getConstraint() == NOCONSTRAINT ||
+			       abstractNode->getConstraint() == NOCONSTRAINTATT) 
 			{
 			  type = "N";
 			}
-		      QString text = type + QString::number(macro->getOrder()) + " - " +
+		      QString text = type + QString::number(abstractNode->getOrder()) + " - " +
 			occurrence->getAttribute();
 		      QColor textColor = occurrence->getLabel()->defaultTextColor();
 		      delete occurrence->getLabel();
@@ -1535,7 +1535,7 @@ void OccurrenceGraphWidget::getEvents()
 		      newLabel->setTextWidth(occurrence->getLabel()->boundingRect().width());
 		      occurrence->show();
 		      occurrence->getLabel()->show();
-		      occurrence->setPos(macro->scenePos().x(), 0);
+		      occurrence->setPos(abstractNode->scenePos().x(), 0);
 		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 		      scene->addItem(occurrence->getLabel());
 		      attributeLabelVector.push_back(occurrence->getLabel());
@@ -1550,17 +1550,17 @@ void OccurrenceGraphWidget::getEvents()
 	}
     }
   /* 
-     Then we do the macros for the attribute-oriented occurrences. 
+     Then we do the abstractNodes for the attribute-oriented occurrences. 
      We don't need to do this for the relationship-oriented occurrences.
   */
-  QVector<MacroEvent*> macros = eventGraph->getMacros();
-  if (macros.size() > 0) 
+  QVector<AbstractNode*> abstractNodes = eventGraph->getAbstractNodes();
+  if (abstractNodes.size() > 0) 
     {
-      QVectorIterator<MacroEvent*> it(macros);
+      QVectorIterator<AbstractNode*> it(abstractNodes);
       while (it.hasNext()) 
 	{
-	  MacroEvent *macro = it.next();
-	  QSet<QString> attributes = macro->getAttributes();
+	  AbstractNode *abstractNode = it.next();
+	  QSet<QString> attributes = abstractNode->getAttributes();
 	  QSetIterator<QString> it2(attributes);
 	  while (it2.hasNext()) 
 	    {
@@ -1579,15 +1579,15 @@ void OccurrenceGraphWidget::getEvents()
 		}
 	      if (found) 
 		{
-		  while (macro->getMacroEvent() != NULL) 
+		  while (abstractNode->getAbstractNode() != NULL) 
 		    {
-		      macro = macro->getMacroEvent();
+		      abstractNode = abstractNode->getAbstractNode();
 		    }
-		  QPointF position = QPointF(macro->scenePos().x(), 0);
-		  // I am setting macro id's to negatives to distinguish them from the incident ids.
-		  OccurrenceItem *newOccurrence = new OccurrenceItem(40, macro->getDescription(),
-								     position, (macro->getId() * -1),
-								     macro->getOrder(),
+		  QPointF position = QPointF(abstractNode->scenePos().x(), 0);
+		  // I am setting abstractNode id's to negatives to distinguish them from the incident ids.
+		  OccurrenceItem *newOccurrence = new OccurrenceItem(40, abstractNode->getDescription(),
+								     position, (abstractNode->getId() * -1),
+								     abstractNode->getOrder(),
 								     currentAttribute);
 		  newOccurrence->setPos(newOccurrence->getOriginalPos());
 		  newOccurrence->setColor(color);
@@ -1596,22 +1596,22 @@ void OccurrenceGraphWidget::getEvents()
 		  scene->addItem(newOccurrence);
 		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 		  QString type = "";
-		  if (macro->getConstraint() == PATHS ||
-		      macro->getConstraint() == PATHSATT) 
+		  if (abstractNode->getConstraint() == PATHS ||
+		      abstractNode->getConstraint() == PATHSATT) 
 		    {
 		      type = "P";
 		    }
-		  else if (macro->getConstraint() == SEMIPATHS ||
-			   macro->getConstraint() == SEMIPATHSATT) 
+		  else if (abstractNode->getConstraint() == SEMIPATHS ||
+			   abstractNode->getConstraint() == SEMIPATHSATT) 
 		    {
 		      type = "S"; 
 		    }
-		  else if (macro->getConstraint() == NOCONSTRAINT ||
-			   macro->getConstraint() == NOCONSTRAINTATT) 
+		  else if (abstractNode->getConstraint() == NOCONSTRAINT ||
+			   abstractNode->getConstraint() == NOCONSTRAINTATT) 
 		    {
 		      type = "N";
 		    }
-		  QString text = type + QString::number(macro->getOrder()) + " - " + currentAttribute;
+		  QString text = type + QString::number(abstractNode->getOrder()) + " - " + currentAttribute;
 		  label->setPlainText(text);
 		  label->setDefaultTextColor(Qt::black);
 		  label->setTextWidth(label->boundingRect().width());
@@ -2927,20 +2927,20 @@ void OccurrenceGraphWidget::setVisibility()
 			 "WHERE incident = :incident AND casename = :casename");
 	  int id = currentItem->getId();
 	  if (id < 0) 
-	    { // Occurrence items for macro events have negative IDs.
+	    { // Occurrence items for abstractNode events have negative IDs.
 	      bool keep = false;
-	      QVector<MacroEvent*> macros = eventGraph->getMacros();
-	      QVectorIterator<MacroEvent*> it4(macros);
+	      QVector<AbstractNode*> abstractNodes = eventGraph->getAbstractNodes();
+	      QVectorIterator<AbstractNode*> it4(abstractNodes);
 	      while (it4.hasNext()) 
 		{
-		  MacroEvent *currentMacro = it4.next();
-		  if (currentMacro->getId() == id * -1) 
+		  AbstractNode *currentAbstractNode = it4.next();
+		  if (currentAbstractNode->getId() == id * -1) 
 		    {
-		      QVector<EventItem*> contents = currentMacro->getIncidents();
-		      QVectorIterator<EventItem*> it5(contents);
+		      QVector<IncidentNode*> contents = currentAbstractNode->getIncidents();
+		      QVectorIterator<IncidentNode*> it5(contents);
 		      while (it5.hasNext()) 
 			{
-			  EventItem *currentIncident = it5.next();
+			  IncidentNode *currentIncident = it5.next();
 			  QVectorIterator<QString> it6(checkedCases);
 			  while (it6.hasNext()) 
 			    {
@@ -2979,20 +2979,20 @@ void OccurrenceGraphWidget::setVisibility()
 		    }
 		  if (matched) 
 		    {
-		      QVector<EventItem*> events = eventGraph->getEventItems();
-		      QVectorIterator<EventItem*> it5(events);
+		      QVector<IncidentNode*> events = eventGraph->getIncidentNodes();
+		      QVectorIterator<IncidentNode*> it5(events);
 		      while (it5.hasNext()) 
 			{
-			  EventItem *currentEvent = it5.next();
-			  if (currentEvent->getId() == currentItem->getId()) 
+			  IncidentNode *currentIncidentNode = it5.next();
+			  if (currentIncidentNode->getId() == currentItem->getId()) 
 			    {
-			      if (currentEvent->getMacroEvent() != NULL) 
+			      if (currentIncidentNode->getAbstractNode() != NULL) 
 				{
-				  QVector<EventItem*> contents = currentEvent->getMacroEvent()->getIncidents();
-				  QVectorIterator<EventItem*> it6(contents);
+				  QVector<IncidentNode*> contents = currentIncidentNode->getAbstractNode()->getIncidents();
+				  QVectorIterator<IncidentNode*> it6(contents);
 				  while (it6.hasNext()) 
 				    {
-				      EventItem *currentIncident = it6.next();
+				      IncidentNode *currentIncident = it6.next();
 				      query->bindValue(":incident", currentIncident->getId());
 				      query->bindValue(":casename", currentCase);
 				      query->exec();

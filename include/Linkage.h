@@ -37,8 +37,8 @@ http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 #define LINKAGE_H
 
 #include <QGraphicsLineItem>
-#include "EventItem.h"
-#include "MacroEvent.h"
+#include "IncidentNode.h"
+#include "AbstractNode.h"
 #include "OccurrenceItem.h"
 
 class Linkage : public QGraphicsLineItem

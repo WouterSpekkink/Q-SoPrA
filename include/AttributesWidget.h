@@ -42,7 +42,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "AttributeTreeFilter.h"
 #include "EventGraphWidget.h"
 #include "MainWindow.h"
-#include "MacroEvent.h"
+#include "AbstractNode.h"
 #include "EventGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"

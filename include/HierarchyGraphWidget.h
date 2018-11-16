@@ -34,9 +34,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSvgGenerator>
 #include <QFileDialog>
 #include "EventGraphWidget.h"
-#include "NodeLabel.h"
+#include "IncidentNodeLabel.h"
 #include "BandlessGraphicsView.h"
-#include "EventItem.h"
+#include "IncidentNode.h"
 #include "Linkage.h"
 #include "Scene.h"
 #include "Constants.h"
@@ -44,8 +44,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ProgressBar.h"
 #include "SavedPlotsDialog.h"
 #include "AttributeColorDialog.h"
-#include "MacroEvent.h"
-#include "MacroLabel.h"
+#include "AbstractNode.h"
+#include "AbstractNodeLabel.h"
 #include "LargeTextDialog.h"
 #include "DeselectableTreeView.h"
 #include "AttributeTreeFilter.h"
@@ -76,9 +76,9 @@ public:
   ~HierarchyGraphWidget();
 
   // Setters
-  void setOrigin(MacroEvent *origin);
-  void setEvents(QVector<EventItem*> eventVector);
-  void setMacros(QVector<MacroEvent*> macroVector);
+  void setOrigin(AbstractNode *origin);
+  void setEvents(QVector<IncidentNode*> eventVector);
+  void setAbstractNodes(QVector<AbstractNode*> abstractNodeVector);
   void setEdges(QVector<Linkage*> edgeVector);
   void setAttributesWidget(AttributesWidget *attributesWidget);
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
@@ -111,8 +111,8 @@ private slots:
   void showComments();
   void setValueButton();
   void setValue();
-  void buildComponents(MacroEvent *origin, int layer);
-  void addLayer(QVector<MacroEvent*> presentLayer, QVector<MacroEvent*> partLayer, int layer);
+  void buildComponents(AbstractNode *origin, int layer);
+  void addLayer(QVector<AbstractNode*> presentLayer, QVector<AbstractNode*> partLayer, int layer);
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void exportSvg();
   void assignAttribute();
@@ -236,14 +236,14 @@ private:
   QPointer<QSlider> zoomSlider;
 
   // Private variables
-  MacroEvent *_origin;
-  MacroEvent *_selectedMacro;
+  AbstractNode *_origin;
+  AbstractNode *_selectedAbstractNode;
   int _selectedIncident;
   bool _commentBool;
 
   // Private data vectors
-  QVector<EventItem*> _eventVector;
-  QVector<MacroEvent*> _macroVector;
+  QVector<IncidentNode*> _eventVector;
+  QVector<AbstractNode*> _abstractNodeVector;
   QVector<Linkage*> _edgeVector;
   QVector<QString> _presentTypes;
   QVector<LineObject*> _lineVector;

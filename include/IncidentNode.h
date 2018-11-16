@@ -20,8 +20,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef EVENTITEM_H
-#define EVENTITEM_H
+#ifndef INCIDENTNODE_H
+#define INCIDENTNODE_H
 
 #include <QGraphicsItem>
 #include <QWheelEvent>
@@ -29,12 +29,12 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 class IncidentNodeLabel;
 class AbstractNode;
 
-class EventItem : public QGraphicsItem
+class IncidentNode : public QGraphicsItem
 {
 
 public:
   // Constructor and destructor
-  EventItem(int width = 40,
+  IncidentNode(int width = 40,
 	    QString toolTip = QString(),
 	    QPointF originalPosition = QPointF(),
 	    int id = -1,
@@ -45,7 +45,7 @@ public:
   // in use by others.
   // The memory addressed they point to are not allocated
   // by this class.
-  ~EventItem() {};
+  ~IncidentNode() {};
 
   // Overrides
   QRectF boundingRect() const override;

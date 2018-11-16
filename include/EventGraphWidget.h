@@ -39,9 +39,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <vector>
 #include <fstream>
-#include "NodeLabel.h"
+#include "IncidentNodeLabel.h"
 #include "GraphicsView.h"
-#include "EventItem.h"
+#include "IncidentNode.h"
 #include "Linkage.h"
 #include "Scene.h"
 #include "Constants.h"
@@ -49,8 +49,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ProgressBar.h"
 #include "SavedPlotsDialog.h"
 #include "AttributeColorDialog.h"
-#include "MacroEvent.h"
-#include "MacroLabel.h"
+#include "AbstractNode.h"
+#include "AbstractNodeLabel.h"
 #include "LargeTextDialog.h"
 #include "DeselectableTreeView.h"
 #include "AttributeTreeFilter.h"
@@ -94,8 +94,8 @@ public:
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
 
   // Getters
-  QVector<MacroEvent*> getMacros();
-  QVector<EventItem*> getEventItems();
+  QVector<AbstractNode*> getAbstractNodes();
+  QVector<IncidentNode*> getIncidentNodes();
   QVector<Linkage*> getEdgeVector();
 
   // Functions that need to be exposed
@@ -149,15 +149,15 @@ private slots:
   void previousDataItem();
   void nextDataItem();
   void getEvents();
-  void plotEvents();
+  void plotIncidents();
   void getEdges(QString coder, QString type, QColor color);
   void plotEdges(QString type);
   void layoutGraph();
   void getLabels();
   void addLabels();
   void cleanUp();	     
-  void changePos(EventItem* item, qreal &dist);
-  void changePos(MacroEvent* item, qreal &dist);
+  void changePos(IncidentNode* item, qreal &dist);
+  void changePos(AbstractNode* item, qreal &dist);
   void increaseDistance();
   void decreaseDistance();
   void expandGraph();
@@ -196,12 +196,12 @@ private slots:
   void changeLinkageColor(QTableWidgetItem *item);
   void hideLinkageType();
   void showLinkageType();
-  void processEventItemContextMenu(const QString &action);
+  void processIncidentNodeContextMenu(const QString &action);
   void colligateEvents();
   void disaggregateEvent();
-  void updateMacroIds(MacroEvent* macro);
-  void updateMacroOrder();
-  void rewireLinkages(MacroEvent* macro, QVector<EventItem*> incidents);
+  void updateAbstractNodeIds(AbstractNode* abstractNode);
+  void updateAbstractNodeOrder();
+  void rewireLinkages(AbstractNode* abstractNode, QVector<IncidentNode*> incidents);
   void recolorEvents();
   void recolorLabels();
   void colorLineage();
@@ -279,7 +279,7 @@ private slots:
   void finalBusiness();
   
 signals:
-  void seeHierarchy(MacroEvent*);
+  void seeHierarchy(AbstractNode*);
   void changeEventWidth(QGraphicsItem*);
   
 private:
@@ -379,7 +379,7 @@ private:
   // Private variables
   QString _selectedCoder;
   QString _selectedCompare;
-  MacroEvent* _selectedMacro;
+  AbstractNode* _selectedAbstractNode;
   qreal _distance;
   int _vectorPos;
   int _selectedIncident;
@@ -387,13 +387,13 @@ private:
   bool _commentBool;
 
   // Private data vectors
-  QVector<EventItem*> _eventVector;
-  QVector<MacroEvent*> _macroVector;
+  QVector<IncidentNode*> _incidentNodeVector;
+  QVector<AbstractNode*> _abstractNodeVector;
   QVector<QGraphicsItem*> _currentData;
   QVector<Linkage*> _edgeVector;
   QVector<Linkage*> _compareVector;
-  QVector<NodeLabel*> _nodeLabelVector;
-  QVector<MacroLabel*> _macroLabelVector;
+  QVector<IncidentNodeLabel*> _incidentNodeLabelVector;
+  QVector<AbstractNodeLabel*> _abstractNodeLabelVector;
   QVector<LineObject*> _lineVector;
   QVector<TextObject*> _textVector;
   QVector<EllipseObject*> _ellipseVector;

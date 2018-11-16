@@ -122,8 +122,8 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   stacked->addWidget(casingWidget); // 15
 
   // We need only a few signals
-  connect(egw, SIGNAL(seeHierarchy(MacroEvent *)),
-	  this, SLOT(switchToHierarchyView(MacroEvent *)));
+  connect(egw, SIGNAL(seeHierarchy(AbstractNode *)),
+	  this, SLOT(switchToHierarchyView(AbstractNode *)));
   connect(hgw, SIGNAL(goToEventGraph()), this, SLOT(switchToEventGraphView()));
   
   // Some things related to positioning.
@@ -896,7 +896,7 @@ void MainWindow::switchToOccurrenceGraphView()
   stacked->setCurrentWidget(occurrenceGraphWidget);
 }
 
-void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro) 
+void MainWindow::switchToHierarchyView(AbstractNode *selectedAbstractNode) 
 {
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
   aw->setComment();
@@ -909,10 +909,10 @@ void MainWindow::switchToHierarchyView(MacroEvent *selectedMacro)
   egw->setComment();
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
   hgw->cleanUp();
-  hgw->setEvents(egw->getEventItems());
-  hgw->setMacros(egw->getMacros());
+  hgw->setEvents(egw->getIncidentNodes());
+  hgw->setAbstractNodes(egw->getAbstractNodes());
   hgw->setEdges(egw->getEdgeVector());
-  hgw->setOrigin(selectedMacro);
+  hgw->setOrigin(selectedAbstractNode);
   hgw->getEdges();
   showMenus(false);
   menuBar->setEnabled(false);

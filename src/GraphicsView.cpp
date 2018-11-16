@@ -22,8 +22,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../include/GraphicsView.h"
 #include "../include/Scene.h"
-#include "../include/NodeLabel.h"
-#include "../include/MacroLabel.h"
+#include "../include/IncidentNodeLabel.h"
+#include "../include/AbstractNodeLabel.h"
 #include "../include/NetworkNode.h"
 #include "../include/OccurrenceItem.h"
 #include "../include/OccurrenceLabel.h"
@@ -58,11 +58,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(parent());
 	  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(parent());
 	  QPoint mousePos = mapFromGlobal(event->globalPos());
-	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
-	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
+	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
 	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
-	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->pos()));
+	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->pos()));
 	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
 	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
 	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
@@ -70,11 +70,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-	  if (!incident && !nodeLabel && !linkage && !macro &&
-	      !macroLabel && !networkNode && !occurrence &&
+	  if (!incident && !incidentNodeLabel && !linkage && !abstractNode &&
+	      !abstractNodeLabel && !networkNode && !occurrence &&
 	      !occurrenceLabel && !line && !text && !ellipse && !rect)
 	    {
-	      if (egw && egw->getEventItems().size() > 0) 
+	      if (egw && egw->getIncidentNodes().size() > 0) 
 		{
 		  QMenu menu;
 		  QAction *action1 = new QAction(ADDLINE, this);
@@ -137,13 +137,13 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	    }
 	  else
 	    {
-	      if (nodeLabel) 
+	      if (incidentNodeLabel) 
 		{
-		  incident = nodeLabel->getNode();
+		  incident = incidentNodeLabel->getNode();
 		}
-	      if (macroLabel) 
+	      if (abstractNodeLabel) 
 		{
-		  macro = macroLabel->getMacroEvent();
+		  abstractNode = abstractNodeLabel->getAbstractNode();
 		}
 	      if (occurrenceLabel) 
 		{
@@ -153,9 +153,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		{
 		  incident->setSelected(true);
 		}
-	      else if (macro) 
+	      else if (abstractNode) 
 		{
-		  macro->setSelected(true);
+		  abstractNode->setSelected(true);
 		}
 	      else if (linkage) 
 		{
@@ -190,11 +190,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	}
       else
 	{
-	  EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
-	  NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
+	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
 	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
-	  MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->pos()));
+	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->pos()));
 	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
 	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
 	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
@@ -202,19 +202,19 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-	  if (nodeLabel) 
+	  if (incidentNodeLabel) 
 	    {
-	      incident = nodeLabel->getNode();
+	      incident = incidentNodeLabel->getNode();
 	    }
-	  if (macroLabel) 
+	  if (abstractNodeLabel) 
 	    {
-	      macro = macroLabel->getMacroEvent();
+	      abstractNode = abstractNodeLabel->getAbstractNode();
 	    }
 	  if (occurrenceLabel) 
 	    {
 	      occurrence = occurrenceLabel->getOccurrence();
 	    }
-	  if (!incident && !macro && !linkage && !networkNode && !occurrence &&
+	  if (!incident && !abstractNode && !linkage && !networkNode && !occurrence &&
 	      !occurrenceLabel && !line && !text && !ellipse && !rect) 
 	    {
 	      _pan = true;
@@ -233,12 +233,12 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		      incident->setSelected(true);
 		    }
 		}
-	      else if (macro) 
+	      else if (abstractNode) 
 		{
-		  if (!macro->isSelected())
+		  if (!abstractNode->isSelected())
 		    {
 		      scene->clearSelection();
-		      macro->setSelected(true);
+		      abstractNode->setSelected(true);
 		    }
 		}
 	      else if (linkage) 
@@ -282,11 +282,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     }
   else if (event->button() == Qt::LeftButton)
     {
-      EventItem *incident = qgraphicsitem_cast<EventItem*>(itemAt(event->pos()));
-      NodeLabel *nodeLabel = qgraphicsitem_cast<NodeLabel*>(itemAt(event->pos()));
+      IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
+      IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
-      MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(itemAt(event->pos()));
-      MacroLabel *macroLabel = qgraphicsitem_cast<MacroLabel*>(itemAt(event->pos()));
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->pos()));
+      AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->pos()));
       NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
       OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
       OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
@@ -294,8 +294,8 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
       TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-      if (incident || nodeLabel || linkage || macro ||
-	  macroLabel || networkNode || occurrence ||
+      if (incident || incidentNodeLabel || linkage || abstractNode ||
+	  abstractNodeLabel || networkNode || occurrence ||
 	  occurrenceLabel || line || text || ellipse || rect)
 	{
 	  this->setDragMode(QGraphicsView::NoDrag);

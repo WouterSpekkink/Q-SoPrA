@@ -30,7 +30,7 @@
 #include "AttributeDialog.h"
 #include "DeselectableListWidget.h"
 #include "EventGraphWidget.h"
-#include "EventItem.h"
+#include "IncidentNode.h"
 #include "SortFunctions.h"
 #include "SupportingFunctions.h"
 #include "LargeTextDialog.h"

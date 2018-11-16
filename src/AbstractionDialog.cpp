@@ -23,15 +23,15 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/AbstractionDialog.h"
 
 AbstractionDialog::AbstractionDialog(QWidget *parent,
-				     QVector<EventItem*> eventVector,
-				     QVector<MacroEvent*> macroVector,
+				     QVector<IncidentNode*> eventVector,
+				     QVector<AbstractNode*> abstractNodeVector,
 				     QVector<QGraphicsItem*> currentData,
 				     QVector<QString> presentTypes,
 				     QString selectedCoder) : QDialog(parent)
 {
   _exitStatus = 1;
   _eventVector = eventVector;
-  _macroVector = macroVector;
+  _abstractNodeVector = abstractNodeVector;
   _currentData = currentData;
   _presentTypes = presentTypes;
   _selectedAttribute = DEFAULT2;
@@ -144,7 +144,7 @@ AbstractionDialog::~AbstractionDialog()
   // We want to clear these vectors, but we don't want to
   // delete the pointers they contain.
   _eventVector.clear();
-  _macroVector.clear();
+  _abstractNodeVector.clear();
   _collectedIncidents.clear();
   _currentData.clear();
 }
@@ -188,14 +188,14 @@ void AbstractionDialog::clearAttribute()
 
 void AbstractionDialog::inheritAttributes()
 {
-  // identify attributes assigned to collected incidents and their macro parents
+  // identify attributes assigned to collected incidents and their abstractNode parents
   if (_collectedIncidents.size() != 0)
     {
       QSet<QString> collectedAttributes;
-      QVectorIterator<EventItem*> it(_collectedIncidents);
+      QVectorIterator<IncidentNode*> it(_collectedIncidents);
       while (it.hasNext())
 	{
-	  EventItem *currentIncident = it.next();
+	  IncidentNode *currentIncident = it.next();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
 			 "WHERE incident = :incident");
@@ -207,11 +207,11 @@ void AbstractionDialog::inheritAttributes()
 	      collectedAttributes.insert(currentAttribute);
 	    }
 	  delete query;
-	  MacroEvent *macro = currentIncident->getMacroEvent();
-	  if (macro != NULL)
+	  AbstractNode *abstractNode = currentIncident->getAbstractNode();
+	  if (abstractNode != NULL)
 	    {
-	      QSet<QString> macroAttributes = macro->getAttributes();
-	      QSetIterator<QString> it2(macroAttributes);
+	      QSet<QString> abstractNodeAttributes = abstractNode->getAttributes();
+	      QSetIterator<QString> it2(abstractNodeAttributes);
 	      while(it2.hasNext())
 		{
 		  collectedAttributes.insert(it2.next());
@@ -250,16 +250,16 @@ void AbstractionDialog::inheritAttributes()
 
 void AbstractionDialog::inheritSharedAttributes()
 {
-  // identify attributes assigned to collected incidents and their macro parents
+  // identify attributes assigned to collected incidents and their abstractNode parents
   if (_collectedIncidents.size() != 0)
     {
       QSet<QString> previousAttributes;
       QSet<QString> sharedAttributes;
-      QVectorIterator<EventItem*> it(_collectedIncidents);
+      QVectorIterator<IncidentNode*> it(_collectedIncidents);
       while (it.hasNext())
 	{
 	  sharedAttributes.clear();
-	  EventItem *currentIncident = it.next();
+	  IncidentNode *currentIncident = it.next();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
 			 "WHERE incident = :incident");
@@ -281,11 +281,11 @@ void AbstractionDialog::inheritSharedAttributes()
 		}
 	    }
 	  delete query;
-	  MacroEvent *macro = currentIncident->getMacroEvent();
-	  if (macro != NULL)
+	  AbstractNode *abstractNode = currentIncident->getAbstractNode();
+	  if (abstractNode != NULL)
 	    {
-	      QSet<QString> macroAttributes = macro->getAttributes();
-	      QSetIterator<QString> it2(macroAttributes);
+	      QSet<QString> abstractNodeAttributes = abstractNode->getAttributes();
+	      QSetIterator<QString> it2(abstractNodeAttributes);
 	      while(it2.hasNext())
 		{
 		  QString currentAttribute = it2.next();
@@ -334,19 +334,19 @@ void AbstractionDialog::prepareEvents()
   if (_currentData.size() > 0) 
     {
       _collectedIncidents.clear();
-      QVector<EventItem*> allIncidents;
+      QVector<IncidentNode*> allIncidents;
       _semiPathsAllowed = true;      
       _pathsAllowed = true;
       QVectorIterator<QGraphicsItem*> it(_currentData);
       while (it.hasNext()) 
 	{
-	  EventItem *event = qgraphicsitem_cast<EventItem*>(it.peekNext());
-	  MacroEvent *macro = qgraphicsitem_cast<MacroEvent*>(it.peekNext());
+	  IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(it.peekNext());
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it.peekNext());
 	  if (event) 
 	    {
-	      EventItem *currentEvent = qgraphicsitem_cast<EventItem*>(it.next());
-	      allIncidents.push_back(currentEvent);
-	      int id = currentEvent->getId();
+	      IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(it.next());
+	      allIncidents.push_back(currentIncidentNode);
+	      int id = currentIncidentNode->getId();
 	      if (_selectedAttribute != DEFAULT2) 
 		{
 		  QVector<QString> attributes;
@@ -373,20 +373,20 @@ void AbstractionDialog::prepareEvents()
 		    }
 		  if (hasAttribute) 
 		    {
-		      _collectedIncidents.push_back(currentEvent);
+		      _collectedIncidents.push_back(currentIncidentNode);
 		    }
 		}
 	      else 
 		{
-		  _collectedIncidents.push_back(currentEvent);
+		  _collectedIncidents.push_back(currentIncidentNode);
 		}
 	    }
-	  if (macro) 
+	  if (abstractNode) 
 	    {
-	      MacroEvent *currentMacro = qgraphicsitem_cast<MacroEvent*>(it.next());
+	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(it.next());
 	      if (_selectedAttribute != DEFAULT2)
 		{
-		  QSet<QString> macroAttributes = currentMacro->getAttributes();
+		  QSet<QString> abstractNodeAttributes = currentAbstractNode->getAttributes();
 		  QVector<QString> attributes;
 		  attributes.push_back(_selectedAttribute);
 		  findChildren(_selectedAttribute, &attributes, _attributeIsEntity);
@@ -395,35 +395,35 @@ void AbstractionDialog::prepareEvents()
 		  while (it2.hasNext())
 		    {
 		      QString currentAttribute = it2.next();
-		      if (macroAttributes.contains(currentAttribute))
+		      if (abstractNodeAttributes.contains(currentAttribute))
 			{
 			  hasAttribute = true;
 			  break;
 			}
 		    }
-		  QVectorIterator<EventItem*> it3(currentMacro->getIncidents());
+		  QVectorIterator<IncidentNode*> it3(currentAbstractNode->getIncidents());
 		  while (it3.hasNext())
 		    {
-		      EventItem* currentEvent = it3.next();
+		      IncidentNode* currentIncidentNode = it3.next();
 		      if (hasAttribute) 
 			{
-			  allIncidents.push_back(currentEvent);
-			  _collectedIncidents.push_back(currentEvent);			  
+			  allIncidents.push_back(currentIncidentNode);
+			  _collectedIncidents.push_back(currentIncidentNode);			  
 			}
 		      else
 			{
-			  allIncidents.push_back(currentEvent);
+			  allIncidents.push_back(currentIncidentNode);
 			}
 		    }
 		}
 	      else 
 		{
-		  QVectorIterator<EventItem*> it3(currentMacro->getIncidents());
+		  QVectorIterator<IncidentNode*> it3(currentAbstractNode->getIncidents());
 		  while (it3.hasNext())
 		    {
-		      EventItem *currentEvent = it3.next();
-		      allIncidents.push_back(currentEvent);
-		      _collectedIncidents.push_back(currentEvent);			  
+		      IncidentNode *currentIncidentNode = it3.next();
+		      allIncidents.push_back(currentIncidentNode);
+		      _collectedIncidents.push_back(currentIncidentNode);			  
 		    }
 		}
 	    }
@@ -434,19 +434,19 @@ void AbstractionDialog::prepareEvents()
 	  std::sort(allIncidents.begin(), allIncidents.end(), eventLessThan);
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  QVector<QGraphicsItem*> allEvents;
-	  QVectorIterator<EventItem*> evIt(_eventVector);
+	  QVectorIterator<IncidentNode*> evIt(_eventVector);
 	  while (evIt.hasNext()) 
 	    {
 	      allEvents.push_back(evIt.next());
 	    }
-	  QVectorIterator<MacroEvent*> maIt(_macroVector);
+	  QVectorIterator<AbstractNode*> maIt(_abstractNodeVector);
 	  while (maIt.hasNext()) 
 	    {
 	      allEvents.push_back(maIt.next());
 	    }
 	  std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-	  EventItem *first = allIncidents.first();
-	  EventItem *last = allIncidents.last();
+	  IncidentNode *first = allIncidents.first();
+	  IncidentNode *last = allIncidents.last();
 	  QSet<int> markOne;
 	  QSet<int> markTwo;
 	  QVectorIterator<QString> lit(_presentTypes);
@@ -474,8 +474,8 @@ void AbstractionDialog::prepareEvents()
 	      while (it4.hasNext()) 
 		{
 		  QGraphicsItem *temp = it4.next();
-		  EventItem *eventTemp = qgraphicsitem_cast<EventItem*>(temp);
-		  MacroEvent *macroTemp = qgraphicsitem_cast<MacroEvent*>(temp);
+		  IncidentNode *eventTemp = qgraphicsitem_cast<IncidentNode*>(temp);
+		  AbstractNode *abstractNodeTemp = qgraphicsitem_cast<AbstractNode*>(temp);
 		  if (eventTemp)
 		    {
 		      if (markOne.contains(eventTemp->getId()) &&
@@ -485,10 +485,10 @@ void AbstractionDialog::prepareEvents()
 			  _semiPathsAllowed = false;
 			}
 		    }
-		  else if (macroTemp) 
+		  else if (abstractNodeTemp) 
 		    {
-		      QVector<EventItem*> macroIncidents = macroTemp->getIncidents();
-		      QVectorIterator<EventItem*> it5(macroIncidents);
+		      QVector<IncidentNode*> abstractNodeIncidents = abstractNodeTemp->getIncidents();
+		      QVectorIterator<IncidentNode*> it5(abstractNodeIncidents);
 		      while (it5.hasNext()) 
 			{
 			  eventTemp = it5.next();
@@ -543,14 +543,14 @@ void AbstractionDialog::prepareEvents()
   evaluateConstraints();
 }
 
-void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents) 
+void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents) 
 {
   QApplication::setOverrideCursor(Qt::WaitCursor);
   QVector<int> incidentId;
-  QVectorIterator<EventItem*> it(incidents);
+  QVectorIterator<IncidentNode*> it(incidents);
   while (it.hasNext()) 
     {
-      EventItem *event = qgraphicsitem_cast<EventItem*>(it.next());
+      IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(it.next());
       if (event) 
 	{
 	  incidentId.push_back(event->getId());
@@ -568,12 +568,12 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 	  query->exec();
 	  query->first();
 	  QString direction = query->value(0).toString();
-	  QVectorIterator<EventItem*> dit(incidents);
+	  QVectorIterator<IncidentNode*> dit(incidents);
 	  while (dit.hasNext()) 
 	    {
 	      QSet<int> markPaths;
 	      QSet<int> markSemiPaths;
-	      EventItem *departure = dit.next();
+	      IncidentNode *departure = dit.next();
 	      // First we check the internal consistency;
 	      if (direction == PAST) 
 		{
@@ -590,10 +590,10 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 	      int lowerLimit = incidents.first()->getOrder();
 	      int upperLimit = incidents.last()->getOrder();
 	      findUndirectedPaths(&markSemiPaths, &items, lowerLimit, upperLimit, currentType);
-	      QVectorIterator<EventItem*> cit(incidents);
+	      QVectorIterator<IncidentNode*> cit(incidents);
 	      while (cit.hasNext()) 
 		{
-		  EventItem *current = cit.next();
+		  IncidentNode *current = cit.next();
 		  bool pathsFound = false;
 		  bool semiPathsFound = false;
 		  if (current != departure) 
@@ -649,10 +649,10 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 			  findHeadsUpperBound(&markPathsTwo, currentTail,
 					      incidents.last()->getOrder(), currentType);
 			}
-		      QVectorIterator<EventItem*> kit(incidents);
+		      QVectorIterator<IncidentNode*> kit(incidents);
 		      while (kit.hasNext()) 
 			{
-			  EventItem *current = kit.next();
+			  IncidentNode *current = kit.next();
 			  bool pathsFoundTwo = false;
 			  if (markPathsTwo.contains(current->getId())) 
 			    {
@@ -676,10 +676,10 @@ void AbstractionDialog::checkConstraints(QVector<EventItem*> incidents)
 		  int currentHead = query->value(0).toInt();
 		  if (!(incidentId.contains(currentHead))) 
 		    {
-		      QVectorIterator<EventItem*> lit(incidents);
+		      QVectorIterator<IncidentNode*> lit(incidents);
 		      while (lit.hasNext()) 
 			{
-			  EventItem *current = lit.next();
+			  IncidentNode *current = lit.next();
 			  if (current != departure) 
 			    {
 			      QSet<int> markPathsThree;
@@ -1125,7 +1125,7 @@ QString AbstractionDialog::getConstraint()
   return _chosenConstraint;
 }
 
-QVector<EventItem*> AbstractionDialog::getCollectedIncidents()
+QVector<IncidentNode*> AbstractionDialog::getCollectedIncidents()
 {
   return _collectedIncidents;
 }

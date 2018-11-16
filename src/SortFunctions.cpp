@@ -2,26 +2,26 @@
 
 bool componentsSort(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) 
 {
-  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
-  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
-  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
-  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
+  const IncidentNode *eventOne = qgraphicsitem_cast<const IncidentNode*>(itemOne);
+  const IncidentNode *eventTwo = qgraphicsitem_cast<const IncidentNode*>(itemTwo);
+  const AbstractNode *abstractNodeOne = qgraphicsitem_cast<const AbstractNode*>(itemOne);
+  const AbstractNode *abstractNodeTwo = qgraphicsitem_cast<const AbstractNode*>(itemTwo);
   if (eventOne && eventTwo) 
     {
       return (eventOne->getOrder() < eventTwo->getOrder());
     }
-  else if (eventOne && macroTwo) 
+  else if (eventOne && abstractNodeTwo) 
     {
-      return (eventOne->getOrder() < macroTwo->getIncidents().first()->getOrder());
+      return (eventOne->getOrder() < abstractNodeTwo->getIncidents().first()->getOrder());
     }
-  else if (macroOne && macroTwo) 
+  else if (abstractNodeOne && abstractNodeTwo) 
     {
-      return (macroOne->getIncidents().first()->getOrder() <
-	      macroTwo->getIncidents().first()->getOrder());
+      return (abstractNodeOne->getIncidents().first()->getOrder() <
+	      abstractNodeTwo->getIncidents().first()->getOrder());
     }
   else 
     {
-      return (macroOne->getIncidents().first()->getOrder() < eventTwo->getOrder());
+      return (abstractNodeOne->getIncidents().first()->getOrder() < eventTwo->getOrder());
     }
 }
 
@@ -41,10 +41,10 @@ bool eventLessThan(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo)
 
 bool eventLessThanWidth(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) 
 {
-  const EventItem *eventOne = qgraphicsitem_cast<const EventItem*>(itemOne);
-  const EventItem *eventTwo = qgraphicsitem_cast<const EventItem*>(itemTwo);
-  const MacroEvent *macroOne = qgraphicsitem_cast<const MacroEvent*>(itemOne);
-  const MacroEvent *macroTwo = qgraphicsitem_cast<const MacroEvent*>(itemTwo);
+  const IncidentNode *eventOne = qgraphicsitem_cast<const IncidentNode*>(itemOne);
+  const IncidentNode *eventTwo = qgraphicsitem_cast<const IncidentNode*>(itemTwo);
+  const AbstractNode *abstractNodeOne = qgraphicsitem_cast<const AbstractNode*>(itemOne);
+  const AbstractNode *abstractNodeTwo = qgraphicsitem_cast<const AbstractNode*>(itemTwo);
   qreal valueOne = 0.0;
   qreal valueTwo = 0.0;
   if (eventOne && eventTwo) 
@@ -52,19 +52,19 @@ bool eventLessThanWidth(const QGraphicsItem *itemOne, const QGraphicsItem *itemT
       valueOne = eventOne->scenePos().x() + eventOne->getWidth();
       valueTwo = eventTwo->scenePos().x() + eventTwo->getWidth();
     }
-  else if (eventOne && macroTwo) 
+  else if (eventOne && abstractNodeTwo) 
     {
       valueOne = eventOne->scenePos().x() + eventOne->getWidth();
-      valueTwo = macroTwo->scenePos().x() + macroTwo->getWidth();
+      valueTwo = abstractNodeTwo->scenePos().x() + abstractNodeTwo->getWidth();
     }
-  else if (macroOne && macroTwo) 
+  else if (abstractNodeOne && abstractNodeTwo) 
     {
-      valueOne = macroOne->scenePos().x() + macroOne->getWidth();
-      valueTwo = macroTwo->scenePos().x() + macroTwo->getWidth();
+      valueOne = abstractNodeOne->scenePos().x() + abstractNodeOne->getWidth();
+      valueTwo = abstractNodeTwo->scenePos().x() + abstractNodeTwo->getWidth();
     }
   else 
     {
-      valueOne = macroOne->scenePos().x() + macroOne->getWidth();
+      valueOne = abstractNodeOne->scenePos().x() + abstractNodeOne->getWidth();
       valueTwo = eventTwo->scenePos().x() + eventTwo->getWidth();
     }
   if (valueOne < valueTwo) 
@@ -77,7 +77,7 @@ bool eventLessThanWidth(const QGraphicsItem *itemOne, const QGraphicsItem *itemT
     }
 } 
 
-bool originalLessThan(const EventItem *itemOne, const EventItem *itemTwo) 
+bool originalLessThan(const IncidentNode *itemOne, const IncidentNode *itemTwo) 
 {
   qreal orderOne = itemOne->getOriginalPos().x();
   qreal orderTwo = itemTwo->getOriginalPos().x();

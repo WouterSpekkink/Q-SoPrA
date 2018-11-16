@@ -33,7 +33,7 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
 						 QVector<QString> modes,
 						 QVector<QString> xCoords,
 						 QVector<QString> yCoords,
-						 QVector<MacroEvent*> macros)
+						 QVector<AbstractNode*> abstractNodes)
   : QDialog(parent) 
 {
 
@@ -46,7 +46,7 @@ EventNodeSettingsDialog::EventNodeSettingsDialog(QWidget *parent,
   _modes = modes;
   _xCoords = xCoords;
   _yCoords = yCoords;
-  _macros = macros;
+  _abstractNodes = abstractNodes;
   tableWidget = new QTableWidget(this);
   tableWidget->setRowCount(_ids.length());
   tableWidget->setColumnCount(8); // default size
@@ -273,17 +273,17 @@ void EventNodeSettingsDialog::addAttribute()
 		  tableWidget->setItem(i, tableWidget->columnCount() - 1, newEntry);
 		}
 	    }
-	  // If we are not dealing with an incident, we have a special procedure for (macro) events
+	  // If we are not dealing with an incident, we have a special procedure for (abstractNode) events
 	  else 
 	    {
 	      QString currentName = tableWidget->item(i, 1)->data(Qt::DisplayRole).toString();
-	      QVectorIterator<MacroEvent*> it2(_macros);
+	      QVectorIterator<AbstractNode*> it2(_abstractNodes);
 	      while (it2.hasNext()) 
 		{
-		  MacroEvent *currentMacro = it2.next();
-		  if (currentMacro->getLabel()->toPlainText() == currentName) 
+		  AbstractNode *currentAbstractNode = it2.next();
+		  if (currentAbstractNode->getLabel()->toPlainText() == currentName) 
 		    {
-		      QSet<QString> attributes = currentMacro->getAttributes();
+		      QSet<QString> attributes = currentAbstractNode->getAttributes();
 		      QVectorIterator<QString> it3(attributesVec);
 		      QString currentAtt = it3.next();
 		      if (attributes.contains(currentAtt) && !valued) 
@@ -294,7 +294,7 @@ void EventNodeSettingsDialog::addAttribute()
 			}
 		      else if (attributes.contains(currentAtt) && valued) 
 			{
-			  QMap<QString, QString> values = currentMacro->getValues();
+			  QMap<QString, QString> values = currentAbstractNode->getValues();
 			  QString currentValue = values[attribute];
 			  if (currentValue != "") 
 			    {

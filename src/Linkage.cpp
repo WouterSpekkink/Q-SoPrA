@@ -127,110 +127,110 @@ void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
 
 void Linkage::calculate() {
   prepareGeometryChange();
-  EventItem *startEvent = qgraphicsitem_cast<EventItem*>(_start);
-  EventItem *endEvent = qgraphicsitem_cast<EventItem*>(_end);
-  MacroEvent *startMacro = qgraphicsitem_cast<MacroEvent*>(_start);
-  MacroEvent *endMacro = qgraphicsitem_cast<MacroEvent*>(_end);
+  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(_start);
+  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(_end);
+  AbstractNode *startAbstractNode = qgraphicsitem_cast<AbstractNode*>(_start);
+  AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(_end);
   OccurrenceItem *occurrenceStart = qgraphicsitem_cast<OccurrenceItem*>(_start);
   OccurrenceItem *occurrenceEnd = qgraphicsitem_cast<OccurrenceItem*>(_end);
-  if (startEvent && endEvent)
+  if (startIncidentNode && endIncidentNode)
     {
       // startX is middle of start node
-      qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
+      qreal startX = startIncidentNode->pos().x() + (startIncidentNode->getWidth() / 2) - 20;
       // endX is middle of end node
-      qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
+      qreal endX = endIncidentNode->pos().x() + (endIncidentNode->getWidth() / 2) - 20;
       // endStart is the left-most edge of the end node
-      qreal endStart = endEvent->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endEvent->getWidth())
+      qreal endStart = endIncidentNode->pos().x() - 20;
+      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endIncidentNode->getWidth())
 	{
-	  _newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			   (QPointF(startX, endEvent->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			   (QPointF(startX, endIncidentNode->pos().y())));
 	}
       else if (startX <= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			   (QPointF(endX - (endEvent->getWidth() / 2) + 20, endEvent->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			   (QPointF(endX - (endIncidentNode->getWidth() / 2) + 20, endIncidentNode->pos().y())));
 	}
       else if (startX >= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			   (QPointF(endX + (endEvent->getWidth() / 2) - 20,
-				    endEvent->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			   (QPointF(endX + (endIncidentNode->getWidth() / 2) - 20,
+				    endIncidentNode->pos().y())));
 	}
     }
-  else if (startEvent && endMacro)
+  else if (startIncidentNode && endAbstractNode)
     {
       // startX is middle of start node
-      qreal startX = startEvent->pos().x() + (startEvent->getWidth() / 2) - 20;
+      qreal startX = startIncidentNode->pos().x() + (startIncidentNode->getWidth() / 2) - 20;
       // endX is middle of end node;
-      qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 2) - 20;
+      qreal endX = endAbstractNode->pos().x() + (endAbstractNode->getWidth() / 2) - 20;
       // endStart is the left-most edge of the end node.
-      qreal endStart = endMacro->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endMacro->getWidth())
+      qreal endStart = endAbstractNode->pos().x() - 20;
+      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endAbstractNode->getWidth())
 	{
-	  _newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			   (QPointF(startX, endMacro->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			   (QPointF(startX, endAbstractNode->pos().y())));
 	}
       else if (startX <= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			   (QPointF(endX - (endMacro->getWidth() / 2) + 20, endMacro->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			   (QPointF(endX - (endAbstractNode->getWidth() / 2) + 20, endAbstractNode->pos().y())));
 	}
       else if (startX >= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startEvent->pos().y()),
-			   (QPointF(endX + (endMacro->getWidth() / 2) - 20,
-				    endMacro->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			   (QPointF(endX + (endAbstractNode->getWidth() / 2) - 20,
+				    endAbstractNode->pos().y())));
 	}
     }
-  else if (startMacro && endMacro)
+  else if (startAbstractNode && endAbstractNode)
     {
       // startX is middle of start node
-      qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
+      qreal startX = startAbstractNode->pos().x() + (startAbstractNode->getWidth() / 2) - 20;
       // endX is middle of end node;
-      qreal endX = endMacro->pos().x() + (endMacro->getWidth() / 2) - 20;
+      qreal endX = endAbstractNode->pos().x() + (endAbstractNode->getWidth() / 2) - 20;
       // endStart is the left-most edge of the end node.
-      qreal endStart = endMacro->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endMacro->getWidth())
+      qreal endStart = endAbstractNode->pos().x() - 20;
+      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endAbstractNode->getWidth())
 	{
-	  _newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			   (QPointF(startX, endMacro->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			   (QPointF(startX, endAbstractNode->pos().y())));
 	}
       else if (startX <= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			   (QPointF(endX - (endMacro->getWidth() / 2) + 20, endMacro->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			   (QPointF(endX - (endAbstractNode->getWidth() / 2) + 20, endAbstractNode->pos().y())));
 	}
       else if (startX >= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			   (QPointF(endX + (endMacro->getWidth() / 2) - 20,
-				    endMacro->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			   (QPointF(endX + (endAbstractNode->getWidth() / 2) - 20,
+				    endAbstractNode->pos().y())));
 	}
     }
-  else if (startMacro && endEvent)
+  else if (startAbstractNode && endIncidentNode)
     {
       // startX is middle of start node
-      qreal startX = startMacro->pos().x() + (startMacro->getWidth() / 2) - 20;
+      qreal startX = startAbstractNode->pos().x() + (startAbstractNode->getWidth() / 2) - 20;
       // endX is middle of end node;
-      qreal endX = endEvent->pos().x() + (endEvent->getWidth() / 2) - 20;
+      qreal endX = endIncidentNode->pos().x() + (endIncidentNode->getWidth() / 2) - 20;
       // endStart is the left-most edge of the end node.
-      qreal endStart = endEvent->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endEvent->getWidth())
+      qreal endStart = endIncidentNode->pos().x() - 20;
+      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endIncidentNode->getWidth())
 	{
-	  _newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			   (QPointF(startX, endEvent->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			   (QPointF(startX, endIncidentNode->pos().y())));
 	}
       else if (startX <= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			   (QPointF(endX - (endEvent->getWidth() / 2) + 20, endEvent->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			   (QPointF(endX - (endIncidentNode->getWidth() / 2) + 20, endIncidentNode->pos().y())));
 	}
       else if (startX >= endStart)
 	{
-	  _newLine = QLineF(QPointF(startX, startMacro->pos().y()),
-			   (QPointF(endX + (endEvent->getWidth() / 2) - 20,
-				    endEvent->pos().y())));
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			   (QPointF(endX + (endIncidentNode->getWidth() / 2) - 20,
+				    endIncidentNode->pos().y())));
 	}
     }
   else if (occurrenceStart && occurrenceEnd)
