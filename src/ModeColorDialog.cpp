@@ -1,24 +1,46 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/ModeColorDialog.h"
 
 ModeColorDialog::ModeColorDialog(QWidget *parent,
-				 QColor submittedFillColor,
-				 QColor submittedTextColor) : QDialog(parent)
+				 QColor fillColor,
+				 QColor textColor) : QDialog(parent)
 {
-  exitStatus = 1;
-  fillColor = submittedFillColor;
-  textColor = submittedTextColor;
+  _exitStatus = 1;
+  _fillColor = fillColor;
+  _textColor = textColor;
 
   infoLabel = new QLabel(tr("<b>Choose new colors:</b>"), this);
   fillColorButton = new QPushButton(tr("Choose fill color"), this);
   QPixmap pixmapOne(fillColorButton->width(), fillColorButton->height());
-  pixmapOne.fill(fillColor);
+  pixmapOne.fill(_fillColor);
   fillColorLabel = new QLabel(this);
   fillColorLabel->setMaximumWidth(50);
   fillColorLabel->setMaximumHeight(fillColorLabel->sizeHint().height());
   fillColorLabel->setPixmap(pixmapOne);
   textColorButton = new QPushButton(tr("Choose text color"), this);
   QPixmap pixmapTwo(textColorButton->width(), textColorButton->height());
-  pixmapTwo.fill(textColor);
+  pixmapTwo.fill(_textColor);
   textColorLabel = new QLabel(this);
   textColorLabel->setMaximumWidth(50);
   textColorLabel->setMaximumHeight(textColorLabel->sizeHint().height());
@@ -57,10 +79,10 @@ void ModeColorDialog::setFillColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      fillColor = colorDialog->selectedColor();
+      _fillColor = colorDialog->selectedColor();
     }
   QPixmap pixmapOne(fillColorButton->width(), fillColorButton->height());
-  pixmapOne.fill(fillColor);
+  pixmapOne.fill(_fillColor);
   fillColorLabel->setPixmap(pixmapOne);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -72,10 +94,10 @@ void ModeColorDialog::setTextColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      textColor = colorDialog->selectedColor();
+      _textColor = colorDialog->selectedColor();
     }
   QPixmap pixmapTwo(textColorButton->width(), textColorButton->height());
-  pixmapTwo.fill(textColor);
+  pixmapTwo.fill(_textColor);
   textColorLabel->setPixmap(pixmapTwo);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -83,30 +105,30 @@ void ModeColorDialog::setTextColor()
 
 void ModeColorDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void ModeColorDialog::saveAndClose() 
 {
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 
 QColor ModeColorDialog::getFillColor() 
 {
-  return fillColor;
+  return _fillColor;
 }
 
 
 QColor ModeColorDialog::getTextColor() 
 {
-  return textColor;
+  return _textColor;
 }
 
 int ModeColorDialog::getExitStatus()
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 

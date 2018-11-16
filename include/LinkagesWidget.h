@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef LINKAGESWIDGET_H
 #define LINKAGESWIDGET_H
 
@@ -28,13 +50,17 @@ class EventGraphWidget;
 class LinkagesWidget : public QWidget
 {
   Q_OBJECT
+  
+  // MainWindow needs access to this class
   friend class MainWindow;
 
 public:
+  // Constructor and destructor
   LinkagesWidget(QWidget *parent=0);
   ~LinkagesWidget() {};
 
 private slots:
+  // Private member functions
   void addCoder();
   void editCoder();
   void removeCoder();
@@ -88,15 +114,13 @@ private slots:
   void findPastPaths(QSet<int> *pIgnore, int currentIncident);
   void findFuturePaths(QSet<int> *pIgnore, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
-  void setEventGraph(EventGraphWidget *egw);
   void finalBusiness();
   
 private:
+  // Interface elements
   QPointer<QSqlTableModel> typesModel;
   QPointer<QSqlTableModel> linkagesModel;
   QPointer<QSqlTableModel> incidentsModel;
-  EventGraphWidget *eventGraph;
-  
   QPointer<QLabel> settingsLabel;
   QPointer<QLabel> selectCoderLabel;
   QPointer<QLabel> selectTypeLabel;
@@ -128,7 +152,6 @@ private:
   QPointer<QLabel> linkageQuestionFeedbackLabel;
   QPointer<QLabel> linkageFeedbackLabel;
   QPointer<QLabel> linkageCommentLabel;
-  
   QPointer<QLineEdit> tailTimeStampField;
   QPointer<QLineEdit> tailSourceField;
   QPointer<QLineEdit> tailDescriptionFilterField;
@@ -139,7 +162,6 @@ private:
   QPointer<QLineEdit> headDescriptionFilterField;
   QPointer<QLineEdit> headRawFilterField;
   QPointer<QLineEdit> headCommentFilterField;
-
   QPointer<QTextEdit> tailDescriptionField;
   QPointer<QTextEdit> tailRawField;
   QPointer<QTextEdit> tailCommentField;
@@ -147,10 +169,8 @@ private:
   QPointer<QTextEdit> headRawField;
   QPointer<QTextEdit> headCommentField;
   QPointer<QTextEdit> linkageCommentField;
-
   QPointer<QComboBox> coderComboBox;
   QPointer<QComboBox> typeComboBox;
-
   QPointer<QPushButton> createCoderButton;
   QPointer<QPushButton> editCoderButton;
   QPointer<QPushButton> removeCoderButton;
@@ -186,19 +206,19 @@ private:
   QPointer<QPushButton> setLinkButton;
   QPointer<QPushButton> unsetLinkButton;
 
-  QString codingType;
-  QString selectedType;
-  QString selectedDirection;
-  QString selectedCoder;
-  QString tailDescriptionFilter;
-  QString tailRawFilter;
-  QString tailCommentFilter;
-  QString headDescriptionFilter;
-  QString headRawFilter;
-  QString headCommentFilter;
-  
-  bool commentBool;
-  bool linkageCommentBool;
+  // Private variables
+  QString _codingType;
+  QString _selectedType;
+  QString _selectedDirection;
+  QString _selectedCoder;
+  QString _tailDescriptionFilter;
+  QString _tailRawFilter;
+  QString _tailCommentFilter;
+  QString _headDescriptionFilter;
+  QString _headRawFilter;
+  QString _headCommentFilter;
+  bool _commentBool;
+  bool _linkageCommentBool;
 };
 
 

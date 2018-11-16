@@ -1,36 +1,58 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/IncidentNodeLabel.h"
 #include <QGraphicsScene>
 #include <QtCore>
 
-IncidentNodeLabel::IncidentNodeLabel(IncidentNode *submittedNode)
+IncidentNodeLabel::IncidentNodeLabel(IncidentNode *incidentNode)
 {
-  node = submittedNode;
-  xOffset = 0;
-  yOffset = 0;
+  _node = incidentNode;
+  _xOffset = 0;
+  _yOffset = 0;
 }
 
 IncidentNode* IncidentNodeLabel::getNode()
 {
-  return node;
+  return _node;
 }
 
 void IncidentNodeLabel::setNewPos(QPointF nodePos, qreal xOffsetincrement, qreal yOffsetincrement)
 {
-  xOffset += xOffsetincrement;
-  yOffset += yOffsetincrement;
+  _xOffset += xOffsetincrement;
+  _yOffset += yOffsetincrement;
   QPointF newPos = nodePos;
-  newPos.setX(newPos.x() - (textWidth() / 2) + xOffset);
-  newPos.setY(newPos.y() - 12 + yOffset);
+  newPos.setX(newPos.x() - (textWidth() / 2) + _xOffset);
+  newPos.setY(newPos.y() - 12 + _yOffset);
   setPos(newPos);
 }
 
 QPointF IncidentNodeLabel::getOffset()
 {
-  return QPointF(xOffset, yOffset);
+  return QPointF(_xOffset, _yOffset);
 }
 
 void IncidentNodeLabel::setOffset(QPointF offset)
 {
-  xOffset = offset.x();
-  yOffset = offset.y();
+  _xOffset = offset.x();
+  _yOffset = offset.y();
 }

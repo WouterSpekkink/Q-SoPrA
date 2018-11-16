@@ -1,20 +1,42 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/MergeRelationshipsDialog.h"
 
 MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
 						   QVector<DirectedEdge*> *directed,
 						   QVector<UndirectedEdge*> *undirected,
-						   QVector<QString> submittedRelationships,
-						   QVector<QString> submittedDirections)
+						   QVector<QString> relationshipsVector,
+						   QVector<QString> directednessVector)
   : QDialog(parent) 
 {
   
-  pDirected = directed;
-  pUndirected = undirected;
-  directions = submittedDirections;
-  name = "";
-  description = "";
-  directedness = "";
-  exitStatus = 1;  
+  _directed = directed;
+  _undirected = undirected;
+  _directednessVector = directednessVector;
+  _name = "";
+  _description = "";
+  _directedness = "";
+  _exitStatus = 1;  
 
   relationshipsLabel = new QLabel(tr("<b>Relationships:</b>"), this);
   nameLabel = new QLabel(tr("<b>Merged relationship name:</b>"), this);
@@ -24,12 +46,12 @@ MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
 
   descriptionField = new QTextEdit();
 
-  QVectorIterator<QString> it(submittedRelationships);
+  QVectorIterator<QString> it(relationshipsVector);
   while (it.hasNext()) 
     {
       QString currentRel = it.next();
       QPointer<QCheckBox> checkBox = new QCheckBox(currentRel, this);
-      relationships.push_back(checkBox);
+      relationshipsCheckBoxVector.push_back(checkBox);
     }
   
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
@@ -39,7 +61,7 @@ MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(relationshipsLabel);
-  QVectorIterator<QPointer<QCheckBox>> it2(relationships);
+  QVectorIterator<QPointer<QCheckBox>> it2(relationshipsCheckBoxVector);
   while (it2.hasNext()) 
     {
       mainLayout->addWidget(it2.next()); 
@@ -74,41 +96,41 @@ MergeRelationshipsDialog::MergeRelationshipsDialog(QWidget *parent,
 
 QVector<QString> MergeRelationshipsDialog::getTypes() 
 {
-  return types;
+  return _types;
 }
 
 QString MergeRelationshipsDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
 QString MergeRelationshipsDialog::getDescription() 
 {
-  return description;
+  return _description;
 }
 
 QString MergeRelationshipsDialog::getDirectedness() 
 {
-  return directedness;
+  return _directedness;
 }
 
 int MergeRelationshipsDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void MergeRelationshipsDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 // TO DO: Check for attributes with same name.
 void MergeRelationshipsDialog::saveAndClose() 
 {
-  description =  descriptionField->toPlainText().trimmed();
-  name = nameField->text().trimmed();
-  QVectorIterator<QPointer<QCheckBox>> it(relationships);
+  _description =  descriptionField->toPlainText().trimmed();
+  _name = nameField->text().trimmed();
+  QVectorIterator<QPointer<QCheckBox>> it(relationshipsCheckBoxVector);
   int checked = 0;
   while (it.hasNext()) 
     {
@@ -131,16 +153,16 @@ void MergeRelationshipsDialog::saveAndClose()
     }
   bool directedFound = false;
   bool undirectedFound = false;
-  for (int i = 0; i != relationships.size(); i++) 
+  for (int i = 0; i != relationshipsCheckBoxVector.size(); i++) 
     {
-      QPointer<QCheckBox> current = relationships[i];
+      QPointer<QCheckBox> current = relationshipsCheckBoxVector[i];
       if (current->isChecked()) 
 	{
-	  if (directions[i] == DIRECTED) 
+	  if (_directednessVector[i] == DIRECTED) 
 	    {
 	      directedFound = true;
 	    }
-	  else if (directions[i] == UNDIRECTED) 
+	  else if (_directednessVector[i] == UNDIRECTED) 
 	    {
 	      undirectedFound = true;
 	    }
@@ -159,13 +181,13 @@ void MergeRelationshipsDialog::saveAndClose()
     }
   else if (directedFound) 
     {
-      directedness = DIRECTED;
+      _directedness = DIRECTED;
     }
   else if (undirectedFound) 
     {
-      directedness = UNDIRECTED;
+      _directedness = UNDIRECTED;
     }
-  if (description == "") 
+  if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -176,7 +198,7 @@ void MergeRelationshipsDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == "") 
+  if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -188,20 +210,20 @@ void MergeRelationshipsDialog::saveAndClose()
       return;
     }
   bool found = false;
-  QVectorIterator<DirectedEdge*> it2(*pDirected);
+  QVectorIterator<DirectedEdge*> it2(*_directed);
   while (it2.hasNext()) 
     {
-      DirectedEdge* directed = it2.next();
-      if (directed->getType() == name) 
+      DirectedEdge* directedEdge = it2.next();
+      if (directedEdge->getType() == _name) 
 	{
 	  found = true;
 	}
     }
-  QVectorIterator<UndirectedEdge*> it3(*pUndirected);
+  QVectorIterator<UndirectedEdge*> it3(*_undirected);
   while (it3.hasNext()) 
     {
-      UndirectedEdge* undirected = it3.next();
-      if (undirected->getType() == name) 
+      UndirectedEdge* undirectedEdge = it3.next();
+      if (undirectedEdge->getType() == _name) 
 	{
 	  found = true;
 	}
@@ -217,17 +239,17 @@ void MergeRelationshipsDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  QVectorIterator<QPointer<QCheckBox>> it4(relationships);
+  QVectorIterator<QPointer<QCheckBox>> it4(relationshipsCheckBoxVector);
   while (it4.hasNext()) 
     {
       QPointer<QCheckBox> current = it4.next();
       if (current->isChecked()) 
 	{
 	  QString currentText = removeChar(current->text(), '&');
-	  types.push_back(currentText);
+	  _types.push_back(currentText);
 	}
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 

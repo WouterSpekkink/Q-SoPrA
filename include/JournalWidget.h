@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef JOURNALWIDGET_H
 #define JOURNALWIDGET_H
 
@@ -22,16 +44,19 @@
 
 class JournalWidget : public QWidget
 {
-  friend class MainWindow;
   Q_OBJECT
 
+  // MainWindow needs access to this class
+  friend class MainWindow;
+
 public:
+  // Constructor and destructor
   JournalWidget(QWidget *parent = 0);
   ~JournalWidget() {};
 
-  void resetButtons();
-	     
 private slots:
+  // Private member functions
+  void resetButtons();
   void addEntry();
   void saveChanges();
   void setData();
@@ -42,15 +67,12 @@ private slots:
   bool eventFilter(QObject *object, QEvent *event);
   
 private:
-
+  // Interface elements
   QPointer<JournalTableModel> journalModel;
   QPointer<ZoomableTableView> tableView;
-
   QPointer<QLabel> journalLabel;
   QPointer<QLabel> logLabel;
-  
   QPointer<QTextEdit> logField;
-
   QPointer<QPushButton> addEntryButton;
   QPointer<QPushButton> saveChangesButton;
   QPointer<QPushButton> removeEntryButton;

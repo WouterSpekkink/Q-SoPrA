@@ -1,27 +1,49 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/LinkagesIndexDialog.h"
 
 LinkagesIndexDialog::LinkagesIndexDialog(QWidget *parent, int size, const QString &direction) : QDialog(parent) 
 {
-  max =  1;
-  submittedSize = size - 1;
-  submittedDirection = direction;
+  _max =  1;
+  _submittedSize = size - 1;
+  _submittedDirection = direction;
   tailIndexLabel = new QLabel(tr("<b>Tail index:</b>"), this);
   headIndexLabel = new QLabel(tr("<b>Head index:</b>"), this);
-  tailIndexText = "";
-  headIndexText = "";
-  if (submittedDirection == PAST) 
+  _tailIndexText = "";
+  _headIndexText = "";
+  if (_submittedDirection == PAST) 
     {
-      tailIndex = 2;
-      headIndex = 1;
+      _tailIndex = 2;
+      _headIndex = 1;
     }
   else 
     {
-      tailIndex = 1;
-      headIndex = 2;
+      _tailIndex = 1;
+      _headIndex = 2;
     }
-  exitStatus = 1;
+  _exitStatus = 1;
   tailIndexField = new QLineEdit(this);
-  tailIndexField->setValidator(new QIntValidator(1, submittedSize, this));
+  tailIndexField->setValidator(new QIntValidator(1, _submittedSize, this));
   headIndexField = new QLineEdit(this);
   headIndexField->setValidator(new QIntValidator(1, 1, this));
 
@@ -59,32 +81,32 @@ LinkagesIndexDialog::LinkagesIndexDialog(QWidget *parent, int size, const QStrin
 
 void LinkagesIndexDialog::setTailIndexText(const QString &newIndex) 
 {
-  tailIndexText = newIndex.trimmed();
-  if (submittedDirection == PAST) 
+  _tailIndexText = newIndex.trimmed();
+  if (_submittedDirection == PAST) 
     {
-      std::istringstream ss(tailIndexText.toStdString());
-      ss >> max;
-      headIndexField->setValidator(new QIntValidator(1, max, this));
+      std::istringstream ss(_tailIndexText.toStdString());
+      ss >> _max;
+      headIndexField->setValidator(new QIntValidator(1, _max, this));
     }
-  else if (submittedDirection == FUTURE) 
+  else if (_submittedDirection == FUTURE) 
     {
-      std::istringstream ss(tailIndexText.toStdString());
-      ss >> max;
-      headIndexField->setValidator(new QIntValidator(1, submittedSize - max + 1, this));
+      std::istringstream ss(_tailIndexText.toStdString());
+      ss >> _max;
+      headIndexField->setValidator(new QIntValidator(1, _submittedSize - _max + 1, this));
     }
-  tailIndex = tailIndexText.toInt();
+  _tailIndex = _tailIndexText.toInt();
   evaluateIndexes();
 }
 
 void LinkagesIndexDialog::setHeadIndexText(const QString &newIndex) 
 {
-  headIndexText = newIndex;
-  headIndex = headIndexText.toInt();
+  _headIndexText = newIndex;
+  _headIndex = _headIndexText.toInt();
   evaluateIndexes();
 }
 void LinkagesIndexDialog::evaluateIndexes() 
 {
-  if (tailIndexText != "" && tailIndex > 0 && headIndexText != "" && headIndex > 0) 
+  if (_tailIndexText != "" && _tailIndex > 0 && _headIndexText != "" && _headIndex > 0) 
     {
       goButton->setEnabled(true);
     }
@@ -96,27 +118,27 @@ void LinkagesIndexDialog::evaluateIndexes()
 
 int LinkagesIndexDialog::getTailIndex() 
 {
-  return tailIndex;
+  return _tailIndex;
 }
 
 int LinkagesIndexDialog::getHeadIndex() 
 {
-  return headIndex;
+  return _headIndex;
 }
 
 void LinkagesIndexDialog::go() 
 {
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 
 void LinkagesIndexDialog::cancel() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 int LinkagesIndexDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }

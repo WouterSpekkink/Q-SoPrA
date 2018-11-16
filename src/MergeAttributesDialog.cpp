@@ -1,13 +1,34 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/MergeAttributesDialog.h"
 
-MergeAttributesDialog::MergeAttributesDialog(QWidget *parent,
-					     QString submittedOrigin,
-					     QString submittedType) : QDialog(parent) 
+MergeAttributesDialog::MergeAttributesDialog(QWidget *parent, QString origin, QString type)
+: QDialog(parent) 
 {
-  origin = submittedOrigin;
-  type = submittedType;
-  exitStatus = 1;
-  chosenAttribute = DEFAULT;
+  _origin = origin;
+  _type = type;
+  _exitStatus = 1;
+  _chosenAttribute = DEFAULT;
 
   attributeLabel = new QLabel(tr("<b>Choose attribute:</b>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -58,13 +79,13 @@ void MergeAttributesDialog::setTree()
 {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) 
+  if (_type == ENTITY) 
     {
       query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
       while (query->next()) 
 	{
 	  QString name = query->value(0).toString();
-	  if (name != origin) 
+	  if (name != _origin) 
 	    {
 	      QString description = query->value(1).toString();
 	      QStandardItem *father = new QStandardItem(name);    
@@ -76,13 +97,13 @@ void MergeAttributesDialog::setTree()
 	    }
 	}
     }
-  else if (type == INCIDENT) 
+  else if (_type == INCIDENT) 
     {
       query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
       while (query->next()) 
 	{
 	  QString name = query->value(0).toString();
-	  if (name != origin) 
+	  if (name != _origin) 
 	    {
 	      QString description = query->value(1).toString();
 	      QStandardItem *father = new QStandardItem(name);    
@@ -102,7 +123,7 @@ void MergeAttributesDialog::setTree()
 void MergeAttributesDialog::buildHierarchy(QStandardItem *top, QString name) 
 {
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) 
+  if (_type == ENTITY) 
     {
       query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
       query->bindValue(":father", name);
@@ -153,19 +174,19 @@ void MergeAttributesDialog::setAttribute()
 {
   if (attributesTreeView->currentIndex().isValid()) 
     {
-      chosenAttribute = attributesTreeView->currentIndex().data().toString();
+      _chosenAttribute = attributesTreeView->currentIndex().data().toString();
     }
 }
 
 void MergeAttributesDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void MergeAttributesDialog::saveAndClose() 
 {
-  if (chosenAttribute == DEFAULT) 
+  if (_chosenAttribute == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -178,18 +199,18 @@ void MergeAttributesDialog::saveAndClose()
     }
   else 
     {
-      exitStatus = 0;
+      _exitStatus = 0;
       this->close();
     }
 }
 
 QString MergeAttributesDialog::getAttribute() 
 {
-  return chosenAttribute;
+  return _chosenAttribute;
 }
 
 int MergeAttributesDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 

@@ -1,11 +1,33 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/LargeTextDialog.h"
 
 LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent) 
 {
-  text = "";
-  subText = "";
-  exitStatus = 1;
-  emptyAllowed = false;
+  _text = "";
+  _subText = "";
+  _exitStatus = 1;
+  _emptyAllowed = false;
   textLabel = new QLabel(tr("<b>Text:</b>"), this);
   textField = new QTextEdit(this);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
@@ -30,41 +52,41 @@ LargeTextDialog::LargeTextDialog(QWidget *parent) : QDialog(parent)
 
 QString LargeTextDialog::getText() 
 {
-  return text;
+  return _text;
 }
 
-void LargeTextDialog::submitText(const QString &submittedText) 
+void LargeTextDialog::submitText(const QString &text) 
 {
-  text = submittedText;
-  subText = submittedText;
-  textField->setText(submittedText);
+  _text = text;
+  _subText = text;
+  textField->setText(text);
 }
 
-void LargeTextDialog::setLabel(const QString &submittedLabel) 
+void LargeTextDialog::setLabel(const QString &label) 
 {
-  textLabel->setText(submittedLabel);
+  textLabel->setText(label);
 }
 
 int LargeTextDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void LargeTextDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void LargeTextDialog::setEmptyAllowed(bool status) 
 {
-  emptyAllowed = status;
+  _emptyAllowed = status;
 }
 
 void LargeTextDialog::saveAndClose() 
 {
-  text = textField->toPlainText().trimmed();
-  if (text == "" && !emptyAllowed) 
+  _text = textField->toPlainText().trimmed();
+  if (_text == "" && !_emptyAllowed) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -75,7 +97,7 @@ void LargeTextDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 

@@ -1,19 +1,41 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/MultimodeDialog.h"
 
 MultimodeDialog::MultimodeDialog(QWidget *parent,
 				 QVector<DirectedEdge*> *directed,
 				 QVector<UndirectedEdge*> *undirected) : QDialog(parent) 
 {
-  pDirected = directed;
-  pUndirected = undirected;
-  name = "";
-  description = "";
-  modeOne = DEFAULT;
-  modeTwo = DEFAULT;
-  relationshipOne = DEFAULT;
-  relationshipTwo = DEFAULT;
-  directedness = DIRECTED;
-  exitStatus = 1;
+  _directed = directed;
+  _undirected = undirected;
+  _name = "";
+  _description = "";
+  _modeOne = DEFAULT;
+  _modeTwo = DEFAULT;
+  _relationshipOne = DEFAULT;
+  _relationshipTwo = DEFAULT;
+  _directedness = DIRECTED;
+  _exitStatus = 1;
   
   modeOneLabel = new QLabel(tr("<b>Mode one:</b>"), this);
   modeOneLabel->setToolTip(breakString("The new relationship "
@@ -127,10 +149,10 @@ MultimodeDialog::MultimodeDialog(QWidget *parent,
   setFixedHeight(sizeHint().height());
 }
 
-void MultimodeDialog::setModes(QVector<QString> submittedModes) 
+void MultimodeDialog::setModes(QVector<QString> modes) 
 {
-  modes = submittedModes;
-  QVectorIterator<QString> it(modes);
+  _modes = modes;
+  QVectorIterator<QString> it(_modes);
   while (it.hasNext()) 
     {
       QString currentMode = it.next();
@@ -139,46 +161,46 @@ void MultimodeDialog::setModes(QVector<QString> submittedModes)
     }
 }
 
-void MultimodeDialog::setModeOne(const QString &name) 
+void MultimodeDialog::setModeOne(const QString &mode)
 {
-  modeOne = name;
-  if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) 
+  _modeOne = mode;
+  if (_modeOne != DEFAULT && _modeTwo != DEFAULT && _modeOne != _modeTwo) 
     {
       relationshipOneComboBox->clear();
       relationshipOneComboBox->addItem(DEFAULT);
       relationshipTwoComboBox->clear();
       relationshipTwoComboBox->addItem(DEFAULT);
       QList<QString> include;
-      QVectorIterator<DirectedEdge*> it(*pDirected);
+      QVectorIterator<DirectedEdge*> it(*_directed);
       while (it.hasNext()) 
 	{
 	  DirectedEdge *directed = it.next();
-	  if (directed->getStart()->getMode() == modeOne &&
-	      directed->getEnd()->getMode() == modeTwo &&
+	  if (directed->getStart()->getMode() == _modeOne &&
+	      directed->getEnd()->getMode() == _modeTwo &&
 	      directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
 	    }
-	  else if (directed->getStart()->getMode() == modeTwo &&
-		   directed->getEnd()->getMode() == modeOne &&
+	  else if (directed->getStart()->getMode() == _modeTwo &&
+		   directed->getEnd()->getMode() == _modeOne &&
 		   directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
 	    }
 	}
     
-      QVectorIterator<UndirectedEdge*> it2(*pUndirected);
+      QVectorIterator<UndirectedEdge*> it2(*_undirected);
       while (it2.hasNext()) 
 	{
 	  UndirectedEdge *undirected = it2.next();
-	  if (undirected->getStart()->getMode() == modeOne &&
-	      undirected->getEnd()->getMode() == modeTwo &&
+	  if (undirected->getStart()->getMode() == _modeOne &&
+	      undirected->getEnd()->getMode() == _modeTwo &&
 	      undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
 	    }
-	  else if (undirected->getStart()->getMode() == modeTwo &&
-		   undirected->getEnd()->getMode() == modeOne &&
+	  else if (undirected->getStart()->getMode() == _modeTwo &&
+		   undirected->getEnd()->getMode() == _modeOne &&
 		   undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
@@ -206,45 +228,45 @@ void MultimodeDialog::setModeOne(const QString &name)
     }
 }
 
-void MultimodeDialog::setModeTwo(const QString &name) 
+void MultimodeDialog::setModeTwo(const QString &mode)
 {
-  modeTwo = name;
-  if (modeOne != DEFAULT && modeTwo != DEFAULT && modeOne != modeTwo) 
+  _modeTwo = mode;
+  if (_modeOne != DEFAULT && _modeTwo != DEFAULT && _modeOne != _modeTwo) 
     {
       relationshipOneComboBox->clear();
       relationshipOneComboBox->addItem(DEFAULT);
       relationshipTwoComboBox->clear();
       relationshipTwoComboBox->addItem(DEFAULT);
       QList<QString> include;
-      QVectorIterator<DirectedEdge*> it(*pDirected);
+      QVectorIterator<DirectedEdge*> it(*_directed);
       while (it.hasNext()) 
 	{
 	  DirectedEdge *directed = it.next();
-	  if (directed->getStart()->getMode() == modeOne &&
-	      directed->getEnd()->getMode() == modeTwo &&
+	  if (directed->getStart()->getMode() == _modeOne &&
+	      directed->getEnd()->getMode() == _modeTwo &&
 	      directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
 	    }
-	  else if (directed->getStart()->getMode() == modeTwo &&
-		   directed->getEnd()->getMode() == modeOne &&
+	  else if (directed->getStart()->getMode() == _modeTwo &&
+		   directed->getEnd()->getMode() == _modeOne &&
 		   directed->isVisible()) 
 	    {
 	      include.push_back(directed->getType());;
 	    }
 	}
-      QVectorIterator<UndirectedEdge*> it2(*pUndirected);
+      QVectorIterator<UndirectedEdge*> it2(*_undirected);
       while (it2.hasNext()) 
 	{
 	  UndirectedEdge *undirected = it2.next();
-	  if (undirected->getStart()->getMode() == modeOne &&
-	      undirected->getEnd()->getMode() == modeTwo &&
+	  if (undirected->getStart()->getMode() == _modeOne &&
+	      undirected->getEnd()->getMode() == _modeTwo &&
 	      undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
 	    }
-	  else if (undirected->getStart()->getMode() == modeTwo &&
-		   undirected->getEnd()->getMode() == modeOne &&
+	  else if (undirected->getStart()->getMode() == _modeTwo &&
+		   undirected->getEnd()->getMode() == _modeOne &&
 		   undirected->isVisible()) 
 	    {
 	      include.push_back(undirected->getType());;
@@ -274,29 +296,29 @@ void MultimodeDialog::setModeTwo(const QString &name)
 
 QString MultimodeDialog::getDirectedness() 
 {
-  return directedness;
+  return _directedness;
 }
 
 void MultimodeDialog::checkDirectedButton() 
 {
   directedButton->setChecked(true);
   undirectedButton->setChecked(false);
-  directedness = DIRECTED;
+  _directedness = DIRECTED;
 }
 
 void MultimodeDialog::checkUndirectedButton() 
 {
   directedButton->setChecked(false);
   undirectedButton->setChecked(true);
-  directedness = UNDIRECTED;
+  _directedness = UNDIRECTED;
 }
 
-void MultimodeDialog::setRelationshipOne(const QString &name) 
+void MultimodeDialog::setRelationshipOne(const QString &relationship)
 {
-  relationshipOne = name;
-  if (relationshipOne == relationshipTwo) 
+  _relationshipOne = relationship;
+  if (_relationshipOne == _relationshipTwo) 
     {
-      directedness = UNDIRECTED;
+      _directedness = UNDIRECTED;
       directedButton->setChecked(false);
       undirectedButton->setChecked(true);
       directedButton->setEnabled(false);
@@ -309,12 +331,12 @@ void MultimodeDialog::setRelationshipOne(const QString &name)
     }
 }
 
-void MultimodeDialog::setRelationshipTwo(const QString &name) 
+void MultimodeDialog::setRelationshipTwo(const QString &relationship) 
 {
-  relationshipTwo = name;
-  if (relationshipOne == relationshipTwo) 
+  _relationshipTwo = relationship;
+  if (_relationshipOne == _relationshipTwo) 
     {
-      directedness = UNDIRECTED;
+      _directedness = UNDIRECTED;
       directedButton->setChecked(false);
       undirectedButton->setChecked(true);
       directedButton->setEnabled(false);
@@ -329,51 +351,51 @@ void MultimodeDialog::setRelationshipTwo(const QString &name)
 
 QString MultimodeDialog::getModeOne() 
 {
-  return modeOne;
+  return _modeOne;
 }
 
 QString MultimodeDialog::getModeTwo() 
 {
-  return modeTwo;
+  return _modeTwo;
 }
 
 QString MultimodeDialog::getRelationshipOne() 
 {
-  return relationshipOne;
+  return _relationshipOne;
 }
 
 QString MultimodeDialog::getRelationshipTwo() 
 {
-  return relationshipTwo;
+  return _relationshipTwo;
 }
 
 QString MultimodeDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
 QString MultimodeDialog::getDescription() 
 {
-  return description;
+  return _description;
 }
 
 int MultimodeDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void MultimodeDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 // TO DO: Check for attributes with same name.
 void MultimodeDialog::saveAndClose() 
 {
-  description =  descriptionField->toPlainText().trimmed();
-  name = nameField->text().trimmed();
-  if (modeOne == DEFAULT || modeTwo == DEFAULT) 
+  _description =  descriptionField->toPlainText().trimmed();
+  _name = nameField->text().trimmed();
+  if (_modeOne == DEFAULT || _modeTwo == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -384,7 +406,7 @@ void MultimodeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (modeOne == modeTwo) 
+  if (_modeOne == _modeTwo) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -395,19 +417,20 @@ void MultimodeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (relationshipOne == DEFAULT || relationshipTwo == DEFAULT) 
+  if (_relationshipOne == DEFAULT || _relationshipTwo == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No valid relationships selected.");
-      warningBox->setInformativeText("You must select valid relationships for the transformation to be possible.");
+      warningBox->setInformativeText("You must select valid relationships for the "
+				     "transformation to be possible.");
       warningBox->exec();
       delete warningBox;
       return;
     
     }
-  if (description == "") 
+  if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -418,7 +441,7 @@ void MultimodeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == "") 
+  if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -430,20 +453,20 @@ void MultimodeDialog::saveAndClose()
       return;
     }
   bool found = false;
-  QVectorIterator<DirectedEdge*> it(*pDirected);
+  QVectorIterator<DirectedEdge*> it(*_directed);
   while (it.hasNext()) 
     {
       DirectedEdge* directed = it.next();
-      if (directed->getType() == name) 
+      if (directed->getType() == _name) 
 	{
 	  found = true;
 	}
     }
-  QVectorIterator<UndirectedEdge*> it2(*pUndirected);
+  QVectorIterator<UndirectedEdge*> it2(*_undirected);
   while (it2.hasNext()) 
     {
       UndirectedEdge* undirected = it2.next();
-      if (undirected->getType() == name) 
+      if (undirected->getType() == _name) 
 	{
 	  found = true;
 	}
@@ -459,7 +482,7 @@ void MultimodeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 

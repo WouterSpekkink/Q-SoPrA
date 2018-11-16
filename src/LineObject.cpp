@@ -4,20 +4,20 @@
 #include <QPainter>
 #include "../include/Scene.h"
 
-LineObject::LineObject(QPointF subStartPos,
-		       QPointF subEndPos,
+LineObject::LineObject(QPointF startPos,
+		       QPointF endPos,
 		       QGraphicsItem *parent)
   : QGraphicsLineItem(parent) 
 {
-  startPos = subStartPos;
-  endPos = subEndPos;
+  _startPos = startPos;
+  _endPos = endPos;
   setFlag(QGraphicsItem::ItemIsSelectable, true);
-  color = Qt::black;
+  _color = Qt::black;
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  arrow1On = false;
-  arrow2On = false;
-  penWidth = 1;
-  penStyle = 1;
+  _arrow1On = false;
+  _arrow2On = false;
+  _penWidth = 1;
+  _penStyle = 1;
   setAcceptHoverEvents(true);
 }
 
@@ -25,8 +25,8 @@ QRectF LineObject::boundingRect() const
 {
   qreal extra = (pen().width() + 40) / 2.0;
   
-  return QRectF(startPos, QSizeF(endPos.x() - startPos.x(),
-				 endPos.y() - startPos.y()))
+  return QRectF(_startPos, QSizeF(_endPos.x() - _startPos.x(),
+				 _endPos.y() - _startPos.y()))
     .normalized()
     .adjusted(-extra, -extra, extra, extra);
 }
@@ -34,13 +34,13 @@ QRectF LineObject::boundingRect() const
 QPainterPath LineObject::shape() const 
 {
   static const qreal clickTolerance = 15;
-  QPointF vec = endPos - startPos;
+  QPointF vec = _endPos - _startPos;
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());
-  QPainterPath result(startPos - vec + orthogonal);
-  result.lineTo(startPos - vec - orthogonal);
-  result.lineTo(endPos + vec - orthogonal);
-  result.lineTo(endPos + vec + orthogonal);
+  QPainterPath result(_startPos - vec + orthogonal);
+  result.lineTo(_startPos - vec - orthogonal);
+  result.lineTo(_endPos + vec - orthogonal);
+  result.lineTo(_endPos + vec + orthogonal);
   result.closeSubpath();
   return result;
 }
@@ -48,25 +48,25 @@ QPainterPath LineObject::shape() const
 void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
   calculate();
-  painter->setPen(QPen(color, penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
+  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
 
-  arrowHead.clear();
-  arrowHead <<  arrowP1 << tempLine1.p2() << arrowP2;
-  arrowHead2.clear();
-  arrowHead2 << arrowP3 << tempLine2.p2() << arrowP4;
+  _arrowHead.clear();
+  _arrowHead <<  _arrowP1 << _tempLine1.p2() << _arrowP2;
+  _arrowHead2.clear();
+  _arrowHead2 << _arrowP3 << _tempLine2.p2() << _arrowP4;
     
   QPainterPath myPath;
-  myPath.moveTo(tempLine2.p2());
-  myPath.lineTo(tempLine1.p2());
-  if (arrow1On) 
+  myPath.moveTo(_tempLine2.p2());
+  myPath.lineTo(_tempLine1.p2());
+  if (_arrow1On) 
     {
-      painter->drawPolyline(arrowHead);
+      painter->drawPolyline(_arrowHead);
     }
-  painter->strokePath(myPath, QPen(color, penWidth, Qt::PenStyle(penStyle),
+  painter->strokePath(myPath, QPen(_color, _penWidth, Qt::PenStyle(_penStyle),
 				   Qt::RoundCap, Qt::RoundJoin));
-  if (arrow2On) 
+  if (_arrow2On) 
     {
-      painter->drawPolyline(arrowHead2);
+      painter->drawPolyline(_arrowHead2);
     }
   if (isSelected()) 
     {
@@ -80,107 +80,107 @@ void LineObject::calculate()
 {
   prepareGeometryChange();
   qreal arrowSize = 20;
-  QLineF newLine = QLineF(startPos, endPos);
+  QLineF newLine = QLineF(_startPos, _endPos);
   setLine(newLine);
-  tempLine1 = QLineF(startPos, endPos);
-  tempLine2 = QLineF(endPos, startPos);
-  double angle = ::acos(tempLine1.dx() / tempLine1.length());
-  if (tempLine1.dy() >= 0)
+  _tempLine1 = QLineF(_startPos, _endPos);
+  _tempLine2 = QLineF(_endPos, _startPos);
+  double angle = ::acos(_tempLine1.dx() / _tempLine1.length());
+  if (_tempLine1.dy() >= 0)
     angle = (Pi * 2) - angle;
-  double angle2 = ::acos(tempLine2.dx() / tempLine2.length());
-  if (tempLine2.dy() >= 0)
+  double angle2 = ::acos(_tempLine2.dx() / _tempLine2.length());
+  if (_tempLine2.dy() >= 0)
     angle2 = (Pi * 2) - angle2;
-  arrowP1 = tempLine1.p2() - QPointF(sin(angle + Pi / 3) * arrowSize,
+  _arrowP1 = _tempLine1.p2() - QPointF(sin(angle + Pi / 3) * arrowSize,
 				     cos(angle + Pi / 3) * arrowSize);
-  arrowP2 = tempLine1.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
+  _arrowP2 = _tempLine1.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 				     cos(angle + Pi - Pi / 3) * arrowSize);
 
   
-  arrowP3 = tempLine2.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
+  _arrowP3 = _tempLine2.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
 				     cos(angle2 + Pi / 3) * arrowSize);
-  arrowP4 = tempLine2.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
+  _arrowP4 = _tempLine2.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
 				     cos(angle2 + Pi - Pi / 3) * arrowSize);  
   prepareGeometryChange();
 }
 
-void LineObject::setColor(const QColor &subColor) 
+void LineObject::setColor(const QColor &color) 
 {
-  color = subColor;
+  _color = color;
 }
 
 QColor LineObject::getColor() 
 {
-  return color;
+  return _color;
 }
 
 QPointF LineObject::getStartPos() 
 {
-  return startPos;
+  return _startPos;
 }
 
 QPointF LineObject::getEndPos() 
 {
-  return endPos;
+  return _endPos;
 }
 
-void LineObject::setStartPos(QPointF subPoint) 
+void LineObject::setStartPos(QPointF startPos) 
 {
-  startPos = subPoint;
+  _startPos = startPos;
 }
 
-void LineObject::setEndPos(QPointF subPoint) 
+void LineObject::setEndPos(QPointF endPos) 
 {
-  endPos = subPoint;
+  _endPos = endPos;
 }
 
 void LineObject::setStartPos(qreal x, qreal y) 
 {
-  startPos = QPointF(x, y);
+  _startPos = QPointF(x, y);
 }
 
 void LineObject::setEndPos(qreal x, qreal y) 
 {
-  endPos = QPointF(x, y);
+  _endPos = QPointF(x, y);
 }
 
 bool LineObject::arrow1() 
 {
-  return arrow1On;
+  return _arrow1On;
 }
 
-void LineObject::setArrow1(bool status) 
+void LineObject::setArrow1(bool state) 
 {
-  arrow1On = status;
+  _arrow1On = state;
 }
 
 bool LineObject::arrow2() 
 {
-  return arrow2On;
+  return _arrow2On;
 }
 
-void LineObject::setArrow2(bool status) 
+void LineObject::setArrow2(bool state) 
 {
-  arrow2On = status;
+  _arrow2On = state;
 }
 
 int LineObject::getPenWidth() 
 {
-  return penWidth;
+  return _penWidth;
 }
 
 void LineObject::setPenWidth(int width) 
 {
-  penWidth = width;
+  _penWidth = width;
 }
 
 int LineObject::getPenStyle() 
 {
-  return penStyle;
+  return _penStyle;
 }
 
 void LineObject::setPenStyle(int style) 
 {
-  penStyle = style;
+  _penStyle = style;
 }
 
 int LineObject::type() const 

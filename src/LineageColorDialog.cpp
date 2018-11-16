@@ -1,71 +1,93 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/LineageColorDialog.h"
 
 LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent) 
 {
-  exitStatus = 1;
-  originFillColor = QColor(255, 165, 0);
-  ancestorFillColor = QColor(179, 225, 172);
-  descendantFillColor = QColor(0, 75, 255);
-  unrelatedFillColor = QColor(255, 255, 255);
-  originTextColor = QColor(0, 0, 0);
-  ancestorTextColor = QColor(0, 0, 0);
-  descendantTextColor = QColor(0, 0, 0);
-  unrelatedTextColor = QColor(0, 0, 0);
+  _exitStatus = 1;
+  _originFillColor = QColor(255, 165, 0);
+  _ancestorFillColor = QColor(179, 225, 172);
+  _descendantFillColor = QColor(0, 75, 255);
+  _unrelatedFillColor = QColor(255, 255, 255);
+  _originTextColor = QColor(0, 0, 0);
+  _ancestorTextColor = QColor(0, 0, 0);
+  _descendantTextColor = QColor(0, 0, 0);
+  _unrelatedTextColor = QColor(0, 0, 0);
   
   lineageLabel = new QLabel(tr("<b>Choose lineage colors:</b>"), this);
 
   originFillButton = new QPushButton(tr("Choose origin fill color"), this);
   QPixmap pixmapOneA(originFillButton->width(), originFillButton->height());
-  pixmapOneA.fill(originFillColor);
+  pixmapOneA.fill(_originFillColor);
   fillColorOneLabel = new QLabel(this);
   fillColorOneLabel->setMaximumWidth(50);
   fillColorOneLabel->setMaximumHeight(fillColorOneLabel->sizeHint().height());
   fillColorOneLabel->setPixmap(pixmapOneA);
   originTextButton = new QPushButton(tr("Choose origin text color"), this);
   QPixmap pixmapOneB(originTextButton->width(), originTextButton->height());
-  pixmapOneB.fill(originTextColor);
+  pixmapOneB.fill(_originTextColor);
   textColorOneLabel = new QLabel(this);
   textColorOneLabel->setMaximumWidth(50);
   textColorOneLabel->setMaximumHeight(textColorOneLabel->sizeHint().height());
   textColorOneLabel->setPixmap(pixmapOneB);
   ancestorFillButton = new QPushButton(tr("Choose ancestors fill color"), this);
   QPixmap pixmapTwoA(ancestorFillButton->width(), ancestorFillButton->height());
-  pixmapTwoA.fill(ancestorFillColor);
+  pixmapTwoA.fill(_ancestorFillColor);
   fillColorTwoLabel = new QLabel(this);
   fillColorTwoLabel->setMaximumWidth(50);
   fillColorTwoLabel->setMaximumHeight(fillColorTwoLabel->sizeHint().height());
   fillColorTwoLabel->setPixmap(pixmapTwoA);
   ancestorTextButton = new QPushButton(tr("Choose ancestors text color"), this);
   QPixmap pixmapTwoB(ancestorTextButton->width(), ancestorTextButton->height());
-  pixmapTwoB.fill(ancestorTextColor);
+  pixmapTwoB.fill(_ancestorTextColor);
   textColorTwoLabel = new QLabel(this);
   textColorTwoLabel->setMaximumWidth(50);
   textColorTwoLabel->setMaximumHeight(textColorTwoLabel->sizeHint().height());
   textColorTwoLabel->setPixmap(pixmapTwoB);
   descendantFillButton = new QPushButton(tr("Choose descendants fill color"), this);
   QPixmap pixmapThreeA(descendantFillButton->width(), descendantFillButton->height());
-  pixmapThreeA.fill(descendantFillColor);
+  pixmapThreeA.fill(_descendantFillColor);
   fillColorThreeLabel = new QLabel(this);
   fillColorThreeLabel->setMaximumWidth(50);
   fillColorThreeLabel->setMaximumHeight(fillColorThreeLabel->sizeHint().height());
   fillColorThreeLabel->setPixmap(pixmapThreeA);
   descendantTextButton = new QPushButton(tr("Choose descendants text color"), this);
   QPixmap pixmapThreeB(descendantTextButton->width(), descendantTextButton->height());
-  pixmapThreeB.fill(descendantTextColor);
+  pixmapThreeB.fill(_descendantTextColor);
   textColorThreeLabel = new QLabel(this);
   textColorThreeLabel->setMaximumWidth(50);
   textColorThreeLabel->setMaximumHeight(textColorThreeLabel->sizeHint().height());
   textColorThreeLabel->setPixmap(pixmapThreeB);
   unrelatedFillButton = new QPushButton(tr("Choose unrelated fill color"), this);
   QPixmap pixmapFourA(unrelatedFillButton->width(), unrelatedFillButton->height());
-  pixmapFourA.fill(unrelatedFillColor);
+  pixmapFourA.fill(_unrelatedFillColor);
   fillColorFourLabel = new QLabel(this);
   fillColorFourLabel->setMaximumWidth(50);
   fillColorFourLabel->setMaximumHeight(fillColorFourLabel->sizeHint().height());
   fillColorFourLabel->setPixmap(pixmapFourA);
   unrelatedTextButton = new QPushButton(tr("Choose unrelated text color"), this);
   QPixmap pixmapFourB(unrelatedTextButton->width(), unrelatedTextButton->height());
-  pixmapFourB.fill(unrelatedTextColor);
+  pixmapFourB.fill(_unrelatedTextColor);
   textColorFourLabel = new QLabel(this);
   textColorFourLabel->setMaximumWidth(50);
   textColorFourLabel->setMaximumHeight(textColorFourLabel->sizeHint().height());
@@ -140,10 +162,10 @@ void LineageColorDialog::setOriginFillColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      originFillColor = colorDialog->selectedColor();
+      _originFillColor = colorDialog->selectedColor();
     }
   QPixmap pixmapOneA(originFillButton->width(), originFillButton->height());
-  pixmapOneA.fill(originFillColor);
+  pixmapOneA.fill(_originFillColor);
   fillColorOneLabel->setPixmap(pixmapOneA);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -155,10 +177,10 @@ void LineageColorDialog::setOriginTextColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      originTextColor = colorDialog->selectedColor();
+      _originTextColor = colorDialog->selectedColor();
     }
   QPixmap pixmapOneB(originTextButton->width(), originTextButton->height());
-  pixmapOneB.fill(originTextColor);
+  pixmapOneB.fill(_originTextColor);
   textColorOneLabel->setPixmap(pixmapOneB);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -170,10 +192,10 @@ void LineageColorDialog::setAncestorFillColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      ancestorFillColor = colorDialog->selectedColor();
+      _ancestorFillColor = colorDialog->selectedColor();
     }
   QPixmap pixmapTwoA(ancestorFillButton->width(), ancestorFillButton->height());
-  pixmapTwoA.fill(ancestorFillColor);
+  pixmapTwoA.fill(_ancestorFillColor);
   fillColorTwoLabel->setPixmap(pixmapTwoA);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -185,10 +207,10 @@ void LineageColorDialog::setAncestorTextColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      ancestorTextColor = colorDialog->selectedColor();
+      _ancestorTextColor = colorDialog->selectedColor();
     }
   QPixmap pixmapTwoB(ancestorTextButton->width(), ancestorTextButton->height());
-  pixmapTwoB.fill(ancestorTextColor);
+  pixmapTwoB.fill(_ancestorTextColor);
   textColorTwoLabel->setPixmap(pixmapTwoB);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -200,10 +222,10 @@ void LineageColorDialog::setDescendantFillColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      descendantFillColor = colorDialog->selectedColor();
+      _descendantFillColor = colorDialog->selectedColor();
     }
   QPixmap pixmapThreeA(descendantFillButton->width(), descendantFillButton->height());
-  pixmapThreeA.fill(descendantFillColor);
+  pixmapThreeA.fill(_descendantFillColor);
   fillColorThreeLabel->setPixmap(pixmapThreeA);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -215,10 +237,10 @@ void LineageColorDialog::setDescendantTextColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      descendantTextColor = colorDialog->selectedColor();
+      _descendantTextColor = colorDialog->selectedColor();
     }
   QPixmap pixmapThreeB(descendantTextButton->width(), descendantTextButton->height());
-  pixmapThreeB.fill(descendantTextColor);
+  pixmapThreeB.fill(_descendantTextColor);
   textColorThreeLabel->setPixmap(pixmapThreeB);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -230,10 +252,10 @@ void LineageColorDialog::setUnrelatedFillColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      unrelatedFillColor = colorDialog->selectedColor();
+      _unrelatedFillColor = colorDialog->selectedColor();
     }
   QPixmap pixmapFourA(unrelatedFillButton->width(), unrelatedFillButton->height());
-  pixmapFourA.fill(unrelatedFillColor);
+  pixmapFourA.fill(_unrelatedFillColor);
   fillColorFourLabel->setPixmap(pixmapFourA);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -245,10 +267,10 @@ void LineageColorDialog::setUnrelatedTextColor()
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   if (colorDialog->exec()) 
     {
-      unrelatedTextColor = colorDialog->selectedColor();
+      _unrelatedTextColor = colorDialog->selectedColor();
     }
   QPixmap pixmapFourB(unrelatedTextButton->width(), unrelatedTextButton->height());
-  pixmapFourB.fill(unrelatedTextColor);
+  pixmapFourB.fill(_unrelatedTextColor);
   textColorFourLabel->setPixmap(pixmapFourB);
   saveCloseButton->setFocus();
   delete colorDialog;
@@ -256,60 +278,60 @@ void LineageColorDialog::setUnrelatedTextColor()
 
 void LineageColorDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void LineageColorDialog::saveAndClose() 
 {
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 
 QColor LineageColorDialog::getOriginFillColor() 
 {
-  return originFillColor;
+  return _originFillColor;
 }
 
 
 QColor LineageColorDialog::getOriginTextColor() 
 {
-  return originTextColor;
+  return _originTextColor;
 }
 
 QColor LineageColorDialog::getAncestorFillColor() 
 {
-  return ancestorFillColor;
+  return _ancestorFillColor;
 }
 
 QColor LineageColorDialog::getAncestorTextColor() 
 {
-  return ancestorTextColor;
+  return _ancestorTextColor;
 }
 
 
 QColor LineageColorDialog::getDescendantFillColor() 
 {
-  return descendantFillColor;
+  return _descendantFillColor;
 }
 
 QColor LineageColorDialog::getDescendantTextColor() 
 {
-  return descendantTextColor;
+  return _descendantTextColor;
 }
 
 QColor LineageColorDialog::getUnrelatedFillColor() 
 {
-  return unrelatedFillColor;
+  return _unrelatedFillColor;
 }
 
 QColor LineageColorDialog::getUnrelatedTextColor() 
 {
-  return unrelatedTextColor;
+  return _unrelatedTextColor;
 }
 
 int LineageColorDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 

@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/MainWindow.h"
 
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) 
@@ -30,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   // Some of these widgets need some pointers to each other to communicate properly.
   //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(linkagesWidget);
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
@@ -42,7 +63,6 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
   aw->setEventGraph(egw);
   aw->setRelationshipsWidget(rw);
-  lw->setEventGraph(egw);
   ogw->setEventGraph(egw);
   egw->setAttributesWidget(aw);
   egw->setOccurrenceGraph(ogw);
@@ -483,7 +503,7 @@ void MainWindow::importFromCsv()
      to report to the user how much we have already imported 
      into the sqlite database.
   */
-  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  QPointer<ProgressBar> loadProgress = new ProgressBar(0, 1, (int)data.size());
   loadProgress->setAttribute(Qt::WA_DeleteOnClose);
   loadProgress->setModal(true);
   loadProgress->show();
@@ -1124,7 +1144,7 @@ void MainWindow::importIncidentAttributes()
      to report to the user how much we have already imported 
      into the sqlite database.
   */
-  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  QPointer<ProgressBar> loadProgress = new ProgressBar(0, 1, (int)data.size());
   loadProgress->setWindowTitle("Importing attributes");
   loadProgress->setAttribute(Qt::WA_DeleteOnClose);
   loadProgress->setModal(true);
@@ -1299,7 +1319,7 @@ void MainWindow::importEntities()
      to report to the user how much we have already imported 
      into the sqlite database.
   */
-  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  QPointer<ProgressBar> loadProgress = new ProgressBar(0, 1, (int)data.size());
   loadProgress->setWindowTitle("Importing entities");
   loadProgress->setAttribute(Qt::WA_DeleteOnClose);
   loadProgress->setModal(true);
@@ -1483,7 +1503,7 @@ void MainWindow::importRelTypes()
      to report to the user how much we have already imported 
      into the sqlite database.
   */
-  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  QPointer<ProgressBar>loadProgress = new ProgressBar(0, 1, (int)data.size());
   loadProgress->setWindowTitle("Importing relationship types");
   loadProgress->setAttribute(Qt::WA_DeleteOnClose);
   loadProgress->setModal(true);
@@ -1658,7 +1678,7 @@ void MainWindow::importEntityAttributes()
      to report to the user how much we have already imported 
      into the sqlite database.
   */
-  loadProgress = new ProgressBar(0, 1, (int)data.size());
+  QPointer<ProgressBar> loadProgress = new ProgressBar(0, 1, (int)data.size());
   loadProgress->setWindowTitle("Importing attributes");
   loadProgress->setAttribute(Qt::WA_DeleteOnClose);
   loadProgress->setModal(true);
