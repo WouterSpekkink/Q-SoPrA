@@ -723,7 +723,7 @@ void AttributesWidget::newAttribute()
       if (top == ENTITIES) 
 	{
 	  EntityDialog *entityDialog = new EntityDialog(this);
-	  entityDialog->setRelationshipsWidget(_relationshipsWidget);
+	  entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
 	  entityDialog->setNew();
 	  entityDialog->exec();
 	  if (entityDialog->getExitStatus() == 0) 
@@ -753,7 +753,7 @@ void AttributesWidget::newAttribute()
 	      delete query;
 	    }
 	  delete entityDialog;
-	  _eventGraph->resetTree();
+	  _eventGraphWidgetPtr->resetTree();
 	}
       else 
 	{
@@ -779,7 +779,7 @@ void AttributesWidget::newAttribute()
 	      query->bindValue(":father", currentParent);
 	      query->exec();
 	      delete query;
-	      _eventGraph->resetTree();
+	      _eventGraphWidgetPtr->resetTree();
 	    }
 	  delete attributeDialog;
 	}
@@ -807,7 +807,7 @@ void AttributesWidget::newAttribute()
 	  QString hint = breakString(description);
 	  attribute->setToolTip(hint);
 	  attribute->setEditable(false);
-	  _eventGraph->resetTree();
+	  _eventGraphWidgetPtr->resetTree();
 	}
       delete attributeDialog;
     }
@@ -837,7 +837,7 @@ void AttributesWidget::editAttribute()
 	      query->first();
 	      QString description = query->value(0).toString();
 	      EntityDialog *entityDialog = new EntityDialog(this);
-	      entityDialog->setRelationshipsWidget(_relationshipsWidget);
+	      entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
 	      entityDialog->submitName(name);
 	      entityDialog->submitDescription(description);
 	      entityDialog->exec();
@@ -912,7 +912,7 @@ void AttributesWidget::editAttribute()
 		  this->setCursor(Qt::WaitCursor);
 		  retrieveData();
 		  this->setCursor(Qt::ArrowCursor);
-		  _eventGraph->resetTree();
+		  _eventGraphWidgetPtr->resetTree();
 		}
 	      delete query;
 	      delete attributeDialog;
@@ -1068,8 +1068,8 @@ void AttributesWidget::updateEntityAfterEdit(const QString name,
      is reconstructed every time it is switched to, so we do not need to reset it
      explicitly.
   */
-  _relationshipsWidget->resetTree();
-  _eventGraph->resetTree();
+  _relationshipsWidgetPtr->resetTree();
+  _eventGraphWidgetPtr->resetTree();
 }
 
 void AttributesWidget::selectText() 
@@ -1443,7 +1443,7 @@ void AttributesWidget::removeUnusedAttributes()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<AbstractNode*> abstractNodeVector = _eventGraph->getAbstractNodes();
+  QVector<AbstractNode*> abstractNodeVector = _eventGraphWidgetPtr->getAbstractNodes();
   QSet<QString> takenAttributes;
   QVectorIterator<AbstractNode*> it(abstractNodeVector);
   while (it.hasNext()) 
@@ -1530,7 +1530,7 @@ void AttributesWidget::removeUnusedAttributes()
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   resetTree();
-  _eventGraph->resetTree();
+  _eventGraphWidgetPtr->resetTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
@@ -2742,7 +2742,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
 		      this->setCursor(Qt::WaitCursor);
 		      retrieveData();
 		      this->setCursor(Qt::ArrowCursor);
-		      _eventGraph->resetTree();
+		      _eventGraphWidgetPtr->resetTree();
 		    }
 		  delete query;
 		  delete attributeDialog;
@@ -2750,7 +2750,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
 		  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 		  resetTree();
 		  fixTree();
-		  _eventGraph->resetTree();
+		  _eventGraphWidgetPtr->resetTree();
 		}
 	    }
 	}
@@ -2909,14 +2909,14 @@ void AttributesWidget::finalBusiness()
   setComment();
 }
 
-void AttributesWidget::setEventGraph(EventGraphWidget *eventGraph) 
+void AttributesWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  _eventGraph = eventGraph;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
-void AttributesWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidget) 
+void AttributesWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  _relationshipsWidget = relationshipsWidget;
+  _relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
 
 void AttributesWidget::resetTree() 

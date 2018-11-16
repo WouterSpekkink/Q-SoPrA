@@ -32,9 +32,9 @@ public:
   RawAttributesTable(QWidget *parent = 0);
   ~RawAttributesTable() {};
 
-  void setEventGraph(EventGraphWidget *egw);
-  void setAttributesWidget(AttributesWidget *aw);
-  void setRelationshipsWidget(RelationshipsWidget *rw);
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 
 private slots:
   void updateTable();
@@ -50,9 +50,9 @@ private slots:
   void exportTable();
   
 private:
-  EventGraphWidget *eventGraph;
-  AttributesWidget *attributesWidget;
-  RelationshipsWidget *relationshipsWidget;
+  EventGraphWidget *eventGraphWidgetPtr;
+  AttributesWidget *attributesWidgetPtr;
+  RelationshipsWidget *relationshipsWidgetPtr;
   
   QPointer<QueryModel> attributesModel;
   QPointer<ZoomableTableView> tableView;

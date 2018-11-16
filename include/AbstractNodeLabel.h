@@ -53,7 +53,7 @@ private:
 
   // Created by other class
   // Do not delete
-  AbstractNode *_abstractNode;
+  AbstractNode *_abstractNodePtr;
 };
 
 #endif

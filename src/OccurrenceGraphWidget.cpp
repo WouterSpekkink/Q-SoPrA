@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/OccurrenceGraphWidget.h"
 
 /*
@@ -8,9 +30,9 @@
 
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 {
-  distance = 70;
-  labelsVisible = true;
-  matched = false;
+  _distance = 70;
+  _labelsVisible = true;
+  _matched = false;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -257,10 +279,34 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   setGraphControls(false);
 }
 
+OccurrenceGraphWidget::~OccurrenceGraphWidget()
+{
+  qDeleteAll(_attributeOccurrenceVector);
+  _attributeOccurrenceVector.clear();
+  qDeleteAll(_relationshipOccurrenceVector);
+  _relationshipOccurrenceVector.clear();
+  qDeleteAll(_attributeLabelVector);
+  _attributeLabelVector.clear();
+  qDeleteAll(_relationshipLabelVector);
+  _relationshipLabelVector.clear();
+  qDeleteAll(_edgeVector);
+  _edgeVector.clear();
+  qDeleteAll(_lineVector);
+  _lineVector.clear();
+  qDeleteAll(_textVector);
+  _textVector.clear();
+  qDeleteAll(_ellipseVector);
+  _ellipseVector.clear();
+  qDeleteAll(_rectVector);
+  _rectVector.clear();
+  delete scene;
+  delete view;
+}
+
 void OccurrenceGraphWidget::checkCongruency() 
 {
   qApp->setOverrideCursor(Qt::WaitCursor);
-  if (attributeOccurrenceVector.size() > 0) 
+  if (_attributeOccurrenceVector.size() > 0) 
     {
       QSqlDatabase::database().transaction();
       QMap<QString, QVector<int>> attributeMap;
@@ -306,7 +352,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	  int order = query->value(1).toInt();
 	  orderPairs.push_back(QPair<int, int>(incident, order));
 	}
-      QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
 	  OccurrenceItem* current = it.next();
@@ -370,7 +416,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		}
 	    }
 	  QSet<int> observed;
-	  QVectorIterator<OccurrenceItem*> it3(attributeOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it3(_attributeOccurrenceVector);
 	  while (it3.hasNext()) 
 	    {
 	      OccurrenceItem *item = it3.next();
@@ -401,7 +447,7 @@ void OccurrenceGraphWidget::checkCongruency()
       delete query3;
       QSqlDatabase::database().commit();
     } 
-  if (relationshipOccurrenceVector.size() > 0) 
+  if (_relationshipOccurrenceVector.size() > 0) 
     {
       QSqlDatabase::database().transaction();
       QSqlQuery *query = new QSqlQuery;
@@ -410,7 +456,7 @@ void OccurrenceGraphWidget::checkCongruency()
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT ch_order FROM incidents "
 		      "WHERE id = :incident");
-      QVectorIterator<OccurrenceItem*> it(relationshipOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> it(_relationshipOccurrenceVector);
       while (it.hasNext()) 
 	{
 	  OccurrenceItem* current = it.next();
@@ -504,7 +550,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	    {
 	      int current = query->value(0).toInt();
 	      bool found = false;
-	      QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+	      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
 	      while (it2.hasNext()) 
 		{
 		  OccurrenceItem *item = it2.next();
@@ -624,16 +670,16 @@ void OccurrenceGraphWidget::checkCases()
       QListWidgetItem *item = caseListWidget->item(i);
       if (item->checkState() == Qt::Checked) 
 	{
-	  if (!checkedCases.contains(item->data(Qt::DisplayRole).toString())) 
+	  if (!_checkedCases.contains(item->data(Qt::DisplayRole).toString())) 
 	    {
-	      checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+	      _checkedCases.push_back(item->data(Qt::DisplayRole).toString());
 	    }
 	}
       else 
 	{
-	  if (checkedCases.contains(item->data(Qt::DisplayRole).toString())) 
+	  if (_checkedCases.contains(item->data(Qt::DisplayRole).toString())) 
 	    {
-	      checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
+	      _checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
 	    }
 	}
     }
@@ -642,12 +688,12 @@ void OccurrenceGraphWidget::checkCases()
 
 bool OccurrenceGraphWidget::attributesPresent() 
 {
-  return presentAttributes.size() > 0;
+  return _presentAttributes.size() > 0;
 }
 
 bool OccurrenceGraphWidget::relationshipsPresent() 
 {
-  return presentRelationships.size() > 0;
+  return _presentRelationships.size() > 0;
 }
 
 void OccurrenceGraphWidget::addAttribute() 
@@ -663,9 +709,9 @@ void OccurrenceGraphWidget::addAttribute()
       QColor textColor = attributeColorDialog->getTextColor();
       bool entity = attributeColorDialog->isEntity();
       QString attribute = attributeColorDialog->getAttribute();
-      if (!presentAttributes.contains(attribute)) 
+      if (!_presentAttributes.contains(attribute)) 
 	{
-	  presentAttributes.push_back(attribute);
+	  _presentAttributes.push_back(attribute);
 	  savePlotButton->setEnabled(true);
 	  QSqlQuery *query = new QSqlQuery;
 	  if (entity) 
@@ -708,13 +754,13 @@ void OccurrenceGraphWidget::addAttribute()
 		  if (!orders.contains(order)) 
 		    {
 		      orders.push_back(order);
-		      QPointF position = QPointF((order * distance), 0);
+		      QPointF position = QPointF((order * _distance), 0);
 		      OccurrenceItem *newOccurrence = new OccurrenceItem(40, incidentDescription, position,
 									 currentIncident, order, attribute);
 		      newOccurrence->setPos(newOccurrence->getOriginalPos());
 		      newOccurrence->setColor(color);
 		      newOccurrence->setZValue(3);
-		      attributeOccurrenceVector.push_back(newOccurrence);
+		      _attributeOccurrenceVector.push_back(newOccurrence);
 		      scene->addItem(newOccurrence);
 		      OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 		      QString text = QString::number(order) + " - " + attribute;
@@ -722,7 +768,7 @@ void OccurrenceGraphWidget::addAttribute()
 		      label->setDefaultTextColor(textColor);
 		      label->setTextWidth(label->boundingRect().width());
 		      label->setNewPos(newOccurrence->scenePos());
-		      attributeLabelVector.push_back(label);
+		      _attributeLabelVector.push_back(label);
 		      newOccurrence->setLabel(label);
 		      label->setZValue(4);
 		      scene->addItem(label);
@@ -791,9 +837,9 @@ void OccurrenceGraphWidget::addRelationship()
       QString relationship = relationshipColorDialog->getRelationship();
       QString type = relationshipColorDialog->getType();
       QString combi = relationship + " (" + type + ")";
-      if (!presentRelationships.contains(combi)) 
+      if (!_presentRelationships.contains(combi)) 
 	{
-	  presentRelationships.push_back(combi);
+	  _presentRelationships.push_back(combi);
 	  savePlotButton->setEnabled(true);
 	  QSqlQuery *query = new QSqlQuery;
 	  QSqlQuery *query2 = new QSqlQuery;
@@ -822,13 +868,13 @@ void OccurrenceGraphWidget::addRelationship()
 	      if (!orders.contains(order)) 
 		{
 		  orders.push_back(order);
-		  QPointF position = QPointF((order * distance), 0);
+		  QPointF position = QPointF((order * _distance), 0);
 		  OccurrenceItem *newOccurrence = new OccurrenceItem(40, incidentDescription, position,
 								     currentIncident, order, combi);
 		  newOccurrence->setPos(newOccurrence->getOriginalPos());
 		  newOccurrence->setColor(color);
 		  newOccurrence->setZValue(3);
-		  relationshipOccurrenceVector.push_back(newOccurrence);
+		  _relationshipOccurrenceVector.push_back(newOccurrence);
 		  scene->addItem(newOccurrence);
 		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 		  QString text = QString::number(order) + " - " + combi;
@@ -836,7 +882,7 @@ void OccurrenceGraphWidget::addRelationship()
 		  label->setDefaultTextColor(textColor);
 		  label->setTextWidth(label->boundingRect().width());
 		  label->setNewPos(newOccurrence->scenePos());
-		  relationshipLabelVector.push_back(label);
+		  _relationshipLabelVector.push_back(label);
 		  newOccurrence->setLabel(label);
 		  label->setZValue(4);
 		  scene->addItem(label);
@@ -894,8 +940,8 @@ void OccurrenceGraphWidget::addRelationship()
 
 void OccurrenceGraphWidget::setChangeLabel() 
 {
-  if (changeLabel->text() == "" && (attributeOccurrenceVector.size() > 0 ||
-				    relationshipOccurrenceVector.size() > 0)) 
+  if (changeLabel->text() == "" && (_attributeOccurrenceVector.size() > 0 ||
+				    _relationshipOccurrenceVector.size() > 0)) 
     {
       changeLabel->setText("*");
     }
@@ -903,7 +949,7 @@ void OccurrenceGraphWidget::setChangeLabel()
 
 void OccurrenceGraphWidget::updateLinkages() 
 {
-  QVectorIterator<Linkage*> it(edgeVector);
+  QVectorIterator<Linkage*> it(_edgeVector);
   while (it.hasNext()) 
     {
       Linkage *current = it.next();
@@ -937,17 +983,17 @@ void OccurrenceGraphWidget::removeAttributeMode()
 {
   setChangeLabel();
   QString text = attributeListWidget->currentItem()->data(Qt::DisplayRole).toString();
-  for (QVector<OccurrenceItem*>::iterator it = attributeOccurrenceVector.begin();
-       it != attributeOccurrenceVector.end();) 
+  for (QVector<OccurrenceItem*>::iterator it = _attributeOccurrenceVector.begin();
+       it != _attributeOccurrenceVector.end();) 
     {
       OccurrenceItem *current = *it;
       if (current->getAttribute() == text) 
 	{
 	  delete current->getLabel();
-	  attributeLabelVector.removeOne(current->getLabel());
+	  _attributeLabelVector.removeOne(current->getLabel());
 	  delete current;
-	  attributeOccurrenceVector.removeOne(current);
-	  presentAttributes.removeOne(text);
+	  _attributeOccurrenceVector.removeOne(current);
+	  _presentAttributes.removeOne(text);
 	}
       else 
 	{
@@ -965,11 +1011,11 @@ void OccurrenceGraphWidget::removeAttributeMode()
 	  i++;
 	}
     }
-  if (presentAttributes.size() > 0 || presentRelationships.size() > 0) 
+  if (_presentAttributes.size() > 0 || _presentRelationships.size() > 0) 
     {
       groupOccurrences();
     }
-  else if (presentAttributes.size() == 0 && presentRelationships.size() == 0) 
+  else if (_presentAttributes.size() == 0 && _presentRelationships.size() == 0) 
     {
       savePlotButton->setEnabled(false);
       caseListWidget->setEnabled(false);
@@ -984,17 +1030,17 @@ void OccurrenceGraphWidget::removeRelationshipMode()
 {
   setChangeLabel();
   QString text = relationshipListWidget->currentItem()->data(Qt::DisplayRole).toString();
-  for (QVector<OccurrenceItem*>::iterator it = relationshipOccurrenceVector.begin();
-       it != relationshipOccurrenceVector.end();) 
+  for (QVector<OccurrenceItem*>::iterator it = _relationshipOccurrenceVector.begin();
+       it != _relationshipOccurrenceVector.end();) 
     {
       OccurrenceItem *current = *it;
       if (current->getAttribute() == text) 
 	{
 	  delete current->getLabel();
-	  relationshipLabelVector.removeOne(current->getLabel());
+	  _relationshipLabelVector.removeOne(current->getLabel());
 	  delete current;
-	  relationshipOccurrenceVector.removeOne(current);
-	  presentRelationships.removeOne(text);
+	  _relationshipOccurrenceVector.removeOne(current);
+	  _presentRelationships.removeOne(text);
 	}
       else 
 	{
@@ -1012,11 +1058,11 @@ void OccurrenceGraphWidget::removeRelationshipMode()
 	  i++;
 	}
     }
-  if (presentAttributes.size() > 0 || presentRelationships.size() > 0) 
+  if (_presentAttributes.size() > 0 || _presentRelationships.size() > 0) 
     {
       groupOccurrences();
     }
-  else if (presentAttributes.size() == 0 && presentRelationships.size() == 0) 
+  else if (_presentAttributes.size() == 0 && _presentRelationships.size() == 0) 
     {
       savePlotButton->setEnabled(false);
       setGraphControls(false);
@@ -1077,7 +1123,7 @@ void OccurrenceGraphWidget::changeAttributeModeColor(QTableWidgetItem *item)
 	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = attributeListWidget->item(item->row(), 0);
 	  QString attribute = neighbour->data(Qt::DisplayRole).toString();
-	  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
 	  while (it.hasNext()) 
 	    {
 	      OccurrenceItem *current = it.next();
@@ -1106,7 +1152,7 @@ void OccurrenceGraphWidget::changeRelationshipModeColor(QTableWidgetItem *item)
 	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = relationshipListWidget->item(item->row(), 0);
 	  QString relationship = neighbour->data(Qt::DisplayRole).toString();
-	  QVectorIterator<OccurrenceItem*> it(relationshipOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it(_relationshipOccurrenceVector);
 	  while (it.hasNext()) 
 	    {
 	      OccurrenceItem *current = it.next();
@@ -1123,8 +1169,8 @@ void OccurrenceGraphWidget::changeRelationshipModeColor(QTableWidgetItem *item)
 void OccurrenceGraphWidget::groupOccurrences() 
 {
   QVector<OccurrenceItem*> allOccurrences;
-  std::sort(presentAttributes.begin(), presentAttributes.end(), stringSort);
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  std::sort(_presentAttributes.begin(), _presentAttributes.end(), stringSort);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   int persistentDist = 0;
   while (it.hasNext()) 
     {
@@ -1132,7 +1178,7 @@ void OccurrenceGraphWidget::groupOccurrences()
       allOccurrences.push_back(current);
       current->setGrouped(false);
       int dist = 0;
-      QVectorIterator<QString> it2(presentAttributes);
+      QVectorIterator<QString> it2(_presentAttributes);
       while (it2.hasNext()) 
 	{
 	  QString text = it2.next();
@@ -1150,15 +1196,15 @@ void OccurrenceGraphWidget::groupOccurrences()
 	}
     }
   persistentDist -= 250;
-  std::sort(presentRelationships.begin(), presentRelationships.end(), stringSort);
-  QVectorIterator<OccurrenceItem*> it3(relationshipOccurrenceVector);
+  std::sort(_presentRelationships.begin(), _presentRelationships.end(), stringSort);
+  QVectorIterator<OccurrenceItem*> it3(_relationshipOccurrenceVector);
   while (it3.hasNext()) 
     {
       OccurrenceItem *current = it3.next();
       allOccurrences.push_back(current);
       current->setGrouped(false);
       int dist = persistentDist;
-      QVectorIterator<QString> it4(presentRelationships);
+      QVectorIterator<QString> it4(_presentRelationships);
       while (it4.hasNext()) 
 	{
 	  QString text = it4.next();
@@ -1254,17 +1300,17 @@ void OccurrenceGraphWidget::groupOccurrences()
 
 void OccurrenceGraphWidget::wireLinkages() 
 {
-  qDeleteAll(edgeVector);
-  edgeVector.clear();
-  std::sort(attributeOccurrenceVector.begin(), attributeOccurrenceVector.end(), eventLessThan);
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  qDeleteAll(_edgeVector);
+  _edgeVector.clear();
+  std::sort(_attributeOccurrenceVector.begin(), _attributeOccurrenceVector.end(), eventLessThan);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       OccurrenceItem *tempSource = it.next();
       OccurrenceItem *tempTarget = NULL;
       if (tempSource->isVisible()) 
 	{
-	  QVectorIterator<OccurrenceItem*> it2(attributeOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it2(_attributeOccurrenceVector);
 	  while (it2.hasNext()) 
 	    {
 	      OccurrenceItem *temp = it2.next();
@@ -1295,21 +1341,21 @@ void OccurrenceGraphWidget::wireLinkages()
 	      newLinkage->setStartItem(tempSource);
 	      newLinkage->setEndItem(tempTarget);
 	      newLinkage->setCopy(true);
-	      edgeVector.push_back(newLinkage);
+	      _edgeVector.push_back(newLinkage);
 	      scene->addItem(newLinkage);
 	    }
 	}
     }
   // And we do the same for the relationship->oriented occurrences
-  std::sort(relationshipOccurrenceVector.begin(), relationshipOccurrenceVector.end(), eventLessThan);
-  QVectorIterator<OccurrenceItem*> it3(relationshipOccurrenceVector);
+  std::sort(_relationshipOccurrenceVector.begin(), _relationshipOccurrenceVector.end(), eventLessThan);
+  QVectorIterator<OccurrenceItem*> it3(_relationshipOccurrenceVector);
   while (it3.hasNext()) 
     {
       OccurrenceItem *tempSource = it3.next();
       OccurrenceItem *tempTarget = NULL;
       if (tempSource->isVisible()) 
 	{
-	  QVectorIterator<OccurrenceItem*> it4(relationshipOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it4(_relationshipOccurrenceVector);
 	  while (it4.hasNext()) 
 	    {
 	      OccurrenceItem *temp = it4.next();
@@ -1340,7 +1386,7 @@ void OccurrenceGraphWidget::wireLinkages()
 	      newLinkage->setStartItem(tempSource);
 	      newLinkage->setEndItem(tempTarget);
 	      newLinkage->setCopy(true);
-	      edgeVector.push_back(newLinkage);
+	      _edgeVector.push_back(newLinkage);
 	      scene->addItem(newLinkage);
 	    }
 	}
@@ -1358,27 +1404,27 @@ void OccurrenceGraphWidget::restore()
 
 void OccurrenceGraphWidget::reset() 
 {
-  matched = false;
+  _matched = false;
   QVector<OccurrenceItem*>::iterator it;
-  for (it = attributeOccurrenceVector.begin(); it != attributeOccurrenceVector.end();) 
+  for (it = _attributeOccurrenceVector.begin(); it != _attributeOccurrenceVector.end();) 
     {
       OccurrenceItem *current = *it;
       if (current->getId() < 0) 
 	{
 	  delete current->getLabel();
-	  attributeLabelVector.removeOne(current->getLabel());
+	  _attributeLabelVector.removeOne(current->getLabel());
 	  current->setLabel(NULL);
 	  delete current;
-	  attributeOccurrenceVector.removeOne(current);
+	  _attributeOccurrenceVector.removeOne(current);
 	}
       else 
 	{
-	  current->setPos(QPointF((current->getOrder() * distance), 0));
+	  current->setPos(QPointF((current->getOrder() * _distance), 0));
 	  current->setPermHidden(false); // We reset this here.2
 	  QString text = QString::number(current->getOrder()) + " - " + current->getAttribute();
 	  QColor textColor = current->getLabel()->defaultTextColor();
 	  delete current->getLabel();
-	  attributeLabelVector.removeOne(current->getLabel());
+	  _attributeLabelVector.removeOne(current->getLabel());
 	  OccurrenceLabel *newLabel = new OccurrenceLabel(current);
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(textColor);
@@ -1388,30 +1434,30 @@ void OccurrenceGraphWidget::reset()
 	  current->getLabel()->show();
 	  current->getLabel()->setNewPos(current->scenePos());
 	  scene->addItem(current->getLabel());
-	  attributeLabelVector.push_back(current->getLabel());
+	  _attributeLabelVector.push_back(current->getLabel());
 	  it++;
 	}
     }
   // And now we do the same for the relationship-oriented occurrences
-  for (it = relationshipOccurrenceVector.begin(); it != relationshipOccurrenceVector.end();) 
+  for (it = _relationshipOccurrenceVector.begin(); it != _relationshipOccurrenceVector.end();) 
     {
       OccurrenceItem *current = *it;
       if (current->getId() < 0) 
 	{
 	  delete current->getLabel();
-	  relationshipLabelVector.removeOne(current->getLabel());
+	  _relationshipLabelVector.removeOne(current->getLabel());
 	  current->setLabel(NULL);
 	  delete current;
-	  relationshipOccurrenceVector.removeOne(current);
+	  _relationshipOccurrenceVector.removeOne(current);
 	}
       else 
 	{
-	  current->setPos(QPointF((current->getOrder() * distance), 0));
+	  current->setPos(QPointF((current->getOrder() * _distance), 0));
 	  current->setPermHidden(false); // We reset this here.2
 	  QString text = QString::number(current->getOrder()) + " - " + current->getAttribute();
 	  QColor textColor = current->getLabel()->defaultTextColor();
 	  delete current->getLabel();
-	  relationshipLabelVector.removeOne(current->getLabel());
+	  _relationshipLabelVector.removeOne(current->getLabel());
 	  OccurrenceLabel *newLabel = new OccurrenceLabel(current);
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(textColor);
@@ -1421,7 +1467,7 @@ void OccurrenceGraphWidget::reset()
 	  current->getLabel()->show();
 	  current->getLabel()->setNewPos(current->scenePos());
 	  scene->addItem(current->getLabel());
-	  relationshipLabelVector.push_back(current->getLabel());
+	  _relationshipLabelVector.push_back(current->getLabel());
 	  it++;
 	}
     }
@@ -1431,8 +1477,8 @@ void OccurrenceGraphWidget::reset()
 void OccurrenceGraphWidget::getEvents() 
 {
   reset();
-  matched = true;
-  QVector<IncidentNode*> incidents = eventGraph->getIncidentNodes();
+  _matched = true;
+  QVector<IncidentNode*> incidents = _eventGraphWidgetPtr->getIncidentNodes();
   if (incidents.size() > 0) 
     {
       QVectorIterator<IncidentNode*> it(incidents);
@@ -1440,7 +1486,7 @@ void OccurrenceGraphWidget::getEvents()
 	{
 	  IncidentNode *incident = it.next();
 	  // We first do this for the attributes-oriented occurrences.
-	  QVectorIterator<OccurrenceItem*> it2(attributeOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it2(_attributeOccurrenceVector);
 	  while (it2.hasNext()) 
 	    {
 	      OccurrenceItem *occurrence = it2.next();
@@ -1473,7 +1519,7 @@ void OccurrenceGraphWidget::getEvents()
 			occurrence->getAttribute();
 		      QColor textColor = occurrence->getLabel()->defaultTextColor();
 		      delete occurrence->getLabel();
-		      attributeLabelVector.removeOne(occurrence->getLabel());
+		      _attributeLabelVector.removeOne(occurrence->getLabel());
 		      OccurrenceLabel *newLabel = new OccurrenceLabel(occurrence);
 		      newLabel->setPlainText(text);
 		      newLabel->setDefaultTextColor(textColor);
@@ -1484,7 +1530,7 @@ void OccurrenceGraphWidget::getEvents()
 		      occurrence->setPos(abstractNode->scenePos().x(), 0);
 		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 		      scene->addItem(occurrence->getLabel());
-		      attributeLabelVector.push_back(occurrence->getLabel());
+		      _attributeLabelVector.push_back(occurrence->getLabel());
 		    }
 		  else 
 		    {
@@ -1494,7 +1540,7 @@ void OccurrenceGraphWidget::getEvents()
 		}
 	    }
 	  // And then we do the relationships-oriented occurrences.
-	  QVectorIterator<OccurrenceItem*> it3(relationshipOccurrenceVector);
+	  QVectorIterator<OccurrenceItem*> it3(_relationshipOccurrenceVector);
 	  while (it3.hasNext()) 
 	    {
 	      OccurrenceItem *occurrence = it3.next();
@@ -1527,7 +1573,7 @@ void OccurrenceGraphWidget::getEvents()
 			occurrence->getAttribute();
 		      QColor textColor = occurrence->getLabel()->defaultTextColor();
 		      delete occurrence->getLabel();
-		      relationshipLabelVector.removeOne(occurrence->getLabel());
+		      _relationshipLabelVector.removeOne(occurrence->getLabel());
 		      OccurrenceLabel *newLabel = new OccurrenceLabel(occurrence);
 		      newLabel->setPlainText(text);
 		      newLabel->setDefaultTextColor(textColor);
@@ -1538,7 +1584,7 @@ void OccurrenceGraphWidget::getEvents()
 		      occurrence->setPos(abstractNode->scenePos().x(), 0);
 		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 		      scene->addItem(occurrence->getLabel());
-		      attributeLabelVector.push_back(occurrence->getLabel());
+		      _attributeLabelVector.push_back(occurrence->getLabel());
 		    }
 		  else 
 		    {
@@ -1553,7 +1599,7 @@ void OccurrenceGraphWidget::getEvents()
      Then we do the abstractNodes for the attribute-oriented occurrences. 
      We don't need to do this for the relationship-oriented occurrences.
   */
-  QVector<AbstractNode*> abstractNodes = eventGraph->getAbstractNodes();
+  QVector<AbstractNode*> abstractNodes = _eventGraphWidgetPtr->getAbstractNodes();
   if (abstractNodes.size() > 0) 
     {
       QVectorIterator<AbstractNode*> it(abstractNodes);
@@ -1592,7 +1638,7 @@ void OccurrenceGraphWidget::getEvents()
 		  newOccurrence->setPos(newOccurrence->getOriginalPos());
 		  newOccurrence->setColor(color);
 		  newOccurrence->setZValue(3);
-		  attributeOccurrenceVector.push_back(newOccurrence);
+		  _attributeOccurrenceVector.push_back(newOccurrence);
 		  scene->addItem(newOccurrence);
 		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 		  QString type = "";
@@ -1616,7 +1662,7 @@ void OccurrenceGraphWidget::getEvents()
 		  label->setDefaultTextColor(Qt::black);
 		  label->setTextWidth(label->boundingRect().width());
 		  label->setNewPos(newOccurrence->scenePos());
-		  attributeLabelVector.push_back(label);
+		  _attributeLabelVector.push_back(label);
 		  newOccurrence->setLabel(label);
 		  label->setZValue(4);
 		  scene->addItem(label);
@@ -1632,12 +1678,12 @@ void OccurrenceGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
 {
   OccurrenceItem *source = NULL;
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -1673,12 +1719,12 @@ void OccurrenceGraphWidget::processMoveLine(QGraphicsItem *item, QPointF pos)
 {
   OccurrenceItem *source = NULL;
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -1755,7 +1801,7 @@ void OccurrenceGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPoint
     {
       newLineObject->setArrow2(true);
     }
-  lineVector.push_back(newLineObject);
+  _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
 }
@@ -1770,7 +1816,7 @@ void OccurrenceGraphWidget::addTextObject(const QPointF &pos)
     {
       QString text = textDialog->getText();
       TextObject *newText = new TextObject(text);
-      textVector.push_back(newText);
+      _textVector.push_back(newText);
       scene->addItem(newText);
       newText->setPos(pos);
       newText->setZValue(6);
@@ -1782,7 +1828,7 @@ void OccurrenceGraphWidget::addTextObject(const QPointF &pos)
 void OccurrenceGraphWidget::addEllipseObject(const QPointF &pos) 
 {
   EllipseObject *newEllipse = new EllipseObject();
-  ellipseVector.push_back(newEllipse);
+  _ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
   newEllipse->setZValue(5);
   newEllipse->setPos(pos);
@@ -1792,7 +1838,7 @@ void OccurrenceGraphWidget::addEllipseObject(const QPointF &pos)
 void OccurrenceGraphWidget::addRectObject(const QPointF &pos) 
 {
   RectObject *newRect = new RectObject();
-  rectVector.push_back(newRect);
+  _rectVector.push_back(newRect);
   scene->addItem(newRect);
   newRect->setZValue(5);
   newRect->setPos(pos);
@@ -1892,7 +1938,7 @@ void OccurrenceGraphWidget::deleteLine()
       if (line) 
 	{
 	  delete line;
-	  lineVector.removeOne(line);
+	  _lineVector.removeOne(line);
 	}
     }
 }
@@ -1920,7 +1966,7 @@ void OccurrenceGraphWidget::duplicateLine()
 	  newLineObject->setPenWidth(line->getPenWidth());
 	  newLineObject->setPenStyle(line->getPenStyle());
 	  newLineObject->setColor(line->getColor());
-	  lineVector.push_back(newLineObject);
+	  _lineVector.push_back(newLineObject);
 	  scene->addItem(newLineObject);
 	  newLineObject->setZValue(5);
 	}
@@ -2015,7 +2061,7 @@ void OccurrenceGraphWidget::deleteText()
       if (text) 
 	{
 	  delete text;
-	  textVector.removeOne(text);
+	  _textVector.removeOne(text);
 	}
     }
 }
@@ -2037,7 +2083,7 @@ void OccurrenceGraphWidget::duplicateText()
 	    {
 	      QString alteredText = textDialog->getText();
 	      TextObject *newText = new TextObject(alteredText);
-	      textVector.push_back(newText);
+	      _textVector.push_back(newText);
 	      scene->addItem(newText);
 	      QPointF pos = text->scenePos();
 	      pos.setY(pos.y() - 300);
@@ -2142,7 +2188,7 @@ void OccurrenceGraphWidget::deleteEllipse()
       if (ellipse) 
 	{
 	  delete ellipse;
-	  ellipseVector.removeOne(ellipse);
+	  _ellipseVector.removeOne(ellipse);
 	}
     }  
 }
@@ -2164,7 +2210,7 @@ void OccurrenceGraphWidget::duplicateEllipse()
 	  newEllipse->setFillColor(ellipse->getFillColor());
 	  newEllipse->setPenWidth(ellipse->getPenWidth());
 	  newEllipse->setPenStyle(ellipse->getPenStyle());
-	  ellipseVector.push_back(newEllipse);
+	  _ellipseVector.push_back(newEllipse);
 	  newEllipse->setZValue(5);
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
@@ -2263,7 +2309,7 @@ void OccurrenceGraphWidget::deleteRect()
       if (rect) 
 	{
 	  delete rect;
-	  rectVector.removeOne(rect);
+	  _rectVector.removeOne(rect);
 	}
     }  
 }
@@ -2285,7 +2331,7 @@ void OccurrenceGraphWidget::duplicateRect()
 	  newRect->setFillColor(rect->getFillColor());
 	  newRect->setPenWidth(rect->getPenWidth());
 	  newRect->setPenStyle(rect->getPenStyle());
-	  rectVector.push_back(newRect);
+	  _rectVector.push_back(newRect);
 	  newRect->setZValue(5);
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
@@ -2599,14 +2645,14 @@ void OccurrenceGraphWidget::fixZValues()
 
 void OccurrenceGraphWidget::plotLabels() 
 {
-  QVectorIterator<OccurrenceLabel*> it(attributeLabelVector);
+  QVectorIterator<OccurrenceLabel*> it(_attributeLabelVector);
   while (it.hasNext()) 
     {
       OccurrenceLabel *currentItem = it.next();
       OccurrenceItem *currentOccurrence = currentItem->getOccurrence();
       if (currentOccurrence->isVisible()) 
 	{
-	  if (labelsVisible) 
+	  if (_labelsVisible) 
 	    {
 	      currentItem->hide();
 	    }
@@ -2616,14 +2662,14 @@ void OccurrenceGraphWidget::plotLabels()
 	    }
 	}
     }
-  QVectorIterator<OccurrenceLabel*> it2(relationshipLabelVector);
+  QVectorIterator<OccurrenceLabel*> it2(_relationshipLabelVector);
   while (it2.hasNext()) 
     {
       OccurrenceLabel *currentItem = it2.next();
       OccurrenceItem *currentOccurrence = currentItem->getOccurrence();
       if (currentOccurrence->isVisible()) 
 	{
-	  if (labelsVisible) 
+	  if (_labelsVisible) 
 	    {
 	      currentItem->hide();
 	    }
@@ -2633,14 +2679,14 @@ void OccurrenceGraphWidget::plotLabels()
 	    }
 	}
     }
-  labelsVisible = !(labelsVisible);
+  _labelsVisible = !(_labelsVisible);
 }
 
 void OccurrenceGraphWidget::changeLabels() 
 {
   if (changeLabelsButton->isChecked()) 
     {
-      QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
 	  OccurrenceItem *currentOccurrence = it.next();
@@ -2651,14 +2697,14 @@ void OccurrenceGraphWidget::changeLabels()
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
 	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
-	  attributeLabelVector.push_back(newLabel);
+	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
 	  delete oldLabel;
-	  attributeLabelVector.removeOne(oldLabel);
+	  _attributeLabelVector.removeOne(oldLabel);
 	}
-      QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
       while (it2.hasNext()) 
 	{
 	  OccurrenceItem *currentOccurrence = it2.next();
@@ -2669,17 +2715,17 @@ void OccurrenceGraphWidget::changeLabels()
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
 	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
-	  relationshipLabelVector.push_back(newLabel);
+	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
 	  delete oldLabel;
-	  relationshipLabelVector.removeOne(oldLabel);
+	  _relationshipLabelVector.removeOne(oldLabel);
 	}
     }
   else 
     {
-      QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
 	  OccurrenceItem *currentOccurrence = it.next();
@@ -2691,14 +2737,14 @@ void OccurrenceGraphWidget::changeLabels()
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
 	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
-	  attributeLabelVector.push_back(newLabel);
+	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
 	  delete oldLabel;
-	  attributeLabelVector.removeOne(oldLabel);
+	  _attributeLabelVector.removeOne(oldLabel);
 	}
-      QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
       while (it2.hasNext()) 
 	{
 	  OccurrenceItem *currentOccurrence = it2.next();
@@ -2710,12 +2756,12 @@ void OccurrenceGraphWidget::changeLabels()
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
 	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
-	  relationshipLabelVector.push_back(newLabel);
+	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
 	  delete oldLabel;
-	  relationshipLabelVector.removeOne(oldLabel);
+	  _relationshipLabelVector.removeOne(oldLabel);
 	}
     }
 }
@@ -2736,12 +2782,12 @@ void OccurrenceGraphWidget::setBackgroundColor()
 void OccurrenceGraphWidget::increaseDistance() 
 {
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -2749,7 +2795,7 @@ void OccurrenceGraphWidget::increaseDistance()
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
   int unit = 0;
   qreal last = -9999;
-  if (distance < 300) 
+  if (_distance < 300) 
     {
       QVectorIterator<OccurrenceItem*> it3(allOccurrences);
       while (it3.hasNext()) 
@@ -2771,18 +2817,18 @@ void OccurrenceGraphWidget::increaseDistance()
 	  last = oldX;
 	}
     }
-  distance++;
+  _distance++;
 }
 
 void OccurrenceGraphWidget::decreaseDistance() 
 {
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -2790,7 +2836,7 @@ void OccurrenceGraphWidget::decreaseDistance()
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
   int unit = 0;
   qreal last = -9999;
-  if (distance > 40) 
+  if (_distance > 40) 
     {
       QVectorIterator<OccurrenceItem*> it3(allOccurrences);
       while (it3.hasNext()) 
@@ -2812,7 +2858,7 @@ void OccurrenceGraphWidget::decreaseDistance()
 	  last = oldX;
 	}
     }
-  distance--;
+  _distance--;
 }
 
 void OccurrenceGraphWidget::setRangeControls() 
@@ -2822,12 +2868,12 @@ void OccurrenceGraphWidget::setRangeControls()
   lowerRangeSpinBox->setEnabled(true);
   upperRangeSpinBox->setEnabled(true);
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -2891,12 +2937,12 @@ void OccurrenceGraphWidget::processUpperRange(int value)
 void OccurrenceGraphWidget::setVisibility() 
 {
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -2920,7 +2966,7 @@ void OccurrenceGraphWidget::setVisibility()
 	      currentItem->hide();
 	    }
 	}
-      if (checkedCases.size() > 0) 
+      if (_checkedCases.size() > 0) 
 	{
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT incident FROM incidents_to_cases "
@@ -2929,7 +2975,7 @@ void OccurrenceGraphWidget::setVisibility()
 	  if (id < 0) 
 	    { // Occurrence items for abstractNode events have negative IDs.
 	      bool keep = false;
-	      QVector<AbstractNode*> abstractNodes = eventGraph->getAbstractNodes();
+	      QVector<AbstractNode*> abstractNodes = _eventGraphWidgetPtr->getAbstractNodes();
 	      QVectorIterator<AbstractNode*> it4(abstractNodes);
 	      while (it4.hasNext()) 
 		{
@@ -2941,7 +2987,7 @@ void OccurrenceGraphWidget::setVisibility()
 		      while (it5.hasNext()) 
 			{
 			  IncidentNode *currentIncident = it5.next();
-			  QVectorIterator<QString> it6(checkedCases);
+			  QVectorIterator<QString> it6(_checkedCases);
 			  while (it6.hasNext()) 
 			    {
 			      QString currentCase = it6.next();
@@ -2965,7 +3011,7 @@ void OccurrenceGraphWidget::setVisibility()
 	  else 
 	    {
 	      bool found = false;
-	      QVectorIterator<QString> it4(checkedCases);
+	      QVectorIterator<QString> it4(_checkedCases);
 	      while (it4.hasNext()) 
 		{
 		  QString currentCase = it4.next();
@@ -2977,9 +3023,9 @@ void OccurrenceGraphWidget::setVisibility()
 		    {
 		      found = true;
 		    }
-		  if (matched) 
+		  if (_matched) 
 		    {
-		      QVector<IncidentNode*> events = eventGraph->getIncidentNodes();
+		      QVector<IncidentNode*> events = _eventGraphWidgetPtr->getIncidentNodes();
 		      QVectorIterator<IncidentNode*> it5(events);
 		      while (it5.hasNext()) 
 			{
@@ -3016,7 +3062,7 @@ void OccurrenceGraphWidget::setVisibility()
 	}
     }
   wireLinkages();
-  QVectorIterator<Linkage*> it4(edgeVector);
+  QVectorIterator<Linkage*> it4(_edgeVector);
   while (it4.hasNext()) 
     {
       Linkage *currentEdge = it4.next();
@@ -3046,7 +3092,7 @@ void OccurrenceGraphWidget::setVisibility()
 	    }
 	}
     }
-  QVectorIterator<OccurrenceLabel*> it5(attributeLabelVector);
+  QVectorIterator<OccurrenceLabel*> it5(_attributeLabelVector);
   while (it5.hasNext()) 
     {
       OccurrenceLabel *currentText = it5.next();
@@ -3060,7 +3106,7 @@ void OccurrenceGraphWidget::setVisibility()
 	  currentText->show();
 	}
     }
-  QVectorIterator<OccurrenceLabel*> it6(relationshipLabelVector);
+  QVectorIterator<OccurrenceLabel*> it6(_relationshipLabelVector);
   while (it6.hasNext()) 
     {
       OccurrenceLabel *currentText = it6.next();
@@ -3110,12 +3156,12 @@ void OccurrenceGraphWidget::exportMatrix()
 {
   // First we put all occurrences together
   QVector<OccurrenceItem*> allOccurrences;
-  QVectorIterator<OccurrenceItem*> it(attributeOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
       allOccurrences.push_back(it.next());
     }
-  QVectorIterator<OccurrenceItem*> it2(relationshipOccurrenceVector);
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
       allOccurrences.push_back(it2.next());
@@ -3313,12 +3359,12 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->exec();
 	}
       QVector<OccurrenceItem*> allOccurrences;
-      QVectorIterator<OccurrenceItem*> aIt(attributeOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> aIt(_attributeOccurrenceVector);
       while (aIt.hasNext()) 
 	{
 	  allOccurrences.push_back(aIt.next());
 	}
-      QVectorIterator<OccurrenceItem*> rIt(relationshipOccurrenceVector);
+      QVectorIterator<OccurrenceItem*> rIt(_relationshipOccurrenceVector);
       while (rIt.hasNext()) 
 	{
 	  allOccurrences.push_back(rIt.next());
@@ -3364,7 +3410,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	    {
 	      perm = 1;
 	    }
-	  if (relationshipOccurrenceVector.contains(currentItem)) 
+	  if (_relationshipOccurrenceVector.contains(currentItem)) 
 	    {
 	      relationship = 1;
 	    }
@@ -3392,12 +3438,12 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       saveProgress->close();
       delete saveProgress;
       QVector<OccurrenceLabel*> allLabels;
-      QVectorIterator<OccurrenceLabel*> alIt(attributeLabelVector);
+      QVectorIterator<OccurrenceLabel*> alIt(_attributeLabelVector);
       while (alIt.hasNext()) 
 	{
 	  allLabels.push_back(alIt.next());
 	}
-      QVectorIterator<OccurrenceLabel*> rlIt(relationshipLabelVector);
+      QVectorIterator<OccurrenceLabel*> rlIt(_relationshipLabelVector);
       while (rlIt.hasNext()) 
 	{
 	  allLabels.push_back(rlIt.next());
@@ -3434,7 +3480,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	    {
 	      hidden = 0;
 	    }
-	  if (relationshipLabelVector.contains(currentLabel)) 
+	  if (_relationshipLabelVector.contains(currentLabel)) 
 	    {
 	      relationship = 1;
 	    }
@@ -3527,7 +3573,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
-      saveProgress = new ProgressBar(0, 1, lineVector.size());
+      saveProgress = new ProgressBar(0, 1, _lineVector.size());
       saveProgress->setWindowTitle("Saving line objects");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
       saveProgress->setModal(true);
@@ -3538,7 +3584,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 		     "zvalue, red, green, blue, alpha) "
 		     "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha)");
-      QVectorIterator<LineObject*> it8(lineVector);
+      QVectorIterator<LineObject*> it8(_lineVector);
       while (it8.hasNext()) 
 	{
 	  LineObject *currentLine = it8.next();
@@ -3585,7 +3631,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
-      saveProgress = new ProgressBar(0, 1, textVector.size());
+      saveProgress = new ProgressBar(0, 1, _textVector.size());
       saveProgress->setWindowTitle("Saving text items");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
       saveProgress->setModal(true);
@@ -3596,7 +3642,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 		     "zvalue, red, green, blue, alpha) "
 		     "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
-      QVectorIterator<TextObject*> it9(textVector);
+      QVectorIterator<TextObject*> it9(_textVector);
       while (it9.hasNext()) 
 	{
 	  TextObject *currentText = it9.next();
@@ -3631,7 +3677,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
-      saveProgress = new ProgressBar(0, 1, ellipseVector.size());
+      saveProgress = new ProgressBar(0, 1, _ellipseVector.size());
       saveProgress->setWindowTitle("Saving ellipses");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
       saveProgress->setModal(true);
@@ -3646,7 +3692,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
-      QVectorIterator<EllipseObject*> it10(ellipseVector);
+      QVectorIterator<EllipseObject*> it10(_ellipseVector);
       while (it10.hasNext()) 
 	{
 	  EllipseObject *ellipse = it10.next();
@@ -3704,7 +3750,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
-      saveProgress = new ProgressBar(0, 1, rectVector.size());
+      saveProgress = new ProgressBar(0, 1, _rectVector.size());
       saveProgress->setWindowTitle("Saving rectangles");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
       saveProgress->setModal(true);
@@ -3719,7 +3765,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
-      QVectorIterator<RectObject*> it11(rectVector);
+      QVectorIterator<RectObject*> it11(_rectVector);
       while (it11.hasNext()) 
 	{
 	  RectObject *rect = it11.next();
@@ -3854,11 +3900,11 @@ void OccurrenceGraphWidget::seePlots()
 	  currentItem->setZValue(3);
 	  if (relationship == 0) 
 	    {
-	      attributeOccurrenceVector.push_back(currentItem);
+	      _attributeOccurrenceVector.push_back(currentItem);
 	    }
 	  else 
 	    {
-	      relationshipOccurrenceVector.push_back(currentItem);
+	      _relationshipOccurrenceVector.push_back(currentItem);
 	    }
 	  allOccurrences.push_back(currentItem);
 	  scene->addItem(currentItem);
@@ -3916,11 +3962,11 @@ void OccurrenceGraphWidget::seePlots()
 		  currentItem->setLabel(currentLabel);
 		  if (relationship == 0) 
 		    {
-		      attributeLabelVector.push_back(currentLabel);
+		      _attributeLabelVector.push_back(currentLabel);
 		    }
 		  else 
 		    {
-		      relationshipLabelVector.push_back(currentLabel);
+		      _relationshipLabelVector.push_back(currentLabel);
 		    }
 		  scene->addItem(currentLabel);
 		  if (hidden == 1) 
@@ -3963,7 +4009,7 @@ void OccurrenceGraphWidget::seePlots()
 	      attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->
 		setFlags(attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->flags() ^
 			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	      presentAttributes.push_back(name);
+	      _presentAttributes.push_back(name);
 	    }
 	  else 
 	    {
@@ -3975,7 +4021,7 @@ void OccurrenceGraphWidget::seePlots()
 	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->
 		setFlags(relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->flags() ^
 			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	      presentRelationships.push_back(name);
+	      _presentRelationships.push_back(name);
 	    }
 	}
       query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
@@ -4001,7 +4047,7 @@ void OccurrenceGraphWidget::seePlots()
 	  int alpha = query->value(12).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  LineObject *newLine = new LineObject(QPointF(startx, starty), QPointF(endx, endy));
-	  lineVector.push_back(newLine);
+	  _lineVector.push_back(newLine);
 	  newLine->setZValue(zValue);
 	  newLine->setColor(color);
 	  if (arone == 1) 
@@ -4037,7 +4083,7 @@ void OccurrenceGraphWidget::seePlots()
 	  int alpha = query->value(10).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  TextObject *newText = new TextObject(desc);
-	  textVector.push_back(newText);
+	  _textVector.push_back(newText);
 	  newText->setZValue(zValue);
 	  newText->setDefaultTextColor(color);
 	  newText->setTextWidth(width);
@@ -4083,7 +4129,7 @@ void OccurrenceGraphWidget::seePlots()
 	  QColor color = QColor(red, green, blue, alpha);
 	  QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
 	  EllipseObject *newEllipse = new EllipseObject();
-	  ellipseVector.push_back(newEllipse);
+	  _ellipseVector.push_back(newEllipse);
 	  scene->addItem(newEllipse);
 	  newEllipse->setTopLeft(QPointF(topleftx, toplefty));
 	  newEllipse->setTopRight(QPointF(toprightx, toprighty));
@@ -4132,7 +4178,7 @@ void OccurrenceGraphWidget::seePlots()
 	  QColor color = QColor(red, green, blue, alpha);
 	  QColor fillColor = QColor(fillred, fillgreen, fillblue, fillalpha);
 	  RectObject *newRect = new RectObject();
-	  rectVector.push_back(newRect);
+	  _rectVector.push_back(newRect);
 	  scene->addItem(newRect);
 	  newRect->setTopLeft(QPointF(topleftx, toplefty));
 	  newRect->setTopRight(QPointF(toprightx, toprighty));
@@ -4146,7 +4192,7 @@ void OccurrenceGraphWidget::seePlots()
 	  newRect->setPenStyle(penstyle);
 	  newRect->setZValue(zValue);
 	}
-      distance = 70;
+      _distance = 70;
       plotLabel->setText(plot);
       changeLabel->setText("");
       scene->update();
@@ -4207,38 +4253,37 @@ void OccurrenceGraphWidget::seePlots()
     }
 }
 
-
-void OccurrenceGraphWidget::setEventGraph(EventGraphWidget *egw) 
+void OccurrenceGraphWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  eventGraph = egw;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
 void OccurrenceGraphWidget::cleanUp() 
 {
   scene->clearSelection();
-  qDeleteAll(attributeOccurrenceVector);
-  attributeOccurrenceVector.clear();
-  qDeleteAll(relationshipOccurrenceVector);
-  relationshipOccurrenceVector.clear();
-  qDeleteAll(attributeLabelVector);
-  attributeLabelVector.clear();
-  qDeleteAll(relationshipLabelVector);
-  relationshipLabelVector.clear();
-  qDeleteAll(edgeVector);
-  edgeVector.clear();
-  qDeleteAll(lineVector);
-  lineVector.clear();
-  qDeleteAll(textVector);
-  textVector.clear();
-  qDeleteAll(ellipseVector);
-  ellipseVector.clear();
-  qDeleteAll(rectVector);
-  rectVector.clear();
+  qDeleteAll(_attributeOccurrenceVector);
+  _attributeOccurrenceVector.clear();
+  qDeleteAll(_relationshipOccurrenceVector);
+  _relationshipOccurrenceVector.clear();
+  qDeleteAll(_attributeLabelVector);
+  _attributeLabelVector.clear();
+  qDeleteAll(_relationshipLabelVector);
+  _relationshipLabelVector.clear();
+  qDeleteAll(_edgeVector);
+  _edgeVector.clear();
+  qDeleteAll(_lineVector);
+  _lineVector.clear();
+  qDeleteAll(_textVector);
+  _textVector.clear();
+  qDeleteAll(_ellipseVector);
+  _ellipseVector.clear();
+  qDeleteAll(_rectVector);
+  _rectVector.clear();
   attributeListWidget->setRowCount(0);
   relationshipListWidget->setRowCount(0);
-  presentAttributes.clear();
-  presentRelationships.clear();
-  checkedCases.clear();
+  _presentAttributes.clear();
+  _presentRelationships.clear();
+  _checkedCases.clear();
   setGraphControls(false);
 }
 

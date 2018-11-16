@@ -343,8 +343,8 @@ void RawAttributesTable::editAttribute()
 	      query->bindValue(":newname", newName);
 	      query->bindValue(":oldname", attribute);
 	      query->exec();
-	      eventGraph->resetTree();
-	      attributesWidget->resetTree();
+	      eventGraphWidgetPtr->resetTree();
+	      attributesWidgetPtr->resetTree();
 	    }
 	  delete attributeDialog;
 	}
@@ -497,9 +497,9 @@ void RawAttributesTable::updateEntityAfterEdit(const QString name,
      is reconstructed every time it is switched to, so we do not need to reset it
      explicitly.
   */
-  relationshipsWidget->resetTree();
-  attributesWidget->resetTree();
-  eventGraph->resetTree();
+  relationshipsWidgetPtr->resetTree();
+  attributesWidgetPtr->resetTree();
+  eventGraphWidgetPtr->resetTree();
 }
 
 void RawAttributesTable::exportTable() 
@@ -538,18 +538,18 @@ void RawAttributesTable::exportTable()
     }
 }
 
-void RawAttributesTable::setEventGraph(EventGraphWidget *egw) 
+void RawAttributesTable::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  eventGraph = egw;
+  eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
-void RawAttributesTable::setAttributesWidget(AttributesWidget *aw) 
+void RawAttributesTable::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  attributesWidget = aw;
+  attributesWidgetPtr = attributesWidgetPtr;
 }
 
-void RawAttributesTable::setRelationshipsWidget(RelationshipsWidget *rw) 
+void RawAttributesTable::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  relationshipsWidget = rw;
+  relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
 

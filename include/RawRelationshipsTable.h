@@ -31,8 +31,7 @@ public:
   RawRelationshipsTable(QWidget *parent = 0);
   ~RawRelationshipsTable() {};
 
-  void setRelationshipsWidget(RelationshipsWidget *rw);
-  void setNetworkGraph(NetworkGraphWidget *ngw);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 						      
 private slots:
   void updateTable();  
@@ -47,8 +46,7 @@ private slots:
   void exportTable();
   
 private:
-  RelationshipsWidget *relationshipsWidget;
-  NetworkGraphWidget *networkGraph;
+  RelationshipsWidget *relationshipsWidgetPtr;
   
   QPointer<RelationalTable> relationshipsModel;
   QPointer<ZoomableTableView> tableView;

@@ -80,8 +80,8 @@ public:
   void setEvents(QVector<IncidentNode*> eventVector);
   void setAbstractNodes(QVector<AbstractNode*> abstractNodeVector);
   void setEdges(QVector<Linkage*> edgeVector);
-  void setAttributesWidget(AttributesWidget *attributesWidget);
-  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 
   // Getters
   void getEdges();
@@ -254,8 +254,8 @@ private:
 
   // Pointers to other widgets
   // Do not delete
-  AttributesWidget *_attributesWidget;
-  RelationshipsWidget *_relationshipsWidget;
+  AttributesWidget *_attributesWidgetPtr;
+  RelationshipsWidget *_relationshipsWidgetPtr;
 
 };
 

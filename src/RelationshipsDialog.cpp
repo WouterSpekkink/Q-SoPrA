@@ -215,8 +215,8 @@ void RelationshipsDialog::addEntity()
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
   // We have to make sure that the new entity also appears as a new attribute in attributes trees.
-  eventGraph->resetTree();
-  attributesWidget->resetTree();
+  eventGraphWidgetPtr->resetTree();
+  attributesWidgetPtr->resetTree();
 }
 
 void RelationshipsDialog::editEntity() 
@@ -467,7 +467,7 @@ void RelationshipsDialog::removeEntities()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<AbstractNode*> abstractNodeVector = eventGraph->getAbstractNodes();
+  QVector<AbstractNode*> abstractNodeVector = eventGraphWidgetPtr->getAbstractNodes();
   QSet<QString> takenAttributes;
   QVectorIterator<AbstractNode*> it(abstractNodeVector);
   while (it.hasNext()) 
@@ -524,14 +524,13 @@ void RelationshipsDialog::removeEntities()
   reset();
   delete query;  
   delete query2;
-  //  occurrenceGraph->checkCongruency(); // Does not seem necessary
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
   // Also remove the entities from attribute trees.
-  eventGraph->resetTree();
-  attributesWidget->resetTree();
+  eventGraphWidgetPtr->resetTree();
+  attributesWidgetPtr->resetTree();
 }
 
 void RelationshipsDialog::cancelAndClose() 
@@ -683,18 +682,13 @@ void RelationshipsDialog::updateTable()
     }
 }
 
-void RelationshipsDialog::setEventGraph(EventGraphWidget *egw) 
+void RelationshipsDialog::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  eventGraph = egw;
+  eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
-void RelationshipsDialog::setOccurrenceGraph(OccurrenceGraphWidget *ogw) 
+void RelationshipsDialog::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  occurrenceGraph = ogw;
-}
-
-void RelationshipsDialog::setAttributesWidget(AttributesWidget *aw) 
-{
-  attributesWidget = aw;
+  attributesWidgetPtr = attributesWidgetPtr;
 }
 

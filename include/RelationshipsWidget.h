@@ -21,7 +21,6 @@
 #include "AttributeIndexDialog.h"
 #include "NetworkGraphWidget.h"
 #include "EventGraphWidget.h"
-#include "OccurrenceGraphWidget.h"
 #include "SupportingFunctions.h"
 #include "EditEntityDialog.h"
 #include "AttributesWidget.h"
@@ -40,10 +39,9 @@ public:
   ~RelationshipsWidget() {};
 
   void resetTree();
-  void setNetworkGraph(NetworkGraphWidget *ngw);
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
-  void setAttributesWidget(AttributesWidget *aw);
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
+  void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr);
 						     
 private slots:
   void retrieveData();
@@ -105,10 +103,9 @@ private:
   QPointer<DeselectableTreeView> relationshipsTreeView;
   QPointer<RelationshipTypeDialog> typeDialog;
   QPointer<RelationshipTreeFilter> treeFilter;
-  NetworkGraphWidget *networkGraph;
-  EventGraphWidget *eventGraph;
-  OccurrenceGraphWidget *occurrenceGraph;
-  AttributesWidget *attributesWidget;
+  EventGraphWidget *eventGraphWidgetPtr;
+  AttributesWidget *attributesWidgetPtr;
+  NetworkGraphWidget *_networkGraphWidgetPtr; // Needed forget entity dialog
   
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;

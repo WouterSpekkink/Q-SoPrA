@@ -20,13 +20,11 @@
 #include "ZoomableListView.h"
 #include "SupportingFunctions.h"
 #include "EventGraphWidget.h"
-#include "OccurrenceGraphWidget.h"
 #include "AttributesWidget.h"
 
 class EntitiesFilter;
 class AttributesWidget;
 class EventGraphWidget;
-class OccurrenceGraphWidget;
 
 class RelationshipsDialog : public QDialog
 {
@@ -49,9 +47,8 @@ public:
   void submitType(QString type);
   void submitDescription(QString description);
   void submitDirectedness(QString directedness);					     
-  void setEventGraph(EventGraphWidget *egw);
-  void setOccurrenceGraph(OccurrenceGraphWidget *ogw);
-  void setAttributesWidget(AttributesWidget *aw);
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
 						     
 private slots:
   void filterEntity(const QString &text);
@@ -73,9 +70,8 @@ private:
   QPointer<EntityTableModel> entitiesTable;
   QPointer<ZoomableListView> entitiesView;
   QPointer<EntitiesFilter> entitiesFilter;
-  EventGraphWidget *eventGraph;
-  OccurrenceGraphWidget *occurrenceGraph;
-  AttributesWidget *attributesWidget;
+  EventGraphWidget *eventGraphWidgetPtr;
+  AttributesWidget *attributesWidgetPtr;
   
   QPointer<QLabel> filterLabel;
   QPointer<QLabel> typeLabel;

@@ -27,7 +27,7 @@ EditEntityDialog::EditEntityDialog(QWidget *parent) : QDialog(parent)
   // First we declare the entities of this dialog.
   _entityEdited = 0;
   _fresh = true;
-  _relationshipsWidget = qobject_cast<RelationshipsWidget*>(parent);
+  _relationshipsWidgetPtr = qobject_cast<RelationshipsWidget*>(parent);
   
   filterLabel = new QLabel(tr("<b>Filter:</b>"), this);
   entitiesTable = new EntityTableModel(this);
@@ -102,7 +102,7 @@ void EditEntityDialog::filterEntity(const QString &text)
 void EditEntityDialog::addEntity() 
 {
   EntityDialog *entityDialog = new EntityDialog(this);
-  entityDialog->setRelationshipsWidget(_relationshipsWidget);
+  entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
   entityDialog->setNew();
   entityDialog->exec();
   if (entityDialog->getExitStatus() == 0) 
@@ -138,7 +138,7 @@ void EditEntityDialog::editEntity()
       query->first();
       QString description = query->value(0).toString();
       EntityDialog *entityDialog = new EntityDialog(this);
-      entityDialog->setRelationshipsWidget(_relationshipsWidget);
+      entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
       entityDialog->submitName(selected);
       entityDialog->submitDescription(description);
       entityDialog->exec();
@@ -289,7 +289,7 @@ void EditEntityDialog::removeEntities()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<AbstractNode*> abstractNodeVector = _eventGraph->getAbstractNodes();
+  QVector<AbstractNode*> abstractNodeVector = _eventGraphWidgetPtr->getAbstractNodes();
   QSet<QString> takenAttributes;
   QVectorIterator<AbstractNode*> it(abstractNodeVector);
   while (it.hasNext()) 
@@ -345,14 +345,13 @@ void EditEntityDialog::removeEntities()
     }
   delete query;  
   delete query2;
-  //  occurrenceGraph->checkCongruency(); // Does not seem necessary
   entitiesTable->select();
   updateTable();
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
   // Also remove the entities from attribute trees.
-  _eventGraph->resetTree();
-  _attributesWidget->resetTree();
+  _eventGraphWidgetPtr->resetTree();
+  _attributesWidgetPtr->resetTree();
 }
 
 void EditEntityDialog::closeThis() 
@@ -389,13 +388,13 @@ int EditEntityDialog::getEntityEdited()
   return _entityEdited;
 }
 
-void EditEntityDialog::setEventGraph(EventGraphWidget *eventGraphWidget)
+void EditEntityDialog::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr)
 {
-  _eventGraph = eventGraphWidget;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
-void EditEntityDialog::setAttributesWidget(AttributesWidget *attributesWidget)
+void EditEntityDialog::setAttributesWidget(AttributesWidget *attributesWidgetPtr)
 {
-  _attributesWidget = attributesWidget;
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
 

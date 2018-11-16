@@ -26,14 +26,14 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 AbstractNodeLabel::AbstractNodeLabel(AbstractNode *abstractNode)
 {
-  _abstractNode = abstractNode;
+  _abstractNodePtr = abstractNode;
   _xOffset = 0;
   _yOffset = 0;
 }
 
 AbstractNode* AbstractNodeLabel::getAbstractNode()
 {
-  return _abstractNode;
+  return _abstractNodePtr;
 }
 
 void AbstractNodeLabel::setNewPos(QPointF nodePos, qreal xOffsetincrement, qreal yOffsetincrement)

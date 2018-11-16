@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef NETWORKGRAPHWIDGET
 #define NETWORKGRAPHWIDGET
 
@@ -48,19 +70,26 @@
 class NetworkGraphWidget : public QWidget
 {
   Q_OBJECT
+
+  // MainWindow needs access to this class
   friend class MainWindow;
 
 public:
+  // Constructor and destructor
   NetworkGraphWidget(QWidget *parent = 0);
-  ~NetworkGraphWidget() {};
+  ~NetworkGraphWidget();
 
-  void resetTree();
-  void checkCongruency();
+  // Getters
   void getTypes();
+  
+  // Some functions that need to be exposed
+  void resetTree();
   bool typesPresent();
   void updateCases();
 
 private slots:
+  // Private member functions
+  void checkCongruency();
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
@@ -68,9 +97,7 @@ private slots:
   void checkCases();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
-
   void setGraphControls(bool status);
-  
   void retrieveData();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
@@ -81,16 +108,13 @@ private slots:
   void setFilter(const QString &text);
   void previousDataItem();
   void nextDataItem();
-
   void setValueButton();
   void setValue();
-
   void assignAttribute();
   void unassignAttribute();
   void addAttribute();
   void editAttribute();
   void removeUnusedAttributes();
-  
   void multimodeTransformation();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
@@ -100,7 +124,6 @@ private slots:
   void showMode();
   void moveModeUp();
   void moveModeDown();
-  
   void mergeRelationships();
   void setFilterButtons(QTableWidgetItem *item);
   void disableFilterButtons();
@@ -110,14 +133,12 @@ private slots:
   void showType();
   void setVisibility();
   void processHeights();
-  
   void getEntities();
   void plotEntities();
   void getDirectedEdges();
   void plotDirectedEdges(QString type, QColor color);
   void getUndirectedEdges();
   void plotUndirectedEdges(QString type, QColor color);
-  
   void colorByAttribute();
   void setNodeColor();
   void setLabelColor();
@@ -127,14 +148,11 @@ private slots:
   void toggleLabels();
   void increaseLabelSize();
   void decreaseLabelSize();
-  
   void findChildren(QString father, QVector<QString> *children);
-
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
   void updateRangeControls();
-
   void exportSvg();
   void exportNodes();
   void exportEdges();
@@ -142,16 +160,13 @@ private slots:
   void seePlots();
   void setChangeLabel();
   void updateEdges();
-  
   void simpleLayout();
   void circularLayout();
   void expandLayout();
   void contractLayout();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
-
   void processNetworkNodeContextMenu(const QString &action);
   void setNodePersistence(bool status);
-
   void processNetworkGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
@@ -178,13 +193,11 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
-
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
   void objectToBack();
   void fixZValues();
-  
   void setPlotButton();
   void plotNewGraph();
   void addRelationshipType();
@@ -195,25 +208,15 @@ private slots:
   void finalBusiness();
   
 private:
+  // Interface elements
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;
-  QVector<NetworkNode*> nodeVector;
-  QVector<NetworkNode*> currentData;
-  QVector<DirectedEdge*> directedVector;
-  QVector<UndirectedEdge*> undirectedVector;
-  QVector<NetworkNodeLabel*> labelVector;
-  QVector<LineObject*> lineVector;
-  QVector<TextObject*> textVector;
-  QVector<EllipseObject*> ellipseVector;
-  QVector<RectObject*> rectVector;
   QPointer<QWidget> infoWidget;
   QPointer<QWidget> graphicsWidget;
   QPointer<QWidget> legendWidget;
-
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeViewEntities> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
-  
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
@@ -229,20 +232,14 @@ private:
   QPointer<QLabel> incongruencyLabel;
   QPointer<QLabel> casesLabel;
   QPointer<QLabel> zoomLabel;
-  
   QPointer<QComboBox> typeComboBox;
-
   QPointer<DeselectableListWidget> nodeListWidget;
   QPointer<DeselectableListWidget> edgeListWidget;
-
   QPointer<QListWidget> caseListWidget;
-
   QPointer<QLineEdit> nameField;
   QPointer<QLineEdit> attributesFilterField;
   QPointer<QLineEdit> valueField;
-  
   QPointer<QTextEdit> descriptionField;
-  
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addButton;
   QPointer<QPushButton> toggleLabelsButton;
@@ -285,26 +282,34 @@ private:
   QPointer<QPushButton> restoreModeColorsButton;
   QPointer<QPushButton> moveModeUpButton;
   QPointer<QPushButton> moveModeDownButton;
-  
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
-
   QPointer<QSlider> zoomSlider;
-  
-  QVector<QString> presentTypes; 
-  QVector<QString> checkedCases;
-  
-  QString selectedType;
-  QString selectedEntityName;
 
-  int minOrder;
-  int maxOrder;
-  int vectorPos;
-  
-  bool labelsShown;
-  bool massMove;
+  // Private variables    
+  QString _selectedType;
+  QString _selectedEntityName;
+  int _minOrder;
+  int _maxOrder;
+  int _vectorPos;
+  bool _labelsShown;
+  bool _massMove;
+
+  // Private data vectors
+  QVector<QString> _presentTypes; 
+  QVector<QString> _checkedCases;
+  QVector<NetworkNode*> _networkNodeVector;
+  QVector<NetworkNode*> _currentData;
+  QVector<DirectedEdge*> _directedVector;
+  QVector<UndirectedEdge*> _undirectedVector;
+  QVector<NetworkNodeLabel*> _networkNodeLabelVector;
+  QVector<LineObject*> _lineVector;
+  QVector<TextObject*> _textVector;
+  QVector<EllipseObject*> _ellipseVector;
+  QVector<RectObject*> _rectVector;
+
 };
 
 

@@ -59,7 +59,7 @@ public:
   void submitName(const QString &name);
   void submitDescription(const QString &description);
   void setNew();
-  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
   
   // Getters
   QString getName();
@@ -135,7 +135,7 @@ private:
 
   // Pointer to other widget
   // Do not delete
-  QPointer<RelationshipsWidget> _relationshipsWidget;
+  QPointer<RelationshipsWidget> _relationshipsWidgetPtr;
 };
 
 #endif

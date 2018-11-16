@@ -55,9 +55,9 @@ public:
   ~EditEntityDialog() {};
 
   // Setters
-  void setEventGraph(EventGraphWidget *eventGraphWidget);
-  void setAttributesWidget(AttributesWidget *attributesWidget);
-  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
   
   // Getters
   int getEntityEdited();
@@ -94,9 +94,9 @@ private:
 
   // Pointers to other widgets
   // Do not delete
-  QPointer<EventGraphWidget> _eventGraph;
-  QPointer<AttributesWidget> _attributesWidget;
-  QPointer<RelationshipsWidget> _relationshipsWidget;
+  QPointer<EventGraphWidget> _eventGraphWidgetPtr;
+  QPointer<AttributesWidget> _attributesWidgetPtr;
+  QPointer<RelationshipsWidget> _relationshipsWidgetPtr;
 };
 
 #endif

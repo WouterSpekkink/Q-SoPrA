@@ -56,9 +56,9 @@ public:
   ~CasingWidget() {};
 
   // Setters
-  void setEventGraphWidget(EventGraphWidget *eventGraphWidget);
-  void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidget);
-  void setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGraphWidget);
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr);
+  void setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGraphWidgetPtr);
 
 private slots:
   void createTable();
@@ -85,9 +85,9 @@ private:
 
   // Pointers to other widgets
   // Do not delete.
-  QPointer<EventGraphWidget> _eventGraph;
-  QPointer<NetworkGraphWidget> _networkGraph;
-  QPointer<OccurrenceGraphWidget> _occurrenceGraph;
+  QPointer<EventGraphWidget> _eventGraphWidgetPtr;
+  QPointer<NetworkGraphWidget> _networkGraphWidgetPtr;
+  QPointer<OccurrenceGraphWidget> _occurrenceGraphWidgetPtr;
 
 };
 

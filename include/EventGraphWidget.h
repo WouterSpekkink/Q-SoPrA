@@ -89,9 +89,8 @@ public:
   ~EventGraphWidget();
 
   // Setters
-  void setAttributesWidget(AttributesWidget* attributesWidget);
-  void setOccurrenceGraph(OccurrenceGraphWidget* occurrenceGraphWidget);
-  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  void setAttributesWidget(AttributesWidget* attributesWidgetPtr);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 
   // Getters
   QVector<AbstractNode*> getAbstractNodes();
@@ -403,9 +402,8 @@ private:
   
   // Pointers to other widgets
   // Do not delete
-  QPointer<AttributesWidget> _attributesWidget;
-  QPointer<OccurrenceGraphWidget> _occurrenceGraph;
-  QPointer<RelationshipsWidget> _relationshipsWidget;
+  QPointer<AttributesWidget> _attributesWidgetPtr;
+  QPointer<RelationshipsWidget> _relationshipsWidgetPtr;
     
 };
 

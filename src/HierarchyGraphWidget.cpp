@@ -2971,7 +2971,7 @@ void HierarchyGraphWidget::newAttribute()
       if (top == ENTITIES) 
 	{
 	  EntityDialog *entityDialog = new EntityDialog(this);
-	  entityDialog->setRelationshipsWidget(_relationshipsWidget);
+	  entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
 	  entityDialog->setNew();
 	  entityDialog->exec();
 	  if (entityDialog->getExitStatus() == 0) 
@@ -3001,7 +3001,7 @@ void HierarchyGraphWidget::newAttribute()
 	      delete query;
 	    }
 	  delete entityDialog;
-	  _attributesWidget->resetTree();
+	  _attributesWidgetPtr->resetTree();
 	}
       else 
 	{
@@ -3027,7 +3027,7 @@ void HierarchyGraphWidget::newAttribute()
 	      query->bindValue(":father", currentParent);
 	      query->exec();
 	      delete query;
-	      _attributesWidget->resetTree();
+	      _attributesWidgetPtr->resetTree();
 	    }
 	  delete attributeDialog;
 	}
@@ -3055,7 +3055,7 @@ void HierarchyGraphWidget::newAttribute()
 	  QString hint = breakString(description);
 	  attribute->setToolTip(hint);
 	  attribute->setEditable(false);
-	  _attributesWidget->resetTree();
+	  _attributesWidgetPtr->resetTree();
 	}
       delete attributeDialog;
     }
@@ -3085,7 +3085,7 @@ void HierarchyGraphWidget::editAttribute()
 	      query->first();
 	      QString description = query->value(0).toString();
 	      EntityDialog *entityDialog = new EntityDialog(this);
-	      entityDialog->setRelationshipsWidget(_relationshipsWidget);
+	      entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
 	      entityDialog->submitName(name);
 	      entityDialog->submitDescription(description);
 	      entityDialog->exec();
@@ -3160,7 +3160,7 @@ void HierarchyGraphWidget::editAttribute()
 		  this->setCursor(Qt::WaitCursor);
 		  retrieveData();
 		  this->setCursor(Qt::ArrowCursor);
-		  _attributesWidget->resetTree();
+		  _attributesWidgetPtr->resetTree();
 		}
 	      delete query;
 	      delete attributeDialog;
@@ -3309,7 +3309,7 @@ void HierarchyGraphWidget::updateEntityAfterEdit(const QString name,
 	}
       delete query;
     }
-  _relationshipsWidget->resetTree();
+  _relationshipsWidgetPtr->resetTree();
 }
 
 void HierarchyGraphWidget::removeUnusedAttributes() 
@@ -3403,7 +3403,7 @@ void HierarchyGraphWidget::removeUnusedAttributes()
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   resetTree();
-  _attributesWidget->resetTree();
+  _attributesWidgetPtr->resetTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
@@ -4055,14 +4055,14 @@ void HierarchyGraphWidget::switchBack()
   emit goToEventGraph();
 }
 
-void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *attributesWidget) 
+void HierarchyGraphWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  _attributesWidget = attributesWidget;
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
 
-void HierarchyGraphWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidget) 
+void HierarchyGraphWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  _relationshipsWidget = relationshipsWidget;
+  _relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
 
 void HierarchyGraphWidget::finalBusiness() 

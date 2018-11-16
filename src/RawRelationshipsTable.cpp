@@ -273,7 +273,7 @@ void RawRelationshipsTable::editType()
 	}
       delete query;
       updateTable();
-      relationshipsWidget->resetTree();
+      relationshipsWidgetPtr->resetTree();
     }
 }
 
@@ -327,8 +327,7 @@ void RawRelationshipsTable::switchType()
 	}
       delete query;
       delete comboBoxDialog;
-      networkGraph->checkCongruency();
-      relationshipsWidget->resetTree();
+      relationshipsWidgetPtr->resetTree();
       updateTable();
     }
 }
@@ -389,24 +388,18 @@ void RawRelationshipsTable::editRelationship()
 	  query->bindValue(":oldName", relationship);
 	  query->bindValue(":type", type);
 	  query->exec();
-	  networkGraph->checkCongruency();
 	}
       if (relationshipsDialog->getEntityEdited() == 1) 
 	{
-	  relationshipsWidget->resetTree();
+	  relationshipsWidgetPtr->resetTree();
 	}
       delete relationshipsDialog;
       delete query;
     }
-  networkGraph->checkCongruency();
 }
 
-void RawRelationshipsTable::setRelationshipsWidget(RelationshipsWidget *rw) 
+void RawRelationshipsTable::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  relationshipsWidget = rw;
+  relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
 
-void RawRelationshipsTable::setNetworkGraph(NetworkGraphWidget *ngw) 
-{
-  networkGraph = ngw;
-}

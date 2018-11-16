@@ -732,8 +732,8 @@ void RelationshipsWidget::editType()
 void RelationshipsWidget::entitiesOverview() 
 {
   QPointer<EditEntityDialog> entityDialog = new EditEntityDialog(this);
-  entityDialog->setEventGraph(eventGraph);
-  entityDialog->setAttributesWidget(attributesWidget);
+  entityDialog->setEventGraphWidget(eventGraphWidgetPtr);
+  entityDialog->setAttributesWidget(attributesWidgetPtr);
   entityDialog->exec();
   if (entityDialog->getEntityEdited() == 1) 
     {
@@ -741,7 +741,6 @@ void RelationshipsWidget::entitiesOverview()
       setTree();
       relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
       retrieveData();
-      networkGraph->checkCongruency();
     }
   delete entityDialog;
 }
@@ -979,9 +978,8 @@ void RelationshipsWidget::newRelationship()
 	  QString description = query->value(1).toString();
 	  QString hint = breakString(directedness + " - " + description);
 	  RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
-	  relationshipsDialog->setAttributesWidget(attributesWidget);
-	  relationshipsDialog->setEventGraph(eventGraph);
-	  relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
+	  relationshipsDialog->setAttributesWidget(attributesWidgetPtr);
+	  relationshipsDialog->setEventGraphWidget(eventGraphWidgetPtr);
 	  relationshipsDialog->submitType(currentType);
 	  relationshipsDialog->submitDescription(description);
 	  relationshipsDialog->submitDirectedness(directedness);
@@ -1014,7 +1012,6 @@ void RelationshipsWidget::newRelationship()
 	  delete query;
 	}
     }
-  networkGraph->checkCongruency();
 }
 
 void RelationshipsWidget::editRelationship() 
@@ -1042,9 +1039,8 @@ void RelationshipsWidget::editRelationship()
 	  QString leftEntity = query->value(0).toString();
 	  QString rightEntity = query->value(1).toString();
 	  RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
-	  relationshipsDialog->setAttributesWidget(attributesWidget);
-	  relationshipsDialog->setEventGraph(eventGraph);
-	  relationshipsDialog->setOccurrenceGraph(occurrenceGraph);
+	  relationshipsDialog->setAttributesWidget(attributesWidgetPtr);
+	  relationshipsDialog->setEventGraphWidget(eventGraphWidgetPtr);
 	  relationshipsDialog->submitType(currentType);
 	  relationshipsDialog->submitDescription(description);
 	  relationshipsDialog->submitDirectedness(directedness);
@@ -1080,7 +1076,6 @@ void RelationshipsWidget::editRelationship()
 	      query->bindValue(":oldName", currentRelationship);
 	      query->bindValue(":type", currentType);
 	      query->exec();
-	      networkGraph->checkCongruency();
 	      currentItem->setData(name, Qt::DisplayRole);
 	    }
 	  if (relationshipsDialog->getEntityEdited() == 1) 
@@ -1089,14 +1084,13 @@ void RelationshipsWidget::editRelationship()
 	      setTree();
 	      relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
 	      retrieveData();
-	      attributesWidget->resetTree();
-	      eventGraph->resetTree();
+	      attributesWidgetPtr->resetTree();
+	      eventGraphWidgetPtr->resetTree();
 	    }
 	  delete relationshipsDialog;
 	  delete query;
 	}
     }
-  networkGraph->checkCongruency();
 }
 
 void RelationshipsWidget::removeUnusedRelationships() 
@@ -1132,7 +1126,6 @@ void RelationshipsWidget::removeUnusedRelationships()
   this->setCursor(Qt::ArrowCursor);
   delete query;
   delete query2;
-  networkGraph->checkCongruency();
 }
 
 void RelationshipsWidget::setTree() 
@@ -1941,24 +1934,19 @@ void RelationshipsWidget::finalBusiness()
   setComment();
 }
 
-void RelationshipsWidget::setNetworkGraph(NetworkGraphWidget *ngw) 
+void RelationshipsWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  networkGraph = ngw;
+  eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
-void RelationshipsWidget::setEventGraph(EventGraphWidget *egw) 
+void RelationshipsWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  eventGraph = egw;
+  attributesWidgetPtr = attributesWidgetPtr;
 }
 
-void RelationshipsWidget::setOccurrenceGraph(OccurrenceGraphWidget *ogw) 
+void RelationshipsWidget::setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr) 
 {
-  occurrenceGraph = ogw;
-}
-
-void RelationshipsWidget::setAttributesWidget(AttributesWidget *aw) 
-{
-  attributesWidget = aw;
+  _networkGraphWidgetPtr = networkGraphWidgetPtr;
 }
 
 void RelationshipsWidget::resetTree() 

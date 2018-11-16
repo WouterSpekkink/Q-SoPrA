@@ -54,9 +54,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     {
       if (event->modifiers() & Qt::ControlModifier)
 	{
- 	  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(parent());
-	  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(parent());
-	  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(parent());
+ 	  EventGraphWidget *eventGraphWidgetPtr = qobject_cast<EventGraphWidget*>(parent());
+	  NetworkGraphWidget *networkGraphWidgetPtr = qobject_cast<NetworkGraphWidget*>(parent());
+	  OccurrenceGraphWidget *occurrenceGraphWidgetPtr = qobject_cast<OccurrenceGraphWidget*>(parent());
 	  QPoint mousePos = mapFromGlobal(event->globalPos());
 	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
 	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
@@ -74,7 +74,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	      !abstractNodeLabel && !networkNode && !occurrence &&
 	      !occurrenceLabel && !line && !text && !ellipse && !rect)
 	    {
-	      if (egw && egw->getIncidentNodes().size() > 0) 
+	      if (eventGraphWidgetPtr && eventGraphWidgetPtr->getIncidentNodes().size() > 0) 
 		{
 		  QMenu menu;
 		  QAction *action1 = new QAction(ADDLINE, this);
@@ -94,7 +94,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		      emit EventGraphContextMenuAction(action->text(), mousePos);
 		    }
 		}
-	      else if (ngw && ngw->typesPresent()) 
+	      else if (networkGraphWidgetPtr && networkGraphWidgetPtr->typesPresent()) 
 		{
 		  QMenu menu;
 		  QAction *action1 = new QAction(ADDLINE, this);
@@ -114,7 +114,9 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		      emit NetworkGraphContextMenuAction(action->text(), mousePos);
 		    }
 		}
-	      else if (ogw && (ogw->attributesPresent() || ogw->relationshipsPresent())) 
+	      else if (occurrenceGraphWidgetPtr &&
+		       (occurrenceGraphWidgetPtr->attributesPresent() ||
+			occurrenceGraphWidgetPtr->relationshipsPresent())) 
 		{
 		  QMenu menu;
 		  QAction *action1 = new QAction(ADDLINE, this);

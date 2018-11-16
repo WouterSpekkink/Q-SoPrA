@@ -1733,7 +1733,6 @@ void EventGraphWidget::assignAttribute()
       setButtons();
     }
   rawField->verticalScrollBar()->setValue(barPos);
-  _occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::unassignAttribute() 
@@ -1810,7 +1809,6 @@ void EventGraphWidget::unassignAttribute()
 	}
     }
   setButtons();
-  _occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::selectText() 
@@ -2151,14 +2149,13 @@ void EventGraphWidget::removeUnusedAttributes()
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   resetTree();
-  _attributesWidget->resetTree();
+  _attributesWidgetPtr->resetTree();
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   retrieveData();
   this->setCursor(Qt::ArrowCursor);
   delete query;  
   delete query2;
-  _occurrenceGraph->checkCongruency();
 }
 
 void EventGraphWidget::highlightText() 
@@ -2294,7 +2291,7 @@ void EventGraphWidget::newAttribute()
       if (top == ENTITIES) 
 	{
 	  EntityDialog *entityDialog = new EntityDialog(this);
-	  entityDialog->setRelationshipsWidget(_relationshipsWidget);
+	  entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
 	  entityDialog->setNew();
 	  entityDialog->exec();
 	  if (entityDialog->getExitStatus() == 0) 
@@ -2324,7 +2321,7 @@ void EventGraphWidget::newAttribute()
 	      delete query;
 	    }
 	  delete entityDialog;
-	  _attributesWidget->resetTree();
+	  _attributesWidgetPtr->resetTree();
 	}
       else 
 	{
@@ -2350,7 +2347,7 @@ void EventGraphWidget::newAttribute()
 	      query->bindValue(":father", currentParent);
 	      query->exec();
 	      delete query;
-	      _attributesWidget->resetTree();
+	      _attributesWidgetPtr->resetTree();
 	    }
 	  delete attributeDialog;
 	}
@@ -2378,7 +2375,7 @@ void EventGraphWidget::newAttribute()
 	  QString hint = breakString(description);
 	  attribute->setToolTip(hint);
 	  attribute->setEditable(false);
-	  _attributesWidget->resetTree();
+	  _attributesWidgetPtr->resetTree();
 	}
       delete attributeDialog;
     }
@@ -2408,7 +2405,7 @@ void EventGraphWidget::editAttribute()
 	      query->first();
 	      QString description = query->value(0).toString();
 	      EntityDialog *entityDialog = new EntityDialog(this);
-	      entityDialog->setRelationshipsWidget(_relationshipsWidget);
+	      entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
 	      entityDialog->submitName(name);
 	      entityDialog->submitDescription(description);
 	      entityDialog->exec();
@@ -2483,7 +2480,7 @@ void EventGraphWidget::editAttribute()
 		  this->setCursor(Qt::WaitCursor);
 		  retrieveData();
 		  this->setCursor(Qt::ArrowCursor);
-		  _attributesWidget->resetTree();
+		  _attributesWidgetPtr->resetTree();
 		}
 	      delete query;
 	      delete attributeDialog;
@@ -2638,8 +2635,8 @@ void EventGraphWidget::updateEntityAfterEdit(const QString name,
      is reconstructed every time it is switched to, so we do not need to reset it
      explicitly.
   */
-  _relationshipsWidget->resetTree();
-  _attributesWidget->resetTree();
+  _relationshipsWidgetPtr->resetTree();
+  _attributesWidgetPtr->resetTree();
 }
 
 void EventGraphWidget::getEvents() 
@@ -10211,19 +10208,15 @@ QVector<Linkage*> EventGraphWidget::getEdgeVector()
   return _edgeVector;
 }
 
-void EventGraphWidget::setAttributesWidget(AttributesWidget *attributesWidget) 
+void EventGraphWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  _attributesWidget = attributesWidget;
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
 
-void EventGraphWidget::setOccurrenceGraph(OccurrenceGraphWidget *occurrenceGraphWidget) 
-{
-  _occurrenceGraph = occurrenceGraphWidget;
-}
 
-void EventGraphWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidget) 
+void EventGraphWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  _relationshipsWidget = relationshipsWidget;
+  _relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
 
 void EventGraphWidget::resetTree() 

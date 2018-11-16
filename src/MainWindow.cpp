@@ -61,23 +61,20 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(rawRelationshipsTableWidget);
   CasingWidget *cw = qobject_cast<CasingWidget*>(casingWidget);
 
-  aw->setEventGraph(egw);
+  aw->setEventGraphWidget(egw);
   aw->setRelationshipsWidget(rw);
-  ogw->setEventGraph(egw);
+  ogw->setEventGraphWidget(egw);
   egw->setAttributesWidget(aw);
-  egw->setOccurrenceGraph(ogw);
   egw->setRelationshipsWidget(rw);
   hgw->setAttributesWidget(aw);
   hgw->setRelationshipsWidget(rw);
-  rw->setNetworkGraph(ngw);
-  rw->setEventGraph(egw);
-  rw->setOccurrenceGraph(ogw);
+  rw->setNetworkGraphWidget(ngw);
+  rw->setEventGraphWidget(egw);
   rw->setAttributesWidget(aw);
-  rat->setEventGraph(egw);
+  rat->setEventGraphWidget(egw);
   rat->setAttributesWidget(aw);
   rat->setRelationshipsWidget(rw);
   rrt->setRelationshipsWidget(rw);
-  rrt->setNetworkGraph(ngw);
   cw->setEventGraphWidget(egw);
   cw->setNetworkGraphWidget(ngw);
   cw->setOccurrenceGraphWidget(ogw);

@@ -67,8 +67,8 @@ public:
   void resetTree();
   
   // Setters
-  void setEventGraph(EventGraphWidget *eventGraph);
-  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidget);
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 
 private slots:
   // Private member functions
@@ -190,8 +190,8 @@ private:
 
   // Pointers to other widgets
   // Do not delete
-  QPointer<EventGraphWidget> _eventGraph;
-  QPointer<RelationshipsWidget> _relationshipsWidget;
+  QPointer<EventGraphWidget> _eventGraphWidgetPtr;
+  QPointer<RelationshipsWidget> _relationshipsWidgetPtr;
 };
 
 

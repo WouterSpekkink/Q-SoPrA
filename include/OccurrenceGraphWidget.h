@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef OCCURRENCEGRAPHWIDGET
 #define OCCURRENCEGRAPHWIDGET
 
@@ -46,25 +68,29 @@ class EventGraphWidget;
 class OccurrenceGraphWidget : public QWidget
 {
   Q_OBJECT
+  // MainWindow needs access to this class
   friend class MainWindow;
 
 public:
+  // Constructor and destructor
   OccurrenceGraphWidget(QWidget *parent = 0);
-  ~OccurrenceGraphWidget() {};
+  ~OccurrenceGraphWidget();
 
-  void setEventGraph(EventGraphWidget *egw);			     
-  void checkCongruency();
+  // Setters
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);			     
+
+  // Other functions that need to be exposed
   bool attributesPresent();
   bool relationshipsPresent();
   void updateCases();
-  bool eventFilter(QObject *object, QEvent *event);
 		    
 private slots:
+  // Private member functions
+  void checkCongruency();
   void toggleLegend();
   void toggleGraphicsControls();
   void rescale();
   void checkCases();
-  
   void addAttribute();
   void addRelationship();
   void findChildren(QString father, QVector<QString> *children, bool entity);
@@ -76,7 +102,6 @@ private slots:
   void disableRelationshipModeButton();
   void removeRelationshipMode();
   void changeRelationshipModeColor(QTableWidgetItem *item);
-  
   void wireLinkages();
   void groupOccurrences();
   void reset();
@@ -90,7 +115,6 @@ private slots:
   void processZoomSliderChange(int value);
   void resetZoomSlider();
   void setGraphControls(bool status);
-  
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setVisibility();
@@ -99,10 +123,8 @@ private slots:
   void exportMatrix();
   void setChangeLabel();
   void updateLinkages();
-  
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void processMoveLine(QGraphicsItem *item, QPointF pos);
-  
   void processOccurrenceGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
@@ -129,35 +151,23 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
-
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
   void objectToBack();
   void fixZValues();
-  
   void saveCurrentPlot();
   void seePlots();
-  
   void cleanUp();
   void finalBusiness();
+  bool eventFilter(QObject *object, QEvent *event);
   
 private:
+  // Interface elements
   QPointer<Scene> scene;
   QPointer<GraphicsView> view;
   QPointer<QWidget> graphicsWidget;
   QPointer<QWidget> legendWidget;
-  QVector<OccurrenceItem*> attributeOccurrenceVector;
-  QVector<OccurrenceItem*> relationshipOccurrenceVector;
-  QVector<Linkage*> edgeVector;
-  QVector<OccurrenceLabel*> attributeLabelVector;
-  QVector<OccurrenceLabel*> relationshipLabelVector;
-  QVector<LineObject*> lineVector;
-  QVector<TextObject*> textVector;
-  QVector<EllipseObject*> ellipseVector;
-  QVector<RectObject*> rectVector;
-  EventGraphWidget *eventGraph;
-
   QPointer<QLabel> attributeLegendLabel;
   QPointer<QLabel> relationshipLegendLabel;
   QPointer<QLabel> plotLabel;
@@ -167,7 +177,6 @@ private:
   QPointer<QLabel> lowerRangeLabel;
   QPointer<QLabel> casesLabel;
   QPointer<QLabel> zoomLabel;
-  
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
@@ -185,26 +194,37 @@ private:
   QPointer<QPushButton> removeRelationshipModeButton;
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> exportMatrixButton;
-  
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
-
   QPointer<QListWidget> caseListWidget;
-  
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
-
   QPointer<QSlider> zoomSlider;
+
+  // Private variables
+  int _distance;
+  bool _labelsVisible;
+  bool _matched;
+  // Pointer to other widget
+  // Do not delete
+  QPointer<EventGraphWidget> _eventGraphWidgetPtr;  
   
-  QVector<QString> presentAttributes;
-  QVector<QString> presentRelationships;
-  QVector<QString> checkedCases;
-  
-  int distance;
-  bool labelsVisible;
-  bool matched;
+  // Private data vectors
+  QVector<QString> _presentAttributes;
+  QVector<QString> _presentRelationships;
+  QVector<QString> _checkedCases;
+  QVector<OccurrenceItem*> _attributeOccurrenceVector;
+  QVector<OccurrenceItem*> _relationshipOccurrenceVector;
+  QVector<Linkage*> _edgeVector;
+  QVector<OccurrenceLabel*> _attributeLabelVector;
+  QVector<OccurrenceLabel*> _relationshipLabelVector;
+  QVector<LineObject*> _lineVector;
+  QVector<TextObject*> _textVector;
+  QVector<EllipseObject*> _ellipseVector;
+  QVector<RectObject*> _rectVector;
+
 };
 
 #endif

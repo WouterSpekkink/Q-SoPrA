@@ -167,9 +167,9 @@ void CasingWidget::updateTable()
   tableWidget->setRowCount(0);
   tableWidget->setColumnCount(0);
   createTable();
-  _eventGraph->updateCases();
-  _networkGraph->updateCases();
-  _occurrenceGraph->updateCases();
+  _eventGraphWidgetPtr->updateCases();
+  _networkGraphWidgetPtr->updateCases();
+  _occurrenceGraphWidgetPtr->updateCases();
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -476,17 +476,17 @@ void CasingWidget::setCellState(QTableWidgetItem *item)
     }
 }
 
-void CasingWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidget) 
+void CasingWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  _eventGraph = eventGraphWidget;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
-void CasingWidget::setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidget) 
+void CasingWidget::setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr) 
 {
-  _networkGraph = networkGraphWidget;
+  _networkGraphWidgetPtr = networkGraphWidgetPtr;
 }
 
-void CasingWidget::setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGraphWidget) 
+void CasingWidget::setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGraphWidgetPtr) 
 {
-  _occurrenceGraph = occurrenceGraphWidget;
+  _occurrenceGraphWidgetPtr = occurrenceGraphWidgetPtr;
 }

@@ -439,7 +439,7 @@ void EntityDialog::addAttribute()
 	  query->bindValue(":father", currentParent);
 	  query->exec();
 	  delete query;
-	  _relationshipsWidget->networkGraph->resetTree();
+	  _relationshipsWidgetPtr->_networkGraphWidgetPtr->resetTree();
 	}
       delete attributeDialog;
     }
@@ -466,7 +466,7 @@ void EntityDialog::addAttribute()
 	  attribute->setToolTip(description);
 	  attribute->setEditable(false);
 	  // The entity dialog does not necessarily have the relationships widget as its parent.
-	  _relationshipsWidget->networkGraph->resetTree();
+	  _relationshipsWidgetPtr->_networkGraphWidgetPtr->resetTree();
 	}
       delete attributeDialog;
     }
@@ -513,7 +513,7 @@ void EntityDialog::editAttribute()
 	  query->bindValue(":newname", newName);
 	  query->bindValue(":oldname", name);
 	  query->exec();
-	  _relationshipsWidget->networkGraph->resetTree();
+	  _relationshipsWidgetPtr->_networkGraphWidgetPtr->resetTree();
 	}
       delete attributeDialog;
       delete query;
@@ -630,7 +630,7 @@ void EntityDialog::removeUnusedAttributes()
 	  unfinished = false;
 	}
     }
-  _relationshipsWidget->networkGraph->resetTree();
+  _relationshipsWidgetPtr->_networkGraphWidgetPtr->resetTree();
   this->setCursor(Qt::WaitCursor);
   attributesTreeView->setSortingEnabled(false);
   delete attributesTree;
@@ -1063,7 +1063,7 @@ void EntityDialog::resetTree()
   setTree();
 }
 
-void EntityDialog::setRelationshipsWidget(RelationshipsWidget *relationshipsWidget) 
+void EntityDialog::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  _relationshipsWidget = relationshipsWidget;
+  _relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
