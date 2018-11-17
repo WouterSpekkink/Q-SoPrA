@@ -1,9 +1,31 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/WelcomeDialog.h"
 
-WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *submittedEsd) : QDialog(parent) 
+WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *esdPtr) : QDialog(parent) 
 {
-  esd = submittedEsd;
-  exitStatus = 1;
+  _esdPtr = esdPtr;
+  _exitStatus = 1;
   
   titleLabel = new QLabel("<h1>Welcome to Q-SoPrA</h1>", this);
   titleLabel->setAlignment(Qt::AlignHCenter);
@@ -45,8 +67,8 @@ void WelcomeDialog::newDatabase()
 	{
 	  QFile::remove(dbName);
 	}
-      esd->openDB(dbName);
-      bool ok = esd->database.open();
+      _esdPtr->openDB(dbName);
+      bool ok = _esdPtr->database.open();
       if (!ok) 
 	{
 	  QPointer<QMessageBox> errorBox = new QMessageBox(this);
@@ -57,8 +79,8 @@ void WelcomeDialog::newDatabase()
 	}
       else 
 	{
-	  esd->database.exec("PRAGMA synchronous=OFF");
-	  esd->database.exec("PRAGMA journal_mode=MEMORY");
+	  _esdPtr->database.exec("PRAGMA synchronous=OFF");
+	  _esdPtr->database.exec("PRAGMA journal_mode=MEMORY");
 	  QSqlQuery *query = new QSqlQuery;
 	  qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
 	  query->exec("CREATE TABLE incidents "
@@ -670,12 +692,12 @@ void WelcomeDialog::newDatabase()
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
 	}
-      exitStatus = 0;
+      _exitStatus = 0;
       this->close();
     }
   else 
     {
-      exitStatus = 2;
+      _exitStatus = 2;
     }
 }
 
@@ -684,8 +706,8 @@ void WelcomeDialog::openDatabase()
   QString dbName = QFileDialog::getOpenFileName(this, tr("Select database"),"", tr("db files (*.db)"));
   if (!dbName.trimmed().isEmpty()) 
     {
-      esd->openDB(dbName);
-      bool ok = esd->database.open();
+      _esdPtr->openDB(dbName);
+      bool ok = _esdPtr->database.open();
       if (!ok) 
 	{
 	  QPointer<QMessageBox> errorBox = new QMessageBox(this);
@@ -701,8 +723,8 @@ void WelcomeDialog::openDatabase()
 	     Let's make sure that we create all tables that are not yet present.
 	     For example, this could be the case after updates of the program. 
 	  */
-	  esd->database.exec("PRAGMA synchronous=OFF");
-	  esd->database.exec("PRAGMA journal_mode=MEMORY");
+	  _esdPtr->database.exec("PRAGMA synchronous=OFF");
+	  _esdPtr->database.exec("PRAGMA journal_mode=MEMORY");
 	  QSqlQuery *query = new QSqlQuery;
 	  qApp->setOverrideCursor(Qt::WaitCursor); // This can take a while
 	  query->exec("CREATE TABLE IF NOT EXISTS incidents "
@@ -1317,24 +1339,24 @@ void WelcomeDialog::openDatabase()
 		      "casename text)");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
-	  exitStatus = 0;
+	  _exitStatus = 0;
 	  delete query;
 	  this->close();
 	}
     }
   else 
     {
-      exitStatus = 2;
+      _exitStatus = 2;
     }
 }
 
 void WelcomeDialog::quitApp() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 int WelcomeDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }

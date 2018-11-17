@@ -1,16 +1,38 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/NodeSettingsDialog.h"
 
 NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
-				       QVector<QString> submittedEntities,
-				       QVector<QString> submittedDescriptions,
-				       QVector<QString> submittedModes)
+				       QVector<QString> entities,
+				       QVector<QString> descriptions,
+				       QVector<QString> modes)
   : QDialog(parent) 
 {
-  entities = submittedEntities;
-  descriptions = submittedDescriptions;
-  modes = submittedModes;
+  _entities = entities;
+  _descriptions = descriptions;
+  _modes = modes;
   tableWidget = new QTableWidget(this);
-  tableWidget->setRowCount(entities.length());
+  tableWidget->setRowCount(_entities.length());
   tableWidget->setColumnCount(4); // default size
   QTableWidgetItem *headerOne = new QTableWidgetItem("Id", 0);
   QTableWidgetItem *headerTwo = new QTableWidgetItem("Label", 1);
@@ -22,12 +44,12 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
   tableWidget->setHorizontalHeaderItem(3, headerFour);
   
   // Now let's fill the table
-  for (QVector<QString>::size_type i = 0; i != entities.length(); i++) 
+  for (QVector<QString>::size_type i = 0; i != _entities.length(); i++) 
     {
-      QTableWidgetItem *newId = new QTableWidgetItem(entities[i], 0);
-      QTableWidgetItem *newLabel = new QTableWidgetItem(entities[i], 0);
-      QTableWidgetItem *newDescription = new QTableWidgetItem(descriptions[i], 0);
-      QTableWidgetItem *newMode = new QTableWidgetItem(modes[i], 0);
+      QTableWidgetItem *newId = new QTableWidgetItem(_entities[i], 0);
+      QTableWidgetItem *newLabel = new QTableWidgetItem(_entities[i], 0);
+      QTableWidgetItem *newDescription = new QTableWidgetItem(_descriptions[i], 0);
+      QTableWidgetItem *newMode = new QTableWidgetItem(_modes[i], 0);
       tableWidget->setItem(i, 0, newId);
       tableWidget->setItem(i, 1, newLabel);
       tableWidget->setItem(i, 2, newDescription);

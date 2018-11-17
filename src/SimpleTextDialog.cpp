@@ -1,10 +1,31 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/SimpleTextDialog.h"
 
 SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent) 
 {
-  text = "";
-  subText = "";
-  exitStatus = 1;
+  _text = "";
+  _exitStatus = 1;
   textLabel = new QLabel(tr("<b>Text:</b>"), this);
   textField = new QLineEdit(this);
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
@@ -32,36 +53,35 @@ SimpleTextDialog::SimpleTextDialog(QWidget *parent) : QDialog(parent)
 
 QString SimpleTextDialog::getText() 
 {
-  return text;
+  return _text;
 }
 
-void SimpleTextDialog::submitText(const QString &submittedText) 
+void SimpleTextDialog::submitText(const QString &text) 
 {
-  text = submittedText;
-  subText = submittedText;
-  textField->setText(submittedText);
+  _text = text;
+  textField->setText(text);
 }
 
-void SimpleTextDialog::setLabel(const QString &submittedLabel) 
+void SimpleTextDialog::setLabel(const QString &label) 
 {
-  textLabel->setText(submittedLabel);
+  textLabel->setText(label);
 }
 
 int SimpleTextDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 void SimpleTextDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void SimpleTextDialog::saveAndClose() 
 {
-  text = textField->text().trimmed();
-  if (text == "") 
+  _text = textField->text().trimmed();
+  if (_text == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -72,7 +92,7 @@ void SimpleTextDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }
 

@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #ifndef RELATIONSHIPSWIDGET_H
 #define RELATIONSHIPSWIDGET_H
 
@@ -30,20 +52,26 @@ class AttributesWidget;
 class RelationshipsWidget : public QWidget
 {
   Q_OBJECT
+  // Some other classes need access to this class
   friend class MainWindow;
   friend class RelationshipsDialog;
   friend class EntityDialog;
 
 public:
-  RelationshipsWidget(QWidget *parent=0);
+  // Constructor and destructor
+  RelationshipsWidget(QWidget *parent = 0);
   ~RelationshipsWidget() {};
 
-  void resetTree();
+  // Setters
   void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
   void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
   void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr);
+
+  // This needs to be exposed
+  void resetTree();
 						     
 private slots:
+  // Private member functions
   void retrieveData();
   void setCommentBool();
   void setComment();
@@ -95,6 +123,7 @@ private slots:
   bool eventFilter(QObject *object, QEvent *event);
   
 private:
+  // Interface elements
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QSqlTableModel> typeModel;
   QPointer<QSqlTableModel> relationshipsModel;
@@ -103,10 +132,6 @@ private:
   QPointer<DeselectableTreeView> relationshipsTreeView;
   QPointer<RelationshipTypeDialog> typeDialog;
   QPointer<RelationshipTreeFilter> treeFilter;
-  EventGraphWidget *eventGraphWidgetPtr;
-  AttributesWidget *attributesWidgetPtr;
-  NetworkGraphWidget *_networkGraphWidgetPtr; // Needed forget entity dialog
-  
   QPointer<QLabel> indexLabel;
   QPointer<QLabel> markLabel;
   QPointer<QLabel> timeStampLabel;
@@ -120,7 +145,6 @@ private:
   QPointer<QLabel> commentFilterLabel;
   QPointer<QLabel> relationshipFilterLabel;
   QPointer<QLabel> relationshipCommentLabel;
-  
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> descriptionFilterField;
@@ -128,11 +152,9 @@ private:
   QPointer<QLineEdit> commentFilterField;
   QPointer<QLineEdit> relationshipFilterField;
   QPointer<QLineEdit> relationshipCommentField;
-
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
-
   QPointer<QPushButton> previousIncidentButton;
   QPointer<QPushButton> nextIncidentButton;
   QPointer<QPushButton> jumpButton;
@@ -161,11 +183,18 @@ private:
   QPointer<QPushButton> removeTextButton;
   QPointer<QPushButton> resetTextsButton;
 
-  QString descriptionFilter;
-  QString rawFilter;
-  QString commentFilter;
+  // Private variables
+  QString _descriptionFilter;
+  QString _rawFilter;
+  QString _commentFilter;
+  bool _commentBool;
 
-  bool commentBool;
+  // Pointers to other widgets
+  // Do not delete
+  QPointer<EventGraphWidget> _eventGraphWidgetPtr;
+  QPointer<AttributesWidget> _attributesWidgetPtr;
+  QPointer<NetworkGraphWidget> _networkGraphWidgetPtr; // Needed forget entity dialog
+
 };
 
 #endif

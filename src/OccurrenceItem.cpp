@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QtWidgets>
 #include "../include/OccurrenceItem.h"
 #include "../include/Scene.h"
@@ -8,35 +30,36 @@
   in real applications.
 */
 
-OccurrenceItem::OccurrenceItem(int subWidth, QString toolTip, QPointF originalPosition,
-			       int subId, int subOrder, QString submittedAttribute)
-  : color(255, 255, 255) 
+OccurrenceItem::OccurrenceItem(int width, QString toolTip, QPointF originalPos,
+			       int id, int order, QString attribute)
 {
-  width = subWidth;
+  _color = QColor(Qt::black);
+  _width = width;
   setToolTip(breakString(toolTip));
-  originalPos = originalPosition;
-  selectionColor = QColor(Qt::black);
-  id = subId;
-  order = subOrder;
-  label = NULL;
+  _originalPos = originalPos;
+  _selectionColor = QColor(Qt::black);
+  _id = id;
+  _order = order;
+  _occurrenceLabelPtr = NULL;
+  _attribute = attribute;
+  _permHidden = false;
+  _grouped = false;
+
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
-  attribute = submittedAttribute;
-  permHidden = false;
-  grouped = false;
 }
 
 QRectF OccurrenceItem::boundingRect() const 
 {
-  return QRectF(-26, -26, width + 12, 52);
+  return QRectF(-26, -26, _width + 12, 52);
 }
 
 QPainterPath OccurrenceItem::shape() const 
 {
   QPainterPath path;
-  path.addEllipse(-20, -20, width, 40);
+  path.addEllipse(-20, -20, _width, 40);
   return path;
 }
 
@@ -46,8 +69,8 @@ void OccurrenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
   Q_UNUSED(widget);
   painter->setPen(Qt::NoPen);
   painter->setPen(QPen(Qt::black, 1));
-  painter->setBrush(QBrush(color));
-  painter->drawEllipse(-20, -20, width, 40);
+  painter->setBrush(QBrush(_color));
+  painter->drawEllipse(-20, -20, _width, 40);
 }
 
 // Only to set the cursor to a different graphic.
@@ -70,9 +93,9 @@ void OccurrenceItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       QPointF newPos = event->scenePos();
       newPos.setX(currentX);
       this->setPos(newPos);
-      if (label != NULL) 
+      if (_occurrenceLabelPtr != NULL) 
 	{
-	  label->setNewPos(newPos);
+	  _occurrenceLabelPtr->setNewPos(newPos);
 	}
       myScene->relevantChange();
     }
@@ -88,9 +111,9 @@ void OccurrenceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       QPointF newPos = event->scenePos();
       newPos.setX(currentX);
       this->setPos(newPos);
-      if (label != NULL) 
+      if (_occurrenceLabelPtr != NULL) 
 	{
-	  label->setNewPos(newPos);
+	  _occurrenceLabelPtr->setNewPos(newPos);
 	}
       setCursor(Qt::OpenHandCursor);
       update();
@@ -104,63 +127,63 @@ void OccurrenceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 
 int OccurrenceItem::getCorrection() 
 {
-  return width - 39;
+  return _width - 39;
 }
 
 QPointF OccurrenceItem::getOriginalPos() const 
 {
-  return originalPos;
+  return _originalPos;
 }
 
 int OccurrenceItem::getId() const 
 {
-  return id;
+  return _id;
 }
 
 int OccurrenceItem::getOrder() const 
 {
-  return order;
+  return _order;
 }
 
-void OccurrenceItem::setOriginalPos(QPointF newPos) 
+void OccurrenceItem::setOriginalPos(const QPointF &originalPos) 
 {
-  originalPos = newPos;
+  _originalPos = originalPos;
 }
 
-void OccurrenceItem::setWidth(int newWidth) 
+void OccurrenceItem::setWidth(const int &width) 
 {
-  width = newWidth;
+  _width = width;
 }
 
 int OccurrenceItem::getWidth() const 
 {
-  return width;
+  return _width;
 }
 
-void OccurrenceItem::setLabel(OccurrenceLabel *submittedLabel) 
+void OccurrenceItem::setLabel(OccurrenceLabel *occurrenceLabelPtr) 
 {
-  label = submittedLabel;
+  _occurrenceLabelPtr = occurrenceLabelPtr;
 }
 
 OccurrenceLabel* OccurrenceItem::getLabel() 
 {
-  return label;
+  return _occurrenceLabelPtr;
 }
 
-void OccurrenceItem::setColor(const QColor &subColor) 
+void OccurrenceItem::setColor(const QColor &color) 
 {
-  color = subColor;
+  _color = color;
   update();
 }
 
 QColor OccurrenceItem::getColor() 
 {
-  return color;
+  return _color;
 }
 
-void OccurrenceItem::setSelectionColor(const QColor &subColor) 
+void OccurrenceItem::setSelectionColor(const QColor &color) 
 {
-  selectionColor = subColor;
+  _selectionColor = color;
 }
 
 int OccurrenceItem::type() const 
@@ -170,31 +193,31 @@ int OccurrenceItem::type() const
 
 QString OccurrenceItem::getAttribute() const 
 {
-  return attribute;  
+  return _attribute;  
 }
 
-void OccurrenceItem::setAttribute(const QString submittedAttribute) 
+void OccurrenceItem::setAttribute(const QString &attribute) 
 {
-  attribute = submittedAttribute;
+  _attribute = attribute;
 }
 
-void OccurrenceItem::setPermHidden(bool status) 
+void OccurrenceItem::setPermHidden(bool state) 
 {
-  permHidden = status;
+  _permHidden = state;
 }
 
 bool OccurrenceItem::isPermHidden() 
 {
-  return permHidden;
+  return _permHidden;
 }
 
-void OccurrenceItem::setGrouped(bool status) 
+void OccurrenceItem::setGrouped(bool state) 
 {
-  grouped = status;
+  _grouped = state;
 }
 
 bool OccurrenceItem::isGrouped() 
 {
-  return grouped;
+  return _grouped;
 }
 

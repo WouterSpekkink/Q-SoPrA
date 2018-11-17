@@ -1,12 +1,34 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/RelationshipTypeDialog.h"
 
 RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent) 
 {
-  directedness = DIRECTED;
-  name = "";
-  subName = "";
-  description = "";
-  exitStatus = 1;
+  _directedness = DIRECTED;
+  _name = "";
+  _subName = "";
+  _description = "";
+  _exitStatus = 1;
     
   nameLabel = new QLabel(tr("<b>Label:</b>"), this);
   nameField = new QLineEdit();
@@ -63,82 +85,82 @@ RelationshipTypeDialog::RelationshipTypeDialog(QWidget *parent) : QDialog(parent
 
 QString RelationshipTypeDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
 QString RelationshipTypeDialog::getDescription() 
 {
-  return description;
+  return _description;
 }
 
 QString RelationshipTypeDialog::getDirectedness() 
 {
-  return directedness;
+  return _directedness;
 }
 
 int RelationshipTypeDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
-void RelationshipTypeDialog::submitName(const QString &submittedName) 
+void RelationshipTypeDialog::submitName(const QString &name) 
 {
-  name = submittedName;
-  subName = submittedName;
-  nameField->setText(name);
+  _name = name;
+  _subName = name;
+  nameField->setText(_name);
 }
 
-void RelationshipTypeDialog::submitDescription(const QString &submittedDescription) 
+void RelationshipTypeDialog::submitDescription(const QString &description) 
 {
-  description = submittedDescription;
-  descriptionField->setText(description);
+  _description = description;
+  descriptionField->setText(_description);
 }
 
-void RelationshipTypeDialog::submitDirectedness(const QString &submittedDirectedness) 
+void RelationshipTypeDialog::submitDirectedness(const QString &directedness) 
 {
-  directedness = submittedDirectedness;
-  if (directedness == DIRECTED) 
+  _directedness = directedness;
+  if (_directedness == DIRECTED) 
     {
       directedButton->setChecked(true);
       undirectedButton->setChecked(false);
     }
-  else if (directedness == UNDIRECTED) 
+  else if (_directedness == UNDIRECTED) 
     {
       directedButton->setChecked(false);
       undirectedButton->setChecked(true);
     }
 }
 
-void RelationshipTypeDialog::setName(const QString &newName) 
+void RelationshipTypeDialog::setName(const QString &name) 
 {
-  name = newName;
+  _name = name;
 }
 
 void RelationshipTypeDialog::checkDirectedButton() 
 {
   directedButton->setChecked(true);
   undirectedButton->setChecked(false);
-  directedness = DIRECTED;
+  _directedness = DIRECTED;
 }
 
 void RelationshipTypeDialog::checkUndirectedButton() 
 {
   directedButton->setChecked(false);
   undirectedButton->setChecked(true);
-  directedness = UNDIRECTED;
+  _directedness = UNDIRECTED;
 }
 
 void RelationshipTypeDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void RelationshipTypeDialog::saveAndClose() 
 {
-  description = descriptionField->toPlainText().trimmed();
-  name = name.trimmed();
-  if (name.contains("(") || name.contains(")")) 
+  _description = descriptionField->toPlainText().trimmed();
+  _name = _name.trimmed();
+  if (_name.contains("(") || _name.contains(")")) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -150,7 +172,7 @@ void RelationshipTypeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (description == "") 
+  if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -161,7 +183,7 @@ void RelationshipTypeDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  if (name == "") 
+  if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -175,11 +197,11 @@ void RelationshipTypeDialog::saveAndClose()
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM relationship_types WHERE name = :name");
-  query->bindValue(":name", name);
+  query->bindValue(":name", _name);
   query->exec();
   query->first();
   empty = query->isNull(0);
-  if (!empty && name != subName) 
+  if (!empty && _name != _subName) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -191,6 +213,6 @@ void RelationshipTypeDialog::saveAndClose()
       return;
     }
   delete query;
-  exitStatus = 0;
+  _exitStatus = 0;
   this->close();
 }

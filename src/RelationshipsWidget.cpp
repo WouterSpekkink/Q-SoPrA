@@ -1,11 +1,33 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/RelationshipsWidget.h"
 
 RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) 
 {
-  descriptionFilter = "";
-  rawFilter = "";
-  commentFilter = "";
-  commentBool = false;
+  _descriptionFilter = "";
+  _rawFilter = "";
+  _commentFilter = "";
+  _commentBool = false;
 
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
@@ -299,12 +321,12 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
 
 void RelationshipsWidget::setCommentBool() 
 {
-  commentBool = true;
+  _commentBool = true;
 }
 
 void RelationshipsWidget::setComment() 
 {
-  if (commentBool) 
+  if (_commentBool) 
     {
       QString comment = commentField->toPlainText();
       incidentsModel->select();
@@ -316,7 +338,7 @@ void RelationshipsWidget::setComment()
       query->bindValue(":comment", comment);
       query->bindValue(":order", order);
       query->exec();
-      commentBool = false;
+      _commentBool = false;
       delete query;
     }
 }
@@ -732,8 +754,8 @@ void RelationshipsWidget::editType()
 void RelationshipsWidget::entitiesOverview() 
 {
   QPointer<EditEntityDialog> entityDialog = new EditEntityDialog(this);
-  entityDialog->setEventGraphWidget(eventGraphWidgetPtr);
-  entityDialog->setAttributesWidget(attributesWidgetPtr);
+  entityDialog->setEventGraphWidget(_eventGraphWidgetPtr);
+  entityDialog->setAttributesWidget(_attributesWidgetPtr);
   entityDialog->exec();
   if (entityDialog->getEntityEdited() == 1) 
     {
@@ -978,8 +1000,8 @@ void RelationshipsWidget::newRelationship()
 	  QString description = query->value(1).toString();
 	  QString hint = breakString(directedness + " - " + description);
 	  RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
-	  relationshipsDialog->setAttributesWidget(attributesWidgetPtr);
-	  relationshipsDialog->setEventGraphWidget(eventGraphWidgetPtr);
+	  relationshipsDialog->setAttributesWidget(_attributesWidgetPtr);
+	  relationshipsDialog->setEventGraphWidget(_eventGraphWidgetPtr);
 	  relationshipsDialog->submitType(currentType);
 	  relationshipsDialog->submitDescription(description);
 	  relationshipsDialog->submitDirectedness(directedness);
@@ -1039,8 +1061,8 @@ void RelationshipsWidget::editRelationship()
 	  QString leftEntity = query->value(0).toString();
 	  QString rightEntity = query->value(1).toString();
 	  RelationshipsDialog *relationshipsDialog = new RelationshipsDialog(this);
-	  relationshipsDialog->setAttributesWidget(attributesWidgetPtr);
-	  relationshipsDialog->setEventGraphWidget(eventGraphWidgetPtr);
+	  relationshipsDialog->setAttributesWidget(_attributesWidgetPtr);
+	  relationshipsDialog->setEventGraphWidget(_eventGraphWidgetPtr);
 	  relationshipsDialog->submitType(currentType);
 	  relationshipsDialog->submitDescription(description);
 	  relationshipsDialog->submitDirectedness(directedness);
@@ -1084,8 +1106,8 @@ void RelationshipsWidget::editRelationship()
 	      setTree();
 	      relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
 	      retrieveData();
-	      attributesWidgetPtr->resetTree();
-	      eventGraphWidgetPtr->resetTree();
+	      _attributesWidgetPtr->resetTree();
+	      _eventGraphWidgetPtr->resetTree();
 	    }
 	  delete relationshipsDialog;
 	  delete query;
@@ -1475,19 +1497,19 @@ void RelationshipsWidget::nextMarked()
 
 void RelationshipsWidget::setDescriptionFilter(const QString &text) 
 {
-  descriptionFilter = text;
+  _descriptionFilter = text;
 }
 
 void RelationshipsWidget::previousDescription() 
 {
   setComment();
-  if (descriptionFilter != "") 
+  if (_descriptionFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = query->value(0).toInt();
-      QString searchText = "%" + descriptionFilter + "%";
+      QString searchText = "%" + _descriptionFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE description LIKE :text "
 		     "AND ch_order < :order "
@@ -1512,13 +1534,13 @@ void RelationshipsWidget::previousDescription()
 void RelationshipsWidget::nextDescription() 
 {
   setComment();
-  if (descriptionFilter != "") 
+  if (_descriptionFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = query->value(0).toInt();
-      QString searchText = "%" + descriptionFilter + "%";
+      QString searchText = "%" + _descriptionFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE description LIKE :text "
 		     "AND ch_order > :order "
@@ -1542,19 +1564,19 @@ void RelationshipsWidget::nextDescription()
 
 void RelationshipsWidget::setRawFilter(const QString &text) 
 {
-  rawFilter = text;
+  _rawFilter = text;
 }
 
 void RelationshipsWidget::previousRaw() 
 {
   setComment();
-  if (rawFilter != "") 
+  if (_rawFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = query->value(0).toInt();
-      QString searchText = "%" + rawFilter + "%";
+      QString searchText = "%" + _rawFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE raw LIKE :text "
 		     "AND ch_order < :order "
@@ -1579,13 +1601,13 @@ void RelationshipsWidget::previousRaw()
 void RelationshipsWidget::nextRaw() 
 {
   setComment();
-  if (rawFilter != "") 
+  if (_rawFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = query->value(0).toInt();
-      QString searchText = "%" + rawFilter + "%";
+      QString searchText = "%" + _rawFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE raw LIKE :text "
 		     "AND ch_order > :order "
@@ -1609,19 +1631,19 @@ void RelationshipsWidget::nextRaw()
 
 void RelationshipsWidget::setCommentFilter(const QString &text) 
 {
-  commentFilter = text;
+  _commentFilter = text;
 }
 
 void RelationshipsWidget::previousComment() 
 {
   setComment();
-  if (commentFilter != "") 
+  if (_commentFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = query->value(0).toInt();
-      QString searchText = "%" + commentFilter + "%";
+      QString searchText = "%" + _commentFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE comment LIKE :text "
 		     "AND ch_order < :order "
@@ -1646,13 +1668,13 @@ void RelationshipsWidget::previousComment()
 void RelationshipsWidget::nextComment() 
 {
   setComment();
-  if (commentFilter != "") 
+  if (_commentFilter != "") 
     {
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
       int order = query->value(0).toInt();
-      QString searchText = "%" + commentFilter + "%";
+      QString searchText = "%" + _commentFilter + "%";
       query->prepare("SELECT ch_order FROM incidents "
 		     "WHERE comment LIKE :text "
 		     "AND ch_order > :order "
@@ -1936,12 +1958,12 @@ void RelationshipsWidget::finalBusiness()
 
 void RelationshipsWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  eventGraphWidgetPtr = eventGraphWidgetPtr;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
 void RelationshipsWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  attributesWidgetPtr = attributesWidgetPtr;
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
 
 void RelationshipsWidget::setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr) 

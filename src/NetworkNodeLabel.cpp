@@ -1,51 +1,73 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+    
 #include "../include/NetworkNodeLabel.h"
 #include <QGraphicsScene>
 #include <QtCore>
 #include "../include/Scene.h"
 
-NetworkNodeLabel::NetworkNodeLabel(NetworkNode *submittedNode) 
+NetworkNodeLabel::NetworkNodeLabel(NetworkNode *networkNodePtr) 
 {
   //setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
-  node = submittedNode;
-  xOffset = 20;
-  yOffset = -15;
-  fontSize = 12;
+  _networkNodePtr = networkNodePtr;
+  _xOffset = 20;
+  _yOffset = -15;
+  _fontSize = 12;
   QFont newFont = this->font();
-  newFont.setPointSizeF(fontSize);
+  newFont.setPointSizeF(_fontSize);
   this->setFont(newFont);
 }
 
 NetworkNode* NetworkNodeLabel::getNode() 
 {
-  return node;
+  return _networkNodePtr;
 }
 
 void NetworkNodeLabel::setNewPos(QPointF nodePos) 
 {
   QPointF newPos = nodePos;
-  newPos.setX(newPos.x() + xOffset);
-  newPos.setY(newPos.y() + yOffset);
+  newPos.setX(newPos.x() + _xOffset);
+  newPos.setY(newPos.y() + _yOffset);
   this->setPos(newPos);
 }
 
 void NetworkNodeLabel::setOriginalPos(QPointF nodePos) 
 {
   QPointF newPos = nodePos;
-  newPos.setX(newPos.x() + xOffset);
-  newPos.setY(newPos.y() + yOffset);
+  newPos.setX(newPos.x() + _xOffset);
+  newPos.setY(newPos.y() + _yOffset);
   this->setPos(newPos);
 }
 
 QPointF NetworkNodeLabel::getOffset() 
 {
-  return QPointF(xOffset, yOffset);
+  return QPointF(_xOffset, _yOffset);
 }
 
 void NetworkNodeLabel::setOffset(QPointF offset) 
 {
-  xOffset = offset.x();
-  yOffset = offset.y();
+  _xOffset = offset.x();
+  _yOffset = offset.y();
 }
 
 int NetworkNodeLabel::type() const 
@@ -55,35 +77,35 @@ int NetworkNodeLabel::type() const
 
 void NetworkNodeLabel::increaseFontSize() 
 {
-  if (fontSize != 24) 
+  if (_fontSize != 24) 
     {
-      fontSize++;
+      _fontSize++;
     }
   QFont newFont = this->font();
-  newFont.setPointSizeF(fontSize);
+  newFont.setPointSizeF(_fontSize);
   this->setFont(newFont);
 }
 
 void NetworkNodeLabel::decreaseFontSize() 
 {
-  if (fontSize != 12) 
+  if (_fontSize != 12) 
     {
-      fontSize--;
+      _fontSize--;
     }
   QFont newFont = this->font();
-  newFont.setPointSizeF(fontSize);
+  newFont.setPointSizeF(_fontSize);
   this->setFont(newFont);
 }
 
 void NetworkNodeLabel::setFontSize(int size) 
 {
-  fontSize = size;
+  _fontSize = size;
   QFont newFont = this->font();
-  newFont.setPointSizeF(fontSize);
+  newFont.setPointSizeF(_fontSize);
   this->setFont(newFont);
 }
 
 int NetworkNodeLabel::getFontSize() 
 {
-  return fontSize;
+  return _fontSize;
 }

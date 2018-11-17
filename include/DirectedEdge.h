@@ -54,7 +54,6 @@ public:
   QColor getColor();
   NetworkNode* getStart() const;
   NetworkNode* getEnd() const;
-  void calculate();
   QString getType();
   int getHeight();
   QString getName();
@@ -68,11 +67,16 @@ public:
   // Type check
   enum {Type = UserType + 4};
   int type() const;
+
+private slots:
+  // Calculate function to support paint function
+  void calculate();
   
 protected:
   // Override of the pain function
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
+  
 private:
   QColor _color;
   QPolygonF _arrowHead;

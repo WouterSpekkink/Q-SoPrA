@@ -84,12 +84,13 @@ public:
   enum {Type = UserType + 2};
   int type() const;
   
+private slots:
+  // Function that supports paint function with necessary calculations
+  void calculate();
+    
 protected:
   // Override of the paint function
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
-
-  // Function that supports paint function with necessary calculations
-  void calculate();
 
 private:
   // Private variables
@@ -113,7 +114,6 @@ private:
   // Do not delete.
   QGraphicsItem *_start;
   QGraphicsItem *_end;
-
 };
 
 #endif

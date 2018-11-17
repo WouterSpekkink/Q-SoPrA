@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/RawAttributesTable.h"
 
 RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) 
@@ -343,8 +365,8 @@ void RawAttributesTable::editAttribute()
 	      query->bindValue(":newname", newName);
 	      query->bindValue(":oldname", attribute);
 	      query->exec();
-	      eventGraphWidgetPtr->resetTree();
-	      attributesWidgetPtr->resetTree();
+	      _eventGraphWidgetPtr->resetTree();
+	      _attributesWidgetPtr->resetTree();
 	    }
 	  delete attributeDialog;
 	}
@@ -497,9 +519,9 @@ void RawAttributesTable::updateEntityAfterEdit(const QString name,
      is reconstructed every time it is switched to, so we do not need to reset it
      explicitly.
   */
-  relationshipsWidgetPtr->resetTree();
-  attributesWidgetPtr->resetTree();
-  eventGraphWidgetPtr->resetTree();
+  _relationshipsWidgetPtr->resetTree();
+  _attributesWidgetPtr->resetTree();
+  _eventGraphWidgetPtr->resetTree();
 }
 
 void RawAttributesTable::exportTable() 
@@ -540,16 +562,16 @@ void RawAttributesTable::exportTable()
 
 void RawAttributesTable::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  eventGraphWidgetPtr = eventGraphWidgetPtr;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
 void RawAttributesTable::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  attributesWidgetPtr = attributesWidgetPtr;
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
 
 void RawAttributesTable::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
-  relationshipsWidgetPtr = relationshipsWidgetPtr;
+  _relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
 

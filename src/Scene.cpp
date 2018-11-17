@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/Scene.h"
 #include "../include/GraphicsView.h"
 #include "../include/BandlessGraphicsView.h"
@@ -6,22 +28,22 @@
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) 
 {
-  resizeOnIncidentNode = false;
-  resizeOnAbstractNode = false;
-  moveOn = false;
-  lineMoveOn = false;
-  moveLineObject = false;
-  manipulateEllipse = false;
-  moveEllipse = false;
-  rotateEllipse = false;
-  manipulateRect = false;
-  moveRect = false;
-  rotateRect = false;
-  moveText = false;
-  rotateText = false;
-  hierarchyMove = false;
-  eventWidthChange = false;
-  moveNetworkNodeLabel = false;
+  _resizeOnIncidentNode = false;
+  _resizeOnAbstractNode = false;
+  _moveOn = false;
+  _lineMoveOn = false;
+  _moveLineObject = false;
+  _manipulateEllipse = false;
+  _moveEllipse = false;
+  _rotateEllipse = false;
+  _manipulateRect = false;
+  _moveRect = false;
+  _rotateRect = false;
+  _moveText = false;
+  _rotateText = false;
+  _hierarchyMove = false;
+  _eventWidthChange = false;
+  _moveNetworkNodeLabel = false;
 }
 
 QRectF Scene::itemsBoundingRect() const 
@@ -42,15 +64,15 @@ void Scene::modEventWidth(QGraphicsItem *item)
   AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(item);
   if (incident) 
     {
-      eventWidthChange = true;
-      selectedIncidentNode = incident;
+      _eventWidthChange = true;
+      _selectedIncidentNodePtr = incident;
       clearSelection();
       incident->setSelected(true);
     }
   else if (abstractNode) 
     {
-      selectedAbstractNode = abstractNode;
-      eventWidthChange = true;
+      _selectedAbstractNodePtr = abstractNode;
+      _eventWidthChange = true;
       clearSelection();
       abstractNode->setSelected(true);
     }
@@ -58,9 +80,9 @@ void Scene::modEventWidth(QGraphicsItem *item)
 
 void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) 
 {
-  if (eventWidthChange) 
+  if (_eventWidthChange) 
     {
-      eventWidthChange = false;
+      _eventWidthChange = false;
     }
   IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(wheelEvent->scenePos(),
 							      QTransform()));
@@ -356,9 +378,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
   if (event->button() == Qt::LeftButton)
     {
-      if (eventWidthChange) 
+      if (_eventWidthChange) 
 	{
-	  eventWidthChange = false;
+	  _eventWidthChange = false;
 	}
       if (event->modifiers() & Qt::ControlModifier) 
 	{
@@ -405,15 +427,15 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  clearSelection();
 		  incident->setSelected(true);
-		  selectedIncidentNode = incident;
-		  hierarchyMove = true;
+		  _selectedIncidentNodePtr = incident;
+		  _hierarchyMove = true;
 		}
 	      else 
 		{
 		  emit resetItemSelection();
 		  incident->setSelected(true);
-		  selectedIncidentNode = incident;
-		  moveOn = true;
+		  _selectedIncidentNodePtr = incident;
+		  _moveOn = true;
 		}
 	    }
 	  else if (abstractNode) 
@@ -422,37 +444,37 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  clearSelection();
 		  abstractNode->setSelected(true);
-		  selectedAbstractNode = abstractNode;
-		  hierarchyMove = true;
+		  _selectedAbstractNodePtr = abstractNode;
+		  _hierarchyMove = true;
 		}
 	      else 
 		{
 		  emit resetItemSelection();
 		  abstractNode->setSelected(true);
-		  selectedAbstractNode = abstractNode;
-		  moveOn = true;
+		  _selectedAbstractNodePtr = abstractNode;
+		  _moveOn = true;
 		}
 	    }
 	  else if (networkNode) 
 	    {
 	      networkNode->setSelected(true);
-	      selectedNode = networkNode;
-	      moveOn = true;
+	      _selectedNetworkNodePtr = networkNode;
+	      _moveOn = true;
 	    }
 	  else if (occurrence) 
 	    {
 	      clearSelection();
 	      occurrence->setSelected(true);
-	      selectedOccurrence = occurrence;
-	      moveOn = true;
+	      _selectedOccurrencePtr = occurrence;
+	      _moveOn = true;
 	    }
 	  else if (text) 
 	    {
 	      clearSelection();
 	      text->setSelected(true);
 	      emit resetItemSelection();
-	      selectedText = text;
-	      rotateText = true;
+	      _selectedTextPtr = text;
+	      _rotateText = true;
 	      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
 	      qApp->processEvents();
 	    }
@@ -461,8 +483,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      clearSelection();
 	      ellipse->setSelected(true);
 	      emit resetItemSelection();
-	      selectedEllipse = ellipse;
-	      rotateEllipse = true;
+	      _selectedEllipsePtr = ellipse;
+	      _rotateEllipse = true;
 	      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
 	      qApp->processEvents();
 	    }
@@ -471,8 +493,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      clearSelection();
 	      rect->setSelected(true);
 	      emit resetItemSelection();
-	      selectedRect = rect;
-	      rotateRect = true;
+	      _selectedRectPtr = rect;
+	      _rotateRect = true;
 	      QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
 	      qApp->processEvents();
 	    }
@@ -521,10 +543,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  if (!incident->isCopy()) 
 		    {
-		      resizeOnIncidentNode = true;
-		      lastMousePos = event->scenePos();
-		      selectedIncidentNode = incident;
-		      selectedAbstractNode = NULL;
+		      _resizeOnIncidentNode = true;
+		      _lastMousePos = event->scenePos();
+		      _selectedIncidentNodePtr = incident;
+		      _selectedAbstractNodePtr = NULL;
 		    }
 		}
 	    }
@@ -548,43 +570,43 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  if (!abstractNode->isCopy()) 
 		    {
-		      resizeOnAbstractNode = true;
-		      lastMousePos = event->scenePos();
-		      selectedAbstractNode = abstractNode;
-		      selectedIncidentNode = NULL;
+		      _resizeOnAbstractNode = true;
+		      _lastMousePos = event->scenePos();
+		      _selectedAbstractNodePtr = abstractNode;
+		      _selectedIncidentNodePtr = NULL;
 		    }
 		}
 	    }
 	  else if (line) 
 	    {
 	      clearSelection();
-	      selectedLine = line;
+	      _selectedLinePtr = line;
 	      line->setSelected(true);
 	      emit resetItemSelection();
-	      moveLineObject = true;
-	      lastMousePos = event->scenePos();
+	      _moveLineObject = true;
+	      _lastMousePos = event->scenePos();
 	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
 	      qApp->processEvents();
 	    }
 	  else if (ellipse) 
 	    {
 	      clearSelection();
-	      selectedEllipse = ellipse;
+	      _selectedEllipsePtr = ellipse;
 	      ellipse->setSelected(true);
 	      emit resetItemSelection();
-	      moveEllipse = true;
-	      lastMousePos = event->scenePos();
+	      _moveEllipse = true;
+	      _lastMousePos = event->scenePos();
 	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
 	      qApp->processEvents();
 	    }
 	  else if (rect) 
 	    {
 	      clearSelection();
-	      selectedRect = rect;
+	      _selectedRectPtr = rect;
 	      rect->setSelected(true);
 	      emit resetItemSelection();
-	      moveRect = true;
-	      lastMousePos = event->scenePos();
+	      _moveRect = true;
+	      _lastMousePos = event->scenePos();
 	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
 	      qApp->processEvents();
 	    }
@@ -648,51 +670,51 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  else if (networkLabel)
 	    {
 	      clearSelection();
-	      moveNetworkNodeLabel = true;
-	      selectedNetworkLabel = networkLabel;
-	      lastMousePos = event->scenePos();
+	      _moveNetworkNodeLabel = true;
+	      _selectedNetworkNodeLabelPtr = networkLabel;
+	      _lastMousePos = event->scenePos();
 	    }
 	  else if (occurrence) 
 	    {
 	      clearSelection();
 	      occurrence->setSelected(true);
-	      selectedOccurrence = occurrence;
+	      _selectedOccurrencePtr = occurrence;
 	    }
 	  else if (line) 
 	    {
 	      clearSelection();
 	      line->setSelected(true);
-	      selectedLine = line;
+	      _selectedLinePtr = line;
 	      emit resetItemSelection();
-	      lineMoveOn = true;
+	      _lineMoveOn = true;
 	    }
 	  else if (ellipse) 
 	    {
 	      clearSelection();
-	      selectedEllipse = ellipse;
+	      _selectedEllipsePtr = ellipse;
 	      ellipse->setSelected(true);
 	      emit resetItemSelection();
-	      manipulateEllipse = true;
+	      _manipulateEllipse = true;
 	    }
 	  else if (rect) 
 	    {
 	      clearSelection();
 	      rect->setSelected(true);
 	      emit resetItemSelection();
-	      selectedRect = rect;
-	      manipulateRect = true;
+	      _selectedRectPtr = rect;
+	      _manipulateRect = true;
 	    }
 	  else if (text) 
 	    {
 	      clearSelection();
 	      text->setSelected(true);
-	      selectedText = text;
-	      lastMousePos = event->scenePos();
-	      moveText = true;
+	      _selectedTextPtr = text;
+	      _lastMousePos = event->scenePos();
+	      _moveText = true;
 	    }
-	  selectedIncidentNode = NULL;
-	  selectedAbstractNode = NULL;
-	  selectedNode = NULL;
+	  _selectedIncidentNodePtr = NULL;
+	  _selectedAbstractNodePtr = NULL;
+	  _selectedNetworkNodePtr = NULL;
 	  emit resetItemSelection();
 	  QGraphicsScene::mousePressEvent(event);
 	}
@@ -705,21 +727,21 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
 {
-  resizeOnIncidentNode = false;
-  resizeOnAbstractNode = false;
-  moveOn = false;
-  lineMoveOn = false;
-  moveLineObject = false;
-  manipulateEllipse = false;
-  moveEllipse = false;
-  rotateEllipse = false;
-  manipulateRect = false;
-  moveRect = false;
-  rotateRect = false;
-  rotateText = false;
-  hierarchyMove = false;
-  moveText = false;
-  moveNetworkNodeLabel = false;
+  _resizeOnIncidentNode = false;
+  _resizeOnAbstractNode = false;
+  _moveOn = false;
+  _lineMoveOn = false;
+  _moveLineObject = false;
+  _manipulateEllipse = false;
+  _moveEllipse = false;
+  _rotateEllipse = false;
+  _manipulateRect = false;
+  _moveRect = false;
+  _rotateRect = false;
+  _rotateText = false;
+  _hierarchyMove = false;
+  _moveText = false;
+  _moveNetworkNodeLabel = false;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
@@ -747,184 +769,184 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 	  occurrence->setCursor(Qt::OpenHandCursor);
 	}
     }
-  selectedIncidentNode = NULL;
-  selectedAbstractNode = NULL;
-  selectedNode = NULL;
-  selectedOccurrence = NULL;
-  selectedLine = NULL;
-  selectedEllipse = NULL;
-  selectedText = NULL;
-  selectedNetworkLabel = NULL;
+  _selectedIncidentNodePtr = NULL;
+  _selectedAbstractNodePtr = NULL;
+  _selectedNetworkNodePtr = NULL;
+  _selectedOccurrencePtr = NULL;
+  _selectedLinePtr = NULL;
+  _selectedEllipsePtr = NULL;
+  _selectedTextPtr = NULL;
+  _selectedNetworkNodeLabelPtr = NULL;
   QGraphicsScene::mouseReleaseEvent(event);
 }
   
 void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
 {
-  if (eventWidthChange) 
+  if (_eventWidthChange) 
     {
-      if (selectedIncidentNode != NULL) 
+      if (_selectedIncidentNodePtr != NULL) 
 	{
-	  QPointF eventPos = selectedIncidentNode->scenePos();
-	  if (event->scenePos().x() > eventPos.x() && selectedIncidentNode->getWidth() >= 40) 
+	  QPointF eventPos = _selectedIncidentNodePtr->scenePos();
+	  if (event->scenePos().x() > eventPos.x() && _selectedIncidentNodePtr->getWidth() >= 40) 
 	    {
-	      int newWidth = event->scenePos().x() - selectedIncidentNode->scenePos().x();
+	      int newWidth = event->scenePos().x() - _selectedIncidentNodePtr->scenePos().x();
 	      if (newWidth >= 40) 
 		{
-		  selectedIncidentNode->setWidth(newWidth);
-		  selectedIncidentNode->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-		  selectedIncidentNode->getLabel()->setNewPos(selectedIncidentNode->scenePos());
+		  _selectedIncidentNodePtr->setWidth(newWidth);
+		  _selectedIncidentNodePtr->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
+		  _selectedIncidentNodePtr->getLabel()->setNewPos(_selectedIncidentNodePtr->scenePos());
 		}
 	    }
 	  else 
 	    {
-	      selectedIncidentNode->setWidth(40);
-	      selectedIncidentNode->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
-	      selectedIncidentNode->getLabel()->setNewPos(selectedIncidentNode->scenePos());
+	      _selectedIncidentNodePtr->setWidth(40);
+	      _selectedIncidentNodePtr->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
+	      _selectedIncidentNodePtr->getLabel()->setNewPos(_selectedIncidentNodePtr->scenePos());
 	    }
 	}
-      else if (selectedAbstractNode != NULL) 
+      else if (_selectedAbstractNodePtr != NULL) 
 	{
-	  QPointF abstractNodePos = selectedAbstractNode->scenePos();
-	  if (event->scenePos().x() > abstractNodePos.x() && selectedAbstractNode->getWidth() >= 40) 
+	  QPointF abstractNodePos = _selectedAbstractNodePtr->scenePos();
+	  if (event->scenePos().x() > abstractNodePos.x() && _selectedAbstractNodePtr->getWidth() >= 40) 
 	    {
-	      int newWidth = event->scenePos().x() - selectedAbstractNode->scenePos().x();
+	      int newWidth = event->scenePos().x() - _selectedAbstractNodePtr->scenePos().x();
 	      if (newWidth >= 40) 
 		{
-		  selectedAbstractNode->setWidth(newWidth);
-		  selectedAbstractNode->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-		  selectedAbstractNode->getLabel()->setNewPos(selectedAbstractNode->scenePos());
+		  _selectedAbstractNodePtr->setWidth(newWidth);
+		  _selectedAbstractNodePtr->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
+		  _selectedAbstractNodePtr->getLabel()->setNewPos(_selectedAbstractNodePtr->scenePos());
 		}
 	    }
 	  else 
 	    {
-	      selectedAbstractNode->setWidth(40);
-	      selectedAbstractNode->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
-	      selectedAbstractNode->getLabel()->setNewPos(selectedAbstractNode->scenePos());
+	      _selectedAbstractNodePtr->setWidth(40);
+	      _selectedAbstractNodePtr->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
+	      _selectedAbstractNodePtr->getLabel()->setNewPos(_selectedAbstractNodePtr->scenePos());
 	    }
 	}
     }
-  else if (resizeOnIncidentNode) 
+  else if (_resizeOnIncidentNode) 
     {
-      qreal dist = event->scenePos().x() - lastMousePos.x();
-      int currentY = selectedIncidentNode->scenePos().y();
-      selectedIncidentNode->setPos(event->scenePos().x(), currentY);
-      emit posChanged(selectedIncidentNode, dist);
-      selectedIncidentNode->setDislodged(true);
-      lastMousePos = event->scenePos();
+      qreal dist = event->scenePos().x() - _lastMousePos.x();
+      int currentY = _selectedIncidentNodePtr->scenePos().y();
+      _selectedIncidentNodePtr->setPos(event->scenePos().x(), currentY);
+      emit posChanged(_selectedIncidentNodePtr, dist);
+      _selectedIncidentNodePtr->setDislodged(true);
+      _lastMousePos = event->scenePos();
       emit relevantChange();
     }
-  else if (resizeOnAbstractNode) 
+  else if (_resizeOnAbstractNode) 
     {
-      qreal dist = event->scenePos().x() - lastMousePos.x();
-      int currentY = selectedAbstractNode->scenePos().y();
-      selectedAbstractNode->setPos(event->scenePos().x(), currentY);
-      emit posChanged(selectedAbstractNode, dist);
-      selectedAbstractNode->setDislodged(true);
-      lastMousePos = event->scenePos();
+      qreal dist = event->scenePos().x() - _lastMousePos.x();
+      int currentY = _selectedAbstractNodePtr->scenePos().y();
+      _selectedAbstractNodePtr->setPos(event->scenePos().x(), currentY);
+      emit posChanged(_selectedAbstractNodePtr, dist);
+      _selectedAbstractNodePtr->setDislodged(true);
+      _lastMousePos = event->scenePos();
       emit relevantChange();
     }
-  else if (hierarchyMove) 
+  else if (_hierarchyMove) 
     {
-      if (selectedIncidentNode) 
+      if (_selectedIncidentNodePtr) 
 	{
-	  emit moveItems(selectedIncidentNode, event->scenePos());
+	  emit moveItems(_selectedIncidentNodePtr, event->scenePos());
 	}
-      else if (selectedAbstractNode) 
+      else if (_selectedAbstractNodePtr) 
 	{
-	  emit moveItems(selectedAbstractNode, event->scenePos());
+	  emit moveItems(_selectedAbstractNodePtr, event->scenePos());
 	}
       emit relevantChange();
     }
-  else if (lineMoveOn) 
+  else if (_lineMoveOn) 
     {
-      lastMousePos = event->scenePos();
-      QPointF start = selectedLine->getStartPos();
-      QPointF end = selectedLine->getEndPos();
-      qreal distStart = sqrt(pow((lastMousePos.x() - start.x()), 2) +
-			     pow((lastMousePos.y() - start.y()), 2));
-      qreal distEnd = sqrt(pow((lastMousePos.x() - end.x()), 2) +
-			   pow((lastMousePos.y() - end.y()), 2));
+      _lastMousePos = event->scenePos();
+      QPointF start = _selectedLinePtr->getStartPos();
+      QPointF end = _selectedLinePtr->getEndPos();
+      qreal distStart = sqrt(pow((_lastMousePos.x() - start.x()), 2) +
+			     pow((_lastMousePos.y() - start.y()), 2));
+      qreal distEnd = sqrt(pow((_lastMousePos.x() - end.x()), 2) +
+			   pow((_lastMousePos.y() - end.y()), 2));
       if (distStart < distEnd) 
 	{
 	  if (event->modifiers() & Qt::ControlModifier) 
 	    {
-	      if (abs((lastMousePos.y() - end.y()) / (lastMousePos.x() - end.x())) < 1) 
+	      if (abs((_lastMousePos.y() - end.y()) / (_lastMousePos.x() - end.x())) < 1) 
 		{
-		  selectedLine->setStartPos(lastMousePos.x(), end.y());
+		  _selectedLinePtr->setStartPos(_lastMousePos.x(), end.y());
 		}
 	      else 
 		{
-		  selectedLine->setStartPos(end.x(), lastMousePos.y());
+		  _selectedLinePtr->setStartPos(end.x(), _lastMousePos.y());
 		}
 	    }
 	  else 
 	    {
-	      selectedLine->setStartPos(lastMousePos);
+	      _selectedLinePtr->setStartPos(_lastMousePos);
 	    }
 	}
       else 
 	{
 	  if (event->modifiers() & Qt::ControlModifier) 
 	    {
-	      if (abs((lastMousePos.y() - start.y()) / (lastMousePos.x() - start.x())) < 1) 
+	      if (abs((_lastMousePos.y() - start.y()) / (_lastMousePos.x() - start.x())) < 1) 
 		{
-		  selectedLine->setEndPos(lastMousePos.x(), start.y());
+		  _selectedLinePtr->setEndPos(_lastMousePos.x(), start.y());
 		}
 	      else 
 		{
-		  selectedLine->setEndPos(start.x(), lastMousePos.y());
+		  _selectedLinePtr->setEndPos(start.x(), _lastMousePos.y());
 		}
 	    }
 	  else 
 	    {
-	      selectedLine->setEndPos(lastMousePos);
+	      _selectedLinePtr->setEndPos(_lastMousePos);
 	    }
 	}
       emit relevantChange();
     }
-  else if (moveLineObject) 
+  else if (_moveLineObject) 
     {
-      QPointF newPos = selectedLine->mapFromScene(event->scenePos());
-      qreal newXDiff = newPos.x() - lastMousePos.x();
-      qreal newYDiff = newPos.y() - lastMousePos.y();
-      selectedLine->setStartPos(selectedLine->mapToScene(selectedLine->getStartPos() +
+      QPointF newPos = _selectedLinePtr->mapFromScene(event->scenePos());
+      qreal newXDiff = newPos.x() - _lastMousePos.x();
+      qreal newYDiff = newPos.y() - _lastMousePos.y();
+      _selectedLinePtr->setStartPos(_selectedLinePtr->mapToScene(_selectedLinePtr->getStartPos() +
 							 QPointF(newXDiff, newYDiff)));
-      selectedLine->setEndPos(selectedLine->mapToScene(selectedLine->getEndPos() +
+      _selectedLinePtr->setEndPos(_selectedLinePtr->mapToScene(_selectedLinePtr->getEndPos() +
 						       QPointF(newXDiff, newYDiff)));
-      lastMousePos = event->scenePos();
+      _lastMousePos = event->scenePos();
       emit relevantChange();
     }
-  else if (manipulateEllipse) 
+  else if (_manipulateEllipse) 
     {
-      lastMousePos = event->scenePos();
-      QPointF topLeft = selectedEllipse->mapToScene(selectedEllipse->topLeft());
-      QPointF bottomLeft = selectedEllipse->mapToScene(selectedEllipse->bottomLeft());
-      QPointF topRight = selectedEllipse->mapToScene(selectedEllipse->topRight());
-      QPointF bottomRight = selectedEllipse->mapToScene(selectedEllipse->bottomRight());
-      QPointF left = selectedEllipse->mapToScene(QPointF(selectedEllipse->getLeft(),
-							 selectedEllipse->getCenter().y()));
-      QPointF right = selectedEllipse->mapToScene(QPointF(selectedEllipse->getRight(),
-							  selectedEllipse->getCenter().y()));
-      QPointF top = selectedEllipse->mapToScene(QPointF(selectedEllipse->getCenter().x(),
-							selectedEllipse->getTop()));
-      QPointF bottom = selectedEllipse->mapToScene(QPointF(selectedEllipse->getCenter().x(),
-							   selectedEllipse->getBottom()));
-      qreal distTopLeft = sqrt(pow((lastMousePos.x() - topLeft.x()), 2) +
-			       pow((lastMousePos.y() - topLeft.y()), 2));
-      qreal distTopRight = sqrt(pow((lastMousePos.x() - topRight.x()), 2) +
-				pow((lastMousePos.y() - topRight.y()), 2));
-      qreal distBottomLeft = sqrt(pow((lastMousePos.x() - bottomLeft.x()), 2) +
-				  pow((lastMousePos.y() - bottomLeft.y()), 2));
-      qreal distBottomRight = sqrt(pow((lastMousePos.x() - bottomRight.x()), 2) +
-				   pow((lastMousePos.y() - bottomRight.y()), 2));
-      qreal distLeft = sqrt(pow((lastMousePos.x() - left.x()), 2) +
-			    pow((lastMousePos.y() - left.y()), 2));
-      qreal distRight = sqrt(pow((lastMousePos.x() - right.x()), 2) +
-			     pow((lastMousePos.y() - right.y()), 2));
-      qreal distTop = sqrt(pow((lastMousePos.x() - top.x()), 2) +
-			   pow((lastMousePos.y() - top.y()), 2));
-      qreal distBottom = sqrt(pow((lastMousePos.x() - bottom.x()), 2) +
-			      pow((lastMousePos.y() - bottom.y()), 2));
+      _lastMousePos = event->scenePos();
+      QPointF topLeft = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft());
+      QPointF bottomLeft = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomLeft());
+      QPointF topRight = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topRight());
+      QPointF bottomRight = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight());
+      QPointF left = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getLeft(),
+							 _selectedEllipsePtr->getCenter().y()));
+      QPointF right = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getRight(),
+							  _selectedEllipsePtr->getCenter().y()));
+      QPointF top = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getCenter().x(),
+							_selectedEllipsePtr->getTop()));
+      QPointF bottom = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getCenter().x(),
+							   _selectedEllipsePtr->getBottom()));
+      qreal distTopLeft = sqrt(pow((_lastMousePos.x() - topLeft.x()), 2) +
+			       pow((_lastMousePos.y() - topLeft.y()), 2));
+      qreal distTopRight = sqrt(pow((_lastMousePos.x() - topRight.x()), 2) +
+				pow((_lastMousePos.y() - topRight.y()), 2));
+      qreal distBottomLeft = sqrt(pow((_lastMousePos.x() - bottomLeft.x()), 2) +
+				  pow((_lastMousePos.y() - bottomLeft.y()), 2));
+      qreal distBottomRight = sqrt(pow((_lastMousePos.x() - bottomRight.x()), 2) +
+				   pow((_lastMousePos.y() - bottomRight.y()), 2));
+      qreal distLeft = sqrt(pow((_lastMousePos.x() - left.x()), 2) +
+			    pow((_lastMousePos.y() - left.y()), 2));
+      qreal distRight = sqrt(pow((_lastMousePos.x() - right.x()), 2) +
+			     pow((_lastMousePos.y() - right.y()), 2));
+      qreal distTop = sqrt(pow((_lastMousePos.x() - top.x()), 2) +
+			   pow((_lastMousePos.y() - top.y()), 2));
+      qreal distBottom = sqrt(pow((_lastMousePos.x() - bottom.x()), 2) +
+			      pow((_lastMousePos.y() - bottom.y()), 2));
       QVector<qreal> temp;
       temp.push_back(distTopLeft);
       temp.push_back(distTopRight);
@@ -946,92 +968,92 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       if (minimum == distTopLeft) 
 	{
-	  selectedEllipse->setTopLeft(selectedEllipse->mapFromScene(lastMousePos));
+	  _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distTopRight) 
 	{
-	  selectedEllipse->setTopRight(selectedEllipse->mapFromScene(lastMousePos));
+	  _selectedEllipsePtr->setTopRight(_selectedEllipsePtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distBottomLeft) 
 	{
-	  selectedEllipse->setBottomLeft(selectedEllipse->mapFromScene(lastMousePos));
+	  _selectedEllipsePtr->setBottomLeft(_selectedEllipsePtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distBottomRight) 
 	{
-	  selectedEllipse->setBottomRight(selectedEllipse->mapFromScene(lastMousePos));
+	  _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distLeft) 
 	{
-	  selectedEllipse->setLeft(selectedEllipse->mapFromScene(lastMousePos).x());
+	  _selectedEllipsePtr->setLeft(_selectedEllipsePtr->mapFromScene(_lastMousePos).x());
 	}
       else if (minimum == distRight) 
 	{
-	  selectedEllipse->setRight(selectedEllipse->mapFromScene(lastMousePos).x());
+	  _selectedEllipsePtr->setRight(_selectedEllipsePtr->mapFromScene(_lastMousePos).x());
 	}
       else if (minimum == distTop) 
 	{
-	  selectedEllipse->setTop(selectedEllipse->mapFromScene(lastMousePos).y());
+	  _selectedEllipsePtr->setTop(_selectedEllipsePtr->mapFromScene(_lastMousePos).y());
 	}
       else if (minimum == distBottom) 
 	{
-	  selectedEllipse->setBottom(selectedEllipse->mapFromScene(lastMousePos).y());
+	  _selectedEllipsePtr->setBottom(_selectedEllipsePtr->mapFromScene(_lastMousePos).y());
 	}
       emit relevantChange();
     }
-  else if (moveEllipse) 
+  else if (_moveEllipse) 
     {
-      selectedEllipse->resetTransform();
+      _selectedEllipsePtr->resetTransform();
       QPointF newPos = event->scenePos();
-      qreal newXDiff = newPos.x() - lastMousePos.x();
-      qreal newYDiff = newPos.y() - lastMousePos.y();
-      selectedEllipse->moveCenter(selectedEllipse->mapToScene(selectedEllipse->getCenter()) +
-				  selectedEllipse->mapFromScene(QPointF(newXDiff, newYDiff)));
-      lastMousePos = event->scenePos();
-      selectedEllipse->setRotationValue(selectedEllipse->getRotationValue());
+      qreal newXDiff = newPos.x() - _lastMousePos.x();
+      qreal newYDiff = newPos.y() - _lastMousePos.y();
+      _selectedEllipsePtr->moveCenter(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter()) +
+				  _selectedEllipsePtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+      _lastMousePos = event->scenePos();
+      _selectedEllipsePtr->setRotationValue(_selectedEllipsePtr->getRotationValue());
       emit relevantChange();
     }
-  else if (rotateEllipse) 
+  else if (_rotateEllipse) 
     {
-      lastMousePos = event->scenePos();
-      QPointF center = selectedEllipse->mapToScene(selectedEllipse->getCenter());
-      qreal dY = lastMousePos.y() - center.y();
-      qreal dX = lastMousePos.x() - center.x();
+      _lastMousePos = event->scenePos();
+      QPointF center = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+      qreal dY = _lastMousePos.y() - center.y();
+      qreal dX = _lastMousePos.x() - center.x();
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
-      selectedEllipse->setRotationValue(angle);
+      _selectedEllipsePtr->setRotationValue(angle);
       emit relevantChange();
     }
-  else if (manipulateRect) 
+  else if (_manipulateRect) 
     {
-      lastMousePos = event->scenePos();
-      QPointF topLeft = selectedRect->mapToScene(selectedRect->topLeft());
-      QPointF bottomLeft = selectedRect->mapToScene(selectedRect->bottomLeft());
-      QPointF topRight = selectedRect->mapToScene(selectedRect->topRight());
-      QPointF bottomRight = selectedRect->mapToScene(selectedRect->bottomRight());
-      QPointF left = selectedRect->mapToScene(QPointF(selectedRect->getLeft(),
-						      selectedRect->getCenter().y()));
-      QPointF right = selectedRect->mapToScene(QPointF(selectedRect->getRight(),
-						       selectedRect->getCenter().y()));
-      QPointF top = selectedRect->mapToScene(QPointF(selectedRect->getCenter().x(),
-						     selectedRect->getTop()));
-      QPointF bottom = selectedRect->mapToScene(QPointF(selectedRect->getCenter().x(),
-							selectedRect->getBottom()));
-      qreal distTopLeft = sqrt(pow((lastMousePos.x() - topLeft.x()), 2) +
-			       pow((lastMousePos.y() - topLeft.y()), 2));
-      qreal distTopRight = sqrt(pow((lastMousePos.x() - topRight.x()), 2) +
-				pow((lastMousePos.y() - topRight.y()), 2));
-      qreal distBottomLeft = sqrt(pow((lastMousePos.x() - bottomLeft.x()), 2) +
-				  pow((lastMousePos.y() - bottomLeft.y()), 2));
-      qreal distBottomRight = sqrt(pow((lastMousePos.x() - bottomRight.x()), 2) +
-				   pow((lastMousePos.y() - bottomRight.y()), 2));
-      qreal distLeft = sqrt(pow((lastMousePos.x() - left.x()), 2) +
-			    pow((lastMousePos.y() - left.y()), 2));
-      qreal distRight = sqrt(pow((lastMousePos.x() - right.x()), 2) +
-			     pow((lastMousePos.y() - right.y()), 2));
-      qreal distTop = sqrt(pow((lastMousePos.x() - top.x()), 2) +
-			   pow((lastMousePos.y() - top.y()), 2));
-      qreal distBottom = sqrt(pow((lastMousePos.x() - bottom.x()), 2) +
-			      pow((lastMousePos.y() - bottom.y()), 2));
+      _lastMousePos = event->scenePos();
+      QPointF topLeft = _selectedRectPtr->mapToScene(_selectedRectPtr->topLeft());
+      QPointF bottomLeft = _selectedRectPtr->mapToScene(_selectedRectPtr->bottomLeft());
+      QPointF topRight = _selectedRectPtr->mapToScene(_selectedRectPtr->topRight());
+      QPointF bottomRight = _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight());
+      QPointF left = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getLeft(),
+						      _selectedRectPtr->getCenter().y()));
+      QPointF right = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getRight(),
+						       _selectedRectPtr->getCenter().y()));
+      QPointF top = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getCenter().x(),
+						     _selectedRectPtr->getTop()));
+      QPointF bottom = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getCenter().x(),
+							_selectedRectPtr->getBottom()));
+      qreal distTopLeft = sqrt(pow((_lastMousePos.x() - topLeft.x()), 2) +
+			       pow((_lastMousePos.y() - topLeft.y()), 2));
+      qreal distTopRight = sqrt(pow((_lastMousePos.x() - topRight.x()), 2) +
+				pow((_lastMousePos.y() - topRight.y()), 2));
+      qreal distBottomLeft = sqrt(pow((_lastMousePos.x() - bottomLeft.x()), 2) +
+				  pow((_lastMousePos.y() - bottomLeft.y()), 2));
+      qreal distBottomRight = sqrt(pow((_lastMousePos.x() - bottomRight.x()), 2) +
+				   pow((_lastMousePos.y() - bottomRight.y()), 2));
+      qreal distLeft = sqrt(pow((_lastMousePos.x() - left.x()), 2) +
+			    pow((_lastMousePos.y() - left.y()), 2));
+      qreal distRight = sqrt(pow((_lastMousePos.x() - right.x()), 2) +
+			     pow((_lastMousePos.y() - right.y()), 2));
+      qreal distTop = sqrt(pow((_lastMousePos.x() - top.x()), 2) +
+			   pow((_lastMousePos.y() - top.y()), 2));
+      qreal distBottom = sqrt(pow((_lastMousePos.x() - bottom.x()), 2) +
+			      pow((_lastMousePos.y() - bottom.y()), 2));
       QVector<qreal> temp;
       temp.push_back(distTopLeft);
       temp.push_back(distTopRight);
@@ -1053,131 +1075,131 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       if (minimum == distTopLeft) 
 	{
-	  selectedRect->setTopLeft(selectedRect->mapFromScene(lastMousePos));
+	  _selectedRectPtr->setTopLeft(_selectedRectPtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distTopRight) 
 	{
-	  selectedRect->setTopRight(selectedRect->mapFromScene(lastMousePos));
+	  _selectedRectPtr->setTopRight(_selectedRectPtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distBottomLeft) 
 	{
-	  selectedRect->setBottomLeft(selectedRect->mapFromScene(lastMousePos));
+	  _selectedRectPtr->setBottomLeft(_selectedRectPtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distBottomRight) 
 	{
-	  selectedRect->setBottomRight(selectedRect->mapFromScene(lastMousePos));
+	  _selectedRectPtr->setBottomRight(_selectedRectPtr->mapFromScene(_lastMousePos));
 	}
       else if (minimum == distLeft) 
 	{
-	  selectedRect->setLeft(selectedRect->mapFromScene(lastMousePos).x());
+	  _selectedRectPtr->setLeft(_selectedRectPtr->mapFromScene(_lastMousePos).x());
 	}
       else if (minimum == distRight) 
 	{
-	  selectedRect->setRight(selectedRect->mapFromScene(lastMousePos).x());
+	  _selectedRectPtr->setRight(_selectedRectPtr->mapFromScene(_lastMousePos).x());
 	}
       else if (minimum == distTop) 
 	{
-	  selectedRect->setTop(selectedRect->mapFromScene(lastMousePos).y());
+	  _selectedRectPtr->setTop(_selectedRectPtr->mapFromScene(_lastMousePos).y());
 	}
       else if (minimum == distBottom) 
 	{
-	  selectedRect->setBottom(selectedRect->mapFromScene(lastMousePos).y());
+	  _selectedRectPtr->setBottom(_selectedRectPtr->mapFromScene(_lastMousePos).y());
 	}
       emit relevantChange();
     }
-  else if (moveRect) 
+  else if (_moveRect) 
     {
-      selectedRect->resetTransform();
+      _selectedRectPtr->resetTransform();
       QPointF newPos = event->scenePos();
-      qreal newXDiff = newPos.x() - lastMousePos.x();
-      qreal newYDiff = newPos.y() - lastMousePos.y();
-      selectedRect->moveCenter(selectedRect->mapToScene(selectedRect->getCenter()) +
-			       selectedRect->mapFromScene(QPointF(newXDiff, newYDiff)));
-      lastMousePos = event->scenePos();
-      selectedRect->setRotationValue(selectedRect->getRotationValue());
+      qreal newXDiff = newPos.x() - _lastMousePos.x();
+      qreal newYDiff = newPos.y() - _lastMousePos.y();
+      _selectedRectPtr->moveCenter(_selectedRectPtr->mapToScene(_selectedRectPtr->getCenter()) +
+			       _selectedRectPtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+      _lastMousePos = event->scenePos();
+      _selectedRectPtr->setRotationValue(_selectedRectPtr->getRotationValue());
       emit relevantChange();
     }
-  else if (rotateRect) 
+  else if (_rotateRect) 
     {
-      lastMousePos = event->scenePos();
-      QPointF center = selectedRect->mapToScene(selectedRect->getCenter());
-      qreal dY = lastMousePos.y() - center.y();
-      qreal dX = lastMousePos.x() - center.x();
+      _lastMousePos = event->scenePos();
+      QPointF center = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+      qreal dY = _lastMousePos.y() - center.y();
+      qreal dX = _lastMousePos.x() - center.x();
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
-      selectedRect->setRotationValue(angle);
+      _selectedRectPtr->setRotationValue(angle);
       emit relevantChange();
     }
-  else if (moveText) 
+  else if (_moveText) 
     {
-      selectedText->resetTransform();
+      _selectedTextPtr->resetTransform();
       QPointF newPos = event->scenePos();
-      qreal newXDiff = newPos.x() - lastMousePos.x();
-      qreal newYDiff = newPos.y() - lastMousePos.y();
-      selectedText->setPos(selectedText->scenePos() + QPointF(newXDiff, newYDiff));
-      lastMousePos = event->scenePos();
-      selectedText->setRotationValue(selectedText->getRotationValue());
+      qreal newXDiff = newPos.x() - _lastMousePos.x();
+      qreal newYDiff = newPos.y() - _lastMousePos.y();
+      _selectedTextPtr->setPos(_selectedTextPtr->scenePos() + QPointF(newXDiff, newYDiff));
+      _lastMousePos = event->scenePos();
+      _selectedTextPtr->setRotationValue(_selectedTextPtr->getRotationValue());
       emit relevantChange();
     }
-  else if (rotateText) 
+  else if (_rotateText) 
     {
-      lastMousePos = event->scenePos();
-      QPointF center = selectedText->mapToScene(selectedText->getCenter());
-      qreal dY = center.y() - lastMousePos.y();
-      qreal dX = center.x() - lastMousePos.x();
+      _lastMousePos = event->scenePos();
+      QPointF center = _selectedTextPtr->mapToScene(_selectedTextPtr->getCenter());
+      qreal dY = center.y() - _lastMousePos.y();
+      qreal dX = center.x() - _lastMousePos.x();
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
-      selectedText->setRotationValue(angle);
+      _selectedTextPtr->setRotationValue(angle);
       emit relevantChange();
     }
-  else if (moveNetworkNodeLabel) 
+  else if (_moveNetworkNodeLabel) 
     {
       QPointF newPos = event->scenePos();
-      qreal newXDiff = newPos.x() - lastMousePos.x();
-      qreal newYDiff = newPos.y() - lastMousePos.y();
-      selectedNetworkLabel->setPos(selectedNetworkLabel->scenePos() + QPointF(newXDiff, newYDiff));
-      qreal xDist = selectedNetworkLabel->scenePos().x() -
-	selectedNetworkLabel->getNode()->scenePos().x();
-      qreal yDist = selectedNetworkLabel->scenePos().y() -
-	selectedNetworkLabel->getNode()->scenePos().y();
-      selectedNetworkLabel->setOffset(QPointF(xDist, yDist));
-      lastMousePos = event->scenePos();
+      qreal newXDiff = newPos.x() - _lastMousePos.x();
+      qreal newYDiff = newPos.y() - _lastMousePos.y();
+      _selectedNetworkNodeLabelPtr->setPos(_selectedNetworkNodeLabelPtr->scenePos() + QPointF(newXDiff, newYDiff));
+      qreal xDist = _selectedNetworkNodeLabelPtr->scenePos().x() -
+	_selectedNetworkNodeLabelPtr->getNode()->scenePos().x();
+      qreal yDist = _selectedNetworkNodeLabelPtr->scenePos().y() -
+	_selectedNetworkNodeLabelPtr->getNode()->scenePos().y();
+      _selectedNetworkNodeLabelPtr->setOffset(QPointF(xDist, yDist));
+      _lastMousePos = event->scenePos();
       emit relevantChange();
     }
   else 
     {
-      if (selectedItems().size() > 1 && moveOn) 
+      if (selectedItems().size() > 1 && _moveOn) 
 	{
-	  if (selectedIncidentNode) 
+	  if (_selectedIncidentNodePtr) 
 	    {
-	      emit moveItems(selectedIncidentNode, event->scenePos());
+	      emit moveItems(_selectedIncidentNodePtr, event->scenePos());
 	      emit relevantChange();
 	    }
-	  else if (selectedAbstractNode) 
+	  else if (_selectedAbstractNodePtr) 
 	    {
-	      emit moveItems(selectedAbstractNode, event->scenePos());
+	      emit moveItems(_selectedAbstractNodePtr, event->scenePos());
 	      emit relevantChange();
 	    }
-	  else if (selectedNode) 
+	  else if (_selectedNetworkNodePtr) 
 	    {
-	      emit moveItems(selectedNode, event->scenePos());
+	      emit moveItems(_selectedNetworkNodePtr, event->scenePos());
 	      emit relevantChange();
 	    }
 	  else 
 	    {
-	      moveOn = false;
+	      _moveOn = false;
 	    }
 	}
       else 
 	{
-	  if (selectedOccurrence && moveOn) 
+	  if (_selectedOccurrencePtr && _moveOn) 
 	    {
-	      emit moveLine(selectedOccurrence, event->scenePos());
+	      emit moveLine(_selectedOccurrencePtr, event->scenePos());
 	      emit relevantChange();
 	    }
-	  else if (selectedOccurrence && !moveOn) 
+	  else if (_selectedOccurrencePtr && !_moveOn) 
 	    {
-	      emit moveItems(selectedOccurrence, event->scenePos());
+	      emit moveItems(_selectedOccurrencePtr, event->scenePos());
 	      emit relevantChange();
 	    }
 	}
@@ -1557,5 +1579,5 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 
 OccurrenceItem* Scene::getSelectedOccurrence() 
 {
-  return selectedOccurrence;
+  return _selectedOccurrencePtr;
 }

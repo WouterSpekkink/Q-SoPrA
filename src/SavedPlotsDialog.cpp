@@ -1,10 +1,32 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/SavedPlotsDialog.h"
 
-SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDialog(parent) 
+SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString type) : QDialog(parent) 
 {
-  selectedPlot = DEFAULT;
-  exitStatus = 1;
-  type = submittedType;
+  _selectedPlot = DEFAULT;
+  _exitStatus = 1;
+  _type = type;
 
   titleLabel = new QLabel(tr("<b>Select plot:</b>"), this);
 
@@ -12,15 +34,15 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDi
   plotsComboBox->addItem(DEFAULT);
 
   QSqlQuery *query = new QSqlQuery;
-  if (type == EVENTGRAPH) 
+  if (_type == EVENTGRAPH) 
     {
       query->exec("SELECT plot FROM saved_eg_plots");
     }
-  else if (type == NETWORKGRAPH) 
+  else if (_type == NETWORKGRAPH) 
     {
       query->exec("SELECT plot FROM saved_ng_plots");
     }
-  else if (type == OCCURRENCEGRAPH) 
+  else if (_type == OCCURRENCEGRAPH) 
     {
       query->exec("SELECT plot FROM saved_og_plots");
     }
@@ -57,14 +79,14 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString submittedType) : QDi
 
 void SavedPlotsDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void SavedPlotsDialog::loadPlot() 
 {
-  exitStatus = 0;
-  selectedPlot = plotsComboBox->currentText();
+  _exitStatus = 0;
+  _selectedPlot = plotsComboBox->currentText();
   this->close();
 }
 
@@ -81,8 +103,8 @@ void SavedPlotsDialog::removePlot()
 				     "Are you sure you want to remove this plot?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
-	  exitStatus = 2;
-	  selectedPlot = plotsComboBox->currentText();
+	  _exitStatus = 2;
+	  _selectedPlot = plotsComboBox->currentText();
 	  delete warningBox;
 	  this->close();
 	}
@@ -100,10 +122,10 @@ void SavedPlotsDialog::removePlot()
 
 int SavedPlotsDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 QString SavedPlotsDialog::getSelectedPlot() 
 {
-  return selectedPlot;
+  return _selectedPlot;
 }

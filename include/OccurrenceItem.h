@@ -17,49 +17,62 @@ class OccurrenceItem : public QGraphicsItem
 {
 
 public:
-  OccurrenceItem(int subWidth, QString toolTip, QPointF originalPosition, int subId,
-		 int subOrder, QString submittedAttribute);
+  // Constructor and destructor
+  OccurrenceItem(int width, QString toolTip, QPointF originalPos, int id,
+		 int order, QString attribute);
 
+  // Overrides of some public functions
   QRectF boundingRect() const override;
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) override;
-  void setColor(const QColor &subColor); 
-  void setSelectionColor(const QColor &subColor);
+  QPainterPath shape() const override;
+  
+  // Setters
+  void setColor(const QColor &color); 
+  void setSelectionColor(const QColor &color);
+  void setOriginalPos(const QPointF &originalPos);
+  void setWidth(const int &width);
+  void setLabel(OccurrenceLabel *occurrenceLabelPtr);
+  void setAttribute(const QString &attribute);
+  void setPermHidden(bool state);
+  void setGrouped(bool state);
+  
+  // Getters
   int getCorrection();
   QPointF getOriginalPos() const;
-  void setOriginalPos(QPointF newPos);
   int getId() const;
   int getOrder() const;
-  void setWidth(int newWidth);
   int getWidth() const;
-  void setLabel(OccurrenceLabel *submittedLabel);
   OccurrenceLabel* getLabel();
   QColor getColor();
+  QString getAttribute() const;
+  bool isPermHidden();
+  bool isGrouped();
+
+  // Type checking
   enum {Type = UserType + 10};
   int type() const;
-  QString getAttribute() const;
-  void setAttribute(const QString submittedAttribute);
-  QPainterPath shape() const override;
-  void setPermHidden(bool status);
-  bool isPermHidden();
-  void setGrouped(bool status);
-  bool isGrouped();
-  
+ 
 protected:
+  // Overrides of events
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
   
 private:
-  OccurrenceLabel *label;
-  QColor color;
-  QColor selectionColor;
-  QPointF originalPos;
-  int id;
-  int width;
-  int order;
-  QString attribute;
-  bool permHidden;
-  bool grouped;
+  // Private variables
+  QColor _color;
+  QColor _selectionColor;
+  QPointF _originalPos;
+  int _id;
+  int _width;
+  int _order;
+  QString _attribute;
+  bool _permHidden;
+  bool _grouped;
+
+  // Pointer to label, created by other class
+  // Do not delete.
+  OccurrenceLabel *_occurrenceLabelPtr;
   
 };
 

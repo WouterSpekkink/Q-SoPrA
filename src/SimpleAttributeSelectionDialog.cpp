@@ -1,11 +1,33 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/SimpleAttributeSelectionDialog.h"
 
-SimpleAttributeSelectionDialog::SimpleAttributeSelectionDialog(QWidget *parent, QString submittedType)
+SimpleAttributeSelectionDialog::SimpleAttributeSelectionDialog(QWidget *parent, QString type)
   : QDialog(parent) 
 {
-  type = submittedType;
-  exitStatus = 1;
-  chosenAttribute = DEFAULT;
+  _type = type;
+  _exitStatus = 1;
+  _chosenAttribute = DEFAULT;
 
   attributeLabel = new QLabel(tr("<b>Choose attribute:</b>"), this);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -56,7 +78,7 @@ void SimpleAttributeSelectionDialog::setTree()
 {
   attributesTree = new QStandardItemModel(this);
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) 
+  if (_type == ENTITY) 
     {
       query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
       while (query->next()) 
@@ -71,7 +93,7 @@ void SimpleAttributeSelectionDialog::setTree()
 	  buildHierarchy(father, name);
 	}
     }
-  else if (type == INCIDENT) 
+  else if (_type == INCIDENT) 
     {
       // First we will fetch the 'normal' attributes.
       {
@@ -120,7 +142,7 @@ void SimpleAttributeSelectionDialog::setTree()
 void SimpleAttributeSelectionDialog::buildHierarchy(QStandardItem *top, QString name) 
 {
   QSqlQuery *query = new QSqlQuery;
-  if (type == ENTITY) 
+  if (_type == ENTITY) 
     {
       query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
       query->bindValue(":father", name);
@@ -193,7 +215,7 @@ void SimpleAttributeSelectionDialog::setAttribute()
 {
   if (attributesTreeView->currentIndex().isValid()) 
     {
-      chosenAttribute = attributesTreeView->currentIndex().data().toString();
+      _chosenAttribute = attributesTreeView->currentIndex().data().toString();
     }
   QModelIndex currentIndex = attributesTreeView->currentIndex();
   while (currentIndex.parent().isValid()) 
@@ -202,23 +224,23 @@ void SimpleAttributeSelectionDialog::setAttribute()
     }
   if (currentIndex.data().toString() == ENTITIES) 
     {
-      entity = true;
+      _entity = true;
     }
   else 
     {
-      entity = false;
+      _entity = false;
     }
 }
 
 void SimpleAttributeSelectionDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void SimpleAttributeSelectionDialog::saveAndClose() 
 {
-  if (chosenAttribute == DEFAULT) 
+  if (_chosenAttribute == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -231,22 +253,22 @@ void SimpleAttributeSelectionDialog::saveAndClose()
     }
   else 
     {
-      exitStatus = 0;
+      _exitStatus = 0;
       this->close();
     }
 }
 
 QString SimpleAttributeSelectionDialog::getAttribute() 
 {
-  return chosenAttribute;
+  return _chosenAttribute;
 }
 
 int SimpleAttributeSelectionDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 bool SimpleAttributeSelectionDialog::isEntity() 
 {
-  return entity;
+  return _entity;
 }

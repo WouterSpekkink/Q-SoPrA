@@ -1,3 +1,25 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include "../include/RelationshipsDialog.h"
 
 RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent) 
@@ -7,12 +29,11 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent)
   headLabel = new QLabel(DIRECTEDHEAD, this);
   selectedSourceLabel = new QLabel(DEFAULT, this);
   selectedTargetLabel = new QLabel(DEFAULT, this);
-  name = "";
-  oldName = "";
-  type = "";
-  exitStatus = 1;
-  entityEdited = 0;
-  fresh = true;
+  _name = "";
+  _oldName = "";
+  _exitStatus = 1;
+  _entityEdited = 0;
+  _fresh = true;
   
   filterLabel = new QLabel(tr("<b>Filter:</b>"), this);
   typeLabel = new QLabel("", this);
@@ -114,7 +135,7 @@ RelationshipsDialog::RelationshipsDialog(QWidget *parent) : QDialog(parent)
   resize(600, 600);
 }
 
-void RelationshipsDialog::submitLeftEntity(QString entity) 
+void RelationshipsDialog::submitLeftEntity(const QString &entity) 
 {
   if (entity != selectedSourceLabel->text() && entity != selectedTargetLabel->text()) 
     {
@@ -123,7 +144,7 @@ void RelationshipsDialog::submitLeftEntity(QString entity)
     }
 }
 
-void RelationshipsDialog::submitRightEntity(QString entity) 
+void RelationshipsDialog::submitRightEntity(const QString &entity) 
 {
   if (entity != selectedSourceLabel->text() && entity != selectedTargetLabel->text()) 
     {
@@ -132,18 +153,18 @@ void RelationshipsDialog::submitRightEntity(QString entity)
     }
 }
 
-void RelationshipsDialog::submitType(QString type) 
+void RelationshipsDialog::submitType(const QString &type) 
 {
   typeLabel->setText(type);
 }
 
-void RelationshipsDialog::submitDescription(QString description) 
+void RelationshipsDialog::submitDescription(const QString &description) 
 {
   QString hint = breakString(description);
   typeLabel->setToolTip(hint);
 }
 
-void RelationshipsDialog::submitDirectedness(QString directedness) 
+void RelationshipsDialog::submitDirectedness(const QString &directedness) 
 {
   if (directedness == DIRECTED) 
     {
@@ -155,9 +176,9 @@ void RelationshipsDialog::submitDirectedness(QString directedness)
     }
 }
 
-void RelationshipsDialog::submitName(QString name) 
+void RelationshipsDialog::submitName(const QString &name) 
 {
-  oldName = name;
+  _oldName = name;
 }
 
 void RelationshipsDialog::assignLeftEntity() 
@@ -215,8 +236,8 @@ void RelationshipsDialog::addEntity()
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
   // We have to make sure that the new entity also appears as a new attribute in attributes trees.
-  eventGraphWidgetPtr->resetTree();
-  attributesWidgetPtr->resetTree();
+  _eventGraphWidgetPtr->resetTree();
+  _attributesWidgetPtr->resetTree();
 }
 
 void RelationshipsDialog::editEntity() 
@@ -254,7 +275,7 @@ void RelationshipsDialog::updateAfterEdit(const QString name,
 					  const QString description,
 					  const QString former) 
 {
-  entityEdited = 1;
+  _entityEdited = 1;
   QSqlQuery *query = new QSqlQuery;
   // Update the entity itself.
   query->prepare("UPDATE entities "
@@ -413,7 +434,7 @@ void RelationshipsDialog::editLeftAssignedEntity()
 	  QString description = entityDialog->getDescription();
 	  updateAfterEdit(name, description, selected);
 	  selectedSourceLabel->setText(name);
-	  oldName = selectedSourceLabel->text() +
+	  _oldName = selectedSourceLabel->text() +
 	    tailLabel->text() + headLabel->text() +
 	    selectedTargetLabel->text();
 	}
@@ -449,7 +470,7 @@ void RelationshipsDialog::editRightAssignedEntity()
 	  QString description = entityDialog->getDescription();
 	  updateAfterEdit(name, description, selected);
 	  selectedTargetLabel->setText(name);
-	  oldName = selectedSourceLabel->text() +
+	  _oldName = selectedSourceLabel->text() +
 	    tailLabel->text() + headLabel->text() +
 	    selectedTargetLabel->text();
 	}
@@ -467,7 +488,7 @@ void RelationshipsDialog::removeEntities()
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   bool unfinished = true;
-  QVector<AbstractNode*> abstractNodeVector = eventGraphWidgetPtr->getAbstractNodes();
+  QVector<AbstractNode*> abstractNodeVector = _eventGraphWidgetPtr->getAbstractNodes();
   QSet<QString> takenAttributes;
   QVectorIterator<AbstractNode*> it(abstractNodeVector);
   while (it.hasNext()) 
@@ -529,13 +550,13 @@ void RelationshipsDialog::removeEntities()
   filterEntity(entityFilterField->text());
   entitiesFilter->sort(1, Qt::AscendingOrder);
   // Also remove the entities from attribute trees.
-  eventGraphWidgetPtr->resetTree();
-  attributesWidgetPtr->resetTree();
+  _eventGraphWidgetPtr->resetTree();
+  _attributesWidgetPtr->resetTree();
 }
 
 void RelationshipsDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
@@ -559,7 +580,7 @@ void RelationshipsDialog::saveAndClose()
       delete errorBox;
       return;
     }
-  name = selectedSourceLabel->text() +
+  _name = selectedSourceLabel->text() +
     tailLabel->text() +
     headLabel->text() +
     selectedTargetLabel->text();
@@ -577,11 +598,11 @@ void RelationshipsDialog::saveAndClose()
     }
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name, type FROM entity_relationships WHERE name = :name AND type = :type");
-  query->bindValue(":name", name);
+  query->bindValue(":name", _name);
   query->bindValue(":type", typeLabel->text());
   query->exec();
   query->first();
-  if (query->isNull(0) || name == oldName) 
+  if (query->isNull(0) || _name == _oldName) 
     {
       if (reverseName != "") 
 	{
@@ -592,9 +613,9 @@ void RelationshipsDialog::saveAndClose()
 	  query2->bindValue(":type", typeLabel->text());
 	  query2->exec();
 	  query2->first();
-	  if (query2->isNull(0) || reverseName == oldName) 
+	  if (query2->isNull(0) || reverseName == _oldName) 
 	    {
-	      exitStatus = 0;
+	      _exitStatus = 0;
 	      this->close();
 	    }
 	  else 
@@ -609,7 +630,7 @@ void RelationshipsDialog::saveAndClose()
 	}
       else 
 	{
-	  exitStatus = 0;
+	  _exitStatus = 0;
 	  this->close();
 	}
     }
@@ -627,9 +648,9 @@ void RelationshipsDialog::saveAndClose()
 
 void RelationshipsDialog::setButtons() 
 {
-  if (fresh) 
+  if (_fresh) 
     {
-      fresh = false;
+      _fresh = false;
     }
   if (entitiesView->currentIndex().isValid()) 
     {
@@ -643,17 +664,17 @@ void RelationshipsDialog::setButtons()
 
 int RelationshipsDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 int RelationshipsDialog::getEntityEdited() 
 {
-  return entityEdited;
+  return _entityEdited;
 }
 
 QString RelationshipsDialog::getName() 
 {
-  return name;
+  return _name;
 }
 
 QString RelationshipsDialog::getLeftEntity() 
@@ -684,11 +705,11 @@ void RelationshipsDialog::updateTable()
 
 void RelationshipsDialog::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
-  eventGraphWidgetPtr = eventGraphWidgetPtr;
+  _eventGraphWidgetPtr = eventGraphWidgetPtr;
 }
 
 void RelationshipsDialog::setAttributesWidget(AttributesWidget *attributesWidgetPtr) 
 {
-  attributesWidgetPtr = attributesWidgetPtr;
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
 

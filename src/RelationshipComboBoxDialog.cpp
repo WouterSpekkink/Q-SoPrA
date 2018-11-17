@@ -2,9 +2,10 @@
 
 RelationshipComboBoxDialog::RelationshipComboBoxDialog(QWidget *parent) : QDialog(parent) 
 {
-  exitStatus = 1;
-  tail = true;
-  head = true;
+  _exitStatus = 1;
+  _selection = DEFAULT;
+  _tail = true;
+  _head = true;
   selectionLabel = new QLabel(tr("<b>Choose:</b>"), this);
 
   selectionComboBox = new QComboBox(this);
@@ -76,14 +77,14 @@ void RelationshipComboBoxDialog::setControls(const QString &selection)
 
 void RelationshipComboBoxDialog::cancelAndClose() 
 {
-  exitStatus = 1;
+  _exitStatus = 1;
   this->close();
 }
 
 void RelationshipComboBoxDialog::saveAndClose() 
 {
-  selection = selectionComboBox->currentText();
-  if (selection == DEFAULT) 
+  _selection = selectionComboBox->currentText();
+  if (_selection == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
@@ -105,29 +106,29 @@ void RelationshipComboBoxDialog::saveAndClose()
       delete warningBox;
       return;
     }
-  tail = includeTailCheckBox->isChecked();
-  head = includeHeadCheckBox->isChecked();
-  exitStatus = 0;
+  _tail = includeTailCheckBox->isChecked();
+  _head = includeHeadCheckBox->isChecked();
+  _exitStatus = 0;
   this->close();
 }
 
 QString RelationshipComboBoxDialog::getSelection() 
 {
-  return selection;
+  return _selection;
 }
 
 int RelationshipComboBoxDialog::getExitStatus() 
 {
-  return exitStatus;
+  return _exitStatus;
 }
 
 bool RelationshipComboBoxDialog::tailSelected() 
 {
-  return tail;
+  return _tail;
 }
 
 bool RelationshipComboBoxDialog::headSelected() 
 {
-  return head;
+  return _head;
 }
 				    

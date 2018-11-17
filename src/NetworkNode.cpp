@@ -1,38 +1,51 @@
+/*
+
+Qualitative Social Process Analysis (Q-SoPrA)
+Copyright (C) 2019 University of Manchester  
+
+This file is part of Q-SoPrA.
+
+Q-SoPrA is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+Q-SoPrA is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
 #include <QtWidgets>
 #include "../include/NetworkNode.h"
 #include "../include/Scene.h"
 #include "../include/NetworkNodeLabel.h"
 
-/*
-  In this case we assign a random colour. I will want to change that
-  in real applications.
-*/
-
-
-NetworkNode::NetworkNode(QString submittedName, QString submittedDescription) : color(255, 255, 255) 
+NetworkNode::NetworkNode(QString name, QString description)
 {
-  name = submittedName;
-  description = submittedDescription;
-  QString toolTip = breakString(name + " - " + description);
+  _color = QColor(Qt::black);
+  _name = name;
+  _description = description;
+  QString toolTip = breakString(_name + " - " + _description);
   setToolTip(toolTip);
+  _previousPos = QPointF(0, 0);
+  _mode = "";
+  _selectionColor = QColor(Qt::black);
+  _persistent = false;
+  _massHidden = false;
+  _networkNodeLabelPtr = NULL;
+
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  previousPos = QPointF(0, 0);
-  mode = "";
-  selectionColor = QColor(Qt::black);
-
   setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
-  persistent = false;
-  massHidden = false;
 }
-
-/*
-  I assume that this is for collision or
-  selection purposes?
-*/
 
 QRectF NetworkNode::boundingRect() const 
 {
@@ -45,22 +58,21 @@ void NetworkNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
   Q_UNUSED(widget);
   painter->setPen(Qt::NoPen);
   painter->setPen(QPen(Qt::black, 1));
-  painter->setBrush(QBrush(color));
+  painter->setBrush(QBrush(_color));
   painter->drawEllipse(-15, -15, 30, 30);
 
   if (isSelected()) 
     {
-      painter->setPen(QPen(selectionColor, 1, Qt::DashLine));
+      painter->setPen(QPen(_selectionColor, 1, Qt::DashLine));
       painter->setBrush(QBrush(Qt::transparent));
       painter->drawEllipse(-18, -18, 36, 36);
       update();
     }
   else 
     {
-      selectionColor = QColor(Qt::black);
+      _selectionColor = QColor(Qt::black);
       update();
     }
-
 }
 
 // Only to set the cursor to a different graphic.
@@ -70,7 +82,7 @@ void NetworkNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
       setSelected(true);
     }
-  previousPos = event->scenePos();
+  _previousPos = event->scenePos();
   setCursor(Qt::ClosedHandCursor);
   
 }
@@ -157,21 +169,21 @@ void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 	    }
 	  else 
 	    {
-	      previousPos = this->scenePos();
+	      _previousPos = this->scenePos();
 	    }
 	}
     }
   if (trespass) 
     {
-      this->setPos(previousPos);
+      this->setPos(_previousPos);
     }
   else 
     {
       this->setPos(newPos);
     }
-  if (label != NULL) 
+  if (_networkNodeLabelPtr != NULL) 
     {
-      label->setNewPos(this->scenePos());
+      _networkNodeLabelPtr->setNewPos(this->scenePos());
     }
   setCursor(Qt::OpenHandCursor);
   update();
@@ -183,19 +195,19 @@ int NetworkNode::getCorrection()
   return 30 - 29;
 }
 
-void NetworkNode::setColor(QColor newColor) 
+void NetworkNode::setColor(const QColor &color) 
 {
-  color = newColor;
+  _color = color;
 }
 
 QString NetworkNode::getName() const 
 {
-  return name;
+  return _name;
 }
 
-QString NetworkNode::getDescription() 
+QString NetworkNode::getDescription() const
 {
-  return description;
+  return _description;
 }
 
 int NetworkNode::type() const 
@@ -203,54 +215,54 @@ int NetworkNode::type() const
   return Type;
 }
 
-void NetworkNode::setLabel(NetworkNodeLabel *newLabel) 
+void NetworkNode::setLabel(NetworkNodeLabel *networkNodeLabelPtr) 
 {
-  label = newLabel;
+  _networkNodeLabelPtr = networkNodeLabelPtr;
 }
 
 NetworkNodeLabel* NetworkNode::getLabel() 
 {
-  return label;
+  return _networkNodeLabelPtr;
 }
 
-void NetworkNode::setMode(const QString &submittedMode) 
+void NetworkNode::setMode(const QString &mode) 
 {
-  mode = submittedMode;
+  _mode = mode;
 }
 
 QString NetworkNode::getMode() const 
 {
-  return mode;
+  return _mode;
 }
 
 QColor NetworkNode::getColor() 
 {
-  return color;
+  return _color;
 }
 
-void NetworkNode::setSelectionColor(const QColor &subColor) 
+void NetworkNode::setSelectionColor(const QColor &color) 
 {
-  selectionColor = subColor;
+  _selectionColor = color;
 }
 
 bool NetworkNode::isPersistent() 
 {
-  return persistent; 
+  return _persistent; 
 }
 
 void NetworkNode::setPersistent(bool state) 
 {
-  persistent = state;
+  _persistent = state;
 }
 
 bool NetworkNode::isMassHidden() 
 {
-  return massHidden; 
+  return _massHidden; 
 }
 
 void NetworkNode::setMassHidden(bool state) 
 {
-  massHidden = state;
+  _massHidden = state;
 }
 
 
