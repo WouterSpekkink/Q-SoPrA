@@ -23,7 +23,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/ProgressBar.h"
 #include <QtWidgets/QHBoxLayout>
 
-ProgressBar::ProgressBar(QWidget *parent, int minimum, int maximum)
+ProgressBar::ProgressBar(QWidget *parent, int minimum, int maximum) : QDialog(parent)
 {
   _minimum = minimum;
   _progressPtr = new QProgressBar(this);

@@ -49,6 +49,7 @@ public:
   void setFiltered(bool state);
   void setMassHidden(bool state);
   void setComment(const QString &comment);
+  void setPenWidth(const qreal &width);
 
   // Getters;
   QColor getColor();
@@ -91,6 +92,7 @@ private:
   QString _comment;
   bool _filtered;
   bool _massHidden;
+  qreal _penWidth;
 
   // Pointers to objects managed by other class.
   // Do not delete.

@@ -45,14 +45,14 @@ DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
   _start = start;
   _end = end;
   _color = Qt::black;
-  setPen(QPen(_color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  _penWidth = 1.0f;
   _height = 20;
   _relType = type;
   _name = name;
   _filtered = true;
   _massHidden = false;
-  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   _comment = "";
+  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 QRectF DirectedEdge::boundingRect() const 
@@ -75,14 +75,14 @@ void DirectedEdge::calculate()
   qreal dY = _end->pos().y() - _start->pos().y();
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
   QLineF newLine = QLineF(_start->pos(), _end->pos());
-  newLine.setLength(newLine.length() - 18);
+  newLine.setLength(newLine.length() - 18 - ((_penWidth / 2) - 2.0f));
   qreal mX = (_start->pos().x() + newLine.p2().x()) / 2;
   qreal mY = (_start->pos().y() + newLine.p2().y()) / 2;
   qreal cX = _height * (-1 * (dY / distance)) + mX;
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLine = QLineF(_controlPoint, _end->pos());
-  _ghostLine.setLength(_ghostLine.length() - 18);
+  _ghostLine.setLength(_ghostLine.length() - 18 - ((_penWidth / 2) - 2.0f));
   double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
   if (_ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
@@ -97,9 +97,8 @@ void DirectedEdge::calculate()
 
 void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
-  QPen myPen = pen();
-  myPen.setColor(_color);
-  painter->setPen(myPen);
+  setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  painter->setPen(pen());
   painter->setBrush(_color);
   calculate();
   _arrowHead.clear();
@@ -109,7 +108,7 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   myPath.quadTo(_controlPoint, _ghostLine.p2());
   _strokePath = myPath;
   painter->drawPolygon(_arrowHead);
-  painter->strokePath(myPath, QPen(_color));
+  painter->strokePath(myPath, pen());
 }
 
 NetworkNode* DirectedEdge::getStart() const 
@@ -197,4 +196,9 @@ QString DirectedEdge::getComment()
 QColor DirectedEdge::getColor() 
 {
   return _color;
+}
+
+void DirectedEdge::setPenWidth(const qreal &width)
+{
+  _penWidth = width;
 }

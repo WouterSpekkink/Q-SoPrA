@@ -97,7 +97,7 @@ private slots:
   void checkCases();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
-  void setGraphControls(bool status);
+  void setGraphControls(bool state);
   void retrieveData();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
@@ -152,7 +152,10 @@ private slots:
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setRangeControls();
+  void setWeightControls();
+  int findCurrentMaxWeight();
   void updateRangeControls();
+  void updateWeightControls();
   void exportSvg();
   void exportNodes();
   void exportEdges();
@@ -166,7 +169,7 @@ private slots:
   void contractLayout();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void processNetworkNodeContextMenu(const QString &action);
-  void setNodePersistence(bool status);
+  void setNodePersistence(bool state);
   void processNetworkGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
@@ -202,6 +205,8 @@ private slots:
   void plotNewGraph();
   void addRelationshipType();
   void removeRelationshipType();
+  void setRelationshipHash();
+  void removeFromRelationshipHash(QString name);
   void cleanUp();
   void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
@@ -220,6 +225,7 @@ private:
   QPointer<QLabel> typeLabel;
   QPointer<QLabel> upperRangeLabel;
   QPointer<QLabel> lowerRangeLabel;
+  QPointer<QLabel> weightLabel;
   QPointer<QLabel> nodeLegendLabel;
   QPointer<QLabel> edgeLegendLabel;
   QPointer<QLabel> nameLabel;
@@ -286,13 +292,16 @@ private:
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
+  QPointer<QSpinBox> weightSpinBox;
   QPointer<QSlider> zoomSlider;
-
+  QPointer<QCheckBox> weightCheckBox;
+  
   // Private variables    
   QString _selectedType;
   QString _selectedEntityName;
   int _minOrder;
   int _maxOrder;
+  int _maxWeight;
   int _vectorPos;
   bool _labelsShown;
   bool _massMove;
@@ -309,6 +318,9 @@ private:
   QVector<TextObject*> _textVector;
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
+
+  // Private map
+  QHash<QString, QSet<int>> _relationshipHash;
 
 };
 

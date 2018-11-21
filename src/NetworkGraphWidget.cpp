@@ -31,6 +31,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   
   _minOrder = 0;
   _maxOrder = 0;
+  _maxWeight = 0;
   _vectorPos = 0;
   
   scene = new Scene(this);
@@ -69,6 +70,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
+  weightLabel = new QLabel(tr("<b>Minimum occurrence:</b>"), graphicsWidget);
   nodeLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   edgeLegendLabel = new QLabel(tr("<b>Edge legend:</b>"), legendWidget);
   nameLabel = new QLabel(tr("<b>Name:</b<"), infoWidget);
@@ -94,6 +96,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   descriptionField = new QTextEdit(infoWidget);
   descriptionField->setReadOnly(true);
 
+  weightCheckBox = new QCheckBox(tr("Visualise weights"));
+  weightCheckBox->setCheckState(Qt::Unchecked);
+  
   plotButton = new QPushButton(tr("Plot new"), this);
   plotButton->setEnabled(false);
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
@@ -178,7 +183,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
   upperRangeSpinBox->setEnabled(false);
-
+  weightSpinBox = new QSpinBox(graphicsWidget);
+  weightSpinBox->setEnabled(false);
+  
   zoomSlider = new QSlider(Qt::Horizontal, this);
   zoomSlider->installEventFilter(this);
   zoomSlider->setMinimum(-9);
@@ -247,6 +254,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
+  connect(weightCheckBox, SIGNAL(stateChanged(int)), this, SLOT(setVisibility()));
+  connect(weightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setVisibility()));
   connect(multimodeButton, SIGNAL(clicked()), this, SLOT(multimodeTransformation()));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(mergeButton, SIGNAL(clicked()), this, SLOT(mergeRelationships()));
@@ -422,6 +431,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   lowerRangeLayout->addWidget(lowerRangeDial);
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
+  graphicsControlsLayout->addWidget(weightLabel);
+  QPointer<QBoxLayout> weightLayout = new QHBoxLayout;
+  weightLayout->addWidget(weightCheckBox);
+  weightLayout->addWidget(weightSpinBox);
+  graphicsControlsLayout->addLayout(weightLayout);
   QPointer<QFrame> sepLine5 = new QFrame();
   sepLine5->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine5);
@@ -680,17 +694,18 @@ void NetworkGraphWidget::resetZoomSlider()
 }
 
 
-void NetworkGraphWidget::setGraphControls(bool status)
+void NetworkGraphWidget::setGraphControls(bool state)
 {
-  zoomSlider->setEnabled(status);
-  expandLayoutButton->setEnabled(status);
-  contractLayoutButton->setEnabled(status);
-  simpleLayoutButton->setEnabled(status);
-  circularLayoutButton->setEnabled(status);
-  lowerRangeDial->setEnabled(status);
-  upperRangeDial->setEnabled(status);
-  lowerRangeSpinBox->setEnabled(status);
-  upperRangeSpinBox->setEnabled(status);
+  zoomSlider->setEnabled(state);
+  expandLayoutButton->setEnabled(state);
+  contractLayoutButton->setEnabled(state);
+  simpleLayoutButton->setEnabled(state);
+  circularLayoutButton->setEnabled(state);
+  lowerRangeDial->setEnabled(state);
+  upperRangeDial->setEnabled(state);
+  lowerRangeSpinBox->setEnabled(state);
+  upperRangeSpinBox->setEnabled(state);
+  weightSpinBox->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -1467,19 +1482,9 @@ void NetworkGraphWidget::plotDirectedEdges(QString type, QColor color)
       if (currentEdge->getType() == type) 
 	{
 	  currentEdge->setColor(color);
-	  currentEdge->show();
-	  currentEdge->getStart()->show();
-	  currentEdge->getEnd()->show();
-	  if (_labelsShown) 
-	    {
-	      currentEdge->getStart()->getLabel()->show();
-	      currentEdge->getEnd()->getLabel()->show();
-	    }
-	  else 
-	    {
-	      currentEdge->getStart()->getLabel()->hide();
-	      currentEdge->getEnd()->getLabel()->hide();
-	    }
+	  currentEdge->hide();
+	  currentEdge->getStart()->hide();
+	  currentEdge->getEnd()->hide();
 	  scene->addItem(currentEdge);
 	}
     }
@@ -1496,19 +1501,9 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color)
       if (currentEdge->getType() == type) 
 	{
 	  currentEdge->setColor(color);
-	  currentEdge->show();
-	  currentEdge->getStart()->show();
-	  currentEdge->getEnd()->show();
-	  if (_labelsShown) 
-	    {
-	      currentEdge->getStart()->getLabel()->show();
-	      currentEdge->getEnd()->getLabel()->show();
-	    }
-	  else 
-	    {
-	      currentEdge->getStart()->getLabel()->hide();
-	      currentEdge->getEnd()->getLabel()->hide();
-	    }
+	  currentEdge->hide();
+	  currentEdge->getStart()->hide();
+	  currentEdge->getEnd()->hide();
 	  scene->addItem(currentEdge);
 	}
     }
@@ -3580,6 +3575,7 @@ void NetworkGraphWidget::mergeRelationships()
 		  newDirected->setZValue(2);
 		  newDirected->setColor(color);
 		  _directedVector.push_back(newDirected);
+		  removeFromRelationshipHash(directed->getName());
 		  delete directed;
 		  _directedVector.removeOne(directed);
 		  scene->addItem(newDirected);
@@ -3607,6 +3603,7 @@ void NetworkGraphWidget::mergeRelationships()
 		}
 	      if (found) 
 		{
+		  removeFromRelationshipHash(first->getName());
 		  delete first;
 		  _directedVector.removeOne(first);
 		}
@@ -3626,8 +3623,9 @@ void NetworkGraphWidget::mergeRelationships()
 		  newUndirected->setColor(color);
 		  newUndirected->setZValue(2);
 		  _undirectedVector.push_back(newUndirected);
-		  delete undirected;
 		  _undirectedVector.removeOne(undirected);
+		  delete undirected;
+		  removeFromRelationshipHash(undirected->getName());
 		  scene->addItem(newUndirected);
 		}
 	    }
@@ -3653,8 +3651,9 @@ void NetworkGraphWidget::mergeRelationships()
 		}
 	      if (found) 
 		{
-		  delete first;
 		  _undirectedVector.removeOne(first);
+		  delete first;
+		  removeFromRelationshipHash(first->getName());
 		}
 	    }
 	}
@@ -4141,6 +4140,7 @@ void NetworkGraphWidget::plotNewGraph()
   delete query;
   savePlotButton->setEnabled(true);
   setRangeControls();
+  setRelationshipHash();
   plotLabel->setText("Unsaved plot");
   updateEdges();
   checkCongruency();
@@ -4169,6 +4169,7 @@ void NetworkGraphWidget::addRelationshipType()
   plotUndirectedEdges(_selectedType, color);
   _presentTypes.push_back(_selectedType);
   updateRangeControls();
+  updateWeightControls();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
 		 "WHERE name = :name");
@@ -4207,8 +4208,9 @@ void NetworkGraphWidget::removeRelationshipType()
       DirectedEdge *directed = it.next();
       if (directed->getType() == text) 
 	{
-	  delete directed;
 	  _directedVector.removeOne(directed);
+	  delete directed;
+	  removeFromRelationshipHash(directed->getName());
 	}
     }
   QVectorIterator<UndirectedEdge*> it2(_undirectedVector);
@@ -4217,8 +4219,9 @@ void NetworkGraphWidget::removeRelationshipType()
       UndirectedEdge *undirected = it2.next();
       if (undirected->getType() == text) 
 	{
-	  delete undirected;
 	  _undirectedVector.removeOne(undirected);
+	  delete undirected;
+	  removeFromRelationshipHash(undirected->getName());
 	}
     }
   for (int i = 0; i != edgeListWidget->rowCount();) 
@@ -4283,6 +4286,79 @@ void NetworkGraphWidget::decreaseLabelSize()
     {
       NetworkNodeLabel *currentLabel = it.next();
       currentLabel->decreaseFontSize();
+    }
+}
+
+void NetworkGraphWidget::setRelationshipHash()
+{
+  qApp->setOverrideCursor(Qt::WaitCursor);
+  _relationshipHash.clear();
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT relationship, incident FROM relationships_to_incidents "
+		 "WHERE type = :type ORDER BY relationship ASC");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
+  QVectorIterator<QString> it(_presentTypes);
+  while (it.hasNext())
+    {
+      QString currentType = it.next();
+      query->bindValue(":type", currentType);
+      query->exec();
+      QString currentRelationship = "";
+      QSet<int> incidents;
+      while (query->next()) 
+	{
+	  QString relationship = query->value(0).toString();
+	  int incident = query->value(1).toInt();
+	  if (relationship != currentRelationship)
+	    {
+	      if (currentRelationship != "")
+		{
+		  _relationshipHash.insert(relationship, incidents);
+		  incidents.clear();
+		  query2->bindValue(":incident", incident);
+		  query2->exec();
+		  query2->first();
+		  int order = query2->value(0).toInt();
+		  if (order >= _minOrder && order <= _maxOrder)
+		    {
+		      incidents.insert(order);
+		    }
+		}
+	      currentRelationship = relationship;
+	    }
+	  else
+	    {
+	      query2->bindValue(":incident", incident);
+	      query2->exec();
+	      query2->first();
+	      int order = query2->value(0).toInt();
+	      if (order >= _minOrder && order <= _maxOrder)
+		{
+		  incidents.insert(incident);
+		}
+	    }
+	}
+      // To insert the last incidents
+      _relationshipHash.insert(currentRelationship, incidents);
+    }
+  delete query;
+  delete query2;
+  setWeightControls();
+  qApp->restoreOverrideCursor();
+  qApp->processEvents();
+}
+
+void NetworkGraphWidget::removeFromRelationshipHash(QString name)
+{
+  QHashIterator<QString, QSet<int>> it(_relationshipHash);
+  while (it.hasNext())
+    {
+      QString currentRelationship = (it.next()).key();
+      if (currentRelationship == name)
+	{
+	  _relationshipHash.remove(currentRelationship);
+	}
     }
 }
 
@@ -4386,10 +4462,6 @@ void NetworkGraphWidget::updateRangeControls()
     }
   int currentLower = lowerRangeDial->value();
   int currentUpper = upperRangeDial->value();
-  lowerRangeDial->setEnabled(true);
-  upperRangeDial->setEnabled(true);
-  lowerRangeSpinBox->setEnabled(true);
-  upperRangeSpinBox->setEnabled(true);
   lowerRangeDial->setRange(_minOrder, _maxOrder - 1);
   upperRangeDial->setRange(_minOrder + 1, _maxOrder);
   lowerRangeSpinBox->setRange(_minOrder, _maxOrder - 1);
@@ -4398,6 +4470,81 @@ void NetworkGraphWidget::updateRangeControls()
   lowerRangeSpinBox->setValue(currentLower);
   upperRangeDial->setValue(currentUpper);
   upperRangeSpinBox->setValue(currentUpper);
+}
+
+void NetworkGraphWidget::setWeightControls()
+{
+  _maxWeight = 0;
+  QHashIterator<QString, QSet<int>> it(_relationshipHash);
+  while (it.hasNext())
+    {
+      QList<int> incidents = (it.next()).value().toList();
+      std::sort(incidents.begin(), incidents.end());
+      int count = 0;
+      QListIterator<int> incIt(incidents);
+      while (incIt.hasNext())
+	{
+	  int current = incIt.next();
+	  if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+	    {
+	      count++;
+	    }
+	}
+      if (count > _maxWeight)
+	{
+	  _maxWeight = count;
+	}
+    }
+
+  weightSpinBox->setEnabled(true);
+  weightSpinBox->setRange(1, _maxWeight);
+}
+
+int NetworkGraphWidget::findCurrentMaxWeight()
+{
+  int currentMaxWeight = 0;
+  QHashIterator<QString, QSet<int>> it(_relationshipHash);
+  while (it.hasNext())
+    {
+      QList<int> incidents = (it.next()).value().toList();
+      std::sort(incidents.begin(), incidents.end());
+      int count = 0;
+      QListIterator<int> incIt(incidents);
+      while (incIt.hasNext())
+	{
+	  int current = incIt.next();
+	  if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+	    {
+	      count++;
+	    }
+	}
+      if (count > currentMaxWeight)
+	{
+	  currentMaxWeight = count;
+	}
+    }
+  return currentMaxWeight;
+}
+
+void NetworkGraphWidget::updateWeightControls()
+{
+  int currentWeight = weightSpinBox->value();
+  _maxWeight = 0;
+  QHashIterator<QString, QSet<int>> it(_relationshipHash);
+  while (it.hasNext())
+    {
+      QSet<int> currentIncidents = (it.next()).value();
+      if (currentIncidents.size() > _maxWeight)
+	{
+	  _maxWeight = currentIncidents.size();
+	}
+    }
+  if (_maxWeight < currentWeight)
+    {
+      currentWeight = _maxWeight;
+    }
+  weightSpinBox->setRange(1, _maxWeight);
+  weightSpinBox->setValue(currentWeight);
 }
 
 void NetworkGraphWidget::exportSvg() 
@@ -5448,6 +5595,7 @@ void NetworkGraphWidget::seePlots()
       plotLabel->setText(plot);
       changeLabel->setText("");
       setRangeControls();
+      setRelationshipHash();
       query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
 		     "red, green, blue, alpha, hidden "
 		     "FROM saved_ng_plots_undirected "
@@ -5712,6 +5860,7 @@ void NetworkGraphWidget::seePlots()
 	}
       checkCongruency();
       setRangeControls();
+      setRelationshipHash();
       setVisibility();
       plotLabel->setText(plot);
       changeLabel->setText("");
@@ -5937,11 +6086,48 @@ void NetworkGraphWidget::setVisibility()
 	      show = false;
 	    }
 	}
+      if (currentDirected->getName() != "CREATED")
+	{
+	  if (_relationshipHash.value(currentDirected->getName()).size() < weightSpinBox->value())
+	    {
+	      show = false;
+	    }
+	}
       if (show) 
 	{
 	  if (!currentDirected->getStart()->isMassHidden() &&
 	      !currentDirected->getEnd()->isMassHidden())
 	    {
+	      if (weightCheckBox->checkState() == Qt::Checked && currentDirected->getName() != "CREATED")
+		{
+		  QList<int> incidents = _relationshipHash.value(currentDirected->getName()).toList();
+		  std::sort(incidents.begin(), incidents.end());
+		  int count = 0;
+		  QListIterator<int> incIt(incidents);
+		  while (incIt.hasNext())
+		    {
+		      int current = incIt.next();
+		      if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+			{
+			  count++;
+			}
+		    }
+		  qreal originalWeight = (qreal) count;
+		  if (originalWeight != 0)
+		    {
+		      qreal normalizedWeight = ((originalWeight - weightSpinBox->value()) /
+						(findCurrentMaxWeight() - weightSpinBox->value())) * (5.0f * 1.0f) + 1.0f ;
+		      currentDirected->setPenWidth(normalizedWeight);
+		    }
+		  else
+		    {
+		      currentDirected->setPenWidth(1.0f);
+		    }
+		}
+	      else
+		{
+		  currentDirected->setPenWidth(1.0f);
+		}
 	      currentDirected->show();
 	      currentDirected->getStart()->show();
 	      currentDirected->getEnd()->show();
@@ -6029,11 +6215,48 @@ void NetworkGraphWidget::setVisibility()
 	      show = false;
 	    }
 	}
+      if (currentUndirected->getName() != "CREATED")
+	{
+	  if (_relationshipHash.value(currentUndirected->getName()).size() < weightSpinBox->value())
+	    {
+	      show = false;
+	    }
+	}
       if (show) 
 	{
 	  if (!currentUndirected->getStart()->isMassHidden() &&
 	      !currentUndirected->getStart()->isMassHidden())
 	    {
+	      if (weightCheckBox->checkState() == Qt::Checked && currentUndirected->getName() != "CREATED")
+		{
+		  QList<int> incidents = _relationshipHash.value(currentUndirected->getName()).toList();
+		  std::sort(incidents.begin(), incidents.end());
+		  int count = 0;
+		  QListIterator<int> incIt(incidents);
+		  while (incIt.hasNext())
+		    {
+		      int current = incIt.next();
+		      if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+			{
+			  count++;
+			}
+		    }
+		  qreal originalWeight = (qreal) count;
+		  if (originalWeight != 0)
+		    {
+		      qreal normalizedWeight = ((originalWeight - weightSpinBox->value()) /
+						(findCurrentMaxWeight() - weightSpinBox->value())) * (5.0f * 1.0f) + 1.0f ;
+		      currentUndirected->setPenWidth(normalizedWeight);
+		    }
+		  else
+		    {
+		      currentUndirected->setPenWidth(1.0f);
+		    }
+		} 
+	      else
+		{
+		  currentUndirected->setPenWidth(1.0f);
+		}
 	      currentUndirected->show();
 	      currentUndirected->getStart()->show();
 	      currentUndirected->getEnd()->show();
@@ -6213,13 +6436,16 @@ void NetworkGraphWidget::cleanUp()
   edgeListWidget->setRowCount(0);
   _presentTypes.clear();
   _checkedCases.clear();
+  _relationshipHash.clear();
   _minOrder = 0;
   _maxOrder = 0;
+  _maxWeight = 0;
   _selectedEntityName = "";
   nameField->clear();
   descriptionField->clear();
   resetFont(attributesTree);
   setGraphControls(false);
+  weightCheckBox->setCheckState(Qt::Unchecked);
 }
 
 void NetworkGraphWidget::finalBusiness() 

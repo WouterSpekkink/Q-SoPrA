@@ -60,9 +60,9 @@ public:
   void setFiltered(bool state);
   void setMassHidden(bool state);
   void setComment(const QString comment);
+  void setPenWidth(const qreal &width);
   
   // Getters
-
   QColor getColor();
   NetworkNode *getStart() const; 
   NetworkNode *getEnd() const;
@@ -76,7 +76,6 @@ public:
   
   // New public function for correct drawing
   void updatePosition();
-
   
   enum {Type = UserType + 5};
   int type() const;
@@ -108,6 +107,7 @@ private:
   QString _comment;
   bool _filtered;
   bool _massHidden;
+  qreal _penWidth;
 
   // Pointers to objects created by other class
   // Do not delete
