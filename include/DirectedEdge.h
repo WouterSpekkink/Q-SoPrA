@@ -41,6 +41,7 @@ public:
 
   // Overrides of public functions
   QRectF boundingRect() const override;
+  QPainterPath shape() const override;
 
   // Setters
   void setColor(const QColor &color);

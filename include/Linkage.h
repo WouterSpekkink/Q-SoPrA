@@ -57,7 +57,6 @@ public:
   // Overrides of public functions
   QRectF boundingRect() const override;
   QPainterPath shape() const override;
-  void setPenStyle(int penStyle);
 
   // New function required for correct drawing
   void updatePosition();
@@ -69,6 +68,7 @@ public:
   void setHeight(const int &height);
   void setMassHidden(bool state);
   void setColor(const QColor &color);
+  void setPenStyle(int penStyle);
   
   // Getters
   QGraphicsItem *getStart() const;

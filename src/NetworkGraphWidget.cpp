@@ -4628,7 +4628,8 @@ void NetworkGraphWidget::exportEdges()
       // Let us first create the file header.
       fileOut << "Source" << ","
 	      << "Target" << ","
-	      << "Type" <<","
+	      << "Type" << ","
+	      << "Weight" << ","
 	      << "Description" << ","
 	      << "Comment" << "\n";
       // Then we iterate through the directed edges first.
@@ -4641,10 +4642,31 @@ void NetworkGraphWidget::exportEdges()
 	      QString source = directed->getStart()->getName();
 	      QString target = directed->getEnd()->getName();
 	      QString description = directed->getType();
+	      QList<int> incidents = directed->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      int weight = 0;
+	      if (weightCheckBox->checkState() == Qt::Checked)
+		{
+		  QListIterator<int> it2(incidents);
+		  while (it2.hasNext())
+		    {
+		      int incident = it2.next();
+		      if (incident >= lowerRangeDial->value() &&
+			  incident <= upperRangeDial->value())
+			{
+			  weight++;
+			}
+		    }
+		}
+	      else
+		{
+		  weight = 1;
+		}
 	      QString comment = directed->getComment();
 	      fileOut << "\"" << doubleQuote(source).toStdString() << "\"" << ","
 		      << "\"" << doubleQuote(target).toStdString() << "\"" << ","
 		      << "Directed" << ","
+		      << weight << ","
 		      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
 		      << "\"" << doubleQuote(comment).toStdString() << "\"" << "\n";
 	    }
@@ -4660,9 +4682,30 @@ void NetworkGraphWidget::exportEdges()
 	      QString target = undirected->getEnd()->getName();
 	      QString description = undirected->getType();
 	      QString comment = undirected->getComment();
+	      QList<int> incidents = undirected->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      int weight = 0;
+	      if (weightCheckBox->checkState() == Qt::Checked)
+		{
+		  QListIterator<int> it2(incidents);
+		  while (it2.hasNext())
+		    {
+		      int incident = it2.next();
+		      if (incident >= lowerRangeDial->value() &&
+			  incident <= upperRangeDial->value())
+			{
+		      weight++;
+			}
+		    }
+		}
+	      else
+		{
+		  weight = 1;
+		}
 	      fileOut << "\"" << doubleQuote(source).toStdString() << "\"" << ","
 		      << "\"" << doubleQuote(target).toStdString() << "\"" << ","
 		      << "Undirected" << ","
+		      << weight << ","
 		      << "\"" << doubleQuote(description).toStdString() << "\"" << ","
 		      << "\"" << doubleQuote(comment).toStdString() << "\"" << "\n";
 	    }
@@ -6182,6 +6225,7 @@ void NetworkGraphWidget::setVisibility()
 	}
       else
 	{
+	  currentDirected->setToolTip("Occurrence: " + QString::number(count));
 	  if (weightCheckBox->checkState() == Qt::Checked)
 	    {
 	      qreal originalWeight = (qreal) count;
@@ -6311,6 +6355,7 @@ void NetworkGraphWidget::setVisibility()
 	}
       else
 	{
+	  currentUndirected->setToolTip("Occurrence: " + QString::number(count));
 	  if (weightCheckBox->checkState() == Qt::Checked)
 	    {
 	      qreal originalWeight = (qreal) count;

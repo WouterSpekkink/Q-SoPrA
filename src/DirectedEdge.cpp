@@ -111,6 +111,13 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   painter->strokePath(myPath, pen());
 }
 
+QPainterPath DirectedEdge::shape() const
+{
+  QPainterPathStroker stroker;
+  stroker.setWidth(20);
+  return stroker.createStroke(_strokePath);
+}
+
 NetworkNode* DirectedEdge::getStart() const 
 {
   return _start;
@@ -184,8 +191,6 @@ void DirectedEdge::setMassHidden(bool state)
 void DirectedEdge::setComment(const QString &comment) 
 {
   _comment = comment;
-  QString toolTip = breakString(_comment);
-  setToolTip(toolTip);
 }
 
 QString DirectedEdge::getComment() 
@@ -227,3 +232,4 @@ QSet<int> DirectedEdge::getIncidents()
 {
   return _incidents;
 }
+

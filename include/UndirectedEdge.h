@@ -52,6 +52,7 @@ public:
 
   // Overriding some public functions
   QRectF boundingRect() const override;
+  QPainterPath shape() const override;
   
   // Setters
   void setColor(const QColor &color);
@@ -87,7 +88,7 @@ public:
 private slots:
   // Calculation function to support paint function
   void calculate();
-
+  
 protected:
   // Overriding paint function
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;

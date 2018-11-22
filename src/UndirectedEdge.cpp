@@ -134,6 +134,14 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   painter->drawPolygon(_arrowHeadTwo);
 }
 
+QPainterPath UndirectedEdge::shape() const
+{
+  QPainterPathStroker stroker;
+  stroker.setWidth(20);
+  return stroker.createStroke(_strokePath);
+}
+
+
 NetworkNode* UndirectedEdge::getStart() const 
 {
   return _start;
@@ -207,8 +215,6 @@ void UndirectedEdge::setMassHidden(bool state)
 void UndirectedEdge::setComment(const QString comment) 
 {
   _comment = comment;
-  QString toolTip = breakString(_comment);
-  this->setToolTip(toolTip);
 }
 
 QString UndirectedEdge::getComment() 
@@ -251,3 +257,4 @@ QSet<int> UndirectedEdge::getIncidents()
 {
   return _incidents;
 }
+
