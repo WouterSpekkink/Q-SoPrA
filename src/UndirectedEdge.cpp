@@ -225,3 +225,29 @@ void UndirectedEdge::setPenWidth(const qreal &width)
 {
   _penWidth = width;
 }
+
+void UndirectedEdge::setIncidents(const QSet<int> &incidents)
+{
+  _incidents = incidents;
+}
+
+
+void UndirectedEdge::insertIncidents(const QSet<int> &incidents)
+{
+  QSetIterator<int> it(incidents);
+  while (it.hasNext())
+    {
+      int incident = it.next();
+      _incidents.insert(incident);
+    }
+}
+
+void UndirectedEdge::insertIncident(const int &incident)
+{
+  _incidents.insert(incident);
+}
+
+QSet<int> UndirectedEdge::getIncidents()
+{
+  return _incidents;
+}

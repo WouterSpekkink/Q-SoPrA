@@ -470,6 +470,12 @@ void WelcomeDialog::newDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
+	  query->exec("CREATE TABLE saved_ng_plots_incidents_to_edges "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "incident integer, "
+		      "relationship text, "
+		      "type text)");
 	  query->exec("CREATE TABLE saved_ng_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1051,7 +1057,7 @@ void WelcomeDialog::openDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer, "
-		      "peristent integer, "
+		      "persistent integer, "
 		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1119,6 +1125,12 @@ void WelcomeDialog::openDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_incidents_to_edges "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "incident integer, "
+		      "relationship text, "
+		      "type text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "

@@ -24,6 +24,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #define DIRECTEDEDGE_H
 
 #include <QGraphicsLineItem>
+#include <QSet>
 #include "NetworkNode.h"
 #include "SupportingFunctions.h"
 #include "Constants.h"
@@ -50,6 +51,9 @@ public:
   void setMassHidden(bool state);
   void setComment(const QString &comment);
   void setPenWidth(const qreal &width);
+  void setIncidents(const QSet<int> &incidents);
+  void insertIncidents(const QSet<int> &incidents);
+  void insertIncident(const int &incident);
 
   // Getters;
   QColor getColor();
@@ -61,6 +65,7 @@ public:
   bool isFiltered();
   bool isMassHidden();
   QString getComment();
+  QSet<int> getIncidents();
   
   // New function for correct drawing
   void updatePosition();
@@ -79,6 +84,7 @@ protected:
 
   
 private:
+  // Private variables
   QColor _color;
   QPolygonF _arrowHead;
   QPainterPath _strokePath;
@@ -93,6 +99,9 @@ private:
   bool _filtered;
   bool _massHidden;
   qreal _penWidth;
+
+  // Private data set
+  QSet<int> _incidents;
 
   // Pointers to objects managed by other class.
   // Do not delete.

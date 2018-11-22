@@ -153,7 +153,6 @@ private slots:
   void processUpperRange(int value);
   void setRangeControls();
   void setWeightControls();
-  int findCurrentMaxWeight();
   void updateRangeControls();
   void updateWeightControls();
   void exportSvg();
@@ -205,8 +204,6 @@ private slots:
   void plotNewGraph();
   void addRelationshipType();
   void removeRelationshipType();
-  void setRelationshipHash();
-  void removeFromRelationshipHash(QString name);
   void cleanUp();
   void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
@@ -318,10 +315,6 @@ private:
   QVector<TextObject*> _textVector;
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
-
-  // Private map
-  QHash<QString, QSet<int>> _relationshipHash;
-
 };
 
 

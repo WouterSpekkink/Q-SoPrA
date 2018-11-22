@@ -36,6 +36,7 @@ http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 #define UNDIRECTEDEDGE_H
 
 #include <QGraphicsLineItem>
+#include <QSet>
 #include "NetworkNode.h"
 #include "SupportingFunctions.h"
 #include "Constants.h"
@@ -61,6 +62,9 @@ public:
   void setMassHidden(bool state);
   void setComment(const QString comment);
   void setPenWidth(const qreal &width);
+  void setIncidents(const QSet<int> &incidents);
+  void insertIncidents(const QSet<int> &incidents);
+  void insertIncident(const int &incident);
   
   // Getters
   QColor getColor();
@@ -72,7 +76,7 @@ public:
   bool isFiltered();
   bool isMassHidden();
   QString getComment();
-
+  QSet<int> getIncidents();
   
   // New public function for correct drawing
   void updatePosition();
@@ -109,6 +113,9 @@ private:
   bool _massHidden;
   qreal _penWidth;
 
+  // Private data set
+  QSet<int> _incidents;
+  
   // Pointers to objects created by other class
   // Do not delete
   NetworkNode *_start;

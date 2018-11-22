@@ -202,3 +202,28 @@ void DirectedEdge::setPenWidth(const qreal &width)
 {
   _penWidth = width;
 }
+
+void DirectedEdge::setIncidents(const QSet<int> &incidents)
+{
+  _incidents = incidents;
+}
+
+void DirectedEdge::insertIncidents(const QSet<int> &incidents)
+{
+  QSetIterator<int> it(incidents);
+  while (it.hasNext())
+    {
+      int incident = it.next();
+      _incidents.insert(incident);
+    }
+}
+
+void DirectedEdge::insertIncident(const int &incident)
+{
+  _incidents.insert(incident);
+}
+
+QSet<int> DirectedEdge::getIncidents()
+{
+  return _incidents;
+}
