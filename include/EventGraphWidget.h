@@ -147,7 +147,7 @@ private slots:
   void seeComponents();
   void previousDataItem();
   void nextDataItem();
-  void getEvents();
+  void getIncidents();
   void plotIncidents();
   void getEdges(QString coder, QString type, QColor color);
   void plotEdges(QString type);

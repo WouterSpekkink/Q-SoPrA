@@ -43,7 +43,7 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
 {
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   _color = Qt::black;
-  setPen(QPen(_color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  setPen(QPen(_color, 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   _typeInd = type;
   _coder = coder;
@@ -93,10 +93,10 @@ void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
       myPath.moveTo(_newLine.p1());
       myPath.quadTo(_controlPoint, _ghostLine.p2());
       _strokePath = myPath;
-      painter->setPen(QPen(_color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      painter->setPen(QPen(_color, 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
       painter->setBrush(_color);
       painter->drawPolygon(_arrowHead);
-      QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::RoundCap, Qt::RoundJoin);
+      QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::SquareCap, Qt::MiterJoin);
       painter->strokePath(myPath, myPen);
       if (_penStyle == 1 && isSelected())
 	{
@@ -279,6 +279,7 @@ void Linkage::calculate() {
 				     cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 				     cos(angle + Pi - Pi / 3) * arrowSize);
+  //  _newLine.setLength(_newLine.length() - 5);
   setLine(_newLine);
 }
 

@@ -76,26 +76,24 @@ void UndirectedEdge::calculate()
   qreal dX = _end->pos().x() - _start->pos().x();
   qreal dY = _end->pos().y() - _start->pos().y();
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
-
   QLineF newLine = QLineF(_start->pos(), _end->pos());
-  newLine.setLength(newLine.length() - 18 - ((_penWidth / 2) - 2.0f));
+  newLine.setLength(newLine.length() - 18 - (_penWidth - 2.0f));
   qreal mX = (_start->pos().x() + newLine.p2().x()) / 2;
   qreal mY = (_start->pos().y() + newLine.p2().y()) / 2;
   qreal cX = _height * (-1 * (dY / distance)) + mX;
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLineOne = QLineF(_controlPoint, _end->pos());
-  _ghostLineOne.setLength(_ghostLineOne.length() - 18 - ((_penWidth / 2) - 2.0f));
-  
+  _ghostLineOne.setLength(_ghostLineOne.length() - 18 - ((_penWidth) - 2.0f));
   newLine = QLineF(_end->pos(), _start->pos());
-  newLine.setLength(newLine.length() - 18 - ((_penWidth / 2) - 2.0f));
+  newLine.setLength(newLine.length() - 18 - (_penWidth - 2.0f));
   mX = (_end->pos().x() + newLine.p2().x()) / 2;
   mY = (_end->pos().y() + newLine.p2().y()) / 2;
   cX = _height * (-1 * (dY / distance)) + mX;
   cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLineTwo = QLineF(_controlPoint, _start->pos());
-  _ghostLineTwo.setLength(_ghostLineTwo.length() - 18 - ((_penWidth / 2) - 2.0f));
+  _ghostLineTwo.setLength(_ghostLineTwo.length() - 18 - (_penWidth - 2.0f));
   // Then we do some calculations to determine how our arrows are drawn.
   double angle = ::acos(_ghostLineOne.dx() / _ghostLineOne.length());
   if (_ghostLineOne.dy() >= 0)
@@ -112,12 +110,16 @@ void UndirectedEdge::calculate()
 					cos(angle2 + Pi / 3) * arrowSize);
   _arrowP4 = _ghostLineTwo.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
 					cos(angle2 + Pi - Pi / 3) * arrowSize);
+  _drawLineOne = _ghostLineOne;
+  _drawLineTwo = _ghostLineTwo;
+  _drawLineOne.setLength(_drawLineOne.length() - 5);
+  _drawLineTwo.setLength(_drawLineTwo.length() - 5);
   prepareGeometryChange();
 }
 
 void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
-  setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+  setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
   painter->setPen(pen());
   painter->setBrush(_color);
   calculate();
@@ -126,8 +128,8 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   _arrowHeadTwo.clear();
   _arrowHeadTwo << _ghostLineTwo.p2() << _arrowP3 << _arrowP4;
   QPainterPath myPath;
-  myPath.moveTo(_ghostLineTwo.p2());
-  myPath.quadTo(_controlPoint, _ghostLineOne.p2());
+  myPath.moveTo(_drawLineTwo.p2());
+  myPath.quadTo(_controlPoint, _drawLineOne.p2());
   _strokePath = myPath;
   painter->drawPolygon(_arrowHeadOne);
   painter->strokePath(myPath, pen());

@@ -2639,7 +2639,7 @@ void EventGraphWidget::updateEntityAfterEdit(const QString name,
   _attributesWidgetPtr->resetTree();
 }
 
-void EventGraphWidget::getEvents() 
+void EventGraphWidget::getIncidents() 
 {
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT ch_order, description FROM incidents ORDER BY ch_order");
@@ -3331,7 +3331,7 @@ void EventGraphWidget::plotGraph()
     }
   delete query;
   _distance = 70;
-  getIncidentNodes();
+  getIncidents();
   plotIncidents(); // Should allow for range to be set here.
   getEdges(_selectedCoder, currentType, color);
   plotEdges(currentType);

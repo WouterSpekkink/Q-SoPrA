@@ -96,7 +96,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   descriptionField = new QTextEdit(infoWidget);
   descriptionField->setReadOnly(true);
 
-  weightCheckBox = new QCheckBox(tr("Visualise weights"));
+  weightCheckBox = new QCheckBox(tr("Visualise"));
   weightCheckBox->setCheckState(Qt::Unchecked);
   
   plotButton = new QPushButton(tr("Plot new"), this);
@@ -433,8 +433,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addLayout(lowerRangeLayout);
   graphicsControlsLayout->addWidget(weightLabel);
   QPointer<QBoxLayout> weightLayout = new QHBoxLayout;
-  weightLayout->addWidget(weightCheckBox);
   weightLayout->addWidget(weightSpinBox);
+  weightLayout->addWidget(weightCheckBox);
   graphicsControlsLayout->addLayout(weightLayout);
   QPointer<QFrame> sepLine5 = new QFrame();
   sepLine5->setFrameShape(QFrame::HLine);
@@ -594,7 +594,7 @@ void NetworkGraphWidget::checkCongruency()
       while (it.hasNext()) 
 	{
 	  DirectedEdge *current = it.next();
-	  if (current->getName() != CREATED) 
+	  if (current->getName() != MERGED && current->getName() != TRANSFORMED) 
 	    {
 	      count++;
 	    }
@@ -603,7 +603,7 @@ void NetworkGraphWidget::checkCongruency()
       while (it2.hasNext()) 
 	{
 	  UndirectedEdge *current = it2.next();
-	  if (current->getName() != CREATED) 
+	  if (current->getName() != MERGED && current->getName() != TRANSFORMED) 
 	    {
 	      count++;
 	    }
@@ -2982,8 +2982,9 @@ void NetworkGraphWidget::multimodeTransformation()
 			    {
 			      if (directedness == DIRECTED) 
 				{
-				  DirectedEdge *newEdge = new DirectedEdge(first->getStart(), second->getStart(),
-									   name, CREATED, 0);
+				  DirectedEdge *newEdge = new DirectedEdge(first->getStart(),
+									   second->getStart(),
+									   name, TRANSFORMED, 0);
 				  bool found = false;
 				  QVectorIterator<DirectedEdge*> it3(_directedVector);
 				  while (it3.hasNext()) 
@@ -3011,13 +3012,13 @@ void NetworkGraphWidget::multimodeTransformation()
 				    {
 				      newEdge = new UndirectedEdge(first->getStart(),
 								   second->getStart(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  else 
 				    {
 				      newEdge = new UndirectedEdge(second->getStart(),
 								   first->getStart(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  bool found = false;
 				  QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
@@ -3069,8 +3070,9 @@ void NetworkGraphWidget::multimodeTransformation()
 			    {
 			      if (directedness == DIRECTED) 
 				{
-				  DirectedEdge *newEdge = new DirectedEdge(first->getEnd(), second->getEnd(),
-									   name, CREATED, 0);
+				  DirectedEdge *newEdge = new DirectedEdge(first->getEnd(),
+									   second->getEnd(),
+									   name, TRANSFORMED, 0);
 				  bool found = false;
 				  QVectorIterator<DirectedEdge*> it3(_directedVector);
 				  while (it3.hasNext()) 
@@ -3102,13 +3104,13 @@ void NetworkGraphWidget::multimodeTransformation()
 				    {
 				      newEdge = new UndirectedEdge(first->getEnd(),
 								   second->getEnd(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  else 
 				    {
 				      newEdge = new UndirectedEdge(second->getEnd(),
 								   first->getEnd(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  bool found = false;
 				  QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
@@ -3168,8 +3170,9 @@ void NetworkGraphWidget::multimodeTransformation()
 			    {
 			      if (directedness == DIRECTED) 
 				{
-				  DirectedEdge *newEdge = new DirectedEdge(first->getStart(), second->getStart(),
-									   name, CREATED, 0);
+				  DirectedEdge *newEdge = new DirectedEdge(first->getStart(),
+									   second->getStart(),
+									   name, TRANSFORMED, 0);
 				  bool found = false;
 				  QVectorIterator<DirectedEdge*> it3(_directedVector);
 				  while (it3.hasNext()) 
@@ -3201,13 +3204,13 @@ void NetworkGraphWidget::multimodeTransformation()
 				    {
 				      newEdge = new UndirectedEdge(first->getStart(),
 								   second->getStart(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  else 
 				    {
 				      newEdge = new UndirectedEdge(second->getStart(),
 								   first->getStart(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
 				  bool found = false;
@@ -3259,8 +3262,9 @@ void NetworkGraphWidget::multimodeTransformation()
 			    {
 			      if (directedness == DIRECTED) 
 				{
-				  DirectedEdge *newEdge = new DirectedEdge(first->getEnd(), second->getEnd(),
-									   name, CREATED, 0);
+				  DirectedEdge *newEdge = new DirectedEdge(first->getEnd(),
+									   second->getEnd(),
+									   name, TRANSFORMED, 0);
 				  bool found = false;
 				  QVectorIterator<DirectedEdge*> it3(_directedVector);
 				  while (it3.hasNext()) 
@@ -3292,13 +3296,13 @@ void NetworkGraphWidget::multimodeTransformation()
 				    {
 				      newEdge = new UndirectedEdge(first->getEnd(),
 								   second->getEnd(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  else 
 				    {
 				      newEdge = new UndirectedEdge(second->getEnd(),
 								   first->getEnd(),
-								   name, CREATED, 0);
+								   name, TRANSFORMED, 0);
 				    }
 				  bool found = false;
 				  QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
@@ -3614,7 +3618,7 @@ void NetworkGraphWidget::mergeRelationships()
 		{
 		  DirectedEdge *newDirected = new DirectedEdge(directed->getStart(),
 							       directed->getEnd(),
-							       name, CREATED, 0);
+							       name, MERGED, 0);
 		  newDirected->setZValue(2);
 		  newDirected->setColor(color);
 		  newDirected->setIncidents(directed->getIncidents());
@@ -3637,8 +3641,8 @@ void NetworkGraphWidget::mergeRelationships()
 		    {
 		      if (first->getStart() == second->getStart() &&
 			  first->getEnd() == second->getEnd() &&
-			  first->getName() == CREATED &&
-			  second->getName() == CREATED) 
+			  first->getName() == MERGED &&
+			  second->getName() == MERGED) 
 			{
 			  found = true;
 			  second->insertIncidents(first->getIncidents());
@@ -3662,7 +3666,7 @@ void NetworkGraphWidget::mergeRelationships()
 		{
 		  UndirectedEdge *newUndirected = new UndirectedEdge(undirected->getStart(),
 								     undirected->getEnd(),
-								     name, CREATED, 0);
+								     name, MERGED, 0);
 		  newUndirected->setColor(color);
 		  newUndirected->setZValue(2);
 		  newUndirected->setIncidents(undirected->getIncidents());
@@ -3685,8 +3689,8 @@ void NetworkGraphWidget::mergeRelationships()
 		    {
 		      if (first->getStart() == second->getStart() &&
 			  first->getEnd() == second->getEnd() &&
-			  first->getName() == CREATED &&
-			  second->getName() == CREATED) 
+			  first->getName() == MERGED &&
+			  second->getName() == MERGED) 
 			{
 			  found = true;
 			  second->insertIncidents(first->getIncidents());
@@ -6148,7 +6152,8 @@ void NetworkGraphWidget::setVisibility()
       QString type = currentDirected->getType();
       if (_presentTypes.contains(type)) 
 	{
-	  if (relationship == CREATED && !(currentDirected->isMassHidden())) 
+	  if ((relationship == MERGED || relationship == TRANSFORMED)
+	      && !(currentDirected->isMassHidden())) 
 	    {
 	      show = true;
 	    }
@@ -6207,43 +6212,50 @@ void NetworkGraphWidget::setVisibility()
 	      show = false;
 	    }
 	}
-      QList<int> incidents = currentDirected->getIncidents().toList();
-      std::sort(incidents.begin(), incidents.end());
-      int count = 0;
-      QListIterator<int> incIt(incidents);
-      while (incIt.hasNext())
+      if (currentDirected->getName() != TRANSFORMED)
 	{
-	  int current = incIt.next();
-	  if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+	  QList<int> incidents = currentDirected->getIncidents().toList();
+	  std::sort(incidents.begin(), incidents.end());
+	  int count = 0;
+	  QListIterator<int> incIt(incidents);
+	  while (incIt.hasNext())
 	    {
-	      count++;
+	      int current = incIt.next();
+	      if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+		{
+		  count++;
+		}
 	    }
-	}
-      if (count < weightSpinBox->value())
-	{
-	  show = false;
-	}
-      else
-	{
-	  currentDirected->setToolTip("Occurrence: " + QString::number(count));
-	  if (weightCheckBox->checkState() == Qt::Checked)
+	  if (count < weightSpinBox->value())
 	    {
-	      qreal originalWeight = (qreal) count;
-	      if (originalWeight == 1.0f)
-		{
-		  currentDirected->setPenWidth(1.0f);
-		}
-	      else
-		{
-		  qreal normalizedWeight = ((originalWeight - 1.0f) /
-					    (_maxWeight - 1.0f)) * (5.0f * 1.0f) + 1.0f ;
-		  currentDirected->setPenWidth(normalizedWeight);
-		}
+	      show = false;
 	    }
 	  else
 	    {
-	      currentDirected->setPenWidth(1.0f);
+	      currentDirected->setToolTip("Occurrence: " + QString::number(count));
+	      if (weightCheckBox->checkState() == Qt::Checked)
+		{
+		  qreal originalWeight = (qreal) count;
+		  if (originalWeight == 1.0f)
+		    {
+		      currentDirected->setPenWidth(1.0f);
+		    }
+		  else
+		    {
+		      qreal normalizedWeight = ((originalWeight - 1.0f) /
+						(_maxWeight - 1.0f)) * (5.0f * 1.0f) + 1.0f ;
+		      currentDirected->setPenWidth(normalizedWeight);
+		    }
+		}
+	      else
+		{
+		  currentDirected->setPenWidth(1.0f);
+		}
 	    }
+	}
+      else
+	{
+	  currentDirected->setPenWidth(1.0f);
 	}
       if (show) 
 	{
@@ -6278,7 +6290,8 @@ void NetworkGraphWidget::setVisibility()
       QString type = currentUndirected->getType();
       if (_presentTypes.contains(type)) 
 	{
-	  if (relationship == CREATED && !(currentUndirected->isMassHidden())) 
+	  if ((relationship == MERGED || relationship == TRANSFORMED)
+	      && !(currentUndirected->isMassHidden())) 
 	    {
 	      show = true;
 	    }
@@ -6337,43 +6350,50 @@ void NetworkGraphWidget::setVisibility()
 	      show = false;
 	    }
 	}
-      QList<int> incidents = currentUndirected->getIncidents().toList();
-      std::sort(incidents.begin(), incidents.end());
-      int count = 0;
-      QListIterator<int> incIt(incidents);
-      while (incIt.hasNext())
+      if (currentUndirected->getName() != TRANSFORMED)
 	{
-	  int current = incIt.next();
-	  if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+	  QList<int> incidents = currentUndirected->getIncidents().toList();
+	  std::sort(incidents.begin(), incidents.end());
+	  int count = 0;
+	  QListIterator<int> incIt(incidents);
+	  while (incIt.hasNext())
 	    {
-	      count++;
+	      int current = incIt.next();
+	      if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+		{
+		  count++;
+		}
 	    }
-	}
-      if (count < weightSpinBox->value())
-	{
-	  show = false;
-	}
-      else
-	{
-	  currentUndirected->setToolTip("Occurrence: " + QString::number(count));
-	  if (weightCheckBox->checkState() == Qt::Checked)
+	  if (count < weightSpinBox->value())
 	    {
-	      qreal originalWeight = (qreal) count;
-	      if (originalWeight == 1.0f)
+	      show = false;
+	    }
+	  else
+	    {
+	      currentUndirected->setToolTip("Occurrence: " + QString::number(count));
+	      if (weightCheckBox->checkState() == Qt::Checked)
+		{
+		  qreal originalWeight = (qreal) count;
+		  if (originalWeight == 1.0f)
+		    {
+		      currentUndirected->setPenWidth(1.0f);
+		    }
+		  else
+		    {
+		      qreal normalizedWeight = ((originalWeight - 1.0f) /
+						(_maxWeight - 1.0f)) * (5.0f * 1.0f) + 1.0f ;
+		      currentUndirected->setPenWidth(normalizedWeight);
+		    }
+		} 
+	      else
 		{
 		  currentUndirected->setPenWidth(1.0f);
 		}
-	      else
-		{
-		  qreal normalizedWeight = ((originalWeight - 1.0f) /
-					    (_maxWeight - 1.0f)) * (5.0f * 1.0f) + 1.0f ;
-		  currentUndirected->setPenWidth(normalizedWeight);
-		}
-	    } 
-	  else
-	    {
-	      currentUndirected->setPenWidth(1.0f);
 	    }
+	}
+      else
+	{
+	  currentUndirected->setPenWidth(1.0f);
 	}
       if (show) 
 	{

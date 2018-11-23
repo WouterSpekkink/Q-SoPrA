@@ -102,6 +102,8 @@ private:
   int _height;
   QLineF _ghostLineOne;
   QLineF _ghostLineTwo;
+  QLineF _drawLineOne;
+  QLineF _drawLineTwo;
   QPointF _arrowP1;
   QPointF _arrowP2;
   QPointF _arrowP3;

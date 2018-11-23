@@ -91,6 +91,7 @@ private:
   QPainterPath _strokePath;
   int _height;
   QLineF _ghostLine;
+  QLineF _drawLine;
   QPointF _arrowP1;
   QPointF _arrowP2;
   QPointF _controlPoint;
