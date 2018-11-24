@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Q-SoPrA");
   
-  stacked->showMaximized();
+  stacked->showFullScreen();
 }
 
 MainWindow::~MainWindow()

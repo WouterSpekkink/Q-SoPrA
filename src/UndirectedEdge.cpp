@@ -110,10 +110,12 @@ void UndirectedEdge::calculate()
 					cos(angle2 + Pi / 3) * arrowSize);
   _arrowP4 = _ghostLineTwo.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
 					cos(angle2 + Pi - Pi / 3) * arrowSize);
-  _drawLineOne = _ghostLineOne;
-  _drawLineTwo = _ghostLineTwo;
-  _drawLineOne.setLength(_drawLineOne.length() - 5);
-  _drawLineTwo.setLength(_drawLineTwo.length() - 5);
+  _arrowHeadOne.clear();
+  _arrowHeadOne << _ghostLineOne.p2() << _arrowP1 << _arrowP2;
+  _arrowHeadTwo.clear();
+  _arrowHeadTwo << _ghostLineTwo.p2() << _arrowP3 << _arrowP4;
+  _ghostLineOne.setLength(_ghostLineOne.length() - 5);
+  _ghostLineTwo.setLength(_ghostLineTwo.length() - 5);
   prepareGeometryChange();
 }
 
@@ -123,13 +125,9 @@ void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   painter->setPen(pen());
   painter->setBrush(_color);
   calculate();
-  _arrowHeadOne.clear();
-  _arrowHeadOne << _ghostLineOne.p2() << _arrowP1 << _arrowP2;
-  _arrowHeadTwo.clear();
-  _arrowHeadTwo << _ghostLineTwo.p2() << _arrowP3 << _arrowP4;
   QPainterPath myPath;
-  myPath.moveTo(_drawLineTwo.p2());
-  myPath.quadTo(_controlPoint, _drawLineOne.p2());
+  myPath.moveTo(_ghostLineTwo.p2());
+  myPath.quadTo(_controlPoint, _ghostLineOne.p2());
   _strokePath = myPath;
   painter->drawPolygon(_arrowHeadOne);
   painter->strokePath(myPath, pen());

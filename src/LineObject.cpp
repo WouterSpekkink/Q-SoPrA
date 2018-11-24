@@ -48,12 +48,8 @@ QPainterPath LineObject::shape() const
 void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
   calculate();
-  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin));
+  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
 
-  _arrowHead.clear();
-  _arrowHead <<  _arrowP1 << _tempLine1.p2() << _arrowP2;
-  _arrowHead2.clear();
-  _arrowHead2 << _arrowP3 << _tempLine2.p2() << _arrowP4;
     
   QPainterPath myPath;
   myPath.moveTo(_tempLine2.p2());
@@ -63,7 +59,7 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
       painter->drawPolyline(_arrowHead);
     }
   painter->strokePath(myPath, QPen(_color, _penWidth, Qt::PenStyle(_penStyle),
-				   Qt::RoundCap, Qt::RoundJoin));
+				   Qt::SquareCap, Qt::MiterJoin));
   if (_arrow2On) 
     {
       painter->drawPolyline(_arrowHead2);
@@ -99,7 +95,13 @@ void LineObject::calculate()
   _arrowP3 = _tempLine2.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
 				     cos(angle2 + Pi / 3) * arrowSize);
   _arrowP4 = _tempLine2.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
-				     cos(angle2 + Pi - Pi / 3) * arrowSize);  
+				     cos(angle2 + Pi - Pi / 3) * arrowSize);
+  _arrowHead.clear();
+  _arrowHead <<  _arrowP1 << _tempLine1.p2() << _arrowP2;
+  _arrowHead2.clear();
+  _arrowHead2 << _arrowP3 << _tempLine2.p2() << _arrowP4;
+  _tempLine1.setLength(_tempLine1.length() - _penWidth);
+  _tempLine2.setLength(_tempLine2.length() - _penWidth);
   prepareGeometryChange();
 }
 
