@@ -162,7 +162,7 @@ private slots:
   void seePlots();
   void setChangeLabel();
   void updateEdges();
-  void simpleLayout();
+  void springLayout();
   void circularLayout();
   void expandLayout();
   void contractLayout();
@@ -276,7 +276,7 @@ private:
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> mergeButton;
   QPointer<QPushButton> removeTypeButton;
-  QPointer<QPushButton> simpleLayoutButton;
+  QPointer<QPushButton> springLayoutButton;
   QPointer<QPushButton> circularLayoutButton;
   QPointer<QPushButton> expandLayoutButton;
   QPointer<QPushButton> contractLayoutButton;

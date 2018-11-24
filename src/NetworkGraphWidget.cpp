@@ -106,7 +106,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   toggleDetailsButton->setCheckable(true);
   expandLayoutButton = new QPushButton(tr("Expand"), this);
   contractLayoutButton = new QPushButton(tr("Contract"), this);
-  simpleLayoutButton = new QPushButton(tr("Spring layout"), this);
+  springLayoutButton = new QPushButton(tr("Spring layout"), this);
   circularLayoutButton = new QPushButton(tr("Circular layout"), this);
   previousNodeButton = new QPushButton(tr("<<"), infoWidget);
   previousNodeButton->setEnabled(false);   
@@ -236,7 +236,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(simpleLayoutButton, SIGNAL(clicked()), this, SLOT(simpleLayout()));
+  connect(springLayoutButton, SIGNAL(clicked()), this, SLOT(springLayout()));
   connect(circularLayoutButton, SIGNAL(clicked()), this, SLOT(circularLayout()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
@@ -452,8 +452,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(toggleDetailsButton);
   toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(simpleLayoutButton);
-  simpleLayoutButton->setMaximumWidth(simpleLayoutButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(springLayoutButton);
+  springLayoutButton->setMaximumWidth(springLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(circularLayoutButton);
   circularLayoutButton->setMaximumWidth(circularLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(expandLayoutButton);
@@ -698,7 +698,7 @@ void NetworkGraphWidget::setGraphControls(bool state)
   zoomSlider->setEnabled(state);
   expandLayoutButton->setEnabled(state);
   contractLayoutButton->setEnabled(state);
-  simpleLayoutButton->setEnabled(state);
+  springLayoutButton->setEnabled(state);
   circularLayoutButton->setEnabled(state);
   lowerRangeDial->setEnabled(state);
   upperRangeDial->setEnabled(state);
@@ -1553,7 +1553,7 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color)
   updateEdges();
 }
 
-void NetworkGraphWidget::simpleLayout() 
+void NetworkGraphWidget::springLayout() 
 {
   qApp->setOverrideCursor(Qt::WaitCursor);
   QVectorIterator<NetworkNode*> it(_networkNodeVector);
@@ -4161,7 +4161,7 @@ void NetworkGraphWidget::plotNewGraph()
   delete colorDialog;
   plotDirectedEdges(_selectedType, color);
   plotUndirectedEdges(_selectedType, color);
-  simpleLayout();
+  springLayout();
   _presentTypes.push_back(_selectedType);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
@@ -4239,7 +4239,7 @@ void NetworkGraphWidget::addRelationshipType()
   delete query;
   addButton->setEnabled(false);
   setChangeLabel();
-  simpleLayout();
+  springLayout();
   updateEdges();
   setVisibility();
 }
