@@ -28,7 +28,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   _selectedEntityName = "";
   _labelsShown = false;
   _massMove = false;
-  
   _minOrder = 0;
   _maxOrder = 0;
   _maxWeight = 0;
@@ -3341,7 +3340,7 @@ void NetworkGraphWidget::multimodeTransformation()
       plotUndirectedEdges(name, color);
       QTableWidgetItem *item = new QTableWidgetItem(_selectedType);
       item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-      QString toolTip = breakString(name + " (Undirected) - " + description);
+      QString toolTip = breakString(name + " (Undirected) - " + description + " (MMT)");
       item->setToolTip(toolTip);
       item->setData(Qt::DisplayRole, name);
       edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
@@ -4827,6 +4826,11 @@ void NetworkGraphWidget::saveCurrentPlot()
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_ng_plots_settings
+	  query->prepare("DELETE FROM saved_ng_plots_settings "
+			 "WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
@@ -5430,6 +5434,34 @@ void NetworkGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
+      query->prepare("INSERT INTO saved_ng_plots_settings "
+		     "(plot, lowerbound, upperbound, boundson, "
+		     "weight, weighton, labelson) "
+		     "VALUES (:plot, :lowerbound, :upperbound, :boundson, "
+		     ":weight, :weighton, :labelson)");
+      int boundson = 0;
+      if (lowerRangeDial->isEnabled())
+	{
+	  boundson = 1;
+	}
+      int weighton = 0;
+      if (weightCheckBox->checkState() == Qt::Checked)
+	{
+	  weighton = 1;
+	}
+      int labelson = 0;
+      if (_labelsShown)
+	{
+	  labelson = 1;
+	}
+      query->bindValue(":plot", name);
+      query->bindValue(":lowerbound", lowerRangeDial->value());
+      query->bindValue(":upperbound", upperRangeDial->value());
+      query->bindValue(":boundson", boundson);
+      query->bindValue(":weight", weightSpinBox->value());
+      query->bindValue(":weighton", weighton);
+      query->bindValue(":labelson", labelson);
+      query->exec();
       delete query;
       QSqlDatabase::database().commit();
     }
@@ -5978,8 +6010,56 @@ void NetworkGraphWidget::seePlots()
 	  newRect->setPenStyle(penstyle);
 	  newRect->setZValue(zValue);
 	}
-      checkCongruency();
       setWeightControls();
+      query->prepare("SELECT lowerbound, upperbound, boundson, weight, weighton, labelson "
+		     "FROM saved_ng_plots_settings "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      query->first();
+      int lowerbound = query->value(0).toInt();
+      int upperbound = query->value(1).toInt();
+      int boundson = query->value(2).toInt();
+      int weight = query->value(3).toInt();
+      int weighton = query->value(4).toInt();
+      int labelson = query->value(5).toInt();
+      lowerRangeDial->setValue(lowerbound);
+      lowerRangeSpinBox->setValue(lowerbound);
+      upperRangeDial->setValue(upperbound);
+      upperRangeSpinBox->setValue(upperbound);
+      if (boundson == 0)
+	{
+	  lowerRangeDial->setEnabled(false);
+	  lowerRangeSpinBox->setEnabled(false);
+	  upperRangeDial->setEnabled(false);
+	  upperRangeSpinBox->setEnabled(false);
+	}
+      else
+	{
+	  lowerRangeDial->setEnabled(true);
+	  lowerRangeSpinBox->setEnabled(true);
+	  upperRangeDial->setEnabled(true);
+	  upperRangeSpinBox->setEnabled(true);
+	}
+      weightSpinBox->setValue(weight);
+      if (weighton == 0)
+	{
+	  weightCheckBox->setCheckState(Qt::Unchecked);
+	}
+      else
+	{
+	  weightCheckBox->setCheckState(Qt::Checked);
+	}
+      if (labelson == 0)
+	{
+	  _labelsShown = false;
+	}
+      else
+	{
+	  _labelsShown = true;
+	}
+      // Now let's do the final processing
+      checkCongruency();
       setVisibility();
       plotLabel->setText(plot);
       changeLabel->setText("");
@@ -6050,6 +6130,12 @@ void NetworkGraphWidget::seePlots()
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
+      // saved_ng_plots_settings
+      query->prepare("DELETE FROM saved_ng_plots_settings "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+
       delete query;
       seePlots();
     }
@@ -6256,6 +6342,7 @@ void NetworkGraphWidget::setVisibility()
       else
 	{
 	  currentDirected->setPenWidth(1.0f);
+	  currentDirected->setToolTip("Created through multimode transformation");
 	}
       if (show) 
 	{
@@ -6394,6 +6481,7 @@ void NetworkGraphWidget::setVisibility()
       else
 	{
 	  currentUndirected->setPenWidth(1.0f);
+	  currentUndirected->setToolTip("Created through mutltimode transformation");
 	}
       if (show) 
 	{

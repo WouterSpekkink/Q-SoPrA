@@ -194,6 +194,18 @@ void RelationshipTypeDialog::saveAndClose()
       delete warningBox;
       return;
     }
+  if (_name == TRANSFORMED || _name == MERGED)
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("Forbidden name.");
+      warningBox->setInformativeText("You are not allowed to use " + TRANSFORMED + " or " +
+				     MERGED + " as a name.");
+      warningBox->exec();
+      delete warningBox;
+      return;
+    }
   bool empty = false;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT name FROM relationship_types WHERE name = :name");
