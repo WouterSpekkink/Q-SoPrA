@@ -69,6 +69,7 @@ public:
   void setMassHidden(bool state);
   void setColor(const QColor &color);
   void setPenStyle(int penStyle);
+  void setAntialiasing(bool state);
   
   // Getters
   QGraphicsItem *getStart() const;
@@ -106,6 +107,7 @@ private:
   QPointF _controlPoint;
   bool _copy;
   bool _massHidden;
+  bool _antialiasing;
   int _penWidth;
   int _penStyle;
   int _height;

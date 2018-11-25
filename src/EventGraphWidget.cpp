@@ -152,6 +152,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   caseListWidget = new QListWidget(graphicsWidget);
   caseListWidget->setEnabled(false);
   
+  antialiasingCheckBox = new QCheckBox("Linkage antialiasing");
+  antialiasingCheckBox->setCheckState(Qt::Checked);
+  
   plotButton = new QPushButton(tr("Plot new"), this);
   addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
   addLinkageTypeButton->setEnabled(false);
@@ -250,6 +253,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
+  connect(antialiasingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(setAntialiasing()));
   connect(scene, SIGNAL(posChanged(IncidentNode *, qreal&)),
 	  this, SLOT(changePos(IncidentNode *, qreal&)));
   connect(scene, SIGNAL(posChanged(AbstractNode*, qreal&)),
@@ -493,6 +497,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addWidget(zoomLabel);
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
+  drawOptionsLeftLayout->addWidget(antialiasingCheckBox);
   zoomSlider->setMaximumWidth(100);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
@@ -659,6 +664,21 @@ void EventGraphWidget::checkCongruency()
 	}
       delete query;
       incongruencyLabel->setText("");
+    }
+}
+
+void EventGraphWidget::setAntialiasing()
+{
+  bool antialiasing = true;
+  if (antialiasingCheckBox->checkState() == Qt::Unchecked)
+    {
+      antialiasing = false;
+    }
+  QVectorIterator<Linkage*> it(_edgeVector);
+  while (it.hasNext())
+    {
+      Linkage *current = it.next();
+      current->setAntialiasing(antialiasing);
     }
 }
 

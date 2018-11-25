@@ -52,6 +52,7 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
   _penWidth = 1;
   _penStyle = 1;
   _massHidden = false;
+  _antialiasing = true;
 }
 
 QRectF Linkage::boundingRect() const
@@ -84,6 +85,7 @@ void Linkage::updatePosition()
 
 void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
+  painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
   calculate();
   if (line().length() > 0)
     {
@@ -362,4 +364,9 @@ void Linkage::setMassHidden(bool state)
 bool Linkage::isMassHidden()
 {
   return _massHidden;
+}
+
+void Linkage::setAntialiasing(bool state)
+{
+  _antialiasing = state;
 }

@@ -275,6 +275,7 @@ private slots:
   void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
   void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   bool eventFilter(QObject *object, QEvent *event);
+  void setAntialiasing();
   void finalBusiness();
   
 signals:
@@ -357,6 +358,7 @@ private:
   QPointer<QPushButton> moveModeDownButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
+  QPointer<QCheckBox> antialiasingCheckBox;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
