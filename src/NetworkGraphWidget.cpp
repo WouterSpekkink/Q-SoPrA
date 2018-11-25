@@ -508,6 +508,42 @@ NetworkGraphWidget::~NetworkGraphWidget()
   delete scene;
 }
 
+void NetworkGraphWidget::setOpenGL(bool state)
+{
+  if (state == true)
+    {
+      QPointer<QOpenGLWidget> openGL = new QOpenGLWidget(this);
+      QSurfaceFormat format;
+      format.setSamples(4);
+      format.setDepthBufferSize(24);
+      format.setStencilBufferSize(8);
+      openGL->setFormat(format);
+      view->setViewport(openGL);
+      view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    }
+  else
+    {
+      view->setViewport(new QWidget());
+    }
+}
+
+void NetworkGraphWidget::setAntialiasing(bool state)
+{
+  QVectorIterator<DirectedEdge*> it(_directedVector);
+  while (it.hasNext())
+    {
+      DirectedEdge *current = it.next();
+      current->setAntialiasing(state);
+    }
+  QVectorIterator<UndirectedEdge*> it2(_undirectedVector);
+  while (it2.hasNext())
+    {
+      UndirectedEdge *current = it2.next();
+      current->setAntialiasing(state);
+    }
+}
+
+
 void NetworkGraphWidget::checkCongruency() 
 {
   if (_networkNodeVector.size() > 0) 
@@ -4191,6 +4227,7 @@ void NetworkGraphWidget::plotNewGraph()
   updateEdges();
   checkCongruency();
   caseListWidget->setEnabled(true);
+  setVisibility();
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
   setGraphControls(true);
 }
@@ -4285,6 +4322,42 @@ void NetworkGraphWidget::removeRelationshipType()
       caseListWidget->setEnabled(false);
       setGraphControls(false);
     }
+  else
+    {
+      bool foundTransformed = false;
+      it.toFront();
+      it2.toFront();
+      while (it.hasNext()) 
+	{
+	  DirectedEdge *directed = it.next();
+	  if (directed->getType() == TRANSFORMED)
+	    { 
+	      foundTransformed = true;
+	      break;
+	    }
+	}
+      if (!foundTransformed)
+	{
+	  while (it2.hasNext()) 
+	    {
+	      UndirectedEdge *undirected = it2.next();
+	      if (undirected->getType() == TRANSFORMED)
+		{
+		  foundTransformed = true;
+		  break;
+		}
+	    }
+	}
+      if (!foundTransformed)
+	{
+	  lowerRangeDial->setEnabled(true);
+	  lowerRangeSpinBox->setEnabled(true);
+	  upperRangeDial->setEnabled(true);
+	  upperRangeSpinBox->setEnabled(true);
+	}
+    }
+  updateRangeControls();
+  updateWeightControls();
   setVisibility();
 }
 
@@ -6645,6 +6718,7 @@ void NetworkGraphWidget::setButtons()
 
 void NetworkGraphWidget::cleanUp() 
 {
+  _currentData.clear();
   scene->clearSelection();
   qDeleteAll(_directedVector);
   _directedVector.clear();
@@ -6671,6 +6745,7 @@ void NetworkGraphWidget::cleanUp()
   _maxOrder = 0;
   _maxWeight = 0;
   _selectedEntityName = "";
+  _selectedType = "";
   nameField->clear();
   descriptionField->clear();
   resetFont(attributesTree);

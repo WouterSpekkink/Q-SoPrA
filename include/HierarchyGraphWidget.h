@@ -82,6 +82,8 @@ public:
   void setEdges(QVector<Linkage*> edgeVector);
   void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
+  void setOpenGL(bool state);
+  void setAntialiasing(bool state);
 
   // Getters
   void getEdges();

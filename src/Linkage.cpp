@@ -38,6 +38,7 @@ http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 #include <QPen>
 #include <QPainter>
 #include "../include/Scene.h"
+#include <QStyleOptionGraphicsItem>
 
 Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphicsLineItem(parent)
 {
@@ -83,9 +84,12 @@ void Linkage::updatePosition()
   _strokePath = myPath;
 }
 
-void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
+void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
 {
   painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
+  painter->setClipping(true);
+  painter->setClipRect(option->exposedRect);
+  
   calculate();
   if (line().length() > 0)
     {
@@ -94,7 +98,7 @@ void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
       myPath.quadTo(_controlPoint, _ghostLine.p2());
       _strokePath = myPath;
       painter->setPen(QPen(_color, 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-      painter->setBrush(_color);
+      painter->setBrush(QBrush(_color, Qt::SolidPattern));
       painter->drawPolygon(_arrowHead);
       QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::SquareCap, Qt::MiterJoin);
       painter->strokePath(myPath, myPen);
@@ -279,7 +283,6 @@ void Linkage::calculate() {
 				     cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 				     cos(angle + Pi - Pi / 3) * arrowSize);
-  //  _newLine.setLength(_newLine.length() - 5);
   setLine(_newLine);
   _arrowHead.clear();
   _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;

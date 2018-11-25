@@ -52,6 +52,7 @@ DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
   _filtered = true;
   _massHidden = false;
   _comment = "";
+  _antialiasing = true;
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
@@ -99,6 +100,7 @@ void DirectedEdge::calculate()
 
 void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
+  painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
   setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
   painter->setPen(pen());
   painter->setBrush(_color);
@@ -233,3 +235,7 @@ QSet<int> DirectedEdge::getIncidents()
   return _incidents;
 }
 
+void DirectedEdge::setAntialiasing(bool state)
+{
+  _antialiasing = state;
+}

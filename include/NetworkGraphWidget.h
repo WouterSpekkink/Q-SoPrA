@@ -79,6 +79,10 @@ public:
   NetworkGraphWidget(QWidget *parent = 0);
   ~NetworkGraphWidget();
 
+  // Setters
+  void setOpenGL(bool state);
+  void setAntialiasing(bool state);
+  
   // Getters
   void getTypes();
   

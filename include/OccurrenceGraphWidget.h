@@ -77,7 +77,9 @@ public:
   ~OccurrenceGraphWidget();
 
   // Setters
-  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);			     
+  void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
+  void setOpenGL(bool state);
+  void setAntialiasing(bool state);
 
   // Other functions that need to be exposed
   bool attributesPresent();

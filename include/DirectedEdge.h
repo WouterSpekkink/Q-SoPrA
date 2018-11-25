@@ -55,7 +55,8 @@ public:
   void setIncidents(const QSet<int> &incidents);
   void insertIncidents(const QSet<int> &incidents);
   void insertIncident(const int &incident);
-
+  void setAntialiasing(bool state);
+  
   // Getters;
   QColor getColor();
   NetworkNode* getStart() const;
@@ -100,6 +101,7 @@ private:
   bool _filtered;
   bool _massHidden;
   qreal _penWidth;
+  bool _antialiasing;
 
   // Private data set
   QSet<int> _incidents;

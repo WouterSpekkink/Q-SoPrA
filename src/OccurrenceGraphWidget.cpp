@@ -303,6 +303,36 @@ OccurrenceGraphWidget::~OccurrenceGraphWidget()
   delete view;
 }
 
+
+void OccurrenceGraphWidget::setOpenGL(bool state)
+{
+  if (state == true)
+    {
+      QPointer<QOpenGLWidget> openGL = new QOpenGLWidget(this);
+      QSurfaceFormat format;
+      format.setSamples(4);
+      format.setDepthBufferSize(24);
+      format.setStencilBufferSize(8);
+      openGL->setFormat(format);
+      view->setViewport(openGL);
+      view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    }
+  else
+    {
+      view->setViewport(new QWidget());
+    }
+}
+
+void OccurrenceGraphWidget::setAntialiasing(bool state)
+{
+  QVectorIterator<Linkage*> it(_edgeVector);
+  while (it.hasNext())
+    {
+      Linkage *current = it.next();
+      current->setAntialiasing(state);
+    }
+}
+
 void OccurrenceGraphWidget::checkCongruency() 
 {
   qApp->setOverrideCursor(Qt::WaitCursor);

@@ -98,6 +98,8 @@ private slots:
   void exportToCsv();
   bool checkLineBreaks(std::string line);
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
+  void setOpenGL();
+  void setAntialiasing();
 
 protected:
   // Overrride event
@@ -130,6 +132,7 @@ private:
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
   QPointer<QMenu> transferMenu;
+  QPointer<QMenu> graphicsMenu;
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;
   QPointer<QAction> exportAct;
@@ -156,6 +159,8 @@ private:
   QPointer<QAction> importRelTypesAct;
   QPointer<QAction> exportEntityAttributesAct;
   QPointer<QAction> importEntityAttributesAct;
+  QPointer<QAction> setOpenGLAct;
+  QPointer<QAction> setAntialiasingAct;
 };
 
 #endif

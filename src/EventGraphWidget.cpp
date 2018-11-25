@@ -21,6 +21,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "../include/EventGraphWidget.h"
+#ifndef QT_NO_OPENGL
+#include <QtOpenGL>
+#include <QGL>
+#endif
 
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) 
 {
@@ -37,6 +41,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   view = new GraphicsView(scene);
   view->setDragMode(QGraphicsView::RubberBandDrag);
   view->setRubberBandSelectionMode(Qt::ContainsItemShape);
+  view->setRenderHint(QPainter::Antialiasing);
+  view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+  
   QRectF currentRect = this->scene->itemsBoundingRect();
   currentRect.setX(currentRect.x() - 50);
   currentRect.setY(currentRect.y() - 50);
@@ -44,8 +51,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
   scene->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
-  view->setRenderHint(QPainter::Antialiasing);
-  view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
   
   infoWidget = new QWidget(this);
   graphicsWidget = new QWidget(this);
@@ -152,9 +157,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   caseListWidget = new QListWidget(graphicsWidget);
   caseListWidget->setEnabled(false);
   
-  antialiasingCheckBox = new QCheckBox("Linkage antialiasing");
-  antialiasingCheckBox->setCheckState(Qt::Checked);
-  
   plotButton = new QPushButton(tr("Plot new"), this);
   addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
   addLinkageTypeButton->setEnabled(false);
@@ -253,7 +255,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
-  connect(antialiasingCheckBox, SIGNAL(stateChanged(int)), this, SLOT(setAntialiasing()));
   connect(scene, SIGNAL(posChanged(IncidentNode *, qreal&)),
 	  this, SLOT(changePos(IncidentNode *, qreal&)));
   connect(scene, SIGNAL(posChanged(AbstractNode*, qreal&)),
@@ -497,7 +498,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addWidget(zoomLabel);
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
-  drawOptionsLeftLayout->addWidget(antialiasingCheckBox);
   zoomSlider->setMaximumWidth(100);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
@@ -667,18 +667,34 @@ void EventGraphWidget::checkCongruency()
     }
 }
 
-void EventGraphWidget::setAntialiasing()
+void EventGraphWidget::setOpenGL(bool state)
 {
-  bool antialiasing = true;
-  if (antialiasingCheckBox->checkState() == Qt::Unchecked)
+  if (state == true)
     {
-      antialiasing = false;
+      QPointer<QOpenGLWidget> openGL = new QOpenGLWidget(this);
+      QSurfaceFormat format;
+      format.setSamples(4);
+      format.setDepthBufferSize(24);
+      format.setStencilBufferSize(8);
+      //  format.setVersion(3, 2);
+      //  format.setProfile(QSurfaceFormat::CoreProfile);
+      openGL->setFormat(format);
+      view->setViewport(openGL);
+      view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     }
+  else
+    {
+      view->setViewport(new QWidget());
+    }
+}
+
+void EventGraphWidget::setAntialiasing(bool state)
+{
   QVectorIterator<Linkage*> it(_edgeVector);
   while (it.hasNext())
     {
       Linkage *current = it.next();
-      current->setAntialiasing(antialiasing);
+      current->setAntialiasing(state);
     }
 }
 

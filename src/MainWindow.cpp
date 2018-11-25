@@ -328,6 +328,21 @@ void MainWindow::createActions()
   importEntityAttributesAct->setStatusTip("Import entity coding tree");
   connect(importEntityAttributesAct, SIGNAL(triggered()),
 	  this, SLOT(importEntityAttributes()));
+
+  setOpenGLAct = new QAction(tr("&Activate OpenGL"), this);
+  setOpenGLAct->setStatusTip("Activate OpenGL rendering");
+  setOpenGLAct->setCheckable(true);
+  setOpenGLAct->setEnabled(false);
+  setOpenGLAct->setChecked(false);
+#ifndef QT_NO_OPENGL
+  setOpenGLAct->setEnabled(true);
+  connect(setOpenGLAct, SIGNAL(triggered()), this, SLOT(setOpenGL()));
+#endif
+  setAntialiasingAct = new QAction(tr("&Activate edge antialiasing"), this);
+  setAntialiasingAct->setStatusTip("Activate antialiasing of edges in visualisations");
+  setAntialiasingAct->setCheckable(true);
+  setAntialiasingAct->setChecked(true);
+  connect(setAntialiasingAct, SIGNAL(triggered()), this, SLOT(setAntialiasing()));
 }
 
 void MainWindow::createMenus() 
@@ -369,6 +384,10 @@ void MainWindow::createMenus()
   transferMenu->addAction(exportEntityAttributesAct);
   transferMenu->addAction(importEntityAttributesAct);
 
+  graphicsMenu = menuBar->addMenu("Graphics");
+  graphicsMenu->addAction(setOpenGLAct);
+  graphicsMenu->addAction(setAntialiasingAct);
+  
   setMenuBar(menuBar);
 }
 
@@ -1723,4 +1742,38 @@ void MainWindow::showMenus(bool status)
   graphMenu->menuAction()->setVisible(status);
   tableMenu->menuAction()->setVisible(status);
   transferMenu->menuAction()->setVisible(status);
+}
+
+void MainWindow::setOpenGL()
+{
+  bool openGL = false;
+  if ((graphicsMenu->actions()[0])->isChecked())
+    {
+      openGL = true;
+    }
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
+  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
+  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  egw->setOpenGL(openGL);
+  ngw->setOpenGL(openGL);
+  ogw->setOpenGL(openGL);
+  hgw->setOpenGL(openGL);
+}
+
+void MainWindow::setAntialiasing()
+{
+  bool antialiasing = false;
+  if ((graphicsMenu->actions()[1])->isChecked())
+    {
+      antialiasing = true;
+    }
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
+  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
+  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  egw->setAntialiasing(antialiasing);
+  ngw->setAntialiasing(antialiasing);
+  ogw->setAntialiasing(antialiasing);
+  hgw->setAntialiasing(antialiasing);
 }

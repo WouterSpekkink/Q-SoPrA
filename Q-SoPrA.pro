@@ -6,7 +6,7 @@ TEMPLATE = app
 TARGET = Q-SoPrA
 INCLUDEPATH += .
 CONFIG += c++11
-QT += widgets sql svg
+QT += widgets sql svg opengl
 
 # Input
 HEADERS += include/AbstractionDialog.h \
