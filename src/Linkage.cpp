@@ -87,8 +87,6 @@ void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
   calculate();
   if (line().length() > 0)
     {
-      _arrowHead.clear();
-      _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
       QPainterPath myPath;
       myPath.moveTo(_newLine.p1());
       myPath.quadTo(_controlPoint, _ghostLine.p2());
@@ -281,6 +279,9 @@ void Linkage::calculate() {
 				     cos(angle + Pi - Pi / 3) * arrowSize);
   //  _newLine.setLength(_newLine.length() - 5);
   setLine(_newLine);
+  _arrowHead.clear();
+  _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
+  _ghostLine.setLength(_ghostLine.length() - 2);
 }
 
 void Linkage::setColor(const QColor &color)
