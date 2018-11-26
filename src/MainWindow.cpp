@@ -348,10 +348,32 @@ void MainWindow::createActions()
 void MainWindow::createMenus() 
 {
   menuBar = new QMenuBar(this);
-  fileMenu = menuBar->addMenu("File");
-  fileMenu->addAction(importAct);
-  fileMenu->addAction(exportAct);
-  fileMenu->addAction(exitAct);
+
+  // We create the graphics and transfer menus first,
+  // because we want to include them in the options menu.
+  graphicsMenu = new QMenu("Graphics");
+  graphicsMenu->addAction(setOpenGLAct);
+  graphicsMenu->addAction(setAntialiasingAct);
+
+  transferDataMenu = new QMenu("Import/Export data");
+  transferDataMenu->addAction(importAct);
+  transferDataMenu->addAction(exportAct);
+  
+  transferCodesMenu = new QMenu("Import/Export codes");
+  transferCodesMenu->addAction(exportIncidentAttributesAct);
+  transferCodesMenu->addAction(importIncidentAttributesAct);
+  transferCodesMenu->addAction(exportEntitiesAct);
+  transferCodesMenu->addAction(importEntitiesAct);
+  transferCodesMenu->addAction(exportRelTypesAct);
+  transferCodesMenu->addAction(importRelTypesAct);
+  transferCodesMenu->addAction(exportEntityAttributesAct);
+  transferCodesMenu->addAction(importEntityAttributesAct);
+  
+  optionsMenu = menuBar->addMenu("Options");
+  optionsMenu->addMenu(transferDataMenu);
+  optionsMenu->addMenu(transferCodesMenu);
+  optionsMenu->addMenu(graphicsMenu);
+  optionsMenu->addAction(exitAct);
 
   toolMenu = menuBar->addMenu("Tools");
   toolMenu->addAction(dataViewAct);
@@ -374,20 +396,6 @@ void MainWindow::createMenus()
   tableMenu->addAction(missingAttributesTableViewAct);
   tableMenu->addAction(missingRelationshipsTableViewAct);
 
-  transferMenu = menuBar->addMenu("Transfer");
-  transferMenu->addAction(exportIncidentAttributesAct);
-  transferMenu->addAction(importIncidentAttributesAct);
-  transferMenu->addAction(exportEntitiesAct);
-  transferMenu->addAction(importEntitiesAct);
-  transferMenu->addAction(exportRelTypesAct);
-  transferMenu->addAction(importRelTypesAct);
-  transferMenu->addAction(exportEntityAttributesAct);
-  transferMenu->addAction(importEntityAttributesAct);
-
-  graphicsMenu = menuBar->addMenu("Graphics");
-  graphicsMenu->addAction(setOpenGLAct);
-  graphicsMenu->addAction(setAntialiasingAct);
-  
   setMenuBar(menuBar);
 }
 
@@ -1737,11 +1745,13 @@ void MainWindow::importEntityAttributes()
 
 void MainWindow::showMenus(bool status) 
 {
-  fileMenu->menuAction()->setVisible(status);
+  optionsMenu->menuAction()->setVisible(status);
+  graphicsMenu->menuAction()->setVisible(status);
+  transferDataMenu->menuAction()->setVisible(status);
+  transferCodesMenu->menuAction()->setVisible(status);
   toolMenu->menuAction()->setVisible(status);
   graphMenu->menuAction()->setVisible(status);
   tableMenu->menuAction()->setVisible(status);
-  transferMenu->menuAction()->setVisible(status);
 }
 
 void MainWindow::setOpenGL()

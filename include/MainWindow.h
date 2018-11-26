@@ -127,12 +127,13 @@ private:
 
   // Menus and actions
   QPointer<QMenuBar> menuBar;
-  QPointer<QMenu> fileMenu;
+  QPointer<QMenu> optionsMenu;
+  QPointer<QMenu> graphicsMenu;
+  QPointer<QMenu> transferCodesMenu;
+  QPointer<QMenu> transferDataMenu;
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
-  QPointer<QMenu> transferMenu;
-  QPointer<QMenu> graphicsMenu;
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;
   QPointer<QAction> exportAct;
