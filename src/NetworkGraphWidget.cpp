@@ -519,11 +519,17 @@ void NetworkGraphWidget::setOpenGL(bool state)
       format.setStencilBufferSize(8);
       openGL->setFormat(format);
       view->setViewport(openGL);
+      view->viewport()->installEventFilter(this);
       view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+      view->setScene(scene);
+      view->setDragMode(QGraphicsView::RubberBandDrag);
     }
   else
     {
       view->setViewport(new QWidget());
+      view->viewport()->installEventFilter(this);
+      view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+      view->setDragMode(QGraphicsView::RubberBandDrag);
     }
 }
 

@@ -338,11 +338,14 @@ void HierarchyGraphWidget::setOpenGL(bool state)
       format.setStencilBufferSize(8);
       openGL->setFormat(format);
       view->setViewport(openGL);
+      view->viewport()->installEventFilter(this);
       view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     }
   else
     {
       view->setViewport(new QWidget());
+      view->viewport()->installEventFilter(this);
+      view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     }
 }
 

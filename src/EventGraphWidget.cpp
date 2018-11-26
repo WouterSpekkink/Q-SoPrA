@@ -676,15 +676,17 @@ void EventGraphWidget::setOpenGL(bool state)
       format.setSamples(4);
       format.setDepthBufferSize(24);
       format.setStencilBufferSize(8);
-      //  format.setVersion(3, 2);
-      //  format.setProfile(QSurfaceFormat::CoreProfile);
       openGL->setFormat(format);
       view->setViewport(openGL);
       view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+      view->viewport()->installEventFilter(this);
+      view->setScene(scene);
     }
   else
     {
       view->setViewport(new QWidget());
+      view->viewport()->installEventFilter(this);
+      view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
     }
 }
 
