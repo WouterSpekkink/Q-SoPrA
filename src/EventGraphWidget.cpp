@@ -7692,8 +7692,8 @@ void EventGraphWidget::exportTransitionMatrix()
   exportDialog->exec();
   if (exportDialog->getExitStatus() == 0) 
     {
-      bool isMode = exportDialog->isMode();
       bool isProb = exportDialog->isProbability();
+      bool ignoreDuplicates = exportDialog->ignoreDuplicates();
       // We make a vector of vectors for our matrix.
       QVector<QVector<int>> matrix;
       // We make a vector to hold the row and column names of our matrix.
@@ -7748,84 +7748,24 @@ void EventGraphWidget::exportTransitionMatrix()
 	  // all events.
 	  QVector<int> incidents;
 	  QVector<QString> attributeVector; 
-	  if (!isMode)
-	    {
-	      attributeVector.push_back(rowMode);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT name FROM entities WHERE name = :name");
-	      query->bindValue(":name", rowMode);
-	      query->exec();
-	      query->first();
-	      bool entity = false;
-	      if (!query->isNull(0)) 
-		{
-		  entity = true;
-		}
-	      findChildren(rowMode, &attributeVector, entity);
-
-	      QVectorIterator<QString> attIt(attributeVector);
-	      while (attIt.hasNext()) 
-		{
-		  QString attribute = attIt.next();
-		  query->prepare("SELECT incident FROM attributes_to_incidents "
-				 "WHERE attribute = :attribute");
-		  query->bindValue(":attribute", attribute);
-		  query->exec();
-		  while (query->next())
-		    {
-		      incidents.push_back(query->value(0).toInt());
-		    }
-		}
-	      delete query;
-	    }
 	  QVectorIterator<QGraphicsItem*> allIt(allEvents);
 	  while (allIt.hasNext())
 	    {
 	      QGraphicsItem* currentIncidentNode = allIt.next();
 	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(currentIncidentNode);
 	      AbstractNode *abstractNodeItem = qgraphicsitem_cast<AbstractNode*>(currentIncidentNode);
-	      if (isMode) 
+	      if (incidentNode) 
 		{
-		  if (incidentNode) 
+		  if (incidentNode->getMode() == rowMode) 
 		    {
-		      if (incidentNode->getMode() == rowMode) 
-			{
-			  occurrence++;
-			}
-		    }
-		  else if (abstractNodeItem) 
-		    {
-		      if (abstractNodeItem->getMode() == rowMode) 
-			{
-			  occurrence++;
-			}
+		      occurrence++;
 		    }
 		}
-	      else if (!isMode) 
+	      else if (abstractNodeItem) 
 		{
-		  if (incidentNode) 
+		  if (abstractNodeItem->getMode() == rowMode) 
 		    {
-		      if (incidents.contains(incidentNode->getId())) 
-			{
-			  occurrence++;
-			}
-		    }
-		  else if (abstractNodeItem) 
-		    {
-		      bool found = false;
-		      QVectorIterator<QString> attIt(attributeVector);
-		      while (attIt.hasNext()) 
-			{
-			  QString attribute = attIt.next();
-			  if (abstractNodeItem->getAttributes().contains(attribute)) 
-			    {
-			      found = true;
-			    }
-			}
-		      if (found) 
-			{
-			  occurrence++;
-			}
+		      occurrence++;
 		    }
 		}
 	    }
@@ -7889,6 +7829,7 @@ void EventGraphWidget::exportTransitionMatrix()
 		      colIncidents.insert(query->value(0).toInt());
 		    }
 		}
+	      QMap<QGraphicsItem*, QSet<QString>> observedEnds;
 	      while (it.hasNext()) 
 		{
 		  Linkage *edge = it.next();
@@ -7901,78 +7842,38 @@ void EventGraphWidget::exportTransitionMatrix()
 			  AbstractNode *startAbstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
 			  AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
 			  // If we are only counting modes.
-			  if (isMode) 
+			  QString startMode = "";
+			  QString endMode = "";
+			  if (startIncidentNode) 
 			    {
-			      QString startMode = "";
-			      QString endMode = "";
-			      if (startIncidentNode) 
-				{
-				  startMode = startIncidentNode->getMode();
-				}
-			      else if (startAbstractNode) 
-				{
-				  startMode = startAbstractNode->getMode();
-				}
-			      if (endIncidentNode) 
-				{
-				  endMode = endIncidentNode->getMode(); 
-				}
-			      else if (endAbstractNode) 
-				{
-				  endMode = endAbstractNode->getMode();
-				}
-			      if (startMode == rowMode && endMode == colMode) 
-				{
-				  transitions++;
-				  count++;
-				}
+			      startMode = startIncidentNode->getMode();
 			    }
-			  // If we are counting all occurrences of variables.
-			  else if (!isMode) 
+			  else if (startAbstractNode) 
 			    {
-			      bool rowFound = false;
-			      bool colFound = false;
-			      if (startIncidentNode) 
+			      startMode = startAbstractNode->getMode();
+			    }
+			  if (endIncidentNode) 
+			    {
+			      endMode = endIncidentNode->getMode();
+			    }
+			  else if (endAbstractNode) 
+			    {
+			      endMode = endAbstractNode->getMode();
+			    }
+			  if (startMode == rowMode && endMode == colMode) 
+			    {
+			      if (ignoreDuplicates)
 				{
-				  if (rowIncidents.contains(startIncidentNode->getId()))
+				  QSet<QString> currentModes = observedEnds.value(edge->getStart());
+				  if (!currentModes.contains(endMode))
 				    {
-				      rowFound = true;
+				      transitions++;
+				      count++;
+				      currentModes.insert(endMode);
+				      observedEnds.insert(edge->getStart(), currentModes);
 				    }
 				}
-			      else if (startAbstractNode) 
-				{
-				  QSetIterator<QString> attIt(startAbstractNode->getAttributes());
-				  while(attIt.hasNext()) 
-				    {
-				      QString currentAttribute = attIt.next();
-				      if (rowVector.contains(currentAttribute)) 
-					{
-					  rowFound = true;
-					  break;
-					}
-				    }
-				}
-			      if (endIncidentNode) 
-				{
-				  if (colIncidents.contains(endIncidentNode->getId()))
-				    {
-				      colFound = true;
-				    }
-				}
-			      else if (endAbstractNode) 
-				{
-				  QSetIterator<QString> attIt(endAbstractNode->getAttributes());
-				  while(attIt.hasNext()) 
-				    {
-				      QString currentAttribute = attIt.next();
-				      if (colVector.contains(currentAttribute)) 
-					{
-					  colFound = true;
-					  break;
-					}
-				    }
-				}
-			      if (rowFound && colFound) 
+			      else
 				{
 				  transitions++;
 				  count++;

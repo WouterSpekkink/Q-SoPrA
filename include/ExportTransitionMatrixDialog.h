@@ -44,31 +44,29 @@ public:
   ~ExportTransitionMatrixDialog() {};
 
   // Getters
-  bool isMode();
   bool isProbability();
   int getExitStatus();
-		      
+  bool ignoreDuplicates();
+		     
 private slots:
   // Private member functions
-  void setModes();
-  void setAttributes();
   void setRaw();
   void setProb();
+  void setIgnoreDuplicates();
   void cancelAndClose();
   void saveAndClose();
 
 private:
   // Interface elements
-  QPointer<QLabel> typeLabel;
   QPointer<QLabel> probLabel;
-  QPointer<QPushButton> modesButton;
-  QPointer<QPushButton> attributesButton;
   QPointer<QPushButton> rawButton;
   QPointer<QPushButton> probButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
-
+  QPointer<QCheckBox> ignoreDuplicatesCheckBox;
+  
   // Private variables
+  bool _ignoreDuplicates;
   int _exitStatus;
 };
 
