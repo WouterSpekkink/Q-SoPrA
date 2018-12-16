@@ -611,6 +611,7 @@ void NetworkGraphWidget::checkCongruency()
       if (tempNames.size() != _networkNodeVector.size()) 
 	{
 	  incongruencyLabel->setText("Incongruency detected");
+	  delete query;
 	  return;
 	}
       for (QVector<NetworkNode*>::size_type i = 0; i != _networkNodeVector.size(); i++) 
@@ -619,11 +620,13 @@ void NetworkGraphWidget::checkCongruency()
 	  if (current->getName() != tempNames[i]) 
 	    {
 	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
 	      return;
 	    }
 	  if (current->getDescription() != tempDescs[i]) 
 	    {
 	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
 	      return;
 	    }
 	}
@@ -652,7 +655,42 @@ void NetworkGraphWidget::checkCongruency()
       if (count != originalRelationships) 
 	{
 	  incongruencyLabel->setText("Incongruency detected");
+	  delete query;
 	  return;
+	}
+            // Let's check for congruence of cases
+      QVector<QString> currentVector;
+      for (int i = 0; i != caseListWidget->count(); i++)
+	{
+	  QListWidgetItem *item = caseListWidget->item(i);
+	  currentVector.push_back(item->text());
+	}
+      QVector<QString> caseVector;
+      query->exec("SELECT name FROM cases");
+      while (query->next()) 
+	{
+	  QString currentCase = query->value(0).toString();
+	  caseVector.push_back(currentCase);
+	}
+      QVectorIterator<QString> cit(caseVector);
+      while (cit.hasNext())
+	{
+	  if (!currentVector.contains(cit.next()))
+	    {
+	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
+	      return;
+	    }
+	}
+      QVectorIterator<QString> cit2(currentVector);
+      while (cit2.hasNext())
+	{
+	  if (!caseVector.contains(cit2.next()))
+	    {
+	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
+	      return;
+	    }
 	}
       delete query;
       incongruencyLabel->setText("");
@@ -4910,6 +4948,11 @@ void NetworkGraphWidget::saveCurrentPlot()
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_ng_plots_cases
+	  query->prepare("DELETE FROM saved_ng_plots_cases "
+			"WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
@@ -5541,6 +5584,34 @@ void NetworkGraphWidget::saveCurrentPlot()
       query->bindValue(":weighton", weighton);
       query->bindValue(":labelson", labelson);
       query->exec();
+          saveProgress = new ProgressBar(0, 1, caseListWidget->count());
+      saveProgress->setWindowTitle("Saving cases");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_ng_plots_cases "
+		     "(plot, casename, checked) "
+		     "VALUES (:plot, :casename, :checked)");
+      for (int i = 0; i != caseListWidget->count(); i++) 
+	{
+	  QListWidgetItem *item = caseListWidget->item(i);
+	  QString casename = item->text();
+	  int checked = 0;
+	  if (item->checkState() == Qt::Checked)
+	    {
+	      checked = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":casename", casename);
+	  query->bindValue(":checked", checked);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
       delete query;
       QSqlDatabase::database().commit();
     }
@@ -6137,6 +6208,27 @@ void NetworkGraphWidget::seePlots()
 	{
 	  _labelsShown = true;
 	}
+      query->prepare("SELECT casename, checked "
+		     "FROM saved_ng_plots_cases "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString casename = query->value(0).toString();
+	  int checked = query->value(1).toInt();
+	  QListWidgetItem *item = new QListWidgetItem(casename, caseListWidget);
+	  item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+	  if (checked == 1)
+	    {
+	      item->setCheckState(Qt::Checked);
+	    }
+	  else
+	    {
+	      item->setCheckState(Qt::Unchecked);
+	    }
+	}
+      caseListWidget->setEnabled(true);
       // Now let's do the final processing
       checkCongruency();
       setVisibility();
@@ -6214,7 +6306,10 @@ void NetworkGraphWidget::seePlots()
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
-
+      // saved_ng_plots_cases
+      query->prepare("DELETE FROM saved_ng_plots_cases "
+		     "WHERE plot = :plot");
+      query->exec();
       delete query;
       seePlots();
     }
@@ -6745,6 +6840,7 @@ void NetworkGraphWidget::cleanUp()
   scene->clear();
   nodeListWidget->setRowCount(0);
   edgeListWidget->setRowCount(0);
+  caseListWidget->clear();
   _presentTypes.clear();
   _checkedCases.clear();
   _minOrder = 0;

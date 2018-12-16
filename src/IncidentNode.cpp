@@ -31,11 +31,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 IncidentNode::IncidentNode(int width,
-		     QString toolTip,
-		     QPointF originalPosition,
-		     int id,
-		     int order,
-		     QGraphicsItem *parent)
+			   QString toolTip,
+			   QPointF originalPosition,
+			   int id,
+			   int order,
+			   QGraphicsItem *parent)
   : QGraphicsItem(parent) 
 {
   _color = QColor(255, 255, 255);

@@ -609,6 +609,41 @@ void OccurrenceGraphWidget::checkCongruency()
       delete query2;
       QSqlDatabase::database().commit();
     }
+  QSqlQuery *query = new QSqlQuery;      
+  // Let's check for congruence of cases
+  QVector<QString> currentVector;
+  for (int i = 0; i != caseListWidget->count(); i++)
+    {
+      QListWidgetItem *item = caseListWidget->item(i);
+      currentVector.push_back(item->text());
+    }
+  QVector<QString> caseVector;
+  query->exec("SELECT name FROM cases");
+  while (query->next()) 
+    {
+      QString currentCase = query->value(0).toString();
+      caseVector.push_back(currentCase);
+	}
+  QVectorIterator<QString> cit(caseVector);
+  while (cit.hasNext())
+    {
+      if (!currentVector.contains(cit.next()))
+	{
+	  incongruencyLabel->setText("Incongruency detected");
+	  delete query;
+	  return;
+	}
+    }
+  QVectorIterator<QString> cit2(currentVector);
+  while (cit2.hasNext())
+    {
+      if (!caseVector.contains(cit2.next()))
+	{
+	  incongruencyLabel->setText("Incongruency detected");
+	  delete query;
+	  return;
+	}
+    }
   incongruencyLabel->setText("");
   qApp->restoreOverrideCursor();
   qApp->processEvents();
@@ -3375,6 +3410,11 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_og_plots_cases
+	  query->prepare("DELETE FROM saved_og_plots_cases "
+			 "WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
@@ -3856,6 +3896,33 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, caseListWidget->count());
+      saveProgress->setWindowTitle("Saving cases");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_og_plots_cases "
+		     "(plot, casename, checked) "
+		     "VALUES (:plot, :casename, :checked)");
+      for (int i = 0; i != caseListWidget->count(); i++) 
+	{
+	  QListWidgetItem *item = caseListWidget->item(i);
+	  QString casename = item->text();
+	  int checked = 0;
+	  if (item->checkState() == Qt::Checked)
+	    {
+	      checked = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":casename", casename);
+	  query->bindValue(":checked", checked);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
       plotLabel->setText(name);
       changeLabel->setText("");
       delete saveProgress;
@@ -4225,6 +4292,27 @@ void OccurrenceGraphWidget::seePlots()
 	  newRect->setPenStyle(penstyle);
 	  newRect->setZValue(zValue);
 	}
+      query->prepare("SELECT casename, checked "
+		     "FROM saved_og_plots_cases "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString casename = query->value(0).toString();
+	  int checked = query->value(1).toInt();
+	  QListWidgetItem *item = new QListWidgetItem(casename, caseListWidget);
+	  item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+	  if (checked == 1)
+	    {
+	      item->setCheckState(Qt::Checked);
+	    }
+	  else
+	    {
+	      item->setCheckState(Qt::Unchecked);
+	    }
+	}
+      caseListWidget->setEnabled(true);
       _distance = 70;
       plotLabel->setText(plot);
       changeLabel->setText("");
@@ -4281,6 +4369,11 @@ void OccurrenceGraphWidget::seePlots()
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
+      // saved_og_plots_cases
+      query->prepare("DELETE FROM saved_og_plots_cases "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
       delete query;
       seePlots();
     }
@@ -4314,6 +4407,7 @@ void OccurrenceGraphWidget::cleanUp()
   _rectVector.clear();
   attributeListWidget->setRowCount(0);
   relationshipListWidget->setRowCount(0);
+  caseListWidget->clear();
   _presentAttributes.clear();
   _presentRelationships.clear();
   _checkedCases.clear();

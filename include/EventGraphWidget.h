@@ -163,6 +163,8 @@ private slots:
   void decreaseDistance();
   void expandGraph();
   void contractGraph();
+  void contractCurrentGraph();
+  void restorePositions();
   void processMoveItems(QGraphicsItem* item, QPointF pos);
   void setPlotButtons();
   void getLinkageDetails();
@@ -359,6 +361,7 @@ private:
   QPointer<QPushButton> moveModeDownButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
+  QPointer<QPushButton> contractCurrentGraphButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
@@ -386,6 +389,7 @@ private:
   int _selectedIncident;
   bool _labelsVisible;
   bool _commentBool;
+  bool _contracted;
 
   // Private data vectors
   QVector<IncidentNode*> _incidentNodeVector;
@@ -401,6 +405,9 @@ private:
   QVector<RectObject*> _rectVector;
   QVector<QString> _presentTypes;
   QVector<QString> _checkedCases;
+
+  // Private map
+  QMap<QGraphicsItem*, QPointF> _contractedMap;
   
   // Pointers to other widgets
   // Do not delete

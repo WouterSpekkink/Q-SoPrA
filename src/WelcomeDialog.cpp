@@ -190,19 +190,20 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "coder text, "
+		      "distance real, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
-	  query->exec("CREATE TABLE saved_eg_plots_incident_nodes " // We'll get information from incidents
+	  query->exec("CREATE TABLE saved_eg_plots_incident_nodes " 
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "incident integer, "
 		      "ch_order integer, "
 		      "width integer, "
-		      "curxpos real, " // Current x position (scenePos)
-		      "curypos real, " // Current y position (scenePos)
-		      "orixpos real, " // Original x position
-		      "oriypos real, " // Original y position
+		      "curxpos real, " 
+		      "curypos real, " 
+		      "orixpos real, " 
+		      "oriypos real, " 
 		      "dislodged integer, "
 		      "mode text, "
 		      "red integer,"
@@ -383,6 +384,18 @@ void WelcomeDialog::newDatabase()
 		      "fillgreen integer, "
 		      "fillblue integer, "
 		      "fillalpha integer)");
+	  query->exec("CREATE TABLE saved_eg_plots_contraction "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "nodeid integer, "
+		      "abstract integer, "
+		      "xpos real, "
+		      "ypos real)");
+	  query->exec("CREATE TABLE saved_eg_plots_cases "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "casename text, "
+		      "checked integer)");
 	  query->exec("CREATE TABLE saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -565,6 +578,11 @@ void WelcomeDialog::newDatabase()
 		      "weight integer, "
 		      "weighton integer, "
 		      "labelson integer)");
+	  query->exec("CREATE TABLE saved_ng_plots_cases "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "casename, "
+		      "checked)");
 	  query->exec("CREATE TABLE saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -578,17 +596,17 @@ void WelcomeDialog::newDatabase()
 		      "ch_order integer, "
 		      "attribute text, "
 		      "width integer, "
-		      "curxpos real, " // Current x position (scenePos)
-		      "curypos real, " // Current y position (scenePos)
-		      "orixpos real, " // Original x position
-		      "oriypos real, " // Original y position
+		      "curxpos real, " 
+		      "curypos real, " 
+		      "orixpos real, " 
+		      "oriypos real, " 
 		      "red integer, "
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer, "
 		      "perm integer, "
-		      "relationship integer)"); // 'Fake' boolean to check whether this is a relationship
+		      "relationship integer)"); 
 	  query->exec("CREATE TABLE saved_og_plots_occurrence_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -695,6 +713,11 @@ void WelcomeDialog::newDatabase()
 		      "fillgreen integer, "
 		      "fillblue integer, "
 		      "fillalpha integer)");
+	  query->exec("CREATE TABLE saved_og_plots_cases "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "casename text, "
+		      "checked integer)");
 	  query->exec("CREATE TABLE cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
@@ -854,6 +877,7 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "coder text, "
+		      "distance real, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -1047,6 +1071,18 @@ void WelcomeDialog::openDatabase()
 		      "fillgreen integer, "
 		      "fillblue integer, "
 		      "fillalpha integer)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_contraction "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "nodeid integer, "
+		      "abstract integer, "
+		      "xpos real, "
+		      "ypos real)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_cases "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "casename text, "
+		      "checked integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1229,6 +1265,11 @@ void WelcomeDialog::openDatabase()
 		      "weight integer, "
 		      "weighton integer, "
 		      "labelson integer)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_cases "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "casename, "
+		      "checked)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1359,6 +1400,11 @@ void WelcomeDialog::openDatabase()
 		      "fillgreen integer, "
 		      "fillblue integer, "
 		      "fillalpha integer)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_cases "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "casename text, "
+		      "checked integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "

@@ -36,6 +36,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _distance = 0;
   _vectorPos = 0;
   _labelsVisible = true;
+  _contracted = false;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -217,6 +218,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   showLinkageTypeButton->setEnabled(false);
   removeLinkageTypeButton = new QPushButton(tr("Remove from plot"), legendWidget);
   removeLinkageTypeButton->setEnabled(false);
+  contractCurrentGraphButton = new QPushButton(tr("Contract current graph"), this);
   
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -294,6 +296,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
   connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
+  connect(contractCurrentGraphButton, SIGNAL(clicked()), this, SLOT(contractCurrentGraph()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -499,6 +502,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
+  drawOptionsLeftLayout->addWidget(contractCurrentGraphButton);
+  contractCurrentGraphButton->setMaximumWidth(contractCurrentGraphButton->sizeHint().width());
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -561,6 +566,7 @@ void EventGraphWidget::checkCongruency()
       if (temp.size() != _incidentNodeVector.size()) 
 	{
 	  incongruencyLabel->setText("Incongruency detected");
+	  delete query;
 	  return;
 	}
       for (QVector<IncidentNode *>::size_type i = 0; i != _incidentNodeVector.size(); i++) 
@@ -569,6 +575,7 @@ void EventGraphWidget::checkCongruency()
 	  if (current->getId() != temp[i]) 
 	    {
 	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
 	      return;
 	    }
 	}
@@ -624,6 +631,7 @@ void EventGraphWidget::checkCongruency()
 		  if (!found) 
 		    {
 		      incongruencyLabel->setText("Incongruency detected");
+		      delete query;
 		      return;
 		    }
 		}
@@ -658,8 +666,43 @@ void EventGraphWidget::checkCongruency()
 	      if (!found) 
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  delete query;
 		  return;
 		}
+	    }
+	}
+      // Let's check for congruence of cases
+      QVector<QString> currentVector;
+      for (int i = 0; i != caseListWidget->count(); i++)
+	{
+	  QListWidgetItem *item = caseListWidget->item(i);
+	  currentVector.push_back(item->text());
+	}
+      QVector<QString> caseVector;
+      query->exec("SELECT name FROM cases");
+      while (query->next()) 
+	{
+	  QString currentCase = query->value(0).toString();
+	  caseVector.push_back(currentCase);
+	}
+      QVectorIterator<QString> cit(caseVector);
+      while (cit.hasNext())
+	{
+	  if (!currentVector.contains(cit.next()))
+	    {
+	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
+	      return;
+	    }
+	}
+      QVectorIterator<QString> cit2(currentVector);
+      while (cit2.hasNext())
+	{
+	  if (!caseVector.contains(cit2.next()))
+	    {
+	      incongruencyLabel->setText("Incongruency detected");
+	      delete query;
+	      return;
 	    }
 	}
       delete query;
@@ -811,12 +854,14 @@ void EventGraphWidget::setGraphControls(bool status)
   zoomSlider->setEnabled(status);
   expandButton->setEnabled(status);
   contractButton->setEnabled(status);
+  contractCurrentGraphButton->setEnabled(status);
   increaseDistanceButton->setEnabled(status);
   decreaseDistanceButton->setEnabled(status);
 }
 
 void EventGraphWidget::updateCases() 
 {
+  restorePositions();
   caseListWidget->clear();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT name FROM cases");
@@ -831,6 +876,10 @@ void EventGraphWidget::updateCases()
 
 void EventGraphWidget::checkCases() 
 {
+  if (_contracted)
+    {
+      restorePositions();
+    }
   for (int i = 0; i != caseListWidget->count(); i++) 
     {
       QListWidgetItem *item = caseListWidget->item(i);
@@ -2681,11 +2730,11 @@ void EventGraphWidget::getIncidents()
 {
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT ch_order, description FROM incidents ORDER BY ch_order");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
   while (query->next()) 
     {
       int order = query->value(0).toInt();
-      QSqlQuery *query2 = new QSqlQuery;
-      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
       query2->bindValue(":order", order);
       query2->exec();
       query2->first();
@@ -2696,9 +2745,9 @@ void EventGraphWidget::getIncidents()
       IncidentNode *currentItem = new IncidentNode(40, toolTip, position, id, order);
       currentItem->setPos(currentItem->getOriginalPos());
       _incidentNodeVector.push_back(currentItem);
-      delete query2;
     }
   delete query;
+  delete query2;
 }
 
 void EventGraphWidget::plotIncidents() 
@@ -2717,6 +2766,13 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM linkages "
 		 "WHERE coder = :coder AND type = :type");
+  QSqlQuery *query2 =  new QSqlQuery;
+  query2->prepare("SELECT ch_order from incidents WHERE id = :id");
+  QSqlQuery *query3 =  new QSqlQuery;
+  query3->prepare("SELECT ch_order from incidents WHERE id = :id");
+  QSqlQuery *query4 =  new QSqlQuery;
+  query4->prepare("SELECT comment, coder FROM linkage_comments "
+		  "WHERE tail = :tail AND head = :head AND type = :type");
   query->bindValue(":coder", coder);
   query->bindValue(":type", type);
   query->exec();
@@ -2724,31 +2780,26 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
     {
       int tail = query->value(0).toInt();
       int head = query->value(1).toInt();
-      QSqlQuery *query2 =  new QSqlQuery;
-      query2->prepare("SELECT ch_order from incidents WHERE id = :id");
       query2->bindValue(":id", tail);
       query2->exec();
       query2->first();
       int tailOrder = query2->value(0).toInt();
-      query2->prepare("SELECT ch_order from incidents WHERE id = :id");
-      query2->bindValue(":id", head);
-      query2->exec();
-      query2->first();
-      int headOrder = query2->value(0).toInt();
-      query2->prepare("SELECT comment, coder FROM linkage_comments "
-		      "WHERE tail = :tail AND head = :head AND type = :type");
-      query2->bindValue(":tail", tailOrder);
-      query2->bindValue(":head", headOrder);
-      query2->bindValue(":type", type);
-      query2->exec();
-      query2->first();
+      query3->bindValue(":id", head);
+      query3->exec();
+      query3->first();
+      int headOrder = query3->value(0).toInt();
+      query4->bindValue(":tail", tailOrder);
+      query4->bindValue(":head", headOrder);
+      query4->bindValue(":type", type);
+      query4->exec();
+      query4->first();
       QString comment = "";
       QString commentCoder = "";
       QString toolTip = "";
-      if (!(query2->isNull(0))) 
+      if (!(query4->isNull(0))) 
 	{
-	  comment = query2->value(0).toString();
-	  commentCoder = query2->value(1).toString();
+	  comment = query4->value(0).toString();
+	  commentCoder = query4->value(1).toString();
 	  toolTip = breakString(commentCoder + " - " + comment);
 	}
       else 
@@ -2795,9 +2846,11 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
 		}
 	    } 
 	}
-      delete query2;
     }
   delete query;
+  delete query2;
+  delete query3;
+  delete query4;
 }
 
 void EventGraphWidget::plotEdges(QString type) 
@@ -2919,15 +2972,18 @@ void EventGraphWidget::cleanUp()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  _contractedMap.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
   linkageListWidget->setRowCount(0);
+  caseListWidget->clear();
   _presentTypes.clear();
   _checkedCases.clear();
   _selectedCoder = "";
   _selectedCompare = "";
   _selectedIncident = 0;
   _selectedAbstractNode = NULL;
+  _contracted = false;
   setGraphControls(false);
 }
 
@@ -3203,6 +3259,155 @@ void EventGraphWidget::contractGraph()
       current->setPos(current->scenePos().x(), virtualCenter + diffY);
       current->getLabel()->setNewPos(current->scenePos());
     }
+}
+
+void EventGraphWidget::contractCurrentGraph()
+{
+  _contracted = true;
+  QVector<QGraphicsItem*> allEvents;
+  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
+  while (it.hasNext()) 
+    {
+      IncidentNode *incident = it.next();
+      if (incident->isVisible())
+	{
+	  allEvents.push_back(incident);
+	}
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext()) 
+    {
+      AbstractNode *abstract = it2.next();
+      if (abstract->isVisible())
+	{
+	  allEvents.push_back(abstract);
+	}
+    }
+  std::sort(allEvents.begin(), allEvents.end(), eventLessThanWidth);
+  QVectorIterator<QGraphicsItem*> it3(allEvents);
+  // Let us store the current positions
+  while (it3.hasNext())
+    {
+      QGraphicsItem *current = it3.next();
+      _contractedMap.insert(current, current->scenePos());
+    }
+  it3.toFront();
+  // We want to skip the first one
+  it3.next();
+  while (it3.hasNext())
+    {
+      QGraphicsItem *current = it3.next();
+      QGraphicsItem *target = NULL;
+      QVectorIterator<QGraphicsItem*> it4(allEvents);
+      while (it4.hasNext()) 
+	{
+	  QGraphicsItem *item = it4.next();
+	  IncidentNode *itemIncidentNode = qgraphicsitem_cast<IncidentNode *>(item);
+	  AbstractNode *itemAbstractNode = qgraphicsitem_cast<AbstractNode*>(item);
+	  if (itemIncidentNode) 
+	    {
+	      if (itemIncidentNode->isVisible() &&
+		  itemIncidentNode->scenePos().x() +
+		  itemIncidentNode->getWidth() < current->scenePos().x()) 
+		{
+		  target = item;
+		}
+	    }
+	  else if (itemAbstractNode) 
+	    {
+	      if (itemAbstractNode->isVisible() &&
+		  itemAbstractNode->scenePos().x() +
+		  itemAbstractNode->getWidth() < current->scenePos().x()) 
+		{
+		  target = item;
+		}
+	    }
+	  else 
+	    {
+	      break;
+	    }
+	}
+      if (target != NULL) 
+	{
+	  IncidentNode *targetIncidentNode = qgraphicsitem_cast<IncidentNode *>(target);
+	  AbstractNode *targetAbstractNode = qgraphicsitem_cast<AbstractNode*>(target);
+	  int width = 0;
+	  if (targetIncidentNode) 
+	    {
+	      width = targetIncidentNode->getWidth();
+	    }
+	  else if (targetAbstractNode) 
+	    {
+	      width = targetAbstractNode->getWidth();
+	    }
+	  if (current->scenePos().x() - target->scenePos().x() - width + 40 > _distance) 
+	    {
+	      qreal oldX = current->scenePos().x();
+	      current->setPos(target->scenePos().x() +
+			      _distance + width - 40, current->scenePos().y());
+	      qreal newX = current->scenePos().x();
+	      qreal dist = oldX - newX;
+	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
+	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+	      if (incidentNode) 
+		{
+		  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
+		}
+	      else if (abstractNode) 
+		{
+		  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+		}
+	      QVectorIterator<QGraphicsItem*> it5(allEvents);
+	      while (it5.hasNext()) 
+		{
+		  QGraphicsItem *follow = it5.next();
+		  if (follow->scenePos().x() > current->scenePos().x()) 
+		    {
+		      IncidentNode *followIncidentNode = qgraphicsitem_cast<IncidentNode *>(follow);
+		      AbstractNode *followAbstractNode = qgraphicsitem_cast<AbstractNode*>(follow);
+		      if (followIncidentNode) 
+			{
+			  followIncidentNode->setPos(followIncidentNode->scenePos().x() -
+						     dist, followIncidentNode->scenePos().y());
+			  followIncidentNode->getLabel()->setNewPos(followIncidentNode->scenePos());
+			}
+		      else if (followAbstractNode) 
+			{
+			  followAbstractNode->setPos(followAbstractNode->scenePos().x() -
+						     dist, followAbstractNode->scenePos().y());
+			  followAbstractNode->getLabel()->setNewPos(followAbstractNode->scenePos());
+			}
+		    }
+		}
+	    }
+	}
+    }
+  updateLinkages();
+}
+
+void EventGraphWidget::restorePositions()
+{
+  QMapIterator<QGraphicsItem*, QPointF> it(_contractedMap);
+  while (it.hasNext())
+    {
+      it.next();
+      QGraphicsItem *current = it.key();
+      QPointF oldPos = it.value();
+      IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+      AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
+      if (incident)
+	{
+	  incident->setPos(oldPos);
+	  incident->getLabel()->setNewPos(incident->scenePos());
+	}
+      else if (abstract)
+	{
+	  abstract->setPos(oldPos);
+	  abstract->getLabel()->setNewPos(abstract->scenePos());
+	}
+    }
+  _contractedMap.clear();
+  _contracted = false;
 }
 
 void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos) 
@@ -3642,10 +3847,11 @@ void EventGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("UPDATE saved_eg_plots SET coder = :coder, "
+	  query->prepare("UPDATE saved_eg_plots SET coder = :coder, distance = :distance, "
 			 "red = :red, green = :green, blue = :blue "
 			 "WHERE plot = :name");
 	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -3721,6 +3927,16 @@ void EventGraphWidget::saveCurrentPlot()
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_eg_plots_contraction
+	  query->prepare("DELETE FROM saved_eg_plots_contraction "
+			"WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
+	  // saved_eg_plots_cases
+	  query->prepare("DELETE FROM saved_eg_plots_cases "
+			"WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
@@ -3729,10 +3945,11 @@ void EventGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("INSERT INTO saved_eg_plots (plot, coder, red, green, blue) "
-			 "VALUES (:name, :coder, :red, :green, :blue)");
+	  query->prepare("INSERT INTO saved_eg_plots (plot, coder, distance, red, green, blue) "
+			 "VALUES (:name, :coder, :distance, :red, :green, :blue)");
 	  query->bindValue(":name", name);
 	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -3754,8 +3971,8 @@ void EventGraphWidget::saveCurrentPlot()
       while (it.hasNext()) 
 	{
 	  IncidentNode *currentItem = it.next();
-	  qreal currentX = currentItem->pos().x();
-	  qreal currentY = currentItem->pos().y();
+	  qreal currentX = currentItem->scenePos().x();
+	  qreal currentY = currentItem->scenePos().y();
 	  qreal originalX = currentItem->getOriginalPos().x();
 	  qreal originalY = currentItem->getOriginalPos().y();
 	  int incident = currentItem->getId();
@@ -4409,6 +4626,74 @@ void EventGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, _contractedMap.size());
+      saveProgress->setWindowTitle("Saving contracted item positions");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_eg_plots_contraction "
+		     "(plot, nodeid, abstract, xpos, ypos) "
+		     "VALUES (:plot, :nodeid, :abstract, :xpos, :ypos)");
+      QMapIterator<QGraphicsItem*, QPointF> it12(_contractedMap);
+      while (it12.hasNext())
+	{
+	  it12.next();
+	  QGraphicsItem *current = it12.key();
+	  QPointF position = it12.value();
+	  int id = -1;
+	  int abstract = 0;
+	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode*>(current);
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+	  if (incidentNode)
+	    {
+	      id  = incidentNode->getId();
+	    }
+	  else if (abstractNode)
+	    {
+	      id = abstractNode->getId();
+	      abstract = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":nodeid", id);
+	  query->bindValue(":abstract", abstract);
+	  query->bindValue(":xpos", position.x());
+	  query->bindValue(":ypos", position.y());
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, caseListWidget->count());
+      saveProgress->setWindowTitle("Saving cases");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_eg_plots_cases "
+		     "(plot, casename, checked) "
+		     "VALUES (:plot, :casename, :checked)");
+      for (int i = 0; i != caseListWidget->count(); i++) 
+	{
+	  QListWidgetItem *item = caseListWidget->item(i);
+	  QString casename = item->text();
+	  int checked = 0;
+	  if (item->checkState() == Qt::Checked)
+	    {
+	      checked = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":casename", casename);
+	  query->bindValue(":checked", checked);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
       delete query;
       plotLabel->setText(name);
       changeLabel->setText("");
@@ -4429,16 +4714,17 @@ void EventGraphWidget::seePlots()
       scene->clear();
       QString plot = savedPlotsDialog->getSelectedPlot();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT coder, red, green, blue "
+      query->prepare("SELECT coder, distance, red, green, blue "
 		     "FROM saved_eg_plots "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
       query->first();
       QString coder = query->value(0).toString();
-      int red = query->value(1).toInt();
-      int green = query->value(2).toInt();
-      int blue = query->value(3).toInt();
+      _distance = query->value(1).toReal();
+      int red = query->value(2).toInt();
+      int green = query->value(3).toInt();
+      int blue = query->value(4).toInt();
       _selectedCoder = coder;
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       int index = coderComboBox->findText(coder);
@@ -4708,7 +4994,7 @@ void EventGraphWidget::seePlots()
       query->exec();
       while (query->next()) 
 	{
-	  int incidentNode = query->value(0).toInt();
+	  int abstractNode = query->value(0).toInt();
 	  QString text = query->value(1).toString();
 	  qreal currentX = query->value(2).toReal();
 	  qreal currentY = query->value(3).toReal();
@@ -4723,8 +5009,8 @@ void EventGraphWidget::seePlots()
 	  while (it.hasNext()) 
 	    {
 	      AbstractNode *currentAbstractNode = it.next();
-	      int incidentNodeId = currentAbstractNode->getId();
-	      if (incidentNodeId == incidentNode) 
+	      int abstractNodeId = currentAbstractNode->getId();
+	      if (abstractNodeId == abstractNode) 
 		{
 		  AbstractNodeLabel *currentLabel = new AbstractNodeLabel(currentAbstractNode);
 		  currentLabel->setPlainText(text);
@@ -5000,7 +5286,8 @@ void EventGraphWidget::seePlots()
 	  newLine->setPenStyle(penstyle);
 	  scene->addItem(newLine);
 	}
-      query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zValue, red, green, blue, alpha "
+      query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zValue, "
+		     "red, green, blue, alpha "
 		     "FROM saved_eg_plots_texts "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5129,14 +5416,78 @@ void EventGraphWidget::seePlots()
 	  newRect->setPenStyle(penstyle);
 	  newRect->setZValue(zValue);
 	}
-      _distance = 70;
+      query->prepare("SELECT nodeid, abstract, xpos, ypos "
+		     "FROM saved_eg_plots_contraction "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next()) 
+	{
+	  int id = query->value(0).toInt();
+	  int abstract = query->value(1).toInt();
+	  qreal xpos = query->value(2).toReal();
+	  qreal ypos = query->value(3).toReal();
+	  if (abstract == 1)
+	    {
+	      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
+	      while (it.hasNext())
+		{
+		  AbstractNode *current = it.next();
+		  if (current->getId() == id)
+		    {
+		      _contractedMap.insert(current, QPointF(xpos, ypos));
+		      break;
+		    }
+		}
+	    }
+	  else
+	    {
+	      QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+	      while (it.hasNext())
+		{
+		  IncidentNode *current = it.next();
+		  if (current->getId() == id)
+		    {
+		      _contractedMap.insert(current, QPointF(xpos, ypos));
+		      break;
+		    }
+		}
+	    }
+	}
+      _contracted = false;
+      query->prepare("SELECT casename, checked "
+		     "FROM saved_eg_plots_cases "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next()) 
+	{
+	  QString casename = query->value(0).toString();
+	  int checked = query->value(1).toInt();
+	  QListWidgetItem *item = new QListWidgetItem(casename, caseListWidget);
+	  item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
+	  if (checked == 1)
+	    {
+	      item->setCheckState(Qt::Checked);
+	    }
+	  else
+	    {
+	      item->setCheckState(Qt::Unchecked);
+	    }
+	}
+      caseListWidget->setEnabled(true);
+      if (!_contractedMap.empty())
+	{
+	  _contracted = true;
+	}
       plotLabel->setText(plot);
       changeLabel->setText("");
       scene->update();
       setRangeControls();
+      setGraphControls(true);
       updateLinkages();
-      checkCongruency();
       setVisibility();
+      checkCongruency();
       delete query;
       QApplication::restoreOverrideCursor();
       qApp->processEvents();
@@ -5218,6 +5569,16 @@ void EventGraphWidget::seePlots()
       query->exec();
       // saved_eg_plots_rects
       query->prepare("DELETE FROM saved_eg_plots_rects "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      // saved_eg_plots_contraction
+      query->prepare("DELETE FROM saved_eg_plots_contraction "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      // saved_eg_plots_cases
+      query->prepare("DELETE FROM saved_eg_plots_cases "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
