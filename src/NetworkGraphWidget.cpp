@@ -1971,13 +1971,21 @@ void NetworkGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
 
 void NetworkGraphWidget::processNetworkNodeContextMenu(const QString &action) 
 {
-  if (action == SETPERSISTENT) 
+  if (action == SETPERSISTENTACTION) 
     {
       setNodePersistence(true);
     }
-  else if (action == UNSETPERSISTENT) 
+  else if (action == UNSETPERSISTENTACTION) 
     {
       setNodePersistence(false);
+    }
+  else if (action == RECOLORNODESACTION)
+    {
+      recolorNodes();
+    }
+  else if (action == RECOLORNODELABELSACTION)
+    {
+      recolorLabels();
     }
 }
 
@@ -1998,6 +2006,66 @@ void NetworkGraphWidget::setNodePersistence(bool state)
     }
   setVisibility();
 }
+
+void NetworkGraphWidget::recolorNodes()
+{
+  if (scene->selectedItems().size() > 0) 
+    {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) 
+	{
+	  setChangeLabel();
+	  QColor color = colorDialog->selectedColor();
+	  delete colorDialog;
+	  QListIterator<QGraphicsItem*> it(scene->selectedItems());
+	  while (it.hasNext()) 
+	    {
+	      NetworkNode *node = qgraphicsitem_cast<NetworkNode *>(it.peekNext());
+	      if (node) 
+		{
+		  NetworkNode *currentNode = qgraphicsitem_cast<NetworkNode *>(it.next());
+		  currentNode->setColor(color);
+		}
+	      else 
+		{
+		  it.next();
+		}
+	    }
+	}
+    }
+}
+
+void NetworkGraphWidget::recolorLabels() 
+{
+  if (scene->selectedItems().size() > 0) 
+    {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      if (colorDialog->exec()) 
+	{
+	  setChangeLabel();
+	  QColor color = colorDialog->selectedColor();
+	  delete colorDialog;
+	  QListIterator<QGraphicsItem*> it(scene->selectedItems());
+	  while (it.hasNext()) 
+	    {
+	      NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(it.peekNext());
+	      if (node) 
+		{
+		  NetworkNode *currentNode = qgraphicsitem_cast<NetworkNode*>(it.next());
+		  NetworkNodeLabel *currentLabel = currentNode->getLabel();
+		  currentLabel->setDefaultTextColor(color);
+		}
+	      else 
+		{
+		  it.next();
+		}
+	    }
+	}
+    }
+}
+
 
 void NetworkGraphWidget::processNetworkGraphContextMenu(const QString &action, const QPoint &pos) 
 {
@@ -4221,6 +4289,7 @@ void NetworkGraphWidget::setPlotButton()
 void NetworkGraphWidget::plotNewGraph() 
 {
   cleanUp();
+  updateCases();
   _selectedType = typeComboBox->currentText();
   getEntities();
   plotEntities(); // Should allow for range to be set here.
@@ -6412,8 +6481,8 @@ void NetworkGraphWidget::setVisibility()
       QString type = currentDirected->getType();
       if (_presentTypes.contains(type)) 
 	{
-	  if ((relationship == MERGED || relationship == TRANSFORMED)
-	      && !(currentDirected->isMassHidden())) 
+	  if ((relationship == MERGED || relationship == TRANSFORMED) &&
+	      !(currentDirected->isMassHidden()))
 	    {
 	      show = true;
 	    }
@@ -6660,7 +6729,7 @@ void NetworkGraphWidget::setVisibility()
       if (show) 
 	{
 	  if (!currentUndirected->getStart()->isMassHidden() &&
-	      !currentUndirected->getStart()->isMassHidden())
+	      !currentUndirected->getEnd()->isMassHidden())
 	    {
 	      currentUndirected->show();
 	      currentUndirected->getStart()->show();

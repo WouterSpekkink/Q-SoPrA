@@ -1430,21 +1430,35 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	}
       else if (node) 
 	{
-	  clearSelection();
-	  node->setSelected(true);
 	  QMenu menu;
-	  QAction *action1 = new QAction(SETPERSISTENT, this);
-	  menu.addAction(action1);
-	  QAction *action2 = new QAction(UNSETPERSISTENT, this);
-	  menu.addAction(action2);
-	  if (node->isPersistent()) 
+	  QMenu persistenceMenu("Persistence");
+	  QMenu colorMenu("Colouring");
+	  menu.addMenu(&persistenceMenu);
+	  menu.addMenu(&colorMenu);
+	  QAction *action1 = new QAction(SETPERSISTENTACTION, this);
+	  persistenceMenu.addAction(action1);
+	  QAction *action2 = new QAction(UNSETPERSISTENTACTION, this);
+	  persistenceMenu.addAction(action2);
+	  QAction *action3 = new QAction(RECOLORNODESACTION, this);
+	  colorMenu.addAction(action3);
+	  QAction *action4 = new QAction(RECOLORNODELABELSACTION, this);
+	  colorMenu.addAction(action4);
+	  if (selectedItems().size() == 1) 
+	    {
+	      if (node->isPersistent()) 
+		{
+		  action1->setEnabled(false);
+		  action2->setEnabled(true);
+		}
+	      else 
+		{
+		  action1->setEnabled(true);
+		  action2->setEnabled(false);
+		}
+	    }
+	  else
 	    {
 	      action1->setEnabled(false);
-	      action2->setEnabled(true);
-	    }
-	  else 
-	    {
-	      action1->setEnabled(true);
 	      action2->setEnabled(false);
 	    }
 	  if (QAction *action = menu.exec(event->screenPos())) 

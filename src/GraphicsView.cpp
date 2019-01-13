@@ -255,8 +255,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		}
 	      else if (networkNode) 
 		{
-		  scene->clearSelection();
-		  networkNode->setSelected(true);
+		  if (!networkNode->isSelected())
+		    {
+		      scene->clearSelection();
+		      networkNode->setSelected(true);
+		    }
 		}
 	      else if (line) 
 		{

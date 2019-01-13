@@ -173,6 +173,8 @@ private slots:
   void processMoveItems(QGraphicsItem *item, QPointF pos);
   void processNetworkNodeContextMenu(const QString &action);
   void setNodePersistence(bool state);
+  void recolorNodes();
+  void recolorLabels();
   void processNetworkGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
