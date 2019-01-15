@@ -2769,6 +2769,10 @@ void OccurrenceGraphWidget::changeLabels()
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
 	  delete oldLabel;
 	  _attributeLabelVector.removeOne(oldLabel);
 	}
@@ -2787,6 +2791,10 @@ void OccurrenceGraphWidget::changeLabels()
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
 	  delete oldLabel;
 	  _relationshipLabelVector.removeOne(oldLabel);
 	}
@@ -2809,6 +2817,10 @@ void OccurrenceGraphWidget::changeLabels()
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
 	  delete oldLabel;
 	  _attributeLabelVector.removeOne(oldLabel);
 	}
@@ -2828,6 +2840,10 @@ void OccurrenceGraphWidget::changeLabels()
 	  currentOccurrence->setLabel(newLabel);
 	  newLabel->setZValue(4);
 	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
 	  delete oldLabel;
 	  _relationshipLabelVector.removeOne(oldLabel);
 	}
@@ -3029,7 +3045,8 @@ void OccurrenceGraphWidget::setVisibility()
 	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) 
 	    {
 	      currentItem->show();
-	    }  else 
+	    }
+	  else 
 	    {
 	      currentItem->hide();
 	    }
