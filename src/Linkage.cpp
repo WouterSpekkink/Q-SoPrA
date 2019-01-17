@@ -44,7 +44,7 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
 {
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   _color = Qt::black;
-  setPen(QPen(_color, 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+  setPen(QPen(_color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   _typeInd = type;
   _coder = coder;
@@ -97,10 +97,10 @@ void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, Q
       myPath.moveTo(_newLine.p1());
       myPath.quadTo(_controlPoint, _ghostLine.p2());
       _strokePath = myPath;
-      painter->setPen(QPen(_color, 2, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
+      painter->setPen(QPen(_color, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
       painter->setBrush(QBrush(_color, Qt::SolidPattern));
       painter->drawPolygon(_arrowHead);
-      QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::SquareCap, Qt::MiterJoin);
+      QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::RoundCap, Qt::RoundJoin);
       painter->strokePath(myPath, myPen);
       if (_penStyle == 1 && isSelected())
 	{

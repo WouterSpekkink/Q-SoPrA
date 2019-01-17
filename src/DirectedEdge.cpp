@@ -83,11 +83,11 @@ void DirectedEdge::calculate()
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLine = QLineF(_controlPoint, _end->pos());
-  _ghostLine.setLength(_ghostLine.length() - 18 - ((_penWidth) - 2.0f));
+  _ghostLine.setLength(_ghostLine.length() - 18);
   double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
   if (_ghostLine.dy() >= 0)
     angle = (Pi * 2) - angle;
-  qreal arrowSize = 10;
+  qreal arrowSize = 10 + _penWidth;
   _arrowP1 = _ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
 				     cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
@@ -101,16 +101,18 @@ void DirectedEdge::calculate()
 void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
   painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
-  setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-  painter->setPen(pen());
+  QPen myPen = QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+  painter->setPen(myPen);
   painter->setBrush(_color);
   calculate();
   QPainterPath myPath;
   myPath.moveTo(_start->pos());
   myPath.quadTo(_controlPoint, _ghostLine.p2());
   _strokePath = myPath;
+  painter->strokePath(myPath, myPen);
+  myPen.setWidth(1);
+  painter->setPen(myPen);
   painter->drawPolygon(_arrowHead);
-  painter->strokePath(myPath, pen());
 }
 
 QPainterPath DirectedEdge::shape() const

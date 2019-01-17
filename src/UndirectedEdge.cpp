@@ -85,16 +85,16 @@ void UndirectedEdge::calculate()
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLineOne = QLineF(_controlPoint, _end->pos());
-  _ghostLineOne.setLength(_ghostLineOne.length() - 18 - ((_penWidth) - 2.0f));
+  _ghostLineOne.setLength(_ghostLineOne.length() - 18);
   newLine = QLineF(_end->pos(), _start->pos());
-  newLine.setLength(newLine.length() - 18 - (_penWidth - 2.0f));
+  newLine.setLength(newLine.length() - 18);
   mX = (_end->pos().x() + newLine.p2().x()) / 2;
   mY = (_end->pos().y() + newLine.p2().y()) / 2;
   cX = _height * (-1 * (dY / distance)) + mX;
   cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLineTwo = QLineF(_controlPoint, _start->pos());
-  _ghostLineTwo.setLength(_ghostLineTwo.length() - 18 - (_penWidth - 2.0f));
+  _ghostLineTwo.setLength(_ghostLineTwo.length() - 18);
   // Then we do some calculations to determine how our arrows are drawn.
   double angle = ::acos(_ghostLineOne.dx() / _ghostLineOne.length());
   if (_ghostLineOne.dy() >= 0)
@@ -102,7 +102,7 @@ void UndirectedEdge::calculate()
   double angle2 = ::acos(_ghostLineTwo.dx() / _ghostLineTwo.length());
   if (_ghostLineTwo.dy() >= 0)
     angle2 = (Pi * 2) - angle2;
-  qreal arrowSize = 10;
+  qreal arrowSize = 10 + _penWidth;
   _arrowP1 = _ghostLineOne.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
 					cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _ghostLineOne.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
@@ -122,17 +122,19 @@ void UndirectedEdge::calculate()
 
 void UndirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
-  painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
-  setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::SquareCap, Qt::MiterJoin));
-  painter->setPen(pen());
-  painter->setBrush(_color);
   calculate();
+  painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
   QPainterPath myPath;
   myPath.moveTo(_ghostLineTwo.p2());
   myPath.quadTo(_controlPoint, _ghostLineOne.p2());
   _strokePath = myPath;
+  QPen myPen = QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+  painter->setPen(myPen);
+  painter->setBrush(_color);
+  painter->strokePath(myPath, myPen);
+  myPen.setWidth(1);
+  painter->setPen(myPen);
   painter->drawPolygon(_arrowHeadOne);
-  painter->strokePath(myPath, pen());
   painter->drawPolygon(_arrowHeadTwo);
 }
 
