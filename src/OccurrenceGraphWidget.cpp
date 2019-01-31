@@ -113,7 +113,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   addRelationshipButton = new QPushButton(tr("Add relationship"), legendWidget);
   removeRelationshipModeButton = new QPushButton(tr("Remove relationship"), legendWidget);
   removeRelationshipModeButton->setEnabled(false);
-  getEventsButton = new QPushButton(tr("Match current event graph"), this);
+  matchEventGraphButton = new QPushButton(tr("Match current event graph"), this);
   restoreButton = new QPushButton(tr("Restore to original"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   changeLabelsButton = new QPushButton(tr("Short labels"), graphicsWidget);
@@ -150,7 +150,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(changeRelationshipModeColor(QTableWidgetItem *)));
   connect(removeAttributeModeButton, SIGNAL(clicked()), this, SLOT(removeAttributeMode()));
   connect(removeRelationshipModeButton, SIGNAL(clicked()), this, SLOT(removeRelationshipMode()));
-  connect(getEventsButton, SIGNAL(clicked()), this, SLOT(getEvents()));
+  connect(matchEventGraphButton, SIGNAL(clicked()), this, SLOT(matchEventGraph()));
   connect(restoreButton, SIGNAL(clicked()), this, SLOT(restore()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
@@ -265,7 +265,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
-  drawOptionsRightLayout->addWidget(getEventsButton);
+  drawOptionsRightLayout->addWidget(matchEventGraphButton);
   drawOptionsRightLayout->addWidget(restoreButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsRightLayout->addWidget(toggleGraphicsControlsButton);
@@ -1465,6 +1465,13 @@ void OccurrenceGraphWidget::wireLinkages()
 void OccurrenceGraphWidget::restore() 
 {
   reset();
+  for (int i = 0; i != caseListWidget->count(); i++)
+    {
+      QListWidgetItem *item = caseListWidget->item(i);
+      item->setCheckState(Qt::Unchecked);
+    }
+  _checkedCases.clear();
+  caseListWidget->setEnabled(true); 
   groupOccurrences();
   wireLinkages();
   setVisibility();
@@ -1542,7 +1549,7 @@ void OccurrenceGraphWidget::reset()
   setVisibility();
 }
 
-void OccurrenceGraphWidget::getEvents() 
+void OccurrenceGraphWidget::matchEventGraph() 
 {
   reset();
   _matched = true;
@@ -1738,6 +1745,24 @@ void OccurrenceGraphWidget::getEvents()
 	    }
 	}
     }
+  // Now we also need to check the same cases as those checked in the event graph widget
+  QVector<QString> eventGraphCases = _eventGraphWidgetPtr->getCheckedCases();
+  _checkedCases.clear();
+  for (int i = 0; i != caseListWidget->count(); i++)
+    {
+      QListWidgetItem *item = caseListWidget->item(i);
+      if (eventGraphCases.contains(item->data(Qt::DisplayRole).toString()))
+	{
+	  item->setCheckState(Qt::Checked);
+	  _checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+	}
+      else
+	{
+	  item->setCheckState(Qt::Unchecked);
+	}
+    }
+  caseListWidget->setEnabled(false);
+  setVisibility();
   groupOccurrences();
   wireLinkages();
 }
@@ -2990,6 +3015,8 @@ void OccurrenceGraphWidget::setRangeControls()
   upperRangeDial->setRange(minOrder + 1, maxOrder);
   lowerRangeSpinBox->setRange(minOrder, maxOrder - 1);
   upperRangeSpinBox->setRange(minOrder + 1, maxOrder);
+  lowerRangeDial->setValue(minOrder);
+  lowerRangeDial->setValue(minOrder);
   upperRangeDial->setValue(maxOrder);
   upperRangeSpinBox->setValue(maxOrder);
 }

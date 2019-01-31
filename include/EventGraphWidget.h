@@ -98,6 +98,7 @@ public:
   QVector<AbstractNode*> getAbstractNodes();
   QVector<IncidentNode*> getIncidentNodes();
   QVector<Linkage*> getEdgeVector();
+  QVector<QString> getCheckedCases();
 
   // Functions that need to be exposed
   void resetTree();

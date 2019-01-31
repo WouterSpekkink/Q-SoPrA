@@ -107,7 +107,7 @@ private slots:
   void wireLinkages();
   void groupOccurrences();
   void reset();
-  void getEvents();
+  void matchEventGraph();
   void restore();
   void plotLabels();
   void changeLabels();
@@ -185,7 +185,7 @@ private:
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> addRelationshipButton;
-  QPointer<QPushButton> getEventsButton;
+  QPointer<QPushButton> matchEventGraphButton;
   QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> changeLabelsButton;

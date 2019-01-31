@@ -901,6 +901,11 @@ void EventGraphWidget::checkCases()
   setVisibility();
 }
 
+QVector<QString> EventGraphWidget::getCheckedCases()
+{
+  return _checkedCases;
+}
+
 void EventGraphWidget::showAttributes() 
 {
   commentWidget->hide();
