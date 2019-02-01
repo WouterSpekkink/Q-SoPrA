@@ -33,7 +33,7 @@ QRectF LineObject::boundingRect() const
 
 QPainterPath LineObject::shape() const 
 {
-  static const qreal clickTolerance = 15;
+  static const qreal clickTolerance = 20;
   QPointF vec = _endPos - _startPos;
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());
@@ -48,18 +48,16 @@ QPainterPath LineObject::shape() const
 void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
 {
   calculate();
-  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
-
-    
   QPainterPath myPath;
   myPath.moveTo(_tempLine2.p2());
   myPath.lineTo(_tempLine1.p2());
+  QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin); 
+  painter->setPen(myPen);
+  painter->strokePath(myPath, myPen);
   if (_arrow1On) 
     {
       painter->drawPolyline(_arrowHead);
     }
-  painter->strokePath(myPath, QPen(_color, _penWidth, Qt::PenStyle(_penStyle),
-				   Qt::SquareCap, Qt::MiterJoin));
   if (_arrow2On) 
     {
       painter->drawPolyline(_arrowHead2);
@@ -75,7 +73,7 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 void LineObject::calculate() 
 {
   prepareGeometryChange();
-  qreal arrowSize = 20;
+  qreal arrowSize = 20 + _penWidth;
   QLineF newLine = QLineF(_startPos, _endPos);
   setLine(newLine);
   _tempLine1 = QLineF(_startPos, _endPos);
