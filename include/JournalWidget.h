@@ -59,7 +59,7 @@ private slots:
   void resetButtons();
   void addEntry();
   void saveChanges();
-  void setData();
+  void setData(const QItemSelection &selected, const QItemSelection &deselected);
   void removeEntry();
   void exportJournal();
   void setButtons();

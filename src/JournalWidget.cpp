@@ -66,7 +66,7 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   connect(removeEntryButton, SIGNAL(clicked()), this, SLOT(removeEntry()));
   connect(tableView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-	  this, SLOT(setData()));
+	  this, SLOT(setData(const QItemSelection &, const QItemSelection &)));
   connect(tableView->verticalHeader(),
 	  SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
   connect(exportJournalButton, SIGNAL(clicked()), this, SLOT(exportJournal()));
@@ -116,25 +116,35 @@ void JournalWidget::saveChanges()
     }
 }
 
-void JournalWidget::setData() 
+void JournalWidget::setData(const QItemSelection &selected, const QItemSelection &deselected) 
 {
-  if (tableView->currentIndex().isValid()) 
+  Q_UNUSED(selected);
+  if (checkChanges())
     {
-      int currentRow = tableView->currentIndex().row();
-      QModelIndex wantedIndex = tableView->currentIndex().sibling(currentRow, 2);
-      QString currentText = wantedIndex.data(Qt::DisplayRole).toString();
-      logField->blockSignals(true);
-      logField->setText(currentText);
-      logField->blockSignals(false);
-      logField->setEnabled(true);
-      saveChangesButton->setEnabled(false);
-      removeEntryButton->setEnabled(true);
+      if (tableView->currentIndex().isValid()) 
+	{
+	  int currentRow = tableView->currentIndex().row();
+	  QModelIndex wantedIndex = tableView->currentIndex().sibling(currentRow, 2);
+	  QString currentText = wantedIndex.data(Qt::DisplayRole).toString();
+	  logField->blockSignals(true);
+	  logField->setText(currentText);
+	  logField->blockSignals(false);
+	  logField->setEnabled(true);
+	  saveChangesButton->setEnabled(false);
+	  removeEntryButton->setEnabled(true);
+	}
+      else 
+	{
+	  removeEntryButton->setEnabled(false);
+	  saveChangesButton->setEnabled(false);
+	  logField->setEnabled(false);
+	}
     }
-  else 
+  else
     {
-      removeEntryButton->setEnabled(false);
-      saveChangesButton->setEnabled(false);
-      logField->setEnabled(false);
+      tableView->selectionModel()->blockSignals(true);
+      tableView->selectRow(deselected.indexes().first().row());
+      tableView->selectionModel()->blockSignals(false);
     }
 }
 
