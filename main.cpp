@@ -29,7 +29,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[]) {
   QApplication QSoPrA(argc, argv);
   QSoPrA.setWindowIcon(QIcon("./images/Q-SoPrA.png"));
-  QString version = QString("0.8.9.5");
+  QString version = QString("0.9");
   QSoPrA.setApplicationVersion(version);
 
   QSharedPointer<EventSequenceDatabase> esd(new EventSequenceDatabase);

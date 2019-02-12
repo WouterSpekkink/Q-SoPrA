@@ -63,6 +63,7 @@ private slots:
   void removeEntry();
   void exportJournal();
   void setButtons();
+  bool checkChanges();
   void resetHeader(int header);
   bool eventFilter(QObject *object, QEvent *event);
   

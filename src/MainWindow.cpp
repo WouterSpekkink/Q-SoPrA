@@ -777,263 +777,330 @@ void MainWindow::exportToCsv()
 
 void MainWindow::switchToDataView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
-  dw->incidentsModel->select();
-  dw->updateTable();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
-  egw->setComment();
-  stacked->setCurrentWidget(dataWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      DataWidget *dw = qobject_cast<DataWidget*>(stacked->widget(0));
+      dw->incidentsModel->select();
+      dw->updateTable();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->getLinkageDetails();
+      egw->setComment();
+      stacked->setCurrentWidget(dataWidget);
+    }
 }
 
 void MainWindow::switchToAttributeView() 
 {
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
-  aw->incidentsModel->sort(1, Qt::AscendingOrder);
-  aw->incidentsModel->select();
-  aw->retrieveData();
-  stacked->setCurrentWidget(attributesWidget);
-  aw->attributesTreeView->clearSelection();
-  const QModelIndex index;
-  aw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
-  aw->setButtons();
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+      aw->incidentsModel->sort(1, Qt::AscendingOrder);
+      aw->incidentsModel->select();
+      aw->retrieveData();
+      stacked->setCurrentWidget(attributesWidget);
+      aw->attributesTreeView->clearSelection();
+      const QModelIndex index;
+      aw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+      aw->setButtons();
+    }
 }
 
 void MainWindow::switchToRelationshipView() 
 {
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->incidentsModel->sort(1, Qt::AscendingOrder);
-  rw->incidentsModel->select();
-  rw->retrieveData();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  stacked->setCurrentWidget(relationshipsWidget);
-  rw->relationshipsTreeView->clearSelection();
-  const QModelIndex index;
-  rw->relationshipsTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
-  rw->setButtons();
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->incidentsModel->sort(1, Qt::AscendingOrder);
+      rw->incidentsModel->select();
+      rw->retrieveData();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      stacked->setCurrentWidget(relationshipsWidget);
+      rw->relationshipsTreeView->clearSelection();
+      const QModelIndex index;
+      rw->relationshipsTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+      rw->setButtons();
+    }
 }
 
 void MainWindow::switchToLinkageView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->incidentsModel->sort(1, Qt::AscendingOrder);
-  lw->incidentsModel->select();
-  lw->retrieveData();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  stacked->setCurrentWidget(linkagesWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->incidentsModel->sort(1, Qt::AscendingOrder);
+      lw->incidentsModel->select();
+      lw->retrieveData();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      stacked->setCurrentWidget(linkagesWidget);
+    }
 }
 
 
 void MainWindow::switchToJournalView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
   JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
-  jw->tableView->clearSelection();
-  jw->logField->setText("");
-  jw->resetButtons();
-  stacked->setCurrentWidget(journalWidget);
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      jw->tableView->clearSelection();
+      jw->logField->setText("");
+      jw->resetButtons();
+      stacked->setCurrentWidget(journalWidget);
+    }
 }
 
 void MainWindow::switchToCasingView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  CasingWidget *cw = qobject_cast<CasingWidget*>(stacked->widget(15));
-  cw->updateTable();
-  stacked->setCurrentWidget(casingWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      CasingWidget *cw = qobject_cast<CasingWidget*>(stacked->widget(15));
+      cw->updateTable();
+      stacked->setCurrentWidget(casingWidget);
+    }
 }
 
 void MainWindow::switchToEventGraphView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->getLinkageDetails();
-  egw->checkCongruency();
-  showMenus(true);
-  menuBar->setEnabled(true);
-  egw->scene->resetItemSelection();
-  stacked->setCurrentWidget(eventGraphWidget);
-  egw->attributesTreeView->clearSelection();
-  const QModelIndex index;
-  egw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
-  egw->setButtons();
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->getLinkageDetails();
+      egw->checkCongruency();
+      showMenus(true);
+      menuBar->setEnabled(true);
+      egw->scene->resetItemSelection();
+      stacked->setCurrentWidget(eventGraphWidget);
+      egw->attributesTreeView->clearSelection();
+      const QModelIndex index;
+      egw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+      egw->setButtons();
+    }
 }
 
 void MainWindow::switchToNetworkGraphView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
-  ngw->getTypes();
-  ngw->checkCongruency();
-  ngw->scene->resetItemSelection();
-  stacked->setCurrentWidget(networkGraphWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
+      ngw->getTypes();
+      ngw->checkCongruency();
+      ngw->scene->resetItemSelection();
+      stacked->setCurrentWidget(networkGraphWidget);
+    }
 }
 
 void MainWindow::switchToOccurrenceGraphView() 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
-  ogw->checkCongruency();
-  ogw->scene->resetItemSelection();
-  stacked->setCurrentWidget(occurrenceGraphWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
+      ogw->checkCongruency();
+      ogw->scene->resetItemSelection();
+      stacked->setCurrentWidget(occurrenceGraphWidget);
+    }
 }
 
 void MainWindow::switchToHierarchyView(AbstractNode *selectedAbstractNode) 
 {
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
-  aw->setComment();
-  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
-  rw->setComment();
-  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
-  lw->setComments();
-  lw->setLinkageComment();
-  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
-  egw->setComment();
-  HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
-  hgw->cleanUp();
-  hgw->setEvents(egw->getIncidentNodes());
-  hgw->setAbstractNodes(egw->getAbstractNodes());
-  hgw->setEdges(egw->getEdgeVector());
-  hgw->setOrigin(selectedAbstractNode);
-  hgw->getEdges();
-  showMenus(false);
-  menuBar->setEnabled(false);
-  hgw->resetTree();
-  stacked->setCurrentWidget(hierarchyGraphWidget);
-  hgw->attributesTreeView->clearSelection();
-  const QModelIndex index;
-  hgw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
-  hgw->setButtons();
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+      aw->setComment();
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(stacked->widget(2));
+      rw->setComment();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setComments();
+      lw->setLinkageComment();
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+      egw->setComment();
+      HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+      hgw->cleanUp();
+      hgw->setEvents(egw->getIncidentNodes());
+      hgw->setAbstractNodes(egw->getAbstractNodes());
+      hgw->setEdges(egw->getEdgeVector());
+      hgw->setOrigin(selectedAbstractNode);
+      hgw->getEdges();
+      showMenus(false);
+      menuBar->setEnabled(false);
+      hgw->resetTree();
+      stacked->setCurrentWidget(hierarchyGraphWidget);
+      hgw->attributesTreeView->clearSelection();
+      const QModelIndex index;
+      hgw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
+      hgw->setButtons();
+    }
 }
 
 void MainWindow::switchToRawAttributesTableView() 
 {
-  // Still need to figure out what else needs to happen here.
-  RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(stacked->widget(9));
-  rat->updateTable();
-  stacked->setCurrentWidget(rawAttributesTableWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(stacked->widget(9));
+      rat->updateTable();
+      stacked->setCurrentWidget(rawAttributesTableWidget);
+    }
 }
 
 void MainWindow::switchToRawRelationshipsTableView() 
 {
-  // Still need to figure out what else needs to happen here.
-  RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(stacked->widget(10));
-  rrt->updateTable();
-  stacked->setCurrentWidget(rawRelationshipsTableWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(stacked->widget(10));
+      rrt->updateTable();
+      stacked->setCurrentWidget(rawRelationshipsTableWidget);
+    }
 }
 
 void MainWindow::switchToIncidentsAttributesTableView() 
 {
-  // Still need to figure out what else needs to happen here.
-  IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(11));
-  iat->attributesModel->select();
-  iat->updateTable();
-  stacked->setCurrentWidget(incidentsAttributesTableWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(11));
+      iat->attributesModel->select();
+      iat->updateTable();
+      stacked->setCurrentWidget(incidentsAttributesTableWidget);
+    }
 }
 
 void MainWindow::switchToEntitiesAttributesTableView() 
 {
-  // Still need to figure out what else needs to happen here.
-  EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
-  eat->attributesModel->select();
-  eat->updateTable();
-  stacked->setCurrentWidget(entitiesAttributesTableWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
+      eat->attributesModel->select();
+      eat->updateTable();
+      stacked->setCurrentWidget(entitiesAttributesTableWidget);
+    }
 }
 
 void MainWindow::switchToMissingAttributesTableView() 
 {
-  // Still need to figure out what else needs to happen here.
-  MissingAttributesTable *mat = qobject_cast<MissingAttributesTable*>(stacked->widget(13));
-  mat->updateTable();
-  stacked->setCurrentWidget(missingAttributesTableWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      MissingAttributesTable *mat = qobject_cast<MissingAttributesTable*>(stacked->widget(13));
+      mat->updateTable();
+      stacked->setCurrentWidget(missingAttributesTableWidget);
+    }
 }
 
 void MainWindow::switchToMissingRelationshipsTableView() 
 {
-  // Still need to figure out what else needs to happen here.
-  MissingRelationshipsTable *mrt = qobject_cast<MissingRelationshipsTable*>(stacked->widget(14));
-  mrt->updateTable();
-  stacked->setCurrentWidget(missingRelationshipsTableWidget);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      MissingRelationshipsTable *mrt = qobject_cast<MissingRelationshipsTable*>(stacked->widget(14));
+      mrt->updateTable();
+      stacked->setCurrentWidget(missingRelationshipsTableWidget);
+    }
 }
 
 void MainWindow::closeEvent(QCloseEvent *event) 
 {
-  QPointer<QMessageBox> warningBox = new QMessageBox(this);
-  warningBox->addButton(QMessageBox::Yes);
-  warningBox->addButton(QMessageBox::No);
-  warningBox->setIcon(QMessageBox::Warning);
-  warningBox->setText("<h2>Are you sure?</h2>");
-  warningBox->setInformativeText("Are you sure you want to exit the program?");
-  if (warningBox->exec() == QMessageBox::Yes) 
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
     {
-      event->accept();
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("Are you sure you want to exit the program?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  event->accept();
+	}
+      else 
+	{
+	  event->ignore();
+	}
     }
-  else 
-    {
-      event->ignore();
-    } 
 }
 
 void MainWindow::exportIncidentAttributes() 

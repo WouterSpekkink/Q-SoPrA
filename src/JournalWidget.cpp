@@ -241,3 +241,28 @@ void JournalWidget::exportJournal()
       fileOut.close();
     }
 }
+
+bool JournalWidget::checkChanges()
+{
+  if (saveChangesButton->isEnabled())
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Unsaved changes</h2>");
+      warningBox->setInformativeText("You have unsaved changes to journal entries, are you want to continue?");
+      if (warningBox->exec() == QMessageBox::Yes)
+	{
+	  return true;
+	}
+      else 
+	{
+	  return false;
+	}
+    }
+  else
+    {
+      return true;
+    }
+}
