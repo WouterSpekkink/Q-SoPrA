@@ -5,7 +5,7 @@ Copyright (C) 2019 University of Manchester
 
 This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
+Q-SoPrA is free software: you can reditribute it and/or modify
 it under the terms of the GNU General Public License as published by
 the Free Software Foundation, either version 3 of the License, or
 (at your option) any later version.

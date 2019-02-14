@@ -35,6 +35,7 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   incidentsModel->setTable("incidents");
   incidentsModel->setSort(1, Qt::AscendingOrder);
   incidentsModel->select();
+  incidentsModel->setEditStrategy(QSqlTableModel::OnFieldChange);
   tableView->setModel(incidentsModel);
   updateTable();
   
@@ -53,6 +54,7 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   tableView->setColumnWidth(4, parent->width()/4);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
+  tableView->setColumnWidth(7, parent->width()/4);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setWordWrap(true);
