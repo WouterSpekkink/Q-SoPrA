@@ -61,6 +61,7 @@ private slots:
   void insertRecordAfter();
   void moveUp();
   void moveDown();
+  void flipEdges();
   void duplicateRow();
   void removeRow();
   void saveCurrent(const QModelIndex &index);

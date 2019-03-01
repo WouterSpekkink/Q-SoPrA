@@ -86,7 +86,9 @@ void DirectedEdge::calculate()
   _ghostLine.setLength(_ghostLine.length() - 18);
   double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
   if (_ghostLine.dy() >= 0)
-    angle = (Pi * 2) - angle;
+    {
+      angle = (Pi * 2) - angle;
+    }
   qreal arrowSize = 10 + _penWidth;
   _arrowP1 = _ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
 				     cos(angle + Pi / 3) * arrowSize);

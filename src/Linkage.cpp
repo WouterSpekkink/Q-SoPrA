@@ -44,7 +44,6 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
 {
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   _color = Qt::black;
-  setPen(QPen(_color, 2, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   _typeInd = type;
   _coder = coder;
@@ -84,11 +83,11 @@ void Linkage::updatePosition()
   _strokePath = myPath;
 }
 
-void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *)
+void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
   painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
-  painter->setClipping(true);
-  painter->setClipRect(option->exposedRect);
+  //  painter->setClipping(true);
+  // painter->setClipRect(option->exposedRect);
   
   calculate();
   if (line().length() > 0)
@@ -287,6 +286,7 @@ void Linkage::calculate() {
   _arrowHead.clear();
   _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
   _ghostLine.setLength(_ghostLine.length() - 2);
+  prepareGeometryChange();
 }
 
 void Linkage::setColor(const QColor &color)

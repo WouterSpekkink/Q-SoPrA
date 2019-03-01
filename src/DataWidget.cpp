@@ -356,6 +356,7 @@ void DataWidget::moveUp()
 	  updateTable();
 	  tableView->selectRow(currentOrder - 2);
 	  delete query;
+	  flipEdges();
 	}
     }
 }
@@ -385,8 +386,63 @@ void DataWidget::moveDown()
 	  updateTable();
 	  tableView->selectRow(currentOrder);
 	  delete query;
+	  flipEdges();
 	}
     }
+}
+
+void DataWidget::flipEdges()
+{
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  QSqlQuery *query3 = new QSqlQuery;
+  QSqlQuery *query4 = new QSqlQuery;
+  query->exec("SELECT tail, head, type FROM linkages");
+  query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");  
+  query3->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+  query4->prepare("UPDATE linkages SET tail = :newTail, head = :newHead "
+		  "WHERE type = :type AND tail = :oldTail AND head = :oldHead");
+  while (query->next())
+    {
+      int tail = query->value(0).toInt();
+      int head = query->value(1).toInt();
+      QString type = query->value(2).toString();
+      query2->bindValue(":id", tail);
+      query2->exec();
+      query2->first();
+      int tailOrder = query2->value(0).toInt();
+      query2->bindValue(":id", head);
+      query2->exec();
+      query2->first();
+      int headOrder = query2->value(0).toInt();
+      query3->bindValue(":type", type);
+      query3->exec();
+      query3->first();
+      QString direction = query3->value(0).toString();
+      if (direction == FUTURE && tailOrder > headOrder)
+	{
+	  query4->bindValue(":newTail", head);
+	  query4->bindValue(":newHead", tail);
+	  query4->bindValue(":type", type);
+	  query4->bindValue(":oldTail", tail);
+	  query4->bindValue(":oldHead", head);
+	  query4->exec();
+	}
+      else if (direction == PAST && tailOrder < headOrder)
+	{
+	  query4->bindValue(":newTail", head);
+	  query4->bindValue(":newHead", tail);
+	  query4->bindValue(":type", type);
+	  query4->bindValue(":oldTail", tail);
+	  query4->bindValue(":oldHead", head);
+	  query4->exec();
+	}
+    }
+  QSqlDatabase::database().commit();
+  delete query;
+  delete query2;
+  delete query3;
+  delete query4;
 }
 
 void DataWidget::duplicateRow() 

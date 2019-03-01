@@ -8962,6 +8962,7 @@ void EventGraphWidget::removeLinkage()
 	  _edgeVector.removeOne(linkage);
 	}
     }
+  setVisibility();
 }
 
 void EventGraphWidget::removeNormalLinkage() 
