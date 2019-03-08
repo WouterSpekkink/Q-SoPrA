@@ -21,6 +21,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "../include/InheritanceDialog.h"
+#include <QDebug>
 
 InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) : QDialog(parent)
 {
@@ -131,7 +132,12 @@ void InheritanceDialog::saveAndClose()
       QCheckBox *current = it.next();
       if (current->checkState() == Qt::Checked)
 	{
-	  _selectedAttributes.push_back(current->text());
+	  QString currentAttribute = current->text();
+	  if (currentAttribute[0] == "&")
+	    {
+	      currentAttribute.remove(0, 1);
+	    }
+	  _selectedAttributes.push_back(currentAttribute);
 	}
     }
   _exitStatus = 0;

@@ -46,7 +46,7 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   QPainterPath myPath;
   myPath.moveTo(_tempLine2.p2());
   myPath.lineTo(_tempLine1.p2());
-  QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(1), Qt::RoundCap, Qt::RoundJoin); 
+  QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::RoundCap, Qt::RoundJoin); 
   painter->setPen(myPen);
   painter->strokePath(myPath, myPen);
   if (_arrow1On) 

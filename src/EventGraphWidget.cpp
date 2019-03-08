@@ -3888,7 +3888,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":plot", name);
 	  query->exec();
 	  // saved_eg_plots_attributes_to_abstract_nodes
-	  query->prepare("DELETE FROM saved_eg_plots_incidents_to_abstract_nodes "
+	  query->prepare("DELETE FROM saved_eg_plots_attributes_to_abstract_nodes "
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
@@ -7266,6 +7266,7 @@ void EventGraphWidget::colligateEvents()
 	      if (abstractionDialog->isInheriting())
 		{
 		  QVector<QString> inheritance = abstractionDialog->getInheritance();
+		  qDebug() << inheritance.size();
 		  QVectorIterator<QString> it7(inheritance);
 		  while (it7.hasNext())
 		    {
