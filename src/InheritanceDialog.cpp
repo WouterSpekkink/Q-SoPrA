@@ -131,7 +131,7 @@ void InheritanceDialog::saveAndClose()
       QCheckBox *current = it.next();
       if (current->checkState() == Qt::Checked)
 	{
-	  selectedAttributes.push_back(current->text());
+	  _selectedAttributes.push_back(current->text());
 	}
     }
   _exitStatus = 0;
@@ -140,7 +140,7 @@ void InheritanceDialog::saveAndClose()
 
 void InheritanceDialog::cancelAndClose()
 {
-  selectedAttributes.clear();
+  _selectedAttributes.clear();
   _exitStatus = 1;
   this->close();
 }
@@ -152,5 +152,5 @@ int InheritanceDialog::getExitStatus()
 
 QVector<QString> InheritanceDialog::getSelected()
 {
-  return selectedAttributes;
+  return _selectedAttributes;
 }

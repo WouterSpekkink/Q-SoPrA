@@ -23,12 +23,7 @@ LineObject::LineObject(QPointF startPos,
 
 QRectF LineObject::boundingRect() const 
 {
-  qreal extra = (pen().width() + 40) / 2.0;
-  
-  return QRectF(_startPos, QSizeF(_endPos.x() - _startPos.x(),
-				 _endPos.y() - _startPos.y()))
-    .normalized()
-    .adjusted(-extra, -extra, extra, extra);
+  return shape().boundingRect();
 }
 
 QPainterPath LineObject::shape() const 

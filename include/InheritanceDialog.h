@@ -67,7 +67,7 @@ private:
   QPointer<QPushButton> deselectAllButton;
   QPointer<QPushButton> saveCloseButton;
   QPointer<QPushButton> cancelCloseButton;
-  QVector<QString> selectedAttributes;
+  QVector<QString> _selectedAttributes;
   // This one we need to delete and clear
   QVector<QCheckBox*> checkBoxVector;
 

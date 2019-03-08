@@ -34,6 +34,9 @@ public:
   TextObject(const QString &text = QString(), QGraphicsTextItem *parent = 0);
   ~TextObject() {};
 
+  // Overriding public functions
+  QPainterPath shape() const override;
+  
   // Setters
   void setRotationValue(const qreal &rotation);
   
@@ -44,7 +47,7 @@ public:
   // Type checking
   enum {Type = UserType + 12};
   int type() const;
-
+  
 protected:
   // Overriding events
   void mousePressEvent(QGraphicsSceneMouseEvent *) override;

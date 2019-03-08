@@ -32,6 +32,13 @@ TextObject::TextObject(const QString &text,
   setAcceptHoverEvents(true);
 }
 
+QPainterPath TextObject::shape() const 
+{
+  QPainterPath path;
+  path.addRect(boundingRect());
+  return path;
+}
+
 qreal TextObject::getRotationValue() 
 {
   return _rotation;
