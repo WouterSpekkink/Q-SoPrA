@@ -49,6 +49,8 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::RoundCap, Qt::RoundJoin); 
   painter->setPen(myPen);
   painter->strokePath(myPath, myPen);
+  myPen.setStyle(Qt::PenStyle(1));
+  painter->setPen(myPen);
   if (_arrow1On) 
     {
       painter->drawPolyline(_arrowHead);

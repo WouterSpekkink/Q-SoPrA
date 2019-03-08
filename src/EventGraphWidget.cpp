@@ -7266,7 +7266,6 @@ void EventGraphWidget::colligateEvents()
 	      if (abstractionDialog->isInheriting())
 		{
 		  QVector<QString> inheritance = abstractionDialog->getInheritance();
-		  qDebug() << inheritance.size();
 		  QVectorIterator<QString> it7(inheritance);
 		  while (it7.hasNext())
 		    {
@@ -9844,7 +9843,7 @@ void EventGraphWidget::changeEllipseColor()
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
       if (ellipse) 
 	{
-	  QColor currentColor = ellipse->getFillColor();
+	  QColor currentColor = ellipse->getColor();
 	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
 	  colorDialog->setCurrentColor(currentColor);
 	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
