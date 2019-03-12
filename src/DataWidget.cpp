@@ -271,7 +271,7 @@ void DataWidget::editRecord()
 
 void DataWidget::insertRecordBefore() 
 {
-  if (tableView->currentIndex().isValid()) 
+  if (tableView->currentIndex().isValid())
     {
       int currentRow = tableView->selectionModel()->currentIndex().row();
       QPointer<RecordDialog> recordDialog = new RecordDialog(this);    
@@ -296,6 +296,8 @@ void DataWidget::insertRecordBefore()
 	{
 	  delete recordDialog;
 	}
+      QModelIndex currentIndex = tableView->selectionModel()->currentIndex();
+      tableView->selectRow(currentIndex.row() - 1);
     }
 }
 
@@ -328,6 +330,8 @@ void DataWidget::insertRecordAfter()
 	{
 	  delete recordDialog;
 	}
+      QModelIndex currentIndex = tableView->selectionModel()->currentIndex();
+      tableView->selectRow(currentIndex.row() - 1);
     }
 }
 
