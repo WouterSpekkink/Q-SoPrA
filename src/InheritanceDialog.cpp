@@ -133,7 +133,7 @@ void InheritanceDialog::saveAndClose()
       if (current->checkState() == Qt::Checked)
 	{
 	  QString currentAttribute = current->text();
-	  if (currentAttribute[0] == "&")
+	  if (currentAttribute[0] == '&')
 	    {
 	      currentAttribute.remove(0, 1);
 	    }
