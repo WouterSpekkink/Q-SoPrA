@@ -62,6 +62,7 @@ public:
   								
 private slots:
   // Private member functions
+  void simplifyText();
   void saveAndClose();
   void cancelAndClose();
   bool eventFilter(QObject *object, QEvent *event);
@@ -74,6 +75,7 @@ private:
   QPointer<QLabel> rawLabel;
   QPointer<QLabel> commentLabel;
   QPointer<QLabel> sourceLabel;
+  QPointer<QPushButton> simplifyButton;
   QPointer<QPushButton> saveRecordButton;
   QPointer<QPushButton> cancelButton;
   QPointer<QLineEdit> timeStampField;

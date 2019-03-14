@@ -27,10 +27,12 @@ RecordDialog::RecordDialog(QWidget *parent)
   commentField->installEventFilter(this);
   sourceField = new QLineEdit(this);
 
+  simplifyButton = new QPushButton("Simplify", this);
   saveRecordButton = new QPushButton("Save incident", this);
   cancelButton = new QPushButton("Cancel", this);
 
   // We connect all the signals.
+  connect(simplifyButton, SIGNAL(clicked()), this, SLOT(simplifyText()));
   connect(saveRecordButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   
@@ -42,6 +44,7 @@ RecordDialog::RecordDialog(QWidget *parent)
   topLayout->addWidget(timeStampField);
   topLayout->addWidget(sourceLabel);
   topLayout->addWidget(sourceField);
+  topLayout->addWidget(simplifyButton);
   mainLayout->addLayout(topLayout);
   QPointer<QHBoxLayout> fieldLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> descriptionLayout = new QVBoxLayout;
@@ -63,6 +66,13 @@ RecordDialog::RecordDialog(QWidget *parent)
   mainLayout->addLayout(buttonLayout);
 
   setLayout(mainLayout);
+  
+  // Set tab order
+  setTabOrder(timeStampField, sourceField);
+  setTabOrder(sourceField, descriptionField);
+  setTabOrder(descriptionField, rawField);
+  setTabOrder(rawField, commentField);
+  
   this->setMinimumWidth(1000);
   setWindowTitle("Set incident data"); 
 }
@@ -135,6 +145,13 @@ void RecordDialog::setRaw(QString &raw)
 void RecordDialog::setComment(QString &comment) 
 {
   _comment = comment;
+}
+
+void RecordDialog::simplifyText()
+{
+  QString replacement = rawField->textCursor().selectedText().simplified();
+  rawField->textCursor().deleteChar();
+  rawField->textCursor().insertText(replacement);
 }
 
 void RecordDialog::saveAndClose() 
