@@ -18,21 +18,19 @@ RecordDialog::RecordDialog(QWidget *parent)
   sourceLabel = new QLabel("<b>Source:</b>", this);
   
   timeStampField = new QLineEdit(this);
-  descriptionField = new QTextEdit(this);
+  descriptionField = new TextEdit(this);
   descriptionField->installEventFilter(this);
-  rawField = new QTextEdit(this);
+  rawField = new TextEdit(this);
   rawField->setAcceptRichText(false);
   rawField->installEventFilter(this);
-  commentField = new QTextEdit(this);
+  commentField = new TextEdit(this);
   commentField->installEventFilter(this);
   sourceField = new QLineEdit(this);
 
-  simplifyButton = new QPushButton("Simplify", this);
   saveRecordButton = new QPushButton("Save incident", this);
   cancelButton = new QPushButton("Cancel", this);
 
   // We connect all the signals.
-  connect(simplifyButton, SIGNAL(clicked()), this, SLOT(simplifyText()));
   connect(saveRecordButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   
@@ -44,7 +42,6 @@ RecordDialog::RecordDialog(QWidget *parent)
   topLayout->addWidget(timeStampField);
   topLayout->addWidget(sourceLabel);
   topLayout->addWidget(sourceField);
-  topLayout->addWidget(simplifyButton);
   mainLayout->addLayout(topLayout);
   QPointer<QHBoxLayout> fieldLayout = new QHBoxLayout;
   QPointer<QVBoxLayout> descriptionLayout = new QVBoxLayout;
@@ -147,13 +144,6 @@ void RecordDialog::setComment(QString &comment)
   _comment = comment;
 }
 
-void RecordDialog::simplifyText()
-{
-  QString replacement = rawField->textCursor().selectedText().simplified();
-  rawField->textCursor().deleteChar();
-  rawField->textCursor().insertText(replacement);
-}
-
 void RecordDialog::saveAndClose() 
 {
   _timeStamp = timeStampField->text();
@@ -201,7 +191,7 @@ bool RecordDialog::eventFilter(QObject *object, QEvent *event)
   if (event->type() == QEvent::Wheel) 
     {
       QWheelEvent *wheelEvent = (QWheelEvent*) event;
-      QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+      TextEdit *textEdit = qobject_cast<TextEdit*>(object);
       if (textEdit) 
 	{
 	  if(wheelEvent->modifiers() & Qt::ControlModifier) 

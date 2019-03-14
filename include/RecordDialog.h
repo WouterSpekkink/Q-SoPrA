@@ -29,7 +29,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QTextEdit>
+#include "TextEdit.h"
 #include <QMessageBox>
 #include <QWheelEvent>
 #include "EventSequenceDatabase.h"
@@ -62,7 +62,6 @@ public:
   								
 private slots:
   // Private member functions
-  void simplifyText();
   void saveAndClose();
   void cancelAndClose();
   bool eventFilter(QObject *object, QEvent *event);
@@ -75,14 +74,13 @@ private:
   QPointer<QLabel> rawLabel;
   QPointer<QLabel> commentLabel;
   QPointer<QLabel> sourceLabel;
-  QPointer<QPushButton> simplifyButton;
   QPointer<QPushButton> saveRecordButton;
   QPointer<QPushButton> cancelButton;
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
-  QPointer<QTextEdit> descriptionField;
-  QPointer<QTextEdit> rawField;
-  QPointer<QTextEdit> commentField;
+  QPointer<TextEdit> descriptionField;
+  QPointer<TextEdit> rawField;
+  QPointer<TextEdit> commentField;
 
   // Private variables
   int _exitStatus;
