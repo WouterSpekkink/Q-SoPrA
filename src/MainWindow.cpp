@@ -205,7 +205,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::createActions() 
 {
-  // File menu actions
+  // Exit and data export/import menu actions
   exitAct = new QAction(tr("&Exit program"), this);
   exitAct->setShortcuts(QKeySequence::Close);
   exitAct->setStatusTip("Exit the program");
@@ -299,6 +299,11 @@ void MainWindow::createActions()
   connect(importIncidentAttributesAct, SIGNAL(triggered()),
 	  this, SLOT(importIncidentAttributes()));
 
+  exportAssignedIncidentAttributesAct = new QAction(tr("&Export assigned incident attributes"), this);
+  exportAssignedIncidentAttributesAct->setStatusTip("Export assigned incident attributes");
+  connect(exportAssignedIncidentAttributesAct, SIGNAL(triggered()),
+	  this, SLOT(exportAssignedIncidentAttributes()));
+
   exportEntitiesAct = new QAction(tr("&Export entities"), this);
   exportEntitiesAct->setStatusTip("Export entities");
   connect(exportEntitiesAct, SIGNAL(triggered()),
@@ -319,6 +324,11 @@ void MainWindow::createActions()
   connect(importRelTypesAct, SIGNAL(triggered()),
 	  this, SLOT(importRelTypes()));
 
+  exportAssignedRelationshipsAct = new QAction(tr("&Export assigned relationships"), this);
+  exportAssignedRelationshipsAct->setStatusTip("Export assigned relationships");
+  connect(exportAssignedRelationshipsAct, SIGNAL(triggered()),
+	  this, SLOT(exportAssignedRelationships()));  
+  
   exportEntityAttributesAct = new QAction(tr("&Export entity attributes coding tree"), this);
   exportEntityAttributesAct->setStatusTip("Export entity coding tree");
   connect(exportEntityAttributesAct, SIGNAL(triggered()),
@@ -329,6 +339,11 @@ void MainWindow::createActions()
   connect(importEntityAttributesAct, SIGNAL(triggered()),
 	  this, SLOT(importEntityAttributes()));
 
+  exportAssignedEntityAttributesAct = new QAction(tr("&Export assigned entity attributes"), this);
+  exportAssignedEntityAttributesAct->setStatusTip("Export assigned entity attributes");
+  connect(exportAssignedEntityAttributesAct, SIGNAL(triggered()),
+	  this, SLOT(exportAssignedEntityAttributes()));
+  
   setOpenGLAct = new QAction(tr("&Activate OpenGL"), this);
   setOpenGLAct->setStatusTip("Activate OpenGL rendering");
   setOpenGLAct->setCheckable(true);
@@ -362,12 +377,15 @@ void MainWindow::createMenus()
   transferCodesMenu = new QMenu("Import/Export codes");
   transferCodesMenu->addAction(exportIncidentAttributesAct);
   transferCodesMenu->addAction(importIncidentAttributesAct);
+  transferCodesMenu->addAction(exportAssignedIncidentAttributesAct);
   transferCodesMenu->addAction(exportEntitiesAct);
   transferCodesMenu->addAction(importEntitiesAct);
   transferCodesMenu->addAction(exportRelTypesAct);
   transferCodesMenu->addAction(importRelTypesAct);
+  transferCodesMenu->addAction(exportAssignedRelationshipsAct);
   transferCodesMenu->addAction(exportEntityAttributesAct);
   transferCodesMenu->addAction(importEntityAttributesAct);
+  transferCodesMenu->addAction(exportAssignedEntityAttributesAct);
   
   optionsMenu = menuBar->addMenu("Options");
   optionsMenu->addMenu(transferDataMenu);
@@ -1278,6 +1296,51 @@ void MainWindow::importIncidentAttributes()
   aw->resetTree();
 }
 
+void MainWindow::exportAssignedIncidentAttributes()
+{
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "attribute" << ","
+	      << "incident" << ","
+	      << "value" << "\n";
+      /* 
+	 Then we fetch the table, but we also have to translate the incident 
+	 ids into their order values
+      */
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT attribute, incident, value FROM attributes_to_incidents "
+		  "ORDER BY attribute");
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      while (query->next()) 
+	{
+	  QString attribute = query->value(0).toString();
+	  int id = query->value(1).toInt();
+	  QString value = query->value(2).toString();
+	  query2->bindValue(":id", id);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+		  << "\"" << order << "\"" << ","
+		  << "\"" << doubleQuote(value).toStdString() << "\"" << "\n";
+	}
+      delete query;
+      delete query2;
+      // And that is it.
+      fileOut.close();
+    }
+}
+
 void MainWindow::exportEntities() 
 {
   // We let the user set the file name and location.
@@ -1637,6 +1700,73 @@ void MainWindow::importRelTypes()
   rw->resetTree();
 }
 
+
+void MainWindow::exportAssignedRelationships()
+{
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "relationship" << ","
+	      << "incident" << "\n";
+      /* 
+	 The rest is relatively simple. We make a query return almost the entire table,
+	 but we also need to translate the incident ids into their order values.
+
+	 In addition, to understand where to split the string, we need to do a third query.
+      */
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QSqlQuery *query3 = new QSqlQuery;
+      query->exec("SELECT relationship, type, incident FROM relationships_to_incidents "
+		  "ORDER BY relationship");
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      query3->prepare("SELECT directedness FROM relationship_types WHERE name = :type");
+      while (query->next()) 
+	{
+	  QString relationship = query->value(0).toString();
+	  QString type = query->value(1).toString();
+	  QString id = query->value(2).toString();
+	  query2->bindValue(":id", id);
+	  query2->exec();
+	  query2->first();
+	  int order = query2->value(0).toInt();
+	  query3->bindValue(":type", type);
+	  query3->exec();
+	  query3->first();
+	  QString directedness = query3->value(0).toString();
+	  QStringList relationshipParts = QStringList();
+	  QString outputRelationship = QString();
+	  if (directedness == DIRECTED)
+	    {
+	      relationshipParts = relationship.split("--->");
+	      outputRelationship = relationshipParts[0] + "-[" + type + "]->" + relationshipParts[1];
+	    }
+	  else if (directedness == UNDIRECTED)
+	    {
+	      relationshipParts = relationship.split("<-->");
+	      outputRelationship = relationshipParts[0] + "<-[" + type + "]->" + relationshipParts[1];
+	    }
+
+	  
+	  fileOut << "\"" << doubleQuote(outputRelationship).toStdString() << "\"" << ","
+		  << "\"" << order << "\"" << "\n";
+	}
+      delete query;
+      delete query2;
+      delete query3;
+      // And that is it.
+      fileOut.close();
+    }
+}
+
 void MainWindow::exportEntityAttributes() 
 {
   // We let the user set the file name and location.
@@ -1808,6 +1938,41 @@ void MainWindow::importEntityAttributes()
     }
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
+}
+
+void MainWindow::exportAssignedEntityAttributes()
+{
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // We first write the header of the file.
+      fileOut << "attribute" << ","
+	      << "entity" << ","
+	      << "value" << "\n";
+      // Then we fetch the table and write the results
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT attribute, entity, value FROM attributes_to_entities "
+		  "ORDER BY attribute");
+      while (query->next()) 
+	{
+	  QString attribute = query->value(0).toString();
+	  QString entity = query->value(1).toString();
+	  QString value = query->value(2).toString();
+	  fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(entity).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(value).toStdString() << "\"" << "\n";
+	}
+      delete query;
+      // And that is it.
+      fileOut.close();
+    }
 }
 
 void MainWindow::showMenus(bool status) 

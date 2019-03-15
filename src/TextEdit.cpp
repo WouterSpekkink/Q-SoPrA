@@ -33,7 +33,7 @@ void TextEdit::contextMenuEvent(QContextMenuEvent *event)
   QAction *simplifyAction = new QAction(tr("Simplify"), this);
   connect(simplifyAction, SIGNAL(triggered()), this, SLOT(simplifyText()));
   menu->addAction(simplifyAction);
-  if (this->textCursor().selectedText() == "")
+  if (this->textCursor().selectedText().length() == 0)
     {
       simplifyAction->setEnabled(false);
     }

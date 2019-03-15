@@ -94,6 +94,9 @@ private slots:
   void importRelTypes();
   void exportEntityAttributes();
   void importEntityAttributes();
+  void exportAssignedIncidentAttributes();
+  void exportAssignedEntityAttributes();
+  void exportAssignedRelationships();
   void importFromCsv();
   void exportToCsv();
   bool checkLineBreaks(std::string line);
@@ -160,6 +163,9 @@ private:
   QPointer<QAction> importRelTypesAct;
   QPointer<QAction> exportEntityAttributesAct;
   QPointer<QAction> importEntityAttributesAct;
+  QPointer<QAction> exportAssignedIncidentAttributesAct;
+  QPointer<QAction> exportAssignedEntityAttributesAct;
+  QPointer<QAction> exportAssignedRelationshipsAct;
   QPointer<QAction> setOpenGLAct;
   QPointer<QAction> setAntialiasingAct;
 };
