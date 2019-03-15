@@ -160,14 +160,17 @@ void RelationshipTypeDialog::saveAndClose()
 {
   _description = descriptionField->toPlainText().trimmed();
   _name = _name.trimmed();
-  if (_name.contains("(") || _name.contains(")")) 
+  if (_name.contains("(") || _name.contains(")") ||
+      _name.contains("--->") || _name.contains("<-->")) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name contains illegal character.");
-      warningBox->setInformativeText("The name of a relationship type cannot "
-				     "contain the '(' and ')' characters.");
+      warningBox->setInformativeText("The name of an entity cannot "
+				     "contain the '(' and ')' characters, "
+				     "and it cannot contain the \"--->\" "
+				     "or \"<-->\" symbols.");
       warningBox->exec();
       delete warningBox;
       return;

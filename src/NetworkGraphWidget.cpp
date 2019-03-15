@@ -658,7 +658,7 @@ void NetworkGraphWidget::checkCongruency()
 	  delete query;
 	  return;
 	}
-            // Let's check for congruence of cases
+      // Let's check for congruence of cases
       QVector<QString> currentVector;
       for (int i = 0; i != caseListWidget->count(); i++)
 	{
@@ -6565,14 +6565,14 @@ void NetworkGraphWidget::setVisibility()
 	      if (weightCheckBox->checkState() == Qt::Checked)
 		{
 		  qreal originalWeight = (qreal) count;
-		  if (originalWeight == 1.0f)
+		  if (originalWeight == 1.0f || _maxWeight == weightSpinBox->value())
 		    {
 		      currentDirected->setPenWidth(1.0f);
 		    }
 		  else
 		    {
-		      qreal normalizedWeight = ((originalWeight - 1.0f) /
-						(_maxWeight - 1.0f)) * (5.0f * 1.0f) + 1.0f ;
+		      qreal normalizedWeight = ((originalWeight - weightSpinBox->value()) /
+						(_maxWeight - weightSpinBox->value())) * (5.0f * 1.0f) + 1.0f ;
 		      currentDirected->setPenWidth(normalizedWeight);
 		    }
 		}

@@ -499,7 +499,7 @@ void RelationshipsWidget::highlightText()
     {
       QStandardItem *currentRelationship = relationshipsTree->
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
-      QString currentName = relationshipsTreeView->currentIndex().data().toString();
+      QString currentName = relationshipsTreeView->currentIndex().data(Qt::UserRole).toString();
       if (currentRelationship->parent()) 
 	{
 	  QStandardItem *typeItem = currentRelationship->parent();
@@ -603,7 +603,7 @@ void RelationshipsWidget::submitRelationshipComment()
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
       if (currentItem->parent()) 
 	{
-	  QString currentName = currentItem->data(Qt::DisplayRole).toString();
+	  QString currentName = currentItem->data(Qt::UserRole).toString();
 	  QString currentType = currentItem->parent()->data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("UPDATE entity_relationships SET comment = :comment "
@@ -627,7 +627,7 @@ void RelationshipsWidget::getComment()
       if (currentItem->parent()) 
 	{
 	  relationshipCommentField->setEnabled(true);
-	  QString currentName = currentItem->data(Qt::DisplayRole).toString();
+	  QString currentName = currentItem->data(Qt::UserRole).toString();
 	  QString currentType = currentItem->parent()->data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT comment FROM entity_relationships "
@@ -708,7 +708,8 @@ void RelationshipsWidget::editType()
 	      QString newName = typeDialog->getName();
 	      description = typeDialog->getDescription();
 	      directedness = typeDialog->getDirectedness();
-	      QStandardItem *currentType = relationshipsTree->itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
+	      QStandardItem *currentType = relationshipsTree->
+		itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	      currentType->setData(newName);
 	      currentType->setData(newName, Qt::DisplayRole);
 	      QString hint = breakString(directedness + " - " + description);
@@ -716,6 +717,22 @@ void RelationshipsWidget::editType()
 	      for (int i = 0; i != currentType->rowCount(); i++) 
 		{
 		  QStandardItem *currentChild = currentType->takeChild(i);
+		  QString baseName = currentChild->data(Qt::UserRole).toString();
+		  QStringList relationshipParts = QStringList();
+		  QString newChildName = QString();
+		  if (directedness == DIRECTED)
+		    {
+		      relationshipParts = baseName.split("--->");
+		      newChildName = relationshipParts[0] + "-[" + newName +
+			"]->" + relationshipParts[1];
+		    }
+		  else if (directedness == UNDIRECTED)
+		    {
+		      relationshipParts = baseName.split("<-->");
+		      newChildName = relationshipParts[0] + "<-[" + newName +
+			"]->" + relationshipParts[1];
+		    }
+		  currentChild->setData(newChildName, Qt::DisplayRole);
 		  currentChild->setToolTip(hint);
 		  currentType->setChild(i, currentChild);
 		}
@@ -779,7 +796,8 @@ void RelationshipsWidget::assignRelationship()
 	  QStandardItem *typeItem = currentItem->parent();
 	  QString currentType = typeItem->data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
-	  QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
+	  QString currentRelationship = relationshipsTreeView->
+	    currentIndex().data(Qt::UserRole).toString();
 	  query->exec("SELECT relationships_record FROM save_data");
 	  query->first();
 	  int order = 0; 
@@ -838,7 +856,8 @@ void RelationshipsWidget::unassignRelationship()
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
       if (currentItem->parent()) 
 	{
-	  QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
+	  QString currentRelationship = relationshipsTreeView->
+	    currentIndex().data(Qt::UserRole).toString();
 	  QStandardItem *typeItem = currentItem->parent();
 	  QString currentType = typeItem->data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
@@ -915,7 +934,7 @@ void RelationshipsWidget::removeText()
       query->first();
       int id = 0;
       id = query->value(0).toInt();
-      QString relationship = relationshipsTreeView->currentIndex().data().toString();
+      QString relationship = relationshipsTreeView->currentIndex().data(Qt::UserRole).toString();
       if (rawField->textCursor().selectedText().trimmed() != "") 
 	{
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
@@ -960,7 +979,8 @@ void RelationshipsWidget::resetTexts()
 	  if (!(query->isNull(0))) 
 	    {
 	      id = query->value(0).toInt();
-	      QString relationship = relationshipsTreeView->currentIndex().data().toString();
+	      QString relationship = relationshipsTreeView->
+		currentIndex().data(Qt::UserRole).toString();
 	      QStandardItem *currentItem = relationshipsTree->
 		itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	      QStandardItem *typeItem = currentItem->parent();
@@ -1011,7 +1031,17 @@ void RelationshipsWidget::newRelationship()
 	      QString name = relationshipsDialog->getName();
 	      QString leftEntity = relationshipsDialog->getLeftEntity();
 	      QString rightEntity = relationshipsDialog->getRightEntity();
-	      QStandardItem *newItem = new QStandardItem(name);
+	      QString itemName = QString();
+	      if (directedness == DIRECTED)
+		{
+		  itemName = leftEntity + "-[" + currentType + "]->" + rightEntity;
+		}
+	      else if (directedness == UNDIRECTED)
+		{
+		  itemName = leftEntity + "<-[" + currentType + "]->" + rightEntity;
+		}
+	      QStandardItem *newItem = new QStandardItem(itemName);
+	      newItem->setData(name, Qt::UserRole);
 	      newItem->setEditable(false);
 	      newItem->setToolTip(hint);
 	      currentItem->appendRow(newItem);
@@ -1046,9 +1076,10 @@ void RelationshipsWidget::editRelationship()
 	{
 	  QStandardItem *typeItem = currentItem->parent();
 	  QString currentType = typeItem->data(Qt::DisplayRole).toString();
-	  QString currentRelationship = currentItem->data(Qt::DisplayRole).toString();
+	  QString currentRelationship = currentItem->data(Qt::UserRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT directedness, description FROM relationship_types WHERE name = :name");
+	  query->prepare("SELECT directedness, description FROM relationship_types "
+			 "WHERE name = :name");
 	  query->bindValue(":name", currentType);
 	  query->exec();
 	  query->first();
@@ -1075,6 +1106,15 @@ void RelationshipsWidget::editRelationship()
 	      QString name = relationshipsDialog->getName();
 	      QString leftEntity = relationshipsDialog->getLeftEntity();
 	      QString rightEntity = relationshipsDialog->getRightEntity();
+	      QString itemName = QString();
+	      if (directedness == DIRECTED)
+		{
+		  itemName = leftEntity + "-[" + currentType + "]->" + rightEntity;
+		}
+	      else if (directedness == UNDIRECTED)
+		{
+		  itemName = leftEntity + "<-[" + currentType + "]->" + rightEntity;
+		}
 	      query->prepare("UPDATE entity_relationships "
 			     "SET name = :name, source = :leftEntity, target = :rightEntity "
 			     "WHERE name = :oldName AND type = :type");
@@ -1098,7 +1138,7 @@ void RelationshipsWidget::editRelationship()
 	      query->bindValue(":oldName", currentRelationship);
 	      query->bindValue(":type", currentType);
 	      query->exec();
-	      currentItem->setData(name, Qt::DisplayRole);
+	      currentItem->setData(itemName, Qt::DisplayRole);
 	    }
 	  if (relationshipsDialog->getEntityEdited() == 1) 
 	    {
@@ -1174,7 +1214,23 @@ void RelationshipsWidget::setTree()
 	{
 	  QString name = query2->value(0).toString();
 	  QString comment = query2->value(1).toString();
-	  QStandardItem *relationship = new QStandardItem(name);
+	  QStringList relationshipParts = QStringList();
+	  QString itemName = QString();
+	  if (currentDirection == DIRECTED)
+	    {
+	      relationshipParts = name.split("--->");
+	      itemName = relationshipParts[0] + "-[" + currentType
+		+ "]->" + relationshipParts[1]; 
+	    }
+	  else if (currentDirection == UNDIRECTED)
+	    {
+	      relationshipParts = name.split("<-->");
+	      itemName = relationshipParts[0] + "<-[" + currentType
+		+ "]->" + relationshipParts[1]; 
+	    }
+	  
+	  QStandardItem *relationship = new QStandardItem(itemName);
+	  relationship->setData(name, Qt::UserRole);
 	  type->setChild(children, relationship);
 	  relationship->setToolTip(hint);
 	  relationship->setEditable(false);
@@ -1192,7 +1248,7 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
   QPoint globalPos = relationshipsTreeView->mapToGlobal(pos);
   QModelIndex targetIndex = relationshipsTreeView->indexAt(pos);
   relationshipsTreeView->selectionModel()->select(targetIndex, QItemSelectionModel::Current);
-  QString relationship = targetIndex.data(Qt::DisplayRole).toString();
+  QString relationship = targetIndex.data(Qt::UserRole).toString();
   QString type = targetIndex.parent().data(Qt::DisplayRole).toString();
   if (targetIndex.parent().isValid()) 
     {
@@ -1297,7 +1353,7 @@ void RelationshipsWidget::unassignAll()
       QStandardItem *currentItem = relationshipsTree->
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
       QStandardItem *typeItem = currentItem->parent();
-      QString relationship = currentItem->data(Qt::DisplayRole).toString();
+      QString relationship = currentItem->data(Qt::UserRole).toString();
       QString type = typeItem->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("DELETE FROM relationships_to_incidents "
@@ -1702,7 +1758,7 @@ void RelationshipsWidget::previousCoded()
   if (relationshipsTreeView->currentIndex().isValid()) 
     {
       QPersistentModelIndex currentIndex = relationshipsTreeView->currentIndex();
-      QString relationship = relationshipsTreeView->currentIndex().data().toString();
+      QString relationship = relationshipsTreeView->currentIndex().data(Qt::UserRole).toString();
       QStandardItem *currentItem = relationshipsTree->
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
       if (currentItem->parent()) 
@@ -1753,7 +1809,7 @@ void RelationshipsWidget::nextCoded()
   if (relationshipsTreeView->currentIndex().isValid()) 
     {
       QPersistentModelIndex currentIndex = relationshipsTreeView->currentIndex();
-      QString relationship = relationshipsTreeView->currentIndex().data().toString();
+      QString relationship = relationshipsTreeView->currentIndex().data(Qt::UserRole).toString();
       QStandardItem *currentItem = relationshipsTree->
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
       if (currentItem->parent()) 
@@ -1806,7 +1862,8 @@ void RelationshipsWidget::setButtons()
 	itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
       if (currentItem->parent()) 
 	{
-	  QString currentRelationship = relationshipsTreeView->currentIndex().data().toString();
+	  QString currentRelationship = relationshipsTreeView->
+	    currentIndex().data(Qt::UserRole).toString();
 	  QStandardItem *typeItem = currentItem->parent();
 	  QString currentType = typeItem->data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
@@ -1900,7 +1957,7 @@ void RelationshipsWidget::boldSelected(QAbstractItemModel *model, QString name, 
     {
       QModelIndex index = model->index(i, 0, parent);
       QStandardItem *currentRelationship = relationshipsTree->itemFromIndex(index);
-      QString currentName = model->data(index).toString();
+      QString currentName = currentRelationship->data(Qt::UserRole).toString();
       if (currentRelationship->parent()) 
 	{
 	  QStandardItem *typeItem = currentRelationship->parent();

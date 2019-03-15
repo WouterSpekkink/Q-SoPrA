@@ -967,6 +967,7 @@ void MainWindow::switchToNetworkGraphView()
       NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
       ngw->getTypes();
       ngw->checkCongruency();
+      ngw->setVisibility();
       ngw->scene->resetItemSelection();
       stacked->setCurrentWidget(networkGraphWidget);
     }
