@@ -373,20 +373,29 @@ void MainWindow::createMenus()
   transferDataMenu = new QMenu("Import/Export data");
   transferDataMenu->addAction(importAct);
   transferDataMenu->addAction(exportAct);
+
+  transferIncidentAttributeMenu = new QMenu("Incident attributes");
+  transferIncidentAttributeMenu->addAction(exportIncidentAttributesAct);
+  transferIncidentAttributeMenu->addAction(importIncidentAttributesAct);
+  transferIncidentAttributeMenu->addAction(exportAssignedIncidentAttributesAct);
+  
+  transferEntitiesMenu = new QMenu("Entities");
+  transferEntitiesMenu->addAction(exportEntitiesAct);
+  transferEntitiesMenu->addAction(importEntitiesAct);
+  transferEntitiesMenu->addAction(exportEntityAttributesAct);
+  transferEntitiesMenu->addAction(importEntityAttributesAct);
+  transferEntitiesMenu->addAction(exportAssignedEntityAttributesAct);
+
+  transferRelationshipsMenu = new QMenu("Entity relationships");
+  transferRelationshipsMenu->addAction(exportRelTypesAct);
+  transferRelationshipsMenu->addAction(importRelTypesAct);
+  transferRelationshipsMenu->addAction(exportAssignedRelationshipsAct);
   
   transferCodesMenu = new QMenu("Import/Export codes");
-  transferCodesMenu->addAction(exportIncidentAttributesAct);
-  transferCodesMenu->addAction(importIncidentAttributesAct);
-  transferCodesMenu->addAction(exportAssignedIncidentAttributesAct);
-  transferCodesMenu->addAction(exportEntitiesAct);
-  transferCodesMenu->addAction(importEntitiesAct);
-  transferCodesMenu->addAction(exportRelTypesAct);
-  transferCodesMenu->addAction(importRelTypesAct);
-  transferCodesMenu->addAction(exportAssignedRelationshipsAct);
-  transferCodesMenu->addAction(exportEntityAttributesAct);
-  transferCodesMenu->addAction(importEntityAttributesAct);
-  transferCodesMenu->addAction(exportAssignedEntityAttributesAct);
-  
+  transferCodesMenu->addMenu(transferIncidentAttributeMenu);
+  transferCodesMenu->addMenu(transferEntitiesMenu);
+  transferCodesMenu->addMenu(transferRelationshipsMenu);
+    
   optionsMenu = menuBar->addMenu("Options");
   optionsMenu->addMenu(transferDataMenu);
   optionsMenu->addMenu(transferCodesMenu);
@@ -406,14 +415,23 @@ void MainWindow::createMenus()
   graphMenu->addAction(networkGraphViewAct);
   graphMenu->addAction(occurrenceGraphViewAct);
 
-  tableMenu = menuBar->addMenu("Tables");
-  tableMenu->addAction(rawAttributesTableViewAct);
-  tableMenu->addAction(rawRelationshipsTableViewAct);
-  tableMenu->addAction(incidentsAttributesTableViewAct);
-  tableMenu->addAction(entitiesAttributesTableViewAct);
-  tableMenu->addAction(missingAttributesTableViewAct);
-  tableMenu->addAction(missingRelationshipsTableViewAct);
+  codingTextsMenu = new QMenu("Coding texts");
+  codingTextsMenu->addAction(rawAttributesTableViewAct);
+  codingTextsMenu->addAction(rawRelationshipsTableViewAct);
 
+  attributeTablesMenu = new QMenu("Attribute tables");
+  attributeTablesMenu->addAction(incidentsAttributesTableViewAct);
+  attributeTablesMenu->addAction(entitiesAttributesTableViewAct);
+
+  missingTablesMenu = new QMenu("Missing codes");
+  missingTablesMenu->addAction(missingAttributesTableViewAct);
+  missingTablesMenu->addAction(missingRelationshipsTableViewAct);
+
+  tableMenu = menuBar->addMenu("Tables");
+  tableMenu->addMenu(codingTextsMenu);
+  tableMenu->addMenu(attributeTablesMenu);
+  tableMenu->addMenu(missingTablesMenu);
+  
   setMenuBar(menuBar);
 }
 

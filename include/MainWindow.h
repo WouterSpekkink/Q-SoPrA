@@ -133,10 +133,16 @@ private:
   QPointer<QMenu> optionsMenu;
   QPointer<QMenu> graphicsMenu;
   QPointer<QMenu> transferCodesMenu;
+  QPointer<QMenu> transferIncidentAttributeMenu;
+  QPointer<QMenu> transferEntitiesMenu;
+  QPointer<QMenu> transferRelationshipsMenu;
   QPointer<QMenu> transferDataMenu;
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
+  QPointer<QMenu> codingTextsMenu;
+  QPointer<QMenu> attributeTablesMenu;
+  QPointer<QMenu> missingTablesMenu;
   QPointer<QAction> exitAct;
   QPointer<QAction> importAct;
   QPointer<QAction> exportAct;
