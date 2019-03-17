@@ -580,13 +580,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  else if (line) 
 	    {
 	      clearSelection();
-	      _selectedLinePtr = line;
 	      line->setSelected(true);
+	      _selectedLinePtr = line;
 	      emit resetItemSelection();
-	      _moveLineObject = true;
-	      _lastMousePos = event->scenePos();
-	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	      qApp->processEvents();
+	      _lineMoveOn = true;
 	    }
 	  else if (ellipse) 
 	    {
@@ -594,23 +591,16 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _selectedEllipsePtr = ellipse;
 	      ellipse->setSelected(true);
 	      emit resetItemSelection();
-	      _moveEllipse = true;
-	      _lastMousePos = event->scenePos();
-	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	      qApp->processEvents();
+	      _manipulateEllipse = true;
 	    }
 	  else if (rect) 
 	    {
 	      clearSelection();
-	      _selectedRectPtr = rect;
 	      rect->setSelected(true);
 	      emit resetItemSelection();
-	      _moveRect = true;
-	      _lastMousePos = event->scenePos();
-	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	      qApp->processEvents();
+	      _selectedRectPtr = rect;
+	      _manipulateRect = true;
 	    }
-	  return;
 	}
       else 
 	{
@@ -683,10 +673,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  else if (line) 
 	    {
 	      clearSelection();
-	      line->setSelected(true);
 	      _selectedLinePtr = line;
+	      line->setSelected(true);
 	      emit resetItemSelection();
-	      _lineMoveOn = true;
+	      _moveLineObject = true;
+	      _lastMousePos = event->scenePos();
+	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	      qApp->processEvents();
 	    }
 	  else if (ellipse) 
 	    {
@@ -694,15 +687,21 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _selectedEllipsePtr = ellipse;
 	      ellipse->setSelected(true);
 	      emit resetItemSelection();
-	      _manipulateEllipse = true;
+	      _moveEllipse = true;
+	      _lastMousePos = event->scenePos();
+	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	      qApp->processEvents();
 	    }
 	  else if (rect) 
 	    {
 	      clearSelection();
+	      _selectedRectPtr = rect;
 	      rect->setSelected(true);
 	      emit resetItemSelection();
-	      _selectedRectPtr = rect;
-	      _manipulateRect = true;
+	      _moveRect = true;
+	      _lastMousePos = event->scenePos();
+	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
+	      qApp->processEvents();
 	    }
 	  else if (text) 
 	    {
@@ -712,6 +711,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _lastMousePos = event->scenePos();
 	      _moveText = true;
 	    }
+	  return;
 	  _selectedIncidentNodePtr = NULL;
 	  _selectedAbstractNodePtr = NULL;
 	  _selectedNetworkNodePtr = NULL;
