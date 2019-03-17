@@ -1293,8 +1293,10 @@ void MainWindow::importIncidentAttributes()
     }
   loadProgress->close(); // We can close the progress bar.
   delete loadProgress; // Memory management
-  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1)); 
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(stacked->widget(1));
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
   aw->resetTree();
+  egw->resetTree();  
 }
 
 void MainWindow::exportAssignedIncidentAttributes()
