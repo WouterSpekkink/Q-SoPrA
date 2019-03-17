@@ -40,6 +40,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _moveRect = false;
   _rotateRect = false;
   _moveText = false;
+  _manipulateText = false;
   _rotateText = false;
   _hierarchyMove = false;
   _eventWidthChange = false;
@@ -515,6 +516,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 									     QTransform()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
 								    QTransform()));
+	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
+								    QTransform()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -600,6 +603,16 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      emit resetItemSelection();
 	      _selectedRectPtr = rect;
 	      _manipulateRect = true;
+	   }
+	  else if (text) 
+	    {
+	      clearSelection();
+	      text->setSelected(true);
+	      emit resetItemSelection();
+	      _selectedTextPtr = text;
+	      _lastMousePos = event->scenePos();
+	      _initPos = event->scenePos();
+	      _manipulateText = true;
 	    }
 	}
       else 
@@ -711,7 +724,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _lastMousePos = event->scenePos();
 	      _moveText = true;
 	    }
-	  return;
 	  _selectedIncidentNodePtr = NULL;
 	  _selectedAbstractNodePtr = NULL;
 	  _selectedNetworkNodePtr = NULL;
@@ -739,6 +751,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _moveRect = false;
   _rotateRect = false;
   _rotateText = false;
+  _manipulateText = false;
   _hierarchyMove = false;
   _moveText = false;
   _moveNetworkNodeLabel = false;
@@ -1140,6 +1153,22 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       _lastMousePos = event->scenePos();
       _selectedTextPtr->setRotationValue(_selectedTextPtr->getRotationValue());
       emit relevantChange();
+    }
+  else if (_manipulateText)
+    {
+      _lastMousePos = event->scenePos();
+      qreal newRight = _selectedTextPtr->scenePos().x() + _lastMousePos.x();
+      qreal newHeight = event->scenePos().y() - _initPos.y();
+      if (newRight >= 10)
+	{
+	  _selectedTextPtr->setTextWidth(_lastMousePos.x() - _selectedTextPtr->scenePos().x());
+	}
+      if (newHeight >= 9)
+	{
+	  QFont font = _selectedTextPtr->font();
+	  font.setPointSize(newHeight);
+	  _selectedTextPtr->setFont(font);
+	}
     }
   else if (_rotateText) 
     {

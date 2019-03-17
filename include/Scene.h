@@ -96,11 +96,13 @@ private:
   bool _moveRect;
   bool _rotateRect;
   bool _moveText;
+  bool _manipulateText;
   bool _rotateText;
   bool _hierarchyMove;
   bool _eventWidthChange;
   bool _moveNetworkNodeLabel;
   QPointF _lastMousePos;
+  QPointF _initPos;
   
   // Pointers to objects created by other classes
   // Do not delete
