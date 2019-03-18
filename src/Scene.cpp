@@ -1158,7 +1158,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
       _lastMousePos = event->scenePos();
       qreal newRight = _selectedTextPtr->scenePos().x() + _lastMousePos.x();
-      qreal newHeight = event->scenePos().y() - _initPos.y();
+      qreal newHeight = ((event->scenePos().y() - _initPos.y()) / 2);
       if (newRight >= 10)
 	{
 	  _selectedTextPtr->setTextWidth(_lastMousePos.x() - _selectedTextPtr->scenePos().x());
