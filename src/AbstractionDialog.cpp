@@ -197,7 +197,7 @@ void AbstractionDialog::inheritAttributes()
 	{
 	  IncidentNode *currentIncident = it.next();
 	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+	  query->prepare("SELECT attribute FROM attributes_to_incidents "
 			 "WHERE incident = :incident");
 	  query->bindValue(":incident", currentIncident->getId());
 	  query->exec();
@@ -261,7 +261,7 @@ void AbstractionDialog::inheritSharedAttributes()
 	  sharedAttributes.clear();
 	  IncidentNode *currentIncident = it.next();
 	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+	  query->prepare("SELECT attribute FROM attributes_to_incidents "
 			 "WHERE incident = :incident");
 	  query->bindValue(":incident", currentIncident->getId());
 	  query->exec();

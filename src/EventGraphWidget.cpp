@@ -6272,7 +6272,7 @@ void EventGraphWidget::plotLabels()
       IncidentNode *currentIncidentNode = currentItem->getNode();
       if (currentIncidentNode->isVisible()) 
 	{
-	  if (_labelsVisible) 
+	  if (!_labelsVisible) 
 	    {
 	      currentItem->hide();
 	    }
