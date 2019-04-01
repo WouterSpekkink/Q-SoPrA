@@ -39,6 +39,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <math.h>
 #include <vector>
 #include <fstream>
+#include <QSvgRenderer>
 #include "IncidentNodeLabel.h"
 #include "GraphicsView.h"
 #include "IncidentNode.h"

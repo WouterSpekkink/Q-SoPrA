@@ -29,6 +29,7 @@ IncidentNodeLabel::IncidentNodeLabel(IncidentNode *incidentNode)
   _node = incidentNode;
   _xOffset = 0;
   _yOffset = 0;
+  
 }
 
 IncidentNode* IncidentNodeLabel::getNode()

@@ -3257,6 +3257,9 @@ void OccurrenceGraphWidget::exportSvg()
       currentRect.setWidth(currentRect.width());
       currentRect.setHeight(currentRect.height());
       gen.setSize(QSize(currentRect.width(), currentRect.height()));
+      gen.setViewBox(QRect(0, 0, currentRect.width(), currentRect.height()));
+      int dpiX = qApp->desktop()->logicalDpiX();
+      gen.setResolution(dpiX);
       QPainter painter;
       painter.begin(&gen);
       scene->render(&painter);

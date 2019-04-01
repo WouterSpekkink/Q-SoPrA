@@ -6570,7 +6570,7 @@ void EventGraphWidget::setRangeControls()
 
 void EventGraphWidget::exportSvg() 
 {
-  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.)"));
+  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.svg)"));
   if (!fileName.trimmed().isEmpty()) 
     {
       if (!fileName.endsWith(".svg")) 
@@ -6585,6 +6585,9 @@ void EventGraphWidget::exportSvg()
       currentRect.setWidth(currentRect.width());
       currentRect.setHeight(currentRect.height());
       gen.setSize(QSize(currentRect.width(), currentRect.height()));
+      gen.setViewBox(QRect(0, 0, currentRect.width(), currentRect.height()));
+      int dpiX = qApp->desktop()->logicalDpiX();
+      gen.setResolution(dpiX);
       QPainter painter;
       painter.begin(&gen);
       scene->render(&painter);
