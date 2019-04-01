@@ -6272,7 +6272,7 @@ void EventGraphWidget::plotLabels()
       IncidentNode *currentIncidentNode = currentItem->getNode();
       if (currentIncidentNode->isVisible()) 
 	{
-	  if (!_labelsVisible) 
+	  if (_labelsVisible == false) 
 	    {
 	      currentItem->hide();
 	    }
@@ -6289,7 +6289,7 @@ void EventGraphWidget::plotLabels()
       AbstractNode *currentIncidentNode = currentItem->getAbstractNode();
       if (currentIncidentNode->isVisible()) 
 	{
-	  if (!_labelsVisible) 
+	  if (_labelsVisible ==  false) 
 	    {
 	      currentItem->hide();
 	    }
@@ -9633,7 +9633,7 @@ void EventGraphWidget::duplicateLine()
 	  newLineObject->setColor(line->getColor());
 	  _lineVector.push_back(newLineObject);
 	  scene->addItem(newLineObject);
-	  newLineObject->setZValue(5);
+	  newLineObject->setZValue(line->zValue());
 	}
     }
 }
@@ -9792,7 +9792,7 @@ void EventGraphWidget::duplicateText()
 	      QPointF pos = text->scenePos();
 	      pos.setY(pos.y() - 300);
 	      newText->setPos(pos);
-	      newText->setZValue(6);
+	      newText->setZValue(text->zValue());
 	      newText->setDefaultTextColor(text->defaultTextColor());
 	      newText->setRotationValue(text->getRotationValue());
 	      newText->setFont(text->font());
@@ -9915,7 +9915,7 @@ void EventGraphWidget::duplicateEllipse()
 	  newEllipse->setPenWidth(ellipse->getPenWidth());
 	  newEllipse->setPenStyle(ellipse->getPenStyle());
 	  _ellipseVector.push_back(newEllipse);
-	  newEllipse->setZValue(5);
+	  newEllipse->setZValue(ellipse->zValue());
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
 	  pos.setY(pos.y() - 100);
@@ -10036,7 +10036,7 @@ void EventGraphWidget::duplicateRect()
 	  newRect->setPenWidth(rect->getPenWidth());
 	  newRect->setPenStyle(rect->getPenStyle());
 	  _rectVector.push_back(newRect);
-	  newRect->setZValue(5);
+	  newRect->setZValue(rect->zValue());
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
 	  pos.setY(pos.y() - 100);
@@ -10318,28 +10318,31 @@ void EventGraphWidget::fixZValues()
 	  maxZ = current->zValue();
 	}
     }
-  for (int i = 4; i != maxZ; i++) 
+  if (maxZ > 3)
     {
-      bool currentZFound = false;
-      QListIterator<QGraphicsItem*> it2(scene->items());
-      while (it2.hasNext()) 
+      for (int i = 4; i != maxZ; i++) 
 	{
-	  QGraphicsItem *current = it2.next();
-	  if (current->zValue() == i) 
+	  bool currentZFound = false;
+	  QListIterator<QGraphicsItem*> it2(scene->items());
+	  while (it2.hasNext()) 
 	    {
-	      currentZFound = true;
-	      break;
-	    }
-	}
-      if (!currentZFound) 
-	{
-	  QListIterator<QGraphicsItem*> it3(scene->items());
-	  while (it3.hasNext()) 
-	    {
-	      QGraphicsItem *current = it3.next();
-	      if (current->zValue() > i) 
+	      QGraphicsItem *current = it2.next();
+	      if (current->zValue() == i) 
 		{
-		  current->setZValue(current->zValue() - 1);
+		  currentZFound = true;
+		  break;
+		}
+	    }
+	  if (!currentZFound) 
+	    {
+	      QListIterator<QGraphicsItem*> it3(scene->items());
+	      while (it3.hasNext()) 
+		{
+		  QGraphicsItem *current = it3.next();
+		  if (current->zValue() > i) 
+		    {
+		      current->setZValue(current->zValue() - 1);
+		    }
 		}
 	    }
 	}
