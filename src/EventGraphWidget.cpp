@@ -6272,7 +6272,7 @@ void EventGraphWidget::plotLabels()
       IncidentNode *currentIncidentNode = currentItem->getNode();
       if (currentIncidentNode->isVisible()) 
 	{
-	  if (_labelsVisible == false) 
+	  if (_labelsVisible) 
 	    {
 	      currentItem->hide();
 	    }
@@ -6289,7 +6289,7 @@ void EventGraphWidget::plotLabels()
       AbstractNode *currentIncidentNode = currentItem->getAbstractNode();
       if (currentIncidentNode->isVisible()) 
 	{
-	  if (_labelsVisible ==  false) 
+	  if (_labelsVisible) 
 	    {
 	      currentItem->hide();
 	    }
@@ -7284,10 +7284,6 @@ void EventGraphWidget::colligateEvents()
 	      abstractNodeLabel->setDefaultTextColor(Qt::black);
 	      _abstractNodeLabelVector.push_back(abstractNodeLabel);
 	      scene->addItem(abstractNodeLabel);
-	      if (!_labelsVisible)
-		{
-		  abstractNodeLabel->hide();
-		}
 	      rewireLinkages(current, tempIncidents);
 	      updateAbstractNodeOrder();
 	      updateLinkages();
@@ -7752,6 +7748,10 @@ void EventGraphWidget::updateAbstractNodeOrder()
       newLabel->setZValue(4);
       newLabel->setDefaultTextColor(labelColor);
       scene->addItem(newLabel);
+      if (_labelsVisible == false || !current->isVisible())
+	{
+	  newLabel->hide();
+	}
     }
 }
 
