@@ -45,6 +45,31 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _hierarchyMove = false;
   _eventWidthChange = false;
   _moveNetworkNodeLabel = false;
+  _gettingEllipseArea = false;
+  _ellipseAreaStarted = false;
+  _gettingRectArea = false;
+  _rectAreaStarted = false;
+  _drawArea = QRectF();
+}
+
+void Scene::resetAreas()
+{
+  _gettingEllipseArea = false;
+  _gettingRectArea = false;
+}
+			    
+void Scene::prepEllipseArea()
+{
+  resetAreas();
+  _gettingEllipseArea = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepRectArea()
+{
+  resetAreas();
+  _gettingRectArea = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
 }
 
 QRectF Scene::itemsBoundingRect() const 
@@ -641,94 +666,116 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 								    QTransform()));
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
 								    QTransform()));
-	  if (incidentNodeLabel) 
+	  if (_gettingEllipseArea)
 	    {
-	      incident = incidentNodeLabel->getNode();
-	    }
-	  if (abstractNodeLabel) 
-	    {
-	      abstractNode = abstractNodeLabel->getAbstractNode();
-	    }
-	  if (occurrenceLabel) 
-	    {
-	      occurrence = occurrenceLabel->getOccurrence();
-	    }
-	  if (incident) 
-	    {
-	      clearSelection();
-	      incident->setSelected(true);
-	      emit resetItemSelection();
-	    }
-	  else if (abstractNode) 
-	    {
-	      clearSelection();
-	      abstractNode->setSelected(true);
-	      emit resetItemSelection();
-	    }
-	  else if (networkNode) 
-	    {
-	      clearSelection();
-	      networkNode->setSelected(true);
-	    }
-	  else if (networkLabel)
-	    {
-	      clearSelection();
-	      _moveNetworkNodeLabel = true;
-	      _selectedNetworkNodeLabelPtr = networkLabel;
 	      _lastMousePos = event->scenePos();
+	      _ellipseAreaStarted = true;
+	      _tempEllipse = new EllipseObject;
+	      _tempEllipse->setPos(_tempEllipse->mapFromScene(event->scenePos()));
+	      _tempEllipse->setBottomRight(_tempEllipse->mapFromScene(event->scenePos()));
+	      addItem(_tempEllipse);
+
 	    }
-	  else if (occurrence) 
+	  else if (_gettingRectArea)
 	    {
-	      clearSelection();
-	      occurrence->setSelected(true);
-	      _selectedOccurrencePtr = occurrence;
+	      _lastMousePos = event->scenePos();
+	      _rectAreaStarted = true;
+	      _tempRect = new RectObject;
+	      _tempRect->setPos(_tempRect->mapFromScene(event->scenePos()));
+	      _tempRect->setBottomRight(_tempRect->mapFromScene(event->scenePos()));
+	      addItem(_tempRect);
 	    }
-	  else if (line) 
+	  else
 	    {
-	      clearSelection();
-	      _selectedLinePtr = line;
-	      line->setSelected(true);
+	      if (incidentNodeLabel) 
+		{
+		  incident = incidentNodeLabel->getNode();
+		}
+	      if (abstractNodeLabel) 
+		{
+		  abstractNode = abstractNodeLabel->getAbstractNode();
+		}
+	      if (occurrenceLabel) 
+		{
+		  occurrence = occurrenceLabel->getOccurrence();
+		}
+	      if (incident) 
+		{
+		  clearSelection();
+		  incident->setSelected(true);
+		  emit resetItemSelection();
+		}
+	      else if (abstractNode) 
+		{
+		  clearSelection();
+		  abstractNode->setSelected(true);
+		  emit resetItemSelection();
+		}
+	      else if (networkNode) 
+		{
+		  clearSelection();
+		  networkNode->setSelected(true);
+		}
+	      else if (networkLabel)
+		{
+		  clearSelection();
+		  _moveNetworkNodeLabel = true;
+		  _selectedNetworkNodeLabelPtr = networkLabel;
+		  _lastMousePos = event->scenePos();
+		}
+	      else if (occurrence) 
+		{
+		  clearSelection();
+		  occurrence->setSelected(true);
+		  _selectedOccurrencePtr = occurrence;
+		}
+	      else if (line) 
+		{
+		  clearSelection();
+		  _selectedLinePtr = line;
+		  line->setSelected(true);
+		  emit resetItemSelection();
+		  _moveLineObject = true;
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
+		  qApp->processEvents();
+		}
+	      else if (ellipse) 
+		{
+		  clearSelection();
+		  _selectedEllipsePtr = ellipse;
+		  ellipse->setSelected(true);
+		  emit resetItemSelection();
+		  _moveEllipse = true;
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
+		  qApp->processEvents();
+		}
+	      else if (rect) 
+		{
+		  clearSelection();
+		  _selectedRectPtr = rect;
+		  rect->setSelected(true);
+		  emit resetItemSelection();
+		  _moveRect = true;
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
+		  qApp->processEvents();
+		}
+	      else if (text) 
+		{
+		  clearSelection();
+		  text->setSelected(true);
+		  _selectedTextPtr = text;
+		  _lastMousePos = event->scenePos();
+		  _moveText = true;
+		}
+	      _selectedIncidentNodePtr = NULL;
+	      _selectedAbstractNodePtr = NULL;
+	      _selectedNetworkNodePtr = NULL;
 	      emit resetItemSelection();
-	      _moveLineObject = true;
-	      _lastMousePos = event->scenePos();
-	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	      qApp->processEvents();
+	      QGraphicsScene::mousePressEvent(event);
 	    }
-	  else if (ellipse) 
-	    {
-	      clearSelection();
-	      _selectedEllipsePtr = ellipse;
-	      ellipse->setSelected(true);
-	      emit resetItemSelection();
-	      _moveEllipse = true;
-	      _lastMousePos = event->scenePos();
-	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	      qApp->processEvents();
-	    }
-	  else if (rect) 
-	    {
-	      clearSelection();
-	      _selectedRectPtr = rect;
-	      rect->setSelected(true);
-	      emit resetItemSelection();
-	      _moveRect = true;
-	      _lastMousePos = event->scenePos();
-	      QApplication::setOverrideCursor(Qt::SizeAllCursor);
-	      qApp->processEvents();
-	    }
-	  else if (text) 
-	    {
-	      clearSelection();
-	      text->setSelected(true);
-	      _selectedTextPtr = text;
-	      _lastMousePos = event->scenePos();
-	      _moveText = true;
-	    }
-	  _selectedIncidentNodePtr = NULL;
-	  _selectedAbstractNodePtr = NULL;
-	  _selectedNetworkNodePtr = NULL;
-	  emit resetItemSelection();
-	  QGraphicsScene::mousePressEvent(event);
 	}
     }
   else
@@ -755,6 +802,21 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _hierarchyMove = false;
   _moveText = false;
   _moveNetworkNodeLabel = false;
+  if (_gettingEllipseArea)
+    {
+      emit sendEllipseArea(_drawArea);
+      delete _tempEllipse;
+    }
+  _gettingEllipseArea = false;
+  _ellipseAreaStarted = false;
+  if (_gettingRectArea)
+    {
+      emit sendRectArea(_drawArea);
+      delete _tempRect;
+    }
+  _gettingRectArea = false;
+  _rectAreaStarted = false;
+  _drawArea = QRectF();
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
@@ -838,6 +900,27 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	    }
 	}
     }
+  else if (_gettingEllipseArea)
+    {
+      if (_ellipseAreaStarted)
+	{
+	  _drawArea = QRectF(_lastMousePos, event->scenePos()).normalized();
+	  _tempEllipse->setTopLeft(_tempEllipse->mapFromScene(_drawArea.topLeft()));
+	  _tempEllipse->setBottomRight(_tempEllipse->mapFromScene(_drawArea.bottomRight()));
+	  clearSelection();
+       	}
+    }
+  else if (_gettingRectArea)
+    {
+      if (_rectAreaStarted)
+	{
+	  _drawArea = QRectF(_lastMousePos, event->scenePos()).normalized();
+	  _tempRect->setTopLeft(_tempRect->mapFromScene(_drawArea.topLeft()));
+	  _tempRect->setBottomRight(_tempRect->mapFromScene(_drawArea.bottomRight()));
+	  clearSelection();
+       	}
+    }
+  
   else if (_resizeOnIncidentNode) 
     {
       qreal dist = event->scenePos().x() - _lastMousePos.x();
@@ -1623,4 +1706,16 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 OccurrenceItem* Scene::getSelectedOccurrence() 
 {
   return _selectedOccurrencePtr;
+}
+
+bool Scene::isPreparingArea()
+{
+  if (_gettingEllipseArea || _gettingRectArea)
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
 }

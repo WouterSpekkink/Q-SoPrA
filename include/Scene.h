@@ -50,10 +50,15 @@ public:
   // Constructor and destructor
   Scene(QObject *parent = 0);
   ~Scene() {};
-
+  
   // This needs to be exposed;
   QRectF itemsBoundingRect() const;
   OccurrenceItem* getSelectedOccurrence(); // Used by occurrence item
+  void prepEllipseArea();
+  void prepRectArea();
+
+  // Getters
+  bool isPreparingArea();
 
 signals:
   void posChanged(IncidentNode *, qreal &dist);
@@ -69,10 +74,13 @@ signals:
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);
   void RectContextMenuAction(const QString&);
+  void sendEllipseArea(const QRectF&);
+  void sendRectArea(const QRectF&);					    
 
 private slots:
   // Private member functions
   void modEventWidth(QGraphicsItem* item);
+  void resetAreas();
   
 protected:
   // Overrides of events
@@ -101,8 +109,17 @@ private:
   bool _hierarchyMove;
   bool _eventWidthChange;
   bool _moveNetworkNodeLabel;
+  bool _gettingEllipseArea;
+  bool _ellipseAreaStarted;
+  bool _gettingRectArea;
+  bool _rectAreaStarted;
   QPointF _lastMousePos;
   QPointF _initPos;
+  QRectF _drawArea;
+
+  // Drawing aids
+  EllipseObject *_tempEllipse;
+  RectObject *_tempRect;
   
   // Pointers to objects created by other classes
   // Do not delete
@@ -115,6 +132,8 @@ private:
   EllipseObject *_selectedEllipsePtr;
   RectObject *_selectedRectPtr;
   TextObject *_selectedTextPtr;
+
+
 };
 
 #endif 

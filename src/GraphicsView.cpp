@@ -287,6 +287,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     }
   else if (event->button() == Qt::LeftButton)
     {
+      Scene *scene = qobject_cast<Scene*>(this->scene());
+      if (scene->isPreparingArea())
+	{
+	  this->setDragMode(QGraphicsView::NoDrag);
+	}
       IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
       IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));

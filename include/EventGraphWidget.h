@@ -241,11 +241,12 @@ private slots:
   void ignoreLinkage();
   void removeNormalLinkage();
   void changeLinkageComment();
-  void processEventGraphContextMenu(const QString &action, const QPoint &pos);
   void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
   void addTextObject(const QPointF &pos);
-  void addEllipseObject(const QPointF &pos);
-  void addRectObject(const QPointF &pos);
+  void prepEllipseArea();
+  void prepRectArea();
+  void addEllipseObject(const QRectF &area);
+  void addRectObject(const QRectF &area);
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void toggleArrow1();
@@ -364,6 +365,12 @@ private:
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
   QPointer<QPushButton> contractCurrentGraphButton;
+  QPointer<QPushButton> addLineButton;
+  QPointer<QPushButton> addSingleArrowButton;
+  QPointer<QPushButton> addDoubleArrowButton;
+  QPointer<QPushButton> addEllipseButton;
+  QPointer<QPushButton> addRectangleButton;
+  QPointer<QPushButton> addTextButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
