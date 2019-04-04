@@ -32,6 +32,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   _maxOrder = 0;
   _maxWeight = 0;
   _vectorPos = 0;
+  _currentPenStyle = 1;
+  _currentPenWidth = 1;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -82,6 +84,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   incongruencyLabel = new QLabel(tr(""), this);
   incongruencyLabel->setStyleSheet("QLabel {color : red;}");
   zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
+  shapesLabel = new QLabel(tr("<b>Shapes:</b>"), this);
+  penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
+  penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
@@ -202,6 +207,41 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   addEllipseButton->setEnabled(false);
   addRectangleButton->setEnabled(false);
   addTextButton->setEnabled(false);
+
+  penStyleComboBox = new QComboBox(this);
+  penStyleComboBox->addItem("Solid");
+  penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
+  penStyleComboBox->addItem("Dashed");
+  penStyleComboBox->setItemIcon(1, QIcon("./images/dashed_line.png"));
+  penStyleComboBox->addItem("Dotted");
+  penStyleComboBox->setItemIcon(2, QIcon("./images/dotted_line.png"));
+  penStyleComboBox->addItem("Dash Dot");
+  penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
+  penStyleComboBox->addItem("Dash Dot Dot");
+  penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
+  penStyleComboBox->setEnabled(false);
+  penWidthComboBox = new QComboBox(this);
+  penWidthComboBox->addItem("1");
+  penWidthComboBox->addItem("2");
+  penWidthComboBox->addItem("3");
+  penWidthComboBox->addItem("4");
+  penWidthComboBox->addItem("5");
+  penWidthComboBox->addItem("6");
+  penWidthComboBox->addItem("7");
+  penWidthComboBox->addItem("8");
+  penWidthComboBox->addItem("9");
+  penWidthComboBox->addItem("10");
+  penWidthComboBox->addItem("11");
+  penWidthComboBox->addItem("12");
+  penWidthComboBox->addItem("13");
+  penWidthComboBox->addItem("14");
+  penWidthComboBox->addItem("15");
+  penWidthComboBox->addItem("16");
+  penWidthComboBox->addItem("17");
+  penWidthComboBox->addItem("18");
+  penWidthComboBox->addItem("19");
+  penWidthComboBox->addItem("20");
+  penWidthComboBox->setEnabled(false);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -319,6 +359,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
+  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
+  connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
+  connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
+  connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateEdges()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
@@ -343,6 +388,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
 	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
+  connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
@@ -374,12 +420,17 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   mainLayout->addWidget(topLine);
   
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
+  plotObjectsLayout->addWidget(shapesLabel);
   plotObjectsLayout->addWidget(addLineButton);
   plotObjectsLayout->addWidget(addSingleArrowButton);
   plotObjectsLayout->addWidget(addDoubleArrowButton);
   plotObjectsLayout->addWidget(addEllipseButton);
   plotObjectsLayout->addWidget(addRectangleButton);
   plotObjectsLayout->addWidget(addTextButton);
+  plotObjectsLayout->addWidget(penStyleLabel);
+  plotObjectsLayout->addWidget(penStyleComboBox);
+  plotObjectsLayout->addWidget(penWidthLabel);
+  plotObjectsLayout->addWidget(penWidthComboBox);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
   
@@ -850,6 +901,8 @@ void NetworkGraphWidget::setGraphControls(bool state)
   addEllipseButton->setEnabled(state);
   addRectangleButton->setEnabled(state);
   addTextButton->setEnabled(state);
+  penStyleComboBox->setEnabled(state);
+  penWidthComboBox->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -2131,10 +2184,60 @@ void NetworkGraphWidget::recolorLabels()
     }
 }
 
+void NetworkGraphWidget::setPenStyle()
+{
+  _currentPenStyle = penStyleComboBox->currentIndex() + 1;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  line->setPenStyle(_currentPenStyle);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setPenStyle(_currentPenStyle);
+	}
+      else if (rect)
+	{
+	  rect->setPenStyle(_currentPenStyle);
+	}
+    }
+}
+
+void NetworkGraphWidget::setPenWidth()
+{
+  _currentPenWidth = penWidthComboBox->currentIndex() + 1;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  line->setPenWidth(_currentPenWidth);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setPenWidth(_currentPenWidth);
+	}
+      else if (rect)
+	{
+	  rect->setPenWidth(_currentPenWidth);
+	}
+    }
+}
+
 void NetworkGraphWidget::addLineObject(const QPointF &start, const QPointF &end) 
 {
   LineObject *newLineObject = new LineObject(start, end);
   _lineVector.push_back(newLineObject);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
 }
@@ -2143,6 +2246,8 @@ void NetworkGraphWidget::addSingleArrowObject(const QPointF &start, const QPoint
 {
   LineObject *newLineObject = new LineObject(start, end);
   newLineObject->setArrow1(true);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
@@ -2153,6 +2258,8 @@ void NetworkGraphWidget::addDoubleArrowObject(const QPointF &start, const QPoint
   LineObject *newLineObject = new LineObject(start, end);
   newLineObject->setArrow1(true);
   newLineObject->setArrow2(true);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
@@ -2163,6 +2270,8 @@ void NetworkGraphWidget::addEllipseObject(const QRectF &area)
   EllipseObject *newEllipse = new EllipseObject();
   _ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
+  newEllipse->setPenStyle(_currentPenStyle);
+  newEllipse->setPenWidth(_currentPenWidth);
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
@@ -2174,6 +2283,8 @@ void NetworkGraphWidget::addRectObject(const QRectF &area)
   RectObject *newRect = new RectObject();
   _rectVector.push_back(newRect);
   scene->addItem(newRect);
+  newRect->setPenStyle(_currentPenStyle);
+  newRect->setPenWidth(_currentPenWidth);
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
@@ -2200,6 +2311,38 @@ void NetworkGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       newText->adjustSize();
     }
   delete textDialog;
+}
+
+void NetworkGraphWidget::processShapeSelection()
+{
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  int penStyle = line->getPenStyle();
+	  int penWidth = line->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+      else if (ellipse)
+	{
+	  int penStyle = ellipse->getPenStyle();
+	  int penWidth = ellipse->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+      else if (rect)
+	{
+	  int penStyle = rect->getPenStyle();
+	  int penWidth = rect->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+    }
 }
 
 void NetworkGraphWidget::processLineContextMenu(const QString &action) 

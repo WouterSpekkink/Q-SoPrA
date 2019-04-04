@@ -133,6 +133,9 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void setPenStyle();
+  void setPenWidth();
+  void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void toggleArrow1();
@@ -180,6 +183,9 @@ private:
   QPointer<QLabel> lowerRangeLabel;
   QPointer<QLabel> casesLabel;
   QPointer<QLabel> zoomLabel;
+  QPointer<QLabel> shapesLabel;
+  QPointer<QLabel> penStyleLabel;
+  QPointer<QLabel> penWidthLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
@@ -211,11 +217,16 @@ private:
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
   QPointer<QSlider> zoomSlider;
+  QPointer<QComboBox> penStyleComboBox;
+  QPointer<QComboBox> penWidthComboBox;
 
   // Private variables
   int _distance;
   bool _labelsVisible;
   bool _matched;
+  int _currentPenStyle;
+  int _currentPenWidth;
+  
   // Pointer to other widget
   // Do not delete
   QPointer<EventGraphWidget> _eventGraphWidgetPtr;  

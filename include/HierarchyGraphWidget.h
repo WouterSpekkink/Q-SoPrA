@@ -137,6 +137,9 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void setPenStyle();
+  void setPenWidth();
+  void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void toggleArrow1();
@@ -206,6 +209,11 @@ private:
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> legendLabel;
   QPointer<QLabel> zoomLabel;
+  QPointer<QLabel> shapesLabel;
+  QPointer<QLabel> penStyleLabel;
+  QPointer<QLabel> penWidthLabel;
+  QPointer<QComboBox> penStyleComboBox;
+  QPointer<QComboBox> penWidthComboBox;
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> attributesFilterField;
@@ -249,6 +257,8 @@ private:
   AbstractNode *_selectedAbstractNode;
   int _selectedIncident;
   bool _commentBool;
+  int _currentPenStyle;
+  int _currentPenWidth;
 
   // Private data vectors
   QVector<IncidentNode*> _eventVector;

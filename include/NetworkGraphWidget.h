@@ -181,6 +181,9 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void setPenStyle();
+  void setPenWidth();
+  void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void toggleArrow1();
@@ -242,7 +245,12 @@ private:
   QPointer<QLabel> incongruencyLabel;
   QPointer<QLabel> casesLabel;
   QPointer<QLabel> zoomLabel;
+  QPointer<QLabel> shapesLabel;
+  QPointer<QLabel> penStyleLabel;
+  QPointer<QLabel> penWidthLabel;
   QPointer<QComboBox> typeComboBox;
+  QPointer<QComboBox> penStyleComboBox;
+  QPointer<QComboBox> penWidthComboBox;
   QPointer<DeselectableListWidget> nodeListWidget;
   QPointer<DeselectableListWidget> edgeListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -315,6 +323,8 @@ private:
   int _vectorPos;
   bool _labelsShown;
   bool _massMove;
+  int _currentPenStyle;
+  int _currentPenWidth;
 
   // Private data vectors
   QVector<QString> _presentTypes; 

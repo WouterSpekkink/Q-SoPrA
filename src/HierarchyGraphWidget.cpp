@@ -26,6 +26,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
 {  
   _selectedAbstractNode = NULL;
   _selectedIncident = 0;
+  _currentPenStyle = 1;
+  _currentPenWidth = 1;
   
   scene = new Scene(this);
   view = new BandlessGraphicsView(scene);
@@ -68,7 +70,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
   legendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
-
+  shapesLabel = new QLabel(tr("<b>Shapes:</b>"), this);
+  penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
+  penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
+  
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
   sourceField = new QLineEdit(infoWidget);
@@ -165,6 +170,39 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   addTextButton->setIconSize(QSize(20, 20));
   addTextButton->setMinimumSize(40, 40);
   addTextButton->setMaximumSize(40, 40);
+
+  penStyleComboBox = new QComboBox(this);
+  penStyleComboBox->addItem("Solid");
+  penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
+  penStyleComboBox->addItem("Dashed");
+  penStyleComboBox->setItemIcon(1, QIcon("./images/dashed_line.png"));
+  penStyleComboBox->addItem("Dotted");
+  penStyleComboBox->setItemIcon(2, QIcon("./images/dotted_line.png"));
+  penStyleComboBox->addItem("Dash Dot");
+  penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
+  penStyleComboBox->addItem("Dash Dot Dot");
+  penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
+  penWidthComboBox = new QComboBox(this);
+  penWidthComboBox->addItem("1");
+  penWidthComboBox->addItem("2");
+  penWidthComboBox->addItem("3");
+  penWidthComboBox->addItem("4");
+  penWidthComboBox->addItem("5");
+  penWidthComboBox->addItem("6");
+  penWidthComboBox->addItem("7");
+  penWidthComboBox->addItem("8");
+  penWidthComboBox->addItem("9");
+  penWidthComboBox->addItem("10");
+  penWidthComboBox->addItem("11");
+  penWidthComboBox->addItem("12");
+  penWidthComboBox->addItem("13");
+  penWidthComboBox->addItem("14");
+  penWidthComboBox->addItem("15");
+  penWidthComboBox->addItem("16");
+  penWidthComboBox->addItem("17");
+  penWidthComboBox->addItem("18");
+  penWidthComboBox->addItem("19");
+  penWidthComboBox->addItem("20");
   
   rawField->viewport()->installEventFilter(infoWidget);
   view->viewport()->installEventFilter(this);
@@ -191,6 +229,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
+  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
+  connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
+  connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -240,6 +282,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
 	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
+  connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));  
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
@@ -248,12 +291,17 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
 
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
+  plotObjectsLayout->addWidget(shapesLabel);
   plotObjectsLayout->addWidget(addLineButton);
   plotObjectsLayout->addWidget(addSingleArrowButton);
   plotObjectsLayout->addWidget(addDoubleArrowButton);
   plotObjectsLayout->addWidget(addEllipseButton);
   plotObjectsLayout->addWidget(addRectangleButton);
   plotObjectsLayout->addWidget(addTextButton);
+  plotObjectsLayout->addWidget(penStyleLabel);
+  plotObjectsLayout->addWidget(penStyleComboBox);
+  plotObjectsLayout->addWidget(penWidthLabel);
+  plotObjectsLayout->addWidget(penWidthComboBox);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
   
@@ -2042,11 +2090,61 @@ void HierarchyGraphWidget::setHeights()
     }
 }
 
+void HierarchyGraphWidget::setPenStyle()
+{
+  _currentPenStyle = penStyleComboBox->currentIndex() + 1;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  line->setPenStyle(_currentPenStyle);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setPenStyle(_currentPenStyle);
+	}
+      else if (rect)
+	{
+	  rect->setPenStyle(_currentPenStyle);
+	}
+    }
+}
+
+void HierarchyGraphWidget::setPenWidth()
+{
+  _currentPenWidth = penWidthComboBox->currentIndex() + 1;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  line->setPenWidth(_currentPenWidth);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setPenWidth(_currentPenWidth);
+	}
+      else if (rect)
+	{
+	  rect->setPenWidth(_currentPenWidth);
+	}
+    }
+}
+
 void HierarchyGraphWidget::addLineObject(const QPointF &start, const QPointF &end) 
 {
   LineObject *newLineObject = new LineObject(start, end);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   newLineObject->setZValue(5);
 }
 
@@ -2056,6 +2154,8 @@ void HierarchyGraphWidget::addSingleArrowObject(const QPointF &start, const QPoi
   newLineObject->setArrow1(true);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   newLineObject->setZValue(5);
 }
 
@@ -2066,6 +2166,8 @@ void HierarchyGraphWidget::addDoubleArrowObject(const QPointF &start, const QPoi
   newLineObject->setArrow2(true);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   newLineObject->setZValue(5);
 }
 
@@ -2074,6 +2176,8 @@ void HierarchyGraphWidget::addEllipseObject(const QRectF &area)
   EllipseObject *newEllipse = new EllipseObject();
   _ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
+  newEllipse->setPenStyle(_currentPenStyle);
+  newEllipse->setPenWidth(_currentPenWidth);
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
@@ -2085,6 +2189,8 @@ void HierarchyGraphWidget::addRectObject(const QRectF &area)
   RectObject *newRect = new RectObject();
   _rectVector.push_back(newRect);
   scene->addItem(newRect);
+  newRect->setPenStyle(_currentPenStyle);
+  newRect->setPenWidth(_currentPenWidth);
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
@@ -2111,6 +2217,38 @@ void HierarchyGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       newText->adjustSize();
     }
   delete textDialog;
+}
+
+void HierarchyGraphWidget::processShapeSelection()
+{
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  int penStyle = line->getPenStyle();
+	  int penWidth = line->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+      else if (ellipse)
+	{
+	  int penStyle = ellipse->getPenStyle();
+	  int penWidth = ellipse->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+      else if (rect)
+	{
+	  int penStyle = rect->getPenStyle();
+	  int penWidth = rect->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+    }
 }
 
 void HierarchyGraphWidget::processLineContextMenu(const QString &action) 

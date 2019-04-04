@@ -37,6 +37,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _vectorPos = 0;
   _labelsVisible = true;
   _contracted = false;
+  _currentPenStyle = 1;
+  _currentPenWidth = 1;
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -105,6 +107,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   eventLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   linkageLegendLabel = new QLabel(tr("<b>Linkages:</b>"), legendWidget);
   zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
+  shapesLabel = new QLabel(tr("<b>Shapes:</b>"), this);
+  penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
+  penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -250,6 +255,41 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   addEllipseButton->setEnabled(false);
   addRectangleButton->setEnabled(false);
   addTextButton->setEnabled(false);
+
+  penStyleComboBox = new QComboBox(this);
+  penStyleComboBox->addItem("Solid");
+  penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
+  penStyleComboBox->addItem("Dashed");
+  penStyleComboBox->setItemIcon(1, QIcon("./images/dashed_line.png"));
+  penStyleComboBox->addItem("Dotted");
+  penStyleComboBox->setItemIcon(2, QIcon("./images/dotted_line.png"));
+  penStyleComboBox->addItem("Dash Dot");
+  penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
+  penStyleComboBox->addItem("Dash Dot Dot");
+  penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
+  penStyleComboBox->setEnabled(false);
+  penWidthComboBox = new QComboBox(this);
+  penWidthComboBox->addItem("1");
+  penWidthComboBox->addItem("2");
+  penWidthComboBox->addItem("3");
+  penWidthComboBox->addItem("4");
+  penWidthComboBox->addItem("5");
+  penWidthComboBox->addItem("6");
+  penWidthComboBox->addItem("7");
+  penWidthComboBox->addItem("8");
+  penWidthComboBox->addItem("9");
+  penWidthComboBox->addItem("10");
+  penWidthComboBox->addItem("11");
+  penWidthComboBox->addItem("12");
+  penWidthComboBox->addItem("13");
+  penWidthComboBox->addItem("14");
+  penWidthComboBox->addItem("15");
+  penWidthComboBox->addItem("16");
+  penWidthComboBox->addItem("17");
+  penWidthComboBox->addItem("18");
+  penWidthComboBox->addItem("19");
+  penWidthComboBox->addItem("20");
+  penWidthComboBox->setEnabled(false);
   
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -293,6 +333,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
+  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
+  connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
+  connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(posChanged(IncidentNode *, qreal&)),
 	  this, SLOT(changePos(IncidentNode *, qreal&)));
@@ -325,6 +369,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
 	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
+  connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -403,12 +448,17 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   mainLayout->addWidget(topLine);
   
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
+  plotObjectsLayout->addWidget(shapesLabel);
   plotObjectsLayout->addWidget(addLineButton);
   plotObjectsLayout->addWidget(addSingleArrowButton);
   plotObjectsLayout->addWidget(addDoubleArrowButton);
   plotObjectsLayout->addWidget(addEllipseButton);
   plotObjectsLayout->addWidget(addRectangleButton);
   plotObjectsLayout->addWidget(addTextButton);
+  plotObjectsLayout->addWidget(penStyleLabel);
+  plotObjectsLayout->addWidget(penStyleComboBox);
+  plotObjectsLayout->addWidget(penWidthLabel);
+  plotObjectsLayout->addWidget(penWidthComboBox);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
 			       
@@ -921,7 +971,9 @@ void EventGraphWidget::setGraphControls(bool state)
   addDoubleArrowButton->setEnabled(state);
   addEllipseButton->setEnabled(state);
   addRectangleButton->setEnabled(state);
-  addTextButton->setEnabled(state);  
+  addTextButton->setEnabled(state);
+  penStyleComboBox->setEnabled(state);
+  penWidthComboBox->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -9498,6 +9550,8 @@ void EventGraphWidget::addLineObject(const QPointF &start, const QPointF &end)
 {
   LineObject *newLineObject = new LineObject(start, end);
   _lineVector.push_back(newLineObject);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
 }
@@ -9506,6 +9560,8 @@ void EventGraphWidget::addSingleArrowObject(const QPointF &start, const QPointF 
 {
   LineObject *newLineObject = new LineObject(start, end);
   newLineObject->setArrow1(true);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
@@ -9516,6 +9572,8 @@ void EventGraphWidget::addDoubleArrowObject(const QPointF &start, const QPointF 
   LineObject *newLineObject = new LineObject(start, end);
   newLineObject->setArrow1(true);
   newLineObject->setArrow2(true);
+  newLineObject->setPenStyle(_currentPenStyle);
+  newLineObject->setPenWidth(_currentPenWidth);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
@@ -9526,6 +9584,8 @@ void EventGraphWidget::addEllipseObject(const QRectF &area)
   EllipseObject *newEllipse = new EllipseObject();
   _ellipseVector.push_back(newEllipse);
   scene->addItem(newEllipse);
+  newEllipse->setPenStyle(_currentPenStyle);
+  newEllipse->setPenWidth(_currentPenWidth);
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
@@ -9537,6 +9597,8 @@ void EventGraphWidget::addRectObject(const QRectF &area)
   RectObject *newRect = new RectObject();
   _rectVector.push_back(newRect);
   scene->addItem(newRect);
+  newRect->setPenStyle(_currentPenStyle);
+  newRect->setPenWidth(_currentPenWidth);
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
@@ -9563,6 +9625,86 @@ void EventGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       newText->adjustSize();
     }
   delete textDialog;
+}
+
+void EventGraphWidget::setPenStyle()
+{
+  _currentPenStyle = penStyleComboBox->currentIndex() + 1;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  line->setPenStyle(_currentPenStyle);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setPenStyle(_currentPenStyle);
+	}
+      else if (rect)
+	{
+	  rect->setPenStyle(_currentPenStyle);
+	}
+    }
+}
+
+void EventGraphWidget::setPenWidth()
+{
+  _currentPenWidth = penWidthComboBox->currentIndex() + 1;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  line->setPenWidth(_currentPenWidth);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setPenWidth(_currentPenWidth);
+	}
+      else if (rect)
+	{
+	  rect->setPenWidth(_currentPenWidth);
+	}
+    }
+}
+
+void EventGraphWidget::processShapeSelection()
+{
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (line)
+	{
+	  int penStyle = line->getPenStyle();
+	  int penWidth = line->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+      else if (ellipse)
+	{
+	  int penStyle = ellipse->getPenStyle();
+	  int penWidth = ellipse->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+      else if (rect)
+	{
+	  int penStyle = rect->getPenStyle();
+	  int penWidth = rect->getPenWidth();
+	  penStyleComboBox->setCurrentIndex(penStyle - 1);
+	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	}
+    }
 }
 
 void EventGraphWidget::processLineContextMenu(const QString &action) 

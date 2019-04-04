@@ -64,8 +64,20 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _tempEllipsePtr = NULL;
   _tempRectPtr = NULL;
   _tempTextPtr = NULL;
+  _currentPenStyle = 1;
+  _currentPenWidth = 1;
 }
 
+void Scene::setPenStyle(int style)
+{
+  _currentPenStyle = style + 1;
+}
+
+void Scene::setPenWidth(int width)
+{
+  _currentPenWidth = width + 1;
+}
+			    
 void Scene::resetAreas()
 {
   _gettingLinePoints = false;
@@ -172,12 +184,6 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
   AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(wheelEvent->scenePos(),
 								  QTransform()));
   TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(wheelEvent->scenePos(),
-							    QTransform()));
-  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(wheelEvent->scenePos(),
-								     QTransform()));
-  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(wheelEvent->scenePos(),
-							    QTransform()));
-  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(wheelEvent->scenePos(),
 							    QTransform()));
   if (incidentNodeLabel) 
     {
@@ -297,156 +303,6 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
 	  wheelEvent->accept();
 	}
     }
-  else if (ellipse) 
-    {
-      if (ellipse->isSelected()) 
-	{
-	  if (wheelEvent->modifiers() & Qt::ControlModifier) 
-	    {
-	      if (wheelEvent->delta() > 0) 
-		{
-		  if (ellipse->getPenWidth() < 20) 
-		    {
-		      ellipse->setPenWidth(ellipse->getPenWidth() + 1);
-		    }
-		}
-	      else if (wheelEvent->delta() < 0) 
-		{
-		  if (ellipse->getPenWidth() > 1) 
-		    {
-		      ellipse->setPenWidth(ellipse->getPenWidth() - 1);
-		    }
-		}
-	    }
-	  else if (wheelEvent->modifiers() & Qt::ShiftModifier) 
-	    {
-	      if (wheelEvent->delta() > 0) 
-		{
-		  if (ellipse->getPenStyle() < 5) 
-		    {
-		      ellipse->setPenStyle(ellipse->getPenStyle() + 1);
-		    }
-		  else 
-		    {
-		      ellipse->setPenStyle(1);
-		    }
-		}
-	      else if (wheelEvent->delta() < 0) 
-		{
-		  if (ellipse->getPenStyle() > 1) 
-		    {
-		      ellipse->setPenStyle(ellipse->getPenStyle() - 1);
-		    }
-		  else 
-		    {
-		      ellipse->setPenStyle(5);
-		    }
-		}
-	    }
-	  wheelEvent->accept();
-	  emit relevantChange();
-	}
-    }
-  else if (line) 
-    {
-      if (line->isSelected()) 
-	{
-	  if (wheelEvent->modifiers() & Qt::ControlModifier) 
-	    {
-	      if (wheelEvent->delta() > 0) 
-		{
-		  if (line->getPenWidth() < 7) 
-		    {
-		      line->setPenWidth(line->getPenWidth() + 1);
-		    }
-		}
-	      else if (wheelEvent->delta() < 0) 
-		{
-		  if (line->getPenWidth() > 1) 
-		    {
-		      line->setPenWidth(line->getPenWidth() - 1);
-		    }
-		}
-	    }
-	  else if (wheelEvent->modifiers() & Qt::ShiftModifier) 
-	    {
-	      if (wheelEvent->delta() > 0) 
-		{
-		  if (line->getPenStyle() < 5) 
-		    {
-		      line->setPenStyle(line->getPenStyle() + 1);
-		    }
-		  else 
-		    {
-		      line->setPenStyle(1);
-		    }
-		}
-	      else if (wheelEvent->delta() < 0) 
-		{
-		  if (line->getPenStyle() > 1) 
-		    {
-		      line->setPenStyle(line->getPenStyle() - 1);
-		    }
-		  else 
-		    {
-		      line->setPenStyle(5);
-		    }
-		}
-	    }
-	  emit relevantChange();
-	  wheelEvent->accept();
-	}
-    }
-  else if (rect) 
-    {
-      if (rect->isSelected()) 
-	{
-	  if (wheelEvent->modifiers() & Qt::ControlModifier) 
-	    {
-	      if (wheelEvent->delta() > 0) 
-		{
-		  if (rect->getPenWidth() < 20) 
-		    {
-		      rect->setPenWidth(rect->getPenWidth() + 1);
-		    }
-		}
-	      else if (wheelEvent->delta() < 0) 
-		{
-		  if (rect->getPenWidth() > 1) 
-		    {
-		      rect->setPenWidth(rect->getPenWidth() - 1);
-		    }
-		}
-	    }
-	  else if (wheelEvent->modifiers() & Qt::ShiftModifier) 
-	    {
-	      if (wheelEvent->delta() > 0) 
-		{
-		  if (rect->getPenStyle() < 5) 
-		    {
-		      rect->setPenStyle(rect->getPenStyle() + 1);
-		    }
-		  else 
-		    {
-		      rect->setPenStyle(1);
-		    }
-		}
-	      else if (wheelEvent->delta() < 0) 
-		{
-		  if (rect->getPenStyle() > 1) 
-		    {
-		      rect->setPenStyle(rect->getPenStyle() - 1);
-		    }
-		  else 
-		    {
-		      rect->setPenStyle(5);
-		    }
-		}
-	    }
-	  emit relevantChange();
-	  wheelEvent->accept();
-	}
-    }
   else 
     {
       wheelEvent->ignore();
@@ -486,25 +342,34 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
 	      _linePointsStarted = true;
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr->setPenStyle(_currentPenStyle);
+	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingSingleArrowPoints)
 	    {
 	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
 	      _singleArrowPointsStarted = true;
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
 	      _tempLinePtr->setArrow1(true);
+	      _tempLinePtr->setPenStyle(_currentPenStyle);
+	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingDoubleArrowPoints)
 	    {
 	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
 	      _doubleArrowPointsStarted = true;
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setArrow2(true);
+	      _tempLinePtr->setPenStyle(_currentPenStyle);
+	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempLinePtr);
 	    }
 	  else
@@ -749,25 +614,34 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
 	      _linePointsStarted = true;
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr->setPenStyle(_currentPenStyle);
+	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingSingleArrowPoints)
 	    {
 	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
 	      _singleArrowPointsStarted = true;
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
 	      _tempLinePtr->setArrow1(true);
+	      _tempLinePtr->setPenStyle(_currentPenStyle);
+	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingDoubleArrowPoints)
 	    {
 	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
 	      _doubleArrowPointsStarted = true;
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setArrow2(true);
+	      _tempLinePtr->setPenStyle(_currentPenStyle);
+	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingEllipseArea)
@@ -777,6 +651,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempEllipsePtr = new EllipseObject;
 	      _tempEllipsePtr->setPos(_tempEllipsePtr->mapFromScene(event->scenePos()));
 	      _tempEllipsePtr->setBottomRight(_tempEllipsePtr->mapFromScene(event->scenePos()));
+	      _tempEllipsePtr->setPenStyle(_currentPenStyle);
+	      _tempEllipsePtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempEllipsePtr);
 	    }
 	  else if (_gettingRectArea)
@@ -786,6 +662,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempRectPtr = new RectObject;
 	      _tempRectPtr->setPos(_tempRectPtr->mapFromScene(event->scenePos()));
 	      _tempRectPtr->setBottomRight(_tempRectPtr->mapFromScene(event->scenePos()));
+	      _tempRectPtr->setPenStyle(_currentPenStyle);
+	      _tempRectPtr->setPenWidth(_currentPenWidth);
 	      addItem(_tempRectPtr);
 	    }
 	  else if (_gettingTextArea)
@@ -914,128 +792,85 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _hierarchyMove = false;
   _moveText = false;
   _moveNetworkNodeLabel = false;
-  if (_gettingLinePoints)
+  if (_gettingLinePoints && _linePointsStarted)
     {
       qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2) +
 			  pow(_lineStart.y() * _lineEnd.y(), 2));
       if (length > 0)
 	{
-	emit sendLinePoints(_lineStart, _lineEnd);
-	if (_tempLinePtr)
-	  {
-	    delete _tempLinePtr;
-	  }
-	}
-      else
-	{
-	  delete _tempLinePtr;
+	  emit sendLinePoints(_lineStart, _lineEnd);
 	}
     }
   _gettingLinePoints = false;
   _linePointsStarted = false;
-  if (_gettingSingleArrowPoints)
+  if (_gettingSingleArrowPoints && _singleArrowPointsStarted)
     {
       qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2) +
 			  pow(_lineStart.y() * _lineEnd.y(), 2));
       if (length > 0)
 	{
-	emit sendSingleArrowPoints(_lineStart, _lineEnd);
-	if (_tempLinePtr)
-	  {
-	    delete _tempLinePtr;
-	  }
-	}
-      else
-	{
-	  delete _tempLinePtr;
+	  emit sendSingleArrowPoints(_lineStart, _lineEnd);
 	}
     }
   _gettingSingleArrowPoints = false;
   _singleArrowPointsStarted = false;
-  if (_gettingDoubleArrowPoints)
+  if (_gettingDoubleArrowPoints && _doubleArrowPointsStarted)
     {
       qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2) +
 			  pow(_lineStart.y() * _lineEnd.y(), 2));
       if (length > 0)
 	{
-	emit sendDoubleArrowPoints(_lineStart, _lineEnd);
-	if (_tempLinePtr)
-	  {
-	    delete _tempLinePtr;
-	  }
-	}
-      else
-	{
-	  delete _tempLinePtr;
+	  emit sendDoubleArrowPoints(_lineStart, _lineEnd);
 	}
     }
   _gettingDoubleArrowPoints = false;
   _doubleArrowPointsStarted = false;
-  if (_gettingEllipseArea)
+  if (_tempLinePtr)
+    {
+      delete _tempLinePtr;
+    }
+  if (_gettingEllipseArea && _ellipseAreaStarted)
     {
       if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
 	{
 	  emit sendEllipseArea(_drawArea);
-	  if (_tempEllipsePtr)
-	    {
-	      delete _tempEllipsePtr;
-	    }
 	}
-      else
-	{
-	  if (_tempEllipsePtr)
-	    {
-	      delete _tempEllipsePtr;
-	    }
-	}
+    }
+  if (_tempEllipsePtr)
+    {
+      delete _tempEllipsePtr;
     }
   _gettingEllipseArea = false;
   _ellipseAreaStarted = false;
-  if (_gettingRectArea)
+  if (_gettingRectArea && _rectAreaStarted)
     {
       if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
 	{
 	  emit sendRectArea(_drawArea);
-	  if (_tempRectPtr)
-	    {
-	      delete _tempRectPtr;
-	    }
 	}
-      else
-	{
-	  if (_tempRectPtr)
-	    {
-	      delete _tempRectPtr;
-	    }
-	}
+    }
+  if (_tempRectPtr)
+    {
+      delete _tempRectPtr;
     }
   _gettingRectArea = false;
   _rectAreaStarted = false;
-  if (_gettingTextArea)
+  if (_gettingTextArea && _textAreaStarted)
     {
       if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
 	{
 	  emit sendTextArea(_drawArea, _tempTextPtr->font().pointSizeF());
-	  if (_tempTextPtr)
-	    {
-	      delete _tempTextPtr;
-	    }
 	}
-       else
-	{
-	  if (_tempTextPtr)
-	    {
-	      delete _tempTextPtr;
-	    }
-	}
+    }
+  if (_tempTextPtr)
+    {
+      delete _tempTextPtr;
     }
   _gettingTextArea = false;
   _textAreaStarted = false;
   _lineStart = QPointF();
   _lineEnd = QPointF();
   _drawArea = QRectF();
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
   QListIterator<QGraphicsItem*> it(this->items());
   while (it.hasNext()) 
     {
@@ -1069,6 +904,12 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _selectedEllipsePtr = NULL;
   _selectedTextPtr = NULL;
   _selectedNetworkNodeLabelPtr = NULL;
+  _tempLinePtr = NULL;
+  _tempEllipsePtr = NULL;
+  _tempRectPtr = NULL;
+  _tempTextPtr = NULL;
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
   QGraphicsScene::mouseReleaseEvent(event);
 }
   
@@ -1121,7 +962,6 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
       if (_linePointsStarted)
 	{
-	  _lineStart = _lastMousePos;
 	  if (event->modifiers() & Qt::ControlModifier)
 	    {
 	      if (abs((event->scenePos().y() - _lineStart.y()) /
@@ -1141,12 +981,12 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	  _tempLinePtr->setStartPos(_lineStart);
 	  _tempLinePtr->setEndPos(_lineEnd);
 	}
+      clearSelection();
     }
   else if (_gettingSingleArrowPoints)
     {
       if (_singleArrowPointsStarted)
 	{
-	  _lineStart = _lastMousePos;
 	  if (event->modifiers() & Qt::ControlModifier)
 	    {
 	      if (abs((event->scenePos().y() - _lineStart.y()) /
@@ -1166,12 +1006,12 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	  _tempLinePtr->setStartPos(_lineStart);
 	  _tempLinePtr->setEndPos(_lineEnd);
 	}
+      clearSelection();
     }
   else if (_gettingDoubleArrowPoints)
     {
       if (_doubleArrowPointsStarted)
 	{
-	  _lineStart = _lastMousePos;
 	  if (event->modifiers() & Qt::ControlModifier)
 	    {
 	      if (abs((event->scenePos().y() - _lineStart.y()) /
@@ -1191,6 +1031,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	  _tempLinePtr->setStartPos(_lineStart);
 	  _tempLinePtr->setEndPos(_lineEnd);
 	}
+      clearSelection();
     }
   else if (_gettingEllipseArea)
     {

@@ -89,6 +89,8 @@ private slots:
   void prepEllipseArea();
   void prepRectArea();
   void prepTextArea();
+  void setPenStyle(int style);
+  void setPenWidth(int width);
   
 protected:
   // Overrides of events
@@ -134,6 +136,8 @@ private:
   QRectF _drawArea;
   QPointF _lineStart;
   QPointF _lineEnd;
+  int _currentPenStyle;
+  int _currentPenWidth;
 
   // Drawing aids
   LineObject * _tempLinePtr;

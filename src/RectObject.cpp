@@ -39,7 +39,7 @@ void RectObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 {
   prepareGeometryChange();
   painter->setBrush(_fillColor);
-  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(_penStyle)));
+  painter->setPen(QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::FlatCap, Qt::MiterJoin));
   painter->drawRect(_drawRect);
   if (isSelected()) 
     {
