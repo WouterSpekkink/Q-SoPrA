@@ -183,6 +183,8 @@ private slots:
   void addTextObject(const QRectF &area, const qreal &size);
   void setPenStyle();
   void setPenWidth();
+  void setLineColor();
+  void setFillColor();
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
@@ -218,6 +220,10 @@ private slots:
   void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
   void finalBusiness();
+
+signals:
+  void sendLineColor(QColor&);
+  void sendFillColor(QColor&);
   
 private:
   // Interface elements
@@ -248,6 +254,8 @@ private:
   QPointer<QLabel> shapesLabel;
   QPointer<QLabel> penStyleLabel;
   QPointer<QLabel> penWidthLabel;
+  QPointer<QLabel> lineColorLabel;
+  QPointer<QLabel> fillColorLabel;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<QComboBox> penWidthComboBox;
@@ -306,6 +314,8 @@ private:
   QPointer<QPushButton> addEllipseButton;
   QPointer<QPushButton> addRectangleButton;
   QPointer<QPushButton> addTextButton;
+  QPointer<QPushButton> changeLineColorButton;
+  QPointer<QPushButton> changeFillColorButton;
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
@@ -325,7 +335,9 @@ private:
   bool _massMove;
   int _currentPenStyle;
   int _currentPenWidth;
-
+  QColor _currentLineColor;
+  QColor _currentFillColor;
+  
   // Private data vectors
   QVector<QString> _presentTypes; 
   QVector<QString> _checkedCases;

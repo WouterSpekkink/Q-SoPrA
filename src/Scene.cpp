@@ -66,6 +66,8 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _tempTextPtr = NULL;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
+  _currentLineColor = QColor(Qt::black);
+  _currentFillColor = QColor(Qt::transparent);
 }
 
 void Scene::setPenStyle(int style)
@@ -77,7 +79,17 @@ void Scene::setPenWidth(int width)
 {
   _currentPenWidth = width + 1;
 }
-			    
+
+void Scene::setLineColor(QColor &color)
+{
+  _currentLineColor = color;
+}
+
+void Scene::setFillColor(QColor &color)
+{
+  _currentFillColor = color;
+}
+
 void Scene::resetAreas()
 {
   _gettingLinePoints = false;
@@ -347,6 +359,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
+	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingSingleArrowPoints)
@@ -358,6 +371,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
+	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingDoubleArrowPoints)
@@ -370,6 +384,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setArrow2(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
+	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
 	    }
 	  else
@@ -619,6 +634,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
+	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingSingleArrowPoints)
@@ -630,6 +646,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
+	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingDoubleArrowPoints)
@@ -642,6 +659,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setArrow2(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
+	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingEllipseArea)
@@ -653,6 +671,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempEllipsePtr->setBottomRight(_tempEllipsePtr->mapFromScene(event->scenePos()));
 	      _tempEllipsePtr->setPenStyle(_currentPenStyle);
 	      _tempEllipsePtr->setPenWidth(_currentPenWidth);
+	      _tempEllipsePtr->setColor(_currentLineColor);
+	      _tempEllipsePtr->setFillColor(_currentFillColor);
 	      addItem(_tempEllipsePtr);
 	    }
 	  else if (_gettingRectArea)
@@ -664,6 +684,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempRectPtr->setBottomRight(_tempRectPtr->mapFromScene(event->scenePos()));
 	      _tempRectPtr->setPenStyle(_currentPenStyle);
 	      _tempRectPtr->setPenWidth(_currentPenWidth);
+	      _tempRectPtr->setColor(_currentLineColor);
+	      _tempRectPtr->setFillColor(_currentFillColor);
 	      addItem(_tempRectPtr);
 	    }
 	  else if (_gettingTextArea)
@@ -673,6 +695,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempTextPtr = new TextObject("Example text");
 	      _tempTextPtr->setPos(_tempTextPtr->mapFromScene(event->scenePos()));
 	      _tempTextPtr->setTextWidth(event->scenePos().x() - _lastMousePos.x());
+	      _tempTextPtr->setDefaultTextColor(_currentLineColor);
 	      addItem(_tempTextPtr);
 	    }
 	  else

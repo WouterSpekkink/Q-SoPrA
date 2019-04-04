@@ -135,6 +135,8 @@ private slots:
   void addTextObject(const QRectF &area, const qreal &size);
   void setPenStyle();
   void setPenWidth();
+  void setLineColor();
+  void setFillColor();
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
@@ -167,6 +169,10 @@ private slots:
   void cleanUp();
   void finalBusiness();
   bool eventFilter(QObject *object, QEvent *event);
+
+signals:
+  void sendLineColor(QColor&);
+  void sendFillColor(QColor&);
   
 private:
   // Interface elements
@@ -186,6 +192,8 @@ private:
   QPointer<QLabel> shapesLabel;
   QPointer<QLabel> penStyleLabel;
   QPointer<QLabel> penWidthLabel;
+  QPointer<QLabel> lineColorLabel;
+  QPointer<QLabel> fillColorLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
@@ -209,6 +217,8 @@ private:
   QPointer<QPushButton> addEllipseButton;
   QPointer<QPushButton> addRectangleButton;
   QPointer<QPushButton> addTextButton;
+  QPointer<QPushButton> changeLineColorButton;
+  QPointer<QPushButton> changeFillColorButton;
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -226,6 +236,8 @@ private:
   bool _matched;
   int _currentPenStyle;
   int _currentPenWidth;
+  QColor _currentLineColor;
+  QColor _currentFillColor;
   
   // Pointer to other widget
   // Do not delete

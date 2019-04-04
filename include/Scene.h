@@ -91,6 +91,8 @@ private slots:
   void prepTextArea();
   void setPenStyle(int style);
   void setPenWidth(int width);
+  void setLineColor(QColor &color);
+  void setFillColor(QColor &color);
   
 protected:
   // Overrides of events
@@ -138,6 +140,8 @@ private:
   QPointF _lineEnd;
   int _currentPenStyle;
   int _currentPenWidth;
+  QColor _currentLineColor;
+  QColor _currentFillColor;
 
   // Drawing aids
   LineObject * _tempLinePtr;

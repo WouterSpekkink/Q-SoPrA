@@ -28,6 +28,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   _selectedIncident = 0;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
+  _currentLineColor = QColor(Qt::black);
+  _currentFillColor = QColor(Qt::transparent);
   
   scene = new Scene(this);
   view = new BandlessGraphicsView(scene);
@@ -73,6 +75,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   shapesLabel = new QLabel(tr("<b>Shapes:</b>"), this);
   penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
   penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
+  lineColorLabel = new QLabel(tr("<b>Line / Text color:</b>"), this);
+  fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
   
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -170,7 +174,21 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   addTextButton->setIconSize(QSize(20, 20));
   addTextButton->setMinimumSize(40, 40);
   addTextButton->setMaximumSize(40, 40);
-
+  QPixmap lineColorMap(20, 20);
+  lineColorMap.fill(_currentLineColor);
+  QIcon lineColorIcon(lineColorMap);
+  changeLineColorButton = new QPushButton(lineColorIcon, "", this);
+  changeLineColorButton->setIconSize(QSize(20, 20));
+  changeLineColorButton->setMinimumSize(40, 40);
+  changeLineColorButton->setMaximumSize(40, 40);
+  QPixmap fillColorMap(20, 20);
+  fillColorMap.fill(_currentFillColor);
+  QIcon fillColorIcon(fillColorMap);
+  changeFillColorButton = new QPushButton(fillColorIcon, "", this);
+  changeFillColorButton->setIconSize(QSize(20, 20));
+  changeFillColorButton->setMinimumSize(40, 40);
+  changeFillColorButton->setMaximumSize(40, 40);
+  
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
   penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
@@ -233,6 +251,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
+  connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
+  connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
+  connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
+  connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -302,6 +324,10 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   plotObjectsLayout->addWidget(penStyleComboBox);
   plotObjectsLayout->addWidget(penWidthLabel);
   plotObjectsLayout->addWidget(penWidthComboBox);
+  plotObjectsLayout->addWidget(lineColorLabel);
+  plotObjectsLayout->addWidget(changeLineColorButton);
+  plotObjectsLayout->addWidget(fillColorLabel);
+  plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
   
@@ -2145,6 +2171,7 @@ void HierarchyGraphWidget::addLineObject(const QPointF &start, const QPointF &en
   scene->addItem(newLineObject);
   newLineObject->setPenStyle(_currentPenStyle);
   newLineObject->setPenWidth(_currentPenWidth);
+  newLineObject->setColor(_currentLineColor);
   newLineObject->setZValue(5);
 }
 
@@ -2156,6 +2183,7 @@ void HierarchyGraphWidget::addSingleArrowObject(const QPointF &start, const QPoi
   scene->addItem(newLineObject);
   newLineObject->setPenStyle(_currentPenStyle);
   newLineObject->setPenWidth(_currentPenWidth);
+  newLineObject->setColor(_currentLineColor);
   newLineObject->setZValue(5);
 }
 
@@ -2168,6 +2196,7 @@ void HierarchyGraphWidget::addDoubleArrowObject(const QPointF &start, const QPoi
   scene->addItem(newLineObject);
   newLineObject->setPenStyle(_currentPenStyle);
   newLineObject->setPenWidth(_currentPenWidth);
+  newLineObject->setColor(_currentLineColor);
   newLineObject->setZValue(5);
 }
 
@@ -2178,6 +2207,8 @@ void HierarchyGraphWidget::addEllipseObject(const QRectF &area)
   scene->addItem(newEllipse);
   newEllipse->setPenStyle(_currentPenStyle);
   newEllipse->setPenWidth(_currentPenWidth);
+  newEllipse->setColor(_currentLineColor);
+  newEllipse->setFillColor(_currentFillColor);
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
@@ -2191,6 +2222,8 @@ void HierarchyGraphWidget::addRectObject(const QRectF &area)
   scene->addItem(newRect);
   newRect->setPenStyle(_currentPenStyle);
   newRect->setPenWidth(_currentPenWidth);
+  newRect->setColor(_currentLineColor);
+  newRect->setFillColor(_currentFillColor);
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
@@ -2213,10 +2246,84 @@ void HierarchyGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       _textVector.push_back(newText);
       scene->addItem(newText);
       newText->setPos(newText->mapFromScene(area.topLeft()));
+      newText->setDefaultTextColor(_currentLineColor);
       newText->setZValue(6);
       newText->adjustSize();
     }
   delete textDialog;
+}
+
+void HierarchyGraphWidget::setLineColor()
+{
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setCurrentColor(_currentLineColor);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  if (colorDialog->exec()) 
+    {
+      _currentLineColor = colorDialog->selectedColor();
+      emit sendLineColor(_currentLineColor);
+      QPixmap lineColorMap(20, 20);
+      lineColorMap.fill(_currentLineColor);
+      QIcon lineColorIcon(lineColorMap);
+      changeLineColorButton->setIcon(lineColorIcon);
+    }
+  delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      TextObject *text = qgraphicsitem_cast<TextObject*>(selectedItem);
+      if (line)
+	{
+	  line->setColor(_currentLineColor);
+	}
+      else if (ellipse)
+	{
+	  ellipse->setColor(_currentLineColor);
+	}
+      else if (rect)
+	{
+	  rect->setColor(_currentLineColor);
+	}
+      else if (text)
+	{
+	  text->setDefaultTextColor(_currentLineColor);
+	}
+    }
+}
+
+void HierarchyGraphWidget::setFillColor()
+{
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setCurrentColor(_currentFillColor);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
+  if (colorDialog->exec()) 
+    {
+      _currentFillColor = colorDialog->selectedColor();
+      emit sendFillColor(_currentFillColor);
+      QPixmap fillColorMap(20, 20);
+      fillColorMap.fill(_currentFillColor);
+      QIcon fillColorIcon(fillColorMap);
+      changeFillColorButton->setIcon(fillColorIcon);
+    }
+  delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (ellipse)
+	{
+	  ellipse->setFillColor(_currentFillColor);
+	}
+      else if (rect)
+	{
+	  rect->setFillColor(_currentFillColor);
+	}
+    }
 }
 
 void HierarchyGraphWidget::processShapeSelection()
@@ -2227,12 +2334,19 @@ void HierarchyGraphWidget::processShapeSelection()
       LineObject *line = qgraphicsitem_cast<LineObject*>(selectedItem);
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
       RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      TextObject *text = qgraphicsitem_cast<TextObject*>(selectedItem);
       if (line)
 	{
 	  int penStyle = line->getPenStyle();
 	  int penWidth = line->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
 	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  _currentLineColor = line->getColor();
+	  emit sendLineColor(_currentLineColor);
+	  QPixmap lineColorMap(20, 20);
+	  lineColorMap.fill(_currentLineColor);
+	  QIcon lineColorIcon(lineColorMap);
+	  changeLineColorButton->setIcon(lineColorIcon);
 	}
       else if (ellipse)
 	{
@@ -2240,6 +2354,18 @@ void HierarchyGraphWidget::processShapeSelection()
 	  int penWidth = ellipse->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
 	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  _currentLineColor = ellipse->getColor();
+	  _currentFillColor = ellipse->getFillColor();
+	  emit sendLineColor(_currentLineColor);
+	  emit sendFillColor(_currentFillColor);
+	  QPixmap lineColorMap(20, 20);
+	  lineColorMap.fill(_currentLineColor);
+	  QIcon lineColorIcon(lineColorMap);
+	  changeLineColorButton->setIcon(lineColorIcon);
+	  QPixmap fillColorMap(20, 20);
+	  fillColorMap.fill(_currentFillColor);
+	  QIcon fillColorIcon(fillColorMap);
+	  changeFillColorButton->setIcon(fillColorIcon);
 	}
       else if (rect)
 	{
@@ -2247,6 +2373,27 @@ void HierarchyGraphWidget::processShapeSelection()
 	  int penWidth = rect->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
 	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  _currentLineColor = rect->getColor();
+	  _currentFillColor = rect->getFillColor();
+	  emit sendLineColor(_currentLineColor);
+	  emit sendFillColor(_currentFillColor);
+	  QPixmap lineColorMap(20, 20);
+	  lineColorMap.fill(_currentLineColor);
+	  QIcon lineColorIcon(lineColorMap);
+	  changeLineColorButton->setIcon(lineColorIcon);
+	  QPixmap fillColorMap(20, 20);
+	  fillColorMap.fill(_currentFillColor);
+	  QIcon fillColorIcon(fillColorMap);
+	  changeFillColorButton->setIcon(fillColorIcon);
+	}
+      else if (text)
+	{
+	  _currentLineColor = text->defaultTextColor();
+	  emit sendLineColor(_currentLineColor);
+	  QPixmap lineColorMap(20, 20);
+	  lineColorMap.fill(_currentLineColor);
+	  QIcon lineColorIcon(lineColorMap);
+	  changeLineColorButton->setIcon(lineColorIcon);
 	}
     }
 }
