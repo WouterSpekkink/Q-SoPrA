@@ -241,12 +241,12 @@ private slots:
   void ignoreLinkage();
   void removeNormalLinkage();
   void changeLinkageComment();
-  void addLineObject(bool arrow1, bool arrow2, const QPointF &pos);
-  void addTextObject(const QPointF &pos);
-  void prepEllipseArea();
-  void prepRectArea();
+  void addLineObject(const QPointF &start, const QPointF &end);
+  void addSingleArrowObject(const QPointF &start, const QPointF &end);
+  void addDoubleArrowObject(const QPointF &start, const QPointF &end);
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
+  void addTextObject(const QRectF &area, const qreal &size);
   void processLineContextMenu(const QString &action);
   void changeLineColor();
   void toggleArrow1();

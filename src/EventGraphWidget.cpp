@@ -287,8 +287,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(exportNodesButton, SIGNAL(clicked()), this, SLOT(exportNodes()));
   connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
   connect(compareButton, SIGNAL(clicked()), this, SLOT(compare()));
-  connect(addEllipseButton, SIGNAL(clicked()), this, SLOT(prepEllipseArea()));
-  connect(addRectangleButton, SIGNAL(clicked()), this, SLOT(prepRectArea()));
+  connect(addLineButton, SIGNAL(clicked()), scene, SLOT(prepLinePoints()));
+  connect(addSingleArrowButton, SIGNAL(clicked()), scene, SLOT(prepSingleArrowPoints()));
+  connect(addDoubleArrowButton, SIGNAL(clicked()), scene, SLOT(prepDoubleArrowPoints()));
+  connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
+  connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
+  connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(posChanged(IncidentNode *, qreal&)),
 	  this, SLOT(changePos(IncidentNode *, qreal&)));
@@ -311,8 +315,16 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
 	  this, SLOT(processRectContextMenu(const QString &)));
   connect(this, SIGNAL(changeEventWidth(QGraphicsItem*)), scene, SLOT(modEventWidth(QGraphicsItem*)));
+  connect(scene, SIGNAL(sendLinePoints(const QPointF&, const QPointF&)),
+	  this, SLOT(addLineObject(const QPointF&, const QPointF&)));
+  connect(scene, SIGNAL(sendSingleArrowPoints(const QPointF&, const QPointF&)),
+	  this, SLOT(addSingleArrowObject(const QPointF&, const QPointF&)));
+  connect(scene, SIGNAL(sendDoubleArrowPoints(const QPointF&, const QPointF&)),
+	  this, SLOT(addDoubleArrowObject(const QPointF&, const QPointF&)));
   connect(scene, SIGNAL(sendEllipseArea(const QRectF&)), this, SLOT(addEllipseObject(const QRectF&)));
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
+  connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
+	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -896,20 +908,20 @@ void EventGraphWidget::resetZoomSlider()
   zoomSlider->setSliderPosition(0);
 }
 
-void EventGraphWidget::setGraphControls(bool status)
+void EventGraphWidget::setGraphControls(bool state)
 {
-  zoomSlider->setEnabled(status);
-  expandButton->setEnabled(status);
-  contractButton->setEnabled(status);
-  contractCurrentGraphButton->setEnabled(status);
-  increaseDistanceButton->setEnabled(status);
-  decreaseDistanceButton->setEnabled(status);
-  addLineButton->setEnabled(status);
-  addSingleArrowButton->setEnabled(status);
-  addDoubleArrowButton->setEnabled(status);
-  addEllipseButton->setEnabled(status);
-  addRectangleButton->setEnabled(status);
-  addTextButton->setEnabled(status);  
+  zoomSlider->setEnabled(state);
+  expandButton->setEnabled(state);
+  contractButton->setEnabled(state);
+  contractCurrentGraphButton->setEnabled(state);
+  increaseDistanceButton->setEnabled(state);
+  decreaseDistanceButton->setEnabled(state);
+  addLineButton->setEnabled(state);
+  addSingleArrowButton->setEnabled(state);
+  addDoubleArrowButton->setEnabled(state);
+  addEllipseButton->setEnabled(state);
+  addRectangleButton->setEnabled(state);
+  addTextButton->setEnabled(state);  
 }
 
 void EventGraphWidget::updateCases() 
@@ -9482,45 +9494,31 @@ void EventGraphWidget::rejectLinkage()
     }
 }
 
-void EventGraphWidget::addLineObject(bool arrow1, bool arrow2, const QPointF &pos) 
+void EventGraphWidget::addLineObject(const QPointF &start, const QPointF &end) 
 {
-  LineObject *newLineObject = new LineObject(QPointF(pos.x() - 100, pos.y()),
-					     QPointF(pos.x() + 100, pos.y()));
-  if (arrow1) 
-    {
-      newLineObject->setArrow1(true);
-    }
-  if (arrow2) 
-    {
-      newLineObject->setArrow2(true);
-    }
+  LineObject *newLineObject = new LineObject(start, end);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
 }
 
-void EventGraphWidget::addTextObject(const QPointF &pos) 
+void EventGraphWidget::addSingleArrowObject(const QPointF &start, const QPointF &end) 
 {
-  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-  textDialog->setWindowTitle("Set text");
-  textDialog->setLabel("Free text:");
-  textDialog->exec();
-  if (textDialog->getExitStatus() == 0) 
-    {
-      QString text = textDialog->getText();
-      TextObject *newText = new TextObject(text);
-      _textVector.push_back(newText);
-      scene->addItem(newText);
-      newText->setPos(pos);
-      newText->setZValue(6);
-      newText->adjustSize();
-    }
-  delete textDialog;
+  LineObject *newLineObject = new LineObject(start, end);
+  newLineObject->setArrow1(true);
+  _lineVector.push_back(newLineObject);
+  scene->addItem(newLineObject);
+  newLineObject->setZValue(5);
 }
 
-void EventGraphWidget::prepEllipseArea()
+void EventGraphWidget::addDoubleArrowObject(const QPointF &start, const QPointF &end) 
 {
-  scene->prepEllipseArea();
+  LineObject *newLineObject = new LineObject(start, end);
+  newLineObject->setArrow1(true);
+  newLineObject->setArrow2(true);
+  _lineVector.push_back(newLineObject);
+  scene->addItem(newLineObject);
+  newLineObject->setZValue(5);
 }
 
 void EventGraphWidget::addEllipseObject(const QRectF &area)
@@ -9534,11 +9532,6 @@ void EventGraphWidget::addEllipseObject(const QRectF &area)
   newEllipse->setZValue(5);
 }
 
-void EventGraphWidget::prepRectArea()
-{
-  scene->prepRectArea();
-}
-
 void EventGraphWidget::addRectObject(const QRectF &area) 
 {
   RectObject *newRect = new RectObject();
@@ -9548,6 +9541,28 @@ void EventGraphWidget::addRectObject(const QRectF &area)
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
   newRect->setZValue(5);
+}
+
+void EventGraphWidget::addTextObject(const QRectF &area, const qreal &size)
+{
+  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
+  textDialog->setWindowTitle("Set text");
+  textDialog->setLabel("Free text:");
+  textDialog->exec();
+  if (textDialog->getExitStatus() == 0) 
+    {
+      QString text = textDialog->getText();
+      TextObject *newText = new TextObject(text);
+      QFont font = newText->font();
+      font.setPointSize(size);
+      newText->setFont(font);
+      _textVector.push_back(newText);
+      scene->addItem(newText);
+      newText->setPos(newText->mapFromScene(area.topLeft()));
+      newText->setZValue(6);
+      newText->adjustSize();
+    }
+  delete textDialog;
 }
 
 void EventGraphWidget::processLineContextMenu(const QString &action) 

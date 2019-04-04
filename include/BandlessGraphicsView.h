@@ -46,9 +46,6 @@ public:
   // Getter
   bool isPanning();
   
-signals:
-  void HierarchyGraphContextMenuAction(const QString&, const QPoint&);
-  
 protected:
   // Override s
   void resizeEvent(QResizeEvent *) override;

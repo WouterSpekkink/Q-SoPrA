@@ -46,9 +46,6 @@ public:
   void centerMe();
 
 signals:
-  void EventGraphContextMenuAction(const QString&, const QPoint&);
-  void NetworkGraphContextMenuAction(const QString&, const QPoint&);
-  void OccurrenceGraphContextMenuAction(const QString&, const QPoint&);
   void changedView();
   
 protected:
