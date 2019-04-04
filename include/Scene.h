@@ -50,10 +50,14 @@ public:
   // Constructor and destructor
   Scene(QObject *parent = 0);
   ~Scene() {};
-
+  
   // This needs to be exposed;
   QRectF itemsBoundingRect() const;
   OccurrenceItem* getSelectedOccurrence(); // Used by occurrence item
+  void resetAreas();
+
+  // Getters
+  bool isPreparingArea();
 
 signals:
   void posChanged(IncidentNode *, qreal &dist);
@@ -69,10 +73,22 @@ signals:
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);
   void RectContextMenuAction(const QString&);
+  void sendLinePoints(const QPointF&, const QPointF&);
+  void sendSingleArrowPoints(const QPointF&, const QPointF&);
+  void sendDoubleArrowPoints(const QPointF&, const QPointF&);
+  void sendEllipseArea(const QRectF&);
+  void sendRectArea(const QRectF&);
+  void sendTextArea(const QRectF&, const qreal&);				  
 
 private slots:
   // Private member functions
   void modEventWidth(QGraphicsItem* item);
+  void prepLinePoints();
+  void prepSingleArrowPoints();
+  void prepDoubleArrowPoints();
+  void prepEllipseArea();
+  void prepRectArea();
+  void prepTextArea();
   
 protected:
   // Overrides of events
@@ -101,8 +117,29 @@ private:
   bool _hierarchyMove;
   bool _eventWidthChange;
   bool _moveNetworkNodeLabel;
+  bool _gettingLinePoints;
+  bool _linePointsStarted;
+  bool _gettingSingleArrowPoints;
+  bool _singleArrowPointsStarted;
+  bool _gettingDoubleArrowPoints;
+  bool _doubleArrowPointsStarted;
+  bool _gettingEllipseArea;
+  bool _ellipseAreaStarted;
+  bool _gettingRectArea;
+  bool _rectAreaStarted;
+  bool _gettingTextArea;
+  bool _textAreaStarted;
   QPointF _lastMousePos;
   QPointF _initPos;
+  QRectF _drawArea;
+  QPointF _lineStart;
+  QPointF _lineEnd;
+
+  // Drawing aids
+  LineObject * _tempLinePtr;
+  EllipseObject *_tempEllipsePtr;
+  RectObject *_tempRectPtr;
+  TextObject *_tempTextPtr;
   
   // Pointers to objects created by other classes
   // Do not delete
