@@ -219,14 +219,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   changeFillColorButton->setIconSize(QSize(20, 20));
   changeFillColorButton->setMinimumSize(40, 40);
   changeFillColorButton->setMaximumSize(40, 40);
-  addLineButton->setEnabled(false);
-  addSingleArrowButton->setEnabled(false);
-  addDoubleArrowButton->setEnabled(false);
-  addEllipseButton->setEnabled(false);
-  addRectangleButton->setEnabled(false);
-  addTextButton->setEnabled(false);
-  changeLineColorButton->setEnabled(false);
-  changeFillColorButton->setEnabled(false);
 
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -239,7 +231,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
   penStyleComboBox->addItem("Dash Dot Dot");
   penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
-  penStyleComboBox->setEnabled(false);
   penWidthComboBox = new QComboBox(this);
   penWidthComboBox->addItem("1");
   penWidthComboBox->addItem("2");
@@ -261,7 +252,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   penWidthComboBox->addItem("18");
   penWidthComboBox->addItem("19");
   penWidthComboBox->addItem("20");
-  penWidthComboBox->setEnabled(false);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -2344,6 +2334,7 @@ void NetworkGraphWidget::addLineObject(const QPointF &start, const QPointF &end)
   newLineObject->setColor(_currentLineColor);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
+  newLineObject->setSelected(true);
 }
 
 void NetworkGraphWidget::addSingleArrowObject(const QPointF &start, const QPointF &end) 
@@ -2356,6 +2347,7 @@ void NetworkGraphWidget::addSingleArrowObject(const QPointF &start, const QPoint
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
+  newLineObject->setSelected(true);
 }
 
 void NetworkGraphWidget::addDoubleArrowObject(const QPointF &start, const QPointF &end) 
@@ -2369,6 +2361,7 @@ void NetworkGraphWidget::addDoubleArrowObject(const QPointF &start, const QPoint
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
+  newLineObject->setSelected(true);
 }
 
 void NetworkGraphWidget::addEllipseObject(const QRectF &area)
@@ -2384,6 +2377,7 @@ void NetworkGraphWidget::addEllipseObject(const QRectF &area)
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
   newEllipse->setZValue(5);
+  newEllipse->setSelected(true);
 }
 
 void NetworkGraphWidget::addRectObject(const QRectF &area) 
@@ -2399,6 +2393,7 @@ void NetworkGraphWidget::addRectObject(const QRectF &area)
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
   newRect->setZValue(5);
+  newRect->setSelected(true);
 }
 
 void NetworkGraphWidget::addTextObject(const QRectF &area, const qreal &size)
@@ -2420,6 +2415,7 @@ void NetworkGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       newText->setDefaultTextColor(_currentLineColor);
       newText->setZValue(6);
       newText->adjustSize();
+      newText->setSelected(true);
     }
   delete textDialog;
 }
@@ -2551,6 +2547,12 @@ void NetworkGraphWidget::changeLineColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      line->setColor(color);
+	      _currentLineColor = line->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2603,8 +2605,6 @@ void NetworkGraphWidget::duplicateLine()
 	{
 	  QPointF newStartPos = line->getStartPos();
 	  QPointF newEndPos = line->getEndPos();
-	  newStartPos.setY(newStartPos.y() - 100);
-	  newEndPos.setY(newEndPos.y() - 100);
 	  LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
 	  if (line->arrow1()) 
 	    {
@@ -2698,6 +2698,12 @@ void NetworkGraphWidget::changeTextColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      text->setDefaultTextColor(color);
+	      _currentLineColor = text->defaultTextColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2737,7 +2743,6 @@ void NetworkGraphWidget::duplicateText()
 	      _textVector.push_back(newText);
 	      scene->addItem(newText);
 	      QPointF pos = text->scenePos();
-	      pos.setY(pos.y() - 300);
 	      newText->setPos(pos);
 	      newText->setZValue(6);
 	      newText->setDefaultTextColor(text->defaultTextColor());
@@ -2803,6 +2808,12 @@ void NetworkGraphWidget::changeEllipseColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      ellipse->setColor(color);
+	      _currentLineColor = ellipse->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2825,6 +2836,12 @@ void NetworkGraphWidget::changeEllipseFillColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      ellipse->setFillColor(color);
+	      _currentFillColor = ellipse->getFillColor();
+	      emit sendFillColor(_currentFillColor);
+	      QPixmap fillColorMap(20, 20);
+	      fillColorMap.fill(_currentFillColor);
+	      QIcon fillColorIcon(fillColorMap);
+	      changeFillColorButton->setIcon(fillColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2865,8 +2882,6 @@ void NetworkGraphWidget::duplicateEllipse()
 	  newEllipse->setZValue(5);
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
-	  pos.setY(pos.y() - 100);
-	  pos.setX(pos.x() - 100);
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 	}
     }
@@ -2924,6 +2939,12 @@ void NetworkGraphWidget::changeRectColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      rect->setColor(color);
+	      _currentLineColor = rect->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2946,6 +2967,12 @@ void NetworkGraphWidget::changeRectFillColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      rect->setFillColor(color);
+	      _currentFillColor = rect->getFillColor();
+	      emit sendFillColor(_currentFillColor);
+	      QPixmap fillColorMap(20, 20);
+	      fillColorMap.fill(_currentFillColor);
+	      QIcon fillColorIcon(fillColorMap);
+	      changeFillColorButton->setIcon(fillColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2986,8 +3013,6 @@ void NetworkGraphWidget::duplicateRect()
 	  newRect->setZValue(5);
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
-	  pos.setY(pos.y() - 100);
-	  pos.setX(pos.x() - 100);
 	  newRect->moveCenter(newRect->mapFromScene(pos));
 	}
     }

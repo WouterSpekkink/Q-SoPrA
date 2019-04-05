@@ -91,6 +91,7 @@ private slots:
   void checkCongruency();
   void toggleLegend();
   void toggleGraphicsControls();
+  void toggleTimeLine();
   void rescale();
   void checkCases();
   void addAttribute();
@@ -133,10 +134,17 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void addTimeLineObject(const qreal &startX, const qreal &endX, const qreal &y);
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
   void setFillColor();
+  void setMajorInterval();
+  void setMinorDivision();
+  void setMajorTickSize();
+  void setMinorTickSize();
+  void setTimeLineWidth();
+  void setTimeLineColor();
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
@@ -155,6 +163,10 @@ private slots:
   void changeRectColor();
   void changeRectFillColor();
   void deleteRect();
+  void processTimeLineContextMenu(const QString &action);
+  void changeTimelineColor();
+  void deleteTimeLine();
+  void duplicateTimeLine();
   void duplicateLine();
   void duplicateText();
   void duplicateEllipse();
@@ -173,6 +185,12 @@ private slots:
 signals:
   void sendLineColor(QColor&);
   void sendFillColor(QColor&);
+  void sendMajorInterval(qreal&);
+  void sendMinorDivision(qreal&);
+  void sendMajorTickSize(qreal&);
+  void sendMinorTickSize(qreal&);
+  void sendTimeLineWidth(int);
+  void sendTimeLineColor(QColor&);
   
 private:
   // Interface elements
@@ -180,6 +198,7 @@ private:
   QPointer<GraphicsView> view;
   QPointer<QWidget> graphicsWidget;
   QPointer<QWidget> legendWidget;
+  QPointer<QWidget> timeLineWidget;
   QPointer<QLabel> attributeLegendLabel;
   QPointer<QLabel> relationshipLegendLabel;
   QPointer<QLabel> plotLabel;
@@ -194,10 +213,18 @@ private:
   QPointer<QLabel> penWidthLabel;
   QPointer<QLabel> lineColorLabel;
   QPointer<QLabel> fillColorLabel;
+  QPointer<QLabel> timeLineLabel;
+  QPointer<QLabel> majorIntervalLabel;
+  QPointer<QLabel> minorDivisionLabel;
+  QPointer<QLabel> majorTickSizeLabel;
+  QPointer<QLabel> minorTickSizeLabel;
+  QPointer<QLabel> timeLineWidthLabel;
+  QPointer<QLabel> timeLineColorLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
+  QPointer<QPushButton> toggleTimeLineButton;
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> addRelationshipButton;
   QPointer<QPushButton> matchEventGraphButton;
@@ -219,6 +246,8 @@ private:
   QPointer<QPushButton> addTextButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
+  QPointer<QPushButton> addTimeLineButton;
+  QPointer<QPushButton> changeTimeLineColorButton;
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -227,17 +256,29 @@ private:
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
   QPointer<QSlider> zoomSlider;
+  QPointer<QSlider> majorIntervalSlider;
+  QPointer<QSlider> minorDivisionSlider;
+  QPointer<QSlider> majorTickSizeSlider;
+  QPointer<QSlider> minorTickSizeSlider;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<QComboBox> penWidthComboBox;
+  QPointer<QComboBox> timeLineWidthComboBox;
 
   // Private variables
   int _distance;
   bool _labelsVisible;
+  bool _shortLabels;
   bool _matched;
   int _currentPenStyle;
   int _currentPenWidth;
   QColor _currentLineColor;
   QColor _currentFillColor;
+  qreal _currentMajorInterval;
+  qreal _currentMinorDivision;
+  qreal _currentMajorTickSize;
+  qreal _currentMinorTickSize;
+  int _currentTimeLineWidth;
+  QColor _currentTimeLineColor;
   
   // Pointer to other widget
   // Do not delete
@@ -256,6 +297,7 @@ private:
   QVector<TextObject*> _textVector;
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
+  QVector<TimeLineObject*> _timeLineVector;
 
 };
 

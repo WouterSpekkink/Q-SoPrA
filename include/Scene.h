@@ -41,6 +41,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/AbstractNodeLabel.h"
 #include "../include/OccurrenceLabel.h"
 #include "../include/RectObject.h"
+#include "../include/TimeLineObject.h"
 
 class Scene : public QGraphicsScene
 {
@@ -73,19 +74,22 @@ signals:
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);
   void RectContextMenuAction(const QString&);
+  void TimeLineContextMenuAction(const QString&);
   void sendLinePoints(const QPointF&, const QPointF&);
+  void sendTimeLinePoints(const qreal&, const qreal&, const qreal&);
   void sendSingleArrowPoints(const QPointF&, const QPointF&);
   void sendDoubleArrowPoints(const QPointF&, const QPointF&);
   void sendEllipseArea(const QRectF&);
   void sendRectArea(const QRectF&);
-  void sendTextArea(const QRectF&, const qreal&);				  
-
+  void sendTextArea(const QRectF&, const qreal&);
+						
 private slots:
   // Private member functions
   void modEventWidth(QGraphicsItem* item);
   void prepLinePoints();
   void prepSingleArrowPoints();
   void prepDoubleArrowPoints();
+  void prepTimeLinePoints();
   void prepEllipseArea();
   void prepRectArea();
   void prepTextArea();
@@ -93,6 +97,12 @@ private slots:
   void setPenWidth(int width);
   void setLineColor(QColor &color);
   void setFillColor(QColor &color);
+  void setMajorInterval(qreal &majorInterval);
+  void setMinorDivision(qreal &minorDivision);
+  void setMajorTickSize(qreal &majorTickSize);
+  void setMinorTickSize(qreal &minorTickSize);
+  void setTimeLineWidth(int width);
+  void setTimeLineColor(QColor &color);
   
 protected:
   // Overrides of events
@@ -118,6 +128,8 @@ private:
   bool _moveText;
   bool _manipulateText;
   bool _rotateText;
+  bool _moveTimeLine;
+  bool _manipulateTimeLine;
   bool _hierarchyMove;
   bool _eventWidthChange;
   bool _moveNetworkNodeLabel;
@@ -127,6 +139,8 @@ private:
   bool _singleArrowPointsStarted;
   bool _gettingDoubleArrowPoints;
   bool _doubleArrowPointsStarted;
+  bool _gettingTimeLinePoints;
+  bool _timeLinePointsStarted;
   bool _gettingEllipseArea;
   bool _ellipseAreaStarted;
   bool _gettingRectArea;
@@ -142,12 +156,19 @@ private:
   int _currentPenWidth;
   QColor _currentLineColor;
   QColor _currentFillColor;
-
+  qreal _currentMajorInterval;
+  qreal _currentMinorDivision;
+  qreal _currentMajorTickSize;
+  qreal _currentMinorTickSize;
+  int _currentTimeLineWidth;
+  QColor _currentTimeLineColor;
+  
   // Drawing aids
   LineObject * _tempLinePtr;
   EllipseObject *_tempEllipsePtr;
   RectObject *_tempRectPtr;
   TextObject *_tempTextPtr;
+  TimeLineObject *_tempTimeLinePtr;
   
   // Pointers to objects created by other classes
   // Do not delete
@@ -160,6 +181,7 @@ private:
   EllipseObject *_selectedEllipsePtr;
   RectObject *_selectedRectPtr;
   TextObject *_selectedTextPtr;
+  TimeLineObject *_selectedTimeLinePtr;
 };
 
 #endif 

@@ -42,6 +42,8 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _moveText = false;
   _manipulateText = false;
   _rotateText = false;
+  _moveTimeLine = false;
+  _manipulateTimeLine = false;
   _hierarchyMove = false;
   _eventWidthChange = false;
   _moveNetworkNodeLabel = false;
@@ -51,6 +53,8 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _singleArrowPointsStarted = false;
   _gettingDoubleArrowPoints = false;
   _doubleArrowPointsStarted = false;
+  _gettingTimeLinePoints = false;
+  _timeLinePointsStarted = false;
   _gettingEllipseArea = false;
   _ellipseAreaStarted = false;
   _gettingRectArea = false;
@@ -64,10 +68,17 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _tempEllipsePtr = NULL;
   _tempRectPtr = NULL;
   _tempTextPtr = NULL;
+  _tempTimeLinePtr = NULL;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
   _currentFillColor = QColor(Qt::transparent);
+  _currentMajorInterval = 100.0;
+  _currentMinorDivision = 2.0;
+  _currentMajorTickSize = 20.0;
+  _currentMinorTickSize = 10.0;
+  _currentTimeLineWidth = 1;
+  _currentTimeLineColor = QColor(Qt::black);
 }
 
 void Scene::setPenStyle(int style)
@@ -90,6 +101,36 @@ void Scene::setFillColor(QColor &color)
   _currentFillColor = color;
 }
 
+void Scene::setMajorInterval(qreal &majorInterval)
+{
+  _currentMajorInterval = majorInterval;
+}
+
+void Scene::setMinorDivision(qreal &minorDivision)
+{
+  _currentMinorDivision = minorDivision;
+}
+
+void Scene::setMajorTickSize(qreal &majorTickSize)
+{
+  _currentMajorTickSize = majorTickSize;
+}
+
+void Scene::setMinorTickSize(qreal &minorTickSize)
+{
+  _currentMinorTickSize = minorTickSize;
+}
+
+void Scene::setTimeLineWidth(int width)
+{
+  _currentTimeLineWidth = width;
+}
+
+void Scene::setTimeLineColor(QColor &color)
+{
+  _currentTimeLineColor = color;
+}
+
 void Scene::resetAreas()
 {
   _gettingLinePoints = false;
@@ -98,6 +139,8 @@ void Scene::resetAreas()
   _singleArrowPointsStarted = false;
   _gettingDoubleArrowPoints = false;
   _doubleArrowPointsStarted = false;
+  _gettingTimeLinePoints = false;
+  _timeLinePointsStarted = false;
   _gettingEllipseArea = false;
   _ellipseAreaStarted = false;
   _gettingRectArea = false;
@@ -125,6 +168,13 @@ void Scene::prepDoubleArrowPoints()
 {
   resetAreas();
   _gettingDoubleArrowPoints = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepTimeLinePoints()
+{
+  resetAreas();
+  _gettingTimeLinePoints = true;
   QApplication::setOverrideCursor(Qt::CrossCursor);
 }
 
@@ -349,6 +399,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 									     QTransform()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
 								    QTransform()));
+	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
+										QTransform()));	  
 	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(),
 							   QTransform()));
 	  if (_gettingLinePoints)
@@ -483,6 +535,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
 		  qApp->processEvents();
 		}
+	      else if (timeline) 
+		{
+		  clearSelection();
+		  timeline->setSelected(true);
+		  emit resetItemSelection();
+		  _selectedTimeLinePtr = timeline;
+		}
 	    }
 	}
       else if (event->modifiers() & Qt::ShiftModifier) 
@@ -503,6 +562,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 								    QTransform()));
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
 								    QTransform()));
+	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
+										QTransform()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -599,6 +660,16 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _initPos = event->scenePos();
 	      _manipulateText = true;
 	    }
+	  else if (timeline) 
+	    {
+	      clearSelection();
+	      timeline->setSelected(true);
+	      emit resetItemSelection();
+	      _selectedTimeLinePtr = timeline;
+	      _lastMousePos = event->scenePos();
+	      _initPos = event->scenePos();
+	      _manipulateTimeLine = true;
+	    }
 	}
       else 
 	{
@@ -626,6 +697,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 								    QTransform()));
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
 								    QTransform()));
+	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
+										QTransform()));
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
@@ -661,6 +734,19 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
 	      addItem(_tempLinePtr);
+	    }
+	   else if (_gettingTimeLinePoints)
+	    {
+	      // NEED TO SET TICKS LATER
+	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
+	      _timeLinePointsStarted = true;
+	      _tempTimeLinePtr = new TimeLineObject(_lineStart.x(), _lineEnd.x(), _lineEnd.y(),
+						    _currentMajorInterval, _currentMinorDivision,
+						    _currentMajorTickSize, _currentMinorTickSize);
+	      _tempTimeLinePtr->setPenWidth(_currentTimeLineWidth);
+	      _tempTimeLinePtr->setColor(_currentTimeLineColor);
+	      addItem(_tempTimeLinePtr);
 	    }
 	  else if (_gettingEllipseArea)
 	    {
@@ -783,6 +869,17 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  _lastMousePos = event->scenePos();
 		  _moveText = true;
 		}
+	      else if (timeline) 
+		{
+		  clearSelection();
+		  _selectedTimeLinePtr = timeline;
+		  timeline->setSelected(true);
+		  emit resetItemSelection();
+		  _moveTimeLine = true;
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
+		  qApp->processEvents();
+		}
 	      _selectedIncidentNodePtr = NULL;
 	      _selectedAbstractNodePtr = NULL;
 	      _selectedNetworkNodePtr = NULL;
@@ -814,6 +911,8 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _manipulateText = false;
   _hierarchyMove = false;
   _moveText = false;
+  _moveTimeLine = false;
+  _manipulateTimeLine = false;
   _moveNetworkNodeLabel = false;
   if (_gettingLinePoints && _linePointsStarted)
     {
@@ -851,6 +950,20 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   if (_tempLinePtr)
     {
       delete _tempLinePtr;
+    }
+  if (_gettingTimeLinePoints && _timeLinePointsStarted)
+    {
+      qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2));
+      if (length > 0)
+	{
+	  emit sendTimeLinePoints(_lineStart.x(), _lineEnd.x(), _lineEnd.y());
+	}
+    }
+  _gettingTimeLinePoints = false;
+  _timeLinePointsStarted =false;
+  if (_tempTimeLinePtr)
+    {
+      delete _tempTimeLinePtr;
     }
   if (_gettingEllipseArea && _ellipseAreaStarted)
     {
@@ -927,10 +1040,12 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _selectedEllipsePtr = NULL;
   _selectedTextPtr = NULL;
   _selectedNetworkNodeLabelPtr = NULL;
+  _selectedTimeLinePtr = NULL;
   _tempLinePtr = NULL;
   _tempEllipsePtr = NULL;
   _tempRectPtr = NULL;
   _tempTextPtr = NULL;
+  _tempTimeLinePtr = NULL;
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   QGraphicsScene::mouseReleaseEvent(event);
@@ -1056,6 +1171,18 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       clearSelection();
     }
+  else if (_gettingTimeLinePoints)
+    {
+      if (_timeLinePointsStarted)
+	{
+	  _lineStart = QPointF(_lastMousePos.x(), event->scenePos().y());
+	  _lineEnd = event->scenePos();
+	  _tempTimeLinePtr->setStartX(_lineStart.x());
+	  _tempTimeLinePtr->setEndX(_lineEnd.x());
+	  _tempTimeLinePtr->setY(_lineEnd.y());
+	}
+      clearSelection();
+    }
   else if (_gettingEllipseArea)
     {
       if (_ellipseAreaStarted)
@@ -1177,10 +1304,38 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       qreal newXDiff = newPos.x() - _lastMousePos.x();
       qreal newYDiff = newPos.y() - _lastMousePos.y();
       _selectedLinePtr->setStartPos(_selectedLinePtr->mapToScene(_selectedLinePtr->getStartPos() +
-							 QPointF(newXDiff, newYDiff)));
+								 QPointF(newXDiff, newYDiff)));
       _selectedLinePtr->setEndPos(_selectedLinePtr->mapToScene(_selectedLinePtr->getEndPos() +
-						       QPointF(newXDiff, newYDiff)));
+							       QPointF(newXDiff, newYDiff)));
       _lastMousePos = event->scenePos();
+      emit relevantChange();
+    }
+  else if (_moveTimeLine)
+    {
+      QPointF newPos = _selectedTimeLinePtr->mapFromScene(event->scenePos());
+      qreal newXDiff = newPos.x() - _lastMousePos.x();
+      //      qreal newYDiff = newPos.y() - _lastMousePos.y();
+      _selectedTimeLinePtr->setStartX(_selectedTimeLinePtr->getStartX() + newXDiff);
+      _selectedTimeLinePtr->setEndX(_selectedTimeLinePtr->getEndX() + newXDiff);
+      _selectedTimeLinePtr->setY(event->scenePos().y());
+      _lastMousePos = event->scenePos();
+      emit relevantChange();
+    }
+  else if (_manipulateTimeLine)
+    {
+      _lastMousePos = event->scenePos();
+      qreal startX = _selectedTimeLinePtr->getStartX();
+      qreal endX = _selectedTimeLinePtr->getEndX();
+      qreal distStartX = sqrt(pow(_lastMousePos.x() - startX, 2));
+      qreal distEndX = sqrt(pow(_lastMousePos.x() - endX, 2));
+      if (distStartX < distEndX) 
+	{
+	  _selectedTimeLinePtr->setStartX(_lastMousePos.x());
+	}
+      else 
+	{
+	  _selectedTimeLinePtr->setEndX(_lastMousePos.x());
+	}
       emit relevantChange();
     }
   else if (_manipulateEllipse) 
@@ -1522,6 +1677,8 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
 									 QTransform()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(), QTransform()));
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
+									    QTransform()));
       if (incidentNodeLabel) 
 	{
 	  incident = incidentNodeLabel->getNode();
@@ -1872,6 +2029,34 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	      emit RectContextMenuAction(action->text());
 	    }
 	}
+      else if (timeline)
+	{
+	  clearSelection();
+	  timeline->setSelected(true);
+	  QMenu menu;
+	  QMenu editMenu("Edit");
+	  QMenu positionMenu("Position");
+	  menu.addMenu(&editMenu);
+	  menu.addMenu(&positionMenu);
+	  QAction *action1 = new QAction(CHANGETIMELINECOLOR, this);
+	  editMenu.addAction(action1);
+	  QAction *action2 = new QAction(COPYOBJECT, this);
+	  menu.addAction(action2);
+	  QAction *action3 = new QAction(DELETETIMELINE, this);
+	  menu.addAction(action3);
+	  QAction *action4 = new QAction(ONEFORWARD, this);
+	  positionMenu.addAction(action4);
+	  QAction *action5 = new QAction(ONEBACKWARD, this);
+	  positionMenu.addAction(action5);
+	  QAction *action6 = new QAction(BRINGFORWARD, this);
+	  positionMenu.addAction(action6);
+	  QAction *action7 = new QAction(BRINGBACKWARD, this);
+	  positionMenu.addAction(action7);
+	  if (QAction *action = menu.exec(event->screenPos())) 
+	    {
+	      emit TimeLineContextMenuAction(action->text());
+	    }
+	}
     }
 }
 
@@ -1883,8 +2068,8 @@ OccurrenceItem* Scene::getSelectedOccurrence()
 bool Scene::isPreparingArea()
 {
   if (_gettingLinePoints || _gettingSingleArrowPoints ||
-      _gettingDoubleArrowPoints || _gettingEllipseArea ||
-      _gettingRectArea || _gettingTextArea)
+      _gettingDoubleArrowPoints || _gettingTimeLinePoints ||
+      _gettingEllipseArea || _gettingRectArea || _gettingTextArea)
     {
       return true;
     }

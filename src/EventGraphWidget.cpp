@@ -37,10 +37,16 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _vectorPos = 0;
   _labelsVisible = true;
   _contracted = false;
+  _currentMajorInterval = 100.0;
+  _currentMinorDivision = 2.0;
+  _currentMajorTickSize = 20.0;
+  _currentMinorTickSize = 10.0;
+  _currentTimeLineWidth = 1;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
   _currentFillColor = QColor(Qt::transparent);
+  _currentTimeLineColor = QColor(Qt::black);
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -61,7 +67,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsWidget = new QWidget(this);
   attWidget = new QWidget(this);
   commentWidget = new QWidget(this);
-  legendWidget = new QWidget(this); 
+  legendWidget = new QWidget(this);
+  timeLineWidget = new QWidget(this);
 
   attributesTreeView = new DeselectableTreeView(attWidget);
   attributesTreeView->setHeaderHidden(true);
@@ -113,7 +120,14 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
   penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
   lineColorLabel = new QLabel(tr("<b>Line / Text color:</b>"), this);
-  fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);			      
+  fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);
+  timeLineLabel = new QLabel(tr("<b>Add timeline:</b>"), timeLineWidget);
+  majorIntervalLabel = new QLabel(tr("<b>Major tick interval:</b>"), timeLineWidget);
+  minorDivisionLabel = new QLabel(tr("<b>Minor tick interval:</b>"), timeLineWidget);
+  majorTickSizeLabel = new QLabel(tr("<b>Major tick size:</b>"), timeLineWidget);
+  minorTickSizeLabel = new QLabel(tr("<b>Minor tick size:</b>"), timeLineWidget);
+  timeLineWidthLabel = new QLabel(tr("<b>Pen width:</b>"), timeLineWidget);
+  timeLineColorLabel = new QLabel(tr("<b>Color:</b>"), timeLineWidget);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -187,6 +201,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   toggleDetailsButton->setCheckable(true);
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
   toggleGraphicsControlsButton->setCheckable(true);
+  toggleTimeLineButton = new QPushButton(tr("Toggle timeline controls"), this);
   previousEventButton = new QPushButton("<<", infoWidget);
   previousEventButton->setEnabled(false);   
   nextEventButton = new QPushButton(">>", infoWidget);
@@ -267,15 +282,56 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   changeFillColorButton->setIconSize(QSize(20, 20));
   changeFillColorButton->setMinimumSize(40, 40);
   changeFillColorButton->setMaximumSize(40, 40);
-  addLineButton->setEnabled(false);
-  addSingleArrowButton->setEnabled(false);
-  addDoubleArrowButton->setEnabled(false);
-  addEllipseButton->setEnabled(false);
-  addRectangleButton->setEnabled(false);
-  addTextButton->setEnabled(false);
-  changeLineColorButton->setEnabled(false);
-  changeFillColorButton->setEnabled(false);
-  
+  addTimeLineButton = new QPushButton(QIcon("./images/timeline.png"), "", timeLineWidget);
+  addTimeLineButton->setIconSize(QSize(20, 20));
+  addTimeLineButton->setMinimumSize(40, 40);
+  addTimeLineButton->setMaximumSize(40, 40);
+  majorIntervalSlider = new QSlider(Qt::Horizontal, timeLineWidget);
+  majorIntervalSlider->setMinimum(1.0);
+  majorIntervalSlider->setMaximum(1000.0);
+  majorIntervalSlider->setValue(100.0);
+  minorDivisionSlider = new QSlider(Qt::Horizontal, timeLineWidget);
+  minorDivisionSlider->setMinimum(1);
+  minorDivisionSlider->setMaximum(20);
+  minorDivisionSlider->setTickInterval(1);
+  minorDivisionSlider->setValue(2);
+  majorTickSizeSlider = new QSlider(Qt::Horizontal, timeLineWidget);
+  majorTickSizeSlider->setMinimum(1.0);
+  majorTickSizeSlider->setMaximum(500.0);
+  majorTickSizeSlider->setValue(20.0);
+  minorTickSizeSlider = new QSlider(Qt::Horizontal, timeLineWidget);
+  minorTickSizeSlider->setMinimum(1.0);
+  minorTickSizeSlider->setMaximum(500.0);
+  minorTickSizeSlider->setValue(20.0);
+  timeLineWidthComboBox = new QComboBox(timeLineWidget);
+  timeLineWidthComboBox->addItem("1");
+  timeLineWidthComboBox->addItem("2");
+  timeLineWidthComboBox->addItem("3");
+  timeLineWidthComboBox->addItem("4");
+  timeLineWidthComboBox->addItem("5");
+  timeLineWidthComboBox->addItem("6");
+  timeLineWidthComboBox->addItem("7");
+  timeLineWidthComboBox->addItem("8");
+  timeLineWidthComboBox->addItem("9");
+  timeLineWidthComboBox->addItem("10");
+  timeLineWidthComboBox->addItem("11");
+  timeLineWidthComboBox->addItem("12");
+  timeLineWidthComboBox->addItem("13");
+  timeLineWidthComboBox->addItem("14");
+  timeLineWidthComboBox->addItem("15");
+  timeLineWidthComboBox->addItem("16");
+  timeLineWidthComboBox->addItem("17");
+  timeLineWidthComboBox->addItem("18");
+  timeLineWidthComboBox->addItem("19");
+  timeLineWidthComboBox->addItem("20");
+  QPixmap timeLineColorMap(20, 20);
+  timeLineColorMap.fill(_currentTimeLineColor);
+  QIcon timeLineColorIcon(timeLineColorMap);
+  changeTimeLineColorButton = new QPushButton(timeLineColorIcon, "", timeLineWidget);
+  changeTimeLineColorButton->setIconSize(QSize(20, 20));
+  changeTimeLineColorButton->setMinimumSize(40, 40);
+  changeTimeLineColorButton->setMaximumSize(40, 40);
+    
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
   penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
@@ -287,7 +343,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
   penStyleComboBox->addItem("Dash Dot Dot");
   penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
-  penStyleComboBox->setEnabled(false);
   penWidthComboBox = new QComboBox(this);
   penWidthComboBox->addItem("1");
   penWidthComboBox->addItem("2");
@@ -309,7 +364,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   penWidthComboBox->addItem("18");
   penWidthComboBox->addItem("19");
   penWidthComboBox->addItem("20");
-  penWidthComboBox->setEnabled(false);
   
   view->viewport()->installEventFilter(this);
   attributesTreeView->installEventFilter(this);
@@ -353,14 +407,29 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
+  connect(addTimeLineButton, SIGNAL(clicked()), scene, SLOT(prepTimeLinePoints()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
+  connect(majorIntervalSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorInterval()));
+  connect(minorDivisionSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorDivision()));
+  connect(majorTickSizeSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorTickSize()));
+  connect(minorTickSizeSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorTickSize()));
+  connect(changeTimeLineColorButton, SIGNAL(clicked()), this, SLOT(setTimeLineColor()));
+  connect(timeLineWidthComboBox, SIGNAL(currentIndexChanged(const QString &)),
+	  this, SLOT(setTimeLineWidth()));
+  connect(timeLineWidthComboBox, SIGNAL(currentIndexChanged(int)),
+	  scene, SLOT(setTimeLineWidth(int)));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
+  connect(this, SIGNAL(sendMajorInterval(qreal &)), scene, SLOT(setMajorInterval(qreal &)));
+  connect(this, SIGNAL(sendMinorDivision(qreal &)), scene, SLOT(setMinorDivision(qreal &)));
+  connect(this, SIGNAL(sendMajorTickSize(qreal &)), scene, SLOT(setMajorTickSize(qreal &)));
+  connect(this, SIGNAL(sendMinorTickSize(qreal &)), scene, SLOT(setMinorTickSize(qreal &)));
+  connect(this, SIGNAL(sendTimeLineColor(QColor &)), scene, SLOT(setTimeLineColor(QColor &)));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(posChanged(IncidentNode *, qreal&)),
 	  this, SLOT(changePos(IncidentNode *, qreal&)));
@@ -382,6 +451,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(processEllipseContextMenu(const QString &)));
   connect(scene, SIGNAL(RectContextMenuAction(const QString &)),
 	  this, SLOT(processRectContextMenu(const QString &)));
+  connect(scene, SIGNAL(TimeLineContextMenuAction(const QString &)),
+	  this, SLOT(processTimeLineContextMenu(const QString &)));
   connect(this, SIGNAL(changeEventWidth(QGraphicsItem*)), scene, SLOT(modEventWidth(QGraphicsItem*)));
   connect(scene, SIGNAL(sendLinePoints(const QPointF&, const QPointF&)),
 	  this, SLOT(addLineObject(const QPointF&, const QPointF&)));
@@ -393,6 +464,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
 	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
+  connect(scene, SIGNAL(sendTimeLinePoints(const qreal&, const qreal&, const qreal&)),
+	  this, SLOT(addTimeLineObject(const qreal&, const qreal&, const qreal&)));
   connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
@@ -419,6 +492,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
+  connect(toggleTimeLineButton, SIGNAL(clicked()), this, SLOT(toggleTimeLine()));
   connect(eventListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(noneSelected()),
@@ -472,6 +546,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   mainLayout->addWidget(topLine);
   
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
+  plotObjectsLayout->addWidget(toggleTimeLineButton);
   plotObjectsLayout->addWidget(shapesLabel);
   plotObjectsLayout->addWidget(addLineButton);
   plotObjectsLayout->addWidget(addSingleArrowButton);
@@ -489,7 +564,26 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
-			       
+
+  QPointer<QHBoxLayout> timeLineLayout = new QHBoxLayout;
+  timeLineLayout->addWidget(timeLineLabel);
+  timeLineLayout->addWidget(addTimeLineButton);
+  timeLineLayout->addWidget(majorIntervalLabel);
+  timeLineLayout->addWidget(majorIntervalSlider);
+  timeLineLayout->addWidget(majorTickSizeLabel);
+  timeLineLayout->addWidget(majorTickSizeSlider);
+  timeLineLayout->addWidget(minorDivisionLabel);
+  timeLineLayout->addWidget(minorDivisionSlider);
+  timeLineLayout->addWidget(minorTickSizeLabel);
+  timeLineLayout->addWidget(minorTickSizeSlider);
+  timeLineLayout->addWidget(timeLineWidthLabel);
+  timeLineLayout->addWidget(timeLineWidthComboBox);
+  timeLineLayout->addWidget(timeLineColorLabel);
+  timeLineLayout->addWidget(changeTimeLineColorButton);
+  timeLineLayout->setAlignment(Qt::AlignLeft);
+  timeLineWidget->setLayout(timeLineLayout);
+  mainLayout->addWidget(timeLineWidget);
+  
   QPointer<QHBoxLayout> screenLayout = new QHBoxLayout;
 
   QPointer<QVBoxLayout> detailsLayout = new QVBoxLayout;
@@ -656,6 +750,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsWidget->hide();
   attWidget->hide();
   legendWidget->hide();
+  timeLineWidget->hide();
   updateCases();
 
   setGraphControls(false);
@@ -683,6 +778,8 @@ EventGraphWidget::~EventGraphWidget()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  qDeleteAll(_timeLineVector);
+  _timeLineVector.clear();
   delete view;
   delete scene;
 }
@@ -951,6 +1048,19 @@ void EventGraphWidget::toggleGraphicsControls()
   rescale();
 }
 
+void EventGraphWidget::toggleTimeLine()
+{
+  if (timeLineWidget->isHidden())
+    {
+      timeLineWidget->show();
+    }
+  else
+    {
+      timeLineWidget->show();
+    }
+  rescale();
+}
+
 void EventGraphWidget::rescale()
 {
   view->scale(2.0, 2.0);
@@ -1004,6 +1114,13 @@ void EventGraphWidget::setGraphControls(bool state)
   penWidthComboBox->setEnabled(state);
   changeLineColorButton->setEnabled(state);
   changeFillColorButton->setEnabled(state);
+  addTimeLineButton->setEnabled(state);
+  majorIntervalSlider->setEnabled(state);
+  minorDivisionSlider->setEnabled(state);
+  majorTickSizeSlider->setEnabled(state);
+  minorTickSizeSlider->setEnabled(state);
+  timeLineWidthComboBox->setEnabled(state);
+  changeTimeLineColorButton->setEnabled(state);    
 }
 
 void EventGraphWidget::updateCases() 
@@ -3124,6 +3241,8 @@ void EventGraphWidget::cleanUp()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  qDeleteAll(_timeLineVector);
+  _timeLineVector.clear();
   _contractedMap.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
@@ -3136,6 +3255,7 @@ void EventGraphWidget::cleanUp()
   _selectedIncident = 0;
   _selectedAbstractNode = NULL;
   _contracted = false;
+  _labelsVisible = true;
   setGraphControls(false);
 }
 
@@ -4009,6 +4129,11 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":name", name);
 	  query->exec();
+	  // saved_eg_plots_settings
+	  query->prepare("DELETE FROM saved_eg_plots_settings "
+			 "WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	  // saved_eg_plots_incident_nodes
 	  query->prepare("DELETE FROM saved_eg_plots_incident_nodes "
 			 "WHERE plot = :plot");
@@ -4064,6 +4189,11 @@ void EventGraphWidget::saveCurrentPlot()
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_eg_plots_timelines
+	  query->prepare("DELETE FROM saved_eg_plots_timelines "
+			 "WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	  // saved_eg_plots_texts
 	  query->prepare("DELETE FROM saved_eg_plots_texts "
 			 "WHERE plot = :plot");
@@ -4108,6 +4238,19 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->exec();
 	}
       QSqlDatabase::database().transaction();
+      query->prepare("INSERT INTO saved_eg_plots_settings "
+		     "(plot, lowerbound, upperbound, labelson) "
+		     "VALUES (:plot, :lowerbound, :upperbound, :labelson)");
+      query->bindValue(":plot", name);
+      query->bindValue(":lowerbound", lowerRangeDial->value());
+      query->bindValue(":upperbound", upperRangeDial->value());
+      int labelson = 0;
+      if (_labelsVisible)
+	{
+	  labelson = 1;
+	}
+      query->bindValue(":labelson", labelson);
+      query->exec();      
       query->prepare("INSERT INTO saved_eg_plots_incident_nodes "
 		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		     "dislodged, mode, red, green, blue, alpha, hidden) "
@@ -4586,6 +4729,56 @@ void EventGraphWidget::saveCurrentPlot()
 	}
       saveProgress->close();
       delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, _timeLineVector.size());
+      saveProgress->setWindowTitle("Saving timeline objects");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_eg_plots_timelines "
+		     "(plot, startx, endx, y, penwidth, majorinterval, minordivision, "
+		     "majorsize, minorsize, zvalue, red, green, blue, alpha) "
+		     "VALUES (:plot, :startx, :endx, :y, :penwidth, :majorinterval, :minordivision, "
+		     ":majorsize, :minorsize, :zvalue, :red, :green, :blue, :alpha)");
+      QVectorIterator<TimeLineObject*> it9(_timeLineVector);
+      while (it9.hasNext()) 
+	{
+	  TimeLineObject *currentTimeLine = it9.next();
+	  qreal startx = currentTimeLine->getStartX();
+	  qreal endx = currentTimeLine->getEndX();
+	  qreal y = currentTimeLine->getY();
+	  int penwidth = currentTimeLine->getPenWidth();
+	  qreal majorinterval = currentTimeLine->getMajorTickInterval();
+	  qreal minordivision = currentTimeLine->getMinorTickDivision();
+	  qreal majorsize = currentTimeLine->getMajorTickSize();
+	  qreal minorsize = currentTimeLine->getMinorTickSize();
+	  int zValue = currentTimeLine->zValue();
+	  QColor color = currentTimeLine->getColor();
+	  int red = color.red();
+	  int green = color.green();
+	  int blue = color.blue();
+	  int alpha = color.alpha();
+	  query->bindValue(":plot", name);
+	  query->bindValue(":startx", startx);
+	  query->bindValue(":endx", endx);
+	  query->bindValue(":y", y);
+	  query->bindValue(":penwidth", penwidth);
+	  query->bindValue(":majorinterval", majorinterval);
+	  query->bindValue(":minordivision", minordivision);
+	  query->bindValue(":majorsize", majorsize);
+	  query->bindValue(":minorsize", minorsize);
+	  query->bindValue(":zvalue", zValue);
+	  query->bindValue(":red", red);
+	  query->bindValue(":green", green);
+	  query->bindValue(":blue", blue);
+	  query->bindValue(":alpha", alpha);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
       saveProgress = new ProgressBar(0, 1, _textVector.size());
       saveProgress->setWindowTitle("Saving text items");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
@@ -4597,10 +4790,10 @@ void EventGraphWidget::saveCurrentPlot()
 		     "red, green, blue, alpha) "
 		     "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
-      QVectorIterator<TextObject*> it9(_textVector);
-      while (it9.hasNext()) 
+      QVectorIterator<TextObject*> it10(_textVector);
+      while (it10.hasNext()) 
 	{
-	  TextObject *currentText = it9.next();
+	  TextObject *currentText = it10.next();
 	  QString desc = currentText->toPlainText();
 	  qreal xpos = currentText->scenePos().x();
 	  qreal ypos = currentText->scenePos().y();
@@ -4647,10 +4840,10 @@ void EventGraphWidget::saveCurrentPlot()
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
-      QVectorIterator<EllipseObject*> it10(_ellipseVector);
-      while (it10.hasNext()) 
+      QVectorIterator<EllipseObject*> it11(_ellipseVector);
+      while (it11.hasNext()) 
 	{
-	  EllipseObject *ellipse = it10.next();
+	  EllipseObject *ellipse = it11.next();
 	  qreal xpos = ellipse->mapToScene(ellipse->getCenter()).x();
 	  qreal ypos = ellipse->mapToScene(ellipse->getCenter()).y();
 	  qreal topleftx = ellipse->topLeft().x();
@@ -4720,10 +4913,10 @@ void EventGraphWidget::saveCurrentPlot()
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
-      QVectorIterator<RectObject*> it11(_rectVector);
-      while (it11.hasNext()) 
+      QVectorIterator<RectObject*> it12(_rectVector);
+      while (it12.hasNext()) 
 	{
-	  RectObject *rect = it11.next();
+	  RectObject *rect = it12.next();
 	  qreal xpos = rect->mapToScene(rect->getCenter()).x();
 	  qreal ypos = rect->mapToScene(rect->getCenter()).y();
 	  qreal topleftx = rect->topLeft().x();
@@ -4787,12 +4980,12 @@ void EventGraphWidget::saveCurrentPlot()
       query->prepare("INSERT INTO saved_eg_plots_contraction "
 		     "(plot, nodeid, abstract, xpos, ypos) "
 		     "VALUES (:plot, :nodeid, :abstract, :xpos, :ypos)");
-      QMapIterator<QGraphicsItem*, QPointF> it12(_contractedMap);
-      while (it12.hasNext())
+      QMapIterator<QGraphicsItem*, QPointF> it13(_contractedMap);
+      while (it13.hasNext())
 	{
-	  it12.next();
-	  QGraphicsItem *current = it12.key();
-	  QPointF position = it12.value();
+	  it13.next();
+	  QGraphicsItem *current = it13.key();
+	  QPointF position = it13.value();
 	  int id = -1;
 	  int abstract = 0;
 	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode*>(current);
@@ -4881,6 +5074,23 @@ void EventGraphWidget::seePlots()
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       int index = coderComboBox->findText(coder);
       coderComboBox->setCurrentIndex(index);
+      query->prepare("SELECT lowerbound, upperbound, labelson "
+		     "FROM saved_eg_plots_settings "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      query->first();
+      int lowerbound = query->value(0).toInt();
+      int upperbound = query->value(1).toInt();
+      int labelson = query->value(2).toInt();
+      if (labelson == 1)
+	{
+	  _labelsVisible = true;
+	}
+      else
+	{
+	  _labelsVisible = false;
+	}
       query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		     "dislodged, mode, red, green, blue, alpha, hidden "
 		     "FROM saved_eg_plots_incident_nodes "
@@ -5438,6 +5648,37 @@ void EventGraphWidget::seePlots()
 	  newLine->setPenStyle(penstyle);
 	  scene->addItem(newLine);
 	}
+      query->prepare("SELECT startx, endx, y, penwidth, majorinterval, minordivision, "
+		     "majorsize, minorsize, zvalue, red, green, blue, alpha "
+		     "FROM saved_eg_plots_timelines "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next()) 
+	{
+	  qreal startx = query->value(0).toReal();
+	  qreal endx = query->value(1).toReal();
+	  qreal y = query->value(2).toReal();
+	  int penwidth = query->value(3).toInt();
+	  qreal majorinterval = query->value(4).toReal();
+	  qreal minordivision = query->value(5).toReal();
+	  qreal majorsize = query->value(6).toReal();
+	  qreal minorsize = query->value(7).toReal();
+	  int zValue = query->value(8).toInt();
+	  int red = query->value(9).toInt();
+	  int green = query->value(10).toInt();
+	  int blue = query->value(11).toInt();
+	  int alpha = query->value(12).toInt();
+	  QColor color = QColor(red, green, blue, alpha);
+	  TimeLineObject *newTimeLine = new TimeLineObject(startx, endx, y,
+							   majorinterval, minordivision,
+							   majorsize, minorsize);
+	  _timeLineVector.push_back(newTimeLine);
+	  newTimeLine->setZValue(zValue);
+	  newTimeLine->setColor(color);
+	  newTimeLine->setPenWidth(penwidth);
+	  scene->addItem(newTimeLine);
+	}
       query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zValue, "
 		     "red, green, blue, alpha "
 		     "FROM saved_eg_plots_texts "
@@ -5636,6 +5877,8 @@ void EventGraphWidget::seePlots()
       changeLabel->setText("");
       scene->update();
       setRangeControls();
+      lowerRangeDial->setValue(lowerbound);
+      upperRangeDial->setValue(upperbound);
       setGraphControls(true);
       updateLinkages();
       setVisibility();
@@ -5651,6 +5894,11 @@ void EventGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       // saved_eg_plots
       query->prepare("DELETE FROM saved_eg_plots "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      // saved_eg_plots_settings
+      query->prepare("DELETE FROM saved_eg_plots_settings "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
@@ -5706,6 +5954,11 @@ void EventGraphWidget::seePlots()
       query->exec();
       // saved_eg_plots_lines
       query->prepare("DELETE FROM saved_eg_plots_lines "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      // saved_eg_plots_timelines
+      query->prepare("DELETE FROM saved_eg_plots_timelines "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
@@ -9585,6 +9838,7 @@ void EventGraphWidget::addLineObject(const QPointF &start, const QPointF &end)
   newLineObject->setColor(_currentLineColor);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
+  newLineObject->setSelected(true);
 }
 
 void EventGraphWidget::addSingleArrowObject(const QPointF &start, const QPointF &end) 
@@ -9597,6 +9851,7 @@ void EventGraphWidget::addSingleArrowObject(const QPointF &start, const QPointF 
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
+  newLineObject->setSelected(true);
 }
 
 void EventGraphWidget::addDoubleArrowObject(const QPointF &start, const QPointF &end) 
@@ -9610,6 +9865,7 @@ void EventGraphWidget::addDoubleArrowObject(const QPointF &start, const QPointF 
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
   newLineObject->setZValue(5);
+  newLineObject->setSelected(true);
 }
 
 void EventGraphWidget::addEllipseObject(const QRectF &area)
@@ -9625,6 +9881,7 @@ void EventGraphWidget::addEllipseObject(const QRectF &area)
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
   newEllipse->setZValue(5);
+  newEllipse->setSelected(true);
 }
 
 void EventGraphWidget::addRectObject(const QRectF &area) 
@@ -9640,6 +9897,7 @@ void EventGraphWidget::addRectObject(const QRectF &area)
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
   newRect->setZValue(5);
+  newRect->setSelected(true);
 }
 
 void EventGraphWidget::addTextObject(const QRectF &area, const qreal &size)
@@ -9661,8 +9919,24 @@ void EventGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       newText->setDefaultTextColor(_currentLineColor);
       newText->setZValue(6);
       newText->adjustSize();
+      newText->setSelected(true);
     }
   delete textDialog;
+}
+
+void EventGraphWidget::addTimeLineObject(const qreal &startX, const qreal &endX, const qreal &y)
+{
+  TimeLineObject *newTimeLine = new TimeLineObject(startX, endX, y,
+						   _currentMajorInterval,
+						   _currentMinorDivision,
+						   _currentMajorTickSize,
+						   _currentMinorTickSize);
+  _timeLineVector.push_back(newTimeLine);
+  newTimeLine->setPenWidth(_currentTimeLineWidth);
+  newTimeLine->setColor(_currentTimeLineColor);
+  scene->addItem(newTimeLine);
+  newTimeLine->setZValue(5);
+  newTimeLine->setSelected(true);
 }
 
 void EventGraphWidget::setPenStyle()
@@ -9786,6 +10060,107 @@ void EventGraphWidget::setFillColor()
     }
 }
 
+void EventGraphWidget::setMajorInterval()
+{
+  _currentMajorInterval = majorIntervalSlider->value();
+  emit sendMajorInterval(_currentMajorInterval);
+  if (scene->selectedItems().size() == 1)
+     {
+       QGraphicsItem *selectedItem = scene->selectedItems().first();
+       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+       if (timeline)
+	 {
+	   timeline->setMajorTickInterval(_currentMajorInterval);
+	 }
+     }
+}
+
+void EventGraphWidget::setMinorDivision()
+{
+  _currentMinorDivision = minorDivisionSlider->value();
+  emit sendMinorDivision(_currentMinorDivision);
+   if (scene->selectedItems().size() == 1)
+     {
+       QGraphicsItem *selectedItem = scene->selectedItems().first();
+       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+       if (timeline)
+	 {
+	   timeline->setMinorTickDivision(_currentMinorDivision);
+	 }
+     }
+}
+
+void EventGraphWidget::setMajorTickSize()
+{
+  _currentMajorTickSize = majorTickSizeSlider->value();
+  emit sendMajorTickSize(_currentMajorTickSize);
+  if (scene->selectedItems().size() == 1)
+     {
+       QGraphicsItem *selectedItem = scene->selectedItems().first();
+       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+       if (timeline)
+	 {
+	   timeline->setMajorTickSize(_currentMajorTickSize);
+	 }
+     }
+}
+
+void EventGraphWidget::setMinorTickSize()
+{
+  _currentMinorTickSize = minorTickSizeSlider->value();
+  emit sendMinorTickSize(_currentMinorTickSize);
+   if (scene->selectedItems().size() == 1)
+     {
+       QGraphicsItem *selectedItem = scene->selectedItems().first();
+       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+       if (timeline)
+	 {
+	   timeline->setMinorTickSize(_currentMinorTickSize);
+	 }
+     }
+}
+
+void EventGraphWidget::setTimeLineWidth()
+{
+ _currentTimeLineWidth = timeLineWidthComboBox->currentIndex() + 1;
+ emit sendTimeLineWidth(_currentTimeLineWidth);
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+      if (timeline)
+	{
+	  timeline->setPenWidth(_currentTimeLineWidth);
+	}
+    }
+}
+
+void EventGraphWidget::setTimeLineColor()
+{
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setCurrentColor(_currentTimeLineColor);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  if (colorDialog->exec()) 
+    {
+      _currentTimeLineColor = colorDialog->selectedColor();
+      emit sendTimeLineColor(_currentTimeLineColor);
+      QPixmap timeLineColorMap(20, 20);
+      timeLineColorMap.fill(_currentTimeLineColor);
+      QIcon timeLineColorIcon(timeLineColorMap);
+      changeTimeLineColorButton->setIcon(timeLineColorIcon);
+    }
+  delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+      if (timeline)
+	{
+	  timeline->setColor(_currentTimeLineColor);
+	}
+    }
+}
+
 void EventGraphWidget::processShapeSelection()
 {
   if (scene->selectedItems().size() == 1)
@@ -9795,6 +10170,7 @@ void EventGraphWidget::processShapeSelection()
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
       RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
       TextObject *text = qgraphicsitem_cast<TextObject*>(selectedItem);
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
        if (line)
 	{
 	  int penStyle = line->getPenStyle();
@@ -9855,6 +10231,37 @@ void EventGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	}
+      else if (timeline)
+	{
+	  _currentMajorInterval = timeline->getMajorTickInterval();
+	  emit sendMajorInterval(_currentMajorInterval);
+	  _currentMinorDivision = timeline->getMinorTickDivision();
+	  emit sendMinorDivision(_currentMinorDivision);
+	  _currentMajorTickSize = timeline->getMajorTickSize();
+	  emit sendMajorTickSize(_currentMajorTickSize);
+	  _currentMinorTickSize = timeline->getMinorTickSize();
+	  emit sendMinorTickSize(_currentMinorTickSize);
+	  majorIntervalSlider->blockSignals(true);
+	  majorIntervalSlider->setValue(_currentMajorInterval);
+	  majorIntervalSlider->blockSignals(false);
+	  minorDivisionSlider->blockSignals(true);
+	  minorDivisionSlider->setValue(_currentMinorDivision);
+	  minorDivisionSlider->blockSignals(false);
+	  majorTickSizeSlider->blockSignals(true);
+	  majorTickSizeSlider->setValue(_currentMajorTickSize);
+	  majorTickSizeSlider->blockSignals(false);
+	  minorTickSizeSlider->blockSignals(true);
+	  minorTickSizeSlider->setValue(_currentMinorTickSize);
+	  minorTickSizeSlider->blockSignals(false);
+	  _currentTimeLineWidth = timeline->getPenWidth();
+	  emit sendTimeLineWidth(_currentTimeLineWidth);
+	  _currentTimeLineColor = timeline->getColor();
+	  emit sendTimeLineColor(_currentTimeLineColor);
+	  QPixmap timeLineColorMap(20, 20);
+	  timeLineColorMap.fill(_currentTimeLineColor);
+	  QIcon timeLineColorIcon(timeLineColorMap);
+	  changeTimeLineColorButton->setIcon(timeLineColorIcon);
+	}
     }
 }
 
@@ -9913,6 +10320,12 @@ void EventGraphWidget::changeLineColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      line->setColor(color);
+	      _currentLineColor = line->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -9965,8 +10378,6 @@ void EventGraphWidget::duplicateLine()
 	{
 	  QPointF newStartPos = line->getStartPos();
 	  QPointF newEndPos = line->getEndPos();
-	  newStartPos.setY(newStartPos.y() - 100);
-	  newEndPos.setY(newEndPos.y() - 100);
 	  LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
 	  if (line->arrow1()) 
 	    {
@@ -10060,6 +10471,12 @@ void EventGraphWidget::changeTextColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      text->setDefaultTextColor(color);
+	      _currentLineColor = text->defaultTextColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -10138,7 +10555,6 @@ void EventGraphWidget::duplicateText()
 	      _textVector.push_back(newText);
 	      scene->addItem(newText);
 	      QPointF pos = text->scenePos();
-	      pos.setY(pos.y() - 300);
 	      newText->setPos(pos);
 	      newText->setZValue(text->zValue());
 	      newText->setDefaultTextColor(text->defaultTextColor());
@@ -10204,6 +10620,12 @@ void EventGraphWidget::changeEllipseColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      ellipse->setColor(color);
+	      _currentLineColor = ellipse->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -10226,6 +10648,12 @@ void EventGraphWidget::changeEllipseFillColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      ellipse->setFillColor(color);
+	      _currentFillColor = ellipse->getFillColor();
+	      emit sendFillColor(_currentFillColor);
+	      QPixmap fillColorMap(20, 20);
+	      fillColorMap.fill(_currentFillColor);
+	      QIcon fillColorIcon(fillColorMap);
+	      changeFillColorButton->setIcon(fillColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -10266,8 +10694,6 @@ void EventGraphWidget::duplicateEllipse()
 	  newEllipse->setZValue(ellipse->zValue());
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
-	  pos.setY(pos.y() - 100);
-	  pos.setX(pos.x() - 100);
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 	}
     }
@@ -10325,6 +10751,12 @@ void EventGraphWidget::changeRectColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      rect->setColor(color);
+	      _currentLineColor = rect->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -10347,6 +10779,12 @@ void EventGraphWidget::changeRectFillColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      rect->setFillColor(color);
+	      _currentFillColor = rect->getFillColor();
+	      emit sendFillColor(_currentFillColor);
+	      QPixmap fillColorMap(20, 20);
+	      fillColorMap.fill(_currentFillColor);
+	      QIcon fillColorIcon(fillColorMap);
+	      changeFillColorButton->setIcon(fillColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -10387,9 +10825,103 @@ void EventGraphWidget::duplicateRect()
 	  newRect->setZValue(rect->zValue());
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
-	  pos.setY(pos.y() - 100);
-	  pos.setX(pos.x() - 100);
 	  newRect->moveCenter(newRect->mapFromScene(pos));
+	}
+    }
+}
+
+void EventGraphWidget::processTimeLineContextMenu(const QString &action) 
+{
+  if (action == CHANGETIMELINECOLOR) 
+    {
+      changeTimelineColor();
+    }
+  else if (action == DELETETIMELINE) 
+    {
+      deleteTimeLine();
+    }
+  else if (action == COPYOBJECT) 
+    {
+      duplicateTimeLine();
+    }
+  else if (action == ONEFORWARD) 
+    {
+      objectOneForward();
+    }
+  else if (action == ONEBACKWARD) 
+    {
+      objectOneBackward();
+    }
+  else if (action == BRINGFORWARD) 
+    {
+      objectToFront();
+    }
+  else if (action ==  BRINGBACKWARD) 
+    {
+      objectToBack();
+    }
+}
+
+void EventGraphWidget::changeTimelineColor() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
+      if (timeline) 
+	{
+	  QColor currentColor = timeline->getColor();
+	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+	  colorDialog->setCurrentColor(currentColor);
+	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+	  if (colorDialog->exec()) 
+	    {
+	      QColor color = colorDialog->selectedColor();
+	      timeline->setColor(color);
+	      _currentTimeLineColor = timeline->getColor();
+	      emit sendTimeLineColor(_currentTimeLineColor);
+	      QPixmap timeLineColorMap(20, 20);
+	      timeLineColorMap.fill(_currentTimeLineColor);
+	      QIcon timeLineColorIcon(timeLineColorMap);
+	      changeTimeLineColorButton->setIcon(timeLineColorIcon);
+	    }
+	  delete colorDialog;
+	}
+    }
+}
+
+void EventGraphWidget::deleteTimeLine() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
+      if (timeline) 
+	{
+	  delete timeline;
+	  _timeLineVector.removeOne(timeline);
+	}
+    }  
+}
+
+void EventGraphWidget::duplicateTimeLine() 
+{
+  if (scene->selectedItems().size() == 1) 
+    {
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
+      if (timeline) 
+	{
+	  TimeLineObject *newTimeLine = new TimeLineObject();
+	  newTimeLine->setStartX(timeline->getStartX());
+	  newTimeLine->setEndX(timeline->getEndX());
+	  newTimeLine->setY(timeline->getY());
+	  newTimeLine->setMajorTickInterval(timeline->getMajorTickInterval());
+	  newTimeLine->setMinorTickDivision(timeline->getMinorTickDivision());
+	  newTimeLine->setMajorTickSize(timeline->getMajorTickSize());
+	  newTimeLine->setMinorTickSize(timeline->getMinorTickSize());
+	  newTimeLine->setPenWidth(timeline->getPenWidth());
+	  newTimeLine->setColor(timeline->getColor());
+	  _timeLineVector.push_back(newTimeLine);
+	  newTimeLine->setZValue(timeline->zValue());
+	  scene->addItem(newTimeLine);
 	}
     }
 }
@@ -10416,6 +10948,7 @@ void EventGraphWidget::objectOneForward()
       RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
       LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
       TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
       if (ellipse) 
 	{
 	  int currentZValue = ellipse->zValue();
@@ -10448,6 +10981,14 @@ void EventGraphWidget::objectOneForward()
 	      text->setZValue(currentZValue + 1);
 	    }
 	}
+      else if (timeline)
+	{
+	  int currentZValue = timeline->zValue();
+	  if (currentZValue < maxZ + 1) 
+	    {
+	      timeline->setZValue(currentZValue + 1);
+	    }
+	}
     }
   fixZValues();
 }
@@ -10460,6 +11001,7 @@ void EventGraphWidget::objectOneBackward()
       RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
       LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
       TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
       if (ellipse) 
 	{
 	  int currentZValue = ellipse->zValue();
@@ -10540,6 +11082,26 @@ void EventGraphWidget::objectOneBackward()
 		}
 	    }
 	}
+      else if (timeline) 
+	{
+	  int currentZValue = timeline->zValue();
+	  if (currentZValue > 1) 
+	    {
+	      timeline->setZValue(currentZValue - 1);
+	      if (timeline->zValue() == 1) 
+		{
+		  QListIterator<QGraphicsItem*> it(scene->items());
+		  while (it.hasNext()) 
+		    {
+		      QGraphicsItem *current = it.next();
+		      if (current !=  timeline) 
+			{
+			  current->setZValue(current->zValue() + 1);
+			}
+		    }
+		}
+	    }
+	}
     }
   fixZValues();
 }
@@ -10566,6 +11128,7 @@ void EventGraphWidget::objectToFront()
       RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
       LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
       TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
       if (ellipse) 
 	{
 	  ellipse->setZValue(maxZ + 1);
@@ -10582,6 +11145,10 @@ void EventGraphWidget::objectToFront()
 	{
 	  text->setZValue(maxZ + 1);
 	}
+      else if (timeline) 
+	{
+	  timeline->setZValue(maxZ + 1);
+	}
     }
   fixZValues();
 }
@@ -10594,6 +11161,7 @@ void EventGraphWidget::objectToBack()
       RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
       LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
       TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
       if (ellipse) 
 	{
 	  ellipse->setZValue(1);
@@ -10636,6 +11204,19 @@ void EventGraphWidget::objectToBack()
       else if (text) 
 	{
 	  text->setZValue(1);
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext()) 
+	    {
+	      QGraphicsItem *current = it.next();
+	      if (current != text) 
+		{
+		  current->setZValue(current->zValue() + 1);
+		}
+	    }
+	}
+      else if (timeline) 
+	{
+	  timeline->setZValue(1);
 	  QListIterator<QGraphicsItem*> it(scene->items());
 	  while (it.hasNext()) 
 	    {

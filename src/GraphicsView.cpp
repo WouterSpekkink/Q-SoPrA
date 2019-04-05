@@ -72,6 +72,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
+	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -118,7 +119,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		}
 	  else if (rect) 
 	    {
-		  rect->setSelected(true);
+	      rect->setSelected(true);
+	    }
+	  else if (timeline)
+	    {
+	      timeline->setSelected(true);
 	    }
 	  QGraphicsView::mousePressEvent(event);
 	}
@@ -136,6 +141,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
+	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -149,7 +155,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	      occurrence = occurrenceLabel->getOccurrence();
 	    }
 	  if (!incident && !abstractNode && !linkage && !networkNode && !occurrence &&
-	      !occurrenceLabel && !line && !text && !ellipse && !rect) 
+	      !occurrenceLabel && !line && !text && !ellipse && !rect && !timeline) 
 	    {
 	      _pan = true;
 	      QApplication::setOverrideCursor(Qt::ClosedHandCursor);
@@ -213,6 +219,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		  scene->clearSelection();
 		  rect->setSelected(true);
 		}
+	      else if (timeline)
+		{
+		  scene->clearSelection();
+		  timeline->setSelected(true);
+		}
 	      scene->resetItemSelection();
 	    }
 	}
@@ -236,9 +247,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
       TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
       if (incident || incidentNodeLabel || linkage || abstractNode ||
 	  abstractNodeLabel || networkNode || occurrence ||
-	  occurrenceLabel || line || text || ellipse || rect)
+	  occurrenceLabel || line || text || ellipse || rect || timeline)
 	{
 	  this->setDragMode(QGraphicsView::NoDrag);
 	}

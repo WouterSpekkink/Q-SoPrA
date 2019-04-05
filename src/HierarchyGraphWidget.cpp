@@ -2437,6 +2437,12 @@ void HierarchyGraphWidget::changeLineColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      line->setColor(color);
+	      _currentLineColor = line->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2489,8 +2495,6 @@ void HierarchyGraphWidget::duplicateLine()
 	{
 	  QPointF newStartPos = line->getStartPos();
 	  QPointF newEndPos = line->getEndPos();
-	  newStartPos.setY(newStartPos.y() - 100);
-	  newEndPos.setY(newEndPos.y() - 100);
 	  LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
 	  if (line->arrow1()) 
 	    {
@@ -2568,6 +2572,12 @@ void HierarchyGraphWidget::changeTextColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      text->setDefaultTextColor(color);
+	      _currentLineColor = text->defaultTextColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2607,7 +2617,6 @@ void HierarchyGraphWidget::duplicateText()
 	      _textVector.push_back(newText);
 	      scene->addItem(newText);
 	      QPointF pos = text->scenePos();
-	      pos.setY(pos.y() - 300);
 	      newText->setPos(pos);
 	      newText->setZValue(6);
 	      newText->setDefaultTextColor(text->defaultTextColor());
@@ -2658,6 +2667,12 @@ void HierarchyGraphWidget::changeEllipseColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      ellipse->setColor(color);
+	      _currentLineColor = ellipse->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2680,6 +2695,12 @@ void HierarchyGraphWidget::changeEllipseFillColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      ellipse->setFillColor(color);
+	      _currentFillColor = ellipse->getFillColor();
+	      emit sendFillColor(_currentFillColor);
+	      QPixmap fillColorMap(20, 20);
+	      fillColorMap.fill(_currentFillColor);
+	      QIcon fillColorIcon(fillColorMap);
+	      changeFillColorButton->setIcon(fillColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2720,8 +2741,6 @@ void HierarchyGraphWidget::duplicateEllipse()
 	  newEllipse->setZValue(5);
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
-	  pos.setY(pos.y() - 100);
-	  pos.setX(pos.x() - 100);
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
 	}
     }
@@ -2763,6 +2782,12 @@ void HierarchyGraphWidget::changeRectColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      rect->setColor(color);
+	      _currentLineColor = rect->getColor();
+	      emit sendLineColor(_currentLineColor);
+	      QPixmap lineColorMap(20, 20);
+	      lineColorMap.fill(_currentLineColor);
+	      QIcon lineColorIcon(lineColorMap);
+	      changeLineColorButton->setIcon(lineColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2785,6 +2810,12 @@ void HierarchyGraphWidget::changeRectFillColor()
 	    {
 	      QColor color = colorDialog->selectedColor();
 	      rect->setFillColor(color);
+	      _currentFillColor = rect->getFillColor();
+	      emit sendFillColor(_currentFillColor);
+	      QPixmap fillColorMap(20, 20);
+	      fillColorMap.fill(_currentFillColor);
+	      QIcon fillColorIcon(fillColorMap);
+	      changeFillColorButton->setIcon(fillColorIcon);
 	    }
 	  delete colorDialog;
 	}
@@ -2825,8 +2856,6 @@ void HierarchyGraphWidget::duplicateRect()
 	  newRect->setZValue(5);
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
-	  pos.setY(pos.y() - 100);
-	  pos.setX(pos.x() - 100);
 	  newRect->moveCenter(newRect->mapFromScene(pos));
 	}
     }

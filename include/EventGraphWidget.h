@@ -113,6 +113,7 @@ private slots:
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
+  void toggleTimeLine();
   void rescale();
   void checkCases();
   void removeMode();
@@ -247,10 +248,17 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void addTimeLineObject(const qreal &startX, const qreal &endX, const qreal &y);
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
   void setFillColor();
+  void setMajorInterval();
+  void setMinorDivision();
+  void setMajorTickSize();
+  void setMinorTickSize();
+  void setTimeLineWidth();
+  void setTimeLineColor();
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
@@ -270,6 +278,10 @@ private slots:
   void changeRectColor();
   void changeRectFillColor();
   void deleteRect();
+  void processTimeLineContextMenu(const QString &action);
+  void changeTimelineColor();
+  void deleteTimeLine();
+  void duplicateTimeLine();
   void duplicateLine();
   void duplicateText();
   void duplicateEllipse();
@@ -294,6 +306,12 @@ signals:
   void changeEventWidth(QGraphicsItem*);
   void sendLineColor(QColor&);
   void sendFillColor(QColor&);
+  void sendMajorInterval(qreal&);
+  void sendMinorDivision(qreal&);
+  void sendMajorTickSize(qreal&);
+  void sendMinorTickSize(qreal&);
+  void sendTimeLineWidth(int);
+  void sendTimeLineColor(QColor&);
   
 private:
   // Interface elements
@@ -304,6 +322,7 @@ private:
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
   QPointer<QWidget> legendWidget;
+  QPointer<QWidget> timeLineWidget;
   QPointer<QStandardItemModel> attributesTree;
   QPointer<DeselectableTreeView> attributesTreeView;
   QPointer<AttributeTreeFilter> treeFilter;
@@ -334,6 +353,13 @@ private:
   QPointer<QLabel> penWidthLabel;
   QPointer<QLabel> lineColorLabel;
   QPointer<QLabel> fillColorLabel;
+  QPointer<QLabel> timeLineLabel;
+  QPointer<QLabel> majorIntervalLabel;
+  QPointer<QLabel> minorDivisionLabel;
+  QPointer<QLabel> majorTickSizeLabel;
+  QPointer<QLabel> minorTickSizeLabel;
+  QPointer<QLabel> timeLineWidthLabel;
+  QPointer<QLabel> timeLineColorLabel;
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
   QPointer<QPushButton> removeLinkageTypeButton;
@@ -347,6 +373,7 @@ private:
   QPointer<QPushButton> toggleDetailsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> toggleLegendButton;
+  QPointer<QPushButton> toggleTimeLineButton;
   QPointer<QPushButton> previousEventButton;
   QPointer<QPushButton> nextEventButton;
   QPointer<QPushButton> exportSvgButton;
@@ -383,8 +410,10 @@ private:
   QPointer<QPushButton> addEllipseButton;
   QPointer<QPushButton> addRectangleButton;
   QPointer<QPushButton> addTextButton;
+  QPointer<QPushButton> addTimeLineButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
+  QPointer<QPushButton> changeTimeLineColorButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
@@ -399,12 +428,17 @@ private:
   QPointer<QComboBox> compareComboBox;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<QComboBox> penWidthComboBox;
+  QPointer<QComboBox> timeLineWidthComboBox;
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
   QPointer<QSlider> zoomSlider;
-
+  QPointer<QSlider> majorIntervalSlider;
+  QPointer<QSlider> minorDivisionSlider;
+  QPointer<QSlider> majorTickSizeSlider;
+  QPointer<QSlider> minorTickSizeSlider;
+  
   // Private variables
   QString _selectedCoder;
   QString _selectedCompare;
@@ -415,10 +449,16 @@ private:
   bool _labelsVisible;
   bool _commentBool;
   bool _contracted;
+  qreal _currentMajorInterval;
+  qreal _currentMinorDivision;
   int _currentPenStyle;
   int _currentPenWidth;
-   QColor _currentLineColor;
+  QColor _currentLineColor;
   QColor _currentFillColor;
+  qreal _currentMajorTickSize;
+  qreal _currentMinorTickSize;
+  int _currentTimeLineWidth;
+  QColor _currentTimeLineColor;
 
   // Private data vectors
   QVector<IncidentNode*> _incidentNodeVector;
@@ -432,6 +472,7 @@ private:
   QVector<TextObject*> _textVector;
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
+  QVector<TimeLineObject*> _timeLineVector;
   QVector<QString> _presentTypes;
   QVector<QString> _checkedCases;
 

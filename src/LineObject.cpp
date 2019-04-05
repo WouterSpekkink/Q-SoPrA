@@ -28,7 +28,7 @@ QRectF LineObject::boundingRect() const
 
 QPainterPath LineObject::shape() const 
 {
-  static const qreal clickTolerance = 20;
+  qreal clickTolerance = 19 + _penWidth;
   QPointF vec = _endPos - _startPos;
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());
