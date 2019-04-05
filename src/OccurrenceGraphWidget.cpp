@@ -331,6 +331,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(this, SIGNAL(sendMinorDivision(qreal &)), scene, SLOT(setMinorDivision(qreal &)));
   connect(this, SIGNAL(sendMajorTickSize(qreal &)), scene, SLOT(setMajorTickSize(qreal &)));
   connect(this, SIGNAL(sendMinorTickSize(qreal &)), scene, SLOT(setMinorTickSize(qreal &)));
+  connect(this, SIGNAL(sendTimeLineWidth(int)), scene, SLOT(setTimeLineWidth(int)));
   connect(this, SIGNAL(sendTimeLineColor(QColor &)), scene, SLOT(setTimeLineColor(QColor &)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
@@ -921,7 +922,7 @@ void OccurrenceGraphWidget::toggleTimeLine()
     }
   else
     {
-      timeLineWidget->show();
+      timeLineWidget->hide();
     }
   rescale();
 }
