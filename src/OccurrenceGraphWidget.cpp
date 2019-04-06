@@ -197,8 +197,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   addTimeLineButton->setMinimumSize(40, 40);
   addTimeLineButton->setMaximumSize(40, 40);
   majorIntervalSlider = new QSlider(Qt::Horizontal, timeLineWidget);
-  majorIntervalSlider->setMinimum(1.0);
-  majorIntervalSlider->setMaximum(1000.0);
+  majorIntervalSlider->setMinimum(5.0);
+  majorIntervalSlider->setMaximum(7500.0);
   majorIntervalSlider->setValue(100.0);
   minorDivisionSlider = new QSlider(Qt::Horizontal, timeLineWidget);
   minorDivisionSlider->setMinimum(1);
@@ -213,27 +213,10 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   minorTickSizeSlider->setMinimum(1.0);
   minorTickSizeSlider->setMaximum(500.0);
   minorTickSizeSlider->setValue(20.0);
-  timeLineWidthComboBox = new QComboBox(timeLineWidget);
-  timeLineWidthComboBox->addItem("1");
-  timeLineWidthComboBox->addItem("2");
-  timeLineWidthComboBox->addItem("3");
-  timeLineWidthComboBox->addItem("4");
-  timeLineWidthComboBox->addItem("5");
-  timeLineWidthComboBox->addItem("6");
-  timeLineWidthComboBox->addItem("7");
-  timeLineWidthComboBox->addItem("8");
-  timeLineWidthComboBox->addItem("9");
-  timeLineWidthComboBox->addItem("10");
-  timeLineWidthComboBox->addItem("11");
-  timeLineWidthComboBox->addItem("12");
-  timeLineWidthComboBox->addItem("13");
-  timeLineWidthComboBox->addItem("14");
-  timeLineWidthComboBox->addItem("15");
-  timeLineWidthComboBox->addItem("16");
-  timeLineWidthComboBox->addItem("17");
-  timeLineWidthComboBox->addItem("18");
-  timeLineWidthComboBox->addItem("19");
-  timeLineWidthComboBox->addItem("20");
+  timeLineWidthSpinBox = new QSpinBox(timeLineWidget);
+  timeLineWidthSpinBox->setMinimum(1);
+  timeLineWidthSpinBox->setMaximum(20);
+  
   QPixmap timeLineColorMap(20, 20);
   timeLineColorMap.fill(_currentTimeLineColor);
   QIcon timeLineColorIcon(timeLineColorMap);
@@ -253,27 +236,9 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
   penStyleComboBox->addItem("Dash Dot Dot");
   penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
-  penWidthComboBox = new QComboBox(this);
-  penWidthComboBox->addItem("1");
-  penWidthComboBox->addItem("2");
-  penWidthComboBox->addItem("3");
-  penWidthComboBox->addItem("4");
-  penWidthComboBox->addItem("5");
-  penWidthComboBox->addItem("6");
-  penWidthComboBox->addItem("7");
-  penWidthComboBox->addItem("8");
-  penWidthComboBox->addItem("9");
-  penWidthComboBox->addItem("10");
-  penWidthComboBox->addItem("11");
-  penWidthComboBox->addItem("12");
-  penWidthComboBox->addItem("13");
-  penWidthComboBox->addItem("14");
-  penWidthComboBox->addItem("15");
-  penWidthComboBox->addItem("16");
-  penWidthComboBox->addItem("17");
-  penWidthComboBox->addItem("18");
-  penWidthComboBox->addItem("19");
-  penWidthComboBox->addItem("20");
+  penWidthSpinBox = new QSpinBox(this);
+  penWidthSpinBox->setMinimum(1);
+  penWidthSpinBox->setMaximum(20);
   
   view->viewport()->installEventFilter(this);
   
@@ -308,9 +273,9 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
-  connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
+  connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
-  connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
+  connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
   connect(addTimeLineButton, SIGNAL(clicked()), scene, SLOT(prepTimeLinePoints()));
@@ -323,10 +288,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(majorTickSizeSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorTickSize()));
   connect(minorTickSizeSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorTickSize()));
   connect(changeTimeLineColorButton, SIGNAL(clicked()), this, SLOT(setTimeLineColor()));
-  connect(timeLineWidthComboBox, SIGNAL(currentIndexChanged(const QString &)),
-	  this, SLOT(setTimeLineWidth()));
-  connect(timeLineWidthComboBox, SIGNAL(currentIndexChanged(int)),
-	  scene, SLOT(setTimeLineWidth(int)));
+  connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setTimeLineWidth()));
+  connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setTimeLineWidth(int)));
   connect(this, SIGNAL(sendMajorInterval(qreal &)), scene, SLOT(setMajorInterval(qreal &)));
   connect(this, SIGNAL(sendMinorDivision(qreal &)), scene, SLOT(setMinorDivision(qreal &)));
   connect(this, SIGNAL(sendMajorTickSize(qreal &)), scene, SLOT(setMajorTickSize(qreal &)));
@@ -407,7 +370,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(penStyleLabel);
   plotObjectsLayout->addWidget(penStyleComboBox);
   plotObjectsLayout->addWidget(penWidthLabel);
-  plotObjectsLayout->addWidget(penWidthComboBox);
+  plotObjectsLayout->addWidget(penWidthSpinBox);
   plotObjectsLayout->addWidget(lineColorLabel);
   plotObjectsLayout->addWidget(changeLineColorButton);
   plotObjectsLayout->addWidget(fillColorLabel);
@@ -427,7 +390,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   timeLineLayout->addWidget(minorTickSizeLabel);
   timeLineLayout->addWidget(minorTickSizeSlider);
   timeLineLayout->addWidget(timeLineWidthLabel);
-  timeLineLayout->addWidget(timeLineWidthComboBox);
+  timeLineLayout->addWidget(timeLineWidthSpinBox);
   timeLineLayout->addWidget(timeLineColorLabel);
   timeLineLayout->addWidget(changeTimeLineColorButton);
   timeLineLayout->setAlignment(Qt::AlignLeft);
@@ -974,7 +937,7 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   addRectangleButton->setEnabled(state);
   addTextButton->setEnabled(state);
   penStyleComboBox->setEnabled(state);
-  penWidthComboBox->setEnabled(state);
+  penWidthSpinBox->setEnabled(state);
   changeLineColorButton->setEnabled(state);
   changeFillColorButton->setEnabled(state);
   addTimeLineButton->setEnabled(state);
@@ -982,7 +945,7 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   minorDivisionSlider->setEnabled(state);
   majorTickSizeSlider->setEnabled(state);
   minorTickSizeSlider->setEnabled(state);
-  timeLineWidthComboBox->setEnabled(state);
+  timeLineWidthSpinBox->setEnabled(state);
   changeTimeLineColorButton->setEnabled(state);
 }
 
@@ -2148,7 +2111,7 @@ void OccurrenceGraphWidget::setPenStyle()
 
 void OccurrenceGraphWidget::setPenWidth()
 {
-  _currentPenWidth = penWidthComboBox->currentIndex() + 1;
+  _currentPenWidth = penWidthSpinBox->value();
   if (scene->selectedItems().size() == 1)
     {
       QGraphicsItem *selectedItem = scene->selectedItems().first();
@@ -2415,7 +2378,7 @@ void OccurrenceGraphWidget::setMinorTickSize()
 
 void OccurrenceGraphWidget::setTimeLineWidth()
 {
- _currentTimeLineWidth = timeLineWidthComboBox->currentIndex() + 1;
+  _currentTimeLineWidth = timeLineWidthSpinBox->value();
  emit sendTimeLineWidth(_currentTimeLineWidth);
   if (scene->selectedItems().size() == 1)
     {
@@ -2469,7 +2432,7 @@ void OccurrenceGraphWidget::processShapeSelection()
 	  int penStyle = line->getPenStyle();
 	  int penWidth = line->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
-	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  penWidthSpinBox->setValue(penWidth);
 	  _currentLineColor = line->getColor();
 	  emit sendLineColor(_currentLineColor);
 	  QPixmap lineColorMap(20, 20);
@@ -2482,7 +2445,7 @@ void OccurrenceGraphWidget::processShapeSelection()
 	  int penStyle = ellipse->getPenStyle();
 	  int penWidth = ellipse->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
-	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  penWidthSpinBox->setValue(penWidth);
 	  _currentLineColor = ellipse->getColor();
 	  _currentFillColor = ellipse->getFillColor();
 	  emit sendLineColor(_currentLineColor);
@@ -2501,7 +2464,7 @@ void OccurrenceGraphWidget::processShapeSelection()
 	  int penStyle = rect->getPenStyle();
 	  int penWidth = rect->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
-	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  penWidthSpinBox->setValue(penWidth);
 	  _currentLineColor = rect->getColor();
 	  _currentFillColor = rect->getFillColor();
 	  emit sendLineColor(_currentLineColor);
@@ -2534,6 +2497,9 @@ void OccurrenceGraphWidget::processShapeSelection()
 	  emit sendMajorTickSize(_currentMajorTickSize);
 	  _currentMinorTickSize = timeline->getMinorTickSize();
 	  emit sendMinorTickSize(_currentMinorTickSize);
+	  _currentTimeLineWidth = timeline->getPenWidth();
+	  emit sendTimeLineWidth(_currentTimeLineWidth);
+	  timeLineWidthSpinBox->setValue(_currentTimeLineWidth);
 	  majorIntervalSlider->blockSignals(true);
 	  majorIntervalSlider->setValue(_currentMajorInterval);
 	  majorIntervalSlider->blockSignals(false);

@@ -255,14 +255,14 @@ private:
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
+  QPointer<QSpinBox> penWidthSpinBox;
+  QPointer<QSpinBox> timeLineWidthSpinBox;
   QPointer<QSlider> zoomSlider;
   QPointer<QSlider> majorIntervalSlider;
   QPointer<QSlider> minorDivisionSlider;
   QPointer<QSlider> majorTickSizeSlider;
   QPointer<QSlider> minorTickSizeSlider;
   QPointer<QComboBox> penStyleComboBox;
-  QPointer<QComboBox> penWidthComboBox;
-  QPointer<QComboBox> timeLineWidthComboBox;
 
   // Private variables
   int _distance;

@@ -200,27 +200,9 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   penStyleComboBox->setItemIcon(3, QIcon("./images/dash_dot_line.png"));
   penStyleComboBox->addItem("Dash Dot Dot");
   penStyleComboBox->setItemIcon(4, QIcon("./images/dash_dot_dot_line.png"));
-  penWidthComboBox = new QComboBox(this);
-  penWidthComboBox->addItem("1");
-  penWidthComboBox->addItem("2");
-  penWidthComboBox->addItem("3");
-  penWidthComboBox->addItem("4");
-  penWidthComboBox->addItem("5");
-  penWidthComboBox->addItem("6");
-  penWidthComboBox->addItem("7");
-  penWidthComboBox->addItem("8");
-  penWidthComboBox->addItem("9");
-  penWidthComboBox->addItem("10");
-  penWidthComboBox->addItem("11");
-  penWidthComboBox->addItem("12");
-  penWidthComboBox->addItem("13");
-  penWidthComboBox->addItem("14");
-  penWidthComboBox->addItem("15");
-  penWidthComboBox->addItem("16");
-  penWidthComboBox->addItem("17");
-  penWidthComboBox->addItem("18");
-  penWidthComboBox->addItem("19");
-  penWidthComboBox->addItem("20");
+  penWidthSpinBox = new QSpinBox(this);
+  penWidthSpinBox->setMinimum(1);
+  penWidthSpinBox->setMaximum(20);
   
   rawField->viewport()->installEventFilter(infoWidget);
   view->viewport()->installEventFilter(this);
@@ -248,9 +230,9 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
-  connect(penWidthComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenWidth()));
+  connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
-  connect(penWidthComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenWidth(int)));
+  connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
@@ -323,7 +305,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   plotObjectsLayout->addWidget(penStyleLabel);
   plotObjectsLayout->addWidget(penStyleComboBox);
   plotObjectsLayout->addWidget(penWidthLabel);
-  plotObjectsLayout->addWidget(penWidthComboBox);
+  plotObjectsLayout->addWidget(penWidthSpinBox);
   plotObjectsLayout->addWidget(lineColorLabel);
   plotObjectsLayout->addWidget(changeLineColorButton);
   plotObjectsLayout->addWidget(fillColorLabel);
@@ -2142,7 +2124,7 @@ void HierarchyGraphWidget::setPenStyle()
 
 void HierarchyGraphWidget::setPenWidth()
 {
-  _currentPenWidth = penWidthComboBox->currentIndex() + 1;
+  _currentPenWidth = penWidthSpinBox->value();
   if (scene->selectedItems().size() == 1)
     {
       QGraphicsItem *selectedItem = scene->selectedItems().first();
@@ -2340,7 +2322,7 @@ void HierarchyGraphWidget::processShapeSelection()
 	  int penStyle = line->getPenStyle();
 	  int penWidth = line->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
-	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  penWidthSpinBox->setValue(penWidth);
 	  _currentLineColor = line->getColor();
 	  emit sendLineColor(_currentLineColor);
 	  QPixmap lineColorMap(20, 20);
@@ -2353,7 +2335,7 @@ void HierarchyGraphWidget::processShapeSelection()
 	  int penStyle = ellipse->getPenStyle();
 	  int penWidth = ellipse->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
-	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  penWidthSpinBox->setValue(penWidth);
 	  _currentLineColor = ellipse->getColor();
 	  _currentFillColor = ellipse->getFillColor();
 	  emit sendLineColor(_currentLineColor);
@@ -2372,7 +2354,7 @@ void HierarchyGraphWidget::processShapeSelection()
 	  int penStyle = rect->getPenStyle();
 	  int penWidth = rect->getPenWidth();
 	  penStyleComboBox->setCurrentIndex(penStyle - 1);
-	  penWidthComboBox->setCurrentIndex(penWidth - 1);
+	  penWidthSpinBox->setValue(penWidth);
 	  _currentLineColor = rect->getColor();
 	  _currentFillColor = rect->getFillColor();
 	  emit sendLineColor(_currentLineColor);

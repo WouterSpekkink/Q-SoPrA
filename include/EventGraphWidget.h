@@ -427,8 +427,8 @@ private:
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> compareComboBox;
   QPointer<QComboBox> penStyleComboBox;
-  QPointer<QComboBox> penWidthComboBox;
-  QPointer<QComboBox> timeLineWidthComboBox;
+  QPointer<QSpinBox> penWidthSpinBox;
+  QPointer<QSpinBox> timeLineWidthSpinBox;
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;

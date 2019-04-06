@@ -88,7 +88,7 @@ void Scene::setPenStyle(int style)
 
 void Scene::setPenWidth(int width)
 {
-  _currentPenWidth = width + 1;
+  _currentPenWidth = width;
 }
 
 void Scene::setLineColor(QColor &color)
@@ -204,11 +204,13 @@ QRectF Scene::itemsBoundingRect() const
   QRectF boundingRect;
   const auto items_ = items();
   for (QGraphicsItem *item : items_)
-    if (item->isVisible()) 
-      {
-	boundingRect |= item->sceneBoundingRect();
-      }
-  return boundingRect.adjusted(-500, -500, 500, 500);
+    {
+      if (item->isVisible()) 
+	{
+	  boundingRect |= item->sceneBoundingRect();
+	}
+      return boundingRect.adjusted(-500, -500, 500, 500);
+    }
 }
 
 void Scene::modEventWidth(QGraphicsItem *item) 

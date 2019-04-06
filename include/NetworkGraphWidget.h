@@ -258,7 +258,6 @@ private:
   QPointer<QLabel> fillColorLabel;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> penStyleComboBox;
-  QPointer<QComboBox> penWidthComboBox;
   QPointer<DeselectableListWidget> nodeListWidget;
   QPointer<DeselectableListWidget> edgeListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -321,6 +320,7 @@ private:
   QPointer<QSpinBox> lowerRangeSpinBox;
   QPointer<QSpinBox> upperRangeSpinBox;
   QPointer<QSpinBox> weightSpinBox;
+  QPointer<QSpinBox> penWidthSpinBox;
   QPointer<QSlider> zoomSlider;
   QPointer<QCheckBox> weightCheckBox;
   

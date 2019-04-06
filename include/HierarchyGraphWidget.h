@@ -219,7 +219,6 @@ private:
   QPointer<QLabel> lineColorLabel;
   QPointer<QLabel> fillColorLabel;
   QPointer<QComboBox> penStyleComboBox;
-  QPointer<QComboBox> penWidthComboBox;
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
   QPointer<QLineEdit> attributesFilterField;
@@ -259,6 +258,7 @@ private:
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<DeselectableListWidget> linkageListWidget;
   QPointer<QSlider> zoomSlider;
+  QPointer<QSpinBox> penWidthSpinBox;
 
   // Private variables
   AbstractNode *_origin;
