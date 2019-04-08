@@ -95,6 +95,7 @@ private slots:
   void rescale();
   void checkCases();
   void addAttribute();
+  void addAttributes();
   void addRelationship();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void setAttributeModeButton(QTableWidgetItem *item);
@@ -228,6 +229,7 @@ private:
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> toggleTimeLineButton;
   QPointer<QPushButton> addAttributeButton;
+  QPointer<QPushButton> addAttributesButton;
   QPointer<QPushButton> addRelationshipButton;
   QPointer<QPushButton> matchEventGraphButton;
   QPointer<QPushButton> restoreButton;

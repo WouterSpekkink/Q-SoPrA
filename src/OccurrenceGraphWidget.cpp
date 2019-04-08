@@ -136,6 +136,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   toggleTimeLineButton = new QPushButton(tr("Toggle timeline controls"), this);
   toggleTimeLineButton->setCheckable(true);
   addAttributeButton = new QPushButton(tr("Add attribute"), legendWidget);
+  addAttributesButton = new QPushButton(tr("Add attributes"), legendWidget);
   removeAttributeModeButton = new QPushButton(tr("Remove attribute"), legendWidget);
   removeAttributeModeButton->setEnabled(false);
   addRelationshipButton = new QPushButton(tr("Add relationship"), legendWidget);
@@ -257,6 +258,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(toggleTimeLineButton, SIGNAL(clicked()), this, SLOT(toggleTimeLine()));
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
+  connect(addAttributesButton, SIGNAL(clicked()), this, SLOT(addAttributes()));
   connect(addRelationshipButton, SIGNAL(clicked()), this, SLOT(addRelationship()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
@@ -422,6 +424,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   legendLayout->addWidget(attributeLegendLabel);
   legendLayout->addWidget(attributeListWidget);
   legendLayout->addWidget(addAttributeButton);
+  legendLayout->addWidget(addAttributesButton);
   legendLayout->addWidget(removeAttributeModeButton);
   legendLayout->addWidget(relationshipLegendLabel);
   legendLayout->addWidget(relationshipListWidget);
@@ -1139,6 +1142,182 @@ void OccurrenceGraphWidget::addAttribute()
   setGraphControls(true);
 }
 
+void OccurrenceGraphWidget::addAttributes() 
+{
+  setChangeLabel();
+  QPointer<SimpleAttributeSelectionDialog> attributeSelectionDialog =
+    new SimpleAttributeSelectionDialog(this, INCIDENT);
+  attributeSelectionDialog->exec();
+  if (attributeSelectionDialog->getExitStatus() == 0) 
+    {
+      reset();
+      QString attribute = attributeSelectionDialog->getAttribute();
+      bool entity = attributeSelectionDialog->isEntity();
+      QVector<QString> attributeVector;
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QSqlQuery *query3 = new QSqlQuery;
+      QSqlQuery *query4 = new QSqlQuery;
+      if (entity)
+	{
+	  query->prepare("SELECT name FROM entities "
+			 "WHERE father = :father "
+			 "ORDER BY name ASC");
+	  query2->prepare("SELECT description FROM entities "
+			  "WHERE name = :name");
+	}
+      else
+	{
+	  query->prepare("SELECT name FROM incident_attributes "
+			 "WHERE father = :father "
+			 "ORDER BY name ASC");
+	  query2->prepare("SELECT description FROM incident_attributes "
+			  "WHERE name = :name");
+	}
+      query3->prepare("SELECT incident FROM attributes_to_incidents "
+		      "WHERE attribute = :currentAttribute");
+      query4->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
+      query->bindValue(":father", attribute);
+      query->exec();
+      while (query->next())
+	{
+	  attributeVector.push_back(query->value(0).toString());
+	}
+      if (attributeVector.isEmpty())
+	{
+	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->addButton(QMessageBox::Ok);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("<b>Attribute has no children</b>");
+	  warningBox->setInformativeText("The selected attribute has no children.");
+	  warningBox->exec();
+	  delete warningBox;
+	  return;
+	}
+      else
+	{
+	  savePlotButton->setEnabled(true);
+	  QList<QColor> palette;
+	  double hue = 0;
+	  int colorCount = attributeVector.size();
+	  for (int i = 0; i != colorCount; i++)
+	    {
+	      palette.append(QColor::fromHslF(hue, 1.0, 0.5));
+	      hue += 0.61803398874895f;
+	      hue = std::fmod(hue, 1.0f);
+	    }
+	  QVectorIterator<QString> it(attributeVector);
+	  int colorNumber = 0;
+	  while (it.hasNext())
+	    {
+	      QString currentAttribute = it.next();
+	      QColor currentColor = palette[colorNumber];
+	      colorNumber++;
+	      if (!_presentAttributes.contains(currentAttribute)) 
+		{
+		  _presentAttributes.push_back(currentAttribute);
+		}
+	      QVector<QString> childrenVector;
+	      childrenVector.push_back(currentAttribute);
+	      findChildren(currentAttribute, &childrenVector, entity);
+	      query2->bindValue(":name", currentAttribute);
+	      query2->exec();
+	      query2->first();
+	      QString description = query2->value(0).toString();
+	      QVectorIterator<QString> it2(childrenVector);
+	      while (it2.hasNext())
+		{
+		  QString currentChild = it2.next();
+		  QVector<int> orders;
+		  query3->bindValue(":currentAttribute", currentChild);
+		  query3->exec();
+		  while (query3->next())
+		    {
+		      
+		      int currentIncident = query3->value(0).toInt();
+		      query4->bindValue(":id", currentIncident);
+		      query4->exec();
+		      query4->first();
+		      int order = query4->value(0).toInt();
+		      QString incidentDescription = query4->value(1).toString();
+		      if (!orders.contains(order))
+			{
+			  orders.push_back(order);
+			  QPointF position = QPointF((order * _distance), 0);
+			  OccurrenceItem *newOccurrence = new OccurrenceItem(40,
+									     incidentDescription,
+									     position,
+									     currentIncident,
+									     order,
+									     currentAttribute);
+			  newOccurrence->setPos(newOccurrence->getOriginalPos());
+			  newOccurrence->setColor(currentColor);
+			  newOccurrence->setZValue(3);
+			  _attributeOccurrenceVector.push_back(newOccurrence);
+			  scene->addItem(newOccurrence);
+			  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
+			  QString text = QString::number(order) + " - " + currentAttribute;
+			  label->setPlainText(text);
+			  label->setDefaultTextColor(Qt::black);
+			  label->setTextWidth(label->boundingRect().width());
+			  label->setNewPos(newOccurrence->scenePos());
+			  _attributeLabelVector.push_back(label);
+			  newOccurrence->setLabel(label);
+			  label->setZValue(4);
+			  scene->addItem(label);
+			}
+		    }
+		}
+	      bool found = false;
+	      for (int i = 0; i < attributeListWidget->rowCount(); i++) 
+		{
+		  if (attributeListWidget->item(i, 0)->data(Qt::DisplayRole) == currentAttribute) 
+		    {
+		      found = true;
+		      QTableWidgetItem *item = attributeListWidget->item(i,0);
+		      QString toolTip = breakString(currentAttribute + " - " + description);
+		      item->setToolTip(toolTip);
+		      attributeListWidget->item(i, 1)->setBackground(currentColor);
+		      break;
+		    }
+		}
+	      if (!found) 
+		{
+		  QTableWidgetItem *item = new QTableWidgetItem(currentAttribute);
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(currentAttribute + " - " + description);
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, currentAttribute);
+		  attributeListWidget->setRowCount(attributeListWidget->rowCount() + 1);
+		  attributeListWidget->setItem(attributeListWidget->rowCount() - 1, 0, item);
+		  attributeListWidget->setItem(attributeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+		  attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->
+		    setFlags(attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
+	    }
+	  groupOccurrences();
+	  wireLinkages();
+	}
+      delete query;
+      delete query2;
+      delete query3;
+      delete query4;
+    }
+  delete attributeSelectionDialog;
+  setRangeControls();
+  scene->update();
+  view->update();
+  updateLinkages();
+  checkCongruency();
+  if (!caseListWidget->isEnabled()) 
+    {
+      caseListWidget->setEnabled(true);
+    }
+  setGraphControls(true);
+}
+	 
 void OccurrenceGraphWidget::addRelationship() 
 {
   setChangeLabel();
@@ -1506,12 +1685,12 @@ void OccurrenceGraphWidget::groupOccurrences()
 	    }
 	  else 
 	    {
-	      dist -= 250;
-	      persistentDist -= 250;
+	      dist -= 150;
+	      persistentDist -= 150;
 	    }
 	}
     }
-  persistentDist -= 250;
+  persistentDist -= 150;
   std::sort(_presentRelationships.begin(), _presentRelationships.end(), stringSort);
   QVectorIterator<OccurrenceItem*> it3(_relationshipOccurrenceVector);
   while (it3.hasNext()) 
@@ -1532,7 +1711,7 @@ void OccurrenceGraphWidget::groupOccurrences()
 	    }
 	  else 
 	    {
-	      dist -= 250;
+	      dist -= 150;
 	    }
 	}
     }
@@ -1588,7 +1767,7 @@ void OccurrenceGraphWidget::groupOccurrences()
 	  qreal startY = group.first()->scenePos().y();
 	  int dist = 80;
 	  QVector<OccurrenceItem*>::iterator it7;
-	  for (it7 = group.begin() + 1; it7 != group.end(); it7++) 
+	  for (it7 = group.begin(); it7 != group.end(); it7++) 
 	    {
 	      OccurrenceItem *current = *it7;
 	      if (group.size() > 1) 
