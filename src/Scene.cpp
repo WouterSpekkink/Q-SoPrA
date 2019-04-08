@@ -209,8 +209,8 @@ QRectF Scene::itemsBoundingRect() const
 	{
 	  boundingRect |= item->sceneBoundingRect();
 	}
-      return boundingRect.adjusted(-500, -500, 500, 500);
     }
+  return boundingRect.adjusted(-500, -500, 500, 500);
 }
 
 void Scene::modEventWidth(QGraphicsItem *item) 
@@ -409,8 +409,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _linePointsStarted = true;
-	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr = new LineObject(_lineStart, _lineEnd);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
@@ -420,8 +421,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _singleArrowPointsStarted = true;
-	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr = new LineObject(_lineStart, _lineEnd);
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
@@ -432,8 +434,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _doubleArrowPointsStarted = true;
-	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr = new LineObject(_lineStart, _lineEnd);
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setArrow2(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
@@ -705,8 +708,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _linePointsStarted = true;
-	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr = new LineObject(_lineStart, _lineEnd);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
@@ -716,8 +720,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _singleArrowPointsStarted = true;
-	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr = new LineObject(_lineStart, _lineEnd);
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
@@ -728,8 +733,9 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _doubleArrowPointsStarted = true;
-	      _tempLinePtr = new LineObject(event->scenePos(), event->scenePos());
+	      _tempLinePtr = new LineObject(_lineStart, _lineEnd);
 	      _tempLinePtr->setArrow1(true);
 	      _tempLinePtr->setArrow2(true);
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
@@ -739,7 +745,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    }
 	   else if (_gettingTimeLinePoints)
 	    {
-	      // NEED TO SET TICKS LATER
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
 	      _timeLinePointsStarted = true;

@@ -139,8 +139,10 @@ private slots:
   void setPenWidth();
   void setLineColor();
   void setFillColor();
-  void setMajorInterval();
-  void setMinorDivision();
+  void setMajorIntervalBySlider();
+  void setMajorIntervalBySpinBox();
+  void setMinorDivisionBySlider();
+  void setMinorDivisionBySpinBox();
   void setMajorTickSize();
   void setMinorTickSize();
   void setTimeLineWidth();
@@ -257,6 +259,8 @@ private:
   QPointer<QSpinBox> upperRangeSpinBox;
   QPointer<QSpinBox> penWidthSpinBox;
   QPointer<QSpinBox> timeLineWidthSpinBox;
+  QPointer<QSpinBox> majorIntervalSpinBox;
+  QPointer<QSpinBox> minorDivisionSpinBox;
   QPointer<QSlider> zoomSlider;
   QPointer<QSlider> majorIntervalSlider;
   QPointer<QSlider> minorDivisionSlider;

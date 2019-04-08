@@ -123,7 +123,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);
   timeLineLabel = new QLabel(tr("<b>Add timeline:</b>"), timeLineWidget);
   majorIntervalLabel = new QLabel(tr("<b>Major tick interval:</b>"), timeLineWidget);
-  minorDivisionLabel = new QLabel(tr("<b>Minor tick interval:</b>"), timeLineWidget);
+  minorDivisionLabel = new QLabel(tr("<b>Minor tick division:</b>"), timeLineWidget);
   majorTickSizeLabel = new QLabel(tr("<b>Major tick size:</b>"), timeLineWidget);
   minorTickSizeLabel = new QLabel(tr("<b>Minor tick size:</b>"), timeLineWidget);
   timeLineWidthLabel = new QLabel(tr("<b>Pen width:</b>"), timeLineWidget);
@@ -202,6 +202,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
   toggleGraphicsControlsButton->setCheckable(true);
   toggleTimeLineButton = new QPushButton(tr("Toggle timeline controls"), this);
+  toggleTimeLineButton->setCheckable(true);
   previousEventButton = new QPushButton("<<", infoWidget);
   previousEventButton->setEnabled(false);   
   nextEventButton = new QPushButton(">>", infoWidget);
@@ -288,13 +289,22 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   addTimeLineButton->setMaximumSize(40, 40);
   majorIntervalSlider = new QSlider(Qt::Horizontal, timeLineWidget);
   majorIntervalSlider->setMinimum(5.0);
-  majorIntervalSlider->setMaximum(7500.0);
+  majorIntervalSlider->setMaximum(5000.0);
   majorIntervalSlider->setValue(100.0);
+  majorIntervalSlider->setTickInterval(1.0);
+  majorIntervalSpinBox = new QSpinBox(timeLineWidget);
+  majorIntervalSpinBox->setMinimum(5);
+  majorIntervalSpinBox->setMaximum(5000);
+  majorIntervalSpinBox->setValue(100);
   minorDivisionSlider = new QSlider(Qt::Horizontal, timeLineWidget);
   minorDivisionSlider->setMinimum(1);
   minorDivisionSlider->setMaximum(20);
   minorDivisionSlider->setTickInterval(1);
   minorDivisionSlider->setValue(2);
+  minorDivisionSpinBox = new QSpinBox(timeLineWidget);
+  minorDivisionSpinBox->setMinimum(1);
+  minorDivisionSpinBox->setMaximum(20);
+  minorDivisionSpinBox->setValue(2);
   majorTickSizeSlider = new QSlider(Qt::Horizontal, timeLineWidget);
   majorTickSizeSlider->setMinimum(1.0);
   majorTickSizeSlider->setMaximum(500.0);
@@ -378,8 +388,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
-  connect(majorIntervalSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorInterval()));
-  connect(minorDivisionSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorDivision()));
+  connect(majorIntervalSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySlider()));
+  connect(majorIntervalSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySpinBox()));
+  connect(minorDivisionSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorDivisionBySlider()));
+  connect(minorDivisionSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setMinorDivisionBySpinBox()));
   connect(majorTickSizeSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorTickSize()));
   connect(minorTickSizeSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorTickSize()));
   connect(changeTimeLineColorButton, SIGNAL(clicked()), this, SLOT(setTimeLineColor()));
@@ -533,10 +545,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   timeLineLayout->addWidget(addTimeLineButton);
   timeLineLayout->addWidget(majorIntervalLabel);
   timeLineLayout->addWidget(majorIntervalSlider);
+  timeLineLayout->addWidget(majorIntervalSpinBox);
   timeLineLayout->addWidget(majorTickSizeLabel);
   timeLineLayout->addWidget(majorTickSizeSlider);
   timeLineLayout->addWidget(minorDivisionLabel);
   timeLineLayout->addWidget(minorDivisionSlider);
+  timeLineLayout->addWidget(minorDivisionSpinBox);
   timeLineLayout->addWidget(minorTickSizeLabel);
   timeLineLayout->addWidget(minorTickSizeSlider);
   timeLineLayout->addWidget(timeLineWidthLabel);
@@ -1079,7 +1093,9 @@ void EventGraphWidget::setGraphControls(bool state)
   changeFillColorButton->setEnabled(state);
   addTimeLineButton->setEnabled(state);
   majorIntervalSlider->setEnabled(state);
+  majorIntervalSpinBox->setEnabled(state);
   minorDivisionSlider->setEnabled(state);
+  minorDivisionSpinBox->setEnabled(state);
   majorTickSizeSlider->setEnabled(state);
   minorTickSizeSlider->setEnabled(state);
   timeLineWidthSpinBox->setEnabled(state);
@@ -10023,9 +10039,12 @@ void EventGraphWidget::setFillColor()
     }
 }
 
-void EventGraphWidget::setMajorInterval()
+void EventGraphWidget::setMajorIntervalBySlider()
 {
   _currentMajorInterval = majorIntervalSlider->value();
+  majorIntervalSpinBox->blockSignals(true);
+  majorIntervalSpinBox->setValue(_currentMajorInterval);
+  majorIntervalSpinBox->blockSignals(false);
   emit sendMajorInterval(_currentMajorInterval);
   if (scene->selectedItems().size() == 1)
      {
@@ -10038,9 +10057,48 @@ void EventGraphWidget::setMajorInterval()
      }
 }
 
-void EventGraphWidget::setMinorDivision()
+void EventGraphWidget::setMajorIntervalBySpinBox()
+{
+  _currentMajorInterval = majorIntervalSpinBox->value();
+  majorIntervalSlider->blockSignals(true);
+  majorIntervalSlider->setValue(_currentMajorInterval);
+  majorIntervalSlider->blockSignals(false);
+  emit sendMajorInterval(_currentMajorInterval);
+  if (scene->selectedItems().size() == 1)
+     {
+       QGraphicsItem *selectedItem = scene->selectedItems().first();
+       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+       if (timeline)
+	 {
+	   timeline->setMajorTickInterval(_currentMajorInterval);
+	 }
+     }
+}
+
+void EventGraphWidget::setMinorDivisionBySlider()
 {
   _currentMinorDivision = minorDivisionSlider->value();
+  minorDivisionSpinBox->blockSignals(true);
+  minorDivisionSpinBox->setValue(_currentMinorDivision);
+  minorDivisionSpinBox->blockSignals(false);
+  emit sendMinorDivision(_currentMinorDivision);
+   if (scene->selectedItems().size() == 1)
+     {
+       QGraphicsItem *selectedItem = scene->selectedItems().first();
+       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(selectedItem);
+       if (timeline)
+	 {
+	   timeline->setMinorTickDivision(_currentMinorDivision);
+	 }
+     }
+}
+
+void EventGraphWidget::setMinorDivisionBySpinBox()
+{
+  _currentMinorDivision = minorDivisionSpinBox->value();
+  minorDivisionSlider->blockSignals(true);
+  minorDivisionSlider->setValue(_currentMinorDivision);
+  minorDivisionSlider->blockSignals(false);
   emit sendMinorDivision(_currentMinorDivision);
    if (scene->selectedItems().size() == 1)
      {
@@ -10210,9 +10268,15 @@ void EventGraphWidget::processShapeSelection()
 	  majorIntervalSlider->blockSignals(true);
 	  majorIntervalSlider->setValue(_currentMajorInterval);
 	  majorIntervalSlider->blockSignals(false);
+	  majorIntervalSpinBox->blockSignals(true);
+	  majorIntervalSpinBox->setValue(_currentMajorInterval);
+	  majorIntervalSpinBox->blockSignals(false);
 	  minorDivisionSlider->blockSignals(true);
 	  minorDivisionSlider->setValue(_currentMinorDivision);
 	  minorDivisionSlider->blockSignals(false);
+	  minorDivisionSpinBox->blockSignals(true);
+	  minorDivisionSpinBox->setValue(_currentMinorDivision);
+	  minorDivisionSpinBox->blockSignals(false);
 	  majorTickSizeSlider->blockSignals(true);
 	  majorTickSizeSlider->setValue(_currentMajorTickSize);
 	  majorTickSizeSlider->blockSignals(false);

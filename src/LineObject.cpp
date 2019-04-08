@@ -23,7 +23,7 @@ LineObject::LineObject(QPointF startPos,
 
 QRectF LineObject::boundingRect() const 
 {
-  return shape().boundingRect();
+  return QRectF(_startPos, _endPos).normalized();
 }
 
 QPainterPath LineObject::shape() const 
@@ -69,7 +69,6 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
 
 void LineObject::calculate() 
 {
-  prepareGeometryChange();
   qreal arrowSize = 20 + _penWidth;
   QLineF newLine = QLineF(_startPos, _endPos);
   setLine(newLine);
