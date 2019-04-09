@@ -21,9 +21,12 @@ LineObject::LineObject(QPointF startPos,
   setAcceptHoverEvents(true);
 }
 
+
 QRectF LineObject::boundingRect() const 
 {
-  return QRectF(_startPos, _endPos).normalized();
+  int margin = 19 + _penWidth;
+  return QRectF(_startPos, _endPos).marginsAdded(QMargins(margin, margin, margin, margin))
+    .normalized();
 }
 
 QPainterPath LineObject::shape() const 
