@@ -21,6 +21,7 @@ LineObject::LineObject(QPointF startPos,
   setAcceptHoverEvents(true);
 }
 
+
 QRectF LineObject::boundingRect() const 
 {
   int margin = 19 + _penWidth;

@@ -73,6 +73,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "AbstractionDialog.h"
 #include "ModeColorDialog.h"
 #include "EventTextDialog.h"
+#include "AttributeCheckBoxDialog.h"
 
 // Need a forward declaration here
 class AttributesWidget;
@@ -192,7 +193,8 @@ private slots:
   void exportTable();
   void exportNodes();
   void exportEdges();
-  void colorByAttribute();
+  void addMode();
+  void addModes();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void setEventColor();
   void setEdgeColor();
@@ -383,7 +385,8 @@ private:
   QPointer<QPushButton> exportNodesButton;
   QPointer<QPushButton> exportEdgesButton;
   QPointer<QPushButton> plotLabelsButton;
-  QPointer<QPushButton> colorByAttributeButton;
+  QPointer<QPushButton> addModeButton;
+  QPointer<QPushButton> addModesButton;
   QPointer<QPushButton> eventColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;

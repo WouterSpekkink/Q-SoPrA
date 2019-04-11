@@ -23,6 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += include/AbstractionDialog.h \
            include/AbstractNode.h \
            include/AbstractNodeLabel.h \
+           include/AttributeCheckBoxDialog.h \
            include/AttributeColorDialog.h \
            include/AttributeDialog.h \
            include/AttributeIndexDialog.h \
@@ -90,6 +91,7 @@ HEADERS += include/AbstractionDialog.h \
            include/RecordDialog.h \
            include/RectObject.h \
            include/RelationalTable.h \
+           include/RelationshipCheckBoxDialog.h \
            include/RelationshipColorDialog.h \
            include/RelationshipComboBoxDialog.h \
            include/RelationshipsDialog.h \
@@ -113,6 +115,7 @@ SOURCES += main.cpp \
            src/AbstractionDialog.cpp \
            src/AbstractNode.cpp \
            src/AbstractNodeLabel.cpp \
+           src/AttributeCheckBoxDialog.cpp \
            src/AttributeColorDialog.cpp \
            src/AttributeDialog.cpp \
            src/AttributeIndexDialog.cpp \
@@ -179,6 +182,7 @@ SOURCES += main.cpp \
            src/RecordDialog.cpp \
            src/RectObject.cpp \
            src/RelationalTable.cpp \
+           src/RelationshipCheckBoxDialog.cpp \
            src/RelationshipColorDialog.cpp \
            src/RelationshipComboBoxDialog.cpp \
            src/RelationshipsDialog.cpp \

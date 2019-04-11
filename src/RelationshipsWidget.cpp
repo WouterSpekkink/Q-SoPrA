@@ -1228,7 +1228,6 @@ void RelationshipsWidget::setTree()
 	      itemName = relationshipParts[0] + "<-[" + currentType
 		+ "]->" + relationshipParts[1]; 
 	    }
-	  
 	  QStandardItem *relationship = new QStandardItem(itemName);
 	  relationship->setData(name, Qt::UserRole);
 	  type->setChild(children, relationship);

@@ -138,7 +138,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   toggleLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   increaseFontSizeButton = new QPushButton(tr("+"));
   decreaseFontSizeButton = new QPushButton(tr("-"));
-  colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
+  addModeButton = new QPushButton(tr("Create single mode"), legendWidget);
+  addModesButton = new QPushButton(tr("Create multiple modes"), legendWidget);
   nodeColorButton = new QPushButton(tr("Set node color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -305,7 +306,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(addRelationshipType()));
   connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeRelationshipType()));
-  connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
+  connect(addModeButton, SIGNAL(clicked()), this, SLOT(addMode()));
+  connect(addModesButton, SIGNAL(clicked()), this, SLOT(addModes()));
   connect(nodeColorButton, SIGNAL(clicked()), this, SLOT(setNodeColor()));
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
@@ -487,7 +489,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   modeButtonsLayout->addWidget(moveModeUpButton);
   modeButtonsLayout->addWidget(moveModeDownButton);
   legendLayout->addLayout(modeButtonsLayout);
-  legendLayout->addWidget(colorByAttributeButton);
+  legendLayout->addWidget(addModeButton);
+  legendLayout->addWidget(addModesButton);
   legendLayout->addWidget(multimodeButton);
   legendLayout->addWidget(hideModeButton);
   legendLayout->addWidget(showModeButton);
@@ -3301,19 +3304,22 @@ void NetworkGraphWidget::fixZValues()
   setChangeLabel();  
 }
 
-void NetworkGraphWidget::colorByAttribute() 
+void NetworkGraphWidget::addMode() 
 {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, ENTITY);
   attributeColorDialog->exec();
   if (attributeColorDialog->getExitStatus() == 0) 
     {
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      query->prepare("SELECT description FROM entity_attributes "
+		     "WHERE name = :name");
+      query2->prepare("SELECT entity FROM attributes_to_entities "
+		     "WHERE attribute = :currentAttribute");
       setChangeLabel();
       QColor color = attributeColorDialog->getColor();
       QColor textColor = attributeColorDialog->getTextColor();
       QString attribute = attributeColorDialog->getAttribute();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT description FROM entity_attributes "
-		     "WHERE name = :name");
       query->bindValue(":name", attribute);
       query->exec();
       query->first();
@@ -3325,13 +3331,11 @@ void NetworkGraphWidget::colorByAttribute()
       while (it.hasNext()) 
 	{
 	  QString currentAttribute = it.next();
-	  query->prepare("SELECT entity FROM attributes_to_entities "
-			 "WHERE attribute = :currentAttribute");
-	  query->bindValue(":currentAttribute", currentAttribute);
-	  query->exec();
-	  while (query->next()) 
+	  query2->bindValue(":currentAttribute", currentAttribute);
+	  query2->exec();
+	  while (query2->next()) 
 	    {
-	      QString currentName = query->value(0).toString();
+	      QString currentName = query2->value(0).toString();
 	      QVectorIterator<NetworkNode*> it2(_networkNodeVector);
 	      while (it2.hasNext()) 
 		{
@@ -3374,8 +3378,111 @@ void NetworkGraphWidget::colorByAttribute()
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 	}
       delete query;
+      delete query2;
     }
   delete attributeColorDialog;
+}
+
+void NetworkGraphWidget::addModes() 
+{
+  QPointer<AttributeCheckBoxDialog> attributeDialog = new AttributeCheckBoxDialog(this, ENTITY);
+  attributeDialog->exec();
+  if (attributeDialog->getExitStatus() == 0) 
+    {
+      setChangeLabel();
+      // Let's first create a few queries
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2= new QSqlQuery;
+      query->prepare("SELECT description FROM entity_attributes "
+		     "WHERE name = :name");
+      query2->prepare("SELECT entity FROM attributes_to_entities "
+		      "WHERE attribute = :currentAttribute");
+      // Then we get the selected attributes
+      QVector<QPair<QString, bool> > chosenAttributes = attributeDialog->getAttributes();
+      // Let's create a color palette;
+      QList<QColor> palette;
+      double hue = double(rand()) / (double(RAND_MAX) + 1.0);
+      int colorCount = chosenAttributes.size();
+      for (int i = 0; i != colorCount; i++)
+	{
+	  palette.append(QColor::fromHslF(hue, 1.0, 0.5));
+	  hue += 0.61803398874895f;
+	  hue = std::fmod(hue, 1.0f);
+	}
+      int colorNumber = 0;
+      // And then we iterate through our attributes
+      QVectorIterator<QPair<QString, bool> > it(chosenAttributes);
+      while (it.hasNext())
+	{
+	   // Set our current color and then increment the color number
+	  QColor currentColor = palette[colorNumber];
+	  colorNumber++;
+	  // Let's retrieve the data we need.
+	  QPair<QString, bool> currentPair = it.next();
+	  QString attribute = currentPair.first;
+	  // We do not need the second variable in this pair in this case
+	  query->bindValue(":name", attribute);
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  QVector<QString> attributeVector;
+	  attributeVector.push_back(attribute);
+	  findChildren(attribute, &attributeVector);
+	  QVectorIterator<QString> it2(attributeVector);
+	  while (it2.hasNext()) 
+	    {
+	      QString currentAttribute = it2.next();
+	      query2->bindValue(":currentAttribute", currentAttribute);
+	      query2->exec();
+	      while (query2->next()) 
+		{
+		  QString currentName = query2->value(0).toString();
+		  QVectorIterator<NetworkNode*> it3(_networkNodeVector);
+		  while (it3.hasNext()) 
+		    {
+		      NetworkNode* currentNode = it3.next();
+		      if (currentNode->getName() == currentName) 
+			{
+			  currentNode->setColor(currentColor);
+			  currentNode->setMode(attribute);
+			  currentNode->getLabel()->setDefaultTextColor(Qt::black);
+			}
+		    }
+		}
+	    }
+	  bool found = false;
+	  for (int i = 0; i < nodeListWidget->rowCount(); i++) 
+	    {
+	      if (nodeListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute) 
+		{
+		  found = true;
+		  QTableWidgetItem *item = nodeListWidget->item(i,0);
+		  QString toolTip = breakString(attribute + " - " + description);
+		  item->setToolTip(toolTip);
+		  nodeListWidget->item(i, 1)->setBackground(currentColor);
+		  break;
+		}
+	    }
+	  if (!found) 
+	    {
+	      QTableWidgetItem *item = new QTableWidgetItem(attribute);
+	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	      QString toolTip = breakString(attribute + " - " + description);
+	      item->setToolTip(toolTip);
+	      item->setData(Qt::DisplayRole, attribute);
+	      nodeListWidget->setRowCount(nodeListWidget->rowCount() + 1);
+	      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
+	      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+	      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
+		setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
+			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	    }
+	}
+      delete query;
+      delete query2;
+    }
+  delete attributeDialog;
 }
 
 void NetworkGraphWidget::findChildren(QString father, QVector<QString> *children) 
