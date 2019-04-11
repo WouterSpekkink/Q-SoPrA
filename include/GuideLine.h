@@ -43,6 +43,9 @@ public:
   // Getters
   QPointF getOrientationPoint();
 
+  // New function for correct drawing
+  void updatePosition();
+  
   // Type checking
   enum {Type = UserType + 16};
   int type() const;
@@ -57,6 +60,7 @@ protected:
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
 
 private:
+  QPainterPath _strokePath;
   QPointF _orientationPoint;
   QPointF _startPos;
   QPointF _endPos;

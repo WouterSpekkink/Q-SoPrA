@@ -10,16 +10,22 @@ GuideLine::GuideLine(bool horizontal, QGraphicsItem *parent)
   _horizontal = horizontal;
   _orientationPoint = QPointF(0.0, 0.0);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
-  setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   setAcceptHoverEvents(true);
 }
 
-
 QRectF GuideLine::boundingRect() const 
 {
-  int margin = 5;
-  return QRectF(_startPos, _endPos).marginsAdded(QMargins(margin, margin, margin, margin))
-    .normalized();
+  return _strokePath.boundingRect();
+}
+
+
+void GuideLine::updatePosition() 
+{
+  calculate();
+  QPainterPath myPath;
+  myPath.moveTo(_startPos);
+  myPath.lineTo(_endPos);
+  _strokePath = myPath;
 }
 
 QPainterPath GuideLine::shape() const 
@@ -42,7 +48,8 @@ void GuideLine::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidg
   QPainterPath myPath;
   myPath.moveTo(_startPos);
   myPath.lineTo(_endPos);
-  QPen myPen = QPen(Qt::blue, 1, Qt::PenStyle(1), Qt::FlatCap, Qt::MiterJoin); 
+  QPen myPen = QPen(Qt::blue, 0, Qt::PenStyle(1), Qt::FlatCap, Qt::MiterJoin); 
+  _strokePath = myPath;
   painter->setPen(myPen);
   painter->strokePath(myPath, myPen);
 }
@@ -61,6 +68,7 @@ void GuideLine::calculate()
       _startPos = QPointF(_orientationPoint.x(), visibleRect.bottom());
       _endPos = QPointF(_orientationPoint.x(), visibleRect.top());
     }
+  setLine(QLineF(_startPos, _endPos));
   prepareGeometryChange();
 }
 
@@ -71,7 +79,11 @@ int GuideLine::type() const
 
 void GuideLine::setOrientationPoint(QPointF orientation)
 {
-  _orientationPoint = mapFromScene(orientation);
+  if (scene() != NULL)
+    {
+      _orientationPoint = mapFromScene(orientation);
+      updatePosition();
+    }
 }
 
 QPointF GuideLine::getOrientationPoint()

@@ -10122,19 +10122,19 @@ void EventGraphWidget::addTimeLineObject(const qreal &startX, const qreal &endX,
 void EventGraphWidget::addHorizontalGuideLine(const QPointF &pos)
 {
   GuideLine *guide = new GuideLine(true);
-  guide->setOrientationPoint(pos);
-  fixZValues();
   _guidesVector.push_back(guide);
   scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
 }
 
 void EventGraphWidget::addVerticalGuideLine(const QPointF &pos)
 {
   GuideLine *guide = new GuideLine(false);
-  guide->setOrientationPoint(pos);
-  fixZValues();
   _guidesVector.push_back(guide);
   scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
 }
 
 void EventGraphWidget::setPenStyle()
@@ -11508,42 +11508,39 @@ void EventGraphWidget::fixZValues()
   while (it.hasNext()) 
     {
       QGraphicsItem *current = it.next();
-      if (current->type() != QGraphicsItem::UserType + 16)
-      {
-	if (maxZ == -1) 
-	  {
-	    maxZ = current->zValue();
-	  }
-	else if (maxZ < current->zValue()) 
-	  {
-	    maxZ = current->zValue();
-	  }
-      }
-      if (maxZ > 3)
+      if (maxZ == -1) 
 	{
-	  for (int i = 4; i != maxZ; i++) 
+	  maxZ = current->zValue();
+	}
+      else if (maxZ < current->zValue()) 
+	{
+	  maxZ = current->zValue();
+	}
+    }
+  if (maxZ > 3)
+    {
+      for (int i = 4; i != maxZ; i++) 
+	{
+	  bool currentZFound = false;
+	  QListIterator<QGraphicsItem*> it2(scene->items());
+	  while (it2.hasNext()) 
 	    {
-	      bool currentZFound = false;
-	      QListIterator<QGraphicsItem*> it2(scene->items());
-	      while (it2.hasNext()) 
+	      QGraphicsItem *current = it2.next();
+	      if (current->zValue() == i) 
 		{
-		  QGraphicsItem *current = it2.next();
-		  if (current->zValue() == i) 
-		    {
-		      currentZFound = true;
-		      break;
-		    }
+		  currentZFound = true;
+		  break;
 		}
-	      if (!currentZFound) 
+	    }
+	  if (!currentZFound) 
+	    {
+	      QListIterator<QGraphicsItem*> it3(scene->items());
+	      while (it3.hasNext()) 
 		{
-		  QListIterator<QGraphicsItem*> it3(scene->items());
-		  while (it3.hasNext()) 
+		  QGraphicsItem *current = it3.next();
+		  if (current->zValue() > i) 
 		    {
-		      QGraphicsItem *current = it3.next();
-		      if (current->zValue() > i) 
-			{
-			  current->setZValue(current->zValue() - 1);
-			}
+		      current->setZValue(current->zValue() - 1);
 		    }
 		}
 	    }
@@ -11552,9 +11549,9 @@ void EventGraphWidget::fixZValues()
   QVectorIterator<GuideLine*> it4(_guidesVector);
   while (it4.hasNext())
     {
-      it4.next()->setZValue(maxZ + 1);
+      GuideLine *guide = it4.next();
+      guide->setZValue(maxZ + 1);
     }
-  setChangeLabel();  
 }
 
 void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident,

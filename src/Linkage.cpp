@@ -63,7 +63,7 @@ QRectF Linkage::boundingRect() const
     }
   else
     {
-    return QGraphicsLineItem::boundingRect(); 
+      return _strokePath.boundingRect();
     }
 }
 
