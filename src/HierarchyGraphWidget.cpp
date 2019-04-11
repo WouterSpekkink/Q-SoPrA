@@ -29,7 +29,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
-  _currentFillColor = QColor(Qt::transparent);
+  _currentFillColor = QColor(Qt::black);
+  _currentFillColor.setAlpha(0);
   
   scene = new Scene(this);
   view = new BandlessGraphicsView(scene);
@@ -77,6 +78,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
   lineColorLabel = new QLabel(tr("<b>Line / Text color:</b>"), this);
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
+  fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -182,12 +184,19 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   changeLineColorButton->setMinimumSize(40, 40);
   changeLineColorButton->setMaximumSize(40, 40);
   QPixmap fillColorMap(20, 20);
-  fillColorMap.fill(_currentFillColor);
+  QColor tempFill = _currentFillColor;
+  tempFill.setAlpha(255);
+  fillColorMap.fill(tempFill);
   QIcon fillColorIcon(fillColorMap);
   changeFillColorButton = new QPushButton(fillColorIcon, "", this);
   changeFillColorButton->setIconSize(QSize(20, 20));
   changeFillColorButton->setMinimumSize(40, 40);
   changeFillColorButton->setMaximumSize(40, 40);
+  fillOpacitySlider = new QSlider(Qt::Horizontal, this);
+  fillOpacitySlider->setMinimum(0);
+  fillOpacitySlider->setMaximum(255);
+  fillOpacitySlider->setValue(0);
+  fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
   
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -235,6 +244,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
+  connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(attributesTreeView->selectionModel(),
@@ -310,6 +320,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   plotObjectsLayout->addWidget(changeLineColorButton);
   plotObjectsLayout->addWidget(fillColorLabel);
   plotObjectsLayout->addWidget(changeFillColorButton);
+  plotObjectsLayout->addWidget(fillOpacityLabel);
+  plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
   
@@ -2280,18 +2292,40 @@ void HierarchyGraphWidget::setFillColor()
 {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setCurrentColor(_currentFillColor);
+  _currentFillColor.setAlpha(fillOpacitySlider->value());
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
   if (colorDialog->exec()) 
     {
       _currentFillColor = colorDialog->selectedColor();
       emit sendFillColor(_currentFillColor);
       QPixmap fillColorMap(20, 20);
-      fillColorMap.fill(_currentFillColor);
+      QColor tempFill = _currentFillColor;
+      tempFill.setAlpha(255);
+      fillColorMap.fill(tempFill);
       QIcon fillColorIcon(fillColorMap);
       changeFillColorButton->setIcon(fillColorIcon);
     }
   delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (ellipse)
+	{
+	  ellipse->setFillColor(_currentFillColor);
+	}
+      else if (rect)
+	{
+	  rect->setFillColor(_currentFillColor);
+	}
+    }
+}
+
+void HierarchyGraphWidget::setFillOpacity(int value)
+{
+  _currentFillColor.setAlpha(value);
+  emit sendFillColor(_currentFillColor);
   if (scene->selectedItems().size() == 1)
     {
       QGraphicsItem *selectedItem = scene->selectedItems().first();
@@ -2345,9 +2379,14 @@ void HierarchyGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (rect)
 	{
@@ -2364,9 +2403,14 @@ void HierarchyGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (text)
 	{
@@ -2680,9 +2724,14 @@ void HierarchyGraphWidget::changeEllipseFillColor()
 	      _currentFillColor = ellipse->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -2795,9 +2844,14 @@ void HierarchyGraphWidget::changeRectFillColor()
 	      _currentFillColor = rect->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}

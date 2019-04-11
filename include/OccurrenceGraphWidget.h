@@ -64,6 +64,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ModeColorDialog.h"
 #include "AttributeCheckBoxDialog.h"
 #include "RelationshipCheckBoxDialog.h"
+#include "GuideLine.h"
 
 class EventGraphWidget;
 
@@ -139,10 +140,13 @@ private slots:
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
   void addTimeLineObject(const qreal &startX, const qreal &endX, const qreal &y);
+  void addHorizontalGuideLine(const QPointF &pos);
+  void addVerticalGuideLine(const QPointF &pos);
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
   void setFillColor();
+  void setFillOpacity(int value);
   void setMajorIntervalBySlider();
   void setMajorIntervalBySpinBox();
   void setMinorDivisionBySlider();
@@ -177,6 +181,8 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
+  void processGuideLineContextMenu(const QString &action);
+  void deleteGuideLine();
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
@@ -226,6 +232,8 @@ private:
   QPointer<QLabel> minorTickSizeLabel;
   QPointer<QLabel> timeLineWidthLabel;
   QPointer<QLabel> timeLineColorLabel;
+  QPointer<QLabel> fillOpacityLabel;
+  QPointer<QLabel> guideLinesLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> toggleLegendButton;
@@ -256,6 +264,8 @@ private:
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> addTimeLineButton;
   QPointer<QPushButton> changeTimeLineColorButton;
+  QPointer<QPushButton> addHorizontalGuideLineButton;
+  QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -272,6 +282,7 @@ private:
   QPointer<QSlider> minorDivisionSlider;
   QPointer<QSlider> majorTickSizeSlider;
   QPointer<QSlider> minorTickSizeSlider;
+  QPointer<QSlider> fillOpacitySlider;
   QPointer<QComboBox> penStyleComboBox;
 
   // Private variables
@@ -308,7 +319,8 @@ private:
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
   QVector<TimeLineObject*> _timeLineVector;
-
+  QVector<GuideLine*> _guidesVector;
+  
 };
 
 #endif

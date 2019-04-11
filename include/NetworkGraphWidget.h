@@ -67,6 +67,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "TextObject.h"
 #include "ModeColorDialog.h"
 #include "AttributeCheckBoxDialog.h"
+#include "GuideLine.h"
 
 class NetworkGraphWidget : public QWidget
 {
@@ -183,10 +184,13 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void addHorizontalGuideLine(const QPointF &pos);
+  void addVerticalGuideLine(const QPointF &pos);
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
   void setFillColor();
+  void setFillOpacity(int value);
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
@@ -209,6 +213,8 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
+  void processGuideLineContextMenu(const QString &action);
+  void deleteGuideLine();
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
@@ -258,6 +264,8 @@ private:
   QPointer<QLabel> penWidthLabel;
   QPointer<QLabel> lineColorLabel;
   QPointer<QLabel> fillColorLabel;
+  QPointer<QLabel> fillOpacityLabel;
+  QPointer<QLabel> guideLinesLabel;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<DeselectableListWidget> nodeListWidget;
@@ -318,6 +326,8 @@ private:
   QPointer<QPushButton> addTextButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
+  QPointer<QPushButton> addHorizontalGuideLineButton;
+  QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
@@ -325,6 +335,7 @@ private:
   QPointer<QSpinBox> weightSpinBox;
   QPointer<QSpinBox> penWidthSpinBox;
   QPointer<QSlider> zoomSlider;
+  QPointer<QSlider> fillOpacitySlider;
   QPointer<QCheckBox> weightCheckBox;
   
   // Private variables    
@@ -353,6 +364,7 @@ private:
   QVector<TextObject*> _textVector;
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
+  QVector<GuideLine*> _guidesVector;
 };
 
 

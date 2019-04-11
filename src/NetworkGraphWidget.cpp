@@ -35,7 +35,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
-  _currentFillColor = QColor(Qt::transparent);
+  _currentFillColor = QColor(Qt::black);
+  _currentFillColor.setAlpha(0);
   
   scene = new Scene(this);
   view = new GraphicsView(scene);
@@ -90,7 +91,9 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
   penWidthLabel = new QLabel(tr("<b>Pen width:</b>"), this);
   lineColorLabel = new QLabel(tr("<b>Line / Text color:</b>"), this);
+  guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
+  fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
@@ -214,13 +217,28 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   changeLineColorButton->setMinimumSize(40, 40);
   changeLineColorButton->setMaximumSize(40, 40);
   QPixmap fillColorMap(20, 20);
-  fillColorMap.fill(_currentFillColor);
+  QColor tempFill = _currentFillColor;
+  tempFill.setAlpha(255);
+  fillColorMap.fill(tempFill);
   QIcon fillColorIcon(fillColorMap);
   changeFillColorButton = new QPushButton(fillColorIcon, "", this);
   changeFillColorButton->setIconSize(QSize(20, 20));
   changeFillColorButton->setMinimumSize(40, 40);
   changeFillColorButton->setMaximumSize(40, 40);
-
+  fillOpacitySlider = new QSlider(Qt::Horizontal, this);
+  fillOpacitySlider->setMinimum(0);
+  fillOpacitySlider->setMaximum(255);
+  fillOpacitySlider->setValue(0);
+  fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+  addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
+  addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
+  addHorizontalGuideLineButton->setMinimumSize(40, 40);
+  addHorizontalGuideLineButton->setMaximumSize(40, 40);
+  addVerticalGuideLineButton = new QPushButton(QIcon("./images/guide_vertical.png"), "", this);
+  addVerticalGuideLineButton->setIconSize(QSize(20, 20));
+  addVerticalGuideLineButton->setMinimumSize(40, 40);
+  addVerticalGuideLineButton->setMaximumSize(40, 40);
+  
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
   penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
@@ -359,8 +377,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
+  connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
+  connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
+  connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateEdges()));
@@ -386,6 +407,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
 	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
+  connect(scene, SIGNAL(GuideLineContextMenuAction(const QString &)),
+	  this, SLOT(processGuideLineContextMenu(const QString &)));
+  connect(scene, SIGNAL(sendHorizontalGuideLinePos(const QPointF&)),
+	  this, SLOT(addHorizontalGuideLine(const QPointF&)));
+  connect(scene, SIGNAL(sendVerticalGuideLinePos(const QPointF&)),
+	  this, SLOT(addVerticalGuideLine(const QPointF&)));
   connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));
   connect(expandLayoutButton, SIGNAL(clicked()), this, SLOT(expandLayout()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
@@ -416,7 +443,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QFrame> topLine = new QFrame();
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
-  
+
+  QPointer<QHBoxLayout> drawHelpLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
   plotObjectsLayout->addWidget(shapesLabel);
   plotObjectsLayout->addWidget(addLineButton);
@@ -433,8 +461,17 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeLineColorButton);
   plotObjectsLayout->addWidget(fillColorLabel);
   plotObjectsLayout->addWidget(changeFillColorButton);
+  plotObjectsLayout->addWidget(fillOpacityLabel);
+  plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
-  mainLayout->addLayout(plotObjectsLayout);
+  drawHelpLayout->addLayout(plotObjectsLayout);
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->setAlignment(Qt::AlignRight);
+  drawHelpLayout->addLayout(guidesLayout);
+  mainLayout->addLayout(drawHelpLayout);
   
   QPointer<QHBoxLayout> screenLayout = new QHBoxLayout;
 
@@ -617,6 +654,8 @@ NetworkGraphWidget::~NetworkGraphWidget()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   delete view;
   delete scene;
 }
@@ -908,6 +947,9 @@ void NetworkGraphWidget::setGraphControls(bool state)
   penWidthSpinBox->setEnabled(state);
   changeLineColorButton->setEnabled(state);
   changeFillColorButton->setEnabled(state);
+  fillOpacitySlider->setEnabled(state);
+  addHorizontalGuideLineButton->setEnabled(state);
+  addVerticalGuideLineButton->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -2283,17 +2325,39 @@ void NetworkGraphWidget::setFillColor()
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setCurrentColor(_currentFillColor);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
   if (colorDialog->exec()) 
     {
       _currentFillColor = colorDialog->selectedColor();
+      _currentFillColor.setAlpha(fillOpacitySlider->value());
       emit sendFillColor(_currentFillColor);
       QPixmap fillColorMap(20, 20);
-      fillColorMap.fill(_currentFillColor);
+      QColor tempFill = _currentFillColor;
+      tempFill.setAlpha(255);
+      fillColorMap.fill(tempFill);
       QIcon fillColorIcon(fillColorMap);
       changeFillColorButton->setIcon(fillColorIcon);
     }
   delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (ellipse)
+	{
+	  ellipse->setFillColor(_currentFillColor);
+	}
+      else if (rect)
+	{
+	  rect->setFillColor(_currentFillColor);
+	}
+    }
+}
+
+void NetworkGraphWidget::setFillOpacity(int value)
+{
+  _currentFillColor.setAlpha(value);
+  emit sendFillColor(_currentFillColor);
   if (scene->selectedItems().size() == 1)
     {
       QGraphicsItem *selectedItem = scene->selectedItems().first();
@@ -2405,6 +2469,24 @@ void NetworkGraphWidget::addTextObject(const QRectF &area, const qreal &size)
   delete textDialog;
 }
 
+void NetworkGraphWidget::addHorizontalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(true);
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+}
+
+void NetworkGraphWidget::addVerticalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(false);
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+}
+
 void NetworkGraphWidget::processShapeSelection()
 {
   if (scene->selectedItems().size() == 1)
@@ -2442,9 +2524,14 @@ void NetworkGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (rect)
 	{
@@ -2461,9 +2548,14 @@ void NetworkGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (text)
 	{
@@ -2824,9 +2916,14 @@ void NetworkGraphWidget::changeEllipseFillColor()
 	      _currentFillColor = ellipse->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -2955,9 +3052,14 @@ void NetworkGraphWidget::changeRectFillColor()
 	      _currentFillColor = rect->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -3001,6 +3103,27 @@ void NetworkGraphWidget::duplicateRect()
 	  newRect->moveCenter(newRect->mapFromScene(pos));
 	}
     }
+}
+
+void NetworkGraphWidget::processGuideLineContextMenu(const QString &action) 
+{
+  if (action == DELETEGUIDEACTION) 
+    {
+      deleteGuideLine();
+    }
+}
+
+void NetworkGraphWidget::deleteGuideLine()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(scene->selectedItems().first());
+      if (guide) 
+	{
+	  delete guide;
+	  _guidesVector.removeOne(guide);
+	}
+    }  
 }
 
 void NetworkGraphWidget::objectOneForward() 
@@ -3300,6 +3423,12 @@ void NetworkGraphWidget::fixZValues()
 		}
 	    }
 	}
+    }
+  QVectorIterator<GuideLine*> it4(_guidesVector);
+  while (it4.hasNext())
+    {
+      GuideLine *guide = it4.next();
+      guide->setZValue(maxZ + 1);
     }
   setChangeLabel();  
 }
@@ -5247,6 +5376,11 @@ void NetworkGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      QVectorIterator<GuideLine*> it(_guidesVector);
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
       QSvgGenerator gen;
       gen.setFileName(fileName);
       QRectF currentRect = this->scene->itemsBoundingRect();
@@ -5262,6 +5396,10 @@ void NetworkGraphWidget::exportSvg()
       painter.begin(&gen);
       scene->render(&painter);
       painter.end();
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
     }
 }
 
@@ -7398,6 +7536,8 @@ void NetworkGraphWidget::cleanUp()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   scene->clear();
   nodeListWidget->setRowCount(0);
   edgeListWidget->setRowCount(0);

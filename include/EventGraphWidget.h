@@ -258,6 +258,7 @@ private slots:
   void setPenWidth();
   void setLineColor();
   void setFillColor();
+  void setFillOpacity(int value);
   void setMajorIntervalBySlider();
   void setMajorIntervalBySpinBox();
   void setMinorDivisionBySlider();
@@ -370,6 +371,7 @@ private:
   QPointer<QLabel> timeLineWidthLabel;
   QPointer<QLabel> timeLineColorLabel;
   QPointer<QLabel> guideLinesLabel;
+  QPointer<QLabel> fillOpacityLabel;
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
   QPointer<QPushButton> removeLinkageTypeButton;
@@ -453,6 +455,7 @@ private:
   QPointer<QSlider> minorDivisionSlider;
   QPointer<QSlider> majorTickSizeSlider;
   QPointer<QSlider> minorTickSizeSlider;
+  QPointer<QSlider> fillOpacitySlider;
   
   // Private variables
   QString _selectedCoder;

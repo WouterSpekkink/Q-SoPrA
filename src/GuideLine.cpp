@@ -15,7 +15,7 @@ GuideLine::GuideLine(bool horizontal, QGraphicsItem *parent)
 
 QRectF GuideLine::boundingRect() const 
 {
-  return _strokePath.boundingRect();
+  return _strokePath.boundingRect().marginsAdded(QMargins(10,10,10,10));
 }
 
 
@@ -30,7 +30,7 @@ void GuideLine::updatePosition()
 
 QPainterPath GuideLine::shape() const 
 {
-  qreal clickTolerance = 5;
+  qreal clickTolerance = 50;
   QPointF vec = _endPos - _startPos;
   vec = vec*(clickTolerance / sqrt(QPointF::dotProduct(vec, vec)));
   QPointF orthogonal(vec.y(), -vec.x());

@@ -44,7 +44,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   _currentMinorTickSize = 10.0;
   _currentTimeLineWidth = 1;
   _currentLineColor = QColor(Qt::black);
-  _currentFillColor = QColor(Qt::transparent);
+  _currentFillColor = QColor(Qt::black);
+  _currentFillColor.setAlpha(0);
   _currentTimeLineColor = QColor(Qt::black);
   
   scene = new Scene(this);
@@ -110,6 +111,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   minorTickSizeLabel = new QLabel(tr("<b>Minor tick size:</b>"), timeLineWidget);
   timeLineWidthLabel = new QLabel(tr("<b>Pen width:</b>"), timeLineWidget);
   timeLineColorLabel = new QLabel(tr("<b>Color:</b>"), timeLineWidget);
+  fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
+  guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -189,12 +192,19 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   changeLineColorButton->setMinimumSize(40, 40);
   changeLineColorButton->setMaximumSize(40, 40);
   QPixmap fillColorMap(20, 20);
-  fillColorMap.fill(_currentFillColor);
+  QColor tempFill = _currentFillColor;
+  tempFill.setAlpha(255);
+  fillColorMap.fill(tempFill);
   QIcon fillColorIcon(fillColorMap);
   changeFillColorButton = new QPushButton(fillColorIcon, "", this);
   changeFillColorButton->setIconSize(QSize(20, 20));
   changeFillColorButton->setMinimumSize(40, 40);
   changeFillColorButton->setMaximumSize(40, 40);
+  fillOpacitySlider = new QSlider(Qt::Horizontal, this);
+  fillOpacitySlider->setMinimum(0);
+  fillOpacitySlider->setMaximum(255);
+  fillOpacitySlider->setValue(0);
+  fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
   addTimeLineButton = new QPushButton(QIcon("./images/timeline.png"), "", timeLineWidget);
   addTimeLineButton->setIconSize(QSize(20, 20));
   addTimeLineButton->setMinimumSize(40, 40);
@@ -228,7 +238,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   timeLineWidthSpinBox = new QSpinBox(timeLineWidget);
   timeLineWidthSpinBox->setMinimum(1);
   timeLineWidthSpinBox->setMaximum(20);
-  
   QPixmap timeLineColorMap(20, 20);
   timeLineColorMap.fill(_currentTimeLineColor);
   QIcon timeLineColorIcon(timeLineColorMap);
@@ -236,6 +245,14 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   changeTimeLineColorButton->setIconSize(QSize(20, 20));
   changeTimeLineColorButton->setMinimumSize(40, 40);
   changeTimeLineColorButton->setMaximumSize(40, 40);
+  addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
+  addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
+  addHorizontalGuideLineButton->setMinimumSize(40, 40);
+  addHorizontalGuideLineButton->setMaximumSize(40, 40);
+  addVerticalGuideLineButton = new QPushButton(QIcon("./images/guide_vertical.png"), "", this);
+  addVerticalGuideLineButton->setIconSize(QSize(20, 20));
+  addVerticalGuideLineButton->setMinimumSize(40, 40);
+  addVerticalGuideLineButton->setMaximumSize(40, 40);
   
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -292,11 +309,10 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
+  connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
   connect(addTimeLineButton, SIGNAL(clicked()), scene, SLOT(prepTimeLinePoints()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
-  connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
-  connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
   connect(majorIntervalSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySlider()));
   connect(majorIntervalSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySpinBox()));
   connect(minorDivisionSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorDivisionBySlider()));
@@ -306,6 +322,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(changeTimeLineColorButton, SIGNAL(clicked()), this, SLOT(setTimeLineColor()));
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setTimeLineWidth()));
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setTimeLineWidth(int)));
+  connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
+  connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
   connect(this, SIGNAL(sendMajorInterval(qreal &)), scene, SLOT(setMajorInterval(qreal &)));
   connect(this, SIGNAL(sendMinorDivision(qreal &)), scene, SLOT(setMinorDivision(qreal &)));
   connect(this, SIGNAL(sendMajorTickSize(qreal &)), scene, SLOT(setMajorTickSize(qreal &)));
@@ -334,6 +352,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(addSingleArrowObject(const QPointF&, const QPointF&)));
   connect(scene, SIGNAL(sendDoubleArrowPoints(const QPointF&, const QPointF&)),
 	  this, SLOT(addDoubleArrowObject(const QPointF&, const QPointF&)));
+  connect(scene, SIGNAL(GuideLineContextMenuAction(const QString &)),
+	  this, SLOT(processGuideLineContextMenu(const QString &)));
   connect(scene, SIGNAL(sendEllipseArea(const QRectF&)), this, SLOT(addEllipseObject(const QRectF&)));
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
@@ -341,6 +361,10 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(scene, SIGNAL(sendTimeLinePoints(const qreal&, const qreal&, const qreal&)),
 	  this, SLOT(addTimeLineObject(const qreal&, const qreal&, const qreal&)));
   connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));
+  connect(scene, SIGNAL(sendHorizontalGuideLinePos(const QPointF&)),
+	  this, SLOT(addHorizontalGuideLine(const QPointF&)));
+  connect(scene, SIGNAL(sendVerticalGuideLinePos(const QPointF&)),
+	  this, SLOT(addVerticalGuideLine(const QPointF&)));
   connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
   connect(changeLabelsButton, SIGNAL(clicked()), this, SLOT(changeLabels()));
@@ -374,6 +398,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
   
+  QPointer<QHBoxLayout> drawHelpLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
   plotObjectsLayout->addWidget(toggleTimeLineButton);
   plotObjectsLayout->addWidget(shapesLabel);
@@ -391,8 +416,17 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeLineColorButton);
   plotObjectsLayout->addWidget(fillColorLabel);
   plotObjectsLayout->addWidget(changeFillColorButton);
+  plotObjectsLayout->addWidget(fillOpacityLabel);
+  plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
-  mainLayout->addLayout(plotObjectsLayout);
+  drawHelpLayout->addLayout(plotObjectsLayout);
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->setAlignment(Qt::AlignRight);
+  drawHelpLayout->addLayout(guidesLayout);
+  mainLayout->addLayout(drawHelpLayout);
 
  QPointer<QHBoxLayout> timeLineLayout = new QHBoxLayout;
   timeLineLayout->addWidget(timeLineLabel);
@@ -522,6 +556,8 @@ OccurrenceGraphWidget::~OccurrenceGraphWidget()
   _rectVector.clear();
   qDeleteAll(_timeLineVector);
   _timeLineVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   delete scene;
   delete view;
 }
@@ -995,6 +1031,9 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   minorTickSizeSlider->setEnabled(state);
   timeLineWidthSpinBox->setEnabled(state);
   changeTimeLineColorButton->setEnabled(state);
+  fillOpacitySlider->setEnabled(state);
+  addHorizontalGuideLineButton->setEnabled(state);
+  addVerticalGuideLineButton->setEnabled(state);
 }
 
 void OccurrenceGraphWidget::updateCases() 
@@ -2623,6 +2662,24 @@ void OccurrenceGraphWidget::addTimeLineObject(const qreal &startX, const qreal &
   newTimeLine->setSelected(true);
 }
 
+void OccurrenceGraphWidget::addHorizontalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(true);
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+}
+
+void OccurrenceGraphWidget::addVerticalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(false);
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+}
+
 void OccurrenceGraphWidget::setLineColor()
 {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -2669,17 +2726,39 @@ void OccurrenceGraphWidget::setFillColor()
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setCurrentColor(_currentFillColor);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
   if (colorDialog->exec()) 
     {
       _currentFillColor = colorDialog->selectedColor();
+      _currentFillColor.setAlpha(fillOpacitySlider->value());
       emit sendFillColor(_currentFillColor);
       QPixmap fillColorMap(20, 20);
-      fillColorMap.fill(_currentFillColor);
+      QColor tempFill = _currentFillColor;
+      tempFill.setAlpha(255);
+      fillColorMap.fill(tempFill);
       QIcon fillColorIcon(fillColorMap);
       changeFillColorButton->setIcon(fillColorIcon);
     }
   delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (ellipse)
+	{
+	  ellipse->setFillColor(_currentFillColor);
+	}
+      else if (rect)
+	{
+	  rect->setFillColor(_currentFillColor);
+	}
+    }
+}
+
+void OccurrenceGraphWidget::setFillOpacity(int value)
+{
+  _currentFillColor.setAlpha(value);
+  emit sendFillColor(_currentFillColor);
   if (scene->selectedItems().size() == 1)
     {
       QGraphicsItem *selectedItem = scene->selectedItems().first();
@@ -2877,9 +2956,14 @@ void OccurrenceGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (rect)
 	{
@@ -2896,9 +2980,14 @@ void OccurrenceGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (text)
 	{
@@ -3299,9 +3388,14 @@ void OccurrenceGraphWidget::changeEllipseFillColor()
 	      _currentFillColor = ellipse->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -3430,9 +3524,14 @@ void OccurrenceGraphWidget::changeRectFillColor()
 	      _currentFillColor = rect->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -3640,6 +3739,27 @@ void OccurrenceGraphWidget::objectOneForward()
 	}
     }
   fixZValues();
+}
+
+void OccurrenceGraphWidget::processGuideLineContextMenu(const QString &action) 
+{
+  if (action == DELETEGUIDEACTION) 
+    {
+      deleteGuideLine();
+    }
+}
+
+void OccurrenceGraphWidget::deleteGuideLine()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(scene->selectedItems().first());
+      if (guide) 
+	{
+	  delete guide;
+	  _guidesVector.removeOne(guide);
+	}
+    }  
 }
 
 void OccurrenceGraphWidget::objectOneBackward() 
@@ -3921,6 +4041,12 @@ void OccurrenceGraphWidget::fixZValues()
 		}
 	    }
 	}
+    }
+  QVectorIterator<GuideLine*> it4(_guidesVector);
+  while (it4.hasNext())
+    {
+      GuideLine *guide = it4.next();
+      guide->setZValue(maxZ + 1);
     }
   setChangeLabel();  
 }
@@ -4455,6 +4581,11 @@ void OccurrenceGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      QVectorIterator<GuideLine*> it(_guidesVector);
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
       QSvgGenerator gen;
       gen.setFileName(fileName);
       QRectF currentRect = this->scene->itemsBoundingRect();
@@ -4470,6 +4601,10 @@ void OccurrenceGraphWidget::exportSvg()
       painter.begin(&gen);
       scene->render(&painter);
       painter.end();
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
     }
 }
 
@@ -5812,6 +5947,8 @@ void OccurrenceGraphWidget::cleanUp()
   _rectVector.clear();
   qDeleteAll(_timeLineVector);
   _timeLineVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   attributeListWidget->setRowCount(0);
   relationshipListWidget->setRowCount(0);
   caseListWidget->clear();

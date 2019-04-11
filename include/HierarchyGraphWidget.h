@@ -141,6 +141,7 @@ private slots:
   void setPenWidth();
   void setLineColor();
   void setFillColor();
+  void setFillOpacity(int value);
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
   void changeLineColor();
@@ -218,6 +219,7 @@ private:
   QPointer<QLabel> penWidthLabel;
   QPointer<QLabel> lineColorLabel;
   QPointer<QLabel> fillColorLabel;
+  QPointer<QLabel> fillOpacityLabel;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -258,6 +260,7 @@ private:
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<DeselectableListWidget> linkageListWidget;
   QPointer<QSlider> zoomSlider;
+  QPointer<QSlider> fillOpacitySlider;
   QPointer<QSpinBox> penWidthSpinBox;
 
   // Private variables

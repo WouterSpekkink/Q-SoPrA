@@ -45,7 +45,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
-  _currentFillColor = QColor(Qt::transparent);
+  _currentFillColor = QColor(Qt::black);
+  _currentFillColor.setAlpha(0);
   _currentTimeLineColor = QColor(Qt::black);
   
   scene = new Scene(this);
@@ -129,6 +130,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   timeLineWidthLabel = new QLabel(tr("<b>Pen width:</b>"), timeLineWidget);
   timeLineColorLabel = new QLabel(tr("<b>Color:</b>"), timeLineWidget);
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
+  fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -279,12 +281,19 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   changeLineColorButton->setMinimumSize(40, 40);
   changeLineColorButton->setMaximumSize(40, 40);
   QPixmap fillColorMap(20, 20);
-  fillColorMap.fill(_currentFillColor);
+  QColor tempFill = _currentFillColor;
+  tempFill.setAlpha(255);
+  fillColorMap.fill(tempFill);
   QIcon fillColorIcon(fillColorMap);
   changeFillColorButton = new QPushButton(fillColorIcon, "", this);
   changeFillColorButton->setIconSize(QSize(20, 20));
   changeFillColorButton->setMinimumSize(40, 40);
   changeFillColorButton->setMaximumSize(40, 40);
+  fillOpacitySlider = new QSlider(Qt::Horizontal, this);
+  fillOpacitySlider->setMinimum(0);
+  fillOpacitySlider->setMaximum(255);
+  fillOpacitySlider->setValue(0);
+  fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
   addTimeLineButton = new QPushButton(QIcon("./images/timeline.png"), "", timeLineWidget);
   addTimeLineButton->setIconSize(QSize(20, 20));
   addTimeLineButton->setMinimumSize(40, 40);
@@ -399,6 +408,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
+  connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
   connect(majorIntervalSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySlider()));
   connect(majorIntervalSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySpinBox()));
   connect(minorDivisionSlider, SIGNAL(valueChanged(int)), this, SLOT(setMinorDivisionBySlider()));
@@ -557,6 +567,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeLineColorButton);
   plotObjectsLayout->addWidget(fillColorLabel);
   plotObjectsLayout->addWidget(changeFillColorButton);
+  plotObjectsLayout->addWidget(fillOpacityLabel);
+  plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
   QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
@@ -1132,6 +1144,7 @@ void EventGraphWidget::setGraphControls(bool state)
   changeTimeLineColorButton->setEnabled(state);
   addHorizontalGuideLineButton->setEnabled(state);
   addVerticalGuideLineButton->setEnabled(state);
+  fillOpacitySlider->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -7157,6 +7170,11 @@ void EventGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      QVectorIterator<GuideLine*> it(_guidesVector);
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
       QSvgGenerator gen;
       gen.setFileName(fileName);
       QRectF currentRect = this->scene->itemsBoundingRect();
@@ -7172,6 +7190,11 @@ void EventGraphWidget::exportSvg()
       painter.begin(&gen);
       scene->render(&painter);
       painter.end();
+      it.toFront();
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
     }
 }
 
@@ -10231,17 +10254,39 @@ void EventGraphWidget::setFillColor()
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setCurrentColor(_currentFillColor);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
   if (colorDialog->exec()) 
     {
       _currentFillColor = colorDialog->selectedColor();
+      _currentFillColor.setAlpha(fillOpacitySlider->value());
       emit sendFillColor(_currentFillColor);
       QPixmap fillColorMap(20, 20);
-      fillColorMap.fill(_currentFillColor);
+      QColor tempFill = _currentFillColor;
+      tempFill.setAlpha(255);
+      fillColorMap.fill(tempFill);
       QIcon fillColorIcon(fillColorMap);
       changeFillColorButton->setIcon(fillColorIcon);
     }
   delete colorDialog;
+  if (scene->selectedItems().size() == 1)
+    {
+      QGraphicsItem *selectedItem = scene->selectedItems().first();
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(selectedItem);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(selectedItem);
+      if (ellipse)
+	{
+	  ellipse->setFillColor(_currentFillColor);
+	}
+      else if (rect)
+	{
+	  rect->setFillColor(_currentFillColor);
+	}
+    }
+}
+
+void EventGraphWidget::setFillOpacity(int value)
+{
+  _currentFillColor.setAlpha(value);
+  emit sendFillColor(_currentFillColor);
   if (scene->selectedItems().size() == 1)
     {
       QGraphicsItem *selectedItem = scene->selectedItems().first();
@@ -10439,9 +10484,14 @@ void EventGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (rect)
 	{
@@ -10458,9 +10508,14 @@ void EventGraphWidget::processShapeSelection()
 	  QIcon lineColorIcon(lineColorMap);
 	  changeLineColorButton->setIcon(lineColorIcon);
 	  QPixmap fillColorMap(20, 20);
-	  fillColorMap.fill(_currentFillColor);
+	  QColor tempFill = _currentFillColor;
+	  tempFill.setAlpha(255);
+	  fillColorMap.fill(tempFill);
 	  QIcon fillColorIcon(fillColorMap);
 	  changeFillColorButton->setIcon(fillColorIcon);
+	  fillOpacitySlider->blockSignals(true);
+	  fillOpacitySlider->setValue(_currentFillColor.alpha());
+	  fillOpacitySlider->blockSignals(false);
 	}
       else if (text)
 	{
@@ -10899,10 +10954,15 @@ void EventGraphWidget::changeEllipseFillColor()
 	      ellipse->setFillColor(color);
 	      _currentFillColor = ellipse->getFillColor();
 	      emit sendFillColor(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -11031,9 +11091,14 @@ void EventGraphWidget::changeRectFillColor()
 	      _currentFillColor = rect->getFillColor();
 	      emit sendFillColor(_currentFillColor);
 	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(_currentFillColor);
+	      QColor tempFill = _currentFillColor;
+	      tempFill.setAlpha(255);
+	      fillColorMap.fill(tempFill);
 	      QIcon fillColorIcon(fillColorMap);
 	      changeFillColorButton->setIcon(fillColorIcon);
+	      fillOpacitySlider->blockSignals(true);
+	      fillOpacitySlider->setValue(_currentFillColor.alpha());
+	      fillOpacitySlider->blockSignals(false);
 	    }
 	  delete colorDialog;
 	}
@@ -11552,6 +11617,7 @@ void EventGraphWidget::fixZValues()
       GuideLine *guide = it4.next();
       guide->setZValue(maxZ + 1);
     }
+  setChangeLabel();  
 }
 
 void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident,
