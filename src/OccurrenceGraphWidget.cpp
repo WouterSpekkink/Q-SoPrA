@@ -1204,6 +1204,7 @@ void OccurrenceGraphWidget::addAttributes()
 	  hue = std::fmod(hue, 1.0f);
 	}
       int colorNumber = 0;
+      // And then we iterate through our attributes
       QVectorIterator<QPair<QString, bool> > it(chosenAttributes);
       while (it.hasNext())
 	{

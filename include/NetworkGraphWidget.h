@@ -66,6 +66,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "RectObject.h"
 #include "TextObject.h"
 #include "ModeColorDialog.h"
+#include "AttributeCheckBoxDialog.h"
 
 class NetworkGraphWidget : public QWidget
 {
@@ -143,7 +144,8 @@ private slots:
   void plotDirectedEdges(QString type, QColor color);
   void getUndirectedEdges();
   void plotUndirectedEdges(QString type, QColor color);
-  void colorByAttribute();
+  void addMode();
+  void addModes();
   void setNodeColor();
   void setLabelColor();
   void setBackgroundColor();
@@ -279,7 +281,8 @@ private:
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> editAttributeButton;
   QPointer<QPushButton> removeUnusedAttributesButton;  
-  QPointer<QPushButton> colorByAttributeButton;
+  QPointer<QPushButton> addModeButton;
+  QPointer<QPushButton> addModesButton;
   QPointer<QPushButton> nodeColorButton;
   QPointer<QPushButton> labelColorButton;
   QPointer<QPushButton> backgroundColorButton;

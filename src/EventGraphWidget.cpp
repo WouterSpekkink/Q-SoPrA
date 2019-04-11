@@ -210,7 +210,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   seeComponentsButton->setEnabled(false);
   nextEventButton->setEnabled(false);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
-  colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
+  addModeButton = new QPushButton(tr("Create single mode"), legendWidget);
+  addModesButton = new QPushButton(tr("Create multiple modes"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -366,7 +367,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
-  connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
+  connect(addModeButton, SIGNAL(clicked()), this, SLOT(addMode()));
+  connect(addModesButton, SIGNAL(clicked()), this, SLOT(addModes()));
   connect(eventColorButton, SIGNAL(clicked()), this, SLOT(setEventColor()));
   connect(labelColorButton, SIGNAL(clicked()), this, SLOT(setLabelColor()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
@@ -644,7 +646,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   modeButtonsLayout->addWidget(moveModeUpButton);
   modeButtonsLayout->addWidget(moveModeDownButton);
   legendLayout->addLayout(modeButtonsLayout);
-  legendLayout->addWidget(colorByAttributeButton);
+  legendLayout->addWidget(addModeButton);
+  legendLayout->addWidget(addModesButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(exportTransitionMatrixButton);
@@ -5999,7 +6002,7 @@ void EventGraphWidget::updateLinkages()
     }
 }
 
-void EventGraphWidget::colorByAttribute() 
+void EventGraphWidget::addMode() 
 {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
   attributeColorDialog->exec();
@@ -6102,6 +6105,133 @@ void EventGraphWidget::colorByAttribute()
   delete attributeColorDialog;
 }
 
+void EventGraphWidget::addModes() 
+{
+  QPointer<AttributeCheckBoxDialog> attributeDialog = new AttributeCheckBoxDialog(this, INCIDENT);
+  attributeDialog->exec();
+  if (attributeDialog->getExitStatus() == 0) 
+    {
+      // Let's first create a few queries
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2= new QSqlQuery;
+      QSqlQuery *query3 = new QSqlQuery;
+      query->prepare("SELECT description FROM incident_attributes "
+		     "WHERE name = :name");
+      query2->prepare("SELECT description FROM entities "
+		      "WHERE name = :name");
+      query3->prepare("SELECT incident FROM attributes_to_incidents "
+		      "WHERE attribute  = :currentAttribute");
+      // Then we get the selected attributes
+      QVector<QPair<QString, bool> > chosenAttributes = attributeDialog->getAttributes();
+      // Let's create a color palette;
+      QList<QColor> palette;
+      double hue = double(rand()) / (double(RAND_MAX) + 1.0);
+      int colorCount = chosenAttributes.size();
+      for (int i = 0; i != colorCount; i++)
+	{
+	  palette.append(QColor::fromHslF(hue, 1.0, 0.5));
+	  hue += 0.61803398874895f;
+	  hue = std::fmod(hue, 1.0f);
+	}
+      int colorNumber = 0;
+      // And then we iterate through our attributes
+      QVectorIterator<QPair<QString, bool> > it(chosenAttributes);
+       while (it.hasNext())
+	{
+	  // Set our current color and then increment the color number
+	  QColor currentColor = palette[colorNumber];
+	  colorNumber++;
+	  // Let's retrieve the data we need.
+	  QPair<QString, bool> currentPair = it.next();
+	  QString currentAttribute = currentPair.first;
+	  bool isEntity = currentPair.second;
+	  QVector<QString> childrenVector;
+	  childrenVector.push_back(currentAttribute);
+	  findChildren(currentAttribute, &childrenVector, isEntity);
+	  QString description = QString();
+	  if (isEntity)
+	    {
+	      query2->bindValue(":name", currentAttribute);
+	      query2->exec();
+	      query2->first();
+	      description = query2->value(0).toString();
+	    }
+	  else
+	    {
+	      query->bindValue(":name", currentAttribute);
+	      query->exec();
+	      query->first();
+	      description = query->value(0).toString();
+	    }
+	  QVectorIterator<QString> it2(childrenVector);
+	  while (it2.hasNext())
+	    {
+	      QString currentChild = it2.next();
+	      query3->bindValue(":currentAttribute", currentChild);
+	      query3->exec();
+	      while (query3->next())
+		{
+		  int currentIncident = query3->value(0).toInt();
+		  QVectorIterator<IncidentNode *> it3(_incidentNodeVector);
+		  while (it3.hasNext()) 
+		    {
+		      IncidentNode *currentIncidentNode = it3.next();
+		      if (currentIncidentNode->getId() == currentIncident) 
+			{
+			  currentIncidentNode->setColor(currentColor);
+			  currentIncidentNode->setMode(currentAttribute);
+			  currentIncidentNode->getLabel()->setDefaultTextColor(Qt::black);
+			}
+		    }
+		}
+	      QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
+	      while (it4.hasNext()) 
+		{
+		  AbstractNode *currentAbstractNode = it4.next();
+		  QSet<QString> attributes = currentAbstractNode->getAttributes();
+		  if (attributes.contains(currentChild)) 
+		    {
+		      currentAbstractNode->setColor(currentColor);
+		      currentAbstractNode->setMode(currentAttribute);
+		      currentAbstractNode->getLabel()->setDefaultTextColor(Qt::black);
+		    }
+		}
+	    }
+	  bool found = false;
+	  for (int i = 0; i < eventListWidget->rowCount(); i++) 
+	    {
+	      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == currentAttribute) 
+		{
+		  found = true;
+		  QTableWidgetItem *item = eventListWidget->item(i,0);
+		  QString toolTip = breakString(currentAttribute + " - " + description);
+		  item->setToolTip(toolTip);
+		  eventListWidget->item(i, 1)->setBackground(currentColor);
+		  break;
+		}
+	    }
+	  if (!found) 
+	    {
+	      QTableWidgetItem *item = new QTableWidgetItem(currentAttribute);
+	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+	      QString toolTip = breakString(currentAttribute + " - " + description);
+	      item->setToolTip(toolTip);
+	      item->setData(Qt::DisplayRole, currentAttribute);
+	      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	    }
+	}
+      delete query;
+      delete query2;
+      delete query3;
+    }
+  delete attributeDialog;
+}
 
 void EventGraphWidget::removeMode() 
 {
