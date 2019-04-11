@@ -76,7 +76,8 @@ void AttributeCheckBoxDialog::setTree()
   QSqlQuery *query = new QSqlQuery;
   if (_type == ENTITY) 
     {
-      query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE'");
+      query->exec("SELECT name, description FROM entity_attributes WHERE father = 'NONE' "
+		  "ORDER BY name ASC");
       while (query->next()) 
 	{
 	  QString name = query->value(0).toString();
@@ -94,7 +95,8 @@ void AttributeCheckBoxDialog::setTree()
     {
       // First we will fetch the 'normal' attributes.
       {
-	query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE'");
+	query->exec("SELECT name, description FROM incident_attributes WHERE father = 'NONE' "
+		    "ORDER BY name ASC");
 	while (query->next()) 
 	  {
 	    QString name = query->value(0).toString();
@@ -117,7 +119,8 @@ void AttributeCheckBoxDialog::setTree()
 	font.setItalic(true);
 	attributesTree->appendRow(entities);
 	entities->setFont(font);
-	query->exec("SELECT name, description FROM entities WHERE father = 'NONE'");
+	query->exec("SELECT name, description FROM entities WHERE father = 'NONE' "
+		    "ORDER BY name ASC");
 	int children = 0;
 	while (query->next()) 
 	  {
@@ -144,7 +147,8 @@ void AttributeCheckBoxDialog::buildHierarchy(QStandardItem *top, QString name)
   QSqlQuery *query = new QSqlQuery;
   if (_type == ENTITY) 
     {
-      query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father");
+      query->prepare("SELECT name, description FROM entity_attributes WHERE  father = :father "
+		     "ORDER BY name ASC");
       query->bindValue(":father", name);
       query->exec();
       int children = 0;
@@ -164,7 +168,8 @@ void AttributeCheckBoxDialog::buildHierarchy(QStandardItem *top, QString name)
     }
   else 
     {
-      query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father");
+      query->prepare("SELECT name, description FROM incident_attributes WHERE  father = :father "
+		     "ORDER BY name ASC");
       query->bindValue(":father", name);
       query->exec();
       int children = 0;
@@ -188,7 +193,8 @@ void AttributeCheckBoxDialog::buildHierarchy(QStandardItem *top, QString name)
 void AttributeCheckBoxDialog::buildEntities(QStandardItem *top, QString name) 
 {
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name, description FROM entities WHERE father = :father");
+  query->prepare("SELECT name, description FROM entities WHERE father = :father "
+		 "ORDER BY name ASC");
   query->bindValue(":father", name);
   query->exec();
   int children = 0;

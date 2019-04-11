@@ -745,14 +745,17 @@ void EntityDialog::saveAndClose()
   _description = _description.trimmed();
   _name = _name.trimmed();
   if (_name.contains("(") || _name.contains(")") ||
-      _name.contains("--->") || _name.contains("<-->")) 
+      _name.contains("--->") || _name.contains("<-->") ||
+      _name.contains("[") || _name.contains("]") ||
+      _name.contains("<") || _name.contains(">")) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name contains illegal character.");
       warningBox->setInformativeText("The name of an entity cannot "
-				     "contain the '(' and ')' characters, "
+				     "contain the '(', ')', '[', ']', "
+				     "'<' and '>' characters, "
 				     "and it cannot contain the \"--->\" "
 				     "or \"<-->\" symbols.");
       warningBox->exec();

@@ -91,6 +91,7 @@ HEADERS += include/AbstractionDialog.h \
            include/RecordDialog.h \
            include/RectObject.h \
            include/RelationalTable.h \
+           include/RelationshipCheckBoxDialog.h \
            include/RelationshipColorDialog.h \
            include/RelationshipComboBoxDialog.h \
            include/RelationshipsDialog.h \
@@ -181,6 +182,7 @@ SOURCES += main.cpp \
            src/RecordDialog.cpp \
            src/RectObject.cpp \
            src/RelationalTable.cpp \
+           src/RelationshipCheckBoxDialog.cpp \
            src/RelationshipColorDialog.cpp \
            src/RelationshipComboBoxDialog.cpp \
            src/RelationshipsDialog.cpp \

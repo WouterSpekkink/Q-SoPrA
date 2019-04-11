@@ -63,6 +63,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "RelationshipColorDialog.h"
 #include "ModeColorDialog.h"
 #include "AttributeCheckBoxDialog.h"
+#include "RelationshipCheckBoxDialog.h"
 
 class EventGraphWidget;
 
@@ -98,6 +99,7 @@ private slots:
   void addAttribute();
   void addAttributes();
   void addRelationship();
+  void addRelationships();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void setAttributeModeButton(QTableWidgetItem *item);
   void disableAttributeModeButton();
@@ -232,6 +234,7 @@ private:
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> addAttributesButton;
   QPointer<QPushButton> addRelationshipButton;
+  QPointer<QPushButton> addRelationshipsButton;
   QPointer<QPushButton> matchEventGraphButton;
   QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;

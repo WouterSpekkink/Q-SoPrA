@@ -139,7 +139,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   addAttributesButton = new QPushButton(tr("Add multiple attributes"), legendWidget);
   removeAttributeModeButton = new QPushButton(tr("Remove attribute"), legendWidget);
   removeAttributeModeButton->setEnabled(false);
-  addRelationshipButton = new QPushButton(tr("Add relationship"), legendWidget);
+  addRelationshipButton = new QPushButton(tr("Add single relationship"), legendWidget);
+  addRelationshipsButton = new QPushButton(tr("Add multiple relationships"), legendWidget);
   removeRelationshipModeButton = new QPushButton(tr("Remove relationship"), legendWidget);
   removeRelationshipModeButton->setEnabled(false);
   matchEventGraphButton = new QPushButton(tr("Match current event graph"), this);
@@ -260,6 +261,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(addAttributesButton, SIGNAL(clicked()), this, SLOT(addAttributes()));
   connect(addRelationshipButton, SIGNAL(clicked()), this, SLOT(addRelationship()));
+  connect(addRelationshipsButton, SIGNAL(clicked()), this, SLOT(addRelationships()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(attributeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
@@ -429,6 +431,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   legendLayout->addWidget(relationshipLegendLabel);
   legendLayout->addWidget(relationshipListWidget);
   legendLayout->addWidget(addRelationshipButton);
+  legendLayout->addWidget(addRelationshipsButton);
   legendLayout->addWidget(removeRelationshipModeButton);
   legendWidget->setMinimumWidth(250);
   legendWidget->setMaximumWidth(250);
@@ -719,20 +722,33 @@ void OccurrenceGraphWidget::checkCongruency()
 	      QString combi = current->getAttribute();
 	      QString relationship = "";
 	      QString type = "";
-	      bool relFin = false;
+	      bool typePart = false;
+	      bool undirected = false;
 	      for (int i = 0; i != combi.length(); i++) 
 		{
-		  if (combi[i] != '(' && !relFin) 
+		  if (combi[i] == '<')
+		    {
+		      undirected = true;
+		    }
+		  if (combi[i] != '[' && combi[i] != ']' && !typePart) 
 		    {
 		      relationship.append(combi[i]);
 		    }
-		  else if (combi[i] == '(') 
+		  else if (combi[i] == '[') 
 		    {
-		      relFin = true;
+		      typePart = true;
+		      if (!undirected)
+			{
+			  relationship.append('-');
+			}
 		    }
-		  if (relFin && combi[i] != ')' && combi[i] != '(') 
+		  if (typePart && combi[i] != ']' && combi[i] != '[') 
 		    {
 		      type.append(combi[i]);
+		    }
+		  if (typePart && combi[i] == ']')
+		    {
+		      typePart = false;
 		    }
 		}
 	      query->bindValue(":relationship", relationship);
@@ -740,7 +756,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      query->bindValue(":incident", id);
 	      query->exec();
 	      query->first();
-	      if (!query->isNull(0)) 
+	      if (query->isNull(0)) 
 		{
 		  incongruencyLabel->setText("Incongruency detected");
 		  qApp->restoreOverrideCursor();
@@ -779,20 +795,33 @@ void OccurrenceGraphWidget::checkCongruency()
 	  QString combi = relationshipListWidget->item(i,0)->data(Qt::DisplayRole).toString();
 	  QString relationship = "";
 	  QString type = "";
-	  bool relFin = false;
+	  bool typePart = false;
+	  bool undirected = false;
 	  for (int i = 0; i != combi.length(); i++) 
 	    {
-	      if (combi[i] != '(' && !relFin) 
+	      if (combi[i] == '<')
+		{
+		  undirected = true;
+		}
+	      if (combi[i] != '[' && combi[i] != ']' && !typePart) 
 		{
 		  relationship.append(combi[i]);
 		}
-	      else if (combi[i] == '(') 
+	      else if (combi[i] == '[') 
 		{
-		  relFin = true;
+		  typePart = true;
+		  if (!undirected)
+		    {
+		      relationship.append('-');
+		    }
 		}
-	      if (relFin && combi[i] != ')' && combi[i] != '(') 
+	      if (typePart && combi[i] != ']' && combi[i] != '[') 
 		{
 		  type.append(combi[i]);
+		}
+	      if (typePart && combi[i] == ']')
+		{
+		  typePart = false;
 		}
 	    }
 	  query->bindValue(":relationship", relationship);
@@ -1261,7 +1290,7 @@ void OccurrenceGraphWidget::addAttributes()
 		  item->setToolTip(toolTip);
 		  attributeListWidget->item(i, 1)->setBackground(currentColor);
 		  break;
-		    }
+		}
 	    }
 	  if (!found) 
 	    {
@@ -1314,65 +1343,74 @@ void OccurrenceGraphWidget::addRelationship()
   relationshipColorDialog->exec();
   if (relationshipColorDialog->getExitStatus() == 0) 
     {
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QSqlQuery *query3 = new QSqlQuery;
+      query->prepare("SELECT description, directedness FROM relationship_types "
+		     "WHERE name = :type");
+      query2->prepare("SELECT incident FROM relationships_to_incidents "
+		     "WHERE relationship = :relationship AND type = :type");
+      query3->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
       reset();
       QColor color = relationshipColorDialog->getColor();
       QColor textColor = relationshipColorDialog->getTextColor();
       QString relationship = relationshipColorDialog->getRelationship();
       QString type = relationshipColorDialog->getType();
-      QString combi = relationship + " (" + type + ")";
+      QStringList relationshipParts = QStringList();
+      QString combi = QString();
+      query->bindValue(":type", type);
+      query->exec();
+      query->first();
+      QString description = query->value(0).toString();
+      QString directedness = query->value(1).toString();
+      if (directedness == DIRECTED)
+	{
+	  relationshipParts = relationship.split("--->");
+	  combi = relationshipParts[0] + "-[" + type
+	    + "]->" + relationshipParts[1]; 
+	}
+      else if (directedness == UNDIRECTED)
+	{
+	  relationshipParts = relationship.split("<-->");
+	  combi = relationshipParts[0] + "<-[" + type
+	    + "]->" + relationshipParts[1]; 
+	}
       if (!_presentRelationships.contains(combi)) 
 	{
 	  _presentRelationships.push_back(combi);
 	  savePlotButton->setEnabled(true);
-	  QSqlQuery *query = new QSqlQuery;
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query->prepare("SELECT description FROM relationship_types "
-			 "WHERE name = :type");
-	  query2->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
-	  query->bindValue(":type", type);
-	  query->exec();
-	  query->first();
 	  QString description = query->value(0).toString();
-	  QVector<int> orders;
 	  QSqlDatabase::database().transaction();
-	  query->prepare("SELECT incident FROM relationships_to_incidents "
-			 "WHERE relationship = :relationship AND type = :type");
-	  query->bindValue(":relationship", relationship);
-	  query->bindValue(":type", type);
-	  query->exec();
-	  while (query->next()) 
+	  query2->bindValue(":relationship", relationship);
+	  query2->bindValue(":type", type);
+	  query2->exec();
+	  while (query2->next()) 
 	    {
-	      int currentIncident = query->value(0).toInt();
-	      query2->bindValue(":id", currentIncident);
-	      query2->exec();
-	      query2->first();
-	      int order = query2->value(0).toInt();
-	      QString incidentDescription = query2->value(1).toString();
-	      if (!orders.contains(order)) 
-		{
-		  orders.push_back(order);
-		  QPointF position = QPointF((order * _distance), 0);
-		  OccurrenceItem *newOccurrence = new OccurrenceItem(40, incidentDescription, position,
-								     currentIncident, order, combi);
-		  newOccurrence->setPos(newOccurrence->getOriginalPos());
-		  newOccurrence->setColor(color);
-		  newOccurrence->setZValue(3);
-		  _relationshipOccurrenceVector.push_back(newOccurrence);
-		  scene->addItem(newOccurrence);
-		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
-		  QString text = QString::number(order) + " - " + combi;
-		  label->setPlainText(text);
-		  label->setDefaultTextColor(textColor);
-		  label->setTextWidth(label->boundingRect().width());
-		  label->setNewPos(newOccurrence->scenePos());
-		  _relationshipLabelVector.push_back(label);
-		  newOccurrence->setLabel(label);
-		  label->setZValue(4);
-		  scene->addItem(label);
-		}
+	      int currentIncident = query2->value(0).toInt();
+	      query3->bindValue(":id", currentIncident);
+	      query3->exec();
+	      query3->first();
+	      int order = query3->value(0).toInt();
+	      QString incidentDescription = query3->value(1).toString();
+	      QPointF position = QPointF((order * _distance), 0);
+	      OccurrenceItem *newOccurrence = new OccurrenceItem(40, incidentDescription, position,
+								 currentIncident, order, combi);
+	      newOccurrence->setPos(newOccurrence->getOriginalPos());
+	      newOccurrence->setColor(color);
+	      newOccurrence->setZValue(3);
+	      _relationshipOccurrenceVector.push_back(newOccurrence);
+	      scene->addItem(newOccurrence);
+	      OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
+	      QString text = QString::number(order) + " - " + combi;
+	      label->setPlainText(text);
+	      label->setDefaultTextColor(textColor);
+	      label->setTextWidth(label->boundingRect().width());
+	      label->setNewPos(newOccurrence->scenePos());
+	      _relationshipLabelVector.push_back(label);
+	      newOccurrence->setLabel(label);
+	      label->setZValue(4);
+	      scene->addItem(label);
 	    }
-	  delete query;
-	  delete query2;
 	  bool found = false;
 	  for (int i = 0; i < relationshipListWidget->rowCount(); i++) 
 	    {
@@ -1398,15 +1436,19 @@ void OccurrenceGraphWidget::addRelationship()
 	      relationshipListWidget->setItem(relationshipListWidget->rowCount() - 1, 0, item);
 	      relationshipListWidget->setItem(relationshipListWidget->rowCount() - 1, 1,
 					      new QTableWidgetItem);
-	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->setBackground(color);
+	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)
+		->setBackground(color);
 	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->
-		setFlags(relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->flags() ^
-			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		setFlags(relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)
+			 ->flags() ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 	    }
 	  QSqlDatabase::database().commit();
 	  groupOccurrences();
 	  wireLinkages();
 	}
+      delete query;
+      delete query2;
+      delete query3;
     }
   delete relationshipColorDialog;
   setRangeControls();
@@ -1420,6 +1462,160 @@ void OccurrenceGraphWidget::addRelationship()
     }
   setGraphControls(true);
 }
+
+void OccurrenceGraphWidget::addRelationships() 
+{
+  setChangeLabel();
+  QPointer<RelationshipCheckBoxDialog> relationshipDialog = new RelationshipCheckBoxDialog(this);
+  relationshipDialog->exec();
+  if (relationshipDialog->getExitStatus() == 0)
+    {
+      // Let us first prepare a few queries.
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QSqlQuery *query3 = new QSqlQuery;
+      query->prepare("SELECT description, directedness FROM relationship_types "
+		     "WHERE name = :type");
+      query2->prepare("SELECT incident FROM relationships_to_incidents "
+		      "WHERE relationship = :relationship AND type = :type");
+      query3->prepare("SELECT ch_order, description FROM incidents "
+		      "WHERE id = :id");
+      // Let us then retrieve our data.
+      QVector<QPair<QString, QString> > chosenRelationships = relationshipDialog->getRelationships();
+      // Now let's create our color palette.
+      QList<QColor> palette;
+      double hue = double(rand()) / (double(RAND_MAX) + 1.0);
+      int colorCount = chosenRelationships.size();
+      for (int i = 0; i != colorCount; i++)
+	{
+	  palette.append(QColor::fromHslF(hue, 1.0, 0.5));
+	  hue += 0.61803398874895f;
+	  hue = std::fmod(hue, 1.0f);
+	}
+      int colorNumber = 0;
+      QVectorIterator<QPair<QString, QString> > it(chosenRelationships);
+      while (it.hasNext())
+	{
+	  // Let us set the color for this relationship and iteratre colorNumber
+	  QColor currentColor = palette[colorNumber];
+	  colorNumber++;
+	  // Then we create our occurrences.
+	  QPair<QString, QString> currentPair = it.next();	    
+	  QString type = currentPair.first;
+	  QString relationship = currentPair.second;
+	  query->bindValue(":type", type);
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  QString directedness = query->value(1).toString();
+	  QStringList relationshipParts = QStringList();
+	  QString combi = QString();
+	  if (directedness == DIRECTED)
+	    {
+	      relationshipParts = relationship.split("--->");
+	      combi = relationshipParts[0] + "-[" + type
+		+ "]->" + relationshipParts[1]; 
+	    }
+	  else if (directedness == UNDIRECTED)
+	    {
+	      relationshipParts = relationship.split("<-->");
+	      combi = relationshipParts[0] + "<-[" + type
+		+ "]->" + relationshipParts[1]; 
+	    }
+	  if (!_presentRelationships.contains(combi))
+	    {
+	      _presentRelationships.push_back(combi);
+	      savePlotButton->setEnabled(true);
+	      query2->bindValue(":relationship", relationship);
+	      query2->bindValue(":type", type);
+	      query2->exec();
+	      while (query2->next())
+		{
+		  int currentIncident = query2->value(0).toInt();
+		  query3->bindValue(":id", currentIncident);
+		  query3->exec();
+		  query3->first();
+		  int order = query3->value(0).toInt();
+		  QString incidentDescription = query3->value(1).toString();
+		  QPointF position = QPointF((order * _distance), 0);
+		  OccurrenceItem *newOccurrence = new OccurrenceItem(40,
+								     incidentDescription,
+								     position,
+								     currentIncident,
+								     order, combi);
+		  newOccurrence->setPos(newOccurrence->getOriginalPos());
+		  newOccurrence->setColor(currentColor);
+		  newOccurrence->setZValue(3);
+		  _relationshipOccurrenceVector.push_back(newOccurrence);
+		  scene->addItem(newOccurrence);
+		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
+		  QString text = QString::number(order) + " - " + combi;
+		  label->setPlainText(text);
+		  label->setDefaultTextColor(Qt::black);
+		  label->setTextWidth(label->boundingRect().width());
+		  label->setNewPos(newOccurrence->scenePos());
+		  _relationshipLabelVector.push_back(label);
+		  newOccurrence->setLabel(label);
+		  label->setZValue(4);
+		  scene->addItem(label);
+		}
+	      bool found = false;
+	      for (int i = 0; i < relationshipListWidget->rowCount(); i++) 
+		{
+		  if (relationshipListWidget->item(i, 0)->data(Qt::DisplayRole) == combi) 
+		    {
+		      found = true;
+		      QTableWidgetItem *item = relationshipListWidget->item(i,0);
+		      QString toolTip = breakString(combi + " - " + description);
+		      item->setToolTip(toolTip);
+		      relationshipListWidget->item(i, 1)->setBackground(currentColor);
+		      break;
+		    }
+		}
+	      if (!found) 
+		{
+		  QTableWidgetItem *item = new QTableWidgetItem(combi);
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(combi + " - " + 
+						description);
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, combi);
+		  relationshipListWidget->setRowCount(relationshipListWidget->rowCount() + 1);
+		  relationshipListWidget->setItem(relationshipListWidget->rowCount() - 1, 0, item);
+		  relationshipListWidget->setItem(relationshipListWidget->rowCount() - 1, 1,
+						  new QTableWidgetItem);
+		  relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)
+		    ->setBackground(currentColor);
+		  relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->
+		    setFlags(relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)
+			     ->flags() ^ Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
+	      groupOccurrences();
+	      wireLinkages();
+	    }
+	}
+      // Cleaning up our queries
+      delete query;
+      delete query2;
+      delete query3;
+      // Setting some settings
+      setRangeControls();
+      scene->update();
+      view->update();
+      updateLinkages();
+      checkCongruency();
+      if (!caseListWidget->isEnabled()) 
+	{
+	  caseListWidget->setEnabled(true);
+	}
+      setGraphControls(true);
+    }
+  else
+    {
+      delete relationshipDialog;
+    }
+}
+
 
 void OccurrenceGraphWidget::setChangeLabel() 
 {
