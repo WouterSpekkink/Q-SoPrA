@@ -62,6 +62,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "TextObject.h"
 #include "RelationshipColorDialog.h"
 #include "ModeColorDialog.h"
+#include "AttributeCheckBoxDialog.h"
 
 class EventGraphWidget;
 

@@ -23,6 +23,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 HEADERS += include/AbstractionDialog.h \
            include/AbstractNode.h \
            include/AbstractNodeLabel.h \
+           include/AttributeCheckBoxDialog.h \
            include/AttributeColorDialog.h \
            include/AttributeDialog.h \
            include/AttributeIndexDialog.h \
@@ -113,6 +114,7 @@ SOURCES += main.cpp \
            src/AbstractionDialog.cpp \
            src/AbstractNode.cpp \
            src/AbstractNodeLabel.cpp \
+           src/AttributeCheckBoxDialog.cpp \
            src/AttributeColorDialog.cpp \
            src/AttributeDialog.cpp \
            src/AttributeIndexDialog.cpp \
