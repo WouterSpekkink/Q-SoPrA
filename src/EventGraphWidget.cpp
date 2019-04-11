@@ -128,6 +128,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   minorTickSizeLabel = new QLabel(tr("<b>Minor tick size:</b>"), timeLineWidget);
   timeLineWidthLabel = new QLabel(tr("<b>Pen width:</b>"), timeLineWidget);
   timeLineColorLabel = new QLabel(tr("<b>Color:</b>"), timeLineWidget);
+  guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -324,6 +325,14 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   changeTimeLineColorButton->setIconSize(QSize(20, 20));
   changeTimeLineColorButton->setMinimumSize(40, 40);
   changeTimeLineColorButton->setMaximumSize(40, 40);
+  addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
+  addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
+  addHorizontalGuideLineButton->setMinimumSize(40, 40);
+  addHorizontalGuideLineButton->setMaximumSize(40, 40);
+  addVerticalGuideLineButton = new QPushButton(QIcon("./images/guide_vertical.png"), "", this);
+  addVerticalGuideLineButton->setIconSize(QSize(20, 20));
+  addVerticalGuideLineButton->setMinimumSize(40, 40);
+  addVerticalGuideLineButton->setMaximumSize(40, 40);
     
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -399,6 +408,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(changeTimeLineColorButton, SIGNAL(clicked()), this, SLOT(setTimeLineColor()));
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setTimeLineWidth()));
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setTimeLineWidth(int)));
+  connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
+  connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(this, SIGNAL(sendMajorInterval(qreal &)), scene, SLOT(setMajorInterval(qreal &)));
@@ -430,6 +441,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(processRectContextMenu(const QString &)));
   connect(scene, SIGNAL(TimeLineContextMenuAction(const QString &)),
 	  this, SLOT(processTimeLineContextMenu(const QString &)));
+  connect(scene, SIGNAL(GuideLineContextMenuAction(const QString &)),
+	  this, SLOT(processGuideLineContextMenu(const QString &)));
   connect(this, SIGNAL(changeEventWidth(QGraphicsItem*)), scene, SLOT(modEventWidth(QGraphicsItem*)));
   connect(scene, SIGNAL(sendLinePoints(const QPointF&, const QPointF&)),
 	  this, SLOT(addLineObject(const QPointF&, const QPointF&)));
@@ -443,6 +456,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(addTextObject(const QRectF&, const qreal&)));
   connect(scene, SIGNAL(sendTimeLinePoints(const qreal&, const qreal&, const qreal&)),
 	  this, SLOT(addTimeLineObject(const qreal&, const qreal&, const qreal&)));
+  connect(scene, SIGNAL(sendHorizontalGuideLinePos(const QPointF&)),
+	  this, SLOT(addHorizontalGuideLine(const QPointF&)));
+  connect(scene, SIGNAL(sendVerticalGuideLinePos(const QPointF&)),
+	  this, SLOT(addVerticalGuideLine(const QPointF&)));
   connect(scene, SIGNAL(selectionChanged()), this, SLOT(processShapeSelection()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
@@ -521,7 +538,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QFrame> topLine = new QFrame();
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
-  
+
+  QPointer<QHBoxLayout> drawHelpLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
   plotObjectsLayout->addWidget(toggleTimeLineButton);
   plotObjectsLayout->addWidget(shapesLabel);
@@ -540,7 +558,14 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(fillColorLabel);
   plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
-  mainLayout->addLayout(plotObjectsLayout);
+  drawHelpLayout->addLayout(plotObjectsLayout);
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->setAlignment(Qt::AlignRight);
+  drawHelpLayout->addLayout(guidesLayout);
+  mainLayout->addLayout(drawHelpLayout);
 
   QPointer<QHBoxLayout> timeLineLayout = new QHBoxLayout;
   timeLineLayout->addWidget(timeLineLabel);
@@ -760,6 +785,8 @@ EventGraphWidget::~EventGraphWidget()
   _rectVector.clear();
   qDeleteAll(_timeLineVector);
   _timeLineVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   delete view;
   delete scene;
 }
@@ -1102,7 +1129,9 @@ void EventGraphWidget::setGraphControls(bool state)
   majorTickSizeSlider->setEnabled(state);
   minorTickSizeSlider->setEnabled(state);
   timeLineWidthSpinBox->setEnabled(state);
-  changeTimeLineColorButton->setEnabled(state);    
+  changeTimeLineColorButton->setEnabled(state);
+  addHorizontalGuideLineButton->setEnabled(state);
+  addVerticalGuideLineButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -3224,6 +3253,8 @@ void EventGraphWidget::cleanUp()
   _rectVector.clear();
   qDeleteAll(_timeLineVector);
   _timeLineVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   _contractedMap.clear();
   scene->clear();
   eventListWidget->setRowCount(0);
@@ -10088,6 +10119,24 @@ void EventGraphWidget::addTimeLineObject(const qreal &startX, const qreal &endX,
   newTimeLine->setSelected(true);
 }
 
+void EventGraphWidget::addHorizontalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(true);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+}
+
+void EventGraphWidget::addVerticalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(false);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+}
+
 void EventGraphWidget::setPenStyle()
 {
   _currentPenStyle = penStyleComboBox->currentIndex() + 1;
@@ -11126,6 +11175,27 @@ void EventGraphWidget::duplicateTimeLine()
     }
 }
 
+void EventGraphWidget::processGuideLineContextMenu(const QString &action) 
+{
+  if (action == DELETEGUIDEACTION) 
+    {
+      deleteGuideLine();
+    }
+}
+
+void EventGraphWidget::deleteGuideLine()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(scene->selectedItems().first());
+      if (guide) 
+	{
+	  delete guide;
+	  _guidesVector.removeOne(guide);
+	}
+    }  
+}
+
 void EventGraphWidget::objectOneForward() 
 {
   int maxZ = -1;
@@ -11438,43 +11508,51 @@ void EventGraphWidget::fixZValues()
   while (it.hasNext()) 
     {
       QGraphicsItem *current = it.next();
-      if (maxZ == -1) 
+      if (current->type() != QGraphicsItem::UserType + 16)
+      {
+	if (maxZ == -1) 
+	  {
+	    maxZ = current->zValue();
+	  }
+	else if (maxZ < current->zValue()) 
+	  {
+	    maxZ = current->zValue();
+	  }
+      }
+      if (maxZ > 3)
 	{
-	  maxZ = current->zValue();
-	}
-      else if (maxZ < current->zValue()) 
-	{
-	  maxZ = current->zValue();
-	}
-    }
-  if (maxZ > 3)
-    {
-      for (int i = 4; i != maxZ; i++) 
-	{
-	  bool currentZFound = false;
-	  QListIterator<QGraphicsItem*> it2(scene->items());
-	  while (it2.hasNext()) 
+	  for (int i = 4; i != maxZ; i++) 
 	    {
-	      QGraphicsItem *current = it2.next();
-	      if (current->zValue() == i) 
+	      bool currentZFound = false;
+	      QListIterator<QGraphicsItem*> it2(scene->items());
+	      while (it2.hasNext()) 
 		{
-		  currentZFound = true;
-		  break;
-		}
-	    }
-	  if (!currentZFound) 
-	    {
-	      QListIterator<QGraphicsItem*> it3(scene->items());
-	      while (it3.hasNext()) 
-		{
-		  QGraphicsItem *current = it3.next();
-		  if (current->zValue() > i) 
+		  QGraphicsItem *current = it2.next();
+		  if (current->zValue() == i) 
 		    {
-		      current->setZValue(current->zValue() - 1);
+		      currentZFound = true;
+		      break;
+		    }
+		}
+	      if (!currentZFound) 
+		{
+		  QListIterator<QGraphicsItem*> it3(scene->items());
+		  while (it3.hasNext()) 
+		    {
+		      QGraphicsItem *current = it3.next();
+		      if (current->zValue() > i) 
+			{
+			  current->setZValue(current->zValue() - 1);
+			}
 		    }
 		}
 	    }
 	}
+    }
+  QVectorIterator<GuideLine*> it4(_guidesVector);
+  while (it4.hasNext())
+    {
+      it4.next()->setZValue(maxZ + 1);
     }
   setChangeLabel();  
 }

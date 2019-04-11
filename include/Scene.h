@@ -42,6 +42,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/OccurrenceLabel.h"
 #include "../include/RectObject.h"
 #include "../include/TimeLineObject.h"
+#include "../include/GuideLine.h"
 
 class Scene : public QGraphicsScene
 {
@@ -75,6 +76,7 @@ signals:
   void EllipseContextMenuAction(const QString&);
   void RectContextMenuAction(const QString&);
   void TimeLineContextMenuAction(const QString&);
+  void GuideLineContextMenuAction(const QString&);
   void sendLinePoints(const QPointF&, const QPointF&);
   void sendTimeLinePoints(const qreal&, const qreal&, const qreal&);
   void sendSingleArrowPoints(const QPointF&, const QPointF&);
@@ -82,6 +84,8 @@ signals:
   void sendEllipseArea(const QRectF&);
   void sendRectArea(const QRectF&);
   void sendTextArea(const QRectF&, const qreal&);
+  void sendHorizontalGuideLinePos(const QPointF&);
+  void sendVerticalGuideLinePos(const QPointF&);
 						
 private slots:
   // Private member functions
@@ -93,6 +97,8 @@ private slots:
   void prepEllipseArea();
   void prepRectArea();
   void prepTextArea();
+  void prepHorizontalGuideLine();
+  void prepVerticalGuideLine();
   void setPenStyle(int style);
   void setPenWidth(int width);
   void setLineColor(QColor &color);
@@ -130,6 +136,7 @@ private:
   bool _rotateText;
   bool _moveTimeLine;
   bool _manipulateTimeLine;
+  bool _moveGuideLine;
   bool _hierarchyMove;
   bool _eventWidthChange;
   bool _moveNetworkNodeLabel;
@@ -147,6 +154,8 @@ private:
   bool _rectAreaStarted;
   bool _gettingTextArea;
   bool _textAreaStarted;
+  bool _gettingHorizontalGuideLine;
+  bool _gettingVerticalGuideLine;
   QPointF _lastMousePos;
   QPointF _initPos;
   QRectF _drawArea;
@@ -169,6 +178,7 @@ private:
   RectObject *_tempRectPtr;
   TextObject *_tempTextPtr;
   TimeLineObject *_tempTimeLinePtr;
+  GuideLine * _tempGuideLinePtr;
   
   // Pointers to objects created by other classes
   // Do not delete
@@ -182,6 +192,7 @@ private:
   RectObject *_selectedRectPtr;
   TextObject *_selectedTextPtr;
   TimeLineObject *_selectedTimeLinePtr;
+  GuideLine* _selectedGuideLine;
 };
 
 #endif 

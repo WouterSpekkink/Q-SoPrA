@@ -1,3 +1,4 @@
+
 /*
 
 Qualitative Social Process Analysis (Q-SoPrA)
@@ -44,6 +45,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _rotateText = false;
   _moveTimeLine = false;
   _manipulateTimeLine = false;
+  _moveGuideLine = false;
   _hierarchyMove = false;
   _eventWidthChange = false;
   _moveNetworkNodeLabel = false;
@@ -61,6 +63,8 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _rectAreaStarted = false;
   _gettingTextArea = false;
   _textAreaStarted = false;
+  _gettingHorizontalGuideLine = false;
+  _gettingVerticalGuideLine = false;
   _lineStart = QPointF();
   _lineEnd = QPointF();
   _drawArea = QRectF();
@@ -199,13 +203,35 @@ void Scene::prepTextArea()
   QApplication::setOverrideCursor(Qt::CrossCursor);
 }
 
+void Scene::prepHorizontalGuideLine()
+{
+  resetAreas();
+  _gettingHorizontalGuideLine = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+  _tempGuideLinePtr = new GuideLine(true);
+  _tempGuideLinePtr->setPos(0.0, 0.0);
+  _tempGuideLinePtr->setZValue(7);
+  addItem(_tempGuideLinePtr);
+}
+
+void Scene::prepVerticalGuideLine()
+{
+  resetAreas();
+  _gettingVerticalGuideLine = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+  _tempGuideLinePtr = new GuideLine(false);
+  _tempGuideLinePtr->setPos(0.0, 0.0);
+  _tempGuideLinePtr->setZValue(7);
+  addItem(_tempGuideLinePtr);
+}
+
 QRectF Scene::itemsBoundingRect() const 
 {
   QRectF boundingRect;
   const auto items_ = items();
   for (QGraphicsItem *item : items_)
     {
-      if (item->isVisible()) 
+      if (item->isVisible() && item->type() != QGraphicsItem::UserType + 16) 
 	{
 	  boundingRect |= item->sceneBoundingRect();
 	}
@@ -381,6 +407,24 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	{
 	  _eventWidthChange = false;
 	}
+      if (_gettingHorizontalGuideLine)
+	{
+	  emit sendHorizontalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
+	  _gettingHorizontalGuideLine = false;
+	  if (_tempGuideLinePtr)
+	    {
+	      delete _tempGuideLinePtr;
+	    }
+	}
+      if (_gettingVerticalGuideLine)
+	{
+	  emit sendVerticalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
+	  _gettingVerticalGuideLine = false;
+	  if (_tempGuideLinePtr)
+	    {
+	      delete _tempGuideLinePtr;
+	    }
+	}
       if (event->modifiers() & Qt::ControlModifier) 
 	{
 	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->scenePos(),
@@ -405,6 +449,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 										QTransform()));	  
 	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(),
 							   QTransform()));
+	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
@@ -415,6 +460,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
+	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingSingleArrowPoints)
@@ -428,6 +474,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
+	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingDoubleArrowPoints)
@@ -442,6 +489,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
+	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
 	  else
@@ -547,6 +595,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  emit resetItemSelection();
 		  _selectedTimeLinePtr = timeline;
 		}
+	      else if (guide)
+		{
+		  clearSelection();
+		  guide->setSelected(true);
+		  _selectedGuideLine = guide;
+		  emit resetItemSelection();
+		}
 	    }
 	}
       else if (event->modifiers() & Qt::ShiftModifier) 
@@ -569,6 +624,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 								    QTransform()));
 	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
 										QTransform()));
+	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -675,6 +731,13 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _initPos = event->scenePos();
 	      _manipulateTimeLine = true;
 	    }
+	  else if (guide)
+	    {
+	      clearSelection();
+	      _selectedGuideLine = guide;
+	      guide->setSelected(true);
+	      emit resetItemSelection();
+	    }
 	}
       else 
 	{
@@ -704,6 +767,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 								    QTransform()));
 	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
 										QTransform()));
+	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
@@ -714,6 +778,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
+	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingSingleArrowPoints)
@@ -727,6 +792,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
+	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
 	  else if (_gettingDoubleArrowPoints)
@@ -741,6 +807,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setPenStyle(_currentPenStyle);
 	      _tempLinePtr->setPenWidth(_currentPenWidth);
 	      _tempLinePtr->setColor(_currentLineColor);
+	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
 	   else if (_gettingTimeLinePoints)
@@ -753,6 +820,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 						    _currentMajorTickSize, _currentMinorTickSize);
 	      _tempTimeLinePtr->setPenWidth(_currentTimeLineWidth);
 	      _tempTimeLinePtr->setColor(_currentTimeLineColor);
+	      _tempTimeLinePtr->setZValue(5);
 	      addItem(_tempTimeLinePtr);
 	    }
 	  else if (_gettingEllipseArea)
@@ -766,6 +834,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempEllipsePtr->setPenWidth(_currentPenWidth);
 	      _tempEllipsePtr->setColor(_currentLineColor);
 	      _tempEllipsePtr->setFillColor(_currentFillColor);
+	      _tempEllipsePtr->setZValue(5);
 	      addItem(_tempEllipsePtr);
 	    }
 	  else if (_gettingRectArea)
@@ -779,6 +848,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempRectPtr->setPenWidth(_currentPenWidth);
 	      _tempRectPtr->setColor(_currentLineColor);
 	      _tempRectPtr->setFillColor(_currentFillColor);
+	      _tempRectPtr->setZValue(5);
 	      addItem(_tempRectPtr);
 	    }
 	  else if (_gettingTextArea)
@@ -789,6 +859,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempTextPtr->setPos(_tempTextPtr->mapFromScene(event->scenePos()));
 	      _tempTextPtr->setTextWidth(event->scenePos().x() - _lastMousePos.x());
 	      _tempTextPtr->setDefaultTextColor(_currentLineColor);
+	      _tempTextPtr->setZValue(6);
 	      addItem(_tempTextPtr);
 	    }
 	  else
@@ -887,6 +958,14 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		  qApp->processEvents();
 		}
+	      else if (guide)
+		{
+		  clearSelection();
+		  guide->setSelected(true);
+		  emit resetItemSelection();
+		  _selectedGuideLine = guide;
+		  _moveGuideLine = true;
+		}
 	      _selectedIncidentNodePtr = NULL;
 	      _selectedAbstractNodePtr = NULL;
 	      _selectedNetworkNodePtr = NULL;
@@ -920,6 +999,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _moveText = false;
   _moveTimeLine = false;
   _manipulateTimeLine = false;
+  _moveGuideLine = false;
   _moveNetworkNodeLabel = false;
   if (_gettingLinePoints && _linePointsStarted)
     {
@@ -1048,6 +1128,7 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
   _selectedTextPtr = NULL;
   _selectedNetworkNodeLabelPtr = NULL;
   _selectedTimeLinePtr = NULL;
+  _selectedGuideLine = NULL;
   _tempLinePtr = NULL;
   _tempEllipsePtr = NULL;
   _tempRectPtr = NULL;
@@ -1225,6 +1306,14 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	  clearSelection();
 	  _tempTextPtr->setSelected(true);
        	}
+    }
+  else if (_gettingHorizontalGuideLine)
+    {
+      _tempGuideLinePtr->setOrientationPoint(event->scenePos());
+    }
+  else if (_gettingVerticalGuideLine)
+    {
+      _tempGuideLinePtr->setOrientationPoint(event->scenePos());
     }
   else if (_resizeOnIncidentNode) 
     {
@@ -1597,6 +1686,10 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       _selectedTextPtr->setRotationValue(angle);
       emit relevantChange();
     }
+  else if (_moveGuideLine)
+    {
+      _selectedGuideLine->setOrientationPoint(event->scenePos());
+    }
   else if (_moveNetworkNodeLabel) 
     {
       QPointF newPos = event->scenePos();
@@ -1686,6 +1779,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(), QTransform()));
       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
 									    QTransform()));
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
       if (incidentNodeLabel) 
 	{
 	  incident = incidentNodeLabel->getNode();
@@ -2064,6 +2158,18 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	      emit TimeLineContextMenuAction(action->text());
 	    }
 	}
+      else if (guide)
+	{
+	  clearSelection();
+	  guide->setSelected(true);
+	  QMenu menu;
+	  QAction *action1 = new QAction(DELETEGUIDEACTION, this);
+	  menu.addAction(action1);
+	  if (QAction *action = menu.exec(event->screenPos()))
+	    {
+	      emit GuideLineContextMenuAction(action->text());
+	    }
+	}
     }
 }
 
@@ -2076,7 +2182,8 @@ bool Scene::isPreparingArea()
 {
   if (_gettingLinePoints || _gettingSingleArrowPoints ||
       _gettingDoubleArrowPoints || _gettingTimeLinePoints ||
-      _gettingEllipseArea || _gettingRectArea || _gettingTextArea)
+      _gettingEllipseArea || _gettingRectArea || _gettingTextArea ||
+      _gettingHorizontalGuideLine || _gettingVerticalGuideLine)
     {
       return true;
     }

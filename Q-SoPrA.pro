@@ -55,6 +55,7 @@ HEADERS += include/AbstractionDialog.h \
            include/EventTableModel.h \
            include/EventTextDialog.h \
            include/ExportTransitionMatrixDialog.h \
+           include/GuideLine.h \
            include/GraphicsView.h \
            include/HierarchyGraphWidget.h \
            include/IncidentNode.h \
@@ -146,6 +147,7 @@ SOURCES += main.cpp \
            src/EventTableModel.cpp \
            src/EventTextDialog.cpp \
            src/ExportTransitionMatrixDialog.cpp \
+           src/GuideLine.cpp \
            src/GraphicsView.cpp \
            src/HierarchyGraphWidget.cpp \
            src/IncidentNode.cpp \

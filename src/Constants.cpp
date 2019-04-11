@@ -122,6 +122,7 @@ QString ASSIGNATTRIBUTEACTION = "Assign attribute";
 QString UNASSIGNATTRIBUTEACTION = "Unassign attribute";
 QString ASSIGNRELATIONSHIPACTION = "Assign relationship";
 QString UNASSIGNRELATIONSHIPACTION = "Unassign relationship";
+QString DELETEGUIDEACTION = "Delete guide";
 QString ONEFORWARD = "Move forward";
 QString ONEBACKWARD = "Move backward";
 QString BRINGFORWARD = "Send to front";

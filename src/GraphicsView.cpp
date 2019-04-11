@@ -73,6 +73,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
 	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
+	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->pos()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -99,7 +100,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	    }
 	  else if (occurrence) 
 	    {
-		  occurrence->setSelected(true);
+	      occurrence->setSelected(true);
 	    }
 	  else if (networkNode) 
 	    {
@@ -125,6 +126,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	    {
 	      timeline->setSelected(true);
 	    }
+	  else if (guide)
+	    {
+	      guide->setSelected(true);
+	    }
 	  QGraphicsView::mousePressEvent(event);
 	}
       else
@@ -142,6 +147,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
 	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
 	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
+	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->pos()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -155,7 +161,7 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	      occurrence = occurrenceLabel->getOccurrence();
 	    }
 	  if (!incident && !abstractNode && !linkage && !networkNode && !occurrence &&
-	      !occurrenceLabel && !line && !text && !ellipse && !rect && !timeline) 
+	      !occurrenceLabel && !line && !text && !ellipse && !rect && !timeline && !guide) 
 	    {
 	      _pan = true;
 	      QApplication::setOverrideCursor(Qt::ClosedHandCursor);
@@ -224,6 +230,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 		  scene->clearSelection();
 		  timeline->setSelected(true);
 		}
+	      else if(guide)
+		{
+		  scene->clearSelection();
+		  guide->setSelected(true);
+		}
 	      scene->resetItemSelection();
 	    }
 	}
@@ -248,9 +259,10 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
       EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
       RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->pos()));
       if (incident || incidentNodeLabel || linkage || abstractNode ||
 	  abstractNodeLabel || networkNode || occurrence ||
-	  occurrenceLabel || line || text || ellipse || rect || timeline)
+	  occurrenceLabel || line || text || ellipse || rect || timeline || guide)
 	{
 	  this->setDragMode(QGraphicsView::NoDrag);
 	}

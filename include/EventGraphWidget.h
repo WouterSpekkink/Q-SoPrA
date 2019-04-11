@@ -74,6 +74,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ModeColorDialog.h"
 #include "EventTextDialog.h"
 #include "AttributeCheckBoxDialog.h"
+#include "GuideLine.h"
 
 // Need a forward declaration here
 class AttributesWidget;
@@ -251,6 +252,8 @@ private slots:
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
   void addTimeLineObject(const qreal &startX, const qreal &endX, const qreal &y);
+  void addHorizontalGuideLine(const QPointF &pos);
+  void addVerticalGuideLine(const QPointF &pos);
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
@@ -268,28 +271,30 @@ private slots:
   void changeLineColor();
   void toggleArrow1();
   void toggleArrow2();
+  void duplicateLine();
   void deleteLine();
   void processTextContextMenu(const QString &action);
   void changeText();
   void changeTextColor();
+  void duplicateText();
   void deleteText();
   void copyDescriptionToText();
   void processEllipseContextMenu(const QString &action);
   void changeEllipseColor();
   void changeEllipseFillColor();
+  void duplicateEllipse();
   void deleteEllipse();
   void processRectContextMenu(const QString &action);
   void changeRectColor();
   void changeRectFillColor();
+  void duplicateRect();
   void deleteRect();
   void processTimeLineContextMenu(const QString &action);
   void changeTimelineColor();
   void deleteTimeLine();
   void duplicateTimeLine();
-  void duplicateLine();
-  void duplicateText();
-  void duplicateEllipse();
-  void duplicateRect();
+  void processGuideLineContextMenu(const QString &action);
+  void deleteGuideLine();
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
@@ -364,6 +369,7 @@ private:
   QPointer<QLabel> minorTickSizeLabel;
   QPointer<QLabel> timeLineWidthLabel;
   QPointer<QLabel> timeLineColorLabel;
+  QPointer<QLabel> guideLinesLabel;
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
   QPointer<QPushButton> removeLinkageTypeButton;
@@ -419,6 +425,8 @@ private:
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> changeTimeLineColorButton;
+  QPointer<QPushButton> addHorizontalGuideLineButton;
+  QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
@@ -480,6 +488,7 @@ private:
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
   QVector<TimeLineObject*> _timeLineVector;
+  QVector<GuideLine*> _guidesVector;
   QVector<QString> _presentTypes;
   QVector<QString> _checkedCases;
 
