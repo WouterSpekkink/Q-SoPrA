@@ -3373,6 +3373,8 @@ void NetworkGraphWidget::addMode()
 	  nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
 	  nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
+	  QVariant textColorVar = QVariant(textColor.rgb());
+	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setData(Qt::UserRole, textColorVar);
 	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
 	    setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -3474,6 +3476,9 @@ void NetworkGraphWidget::addModes()
 	      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
 	      nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+	      QVariant textColorVar = QVariant(QColor(Qt::black).rgb());
+	      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)
+		->setData(Qt::UserRole, textColorVar);
 	      nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
 		setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
 			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -4059,10 +4064,20 @@ void NetworkGraphWidget::disableModeButtons()
 
 void NetworkGraphWidget::restoreModeColors() 
 {
+  QVectorIterator<NetworkNode*> it(_networkNodeVector);
+  while (it.hasNext())
+    {
+      NetworkNode *currentNode = it.next();
+      currentNode->setColor(Qt::black);
+      currentNode->getLabel()->setDefaultTextColor(Qt::black);
+      currentNode->setMode("");
+    }
   for (int i = 0; i != nodeListWidget->rowCount(); i++) 
     {
       QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
       QColor color = nodeListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = nodeListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVector<QString> attributeVector;
       attributeVector.push_back(currentMode);
       findChildren(currentMode, &attributeVector);
@@ -4085,6 +4100,7 @@ void NetworkGraphWidget::restoreModeColors()
 		  if (currentEntity->getName() == entity) 
 		    {
 		      currentEntity->setColor(color);
+		      currentEntity->getLabel()->setDefaultTextColor(textColor);
 		      currentEntity->setMode(currentMode);
 		    }
 		}
@@ -4096,6 +4112,8 @@ void NetworkGraphWidget::restoreModeColors()
     {
       QString mode = nodeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
       QColor color = nodeListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = nodeListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVectorIterator<NetworkNode*> it(_networkNodeVector);
       while (it.hasNext()) 
 	{
@@ -4103,6 +4121,7 @@ void NetworkGraphWidget::restoreModeColors()
 	  if (node->getMode() == mode) 
 	    {
 	      node->setColor(color);
+	      node->getLabel()->setDefaultTextColor(textColor);
 	    }
 	}
     }
@@ -4117,13 +4136,17 @@ void NetworkGraphWidget::moveModeUp()
       int currentRow = nodeListWidget->row(nodeListWidget->currentItem());
       QTableWidgetItem *currentItem = nodeListWidget->takeItem(currentRow,0);
       QColor currentColor = nodeListWidget->item(currentRow, 1)->background().color();
+      QVariant currentTextColorVar = nodeListWidget->item(currentRow, 1)->data(Qt::UserRole);
       int newRow = currentRow - 1;
       QTableWidgetItem *otherItem = nodeListWidget->takeItem(newRow, 0);
       QColor otherColor = nodeListWidget->item(newRow, 1)->background().color();
+      QVariant otherTextColorVar = nodeListWidget->item(newRow, 1)->data(Qt::UserRole);
       nodeListWidget->setItem(newRow, 0, currentItem);
       nodeListWidget->item(newRow, 1)->setBackground(currentColor);
+      nodeListWidget->item(newRow, 1)->setData(Qt::UserRole, currentTextColorVar);
       nodeListWidget->setItem(currentRow, 0, otherItem);
       nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
+      nodeListWidget->item(currentRow, 1)->setData(Qt::UserRole, otherTextColorVar);
       restoreModeColors();
       QModelIndex newIndex = nodeListWidget->model()->index(newRow, 0);
       nodeListWidget->setCurrentIndex(newIndex);
@@ -4141,13 +4164,17 @@ void NetworkGraphWidget::moveModeDown()
       int currentRow = nodeListWidget->row(nodeListWidget->currentItem());
       QTableWidgetItem *currentItem = nodeListWidget->takeItem(currentRow, 0);
       QColor currentColor = nodeListWidget->item(currentRow, 1)->background().color();
+      QVariant currentTextColorVar = nodeListWidget->item(currentRow, 1)->data(Qt::UserRole);
       int newRow = currentRow + 1;
       QTableWidgetItem *otherItem = nodeListWidget->takeItem(newRow, 0);
-      QColor otherColor = nodeListWidget->item(newRow, 1)->background().color();;
+      QColor otherColor = nodeListWidget->item(newRow, 1)->background().color();
+      QVariant otherTextColorVar = nodeListWidget->item(newRow, 1)->data(Qt::UserRole);
       nodeListWidget->setItem(newRow, 0, currentItem);
       nodeListWidget->item(newRow, 1)->setBackground(currentColor);
+      nodeListWidget->item(newRow, 1)->setData(Qt::UserRole, currentTextColorVar);
       nodeListWidget->setItem(currentRow, 0, otherItem);
       nodeListWidget->item(currentRow, 1)->setBackground(otherColor);
+      nodeListWidget->item(currentRow, 1)->setData(Qt::UserRole, otherTextColorVar);
       restoreModeColors();
       QModelIndex newIndex = nodeListWidget->model()->index(newRow, 0);
       nodeListWidget->setCurrentIndex(newIndex);
@@ -4688,7 +4715,8 @@ void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item)
   if (item->column() == 1) 
     {
       QColor currentFill = item->background().color();
-      QColor currentText = QColor("black");
+      QVariant textColorVar = item->data(Qt::UserRole);
+      QColor currentText = QColor::fromRgb(textColorVar.toUInt());
       QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
       colorDialog->exec();
       if (colorDialog->getExitStatus() == 0)
@@ -4696,6 +4724,8 @@ void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item)
 	  QColor fillColor = colorDialog->getFillColor();
 	  QColor textColor = colorDialog->getTextColor();
 	  item->setBackground(fillColor);
+	  textColorVar = QVariant(textColor.rgb());
+	  item->setData(Qt::UserRole, textColorVar);
 	  QTableWidgetItem* neighbour = nodeListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
 	  QVectorIterator<NetworkNode*> it(_networkNodeVector);

@@ -1263,7 +1263,6 @@ void EventGraphWidget::retrieveData()
 	      sourceLabel->setText("<b>Source:</b>");
 	      rawLabel->show();
 	      rawField->show();
-
 	      currentIncidentNode->setSelectionColor(Qt::red);
 	      currentIncidentNode->update();
 	      int id = currentIncidentNode->getId();
@@ -6096,6 +6095,9 @@ void EventGraphWidget::addMode()
 	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
 	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(color);
+	  QVariant textColorVar = QVariant(textColor.rgb()); 
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+	    ->setData(Qt::UserRole, textColorVar);
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -6221,6 +6223,9 @@ void EventGraphWidget::addModes()
 	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
 	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+	      QVariant textColorVar = QVariant(QColor(Qt::black).rgb());
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
+										 textColorVar);
 	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 		setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -6414,10 +6419,28 @@ void EventGraphWidget::disableLinkageButtons()
 
 void EventGraphWidget::restoreModeColors() 
 {
+  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
+  while (it.hasNext()) 
+    {
+      IncidentNode *incidentNode = it.next();
+      incidentNode->setColor(Qt::white);
+      incidentNode->getLabel()->setDefaultTextColor(Qt::black);
+      incidentNode->setMode("");
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext()) 
+    {
+      AbstractNode *abstractNode = it2.next();
+      abstractNode->setColor(Qt::white);
+      abstractNode->getLabel()->setDefaultTextColor(Qt::black);
+      abstractNode->setMode("");
+    }
   for (int i = 0; i != eventListWidget->rowCount(); i++) 
     {
       QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
       QColor color = eventListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = eventListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVector<QString> attributeVector;
       attributeVector.push_back(currentMode);
       QSqlQuery *query = new QSqlQuery;
@@ -6449,6 +6472,7 @@ void EventGraphWidget::restoreModeColors()
 		  if (currentIncidentNode->getId() == currentIncident) 
 		    {
 		      currentIncidentNode->setColor(color);
+		      currentIncidentNode->getLabel()->setDefaultTextColor(textColor);
 		      currentIncidentNode->setMode(currentMode);
 		    }
 		}
@@ -6461,6 +6485,7 @@ void EventGraphWidget::restoreModeColors()
 	      if (attributes.contains(currentAttribute)) 
 		{
 		  currentAbstractNode->setColor(color);
+		  currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
 		  currentAbstractNode->setMode(currentMode);
 		}
 	    }
@@ -6471,6 +6496,8 @@ void EventGraphWidget::restoreModeColors()
     {
       QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
       QColor color = eventListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = eventListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVectorIterator<IncidentNode *> it(_incidentNodeVector);
       while (it.hasNext()) 
 	{
@@ -6478,6 +6505,7 @@ void EventGraphWidget::restoreModeColors()
 	  if (incidentNode->getMode() == mode) 
 	    {
 	      incidentNode->setColor(color);
+	      incidentNode->getLabel()->setDefaultTextColor(textColor);
 	    }
 	}
       QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
@@ -6487,6 +6515,7 @@ void EventGraphWidget::restoreModeColors()
 	  if (abstractNode->getMode() == mode) 
 	    {
 	      abstractNode->setColor(color);
+	      abstractNode->getLabel()->setDefaultTextColor(textColor);
 	    }
 	}
     }
@@ -6501,13 +6530,17 @@ void EventGraphWidget::moveModeUp()
       int currentRow = eventListWidget->row(eventListWidget->currentItem());
       QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow,0);
       QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+      QVariant currentTextColorVar = eventListWidget->item(currentRow, 1)->data(Qt::UserRole);
       int newRow = currentRow - 1;
       QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
       QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+      QVariant otherTextColorVar = eventListWidget->item(newRow, 1)->data(Qt::UserRole);
       eventListWidget->setItem(newRow, 0, currentItem);
       eventListWidget->item(newRow, 1)->setBackground(currentColor);
+      eventListWidget->item(newRow, 1)->setData(Qt::UserRole, currentTextColorVar);
       eventListWidget->setItem(currentRow, 0, otherItem);
       eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+      eventListWidget->item(currentRow, 1)->setData(Qt::UserRole, otherTextColorVar);
       restoreModeColors();
       QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
       eventListWidget->setCurrentIndex(newIndex);
@@ -6525,13 +6558,17 @@ void EventGraphWidget::moveModeDown()
       int currentRow = eventListWidget->row(eventListWidget->currentItem());
       QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow, 0);
       QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+      QVariant currentTextColorVar = eventListWidget->item(currentRow, 1)->data(Qt::UserRole);
       int newRow = currentRow + 1;
       QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
-      QColor otherColor = eventListWidget->item(newRow, 1)->background().color();;
+      QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+      QVariant otherTextColorVar = eventListWidget->item(newRow, 1)->data(Qt::UserRole);
       eventListWidget->setItem(newRow, 0, currentItem);
       eventListWidget->item(newRow, 1)->setBackground(currentColor);
+      eventListWidget->item(newRow, 1)->setData(Qt::UserRole, currentTextColorVar);
       eventListWidget->setItem(currentRow, 0, otherItem);
       eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+      eventListWidget->item(currentRow, 1)->setData(Qt::UserRole, otherTextColorVar);
       restoreModeColors();
       QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
       eventListWidget->setCurrentIndex(newIndex);
@@ -6633,14 +6670,17 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item)
   if (item->column() == 1) 
     {
       QColor currentFill = item->background().color();
-      QColor currentText = QColor("black");
+      QVariant textColorVar = item->data(Qt::UserRole);
+      QColor currentText = QColor::fromRgb(textColorVar.toUInt());
       QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
       colorDialog->exec();
       if (colorDialog->getExitStatus() == 0)
 	{
 	  QColor fillColor = colorDialog->getFillColor();
 	  QColor textColor = colorDialog->getTextColor();
+	  textColorVar = QVariant(textColor.rgb());
 	  item->setBackground(fillColor);
+	  item->setData(Qt::UserRole, textColorVar);
 	  QTableWidgetItem*neighbour = eventListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
 	  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
