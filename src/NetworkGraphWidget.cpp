@@ -2571,11 +2571,7 @@ void NetworkGraphWidget::processShapeSelection()
 
 void NetworkGraphWidget::processLineContextMenu(const QString &action) 
 {
-  if (action == CHANGELINECOLOR) 
-    {
-      changeLineColor();
-    }
-  else if (action == TOGGLEARROW1) 
+  if (action == TOGGLEARROW1) 
     {
       toggleArrow1();
     }
@@ -2606,33 +2602,6 @@ void NetworkGraphWidget::processLineContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void NetworkGraphWidget::changeLineColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-      if (line) 
-	{
-	  QColor currentColor = line->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      line->setColor(color);
-	      _currentLineColor = line->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -2707,10 +2676,6 @@ void NetworkGraphWidget::processTextContextMenu(const QString &action)
     {
       changeText();
     }
-  else if (action == CHANGETEXTCOLOR) 
-    {
-      changeTextColor();
-    }
   else if (action == DELETETEXT) 
     {
       deleteText();
@@ -2756,33 +2721,6 @@ void NetworkGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
-	}
-    }
-}
-
-void NetworkGraphWidget::changeTextColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-      if (text) 
-	{
-	  QColor currentColor = text->defaultTextColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      text->setDefaultTextColor(color);
-	      _currentLineColor = text->defaultTextColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
 	}
     }
 }
@@ -2835,15 +2773,7 @@ void NetworkGraphWidget::duplicateText()
 
 void NetworkGraphWidget::processEllipseContextMenu(const QString &action) 
 {
-  if (action == CHANGEELLIPSECOLOR) 
-    { 
-      changeEllipseColor();
-    }
-  else if (action == CHANGEELLIPSEFILLCOLOR) 
-    {
-      changeEllipseFillColor();
-    }
-  else if (action == DELETEELLIPSE) 
+  if (action == DELETEELLIPSE) 
     {
       deleteEllipse();
     }
@@ -2866,67 +2796,6 @@ void NetworkGraphWidget::processEllipseContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void NetworkGraphWidget::changeEllipseColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setColor(color);
-	      _currentLineColor = ellipse->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
-    }
-}
-
-void NetworkGraphWidget::changeEllipseFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setFillColor(color);
-	      _currentFillColor = ellipse->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -2971,15 +2840,7 @@ void NetworkGraphWidget::duplicateEllipse()
 
 void NetworkGraphWidget::processRectContextMenu(const QString &action) 
 {
-  if (action == CHANGERECTCOLOR) 
-    {
-      changeRectColor();
-    }
-  else if (action == CHANGERECTFILLCOLOR) 
-    {
-      changeRectFillColor();
-    }
-  else if (action == DELETERECT) 
+  if (action == DELETERECT) 
     {
       deleteRect();
     }
@@ -3002,67 +2863,6 @@ void NetworkGraphWidget::processRectContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void NetworkGraphWidget::changeRectColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setColor(color);
-	      _currentLineColor = rect->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
-    }
-}
-
-void NetworkGraphWidget::changeRectFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setFillColor(color);
-	      _currentFillColor = rect->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -5376,6 +5176,7 @@ void NetworkGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      scene->clearSelection();
       QVectorIterator<GuideLine*> it(_guidesVector);
       while (it.hasNext())
 	{

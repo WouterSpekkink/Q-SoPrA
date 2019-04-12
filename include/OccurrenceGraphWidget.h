@@ -116,7 +116,8 @@ private slots:
   void matchEventGraph();
   void restore();
   void plotLabels();
-  void changeLabels();
+  void toggleIncidentLabelsOnly();
+  void toggleAttributeLabelsOnly();
   void setBackgroundColor();
   void increaseDistance();
   void decreaseDistance();
@@ -157,24 +158,19 @@ private slots:
   void setTimeLineColor();
   void processShapeSelection();
   void processLineContextMenu(const QString &action);
-  void changeLineColor();
   void toggleArrow1();
   void toggleArrow2();
   void deleteLine();
   void processTextContextMenu(const QString &action);
   void changeText();
-  void changeTextColor();
   void deleteText();
   void processEllipseContextMenu(const QString &action);
-  void changeEllipseColor();
-  void changeEllipseFillColor();
   void deleteEllipse();
   void processRectContextMenu(const QString &action);
-  void changeRectColor();
-  void changeRectFillColor();
   void deleteRect();
   void processTimeLineContextMenu(const QString &action);
-  void changeTimelineColor();
+  void timeLineToggleFirstTick();
+  void timeLineToggleForceLastTick();
   void deleteTimeLine();
   void duplicateTimeLine();
   void duplicateLine();
@@ -246,7 +242,8 @@ private:
   QPointer<QPushButton> matchEventGraphButton;
   QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
-  QPointer<QPushButton> changeLabelsButton;
+  QPointer<QPushButton> incidentLabelsOnlyButton;
+  QPointer<QPushButton> attributeLabelsOnlyButton;
   QPointer<QPushButton> backgroundColorButton;
   QPointer<QPushButton> increaseDistanceButton;
   QPointer<QPushButton> decreaseDistanceButton;
@@ -288,7 +285,8 @@ private:
   // Private variables
   int _distance;
   bool _labelsVisible;
-  bool _shortLabels;
+  bool _incidentLabelsOnly;
+  bool _attributeLabelsOnly;
   bool _matched;
   int _currentPenStyle;
   int _currentPenWidth;

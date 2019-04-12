@@ -32,7 +32,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
 {
   _distance = 70;
   _labelsVisible = true;
-  _shortLabels = false;
+  _incidentLabelsOnly = false;
+  _attributeLabelsOnly = false;
   _matched = false;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
@@ -149,8 +150,10 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   matchEventGraphButton = new QPushButton(tr("Match current event graph"), this);
   restoreButton = new QPushButton(tr("Restore to original"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
-  changeLabelsButton = new QPushButton(tr("Short labels"), graphicsWidget);
-  changeLabelsButton->setCheckable(true);
+  incidentLabelsOnlyButton = new QPushButton(tr("Incident labels only"), graphicsWidget);
+  incidentLabelsOnlyButton->setCheckable(true);
+  attributeLabelsOnlyButton = new QPushButton(tr("Attribute labels only"), graphicsWidget);
+  attributeLabelsOnlyButton->setCheckable(true);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
   increaseDistanceButton = new QPushButton(tr("< >"), this);
   decreaseDistanceButton = new QPushButton(tr("> <"), this);
@@ -367,7 +370,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(addVerticalGuideLine(const QPointF&)));
   connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
-  connect(changeLabelsButton, SIGNAL(clicked()), this, SLOT(changeLabels()));
+  connect(incidentLabelsOnlyButton, SIGNAL(clicked()), this, SLOT(toggleIncidentLabelsOnly()));
+  connect(attributeLabelsOnlyButton, SIGNAL(clicked()), this, SLOT(toggleAttributeLabelsOnly()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
@@ -476,7 +480,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(caseListWidget);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(plotLabelsButton);
-  graphicsControlsLayout->addWidget(changeLabelsButton);
+  graphicsControlsLayout->addWidget(incidentLabelsOnlyButton);
+  graphicsControlsLayout->addWidget(attributeLabelsOnlyButton);
   QPointer<QFrame> sepLine = new QFrame();
   sepLine->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine);
@@ -1736,6 +1741,8 @@ void OccurrenceGraphWidget::removeAttributeMode()
     }
   else if (_presentAttributes.size() == 0 && _presentRelationships.size() == 0) 
     {
+      incidentLabelsOnlyButton->setChecked(false);
+      attributeLabelsOnlyButton->setChecked(false);
       savePlotButton->setEnabled(false);
       caseListWidget->setEnabled(false);
       setGraphControls(false);
@@ -1783,6 +1790,9 @@ void OccurrenceGraphWidget::removeRelationshipMode()
     }
   else if (_presentAttributes.size() == 0 && _presentRelationships.size() == 0) 
     {
+      incidentLabelsOnlyButton->setChecked(false);
+      attributeLabelsOnlyButton->setChecked(false);
+      caseListWidget->setEnabled(false);
       savePlotButton->setEnabled(false);
       setGraphControls(false);
     }
@@ -3043,11 +3053,7 @@ void OccurrenceGraphWidget::processShapeSelection()
 
 void OccurrenceGraphWidget::processLineContextMenu(const QString &action) 
 {
-  if (action == CHANGELINECOLOR) 
-    {
-      changeLineColor();
-    }
-  else if (action == TOGGLEARROW1) 
+  if (action == TOGGLEARROW1) 
     {
       toggleArrow1();
     }
@@ -3078,33 +3084,6 @@ void OccurrenceGraphWidget::processLineContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void OccurrenceGraphWidget::changeLineColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-      if (line) 
-	{
-	  QColor currentColor = line->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      line->setColor(color);
-	      _currentLineColor = line->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -3179,10 +3158,6 @@ void OccurrenceGraphWidget::processTextContextMenu(const QString &action)
     {
       changeText();
     }
-  else if (action == CHANGETEXTCOLOR) 
-    {
-      changeTextColor();
-    }
   else if (action == DELETETEXT) 
     {
       deleteText();
@@ -3228,33 +3203,6 @@ void OccurrenceGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
-	}
-    }
-}
-
-void OccurrenceGraphWidget::changeTextColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-      if (text) 
-	{
-	  QColor currentColor = text->defaultTextColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      text->setDefaultTextColor(color);
-	      _currentLineColor = text->defaultTextColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
 	}
     }
 }
@@ -3307,15 +3255,7 @@ void OccurrenceGraphWidget::duplicateText()
 
 void OccurrenceGraphWidget::processEllipseContextMenu(const QString &action) 
 {
-  if (action == CHANGEELLIPSECOLOR) 
-    {
-      changeEllipseColor();
-    }
-  else if (action == CHANGEELLIPSEFILLCOLOR) 
-    {
-      changeEllipseFillColor();
-    }
-  else if (action == DELETEELLIPSE) 
+  if (action == DELETEELLIPSE) 
     {
       deleteEllipse();
     }
@@ -3338,67 +3278,6 @@ void OccurrenceGraphWidget::processEllipseContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void OccurrenceGraphWidget::changeEllipseColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());    
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	     QColor color = colorDialog->selectedColor();
-	      ellipse->setColor(color);
-	      _currentLineColor = ellipse->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
-    }
-}
-
-void OccurrenceGraphWidget::changeEllipseFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getFillColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setFillColor(color);
-	      _currentFillColor = ellipse->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -3443,15 +3322,7 @@ void OccurrenceGraphWidget::duplicateEllipse()
 
 void OccurrenceGraphWidget::processRectContextMenu(const QString &action) 
 {
-  if (action == CHANGERECTCOLOR) 
-    {
-      changeRectColor();
-    }
-  else if (action == CHANGERECTFILLCOLOR) 
-    {
-      changeRectFillColor();
-    }
-  else if (action == DELETERECT) 
+  if (action == DELETERECT) 
     {
       deleteRect();
     }
@@ -3474,67 +3345,6 @@ void OccurrenceGraphWidget::processRectContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void OccurrenceGraphWidget::changeRectColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setColor(color);
-	      _currentLineColor = rect->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
-    }
-}
-
-void OccurrenceGraphWidget::changeRectFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getFillColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setFillColor(color);
-	      _currentFillColor = rect->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -3577,12 +3387,15 @@ void OccurrenceGraphWidget::duplicateRect()
     }
 }
 
-
 void OccurrenceGraphWidget::processTimeLineContextMenu(const QString &action) 
 {
-  if (action == CHANGETIMELINECOLOR) 
+  if (action == TOGGLEFIRSTTICK)
     {
-      changeTimelineColor();
+      timeLineToggleFirstTick();
+    }
+  else if (action == FORCELASTTICK)
+    {
+      timeLineToggleForceLastTick();
     }
   else if (action == DELETETIMELINE) 
     {
@@ -3610,31 +3423,32 @@ void OccurrenceGraphWidget::processTimeLineContextMenu(const QString &action)
     }
 }
 
-void OccurrenceGraphWidget::changeTimelineColor() 
+void OccurrenceGraphWidget::timeLineToggleFirstTick()
 {
-  if (scene->selectedItems().size() == 1) 
+ if (scene->selectedItems().size() == 1) 
     {
       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
       if (timeline) 
 	{
-	  QColor currentColor = timeline->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      timeline->setColor(color);
-	      _currentTimeLineColor = timeline->getColor();
-	      emit sendTimeLineColor(_currentTimeLineColor);
-	      QPixmap timeLineColorMap(20, 20);
-	      timeLineColorMap.fill(_currentTimeLineColor);
-	      QIcon timeLineColorIcon(timeLineColorMap);
-	      changeTimeLineColorButton->setIcon(timeLineColorIcon);
-	    }
-	  delete colorDialog;
+	  bool state = timeline->getFirstTick();
+	  state = !state;
+	  timeline->setFirstTick(state);
 	}
-    }
+    }  
+}
+
+void OccurrenceGraphWidget::timeLineToggleForceLastTick()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
+      if (timeline) 
+	{
+	  bool state = timeline->getForceLastTick();
+	  state = !state;
+	  timeline->setForceLastTick(state);
+	}
+    }  
 }
 
 void OccurrenceGraphWidget::deleteTimeLine() 
@@ -4090,11 +3904,16 @@ void OccurrenceGraphWidget::plotLabels()
   _labelsVisible = !(_labelsVisible);
 }
 
-void OccurrenceGraphWidget::changeLabels() 
+void OccurrenceGraphWidget::toggleIncidentLabelsOnly() 
 {
-  if (changeLabelsButton->isChecked()) 
+  if (incidentLabelsOnlyButton->isChecked()) 
     {
-      _shortLabels = true;
+      _incidentLabelsOnly = true;
+      _attributeLabelsOnly = false;
+      if (attributeLabelsOnlyButton->isChecked())
+	{
+	  attributeLabelsOnlyButton->setChecked(false);
+	}
       QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
@@ -4142,7 +3961,115 @@ void OccurrenceGraphWidget::changeLabels()
     }
   else 
     {
-      _shortLabels = false;
+      _incidentLabelsOnly = false;
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+      while (it.hasNext()) 
+	{
+	  OccurrenceItem *currentOccurrence = it.next();
+	  OccurrenceLabel *oldLabel = currentOccurrence->getLabel();
+	  OccurrenceLabel *newLabel = new OccurrenceLabel(currentOccurrence);
+	  QString text = QString::number(currentOccurrence->getOrder()) + " - " +
+	    currentOccurrence->getAttribute();
+	  newLabel->setPlainText(text);
+	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
+	  newLabel->setTextWidth(newLabel->boundingRect().width());
+	  newLabel->setNewPos(currentOccurrence->scenePos());
+	  _attributeLabelVector.push_back(newLabel);
+	  currentOccurrence->setLabel(newLabel);
+	  newLabel->setZValue(4);
+	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
+	  delete oldLabel;
+	  _attributeLabelVector.removeOne(oldLabel);
+	}
+      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+      while (it2.hasNext()) 
+	{
+	  OccurrenceItem *currentOccurrence = it2.next();
+	  OccurrenceLabel *oldLabel = currentOccurrence->getLabel();
+	  OccurrenceLabel *newLabel = new OccurrenceLabel(currentOccurrence);
+	  QString text = QString::number(currentOccurrence->getOrder()) + " - " +
+	    currentOccurrence->getAttribute();
+	  newLabel->setPlainText(text);
+	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
+	  newLabel->setTextWidth(newLabel->boundingRect().width());
+	  newLabel->setNewPos(currentOccurrence->scenePos());
+	  _relationshipLabelVector.push_back(newLabel);
+	  currentOccurrence->setLabel(newLabel);
+	  newLabel->setZValue(4);
+	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
+	  delete oldLabel;
+	  _relationshipLabelVector.removeOne(oldLabel);
+	}
+    }
+  setVisibility();
+}
+
+void OccurrenceGraphWidget::toggleAttributeLabelsOnly() 
+{
+  if (attributeLabelsOnlyButton->isChecked()) 
+    {
+      _incidentLabelsOnly = false;
+      _attributeLabelsOnly = true;
+      if (incidentLabelsOnlyButton->isChecked())
+	{
+	  incidentLabelsOnlyButton->setChecked(false);
+	}
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+      while (it.hasNext()) 
+	{
+	  OccurrenceItem *currentOccurrence = it.next();
+	  OccurrenceLabel *oldLabel = currentOccurrence->getLabel();
+	  OccurrenceLabel *newLabel = new OccurrenceLabel(currentOccurrence);
+	  QString text = currentOccurrence->getAttribute();
+	  newLabel->setPlainText(text);
+	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
+	  newLabel->setTextWidth(newLabel->boundingRect().width());
+	  newLabel->setNewPos(currentOccurrence->scenePos());
+	  _attributeLabelVector.push_back(newLabel);
+	  currentOccurrence->setLabel(newLabel);
+	  newLabel->setZValue(4);
+	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
+	  delete oldLabel;
+	  _attributeLabelVector.removeOne(oldLabel);
+	}
+      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+      while (it2.hasNext()) 
+	{
+	  OccurrenceItem *currentOccurrence = it2.next();
+	  OccurrenceLabel *oldLabel = currentOccurrence->getLabel();
+	  OccurrenceLabel *newLabel = new OccurrenceLabel(currentOccurrence);
+	  QString text = currentOccurrence->getAttribute();
+	  newLabel->setPlainText(text);
+	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
+	  newLabel->setTextWidth(newLabel->boundingRect().width());
+	  newLabel->setNewPos(currentOccurrence->scenePos());
+	  _relationshipLabelVector.push_back(newLabel);
+	  currentOccurrence->setLabel(newLabel);
+	  newLabel->setZValue(4);
+	  scene->addItem(newLabel);
+	  if (!newLabel->getOccurrence()->isVisible())
+	    {
+	      newLabel->hide();
+	    }
+	  delete oldLabel;
+	  _relationshipLabelVector.removeOne(oldLabel);
+	}
+    }
+  else 
+    {
+      _attributeLabelsOnly = false;
       QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
@@ -4581,6 +4508,7 @@ void OccurrenceGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      scene->clearSelection();
       QVectorIterator<GuideLine*> it(_guidesVector);
       while (it.hasNext())
 	{
@@ -4830,8 +4758,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->exec();
 	}
       query->prepare("INSERT INTO saved_og_plots_settings "
-		     "(plot, lowerbound, upperbound, labelson, shortlabels) "
-		     "VALUES (:plot, :lowerbound, :upperbound, :labelson, :shortlabels)");
+		     "(plot, lowerbound, upperbound, labelson, incidentlabelsonly, "
+		     "attributelabelsonly) "
+		     "VALUES (:plot, :lowerbound, :upperbound, :labelson, :incidentlabelsonly, "
+		     ":attributelabelsonly)");
       query->bindValue(":plot", name);
       query->bindValue(":lowerbound", lowerRangeDial->value());
       query->bindValue(":upperbound", upperRangeDial->value());
@@ -4841,12 +4771,18 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  labelson = 1;
 	}
       query->bindValue(":labelson", labelson);
-      int shortlabels = 0;
-      if (_shortLabels)
+      int incidentlabelsonly = 0;
+      if (_incidentLabelsOnly)
 	{
-	  shortlabels = 1;
+	  incidentlabelsonly = 1;
 	}
-      query->bindValue(":shortlabels", shortlabels);
+      int attributelabelsonly = 0;
+      if (_attributeLabelsOnly)
+	{
+	  attributelabelsonly = 1;
+	}
+      query->bindValue(":incidentlabelsonly", incidentlabelsonly);
+      query->bindValue(":attributelabelsonly", attributelabelsonly);
       query->exec();      
       QVector<OccurrenceItem*> allOccurrences;
       QVectorIterator<OccurrenceItem*> aIt(_attributeOccurrenceVector);
@@ -5129,9 +5065,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_timelines "
 		     "(plot, startx, endx, y, penwidth, majorinterval, minordivision, "
-		     "majorsize, minorsize, zvalue, red, green, blue, alpha) "
+		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha) "
 		     "VALUES (:plot, :startx, :endx, :y, :penwidth, :majorinterval, :minordivision, "
-		     ":majorsize, :minorsize, :zvalue, :red, :green, :blue, :alpha)");
+		     ":majorsize, :minorsize, :firsttick, :lasttick, "
+		     ":zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<TimeLineObject*> it9(_timeLineVector);
       while (it9.hasNext()) 
 	{
@@ -5144,6 +5081,16 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  qreal minordivision = currentTimeLine->getMinorTickDivision();
 	  qreal majorsize = currentTimeLine->getMajorTickSize();
 	  qreal minorsize = currentTimeLine->getMinorTickSize();
+	  int firsttick = 0;
+	  if (currentTimeLine->getFirstTick())
+	    {
+	      firsttick = 1;
+	    }
+	  int lasttick = 0;
+	  if (currentTimeLine->getForceLastTick())
+	    {
+	      lasttick = 1;
+	    }
 	  int zValue = currentTimeLine->zValue();
 	  QColor color = currentTimeLine->getColor();
 	  int red = color.red();
@@ -5159,6 +5106,8 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->bindValue(":minordivision", minordivision);
 	  query->bindValue(":majorsize", majorsize);
 	  query->bindValue(":minorsize", minorsize);
+	  query->bindValue(":firsttick", firsttick);
+	  query->bindValue(":lasttick", lasttick);
 	  query->bindValue(":zvalue", zValue);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
@@ -5418,7 +5367,8 @@ void OccurrenceGraphWidget::seePlots()
       int green = query->value(1).toInt();
       int blue = query->value(2).toInt();
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
-      query->prepare("SELECT lowerbound, upperbound, labelson, shortlabels "
+      query->prepare("SELECT lowerbound, upperbound, labelson, incidentlabelsonly, "
+		     "attributelabelsonly "
 		     "FROM saved_og_plots_settings "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5427,7 +5377,8 @@ void OccurrenceGraphWidget::seePlots()
       int lowerbound = query->value(0).toInt();
       int upperbound = query->value(1).toInt();
       int labelson = query->value(2).toInt();
-      int shortlabels = query->value(3).toInt();
+      int incidentlabelsonly = query->value(3).toInt();
+      int attributelabelsonly = query->value(4).toInt();
       if (labelson == 1)
 	{
 	  _labelsVisible = true;
@@ -5436,13 +5387,21 @@ void OccurrenceGraphWidget::seePlots()
 	{
 	  _labelsVisible = false;
 	}
-      if (shortlabels == 1)
+      if (incidentlabelsonly == 1)
 	{
-	  _shortLabels = true;
+	  _incidentLabelsOnly = true;
 	}
       else
 	{
-	  _shortLabels = false;
+	  _incidentLabelsOnly = false;
+	}
+      if (attributelabelsonly == 1)
+	{
+	  _attributeLabelsOnly = true;
+	}
+      else
+	{
+	  _attributeLabelsOnly = false;
 	}
       query->prepare("SELECT incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
 		     "oriypos, red, green, blue, alpha, hidden, perm, relationship "
@@ -5655,7 +5614,7 @@ void OccurrenceGraphWidget::seePlots()
 	  scene->addItem(newLine);
 	}
       query->prepare("SELECT startx, endx, y, penwidth, majorinterval, minordivision, "
-		     "majorsize, minorsize, zvalue, red, green, blue, alpha "
+		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha "
 		     "FROM saved_og_plots_timelines "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5670,15 +5629,25 @@ void OccurrenceGraphWidget::seePlots()
 	  qreal minordivision = query->value(5).toReal();
 	  qreal majorsize = query->value(6).toReal();
 	  qreal minorsize = query->value(7).toReal();
-	  int zValue = query->value(8).toInt();
-	  int red = query->value(9).toInt();
-	  int green = query->value(10).toInt();
-	  int blue = query->value(11).toInt();
-	  int alpha = query->value(12).toInt();
+	  int firsttick = query->value(8).toInt();
+	  int lasttick = query->value(9).toInt();
+	  int zValue = query->value(10).toInt();
+	  int red = query->value(11).toInt();
+	  int green = query->value(12).toInt();
+	  int blue = query->value(13).toInt();
+	  int alpha = query->value(14).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  TimeLineObject *newTimeLine = new TimeLineObject(startx, endx, y,
 							   majorinterval, minordivision,
 							   majorsize, minorsize);
+	  if (firsttick == 0)
+	    {
+	      newTimeLine->setFirstTick(false);
+	    }
+	  if (lasttick == 1)
+	    {
+	      newTimeLine->setForceLastTick(true);
+	    }
 	  _timeLineVector.push_back(newTimeLine);
 	  newTimeLine->setZValue(zValue);
 	  newTimeLine->setColor(color);
@@ -5840,15 +5809,19 @@ void OccurrenceGraphWidget::seePlots()
       plotLabel->setText(plot);
       changeLabel->setText("");
       scene->update();
-      groupOccurrences();
-      wireLinkages();
       setRangeControls();
       lowerRangeDial->setValue(lowerbound);
       upperRangeDial->setValue(upperbound);
-      if (_shortLabels)
+      setGraphControls(true);
+      if (_incidentLabelsOnly)
 	{
-	  changeLabelsButton->setChecked(true);
-	  changeLabels();
+	  incidentLabelsOnlyButton->setChecked(true);
+	  toggleIncidentLabelsOnly();
+	}
+      else if(_attributeLabelsOnly)
+	{
+	  attributeLabelsOnlyButton->setChecked(true);
+	  toggleAttributeLabelsOnly();
 	}
       setVisibility();
       checkCongruency();
@@ -5955,6 +5928,8 @@ void OccurrenceGraphWidget::cleanUp()
   _presentAttributes.clear();
   _presentRelationships.clear();
   _checkedCases.clear();
+  incidentLabelsOnlyButton->setChecked(false);
+  attributeLabelsOnlyButton->setChecked(false);
   setGraphControls(false);
 }
 

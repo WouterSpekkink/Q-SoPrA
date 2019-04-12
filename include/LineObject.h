@@ -58,7 +58,10 @@ public:
   bool arrow2();
   int getPenWidth();
   int getPenStyle();
-
+  
+  // New function for correct drawing
+  void updatePosition();
+  
   // Type checking
   enum {Type = UserType + 11};
   int type() const;
@@ -74,6 +77,7 @@ protected:
   
 private:
   // Private variables
+  QPainterPath _strokePath;
   QPointF _startPos;
   QPointF _endPos;
   QColor _color;

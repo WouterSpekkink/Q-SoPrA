@@ -4762,9 +4762,10 @@ void EventGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_timelines "
 		     "(plot, startx, endx, y, penwidth, majorinterval, minordivision, "
-		     "majorsize, minorsize, zvalue, red, green, blue, alpha) "
+		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha) "
 		     "VALUES (:plot, :startx, :endx, :y, :penwidth, :majorinterval, :minordivision, "
-		     ":majorsize, :minorsize, :zvalue, :red, :green, :blue, :alpha)");
+		     ":majorsize, :minorsize, :firsttick, :lasttick, :zvalue, "
+		     ":red, :green, :blue, :alpha)");
       QVectorIterator<TimeLineObject*> it9(_timeLineVector);
       while (it9.hasNext()) 
 	{
@@ -4777,6 +4778,16 @@ void EventGraphWidget::saveCurrentPlot()
 	  qreal minordivision = currentTimeLine->getMinorTickDivision();
 	  qreal majorsize = currentTimeLine->getMajorTickSize();
 	  qreal minorsize = currentTimeLine->getMinorTickSize();
+	  int firsttick = 0;
+	  if (currentTimeLine->getFirstTick())
+	    {
+	      firsttick = 1;
+	    }
+	  int lasttick = 0;
+	  if (currentTimeLine->getForceLastTick())
+	    {
+	      lasttick = 1;
+	    }
 	  int zValue = currentTimeLine->zValue();
 	  QColor color = currentTimeLine->getColor();
 	  int red = color.red();
@@ -4792,6 +4803,8 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":minordivision", minordivision);
 	  query->bindValue(":majorsize", majorsize);
 	  query->bindValue(":minorsize", minorsize);
+	  query->bindValue(":firsttick", firsttick);
+	  query->bindValue(":lasttick", lasttick);
 	  query->bindValue(":zvalue", zValue);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
@@ -5674,7 +5687,7 @@ void EventGraphWidget::seePlots()
 	  scene->addItem(newLine);
 	}
       query->prepare("SELECT startx, endx, y, penwidth, majorinterval, minordivision, "
-		     "majorsize, minorsize, zvalue, red, green, blue, alpha "
+		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha "
 		     "FROM saved_eg_plots_timelines "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5689,15 +5702,25 @@ void EventGraphWidget::seePlots()
 	  qreal minordivision = query->value(5).toReal();
 	  qreal majorsize = query->value(6).toReal();
 	  qreal minorsize = query->value(7).toReal();
-	  int zValue = query->value(8).toInt();
-	  int red = query->value(9).toInt();
-	  int green = query->value(10).toInt();
-	  int blue = query->value(11).toInt();
-	  int alpha = query->value(12).toInt();
+	  int firsttick = query->value(8).toInt();
+	  int lasttick = query->value(9).toInt();
+	  int zValue = query->value(10).toInt();
+	  int red = query->value(11).toInt();
+	  int green = query->value(12).toInt();
+	  int blue = query->value(13).toInt();
+	  int alpha = query->value(14).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  TimeLineObject *newTimeLine = new TimeLineObject(startx, endx, y,
 							   majorinterval, minordivision,
 							   majorsize, minorsize);
+	  if (firsttick == 0)
+	    {
+	      newTimeLine->setFirstTick(false);
+	    }
+	  if (lasttick == 1)
+	    {
+	      newTimeLine->setForceLastTick(true);
+	    }
 	  _timeLineVector.push_back(newTimeLine);
 	  newTimeLine->setZValue(zValue);
 	  newTimeLine->setColor(color);
@@ -7170,6 +7193,7 @@ void EventGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      scene->clearSelection();
       QVectorIterator<GuideLine*> it(_guidesVector);
       while (it.hasNext())
 	{
@@ -10571,11 +10595,7 @@ void EventGraphWidget::processShapeSelection()
 
 void EventGraphWidget::processLineContextMenu(const QString &action) 
 {
-  if (action == CHANGELINECOLOR) 
-    {
-      changeLineColor();
-    }
-  else if (action == TOGGLEARROW1) 
+  if (action == TOGGLEARROW1) 
     {
       toggleArrow1();
     }
@@ -10606,33 +10626,6 @@ void EventGraphWidget::processLineContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void EventGraphWidget::changeLineColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-      if (line) 
-	{
-	  QColor currentColor = line->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      line->setColor(color);
-	      _currentLineColor = line->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -10707,10 +10700,6 @@ void EventGraphWidget::processTextContextMenu(const QString &action)
     {
       changeText();
     }
-  else if (action == CHANGETEXTCOLOR) 
-    {
-      changeTextColor();
-    }
   else if (action == DELETETEXT) 
     {
       deleteText();
@@ -10756,33 +10745,6 @@ void EventGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
-	}
-    }
-}
-
-void EventGraphWidget::changeTextColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-      if (text) 
-	{
-	  QColor currentColor = text->defaultTextColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      text->setDefaultTextColor(color);
-	      _currentLineColor = text->defaultTextColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
 	}
     }
 }
@@ -10874,15 +10836,7 @@ void EventGraphWidget::duplicateText()
 
 void EventGraphWidget::processEllipseContextMenu(const QString &action) 
 {
-  if (action == CHANGEELLIPSECOLOR) 
-    {
-      changeEllipseColor();
-    }
-  else if (action == CHANGEELLIPSEFILLCOLOR) 
-    {
-      changeEllipseFillColor();
-    }
-  else if (action == DELETEELLIPSE) 
+  if (action == DELETEELLIPSE) 
     {
       deleteEllipse();
     }
@@ -10905,67 +10859,6 @@ void EventGraphWidget::processEllipseContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void EventGraphWidget::changeEllipseColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setColor(color);
-	      _currentLineColor = ellipse->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
-    }
-}
-
-void EventGraphWidget::changeEllipseFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getFillColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  colorDialog->setCurrentColor(currentColor);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setFillColor(color);
-	      _currentFillColor = ellipse->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      QPixmap fillColorMap(20, 20);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -11010,15 +10903,7 @@ void EventGraphWidget::duplicateEllipse()
 
 void EventGraphWidget::processRectContextMenu(const QString &action) 
 {
-  if (action == CHANGERECTCOLOR) 
-    {
-      changeRectColor();
-    }
-  else if (action == CHANGERECTFILLCOLOR) 
-    {
-      changeRectFillColor(); 
-    }
-  else if (action == DELETERECT) 
+  if (action == DELETERECT) 
     {
       deleteRect();
     }
@@ -11041,67 +10926,6 @@ void EventGraphWidget::processRectContextMenu(const QString &action)
   else if (action ==  BRINGBACKWARD) 
     {
       objectToBack();
-    }
-}
-
-void EventGraphWidget::changeRectColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setColor(color);
-	      _currentLineColor = rect->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
-    }
-}
-
-void EventGraphWidget::changeRectFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getFillColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  colorDialog->setCurrentColor(currentColor);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setFillColor(color);
-	      _currentFillColor = rect->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
     }
 }
 
@@ -11146,9 +10970,13 @@ void EventGraphWidget::duplicateRect()
 
 void EventGraphWidget::processTimeLineContextMenu(const QString &action) 
 {
-  if (action == CHANGETIMELINECOLOR) 
+  if (action == TOGGLEFIRSTTICK)
     {
-      changeTimelineColor();
+      timeLineToggleFirstTick();
+    }
+  else if (action == FORCELASTTICK)
+    {
+      timeLineToggleForceLastTick();
     }
   else if (action == DELETETIMELINE) 
     {
@@ -11176,31 +11004,32 @@ void EventGraphWidget::processTimeLineContextMenu(const QString &action)
     }
 }
 
-void EventGraphWidget::changeTimelineColor() 
+void EventGraphWidget::timeLineToggleFirstTick()
 {
-  if (scene->selectedItems().size() == 1) 
+ if (scene->selectedItems().size() == 1) 
     {
       TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
       if (timeline) 
 	{
-	  QColor currentColor = timeline->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      timeline->setColor(color);
-	      _currentTimeLineColor = timeline->getColor();
-	      emit sendTimeLineColor(_currentTimeLineColor);
-	      QPixmap timeLineColorMap(20, 20);
-	      timeLineColorMap.fill(_currentTimeLineColor);
-	      QIcon timeLineColorIcon(timeLineColorMap);
-	      changeTimeLineColorButton->setIcon(timeLineColorIcon);
-	    }
-	  delete colorDialog;
+	  bool state = timeline->getFirstTick();
+	  state = !state;
+	  timeline->setFirstTick(state);
 	}
-    }
+    }  
+}
+
+void EventGraphWidget::timeLineToggleForceLastTick()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(scene->selectedItems().first());
+      if (timeline) 
+	{
+	  bool state = timeline->getForceLastTick();
+	  state = !state;
+	  timeline->setForceLastTick(state);
+	}
+    }  
 }
 
 void EventGraphWidget::deleteTimeLine() 

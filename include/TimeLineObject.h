@@ -54,6 +54,8 @@ public:
   void setMinorTickSize(qreal minorTickSize);
   void setY(qreal y);
   void setPenWidth(int width);
+  void setFirstTick(bool state);
+  void setForceLastTick(bool state);
   
   // Getters
   QColor getColor();
@@ -65,6 +67,8 @@ public:
   qreal getMinorTickDivision();
   qreal getMajorTickSize();
   qreal getMinorTickSize();
+  bool getFirstTick();
+  bool getForceLastTick();
 
   // Type checking
   enum {Type = UserType + 15};
@@ -90,6 +94,8 @@ private:
   qreal _minorTickSize;
   QColor _color;
   int _penWidth;
+  bool _firstTick;
+  bool _forceLastTick;
   
 };
 

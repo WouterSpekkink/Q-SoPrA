@@ -26,6 +26,8 @@ TimeLineObject::TimeLineObject(qreal startX,
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
   _penWidth = 1;
   setAcceptHoverEvents(true);
+  _firstTick = true;
+  _forceLastTick = false;
 }
 
 QRectF TimeLineObject::boundingRect() const 
@@ -78,7 +80,10 @@ void TimeLineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
   myPath.lineTo(QPointF(_endX, _y));
   // Then we draw the major ticks
   myPath.moveTo(QPointF(_startX, (_y - _majorTickSize / 2)));
-  myPath.lineTo(QPointF(_startX, (_y + _majorTickSize / 2)));
+  if (_firstTick)
+    {
+      myPath.lineTo(QPointF(_startX, (_y + _majorTickSize / 2)));
+    }
   if (_majorTickInterval < (abs(_endX - _startX)))
     {
       while (myPath.currentPosition().x() + _majorTickInterval <= _endX)
@@ -109,6 +114,11 @@ void TimeLineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
 		}
 	    }
 	}
+    }
+  if (_forceLastTick)
+    {
+      myPath.moveTo(QPointF(_endX, _y + _majorTickSize / 2));
+      myPath.lineTo(QPointF(_endX, _y - _majorTickSize / 2));
     }
   QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(1), Qt::FlatCap, Qt::MiterJoin); 
   painter->setPen(myPen);
@@ -169,6 +179,26 @@ int TimeLineObject::getPenWidth()
 void TimeLineObject::setPenWidth(int width) 
 {
   _penWidth = width;
+}
+
+void TimeLineObject::setFirstTick(bool state)
+{
+  _firstTick = state;
+}
+
+bool TimeLineObject::getFirstTick()
+{
+  return _firstTick;
+}
+
+void TimeLineObject::setForceLastTick(bool state)
+{
+  _forceLastTick = state;
+}
+
+bool TimeLineObject::getForceLastTick()
+{
+  return _forceLastTick;
 }
 
 int TimeLineObject::type() const 

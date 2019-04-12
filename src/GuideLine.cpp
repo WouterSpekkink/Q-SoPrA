@@ -68,7 +68,6 @@ void GuideLine::calculate()
       _startPos = QPointF(_orientationPoint.x(), visibleRect.bottom());
       _endPos = QPointF(_orientationPoint.x(), visibleRect.top());
     }
-  setLine(QLineF(_startPos, _endPos));
   prepareGeometryChange();
 }
 
@@ -93,7 +92,14 @@ QPointF GuideLine::getOrientationPoint()
 
 void GuideLine::mousePressEvent(QGraphicsSceneMouseEvent *) 
 {
-  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+  if (_horizontal)
+    {
+      QApplication::setOverrideCursor(Qt::SizeVerCursor);
+    }
+  else
+    {
+      QApplication::setOverrideCursor(Qt::SizeHorCursor);
+    }
 }
 
 void GuideLine::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
@@ -103,7 +109,14 @@ void GuideLine::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
 
 void GuideLine::hoverMoveEvent(QGraphicsSceneHoverEvent *) 
 {
-  QApplication::setOverrideCursor(Qt::OpenHandCursor);
+  if (_horizontal)
+    {
+      QApplication::setOverrideCursor(Qt::SplitVCursor);
+    }
+  else
+    {
+      QApplication::setOverrideCursor(Qt::SplitHCursor);
+    }
 }
 
 void GuideLine::hoverLeaveEvent(QGraphicsSceneHoverEvent *) 

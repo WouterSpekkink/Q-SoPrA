@@ -2426,11 +2426,7 @@ void HierarchyGraphWidget::processShapeSelection()
 
 void HierarchyGraphWidget::processLineContextMenu(const QString &action) 
 {
-  if (action == CHANGELINECOLOR) 
-    {
-      changeLineColor();
-    }
-  else if (action == TOGGLEARROW1) 
+  if (action == TOGGLEARROW1) 
     {
       toggleArrow1();
     }
@@ -2446,32 +2442,21 @@ void HierarchyGraphWidget::processLineContextMenu(const QString &action)
     {
       duplicateLine();
     }
-}
-
-void HierarchyGraphWidget::changeLineColor() 
-{
-  if (scene->selectedItems().size() == 1) 
+  else if (action == ONEFORWARD) 
     {
-      LineObject *line = qgraphicsitem_cast<LineObject*>(scene->selectedItems().first());
-      if (line) 
-	{
-	  QColor currentColor = line->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      line->setColor(color);
-	      _currentLineColor = line->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
+      objectOneForward();
+    }
+  else if (action == ONEBACKWARD) 
+    {
+      objectOneBackward();
+    }
+  else if (action == BRINGFORWARD) 
+    {
+      objectToFront();
+    }
+  else if (action ==  BRINGBACKWARD) 
+    {
+      objectToBack();
     }
 }
 
@@ -2546,10 +2531,6 @@ void HierarchyGraphWidget::processTextContextMenu(const QString &action)
     {
       changeText();
     }
-  else if (action == CHANGETEXTCOLOR) 
-    {
-      changeTextColor();
-    }
   else if (action == DELETETEXT) 
     {
       deleteText();
@@ -2557,6 +2538,22 @@ void HierarchyGraphWidget::processTextContextMenu(const QString &action)
   else if (action == COPYOBJECT) 
     {
       duplicateText();
+    }
+  else if (action == ONEFORWARD) 
+    {
+      objectOneForward();
+    }
+  else if (action == ONEBACKWARD) 
+    {
+      objectOneBackward();
+    }
+  else if (action == BRINGFORWARD) 
+    {
+      objectToFront();
+    }
+  else if (action ==  BRINGBACKWARD) 
+    {
+      objectToBack();
     }
 }
 
@@ -2579,33 +2576,6 @@ void HierarchyGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
-	}
-    }
-}
-
-void HierarchyGraphWidget::changeTextColor() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      TextObject *text = qgraphicsitem_cast<TextObject*>(scene->selectedItems().first());
-      if (text) 
-	{
-	  QColor currentColor = text->defaultTextColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      text->setDefaultTextColor(color);
-	      _currentLineColor = text->defaultTextColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
 	}
     }
 }
@@ -2659,15 +2629,7 @@ void HierarchyGraphWidget::duplicateText()
 
 void HierarchyGraphWidget::processEllipseContextMenu(const QString &action) 
 {
-  if (action == CHANGEELLIPSECOLOR) 
-    {
-      changeEllipseColor();
-    }
-  else if (action == CHANGEELLIPSEFILLCOLOR) 
-    {
-      changeEllipseFillColor();
-    }
-  else if (action == DELETEELLIPSE) 
+  if (action == DELETEELLIPSE) 
     {
       deleteEllipse();
     }
@@ -2675,66 +2637,21 @@ void HierarchyGraphWidget::processEllipseContextMenu(const QString &action)
     {
       duplicateEllipse();
     }
-}
-
-void HierarchyGraphWidget::changeEllipseColor() 
-{
-  if (scene->selectedItems().size() == 1) 
+  else if (action == ONEFORWARD) 
     {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setColor(color);
-	      _currentLineColor = ellipse->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
+      objectOneForward();
     }
-}
-
-void HierarchyGraphWidget::changeEllipseFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
+  else if (action == ONEBACKWARD) 
     {
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(scene->selectedItems().first());
-      if (ellipse) 
-	{
-	  QColor currentColor = ellipse->getFillColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      ellipse->setFillColor(color);
-	      _currentFillColor = ellipse->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
+      objectOneBackward();
+    }
+  else if (action == BRINGFORWARD) 
+    {
+      objectToFront();
+    }
+  else if (action ==  BRINGBACKWARD) 
+    {
+      objectToBack();
     }
 }
 
@@ -2779,15 +2696,7 @@ void HierarchyGraphWidget::duplicateEllipse()
 
 void HierarchyGraphWidget::processRectContextMenu(const QString &action) 
 {
-  if (action == CHANGERECTCOLOR) 
-    {
-      changeRectColor();
-    }
-  else if (action == CHANGERECTFILLCOLOR) 
-    {
-      changeRectFillColor();
-    }
-  else if (action == DELETERECT) 
+  if (action == DELETERECT) 
     {
       deleteRect();
     }
@@ -2795,66 +2704,21 @@ void HierarchyGraphWidget::processRectContextMenu(const QString &action)
     {
       duplicateRect();
     }
-}
-
-void HierarchyGraphWidget::changeRectColor() 
-{
-  if (scene->selectedItems().size() == 1) 
+  else if (action == ONEFORWARD) 
     {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setColor(color);
-	      _currentLineColor = rect->getColor();
-	      emit sendLineColor(_currentLineColor);
-	      QPixmap lineColorMap(20, 20);
-	      lineColorMap.fill(_currentLineColor);
-	      QIcon lineColorIcon(lineColorMap);
-	      changeLineColorButton->setIcon(lineColorIcon);
-	    }
-	  delete colorDialog;
-	}
+      objectOneForward();
     }
-}
-
-void HierarchyGraphWidget::changeRectFillColor() 
-{
-  if (scene->selectedItems().size() == 1) 
+  else if (action == ONEBACKWARD) 
     {
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(scene->selectedItems().first());
-      if (rect) 
-	{
-	  QColor currentColor = rect->getFillColor();
-	  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
-	  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
-	  colorDialog->setCurrentColor(currentColor);
-	  colorDialog->setOption(QColorDialog::ShowAlphaChannel, true);
-	  if (colorDialog->exec()) 
-	    {
-	      QColor color = colorDialog->selectedColor();
-	      rect->setFillColor(color);
-	      _currentFillColor = rect->getFillColor();
-	      emit sendFillColor(_currentFillColor);
-	      QPixmap fillColorMap(20, 20);
-	      QColor tempFill = _currentFillColor;
-	      tempFill.setAlpha(255);
-	      fillColorMap.fill(tempFill);
-	      QIcon fillColorIcon(fillColorMap);
-	      changeFillColorButton->setIcon(fillColorIcon);
-	      fillOpacitySlider->blockSignals(true);
-	      fillOpacitySlider->setValue(_currentFillColor.alpha());
-	      fillOpacitySlider->blockSignals(false);
-	    }
-	  delete colorDialog;
-	}
+      objectOneBackward();
+    }
+  else if (action == BRINGFORWARD) 
+    {
+      objectToFront();
+    }
+  else if (action ==  BRINGBACKWARD) 
+    {
+      objectToBack();
     }
 }
 
@@ -3206,6 +3070,7 @@ void HierarchyGraphWidget::exportSvg()
 	{
 	  fileName.append(".svg");
 	}
+      scene->clearSelection();
       QSvgGenerator gen;
       gen.setFileName(fileName);
       QRectF currentRect = this->scene->itemsBoundingRect();

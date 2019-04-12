@@ -19,14 +19,22 @@ LineObject::LineObject(QPointF startPos,
   _penWidth = 1;
   _penStyle = 1;
   setAcceptHoverEvents(true);
+  updatePosition();
 }
 
 
 QRectF LineObject::boundingRect() const 
 {
-  int margin = 19 + _penWidth;
-  return QRectF(_startPos, _endPos).marginsAdded(QMargins(margin, margin, margin, margin))
-    .normalized();
+  return _strokePath.boundingRect().marginsAdded(QMargins(50,50,50,50));
+}
+
+void LineObject::updatePosition() 
+{
+  calculate();
+  QPainterPath myPath;
+  myPath.moveTo(_startPos);
+  myPath.lineTo(_endPos);
+  _strokePath = myPath;
 }
 
 QPainterPath LineObject::shape() const 
@@ -52,6 +60,7 @@ void LineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWid
   QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::RoundCap, Qt::RoundJoin); 
   painter->setPen(myPen);
   painter->strokePath(myPath, myPen);
+  _strokePath = myPath;
   myPen.setStyle(Qt::PenStyle(1));
   painter->setPen(myPen);
   if (_arrow1On) 
@@ -125,21 +134,25 @@ QPointF LineObject::getEndPos()
 void LineObject::setStartPos(QPointF startPos) 
 {
   _startPos = startPos;
+  updatePosition();
 }
 
 void LineObject::setEndPos(QPointF endPos) 
 {
   _endPos = endPos;
+  updatePosition();
 }
 
 void LineObject::setStartPos(qreal x, qreal y) 
 {
   _startPos = QPointF(x, y);
+  updatePosition();
 }
 
 void LineObject::setEndPos(qreal x, qreal y) 
 {
   _endPos = QPointF(x, y);
+  updatePosition();
 }
 
 bool LineObject::arrow1() 

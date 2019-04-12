@@ -492,6 +492,34 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempLinePtr->setZValue(5);
 	      addItem(_tempLinePtr);
 	    }
+	  else if (_gettingEllipseArea)
+	    {
+	      _lastMousePos = event->scenePos();
+	      _ellipseAreaStarted = true;
+	      _tempEllipsePtr = new EllipseObject;
+	      _tempEllipsePtr->setPos(_tempEllipsePtr->mapFromScene(event->scenePos()));
+	      _tempEllipsePtr->setBottomRight(_tempEllipsePtr->mapFromScene(event->scenePos()));
+	      _tempEllipsePtr->setPenStyle(_currentPenStyle);
+	      _tempEllipsePtr->setPenWidth(_currentPenWidth);
+	      _tempEllipsePtr->setColor(_currentLineColor);
+	      _tempEllipsePtr->setFillColor(_currentFillColor);
+	      _tempEllipsePtr->setZValue(5);
+	      addItem(_tempEllipsePtr);
+	    }
+	  else if (_gettingRectArea)
+	    {
+	      _lastMousePos = event->scenePos();
+	      _rectAreaStarted = true;
+	      _tempRectPtr = new RectObject;
+	      _tempRectPtr->setPos(_tempRectPtr->mapFromScene(event->scenePos()));
+	      _tempRectPtr->setBottomRight(_tempRectPtr->mapFromScene(event->scenePos()));
+	      _tempRectPtr->setPenStyle(_currentPenStyle);
+	      _tempRectPtr->setPenWidth(_currentPenWidth);
+	      _tempRectPtr->setColor(_currentLineColor);
+	      _tempRectPtr->setFillColor(_currentFillColor);
+	      _tempRectPtr->setZValue(5);
+	      addItem(_tempRectPtr);
+	    }
 	  else
 	    {
 	      if (incidentNodeLabel) 
@@ -702,6 +730,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      ellipse->setSelected(true);
 	      emit resetItemSelection();
 	      _manipulateEllipse = true;
+	      _lastMousePos = event->scenePos();
 	    }
 	  else if (rect) 
 	    {
@@ -710,6 +739,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      emit resetItemSelection();
 	      _selectedRectPtr = rect;
 	      _manipulateRect = true;
+	      _lastMousePos = event->scenePos();
 	   }
 	  else if (text) 
 	    {
@@ -1056,7 +1086,8 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
       if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
 	{
-	  emit sendEllipseArea(_drawArea);
+	  emit sendEllipseArea(QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				      _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight())));
 	}
     }
   if (_tempEllipsePtr)
@@ -1069,7 +1100,8 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
     {
       if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
 	{
-	  emit sendRectArea(_drawArea);
+	  emit sendRectArea(QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				   _tempRectPtr->mapToScene(_tempRectPtr->bottomRight())));
 	}
     }
   if (_tempRectPtr)
@@ -1275,21 +1307,509 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
       if (_ellipseAreaStarted)
 	{
-	  _drawArea = QRectF(_lastMousePos, event->scenePos()).normalized();
-	  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->mapFromScene(_drawArea.topLeft()));
-	  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->mapFromScene(_drawArea.bottomRight()));
-	  clearSelection();
-       	}
+	  QPointF topLeft = _tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft());
+	  QPointF bottomLeft = _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomLeft());
+	  QPointF topRight = _tempEllipsePtr->mapToScene(_tempEllipsePtr->topRight());
+	  QPointF bottomRight = _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight());
+	  QPointF left = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getLeft(),
+							     _tempEllipsePtr->getCenter().y()));
+	  QPointF right = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getRight(),
+							      _tempEllipsePtr->getCenter().y()));
+	  QPointF top = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getCenter().x(),
+							    _tempEllipsePtr->getTop()));
+	  QPointF bottom = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getCenter().x(),
+							       _tempEllipsePtr->getBottom()));
+	  qreal distTopLeft = sqrt(pow((event->scenePos().x() - topLeft.x()), 2) +
+				   pow((event->scenePos().y() - topLeft.y()), 2));
+	  qreal distTopRight = sqrt(pow((event->scenePos().x() - topRight.x()), 2) +
+				    pow((event->scenePos().y() - topRight.y()), 2));
+	  qreal distBottomLeft = sqrt(pow((event->scenePos().x() - bottomLeft.x()), 2) +
+				      pow((event->scenePos().y() - bottomLeft.y()), 2));
+	  qreal distBottomRight = sqrt(pow((event->scenePos().x() - bottomRight.x()), 2) +
+				       pow((event->scenePos().y() - bottomRight.y()), 2));
+	  qreal distLeft = sqrt(pow((event->scenePos().x() - left.x()), 2) +
+				pow((event->scenePos().y() - left.y()), 2));
+	  qreal distRight = sqrt(pow((event->scenePos().x() - right.x()), 2) +
+				 pow((event->scenePos().y() - right.y()), 2));
+	  qreal distTop = sqrt(pow((event->scenePos().x() - top.x()), 2) +
+			       pow((event->scenePos().y() - top.y()), 2));
+	  qreal distBottom = sqrt(pow((event->scenePos().x() - bottom.x()), 2) +
+				  pow((event->scenePos().y() - bottom.y()), 2));
+	  QVector<qreal> temp;
+	  temp.push_back(distTopLeft);
+	  temp.push_back(distTopRight);
+	  temp.push_back(distBottomLeft);
+	  temp.push_back(distBottomRight);
+	  temp.push_back(distLeft);
+	  temp.push_back(distRight);
+	  temp.push_back(distTop);
+	  temp.push_back(distBottom);
+	  qreal minimum = -1.0;
+	  QVectorIterator<qreal> it(temp);
+	  while (it.hasNext()) 
+	    {
+	      qreal current = it.next();
+	      if (minimum == -1 || current < minimum) 
+		{
+		  minimum = current;
+		}
+	    }
+	  if (minimum == distTopLeft) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setTopLeft(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		}
+	    }
+	  else if (minimum == distTopRight) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setTopRight(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setTopRight(_tempEllipsePtr->
+					       mapFromScene(_drawArea.topRight()));
+		}
+	    }
+	  else if (minimum == distBottomLeft) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setBottomLeft(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setBottomLeft(_tempEllipsePtr->
+						 mapFromScene(_drawArea.bottomLeft()));
+		}
+	    }
+	  else if (minimum == distBottomRight) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setBottomRight(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	    }
+	  else if (minimum == distLeft) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setLeft(event->scenePos().x());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setHeight(_drawArea.width());
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setLeft(_tempEllipsePtr->
+					   mapFromScene(event->scenePos()).x());
+		}
+	    }
+	  else if (minimum == distRight) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setRight(event->scenePos().x());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setHeight(_drawArea.width());
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setRight(_tempEllipsePtr->mapFromScene(event->scenePos()).x());
+		}
+	    }
+	  else if (minimum == distTop) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setTop(event->scenePos().y());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setWidth(_drawArea.height());
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setTop(_tempEllipsePtr->mapFromScene(event->scenePos()).y());
+		}
+	    }
+	  else if (minimum == distBottom) 
+	    {
+	      QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+	      _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+				 _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+	      _drawArea.setBottom(event->scenePos().y());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setWidth(_drawArea.height());
+		  _drawArea.moveCenter(anchor);
+		  _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+					      mapFromScene(_drawArea.topLeft()));
+		  _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+						  mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempEllipsePtr->setBottom(_tempEllipsePtr->mapFromScene(event->scenePos()).y());
+		}
+	    }
+	}
     }
   else if (_gettingRectArea)
     {
       if (_rectAreaStarted)
 	{
-	  _drawArea = QRectF(_lastMousePos, event->scenePos()).normalized();
-	  _tempRectPtr->setTopLeft(_tempRectPtr->mapFromScene(_drawArea.topLeft()));
-	  _tempRectPtr->setBottomRight(_tempRectPtr->mapFromScene(_drawArea.bottomRight()));
-	  clearSelection();
-       	}
+	  QPointF topLeft = _tempRectPtr->mapToScene(_tempRectPtr->topLeft());
+	  QPointF bottomLeft = _tempRectPtr->mapToScene(_tempRectPtr->bottomLeft());
+	  QPointF topRight = _tempRectPtr->mapToScene(_tempRectPtr->topRight());
+	  QPointF bottomRight = _tempRectPtr->mapToScene(_tempRectPtr->bottomRight());
+	  QPointF left = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getLeft(),
+							  _tempRectPtr->getCenter().y()));
+	  QPointF right = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getRight(),
+							   _tempRectPtr->getCenter().y()));
+	  QPointF top = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getCenter().x(),
+							 _tempRectPtr->getTop()));
+	  QPointF bottom = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getCenter().x(),
+							    _tempRectPtr->getBottom()));
+	  qreal distTopLeft = sqrt(pow((event->scenePos().x() - topLeft.x()), 2) +
+				   pow((event->scenePos().y() - topLeft.y()), 2));
+	  qreal distTopRight = sqrt(pow((event->scenePos().x() - topRight.x()), 2) +
+				    pow((event->scenePos().y() - topRight.y()), 2));
+	  qreal distBottomLeft = sqrt(pow((event->scenePos().x() - bottomLeft.x()), 2) +
+				      pow((event->scenePos().y() - bottomLeft.y()), 2));
+	  qreal distBottomRight = sqrt(pow((event->scenePos().x() - bottomRight.x()), 2) +
+				       pow((event->scenePos().y() - bottomRight.y()), 2));
+	  qreal distLeft = sqrt(pow((event->scenePos().x() - left.x()), 2) +
+				pow((event->scenePos().y() - left.y()), 2));
+	  qreal distRight = sqrt(pow((event->scenePos().x() - right.x()), 2) +
+				 pow((event->scenePos().y() - right.y()), 2));
+	  qreal distTop = sqrt(pow((event->scenePos().x() - top.x()), 2) +
+			       pow((event->scenePos().y() - top.y()), 2));
+	  qreal distBottom = sqrt(pow((event->scenePos().x() - bottom.x()), 2) +
+				  pow((event->scenePos().y() - bottom.y()), 2));
+	  QVector<qreal> temp;
+	  temp.push_back(distTopLeft);
+	  temp.push_back(distTopRight);
+	  temp.push_back(distBottomLeft);
+	  temp.push_back(distBottomRight);
+	  temp.push_back(distLeft);
+	  temp.push_back(distRight);
+	  temp.push_back(distTop);
+	  temp.push_back(distBottom);
+	  qreal minimum = -1.0;
+	  QVectorIterator<qreal> it(temp);
+	  while (it.hasNext()) 
+	    {
+	      qreal current = it.next();
+	      if (minimum == -1 || current < minimum) 
+		{
+		  minimum = current;
+		}
+	    }
+	  if (minimum == distTopLeft) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setTopLeft(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		}
+	    }
+	  else if (minimum == distTopRight) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setTopRight(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setTopRight(_tempRectPtr->
+					    mapFromScene(_drawArea.topRight()));
+		}
+	    }
+	  else if (minimum == distBottomLeft) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setBottomLeft(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setBottomLeft(_tempRectPtr->
+					      mapFromScene(_drawArea.bottomLeft()));
+		}
+	    }
+	  else if (minimum == distBottomRight) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setBottomRight(event->scenePos());
+	      qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	      qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  if (xDist > yDist)
+		    {
+		      _drawArea.setHeight(_drawArea.width());
+		    }
+		  else if (xDist < yDist)
+		    {
+		      _drawArea.setWidth(_drawArea.height());
+		    }
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	    }
+	  else if (minimum == distLeft) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setLeft(event->scenePos().x());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setHeight(_drawArea.width());
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setLeft(_tempRectPtr->
+					mapFromScene(event->scenePos()).x());
+		}
+	    }
+	  else if (minimum == distRight) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setRight(event->scenePos().x());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setHeight(_drawArea.width());
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setRight(_tempRectPtr->mapFromScene(event->scenePos()).x());
+		}
+	    }
+	  else if (minimum == distTop) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setTop(event->scenePos().y());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setWidth(_drawArea.height());
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setTop(_tempRectPtr->mapFromScene(event->scenePos()).y());
+		}
+	    }
+	  else if (minimum == distBottom) 
+	    {
+	      QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+	      _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+				 _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+	      _drawArea.setBottom(event->scenePos().y());
+	      if (event->modifiers() & Qt::ControlModifier)
+		{
+		  _drawArea.setWidth(_drawArea.height());
+		  _drawArea.moveCenter(anchor);
+		  _tempRectPtr->setTopLeft(_tempRectPtr->
+					   mapFromScene(_drawArea.topLeft()));
+		  _tempRectPtr->setBottomRight(_tempRectPtr->
+					       mapFromScene(_drawArea.bottomRight()));
+		}
+	      else
+		{
+		  _tempRectPtr->setBottom(_tempRectPtr->mapFromScene(event->scenePos()).y());
+		}
+	    }
+	}
     }
   else if (_gettingTextArea)
     {
@@ -1436,35 +1956,35 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
   else if (_manipulateEllipse) 
     {
-      _lastMousePos = event->scenePos();
+      _selectedEllipsePtr->resetTransform();
       QPointF topLeft = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft());
       QPointF bottomLeft = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomLeft());
       QPointF topRight = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topRight());
       QPointF bottomRight = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight());
       QPointF left = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getLeft(),
-							 _selectedEllipsePtr->getCenter().y()));
+							     _selectedEllipsePtr->getCenter().y()));
       QPointF right = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getRight(),
-							  _selectedEllipsePtr->getCenter().y()));
+							      _selectedEllipsePtr->getCenter().y()));
       QPointF top = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getCenter().x(),
-							_selectedEllipsePtr->getTop()));
+							    _selectedEllipsePtr->getTop()));
       QPointF bottom = _selectedEllipsePtr->mapToScene(QPointF(_selectedEllipsePtr->getCenter().x(),
-							   _selectedEllipsePtr->getBottom()));
-      qreal distTopLeft = sqrt(pow((_lastMousePos.x() - topLeft.x()), 2) +
-			       pow((_lastMousePos.y() - topLeft.y()), 2));
-      qreal distTopRight = sqrt(pow((_lastMousePos.x() - topRight.x()), 2) +
-				pow((_lastMousePos.y() - topRight.y()), 2));
-      qreal distBottomLeft = sqrt(pow((_lastMousePos.x() - bottomLeft.x()), 2) +
-				  pow((_lastMousePos.y() - bottomLeft.y()), 2));
-      qreal distBottomRight = sqrt(pow((_lastMousePos.x() - bottomRight.x()), 2) +
-				   pow((_lastMousePos.y() - bottomRight.y()), 2));
-      qreal distLeft = sqrt(pow((_lastMousePos.x() - left.x()), 2) +
-			    pow((_lastMousePos.y() - left.y()), 2));
-      qreal distRight = sqrt(pow((_lastMousePos.x() - right.x()), 2) +
-			     pow((_lastMousePos.y() - right.y()), 2));
-      qreal distTop = sqrt(pow((_lastMousePos.x() - top.x()), 2) +
-			   pow((_lastMousePos.y() - top.y()), 2));
-      qreal distBottom = sqrt(pow((_lastMousePos.x() - bottom.x()), 2) +
-			      pow((_lastMousePos.y() - bottom.y()), 2));
+							       _selectedEllipsePtr->getBottom()));
+      qreal distTopLeft = sqrt(pow((event->scenePos().x() - topLeft.x()), 2) +
+			       pow((event->scenePos().y() - topLeft.y()), 2));
+      qreal distTopRight = sqrt(pow((event->scenePos().x() - topRight.x()), 2) +
+				pow((event->scenePos().y() - topRight.y()), 2));
+      qreal distBottomLeft = sqrt(pow((event->scenePos().x() - bottomLeft.x()), 2) +
+				  pow((event->scenePos().y() - bottomLeft.y()), 2));
+      qreal distBottomRight = sqrt(pow((event->scenePos().x() - bottomRight.x()), 2) +
+				   pow((event->scenePos().y() - bottomRight.y()), 2));
+      qreal distLeft = sqrt(pow((event->scenePos().x() - left.x()), 2) +
+			    pow((event->scenePos().y() - left.y()), 2));
+      qreal distRight = sqrt(pow((event->scenePos().x() - right.x()), 2) +
+			     pow((event->scenePos().y() - right.y()), 2));
+      qreal distTop = sqrt(pow((event->scenePos().x() - top.x()), 2) +
+			   pow((event->scenePos().y() - top.y()), 2));
+      qreal distBottom = sqrt(pow((event->scenePos().x() - bottom.x()), 2) +
+			      pow((event->scenePos().y() - bottom.y()), 2));
       QVector<qreal> temp;
       temp.push_back(distTopLeft);
       temp.push_back(distTopRight);
@@ -1486,38 +2006,208 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       if (minimum == distTopLeft) 
 	{
-	  _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setTopLeft(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	    }
 	}
       else if (minimum == distTopRight) 
 	{
-	  _selectedEllipsePtr->setTopRight(_selectedEllipsePtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setTopRight(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setTopRight(_selectedEllipsePtr->
+					       mapFromScene(drawArea.topRight()));
+	    }
 	}
       else if (minimum == distBottomLeft) 
 	{
-	  _selectedEllipsePtr->setBottomLeft(_selectedEllipsePtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setBottomLeft(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setBottomLeft(_selectedEllipsePtr->
+						 mapFromScene(drawArea.bottomLeft()));
+	    }
 	}
       else if (minimum == distBottomRight) 
 	{
-	  _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setBottomRight(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
 	}
       else if (minimum == distLeft) 
 	{
-	  _selectedEllipsePtr->setLeft(_selectedEllipsePtr->mapFromScene(_lastMousePos).x());
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setLeft(event->scenePos().x());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setHeight(drawArea.width());
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setLeft(_selectedEllipsePtr->
+					   mapFromScene(event->scenePos()).x());
+	    }
 	}
       else if (minimum == distRight) 
 	{
-	  _selectedEllipsePtr->setRight(_selectedEllipsePtr->mapFromScene(_lastMousePos).x());
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setRight(event->scenePos().x());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setHeight(drawArea.width());
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setRight(_selectedEllipsePtr->mapFromScene(event->scenePos()).x());
+	    }
 	}
       else if (minimum == distTop) 
 	{
-	  _selectedEllipsePtr->setTop(_selectedEllipsePtr->mapFromScene(_lastMousePos).y());
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setTop(event->scenePos().y());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setWidth(drawArea.height());
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setTop(_selectedEllipsePtr->mapFromScene(event->scenePos()).y());
+	    }
 	}
       else if (minimum == distBottom) 
 	{
-	  _selectedEllipsePtr->setBottom(_selectedEllipsePtr->mapFromScene(_lastMousePos).y());
+	  QPointF anchor = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->topLeft()),
+				   _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->bottomRight()));
+	  drawArea.setBottom(event->scenePos().y());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setWidth(drawArea.height());
+	      drawArea.moveCenter(anchor);
+	      _selectedEllipsePtr->setTopLeft(_selectedEllipsePtr->
+					      mapFromScene(drawArea.topLeft()));
+	      _selectedEllipsePtr->setBottomRight(_selectedEllipsePtr->
+						  mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedEllipsePtr->setBottom(_selectedEllipsePtr->mapFromScene(event->scenePos()).y());
+	    }
 	}
+      _selectedEllipsePtr->setRotationValue(_selectedEllipsePtr->getRotationValue());
       emit relevantChange();
-    }
+    } 
   else if (_moveEllipse) 
     {
       _selectedEllipsePtr->resetTransform();
@@ -1525,7 +2215,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       qreal newXDiff = newPos.x() - _lastMousePos.x();
       qreal newYDiff = newPos.y() - _lastMousePos.y();
       _selectedEllipsePtr->moveCenter(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter()) +
-				  _selectedEllipsePtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+				      _selectedEllipsePtr->mapFromScene(QPointF(newXDiff, newYDiff)));
       _lastMousePos = event->scenePos();
       _selectedEllipsePtr->setRotationValue(_selectedEllipsePtr->getRotationValue());
       emit relevantChange();
@@ -1543,35 +2233,35 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
   else if (_manipulateRect) 
     {
-      _lastMousePos = event->scenePos();
+      _selectedRectPtr->resetTransform();
       QPointF topLeft = _selectedRectPtr->mapToScene(_selectedRectPtr->topLeft());
       QPointF bottomLeft = _selectedRectPtr->mapToScene(_selectedRectPtr->bottomLeft());
       QPointF topRight = _selectedRectPtr->mapToScene(_selectedRectPtr->topRight());
       QPointF bottomRight = _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight());
       QPointF left = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getLeft(),
-						      _selectedRectPtr->getCenter().y()));
+							  _selectedRectPtr->getCenter().y()));
       QPointF right = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getRight(),
-						       _selectedRectPtr->getCenter().y()));
+							   _selectedRectPtr->getCenter().y()));
       QPointF top = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getCenter().x(),
-						     _selectedRectPtr->getTop()));
+							 _selectedRectPtr->getTop()));
       QPointF bottom = _selectedRectPtr->mapToScene(QPointF(_selectedRectPtr->getCenter().x(),
-							_selectedRectPtr->getBottom()));
-      qreal distTopLeft = sqrt(pow((_lastMousePos.x() - topLeft.x()), 2) +
-			       pow((_lastMousePos.y() - topLeft.y()), 2));
-      qreal distTopRight = sqrt(pow((_lastMousePos.x() - topRight.x()), 2) +
-				pow((_lastMousePos.y() - topRight.y()), 2));
-      qreal distBottomLeft = sqrt(pow((_lastMousePos.x() - bottomLeft.x()), 2) +
-				  pow((_lastMousePos.y() - bottomLeft.y()), 2));
-      qreal distBottomRight = sqrt(pow((_lastMousePos.x() - bottomRight.x()), 2) +
-				   pow((_lastMousePos.y() - bottomRight.y()), 2));
-      qreal distLeft = sqrt(pow((_lastMousePos.x() - left.x()), 2) +
-			    pow((_lastMousePos.y() - left.y()), 2));
-      qreal distRight = sqrt(pow((_lastMousePos.x() - right.x()), 2) +
-			     pow((_lastMousePos.y() - right.y()), 2));
-      qreal distTop = sqrt(pow((_lastMousePos.x() - top.x()), 2) +
-			   pow((_lastMousePos.y() - top.y()), 2));
-      qreal distBottom = sqrt(pow((_lastMousePos.x() - bottom.x()), 2) +
-			      pow((_lastMousePos.y() - bottom.y()), 2));
+							    _selectedRectPtr->getBottom()));
+      qreal distTopLeft = sqrt(pow((event->scenePos().x() - topLeft.x()), 2) +
+			       pow((event->scenePos().y() - topLeft.y()), 2));
+      qreal distTopRight = sqrt(pow((event->scenePos().x() - topRight.x()), 2) +
+				pow((event->scenePos().y() - topRight.y()), 2));
+      qreal distBottomLeft = sqrt(pow((event->scenePos().x() - bottomLeft.x()), 2) +
+				  pow((event->scenePos().y() - bottomLeft.y()), 2));
+      qreal distBottomRight = sqrt(pow((event->scenePos().x() - bottomRight.x()), 2) +
+				   pow((event->scenePos().y() - bottomRight.y()), 2));
+      qreal distLeft = sqrt(pow((event->scenePos().x() - left.x()), 2) +
+			    pow((event->scenePos().y() - left.y()), 2));
+      qreal distRight = sqrt(pow((event->scenePos().x() - right.x()), 2) +
+			     pow((event->scenePos().y() - right.y()), 2));
+      qreal distTop = sqrt(pow((event->scenePos().x() - top.x()), 2) +
+			   pow((event->scenePos().y() - top.y()), 2));
+      qreal distBottom = sqrt(pow((event->scenePos().x() - bottom.x()), 2) +
+			      pow((event->scenePos().y() - bottom.y()), 2));
       QVector<qreal> temp;
       temp.push_back(distTopLeft);
       temp.push_back(distTopRight);
@@ -1593,38 +2283,208 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       if (minimum == distTopLeft) 
 	{
-	  _selectedRectPtr->setTopLeft(_selectedRectPtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setTopLeft(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	    }
 	}
       else if (minimum == distTopRight) 
 	{
-	  _selectedRectPtr->setTopRight(_selectedRectPtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setTopRight(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setTopRight(_selectedRectPtr->
+					    mapFromScene(drawArea.topRight()));
+	    }
 	}
       else if (minimum == distBottomLeft) 
 	{
-	  _selectedRectPtr->setBottomLeft(_selectedRectPtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setBottomLeft(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setBottomLeft(_selectedRectPtr->
+					      mapFromScene(drawArea.bottomLeft()));
+	    }
 	}
       else if (minimum == distBottomRight) 
 	{
-	  _selectedRectPtr->setBottomRight(_selectedRectPtr->mapFromScene(_lastMousePos));
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setBottomRight(event->scenePos());
+	  qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+	  qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      if (xDist > yDist)
+		{
+		  drawArea.setHeight(drawArea.width());
+		}
+	      else if (xDist < yDist)
+		{
+		  drawArea.setWidth(drawArea.height());
+		}
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
 	}
       else if (minimum == distLeft) 
 	{
-	  _selectedRectPtr->setLeft(_selectedRectPtr->mapFromScene(_lastMousePos).x());
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setLeft(event->scenePos().x());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setHeight(drawArea.width());
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setLeft(_selectedRectPtr->
+					mapFromScene(event->scenePos()).x());
+	    }
 	}
       else if (minimum == distRight) 
 	{
-	  _selectedRectPtr->setRight(_selectedRectPtr->mapFromScene(_lastMousePos).x());
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setRight(event->scenePos().x());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setHeight(drawArea.width());
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setRight(_selectedRectPtr->mapFromScene(event->scenePos()).x());
+	    }
 	}
       else if (minimum == distTop) 
 	{
-	  _selectedRectPtr->setTop(_selectedRectPtr->mapFromScene(_lastMousePos).y());
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setTop(event->scenePos().y());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setWidth(drawArea.height());
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setTop(_selectedRectPtr->mapFromScene(event->scenePos()).y());
+	    }
 	}
       else if (minimum == distBottom) 
 	{
-	  _selectedRectPtr->setBottom(_selectedRectPtr->mapFromScene(_lastMousePos).y());
+	  QPointF anchor = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+	  QRectF drawArea = QRectF(_selectedRectPtr->mapToScene(_selectedRectPtr->topLeft()),
+				   _selectedRectPtr->mapToScene(_selectedRectPtr->bottomRight()));
+	  drawArea.setBottom(event->scenePos().y());
+	  if (event->modifiers() & Qt::ControlModifier)
+	    {
+	      drawArea.setWidth(drawArea.height());
+	      drawArea.moveCenter(anchor);
+	      _selectedRectPtr->setTopLeft(_selectedRectPtr->
+					   mapFromScene(drawArea.topLeft()));
+	      _selectedRectPtr->setBottomRight(_selectedRectPtr->
+					       mapFromScene(drawArea.bottomRight()));
+	    }
+	  else
+	    {
+	      _selectedRectPtr->setBottom(_selectedRectPtr->mapFromScene(event->scenePos()).y());
+	    }
 	}
+      _selectedRectPtr->setRotationValue(_selectedRectPtr->getRotationValue());
       emit relevantChange();
-    }
+    } 
   else if (_moveRect) 
     {
       _selectedRectPtr->resetTransform();
@@ -1632,7 +2492,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       qreal newXDiff = newPos.x() - _lastMousePos.x();
       qreal newYDiff = newPos.y() - _lastMousePos.y();
       _selectedRectPtr->moveCenter(_selectedRectPtr->mapToScene(_selectedRectPtr->getCenter()) +
-			       _selectedRectPtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+				   _selectedRectPtr->mapFromScene(QPointF(newXDiff, newYDiff)));
       _lastMousePos = event->scenePos();
       _selectedRectPtr->setRotationValue(_selectedRectPtr->getRotationValue());
       emit relevantChange();
@@ -2017,24 +2877,22 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  QMenu positionMenu("Position");
 	  menu.addMenu(&editMenu);
 	  menu.addMenu(&positionMenu);
-	  QAction *action1 = new QAction(CHANGELINECOLOR, this);
+	  QAction *action1 = new QAction(TOGGLEARROW1, this);
 	  editMenu.addAction(action1);
-	  QAction *action2 = new QAction(TOGGLEARROW1, this);
+	  QAction *action2 = new QAction(TOGGLEARROW2, this);
 	  editMenu.addAction(action2);
-	  QAction *action3 = new QAction(TOGGLEARROW2, this);
-	  editMenu.addAction(action3);
-	  QAction *action4 = new QAction(COPYOBJECT, this);
+	  QAction *action3 = new QAction(COPYOBJECT, this);
+	  menu.addAction(action3);
+	  QAction *action4 = new QAction(DELETELINE, this);
 	  menu.addAction(action4);
-	  QAction *action5 = new QAction(DELETELINE, this);
-	  menu.addAction(action5);
-	  QAction *action6 = new QAction(ONEFORWARD, this);
+	  QAction *action5 = new QAction(ONEFORWARD, this);
+	  positionMenu.addAction(action5);
+	  QAction *action6 = new QAction(ONEBACKWARD, this);
 	  positionMenu.addAction(action6);
-	  QAction *action7 = new QAction(ONEBACKWARD, this);
+	  QAction *action7 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action7);
-	  QAction *action8 = new QAction(BRINGFORWARD, this);
+	  QAction *action8 = new QAction(BRINGBACKWARD, this);
 	  positionMenu.addAction(action8);
-	  QAction *action9 = new QAction(BRINGBACKWARD, this);
-	  positionMenu.addAction(action9);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit LineContextMenuAction(action->text());
@@ -2045,26 +2903,22 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  text->setSelected(true);
 	  QMenu menu;
-	  QMenu editMenu("Edit");
 	  QMenu positionMenu("Position");
-	  menu.addMenu(&editMenu);
 	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(CHANGETEXT, this);
-	  editMenu.addAction(action1);
-	  QAction *action2 = new QAction(CHANGETEXTCOLOR, this);
-	  editMenu.addAction(action2);
-	  QAction *action3 = new QAction(COPYOBJECT, this);
+	  menu.addAction(action1);
+	  QAction *action2 = new QAction(COPYOBJECT, this);
+	  menu.addAction(action2);
+	  QAction *action3 = new QAction(DELETETEXT, this);
 	  menu.addAction(action3);
-	  QAction *action4 = new QAction(DELETETEXT, this);
-	  menu.addAction(action4);
-	  QAction *action5 = new QAction(ONEFORWARD, this);
+	  QAction *action4 = new QAction(ONEFORWARD, this);
+	  positionMenu.addAction(action4);
+	  QAction *action5 = new QAction(ONEBACKWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(ONEBACKWARD, this);
+	  QAction *action6 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action6);
-	  QAction *action7 = new QAction(BRINGFORWARD, this);
+	  QAction *action7 = new QAction(BRINGBACKWARD, this);
 	  positionMenu.addAction(action7);
-	  QAction *action8 = new QAction(BRINGBACKWARD, this);
-	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit TextContextMenuAction(action->text());
@@ -2075,26 +2929,20 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  ellipse->setSelected(true);
 	  QMenu menu;
-	  QMenu editMenu("Edit");
 	  QMenu positionMenu("Position");
-	  menu.addMenu(&editMenu);
 	  menu.addMenu(&positionMenu);
-	  QAction *action1 = new QAction(CHANGEELLIPSECOLOR, this);
-	  editMenu.addAction(action1);
-	  QAction *action2 = new QAction(CHANGEELLIPSEFILLCOLOR, this);
-	  editMenu.addAction(action2);
-	  QAction *action3 = new QAction(COPYOBJECT, this);
-	  menu.addAction(action3);
-	  QAction *action4 = new QAction(DELETEELLIPSE, this);
-	  menu.addAction(action4);
-	  QAction *action5 = new QAction(ONEFORWARD, this);
+	  QAction *action1 = new QAction(COPYOBJECT, this);
+	  menu.addAction(action1);
+	  QAction *action2 = new QAction(DELETEELLIPSE, this);
+	  menu.addAction(action2);
+	  QAction *action3 = new QAction(ONEFORWARD, this);
+	  positionMenu.addAction(action3);
+	  QAction *action4 = new QAction(ONEBACKWARD, this);
+	  positionMenu.addAction(action4);
+	  QAction *action5 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(ONEBACKWARD, this);
+	  QAction *action6 = new QAction(BRINGBACKWARD, this);
 	  positionMenu.addAction(action6);
-	  QAction *action7 = new QAction(BRINGFORWARD, this);
-	  positionMenu.addAction(action7);
-	  QAction *action8 = new QAction(BRINGBACKWARD, this);
-	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit EllipseContextMenuAction(action->text());
@@ -2105,26 +2953,20 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  rect->setSelected(true);
 	  QMenu menu;
-	  QMenu editMenu("Edit");
 	  QMenu positionMenu("Position");
-	  menu.addMenu(&editMenu);
 	  menu.addMenu(&positionMenu);
-	  QAction *action1 = new QAction(CHANGERECTCOLOR, this);
-	  editMenu.addAction(action1);
-	  QAction *action2 = new QAction(CHANGERECTFILLCOLOR, this);
-	  editMenu.addAction(action2);
-	  QAction *action3 = new QAction(COPYOBJECT, this);
-	  menu.addAction(action3);
-	  QAction *action4 = new QAction(DELETERECT, this);
-	  menu.addAction(action4);
-	  QAction *action5 = new QAction(ONEFORWARD, this);
+	  QAction *action1 = new QAction(COPYOBJECT, this);
+	  menu.addAction(action1);
+	  QAction *action2 = new QAction(DELETERECT, this);
+	  menu.addAction(action2);
+	  QAction *action3 = new QAction(ONEFORWARD, this);
+	  positionMenu.addAction(action3);
+	  QAction *action4 = new QAction(ONEBACKWARD, this);
+	  positionMenu.addAction(action4);
+	  QAction *action5 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(ONEBACKWARD, this);
+	  QAction *action6 = new QAction(BRINGBACKWARD, this);
 	  positionMenu.addAction(action6);
-	  QAction *action7 = new QAction(BRINGFORWARD, this);
-	  positionMenu.addAction(action7);
-	  QAction *action8 = new QAction(BRINGBACKWARD, this);
-	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit RectContextMenuAction(action->text());
@@ -2135,24 +2977,26 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  timeline->setSelected(true);
 	  QMenu menu;
-	  QMenu editMenu("Edit");
+	  QMenu tickMenu("Ticks");
 	  QMenu positionMenu("Position");
-	  menu.addMenu(&editMenu);
+	  menu.addMenu(&tickMenu);
 	  menu.addMenu(&positionMenu);
-	  QAction *action1 = new QAction(CHANGETIMELINECOLOR, this);
-	  editMenu.addAction(action1);
-	  QAction *action2 = new QAction(COPYOBJECT, this);
-	  menu.addAction(action2);
-	  QAction *action3 = new QAction(DELETETIMELINE, this);
+	  QAction *action1 = new QAction(TOGGLEFIRSTTICK, this);
+	  tickMenu.addAction(action1);
+	  QAction *action2 = new QAction(FORCELASTTICK, this);
+	  tickMenu.addAction(action2);
+	  QAction *action3 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action3);
-	  QAction *action4 = new QAction(ONEFORWARD, this);
-	  positionMenu.addAction(action4);
-	  QAction *action5 = new QAction(ONEBACKWARD, this);
+	  QAction *action4 = new QAction(DELETETIMELINE, this);
+	  menu.addAction(action4);
+	  QAction *action5 = new QAction(ONEFORWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(BRINGFORWARD, this);
+	  QAction *action6 = new QAction(ONEBACKWARD, this);
 	  positionMenu.addAction(action6);
-	  QAction *action7 = new QAction(BRINGBACKWARD, this);
+	  QAction *action7 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action7);
+	  QAction *action8 = new QAction(BRINGBACKWARD, this);
+	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
 	      emit TimeLineContextMenuAction(action->text());
