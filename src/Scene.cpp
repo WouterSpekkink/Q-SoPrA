@@ -3577,3 +3577,8 @@ bool Scene::isRotating()
       return false;
     }
 }
+
+bool Scene::isSnappingGuides()
+{
+  return _snapGuides;
+}

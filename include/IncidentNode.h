@@ -28,6 +28,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 class IncidentNodeLabel;
 class AbstractNode;
+class Scene;
 
 class IncidentNode : public QGraphicsItem
 {
@@ -91,6 +92,7 @@ private:
   QColor _color;
   QColor _selectionColor;
   QPointF _originalPos;
+  QPointF _lastPos;
   int _id;
   int _width;
   bool _dislodged;

@@ -65,6 +65,7 @@ public:
   // Getters
   bool isPreparingArea();
   bool isRotating();
+  bool isSnappingGuides();
 
 signals:
   void moveItems(QGraphicsItem *, QPointF);
