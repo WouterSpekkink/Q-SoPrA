@@ -162,8 +162,6 @@ private slots:
   void getLabels();
   void addLabels();
   void cleanUp();	     
-  void changePos(IncidentNode* item, qreal &dist);
-  void changePos(AbstractNode* item, qreal &dist);
   void increaseDistance();
   void decreaseDistance();
   void expandGraph();

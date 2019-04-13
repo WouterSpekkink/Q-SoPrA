@@ -101,7 +101,7 @@ void IncidentNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void IncidentNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
 {
-  if ((event->modifiers() & Qt::AltModifier) ||
+  if ((event->modifiers() & Qt::ShiftModifier) ||
       (isCopy() && (event->modifiers() & Qt::ControlModifier))) 
     {
       setCursor(Qt::SizeAllCursor);

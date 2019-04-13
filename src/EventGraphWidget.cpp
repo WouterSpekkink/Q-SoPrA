@@ -432,10 +432,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(this, SIGNAL(sendTimeLineWidth(int)), scene, SLOT(setTimeLineWidth(int)));
   connect(this, SIGNAL(sendTimeLineColor(QColor &)), scene, SLOT(setTimeLineColor(QColor &)));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
-  connect(scene, SIGNAL(posChanged(IncidentNode *, qreal&)),
-	  this, SLOT(changePos(IncidentNode *, qreal&)));
-  connect(scene, SIGNAL(posChanged(AbstractNode*, qreal&)),
-	  this, SLOT(changePos(AbstractNode*, qreal&)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
   connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
@@ -3289,70 +3285,6 @@ void EventGraphWidget::cleanUp()
   toggleSnapGuides();
   _labelsVisible = true;
   setGraphControls(false);
-}
-
-void EventGraphWidget::changePos(IncidentNode *item, qreal &dist) 
-{
-  QPointF original = item->scenePos();
-  int order = original.x();
-  IncidentNodeLabel *itemLabel = item->getLabel();
-  itemLabel->setNewPos(original);
-  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-  while (it.hasNext()) 
-    {
-      IncidentNode *currentItem = it.next();
-      if (currentItem->pos().x() > order) 
-	{
-	  QPointF newPos = QPointF(currentItem->pos().x() + dist, currentItem->pos().y());
-	  IncidentNodeLabel *currentLabel = currentItem->getLabel();
-	  currentLabel->setNewPos(newPos);
-	  currentItem->setPos(newPos);
-	}
-    }
-  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
-  while (it2.hasNext()) 
-    {
-      AbstractNode *currentItem = it2.next();
-      if (currentItem->pos().x() > order) 
-	{
-	  QPointF newPos = QPointF(currentItem->pos().x() + dist, currentItem->pos().y());
-	  AbstractNodeLabel *currentLabel = currentItem->getLabel();
-	  currentLabel->setNewPos(newPos);
-	  currentItem->setPos(newPos);
-	}
-    }
-}
-
-void EventGraphWidget::changePos(AbstractNode *item, qreal &dist) 
-{
-  QPointF original = item->scenePos();
-  int order = original.x();
-  AbstractNodeLabel *itemLabel = item->getLabel();
-  itemLabel->setNewPos(original);
-  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-  while (it.hasNext()) 
-    {
-      IncidentNode *currentItem = it.next();
-      if (currentItem->pos().x() > order) 
-	{
-	  QPointF newPos = QPointF(currentItem->pos().x() + dist, currentItem->pos().y());
-	  IncidentNodeLabel *currentLabel = currentItem->getLabel();
-	  currentLabel->setNewPos(newPos);
-	  currentItem->setPos(newPos);
-	}
-    }
-  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
-  while (it2.hasNext()) 
-    {
-      AbstractNode *currentItem = it2.next();
-      if (currentItem->pos().x() > order) 
-	{
-	  QPointF newPos = QPointF(currentItem->pos().x() + dist, currentItem->pos().y());
-	  AbstractNodeLabel *currentLabel = currentItem->getLabel();
-	  currentLabel->setNewPos(newPos);
-	  currentItem->setPos(newPos);
-	}
-    }
 }
 
 void EventGraphWidget::increaseDistance() 

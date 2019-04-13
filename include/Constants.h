@@ -40,6 +40,8 @@ extern QString FUTURE;
 extern QString MANUAL;
 extern QString ASSISTED;
 extern QString COLLIGATEACTION;
+extern QString MASSMOVEINCIDENTNODESACTION;
+extern QString MASSMOVEABSTRACTNODESACTION;
 extern QString MAKEABSTRACTNODEACTION;
 extern QString PATHS;
 extern QString PATHSATT;

@@ -30,8 +30,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) 
 {
   _snapGuides = false;
-  _resizeOnIncidentNode = false;
-  _resizeOnAbstractNode = false;
   _moveOn = false;
   _lineMoveOn = false;
   _moveLineObject = false;
@@ -64,6 +62,7 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _rectAreaStarted = false;
   _gettingTextArea = false;
   _textAreaStarted = false;
+  _massMoveNodes = false;
   _gettingHorizontalGuideLine = false;
   _gettingVerticalGuideLine = false;
   _lineStart = QPointF();
@@ -430,6 +429,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     {
       _eventWidthChange = false;
     }
+  if (_massMoveNodes) 
+    {
+      _massMoveNodes = false;
+    }
   if (_gettingHorizontalGuideLine)
     {
       emit sendHorizontalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
@@ -690,8 +693,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      abstractNode = abstractNodeLabel->getAbstractNode();
 	    }
 	  if (incident) 
-	    {
-	      emit resetItemSelection();
+	    {	    
 	      if (event->modifiers() & Qt::AltModifier) 
 		{
 		  if (incident->isCopy()) 
@@ -704,21 +706,18 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		      incident->setPos(incident->getOriginalPos().x(), incident->scenePos().y());
 		      incident->getLabel()->setNewPos(incident->scenePos());
 		    }
+		  emit resetItemSelection();
 		}
-	      else 
+	      else
 		{
-		  if (!incident->isCopy()) 
-		    {
-		      _resizeOnIncidentNode = true;
-		      _lastMousePos = event->scenePos();
-		      _selectedIncidentNodePtr = incident;
-		      _selectedAbstractNodePtr = NULL;
-		    }
+		  clearSelection();
+		  incident->setSelected(true);
+		  emit resetItemSelection();
+		  QGraphicsScene::mousePressEvent(event);
 		}
 	    }
 	  else if (abstractNode) 
 	    {
-	      emit resetItemSelection();
 	      if (event->modifiers() & Qt::AltModifier) 
 		{
 		  if (abstractNode->isCopy()) 
@@ -728,19 +727,18 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		    }
 		  else 
 		    {
-		      abstractNode->setPos(abstractNode->getOriginalPos().x(), abstractNode->scenePos().y());
+		      abstractNode->setPos(abstractNode->getOriginalPos().x(),
+					   abstractNode->scenePos().y());
 		      abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
 		    }
+		  emit resetItemSelection();
 		}
-	      else 
+	      else
 		{
-		  if (!abstractNode->isCopy()) 
-		    {
-		      _resizeOnAbstractNode = true;
-		      _lastMousePos = event->scenePos();
-		      _selectedAbstractNodePtr = abstractNode;
-		      _selectedIncidentNodePtr = NULL;
-		    }
+		  clearSelection();
+		  abstractNode->setSelected(true);
+		  emit resetItemSelection();
+		  QGraphicsScene::mousePressEvent(event);
 		}
 	    }
 	  else if (line) 
@@ -1052,8 +1050,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
 {
-  _resizeOnIncidentNode = false;
-  _resizeOnAbstractNode = false;
   _moveOn = false;
   _lineMoveOn = false;
   _moveLineObject = false;
@@ -1224,36 +1220,102 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	      if (newWidth >= 40) 
 		{
 		  _selectedIncidentNodePtr->setWidth(newWidth);
-		  _selectedIncidentNodePtr->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-		  _selectedIncidentNodePtr->getLabel()->setNewPos(_selectedIncidentNodePtr->scenePos());
+		  _selectedIncidentNodePtr->getLabel()->
+		    setOffset(QPointF(newWidth / 2 - 20, 0));
+		  _selectedIncidentNodePtr->getLabel()->
+		    setNewPos(_selectedIncidentNodePtr->scenePos());
 		}
 	    }
 	  else 
 	    {
 	      _selectedIncidentNodePtr->setWidth(40);
-	      _selectedIncidentNodePtr->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
-	      _selectedIncidentNodePtr->getLabel()->setNewPos(_selectedIncidentNodePtr->scenePos());
+	      _selectedIncidentNodePtr->getLabel()->
+		setOffset(QPointF(40 / 2 - 20, 0));
+	      _selectedIncidentNodePtr->getLabel()->
+		setNewPos(_selectedIncidentNodePtr->scenePos());
 	    }
 	}
       else if (_selectedAbstractNodePtr != NULL) 
 	{
 	  QPointF abstractNodePos = _selectedAbstractNodePtr->scenePos();
-	  if (event->scenePos().x() > abstractNodePos.x() && _selectedAbstractNodePtr->getWidth() >= 40) 
+	  if (event->scenePos().x() > abstractNodePos.x() &&
+	      _selectedAbstractNodePtr->getWidth() >= 40) 
 	    {
 	      int newWidth = event->scenePos().x() - _selectedAbstractNodePtr->scenePos().x();
 	      if (newWidth >= 40) 
 		{
 		  _selectedAbstractNodePtr->setWidth(newWidth);
-		  _selectedAbstractNodePtr->getLabel()->setOffset(QPointF(newWidth / 2 - 20, 0));
-		  _selectedAbstractNodePtr->getLabel()->setNewPos(_selectedAbstractNodePtr->scenePos());
+		  _selectedAbstractNodePtr->getLabel()->
+		    setOffset(QPointF(newWidth / 2 - 20, 0));
+		  _selectedAbstractNodePtr->getLabel()->
+		    setNewPos(_selectedAbstractNodePtr->scenePos());
 		}
 	    }
 	  else 
 	    {
 	      _selectedAbstractNodePtr->setWidth(40);
-	      _selectedAbstractNodePtr->getLabel()->setOffset(QPointF(40 / 2 - 20, 0));
-	      _selectedAbstractNodePtr->getLabel()->setNewPos(_selectedAbstractNodePtr->scenePos());
+	      _selectedAbstractNodePtr->getLabel()->
+		setOffset(QPointF(40 / 2 - 20, 0));
+	      _selectedAbstractNodePtr->getLabel()->
+		setNewPos(_selectedAbstractNodePtr->scenePos());
 	    }
+	}
+    }
+  else if (_massMoveNodes)
+    {
+      if (selectedItems().size() == 1)
+	{
+	  QGraphicsItem *current = selectedItems().first();
+	  if (event->scenePos().x() > _initPos.x())
+	    {
+	      QPointF oldPos = current->scenePos();
+	      QPointF newPos = QPointF(event->scenePos().x(), _initPos.y());
+	      current->setPos(newPos);
+	      IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+	      AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
+	      if (incident)
+		{
+		  incident->getLabel()->setNewPos(incident->scenePos());
+		}
+	      else if (abstract)
+		{
+		  abstract->getLabel()->setNewPos(abstract->scenePos());
+		}
+
+	      QListIterator<QGraphicsItem*> it(items());
+	      while (it.hasNext())
+		{
+		  QGraphicsItem *part = it.next();
+		  if (part != current)
+		    {
+		      IncidentNode *incidentPart = qgraphicsitem_cast<IncidentNode*>(part);
+		      AbstractNode *abstractPart = qgraphicsitem_cast<AbstractNode*>(part);
+		      if (incidentPart)
+			{
+			  if (incidentPart->scenePos().x() > _initPos.x())
+			    {
+			      qreal xDiff = incidentPart->scenePos().x() - oldPos.x();
+			      QPointF newPos = QPointF(event->scenePos().x() +
+						       xDiff, incidentPart->pos().y());
+			      incidentPart->setPos(newPos);
+			      incidentPart->getLabel()->setNewPos(incidentPart->scenePos());
+			    }
+			}
+		      else if (abstractPart)
+			{
+			  if (abstractPart->scenePos().x() > _initPos.x())
+			    {
+			      qreal xDiff = abstractPart->scenePos().x() - oldPos.x();
+			      QPointF newPos = QPointF(event->scenePos().x() +
+						       xDiff, abstractPart->pos().y());
+			      abstractPart->setPos(newPos);
+			      abstractPart->getLabel()->setNewPos(abstractPart->scenePos());
+			    }
+			}
+		    }
+		}
+	    }
+	  emit relevantChange();
 	}
     }
   else if (_gettingLinePoints)
@@ -1874,26 +1936,6 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   else if (_gettingVerticalGuideLine)
     {
       _tempGuideLinePtr->setOrientationPoint(event->scenePos());
-    }
-  else if (_resizeOnIncidentNode) 
-    {
-      qreal dist = event->scenePos().x() - _lastMousePos.x();
-      int currentY = _selectedIncidentNodePtr->scenePos().y();
-      _selectedIncidentNodePtr->setPos(event->scenePos().x(), currentY);
-      emit posChanged(_selectedIncidentNodePtr, dist);
-      _selectedIncidentNodePtr->setDislodged(true);
-      _lastMousePos = event->scenePos();
-      emit relevantChange();
-    }
-  else if (_resizeOnAbstractNode) 
-    {
-      qreal dist = event->scenePos().x() - _lastMousePos.x();
-      int currentY = _selectedAbstractNodePtr->scenePos().y();
-      _selectedAbstractNodePtr->setPos(event->scenePos().x(), currentY);
-      emit posChanged(_selectedAbstractNodePtr, dist);
-      _selectedAbstractNodePtr->setDislodged(true);
-      _lastMousePos = event->scenePos();
-      emit relevantChange();
     }
   else if (_hierarchyMove) 
     {
@@ -3051,20 +3093,30 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 {
   if (!event->modifiers())
     {
-      IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->scenePos(), QTransform()));
-      Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(), QTransform()));
-      IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->scenePos(), QTransform()));
-      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->scenePos(), QTransform()));
-      AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->scenePos(), QTransform()));
-      NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(), QTransform()));
-      LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(), QTransform()));
-      TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(), QTransform()));
-      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									 QTransform()));
-      RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(), QTransform()));
-      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
-									    QTransform()));
-      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
+      IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>
+	(itemAt(event->scenePos(), QTransform()));
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>
+	(itemAt(event->scenePos(), QTransform()));
+      IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>
+	(itemAt(event->scenePos(), QTransform()));
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>
+	(itemAt(event->scenePos(), QTransform()));
+      AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>
+	(itemAt(event->scenePos(), QTransform()));
+      NetworkNode *node = qgraphicsitem_cast<NetworkNode*>
+	(itemAt(event->scenePos(), QTransform()));
+      LineObject *line = qgraphicsitem_cast<LineObject*>
+	(itemAt(event->scenePos(), QTransform()));
+      TextObject *text = qgraphicsitem_cast<TextObject*>
+	(itemAt(event->scenePos(), QTransform()));
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>
+	(itemAt(event->scenePos(), QTransform()));
+      RectObject *rect = qgraphicsitem_cast<RectObject*>
+	(itemAt(event->scenePos(), QTransform()));
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>
+	(itemAt(event->scenePos(), QTransform()));
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>
+	(itemAt(event->scenePos(), QTransform()));
       if (incidentNodeLabel) 
 	{
 	  incident = incidentNodeLabel->getNode();
@@ -3100,54 +3152,65 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  colorMenu.addAction(action5);
 	  QAction *action6 = new QAction(SETWIDTHACTION, this);
 	  posMenu.addAction(action6);
-	  QAction *action7 = new QAction(ORIGINALPOSACTION, this);
+	  QAction *action7 = new QAction(MASSMOVEINCIDENTNODESACTION, this);
 	  posMenu.addAction(action7);
-	  QAction *action8= new QAction(SETTLEACTION, this);
+	  QAction *action8 = new QAction(ORIGINALPOSACTION, this);
 	  posMenu.addAction(action8);
-	  QAction *action9 = new QAction(PARALLELACTION, this);
+	  QAction *action9= new QAction(SETTLEACTION, this);
 	  posMenu.addAction(action9);
-	  QAction *action10 = new QAction(NORMALIZEACTION, this);
+	  QAction *action10 = new QAction(PARALLELACTION, this);
 	  posMenu.addAction(action10);
-	  QAction *action11 = new QAction(CLOSEGAPACTION, this);
+	  QAction *action11 = new QAction(NORMALIZEACTION, this);
 	  posMenu.addAction(action11);
-	  QAction *action12 = new QAction(ADDLINKAGEACTION, this);
-	  linkageMenu.addAction(action12);
-	  QAction *action13 = new QAction(SELECTFOLLOWERSACTION, this);
-	  selectionMenu.addAction(action13);
-	  QAction *action14 = new QAction(SELECTPREDECESSORSACTION, this);
+	  QAction *action12 = new QAction(CLOSEGAPACTION, this);
+	  posMenu.addAction(action12);
+	  QAction *action13 = new QAction(ADDLINKAGEACTION, this);
+	  linkageMenu.addAction(action13);
+	  QAction *action14 = new QAction(SELECTFOLLOWERSACTION, this);
 	  selectionMenu.addAction(action14);
-	  QAction *action15 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
-	  descMenu.addAction(action15);
+	  QAction *action15 = new QAction(SELECTPREDECESSORSACTION, this);
+	  selectionMenu.addAction(action15);
+	  QAction *action16 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+	  descMenu.addAction(action16);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
 	      action5->setEnabled(false);
 	      action6->setEnabled(false);
-	      action8->setEnabled(false);
-	      action10->setEnabled(false);
+	      action7->setEnabled(false);
+	      action9->setEnabled(false);
 	      action11->setEnabled(false);
-	      action13->setEnabled(false);
+	      action12->setEnabled(false);
 	      action14->setEnabled(false);
 	      action15->setEnabled(false);
+	      action16->setEnabled(false);
 	    }
 	  if (selectedItems().size() == 1) 
 	    {
 	      action1->setEnabled(false);
-	      action9->setEnabled(false);
+	      action10->setEnabled(false);
 	    }
-	  action12->setEnabled(false);
+	  action13->setEnabled(false);
 	  if (selectedItems().size() == 2) 
 	    {
 	      IncidentNode *incidentNodeOne = qgraphicsitem_cast<IncidentNode*>(selectedItems()[0]);
 	      IncidentNode *incidentNodeTwo = qgraphicsitem_cast<IncidentNode*>(selectedItems()[1]);
 	      if (incidentNodeOne && incidentNodeTwo) 
 		{
-		  action12->setEnabled(true);
+		  action13->setEnabled(true);
 		}
 	    }
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
-	      emit IncidentNodeContextMenuAction(action->text());
+	      if (action->text() == MASSMOVEINCIDENTNODESACTION)
+		{
+		  _massMoveNodes = true;
+		  _initPos = incident->scenePos();
+		}
+	      else
+		{
+		  emit IncidentNodeContextMenuAction(action->text());
+		}
 	    }
 	  // And then we'll capture some action, and send a signal to the main widget.
 	}
@@ -3176,43 +3239,54 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  colorMenu.addAction(action5);
 	  QAction *action6 = new QAction(SETWIDTHACTION, this);
 	  posMenu.addAction(action6);
-	  QAction *action7= new QAction(SETTLEACTION, this);
+	  QAction *action7= new QAction(MASSMOVEABSTRACTNODESACTION, this);
 	  posMenu.addAction(action7);
-	  QAction *action8 = new QAction(PARALLELACTION, this);
+	  QAction *action8= new QAction(SETTLEACTION, this);
 	  posMenu.addAction(action8);
-	  QAction *action9 = new QAction(NORMALIZEACTION, this);
+	  QAction *action9 = new QAction(PARALLELACTION, this);
 	  posMenu.addAction(action9);
-	  QAction *action10 = new QAction(CLOSEGAPACTION, this);
+	  QAction *action10 = new QAction(NORMALIZEACTION, this);
 	  posMenu.addAction(action10);
-	  QAction *action11 = new QAction(CHANGEDESCRIPTIONACTION, this);
-	  descMenu.addAction(action11);
-	  QAction *action12 = new QAction(SELECTFOLLOWERSACTION, this);
-	  selectionMenu.addAction(action12);
-	  QAction *action13 = new QAction(SELECTPREDECESSORSACTION, this);
+	  QAction *action11 = new QAction(CLOSEGAPACTION, this);
+	  posMenu.addAction(action11);
+	  QAction *action12 = new QAction(CHANGEDESCRIPTIONACTION, this);
+	  descMenu.addAction(action12);
+	  QAction *action13 = new QAction(SELECTFOLLOWERSACTION, this);
 	  selectionMenu.addAction(action13);
-	  QAction *action14 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
-	  descMenu.addAction(action14);
+	  QAction *action14 = new QAction(SELECTPREDECESSORSACTION, this);
+	  selectionMenu.addAction(action14);
+	  QAction *action15 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+	  descMenu.addAction(action15);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
 	      action5->setEnabled(false);
 	      action6->setEnabled(false);
 	      action7->setEnabled(false);
-	      action9->setEnabled(false);
+	      action8->setEnabled(false);
 	      action10->setEnabled(false);
 	      action11->setEnabled(false);
 	      action12->setEnabled(false);
 	      action13->setEnabled(false);
 	      action14->setEnabled(false);
+	      action15->setEnabled(false);
 	    }
 	  if (selectedItems().size() == 1) 
 	    {
 	      action1->setEnabled(false);
-	      action8->setEnabled(false);
+	      action9->setEnabled(false);
 	    }
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
-	      emit IncidentNodeContextMenuAction(action->text());
+	      if (action->text() == MASSMOVEABSTRACTNODESACTION)
+		{
+		  _massMoveNodes = true;
+		  _initPos = abstractNode->scenePos();
+		}
+	      else
+		{
+		  emit IncidentNodeContextMenuAction(action->text());
+		}
 	    }
 	}
       else if (linkage && !linkage->isCopy()) 

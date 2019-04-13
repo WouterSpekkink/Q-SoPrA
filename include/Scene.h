@@ -67,8 +67,6 @@ public:
   bool isRotating();
 
 signals:
-  void posChanged(IncidentNode *, qreal &dist);
-  void posChanged(AbstractNode *, qreal &dist);
   void moveItems(QGraphicsItem *, QPointF);
   void moveLine(QGraphicsItem *, QPointF);
   void relevantChange();
@@ -125,8 +123,6 @@ protected:
 
 private:
   // Private variables
-  bool _resizeOnIncidentNode;
-  bool _resizeOnAbstractNode;
   bool _moveOn;
   bool _lineMoveOn;
   bool _moveLineObject;
@@ -162,6 +158,7 @@ private:
   bool _gettingHorizontalGuideLine;
   bool _gettingVerticalGuideLine;
   bool _snapGuides;
+  bool _massMoveNodes;
   QPointF _lastMousePos;
   QPointF _initPos;
   QPointF _lastObjectPos;
