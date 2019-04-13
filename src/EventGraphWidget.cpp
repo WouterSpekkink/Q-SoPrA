@@ -342,6 +342,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   addVerticalGuideLineButton->setIconSize(QSize(20, 20));
   addVerticalGuideLineButton->setMinimumSize(40, 40);
   addVerticalGuideLineButton->setMaximumSize(40, 40);
+  snapGuidesButton = new QPushButton(tr("Toggle snap guides"), this);
+  snapGuidesButton->setCheckable(true);
     
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -420,6 +422,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setTimeLineWidth(int)));
   connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
   connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
+  connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(this, SIGNAL(sendMajorInterval(qreal &)), scene, SLOT(setMajorInterval(qreal &)));
@@ -575,6 +578,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
   guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
   guidesLayout->setAlignment(Qt::AlignRight);
   drawHelpLayout->addLayout(guidesLayout);
   mainLayout->addLayout(drawHelpLayout);
@@ -1145,6 +1149,7 @@ void EventGraphWidget::setGraphControls(bool state)
   addHorizontalGuideLineButton->setEnabled(state);
   addVerticalGuideLineButton->setEnabled(state);
   fillOpacitySlider->setEnabled(state);
+  snapGuidesButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -3280,6 +3285,8 @@ void EventGraphWidget::cleanUp()
   _selectedIncident = 0;
   _selectedAbstractNode = NULL;
   _contracted = false;
+  snapGuidesButton->setChecked(false);
+  toggleSnapGuides();
   _labelsVisible = true;
   setGraphControls(false);
 }
@@ -10182,6 +10189,18 @@ void EventGraphWidget::addVerticalGuideLine(const QPointF &pos)
   scene->addItem(guide);
   guide->setOrientationPoint(pos);
   fixZValues();
+}
+
+void EventGraphWidget::toggleSnapGuides()
+{
+  if (snapGuidesButton->isChecked())
+    {
+      scene->setSnapGuides(true);
+    }
+  else
+    {
+      scene->setSnapGuides(false);
+    }
 }
 
 void EventGraphWidget::setPenStyle()

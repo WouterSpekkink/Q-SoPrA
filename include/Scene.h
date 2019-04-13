@@ -59,6 +59,9 @@ public:
   void resetAreas();
   void stopRotation();
 
+  // Setters
+  void setSnapGuides(bool state);
+
   // Getters
   bool isPreparingArea();
   bool isRotating();
@@ -158,8 +161,10 @@ private:
   bool _textAreaStarted;
   bool _gettingHorizontalGuideLine;
   bool _gettingVerticalGuideLine;
+  bool _snapGuides;
   QPointF _lastMousePos;
   QPointF _initPos;
+  QPointF _lastObjectPos;
   QRectF _drawArea;
   QPointF _lineStart;
   QPointF _lineEnd;

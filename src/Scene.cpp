@@ -29,6 +29,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) 
 {
+  _snapGuides = false;
   _resizeOnIncidentNode = false;
   _resizeOnAbstractNode = false;
   _moveOn = false;
@@ -85,6 +86,11 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _currentTimeLineColor = QColor(Qt::black);
 }
 
+void Scene::setSnapGuides(bool state)
+{
+  _snapGuides = state;
+}
+			    
 void Scene::setPenStyle(int style)
 {
   _currentPenStyle = style + 1;
@@ -972,6 +978,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  text->setSelected(true);
 		  _selectedTextPtr = text;
 		  _lastMousePos = event->scenePos();
+		  _selectedTextPtr->resetTransform();
+		  QPointF currentPos = _selectedTextPtr->scenePos();
+		  _selectedTextPtr->setRotationValue(_selectedTextPtr->getRotationValue());
+		  _initPos = currentPos;
 		  _moveText = true;
 		}
 	      else if (timeline) 
@@ -2746,38 +2756,117 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       else
 	{
-	  bool snapped = false;
-	  QListIterator<QGraphicsItem*> it(items());
-	  while (it.hasNext())
+	  bool snappedHorizontal = false;
+	  bool snappedVertical = false;
+	  if (_snapGuides)
 	    {
-	      QGraphicsItem *item = it.next();
-	      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
-	      if (guide)
+	      QListIterator<QGraphicsItem*> it(items());
+	      while (it.hasNext())
 		{
-		  if (guide->isHorizontal())
+		  QGraphicsItem *item = it.next();
+		  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+		  if (guide)
 		    {
-		      qreal topDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().top() -
-					       guide->getOrientationPoint().y(), 2));
-		      qreal bottomDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().bottom() -
-					       guide->getOrientationPoint().y(), 2));
-		      qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
-		      if (topDist < 10 && eventDist < 100 && eventDist > 0)
+		      if (guide->isHorizontal())
 			{
-			  snapped = true;
-			  _selectedTextPtr->setPos(currentPos.x() + newXDiff,
-						   guide->getOrientationPoint().y());
+			  qreal topDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().top() -
+						   guide->getOrientationPoint().y(), 2));
+			  qreal bottomDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().bottom() -
+						      guide->getOrientationPoint().y(), 2));
+			  qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+			  if (topDist < 10 &&
+			      abs(eventDist) < _selectedTextPtr->sceneBoundingRect().height() &&
+			      eventDist > 0)
+			    {
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  _selectedTextPtr->setPos(_lastObjectPos.x(),
+							   guide->getOrientationPoint().y());
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			      else
+				{
+				  _selectedTextPtr->setPos(currentPos.x() + newXDiff,
+							   guide->getOrientationPoint().y());
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			    }
+			  else if (bottomDist < 10 &&
+			      abs(eventDist) < _selectedTextPtr->sceneBoundingRect().height() &&
+			      eventDist < 0)
+			    {
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  _selectedTextPtr->setPos(_lastObjectPos.x(),
+							   guide->getOrientationPoint().y() -
+							   _selectedTextPtr->
+							   sceneBoundingRect().height());
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			      else
+				{
+				  _selectedTextPtr->setPos(currentPos.x() + newXDiff,
+							   guide->getOrientationPoint().y() -
+							   _selectedTextPtr->
+							   sceneBoundingRect().height());
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			    }
 			}
-		      if (bottomDist < 10 && eventDist > -100 && eventDist < 0)
+		      else
 			{
-			  snapped = true;
-			  _selectedTextPtr->setPos(currentPos.x() + newXDiff,
-						   guide->getOrientationPoint().y() -
-						   _selectedTextPtr->sceneBoundingRect().height());
+			  qreal leftDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().left() -
+						    guide->getOrientationPoint().x(), 2));
+			  qreal rightDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().right() -
+						    guide->getOrientationPoint().x(), 2));
+			  qreal eventDist = event->scenePos().x() - guide->getOrientationPoint().x();
+			  if (leftDist < 10 &&
+			      abs(eventDist) < _selectedTextPtr->sceneBoundingRect().width() &&
+			      eventDist > 0)
+			    {
+			      snappedVertical = true;
+			      if (snappedHorizontal)
+				{
+				  _selectedTextPtr->setPos(guide->getOrientationPoint().x(),
+							   _lastObjectPos.y());
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			      else
+				{
+				  _selectedTextPtr->setPos(guide->getOrientationPoint().x(),
+							   currentPos.y() + newYDiff);
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			    }
+			  else if (rightDist < 10 &&
+			      abs(eventDist) < _selectedTextPtr->sceneBoundingRect().width() &&
+			      eventDist < 0)
+			    {
+			      snappedVertical = true;
+			      if (snappedHorizontal)
+				{
+				  _selectedTextPtr->setPos(guide->getOrientationPoint().x() -
+							   _selectedTextPtr->
+							   sceneBoundingRect().width(),
+							   _lastObjectPos.y());
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			      else
+				{
+				  _selectedTextPtr->setPos(guide->getOrientationPoint().x() -
+							   _selectedTextPtr->
+							   sceneBoundingRect().width(),
+							   currentPos.y() + newYDiff);
+				  _lastObjectPos = _selectedTextPtr->scenePos();
+				}
+			    }
 			}
 		    }
 		}
 	    }
-	  if (!snapped)
+	  if (!snappedHorizontal && !snappedVertical)
 	    {
 	      _selectedTextPtr->setPos(currentPos + QPointF(newXDiff, newYDiff));
 	    }

@@ -254,6 +254,7 @@ private slots:
   void addTimeLineObject(const qreal &startX, const qreal &endX, const qreal &y);
   void addHorizontalGuideLine(const QPointF &pos);
   void addVerticalGuideLine(const QPointF &pos);
+  void toggleSnapGuides();
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
@@ -424,6 +425,7 @@ private:
   QPointer<QPushButton> changeTimeLineColorButton;
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
+  QPointer<QPushButton> snapGuidesButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
