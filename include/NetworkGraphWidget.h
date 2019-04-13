@@ -186,6 +186,7 @@ private slots:
   void addTextObject(const QRectF &area, const qreal &size);
   void addHorizontalGuideLine(const QPointF &pos);
   void addVerticalGuideLine(const QPointF &pos);
+  void toggleSnapGuides();
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
@@ -322,6 +323,7 @@ private:
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
+  QPointer<QPushButton> snapGuidesButton;
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;

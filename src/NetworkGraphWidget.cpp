@@ -238,6 +238,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   addVerticalGuideLineButton->setIconSize(QSize(20, 20));
   addVerticalGuideLineButton->setMinimumSize(40, 40);
   addVerticalGuideLineButton->setMaximumSize(40, 40);
+  snapGuidesButton = new QPushButton(tr("Toggle snap guides"), this);
+  snapGuidesButton->setCheckable(true);
   
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -382,6 +384,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
   connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
+  connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
   connect(scene, SIGNAL(resetItemSelection()), this, SLOT(retrieveData()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateEdges()));
@@ -469,6 +472,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
   guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
   guidesLayout->setAlignment(Qt::AlignRight);
   drawHelpLayout->addLayout(guidesLayout);
   mainLayout->addLayout(drawHelpLayout);
@@ -950,6 +954,7 @@ void NetworkGraphWidget::setGraphControls(bool state)
   fillOpacitySlider->setEnabled(state);
   addHorizontalGuideLineButton->setEnabled(state);
   addVerticalGuideLineButton->setEnabled(state);
+  snapGuidesButton->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -2485,6 +2490,18 @@ void NetworkGraphWidget::addVerticalGuideLine(const QPointF &pos)
   scene->addItem(guide);
   guide->setOrientationPoint(pos);
   fixZValues();
+}
+
+void NetworkGraphWidget::toggleSnapGuides()
+{
+  if (snapGuidesButton->isChecked())
+    {
+      scene->setSnapGuides(true);
+    }
+  else
+    {
+      scene->setSnapGuides(false);
+    }
 }
 
 void NetworkGraphWidget::processShapeSelection()
@@ -7353,6 +7370,8 @@ void NetworkGraphWidget::cleanUp()
   nameField->clear();
   descriptionField->clear();
   resetFont(attributesTree);
+  snapGuidesButton->setChecked(false);
+  toggleSnapGuides();
   setGraphControls(false);
   weightCheckBox->setCheckState(Qt::Unchecked);
 }

@@ -89,16 +89,119 @@ void NetworkNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void NetworkNode::move(QPointF newPos) 
 {
-  this->setPos(newPos);
-  this->getLabel()->setNewPos(newPos);
-  QListIterator<QGraphicsItem*> it(scene()->items());
+  Scene *scene = qobject_cast<Scene*>(this->scene());
+  bool snappedHorizontal = false;
+  bool snappedVertical = false;
+  QRectF drawRect = sceneBoundingRect().marginsRemoved(QMargins(6,6,6,6));
+  QListIterator<QGraphicsItem*> it(scene->items());
   while (it.hasNext()) 
     {
       QGraphicsItem *item = it.next();
       NetworkNode *first = this;
       NetworkNode *second = qgraphicsitem_cast<NetworkNode*>(item);
-      if (second && first != second && second->isVisible()) 
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+      if (scene->isSnappingGuides())
 	{
+	  if (guide)
+	    {
+	      if (guide->isHorizontal())
+		{
+		  qreal topDist = sqrt(pow(drawRect.top() - 
+					   guide->getOrientationPoint().y(), 2));
+		  qreal bottomDist = sqrt(pow(drawRect.bottom() -
+					      guide->getOrientationPoint().y(), 2));
+		  qreal eventDist = newPos.y() - guide->getOrientationPoint().y();
+		  if (topDist < 10 &&
+		      std::abs(eventDist) < 40 &&
+		      eventDist > 0)
+		    {
+		      snappedHorizontal = true;
+		      if (snappedVertical)
+			{
+			  this->setPos(_lastPos.x(),
+				       guide->getOrientationPoint().y() + 20);
+			  _lastPos = this->scenePos();
+			}
+		      else
+			{
+			  this->setPos(newPos.x(),
+				       guide->getOrientationPoint().y() + 20);
+			  _lastPos = this->scenePos();
+			}
+		    }
+		  else if (bottomDist < 10 &&
+			   std::abs(eventDist) < drawRect.height() &&
+			   eventDist < 0)
+		    {
+		      snappedHorizontal = true;
+		      if (snappedVertical)
+			{
+			  this->setPos(_lastPos.x(),
+				       guide->getOrientationPoint().y() - 20);
+			  _lastPos = this->scenePos();
+			}
+		      else
+			{
+			  this->setPos(newPos.x(),
+				       guide->getOrientationPoint().y() - 20);
+			  _lastPos = this->scenePos();
+			}			  
+		    }
+		}
+	      else
+		{
+		  qreal leftDist = sqrt(pow(drawRect.left() -
+					    guide->getOrientationPoint().x(), 2));
+		  qreal rightDist = sqrt(pow(drawRect.right() -
+					     guide->getOrientationPoint().x(), 2));
+		  qreal eventDist = newPos.x() -
+		    guide->getOrientationPoint().x();
+		  if (leftDist < 10 &&
+		      std::abs(eventDist) < drawRect.width() &&
+		      eventDist > 0)
+		    {
+		      snappedVertical = true;
+		      if (snappedHorizontal)
+			{
+			  this->setPos(guide->getOrientationPoint().x() + 18,
+				       _lastPos.y());
+			  _lastPos = this->scenePos();
+			}
+		      else
+			{
+			  this->setPos(guide->getOrientationPoint().x() + 18,
+				       newPos.y());
+			  _lastPos = this->scenePos();
+			}
+		    }
+		  else if (rightDist < 10 &&
+			   std::abs(eventDist) < drawRect.width() &&
+			   eventDist < 0)
+		    {
+		      snappedVertical = true;
+		      if (snappedHorizontal)
+			{
+			  this->setPos(guide->getOrientationPoint().x() - 18,
+				       _lastPos.y());
+			  _lastPos = this->scenePos();
+			}
+		      else
+			{
+			  this->setPos(guide->getOrientationPoint().x() - 18,
+				       newPos.y());
+			  _lastPos = this->scenePos();
+			}
+		    }
+		}
+	    }
+	}
+      if (!snappedHorizontal && !snappedVertical)
+	{
+	  this->setPos(newPos);
+       	}
+      this->getLabel()->setNewPos(this->scenePos());
+      if (second && first != second && second->isVisible()) 
+	  {
 	  qreal dist = qSqrt(qPow(first->scenePos().x() -
 				  second->scenePos().x(), 2) +
 			     qPow(first->scenePos().y() -
@@ -136,8 +239,7 @@ void NetworkNode::move(QPointF newPos)
 	    }
 	}
     }
-  Scene *myScene = qobject_cast<Scene*>(scene());
-  myScene->relevantChange();
+  scene->relevantChange();
   update();
   setCursor(Qt::ClosedHandCursor);
 }
@@ -146,48 +248,6 @@ void NetworkNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
   this->move(event->scenePos());
   setCursor(Qt::ClosedHandCursor);  
-}
-
-void NetworkNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  
-{
-  QPointF newPos = event->scenePos();
-  qreal x = newPos.x();
-  qreal y = newPos.y();
-
-  bool trespass = false;
-  for (int i = 0; i < scene()->items().count(); i++) 
-    {
-      QGraphicsItem *item = scene()->items()[i];
-      NetworkNode *currentItem = qgraphicsitem_cast<NetworkNode*>(item);
-      Linkage *no = qgraphicsitem_cast<Linkage*>(item);
-      if (currentItem && !(no) && item != this) 
-	{
-	  qreal dist = qSqrt(qPow(currentItem->pos().x()-x,2)+qPow(currentItem->pos().y()-y,2));
-	  if (dist <= 40) 
-	    {
-	      trespass = true;
-	    }
-	  else 
-	    {
-	      _previousPos = this->scenePos();
-	    }
-	}
-    }
-  if (trespass) 
-    {
-      this->setPos(_previousPos);
-    }
-  else 
-    {
-      this->setPos(newPos);
-    }
-  if (_networkNodeLabelPtr != NULL) 
-    {
-      _networkNodeLabelPtr->setNewPos(this->scenePos());
-    }
-  setCursor(Qt::OpenHandCursor);
-  update();
-  QGraphicsItem::mouseReleaseEvent(event);
 }
 
 int NetworkNode::getCorrection() 
