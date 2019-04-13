@@ -47,6 +47,7 @@ public:
   QString getAttribute() const;
   bool isPermHidden();
   bool isGrouped();
+  QPointF getLastPos();
 
   // Type checking
   enum {Type = UserType + 10};
@@ -63,6 +64,7 @@ private:
   QColor _color;
   QColor _selectionColor;
   QPointF _originalPos;
+  QPointF _lastPos;
   int _id;
   int _width;
   int _order;

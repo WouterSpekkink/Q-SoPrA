@@ -58,6 +58,7 @@ public:
   OccurrenceItem* getSelectedOccurrence(); // Used by occurrence item
   void resetAreas();
   void stopRotation();
+  void occurrencePosJumped(OccurrenceItem* item, QPointF newPos);
 
   // Setters
   void setSnapGuides(bool state);

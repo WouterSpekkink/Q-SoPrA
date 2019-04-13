@@ -84,21 +84,72 @@ void OccurrenceItem::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void OccurrenceItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
 {
-  Scene *myScene = qobject_cast<Scene*>(scene());
-  if (myScene->getSelectedOccurrence() != NULL) 
+  Scene *scene = qobject_cast<Scene*>(this->scene());
+  if (scene->getSelectedOccurrence() != NULL) 
     {
-      setCursor(Qt::SizeVerCursor);
-      QPointF currentPos = this->scenePos();
-      qreal currentX = currentPos.x();
-      QPointF newPos = event->scenePos();
-      newPos.setX(currentX);
-      this->setPos(newPos);
+      bool snappedHorizontal = false;
+      if (scene->isSnappingGuides())
+	{
+	  QRectF drawRect = sceneBoundingRect().marginsRemoved(QMargins(6,6,6,6));
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext())
+	    {
+	      QGraphicsItem *item = it.next();
+	      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+	      if (guide)
+		{
+		  if (guide->isHorizontal())
+		    {
+		      qreal topDist = sqrt(pow(drawRect.top() - 
+					       guide->getOrientationPoint().y(), 2));
+		      qreal bottomDist = sqrt(pow(drawRect.bottom() -
+						  guide->getOrientationPoint().y(), 2));
+		      qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+		      if (topDist < 10 &&
+			  std::abs(eventDist) < 40 &&
+			  eventDist > 0)
+			{
+			  snappedHorizontal = true;
+			  _lastPos = this->scenePos();
+			  this->setPos(this->scenePos().x(),
+				       guide->getOrientationPoint().y() + 20);
+			  scene->occurrencePosJumped(this, this->scenePos());
+			}
+		      else if (bottomDist < 10 &&
+			       std::abs(eventDist) < drawRect.height() &&
+			       eventDist < 0)
+			{
+			  snappedHorizontal = true;
+			  _lastPos = this->scenePos();
+			  this->setPos(this->scenePos().x(),
+				       guide->getOrientationPoint().y() - 20);
+			  scene->occurrencePosJumped(this, this->scenePos());
+			}
+		    }
+		}
+	    }
+	}
+      if (!snappedHorizontal)
+	{
+	  QPointF currentPos = this->scenePos();
+	  qreal currentX = currentPos.x();
+	  QPointF newPos = event->scenePos();
+	  newPos.setX(currentX);
+	  _lastPos = this->scenePos();
+	  this->setPos(newPos);
+	  scene->occurrencePosJumped(this, this->scenePos());
+	}
       if (_occurrenceLabelPtr != NULL) 
 	{
-	  _occurrenceLabelPtr->setNewPos(newPos);
+	  _occurrenceLabelPtr->setNewPos(this->scenePos());
 	}
-      myScene->relevantChange();
+      scene->relevantChange();
     }
+}
+
+QPointF OccurrenceItem::getLastPos()
+{
+  return _lastPos;
 }
 
 void OccurrenceItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  

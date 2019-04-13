@@ -29,6 +29,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 Scene::Scene(QObject *parent) : QGraphicsScene(parent) 
 {
+  _selectedOccurrencePtr = NULL;
   _snapGuides = false;
   _moveOn = false;
   _lineMoveOn = false;
@@ -621,6 +622,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  occurrence->setSelected(true);
 		  _selectedOccurrencePtr = occurrence;
 		  _moveOn = true;
+		  QGraphicsScene::mousePressEvent(event);
 		}
 	      else if (line) 
 		{
@@ -1281,7 +1283,6 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  abstract->getLabel()->setNewPos(abstract->scenePos());
 		}
-
 	      QListIterator<QGraphicsItem*> it(items());
 	      while (it.hasNext())
 		{
@@ -3056,19 +3057,6 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	      _moveOn = false;
 	    }
 	}
-      else 
-	{
-	  if (_selectedOccurrencePtr && _moveOn) 
-	    {
-	      emit moveLine(_selectedOccurrencePtr, event->scenePos());
-	      emit relevantChange();
-	    }
-	  else if (_selectedOccurrencePtr && !_moveOn) 
-	    {
-	      emit moveItems(_selectedOccurrencePtr, event->scenePos());
-	      emit relevantChange();
-	    }
-	}
       GraphicsView *view = qobject_cast<GraphicsView*>(views()[0]);
       BandlessGraphicsView *bandless = qobject_cast<BandlessGraphicsView*>(views()[0]);
       if (view) 
@@ -3549,6 +3537,19 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 OccurrenceItem* Scene::getSelectedOccurrence() 
 {
   return _selectedOccurrencePtr;
+}
+
+void Scene::occurrencePosJumped(OccurrenceItem *item, QPointF newPos)
+{
+  if (_moveOn)
+    {
+      emit moveLine(item, newPos);
+    }
+  else
+    {
+      emit moveItems(item, newPos);
+    }
+  emit relevantChange();
 }
 
 bool Scene::isPreparingArea()

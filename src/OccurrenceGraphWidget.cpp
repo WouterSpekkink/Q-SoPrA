@@ -256,6 +256,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   addVerticalGuideLineButton->setIconSize(QSize(20, 20));
   addVerticalGuideLineButton->setMinimumSize(40, 40);
   addVerticalGuideLineButton->setMaximumSize(40, 40);
+  snapGuidesButton = new QPushButton(tr("Toggle snap guides"), this);
+  snapGuidesButton->setCheckable(true);
   
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -327,6 +329,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setTimeLineWidth(int)));
   connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
   connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
+  connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
   connect(this, SIGNAL(sendMajorInterval(qreal &)), scene, SLOT(setMajorInterval(qreal &)));
   connect(this, SIGNAL(sendMinorDivision(qreal &)), scene, SLOT(setMinorDivision(qreal &)));
   connect(this, SIGNAL(sendMajorTickSize(qreal &)), scene, SLOT(setMajorTickSize(qreal &)));
@@ -428,6 +431,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
   guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
   guidesLayout->setAlignment(Qt::AlignRight);
   drawHelpLayout->addLayout(guidesLayout);
   mainLayout->addLayout(drawHelpLayout);
@@ -1039,6 +1043,7 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   fillOpacitySlider->setEnabled(state);
   addHorizontalGuideLineButton->setEnabled(state);
   addVerticalGuideLineButton->setEnabled(state);
+  snapGuidesButton->setEnabled(state);
 }
 
 void OccurrenceGraphWidget::updateCases() 
@@ -2453,14 +2458,14 @@ void OccurrenceGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
     }
   if (source != NULL) 
     {
-      qreal currentY = source->scenePos().y();
+      qreal currentY = source->getLastPos().y();
       qreal newY = pos.y();
       qreal yDiff = newY - currentY;
       it3.toFront();
       while (it3.hasNext()) 
 	{
 	  OccurrenceItem *current = it3.next();
-	  if (current->scenePos().x() == source->scenePos().x()) 
+	  if (current->scenePos().x() == source->scenePos().x() && current != source) 
 	    {
 	      current->setPos(current->scenePos().x(), current->scenePos().y() + yDiff);
 	      current->getLabel()->setNewPos(current->scenePos());
@@ -2494,7 +2499,7 @@ void OccurrenceGraphWidget::processMoveLine(QGraphicsItem *item, QPointF pos)
     }
   if (source != NULL) 
     {
-      qreal currentY = source->scenePos().y();
+      qreal currentY = source->getLastPos().y();
       qreal newY = pos.y();
       qreal yDiff = newY - currentY;
       if (!source->isGrouped()) 
@@ -2504,7 +2509,7 @@ void OccurrenceGraphWidget::processMoveLine(QGraphicsItem *item, QPointF pos)
 	    {
 	      OccurrenceItem *current = it3.next();
 	      if (current->getAttribute() == source->getAttribute() &&
-		  !current->isGrouped()) 
+		  !current->isGrouped() && current != source) 
 		{
 		  current->setPos(current->scenePos().x(), current->scenePos().y() + yDiff);
 		  current->getLabel()->setNewPos(current->scenePos());
@@ -2688,6 +2693,18 @@ void OccurrenceGraphWidget::addVerticalGuideLine(const QPointF &pos)
   scene->addItem(guide);
   guide->setOrientationPoint(pos);
   fixZValues();
+}
+
+void OccurrenceGraphWidget::toggleSnapGuides()
+{
+  if (snapGuidesButton->isChecked())
+    {
+      scene->setSnapGuides(true);
+    }
+  else
+    {
+      scene->setSnapGuides(false);
+    }
 }
 
 void OccurrenceGraphWidget::setLineColor()
@@ -5928,6 +5945,8 @@ void OccurrenceGraphWidget::cleanUp()
   _presentAttributes.clear();
   _presentRelationships.clear();
   _checkedCases.clear();
+  snapGuidesButton->setChecked(false);
+  toggleSnapGuides();
   incidentLabelsOnlyButton->setChecked(false);
   attributeLabelsOnlyButton->setChecked(false);
   setGraphControls(false);
