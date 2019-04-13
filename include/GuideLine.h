@@ -55,7 +55,8 @@ protected:
   // Overriding protected functions
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
   void calculate();
-  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
   void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
@@ -66,6 +67,7 @@ private:
   QPointF _startPos;
   QPointF _endPos;
   bool _horizontal;
+  bool _moving;
 };
 
 #endif

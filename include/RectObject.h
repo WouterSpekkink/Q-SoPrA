@@ -56,6 +56,7 @@ public:
   void setRotationValue(const qreal &newRotation);
   void setPenWidth(const int &width);
   void setPenStyle(const int &style);
+  void setRotating(bool state);
 
   // Getters
   QColor getColor();
@@ -72,6 +73,7 @@ public:
   qreal getRight();
   qreal getTop();
   qreal getBottom();
+  bool getRotating();
   
   // Public function for moving object
   void moveCenter(const QPointF &center);
@@ -82,19 +84,25 @@ public:
 
 protected:
   // Overrides of events
-  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   virtual void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
   
 private:
   // Private variables
   QRectF _drawRect;
+  QPointF _lastPos;
+  QPointF _lastEventPos;
   QColor _color;
   QColor _fillColor;
   qreal _rotation;
   int _penWidth;
   int _penStyle;
+  bool _moving;
+  bool _rotating;
+  bool _manipulating;
 };
 
 #endif

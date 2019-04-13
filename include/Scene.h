@@ -127,19 +127,9 @@ private:
   // Private variables
   bool _moveOn;
   bool _lineMoveOn;
-  bool _moveLineObject;
-  bool _manipulateEllipse;
-  bool _moveEllipse;
-  bool _manipulateRect;
   bool _rotateEllipse;
-  bool _moveRect;
   bool _rotateRect;
-  bool _moveText;
-  bool _manipulateText;
   bool _rotateText;
-  bool _moveTimeLine;
-  bool _manipulateTimeLine;
-  bool _moveGuideLine;
   bool _hierarchyMove;
   bool _eventWidthChange;
   bool _moveNetworkNodeLabel;

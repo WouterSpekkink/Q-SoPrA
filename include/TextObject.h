@@ -39,10 +39,12 @@ public:
   
   // Setters
   void setRotationValue(const qreal &rotation);
+  void setRotating(bool state);
   
   // Getters
   qreal getRotationValue();
   QPointF getCenter();
+  bool isRotating();
 
   // Type checking
   enum {Type = UserType + 12};
@@ -50,13 +52,20 @@ public:
   
 protected:
   // Overriding events
-  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   virtual void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   
 private:
   // Private variable
   qreal _rotation;
+  QPointF _lastPos;
+  QPointF _memPos;
+  QPointF _lastEventPos;
+  bool _moving;
+  bool _rotating;
+  bool _manipulating;
 };
 
 #endif

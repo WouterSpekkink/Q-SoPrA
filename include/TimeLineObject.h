@@ -78,7 +78,8 @@ protected:
   // Overriding protected functions
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
   //void calculate();
-  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
   void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
@@ -92,10 +93,17 @@ private:
   qreal _minorTickDivision;
   qreal _majorTickSize;
   qreal _minorTickSize;
+  QPointF _lastEventPos;
+  qreal _lastStartX;
+  qreal _lastEndX;
+  qreal _lastY;
+  QPointF _lastCenterPos;
   QColor _color;
   int _penWidth;
   bool _firstTick;
   bool _forceLastTick;
+  bool _moving;
+  bool _manipulating;
   
 };
 

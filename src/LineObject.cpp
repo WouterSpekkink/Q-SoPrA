@@ -20,6 +20,7 @@ LineObject::LineObject(QPointF startPos,
   _penStyle = 1;
   setAcceptHoverEvents(true);
   updatePosition();
+  _moving = false;
 }
 
 
@@ -96,8 +97,6 @@ void LineObject::calculate()
 				     cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _tempLine1.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
 				     cos(angle + Pi - Pi / 3) * arrowSize);
-
-  
   _arrowP3 = _tempLine2.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
 				     cos(angle2 + Pi / 3) * arrowSize);
   _arrowP4 = _tempLine2.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
@@ -200,13 +199,58 @@ int LineObject::type() const
   return Type;
 }
 
-void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *) 
+void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
+  _moving = true;
+  _lastEventPos = event->scenePos();
+  _lastStartPos = this->getStartPos();
+  _lastEndPos = this->getEndPos();
+  _lastCenterPos = event->scenePos();
   QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+}
+
+void LineObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+  Scene *scene = qobject_cast<Scene*>(this->scene());
+  if (_moving)
+    {
+      QPointF newPos = event->scenePos();
+      qreal xDist = sqrt(pow(newPos.x() - _lastCenterPos.x(), 2));
+      qreal yDist = sqrt(pow(newPos.y() - _lastCenterPos.y(), 2));
+      qreal newXDiff = newPos.x() - _lastEventPos.x();
+      qreal newYDiff = newPos.y() - _lastEventPos.y();
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  if (std::abs(xDist) > std::abs(yDist))
+	    {
+	      this->setStartPos(this->mapToScene(QPointF(this->getStartPos().x() + newXDiff,
+							 _lastStartPos.y())));
+	      this->setEndPos(this->mapToScene(this->getEndPos().x() + newXDiff,
+					       _lastEndPos.y()));
+	    }
+	  else if (std::abs(xDist) < std::abs(yDist))
+	    {
+	      this->setStartPos(this->mapToScene(QPointF(_lastStartPos.x(),
+							 this->getStartPos().y() + newYDiff)));
+	      this->setEndPos(this->mapToScene(QPointF(_lastEndPos.x(),
+						       this->getEndPos().y() + newYDiff)));
+	    }
+	}
+      else
+	{
+	  this->setStartPos(this->mapToScene(this->getStartPos() +
+					     QPointF(newXDiff, newYDiff)));
+	  this->setEndPos(this->mapToScene(this->getEndPos() +
+					   QPointF(newXDiff, newYDiff)));
+	}
+      _lastEventPos = event->scenePos();
+      scene->relevantChange();
+    }
 }
 
 void LineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
 {
+  _moving = false;
   QApplication::restoreOverrideCursor();
 }
 

@@ -11,6 +11,7 @@ GuideLine::GuideLine(bool horizontal, QGraphicsItem *parent)
   _orientationPoint = QPointF(0.0, 0.0);
   setFlag(QGraphicsItem::ItemIsSelectable, true);
   setAcceptHoverEvents(true);
+  _moving = false;
 }
 
 QRectF GuideLine::boundingRect() const 
@@ -105,10 +106,20 @@ void GuideLine::mousePressEvent(QGraphicsSceneMouseEvent *)
     {
       QApplication::setOverrideCursor(Qt::SizeHorCursor);
     }
+  _moving = true;
+}
+
+void GuideLine::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
+{
+  if (_moving)
+    {
+      this->setOrientationPoint(event->scenePos());
+    }
 }
 
 void GuideLine::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
 {
+  _moving = false;
   QApplication::restoreOverrideCursor();
 }
 

@@ -28,6 +28,8 @@ TimeLineObject::TimeLineObject(qreal startX,
   setAcceptHoverEvents(true);
   _firstTick = true;
   _forceLastTick = false;
+  _moving = false;
+  _manipulating = false;
 }
 
 QRectF TimeLineObject::boundingRect() const 
@@ -246,13 +248,79 @@ qreal TimeLineObject::getMinorTickSize()
   return _minorTickSize;
 }
 
-void TimeLineObject::mousePressEvent(QGraphicsSceneMouseEvent *) 
+void TimeLineObject::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
+  if (event->modifiers() & Qt::ShiftModifier)
+    {
+      _manipulating = true;
+    }
+  else
+    {
+      _moving = true;
+      _lastEventPos = event->scenePos();
+      _lastStartX = this->getStartX();
+      _lastEndX = this->getEndX();
+      _lastY = this->getY();
+      _lastCenterPos = event->scenePos();
+    }
   QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+}
+
+void TimeLineObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
+{
+  Scene *scene = qobject_cast<Scene*>(this->scene());
+  if (_moving)
+    {
+      QPointF newPos = event->scenePos();
+      qreal newXDiff = newPos.x() - _lastEventPos.x();
+      qreal xDist = sqrt(pow(newPos.x() - _lastCenterPos.x(), 2));
+      qreal yDist = sqrt(pow(newPos.y() - _lastCenterPos.y(), 2));
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  if (std::abs(xDist) > std::abs(yDist))
+	    {
+	      this->setStartX(this->getStartX() + newXDiff);
+	      this->setEndX(this->getEndX() + newXDiff);
+	      this->setY(_lastY);
+	    }
+	  else if (std::abs(xDist) < std::abs(yDist))
+	    {
+	      this->setStartX(_lastStartX);
+	      this->setEndX(_lastEndX);
+	      this->setY(event->scenePos().y());
+	    }
+	}
+      else
+	{
+	  this->setStartX(this->getStartX() + newXDiff);
+	  this->setEndX(this->getEndX() + newXDiff);
+	  this->setY(event->scenePos().y());
+	}
+      _lastEventPos = event->scenePos();
+      scene->relevantChange();
+    }
+  else if (_manipulating)
+    {
+      qreal startX = this->getStartX();
+      qreal endX = this->getEndX();
+      qreal distStartX = sqrt(pow(event->scenePos().x() - startX, 2));
+      qreal distEndX = sqrt(pow(event->scenePos().x() - endX, 2));
+      if (distStartX < distEndX) 
+	{
+	  this->setStartX(event->scenePos().x());
+	}
+      else 
+	{
+	  this->setEndX(event->scenePos().x());
+	}
+      scene->relevantChange();
+    }
 }
 
 void TimeLineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
 {
+  _moving = false;
+  _manipulating = false;
   QApplication::restoreOverrideCursor();
 }
 

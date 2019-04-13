@@ -70,7 +70,8 @@ protected:
   // Overriding protected functions
   void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
   void calculate();
-  void mousePressEvent(QGraphicsSceneMouseEvent *) override;
+  void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
+  void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseReleaseEvent(QGraphicsSceneMouseEvent *) override;
   void hoverMoveEvent(QGraphicsSceneHoverEvent *) override;
   void hoverLeaveEvent(QGraphicsSceneHoverEvent *) override;
@@ -80,6 +81,10 @@ private:
   QPainterPath _strokePath;
   QPointF _startPos;
   QPointF _endPos;
+  QPointF _lastEventPos;
+  QPointF _lastStartPos;
+  QPointF _lastCenterPos;
+  QPointF _lastEndPos;
   QColor _color;
   QLineF _tempLine1;
   QLineF _tempLine2;
@@ -91,6 +96,7 @@ private:
   QPointF _arrowP4;
   bool _arrow1On;
   bool _arrow2On;
+  bool _moving;
   int _penWidth;
   int _penStyle;
   
