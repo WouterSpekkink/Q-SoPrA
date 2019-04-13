@@ -42,6 +42,7 @@ public:
 
   // Getters
   QPointF getOrientationPoint();
+  bool isHorizontal();
 
   // New function for correct drawing
   void updatePosition();

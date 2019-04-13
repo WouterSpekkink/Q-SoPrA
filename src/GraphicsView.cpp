@@ -45,6 +45,7 @@ void GraphicsView::resizeEvent(QResizeEvent *)
 
 void GraphicsView::mousePressEvent(QMouseEvent *event) 
 {
+  Scene *scene = qobject_cast<Scene*>(this->scene());
   if (event->modifiers() & Qt::ShiftModifier) 
     {
       this->setDragMode(QGraphicsView::NoDrag);
@@ -52,7 +53,11 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
     }
   if (event->button() == Qt::RightButton)
     {
-      Scene *scene = qobject_cast<Scene*>(this->scene());
+      if (scene->isRotating())
+	{
+	  scene->stopRotation();
+	}
+      this->setDragMode(QGraphicsView::NoDrag);
       if (scene->isPreparingArea())
 	{
 	  scene->resetAreas();
@@ -60,20 +65,34 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	}
       if (event->modifiers() & Qt::ControlModifier)
 	{
-	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->pos()));
-	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->pos()));
-	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->pos()));
-	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->pos()));
-	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->pos()));
-	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
-	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
-	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
-	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
-	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
-	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
-	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->pos()));
-	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->pos()));
-	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->pos()));
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>
+	    (itemAt(event->pos()));
+	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>
+	    (itemAt(event->pos()));
+	  Linkage *linkage = qgraphicsitem_cast<Linkage*>
+	    (itemAt(event->pos()));
+	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>
+	    (itemAt(event->pos()));
+	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>
+	    (itemAt(event->pos()));
+	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>
+	    (itemAt(event->pos()));
+	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>
+	    (itemAt(event->pos()));
+	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
+	    (itemAt(event->pos()));
+	  LineObject *line = qgraphicsitem_cast<LineObject*>
+	    (itemAt(event->pos()));
+	  TextObject *text = qgraphicsitem_cast<TextObject*>
+	    (itemAt(event->pos()));
+	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>
+	    (itemAt(event->pos()));
+	  RectObject *rect = qgraphicsitem_cast<RectObject*>
+	    (itemAt(event->pos()));
+	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>
+	    (itemAt(event->pos()));
+	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>
+	    (itemAt(event->pos()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -239,10 +258,32 @@ void GraphicsView::mousePressEvent(QMouseEvent *event)
 	    }
 	}
     }
+  else if (event->button() == Qt::MiddleButton)
+    {
+      this->setDragMode(QGraphicsView::NoDrag);      
+      TextObject *text = qgraphicsitem_cast<TextObject*>
+	(itemAt(event->pos()));
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>
+	(itemAt(event->pos()));
+      RectObject *rect = qgraphicsitem_cast<RectObject*>
+	(itemAt(event->pos()));
+      if (text) 
+	{
+	  text->setSelected(true);
+	}
+      else if (ellipse) 
+	{
+	  ellipse->setSelected(true);
+	}
+      else if (rect) 
+	{
+	  rect->setSelected(true);
+	}
+      QGraphicsView::mousePressEvent(event);
+    }
   else if (event->button() == Qt::LeftButton)
     {
-      Scene *scene = qobject_cast<Scene*>(this->scene());
-      if (scene->isPreparingArea())
+      if (scene->isPreparingArea() || scene->isRotating())
 	{
 	  this->setDragMode(QGraphicsView::NoDrag);
 	}

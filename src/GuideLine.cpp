@@ -90,6 +90,11 @@ QPointF GuideLine::getOrientationPoint()
   return _orientationPoint;
 }
 
+bool GuideLine::isHorizontal()
+{
+  return _horizontal;
+}
+
 void GuideLine::mousePressEvent(QGraphicsSceneMouseEvent *) 
 {
   if (_horizontal)

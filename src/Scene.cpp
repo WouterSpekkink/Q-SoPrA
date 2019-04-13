@@ -399,57 +399,84 @@ void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent)
     }
 }
 
+void Scene::stopRotation()
+{
+  if (_rotateEllipse)
+    {
+      _rotateEllipse = false;
+      _selectedEllipsePtr = NULL;
+    }
+  if (_rotateRect)
+    {
+      _rotateRect = false;
+      _selectedRectPtr = NULL;
+    }
+  if (_rotateText)
+    {
+      _rotateText = false;
+      _selectedTextPtr = NULL;
+    }
+}
+
 void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
+  if (_eventWidthChange) 
+    {
+      _eventWidthChange = false;
+    }
+  if (_gettingHorizontalGuideLine)
+    {
+      emit sendHorizontalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
+      _gettingHorizontalGuideLine = false;
+      if (_tempGuideLinePtr)
+	{
+	  delete _tempGuideLinePtr;
+	    }
+    }
+  if (_gettingVerticalGuideLine)
+    {
+      emit sendVerticalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
+      _gettingVerticalGuideLine = false;
+      if (_tempGuideLinePtr)
+	{
+	  delete _tempGuideLinePtr;
+	}
+    }
+  stopRotation();
+  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>
+    (itemAt(event->scenePos(), QTransform()));
+  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>
+    (itemAt(event->scenePos(), QTransform()));
+  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>
+    (itemAt(event->scenePos(), QTransform()));
+  NetworkNodeLabel *networkLabel = qgraphicsitem_cast<NetworkNodeLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>
+    (itemAt(event->scenePos(), QTransform()));
+  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  LineObject *line = qgraphicsitem_cast<LineObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  TextObject *text = qgraphicsitem_cast<TextObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  RectObject *rect = qgraphicsitem_cast<RectObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>
+    (itemAt(event->scenePos(), QTransform()));	  
+  Linkage *linkage = qgraphicsitem_cast<Linkage*>
+    (itemAt(event->scenePos(), QTransform()));
+  GuideLine *guide = qgraphicsitem_cast<GuideLine*>
+    (itemAt(event->scenePos(), QTransform()));
   if (event->button() == Qt::LeftButton)
     {
-      if (_eventWidthChange) 
-	{
-	  _eventWidthChange = false;
-	}
-      if (_gettingHorizontalGuideLine)
-	{
-	  emit sendHorizontalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
-	  _gettingHorizontalGuideLine = false;
-	  if (_tempGuideLinePtr)
-	    {
-	      delete _tempGuideLinePtr;
-	    }
-	}
-      if (_gettingVerticalGuideLine)
-	{
-	  emit sendVerticalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
-	  _gettingVerticalGuideLine = false;
-	  if (_tempGuideLinePtr)
-	    {
-	      delete _tempGuideLinePtr;
-	    }
-	}
       if (event->modifiers() & Qt::ControlModifier) 
 	{
-	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->scenePos(),
-								      QTransform()));
-	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->scenePos(),
-								       QTransform()));
-	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->scenePos(),
-								     QTransform()));
-	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->scenePos(),
-									  QTransform()));
-	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
-									     QTransform()));
-	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
-										  QTransform()));
-	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									     QTransform()));
-	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
-										QTransform()));	  
-	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(),
-							   QTransform()));
-	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
@@ -586,73 +613,68 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  _selectedOccurrencePtr = occurrence;
 		  _moveOn = true;
 		}
-	      else if (text) 
+	      else if (line) 
 		{
 		  clearSelection();
-		  text->setSelected(true);
+		  _selectedLinePtr = line;
+		  line->setSelected(true);
 		  emit resetItemSelection();
-		  _selectedTextPtr = text;
-		  _rotateText = true;
-		  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+		  _moveLineObject = true;
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		  qApp->processEvents();
 		}
 	      else if (ellipse) 
 		{
 		  clearSelection();
+		  _selectedEllipsePtr = ellipse;
 		  ellipse->setSelected(true);
 		  emit resetItemSelection();
-		  _selectedEllipsePtr = ellipse;
-		  _rotateEllipse = true;
-		  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+		  _moveEllipse = true;
+		  _initPos = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		  qApp->processEvents();
 		}
 	      else if (rect) 
 		{
 		  clearSelection();
+		  _selectedRectPtr = rect;
 		  rect->setSelected(true);
 		  emit resetItemSelection();
-		  _selectedRectPtr = rect;
-		  _rotateRect = true;
-		  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+		  _moveRect = true;
+		  _initPos = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		  qApp->processEvents();
+		}
+	      else if (text) 
+		{
+		  clearSelection();
+		  text->setSelected(true);
+		  _selectedTextPtr = text;
+		  _lastMousePos = event->scenePos();
+		  _selectedTextPtr->resetTransform();
+		  QPointF currentPos = _selectedTextPtr->scenePos();
+		  _selectedTextPtr->setRotationValue(_selectedTextPtr->getRotationValue());
+		  _initPos = currentPos;
+		  _moveText = true;
 		}
 	      else if (timeline) 
 		{
 		  clearSelection();
+		  _selectedTimeLinePtr = timeline;
 		  timeline->setSelected(true);
 		  emit resetItemSelection();
-		  _selectedTimeLinePtr = timeline;
-		}
-	      else if (guide)
-		{
-		  clearSelection();
-		  guide->setSelected(true);
-		  _selectedGuideLine = guide;
-		  emit resetItemSelection();
+		  _moveTimeLine = true;
+		  _lastMousePos = event->scenePos();
+		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
+		  qApp->processEvents();
 		}
 	    }
 	}
       else if (event->modifiers() & Qt::ShiftModifier) 
 	{
-	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->scenePos(),
-								      QTransform()));
-	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->scenePos(),
-								       QTransform()));
-	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->scenePos(),
-								     QTransform()));
-	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->scenePos(),
-									  QTransform()));
-	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									     QTransform()));
-	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
-										QTransform()));
-	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
 	  if (incidentNodeLabel) 
 	    {
 	      incident = incidentNodeLabel->getNode();
@@ -771,33 +793,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	}
       else 
 	{
-	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->scenePos(),
-								      QTransform()));
-	  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>(itemAt(event->scenePos(),
-								       QTransform()));
-	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(itemAt(event->scenePos(),
-								     QTransform()));
-	  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>(itemAt(event->scenePos(),
-									  QTransform()));
-	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->scenePos(),
-									     QTransform()));
-	  NetworkNodeLabel *networkLabel = qgraphicsitem_cast<NetworkNodeLabel*>(itemAt(event->scenePos(),
-											QTransform()));
-	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->scenePos(),
-										  QTransform()));
-	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->scenePos(),
-											 QTransform()));
-	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->scenePos(),
-									     QTransform()));
-	  RectObject *rect = qgraphicsitem_cast<RectObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->scenePos(),
-								    QTransform()));
-	  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(itemAt(event->scenePos(),
-										QTransform()));
-	  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(itemAt(event->scenePos(), QTransform()));
 	  if (_gettingLinePoints)
 	    {
 	      _lastMousePos = event->scenePos();
@@ -954,6 +949,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  ellipse->setSelected(true);
 		  emit resetItemSelection();
 		  _moveEllipse = true;
+		  _initPos = event->scenePos();
 		  _lastMousePos = event->scenePos();
 		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		  qApp->processEvents();
@@ -965,6 +961,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  rect->setSelected(true);
 		  emit resetItemSelection();
 		  _moveRect = true;
+		  _initPos = event->scenePos();
 		  _lastMousePos = event->scenePos();
 		  QApplication::setOverrideCursor(Qt::SizeAllCursor);
 		  qApp->processEvents();
@@ -1002,6 +999,39 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      emit resetItemSelection();
 	      QGraphicsScene::mousePressEvent(event);
 	    }
+	}
+    }
+  else if(event->button() == Qt::MiddleButton)
+    {
+      if (text) 
+	{
+	  clearSelection();
+	  text->setSelected(true);
+	  emit resetItemSelection();
+	  _selectedTextPtr = text;
+	  _rotateText = true;
+	  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	  qApp->processEvents();
+	}
+      else if (ellipse) 
+	{
+	  clearSelection();
+	  ellipse->setSelected(true);
+	  emit resetItemSelection();
+	  _selectedEllipsePtr = ellipse;
+	  _rotateEllipse = true;
+	  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	  qApp->processEvents();
+	}
+      else if (rect) 
+	{
+	  clearSelection();
+	  rect->setSelected(true);
+	  emit resetItemSelection();
+	  _selectedRectPtr = rect;
+	  _rotateRect = true;
+	  QApplication::setOverrideCursor(Qt::SizeBDiagCursor);
+	  qApp->processEvents();
 	}
     }
   else
@@ -2212,23 +2242,115 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
       _selectedEllipsePtr->resetTransform();
       QPointF newPos = event->scenePos();
+      qreal xDist = sqrt(pow(newPos.x() - _initPos.x(), 2));
+      qreal yDist = sqrt(pow(newPos.y() - _initPos.y(), 2));		 
+      QPointF currentPos = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
       qreal newXDiff = newPos.x() - _lastMousePos.x();
       qreal newYDiff = newPos.y() - _lastMousePos.y();
-      _selectedEllipsePtr->moveCenter(_selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter()) +
-				      _selectedEllipsePtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  if (abs(xDist) > abs(yDist))
+	    {
+	      QPointF newCenter = QPointF(currentPos.x() + newXDiff,
+					  _initPos.y());
+	      _selectedEllipsePtr->moveCenter(_selectedEllipsePtr->mapFromScene(newCenter));
+	    }
+	  else if (abs(xDist) < abs(yDist))
+	    {
+	      QPointF newCenter = QPointF(_initPos.x(),
+					  currentPos.y() + newYDiff);
+	      _selectedEllipsePtr->moveCenter(_selectedEllipsePtr->mapFromScene(newCenter));
+	    }
+	}
+      else
+	{
+	  _selectedEllipsePtr->moveCenter(_selectedEllipsePtr->
+					  mapToScene(_selectedEllipsePtr->getCenter()) +
+	  				  _selectedEllipsePtr->
+					  mapFromScene(QPointF(newXDiff, newYDiff)));
+	}
       _lastMousePos = event->scenePos();
       _selectedEllipsePtr->setRotationValue(_selectedEllipsePtr->getRotationValue());
       emit relevantChange();
     }
   else if (_rotateEllipse) 
     {
-      _lastMousePos = event->scenePos();
       QPointF center = _selectedEllipsePtr->mapToScene(_selectedEllipsePtr->getCenter());
-      qreal dY = _lastMousePos.y() - center.y();
-      qreal dX = _lastMousePos.x() - center.x();
+      qreal dY = event->scenePos().y() - center.y();
+      qreal dX = event->scenePos().x() - center.x();
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  QVector<qreal> distVector;
+	  qreal dist_0 = abs(angle - 0);
+	  qreal dist_45 = abs(angle - 45);
+	  distVector.push_back(dist_45);
+	  qreal dist_90 = abs(angle - 90);
+	  distVector.push_back(dist_90);
+	  qreal dist_135 = abs(angle - 135);
+	  distVector.push_back(dist_135);
+	  qreal dist_180 = abs(angle - 180);
+	  distVector.push_back(dist_180);
+	  qreal dist_45n = abs(angle + 45);
+	  distVector.push_back(dist_45n);
+	  qreal dist_90n = abs(angle + 90);
+	  distVector.push_back(dist_90n);
+	  qreal dist_135n = abs(angle + 135);
+	  distVector.push_back(dist_135n);
+	  qreal dist_180n = abs(angle + 180);
+	  distVector.push_back(dist_180n);
+	  qreal minDist = dist_0;
+	  QVectorIterator<qreal> it(distVector);
+	  while (it.hasNext())
+	    {
+	      qreal currentDist = it.next();
+	      if (currentDist < minDist)
+		{
+		  minDist = currentDist;
+		}
+	    }
+	  if (minDist == dist_0)
+	    {
+	      _selectedEllipsePtr->setRotationValue(0);
+	    }
+	  else if (minDist == dist_45)
+	    {
+	      _selectedEllipsePtr->setRotationValue(45);
+	    }
+	  else if (minDist == dist_90)
+	    {
+	      _selectedEllipsePtr->setRotationValue(90);
+	    }
+	  else if (minDist == dist_135)
+	    {
+	      _selectedEllipsePtr->setRotationValue(135);
+	    }
+	  else if (minDist == dist_180)
+	    {
+	      _selectedEllipsePtr->setRotationValue(180);
+	    }
+	  else if (minDist == dist_45n)
+	    {
+	      _selectedEllipsePtr->setRotationValue(-45);
+	    }
+	  else if (minDist == dist_90n)
+	    {
+	      _selectedEllipsePtr->setRotationValue(-90);
+	    }
+	  else if (minDist == dist_135n)
+	    {
+	      _selectedEllipsePtr->setRotationValue(-135);
+	    }
+	  else if (minDist == dist_180n)
+	    {
+	      _selectedEllipsePtr->setRotationValue(-180);
+	    }
+	}
+      else
+	{
       _selectedEllipsePtr->setRotationValue(angle);
+	}
       emit relevantChange();
     }
   else if (_manipulateRect) 
@@ -2489,32 +2611,177 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     {
       _selectedRectPtr->resetTransform();
       QPointF newPos = event->scenePos();
+      qreal xDist = sqrt(pow(newPos.x() - _initPos.x(), 2));
+      qreal yDist = sqrt(pow(newPos.y() - _initPos.y(), 2));		 
+      QPointF currentPos = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
       qreal newXDiff = newPos.x() - _lastMousePos.x();
       qreal newYDiff = newPos.y() - _lastMousePos.y();
-      _selectedRectPtr->moveCenter(_selectedRectPtr->mapToScene(_selectedRectPtr->getCenter()) +
-				   _selectedRectPtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  if (abs(xDist) > abs(yDist))
+	    {
+	      QPointF newCenter = QPointF(currentPos.x() + newXDiff,
+					  _initPos.y());
+	      _selectedRectPtr->moveCenter(_selectedRectPtr->mapFromScene(newCenter));
+	    }
+	  else if (abs(xDist) < abs(yDist))
+	    {
+	      QPointF newCenter = QPointF(_initPos.x(),
+					  currentPos.y() + newYDiff);
+	      _selectedRectPtr->moveCenter(_selectedRectPtr->mapFromScene(newCenter));
+	    }
+	}
+      else
+	{
+	  _selectedRectPtr->moveCenter(_selectedRectPtr->mapToScene(_selectedRectPtr->getCenter()) +
+				       _selectedRectPtr->mapFromScene(QPointF(newXDiff, newYDiff)));
+	}
       _lastMousePos = event->scenePos();
       _selectedRectPtr->setRotationValue(_selectedRectPtr->getRotationValue());
       emit relevantChange();
     }
   else if (_rotateRect) 
     {
-      _lastMousePos = event->scenePos();
       QPointF center = _selectedRectPtr->mapToScene(_selectedRectPtr->getCenter());
-      qreal dY = _lastMousePos.y() - center.y();
-      qreal dX = _lastMousePos.x() - center.x();
+      qreal dY = event->scenePos().y() - center.y();
+      qreal dX = event->scenePos().x() - center.x();
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
-      _selectedRectPtr->setRotationValue(angle);
-      emit relevantChange();
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  QVector<qreal> distVector;
+	  qreal dist_0 = abs(angle - 0);
+	  qreal dist_45 = abs(angle - 45);
+	  distVector.push_back(dist_45);
+	  qreal dist_90 = abs(angle - 90);
+	  distVector.push_back(dist_90);
+	  qreal dist_135 = abs(angle - 135);
+	  distVector.push_back(dist_135);
+	  qreal dist_180 = abs(angle - 180);
+	  distVector.push_back(dist_180);
+	  qreal dist_45n = abs(angle + 45);
+	  distVector.push_back(dist_45n);
+	  qreal dist_90n = abs(angle + 90);
+	  distVector.push_back(dist_90n);
+	  qreal dist_135n = abs(angle + 135);
+	  distVector.push_back(dist_135n);
+	  qreal dist_180n = abs(angle + 180);
+	  distVector.push_back(dist_180n);
+	  qreal minDist = dist_0;
+	  QVectorIterator<qreal> it(distVector);
+	  while (it.hasNext())
+	    {
+	      qreal currentDist = it.next();
+	      if (currentDist < minDist)
+		{
+		  minDist = currentDist;
+		}
+	    }
+	  if (minDist == dist_0)
+	    {
+	      _selectedRectPtr->setRotationValue(0);
+	    }
+	  else if (minDist == dist_45)
+	    {
+	      _selectedRectPtr->setRotationValue(45);
+	    }
+	  else if (minDist == dist_90)
+	    {
+	      _selectedRectPtr->setRotationValue(90);
+	    }
+	  else if (minDist == dist_135)
+	    {
+	      _selectedRectPtr->setRotationValue(135);
+	    }
+	  else if (minDist == dist_180)
+	    {
+	      _selectedRectPtr->setRotationValue(180);
+	    }
+	  else if (minDist == dist_45n)
+	    {
+	      _selectedRectPtr->setRotationValue(-45);
+	    }
+	  else if (minDist == dist_90n)
+	    {
+	      _selectedRectPtr->setRotationValue(-90);
+	    }
+	  else if (minDist == dist_135n)
+	    {
+	      _selectedRectPtr->setRotationValue(-135);
+	    }
+	  else if (minDist == dist_180n)
+	    {
+	      _selectedRectPtr->setRotationValue(-180);
+	    }
+	}
+      else
+	{
+	  _selectedRectPtr->setRotationValue(angle);
+	  emit relevantChange();
+	}
     }
   else if (_moveText) 
     {
       _selectedTextPtr->resetTransform();
       QPointF newPos = event->scenePos();
+      qreal xDist = sqrt(pow(newPos.x() - _initPos.x(), 2));
+      qreal yDist = sqrt(pow(newPos.y() - _initPos.y(), 2));		 
+      QPointF currentPos = _selectedTextPtr->scenePos();
       qreal newXDiff = newPos.x() - _lastMousePos.x();
       qreal newYDiff = newPos.y() - _lastMousePos.y();
-      _selectedTextPtr->setPos(_selectedTextPtr->scenePos() + QPointF(newXDiff, newYDiff));
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  if (abs(xDist) > abs(yDist))
+	    {
+	      QPointF newCenter = QPointF(currentPos.x() + newXDiff,
+					  _initPos.y());
+	      _selectedTextPtr->setPos(newCenter);
+	    }
+	  else if (abs(xDist) < abs(yDist))
+	    {
+	      QPointF newCenter = QPointF(_initPos.x(),
+					  currentPos.y() + newYDiff);
+	      _selectedTextPtr->setPos(newCenter);
+	    }
+	}
+      else
+	{
+	  bool snapped = false;
+	  QListIterator<QGraphicsItem*> it(items());
+	  while (it.hasNext())
+	    {
+	      QGraphicsItem *item = it.next();
+	      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+	      if (guide)
+		{
+		  if (guide->isHorizontal())
+		    {
+		      qreal topDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().top() -
+					       guide->getOrientationPoint().y(), 2));
+		      qreal bottomDist = sqrt(pow(_selectedTextPtr->sceneBoundingRect().bottom() -
+					       guide->getOrientationPoint().y(), 2));
+		      qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+		      if (topDist < 10 && eventDist < 100 && eventDist > 0)
+			{
+			  snapped = true;
+			  _selectedTextPtr->setPos(currentPos.x() + newXDiff,
+						   guide->getOrientationPoint().y());
+			}
+		      if (bottomDist < 10 && eventDist > -100 && eventDist < 0)
+			{
+			  snapped = true;
+			  _selectedTextPtr->setPos(currentPos.x() + newXDiff,
+						   guide->getOrientationPoint().y() -
+						   _selectedTextPtr->sceneBoundingRect().height());
+			}
+		    }
+		}
+	    }
+	  if (!snapped)
+	    {
+	      _selectedTextPtr->setPos(currentPos + QPointF(newXDiff, newYDiff));
+	    }
+	}
       _lastMousePos = event->scenePos();
       _selectedTextPtr->setRotationValue(_selectedTextPtr->getRotationValue());
       emit relevantChange();
@@ -2537,14 +2804,83 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
   else if (_rotateText) 
     {
-      _lastMousePos = event->scenePos();
       QPointF center = _selectedTextPtr->mapToScene(_selectedTextPtr->getCenter());
-      qreal dY = center.y() - _lastMousePos.y();
-      qreal dX = center.x() - _lastMousePos.x();
+      qreal dY = center.y() - event->scenePos().y();
+      qreal dX = center.x() - event->scenePos().x();
       qreal angle = atan2(dY, dX);
       angle = qRadiansToDegrees(angle);
-      _selectedTextPtr->setRotationValue(angle);
-      emit relevantChange();
+      if (event->modifiers() & Qt::ControlModifier)
+	{
+	  QVector<qreal> distVector;
+	  qreal dist_0 = abs(angle - 0);
+	  qreal dist_45 = abs(angle - 45);
+	  distVector.push_back(dist_45);
+	  qreal dist_90 = abs(angle - 90);
+	  distVector.push_back(dist_90);
+	  qreal dist_135 = abs(angle - 135);
+	  distVector.push_back(dist_135);
+	  qreal dist_180 = abs(angle - 180);
+	  distVector.push_back(dist_180);
+	  qreal dist_45n = abs(angle + 45);
+	  distVector.push_back(dist_45n);
+	  qreal dist_90n = abs(angle + 90);
+	  distVector.push_back(dist_90n);
+	  qreal dist_135n = abs(angle + 135);
+	  distVector.push_back(dist_135n);
+	  qreal dist_180n = abs(angle + 180);
+	  distVector.push_back(dist_180n);
+	  qreal minDist = dist_0;
+	  QVectorIterator<qreal> it(distVector);
+	  while (it.hasNext())
+	    {
+	      qreal currentDist = it.next();
+	      if (currentDist < minDist)
+		{
+		  minDist = currentDist;
+		}
+	    }
+	  if (minDist == dist_0)
+	    {
+	      _selectedTextPtr->setRotationValue(0);
+	    }
+	  else if (minDist == dist_45)
+	    {
+	      _selectedTextPtr->setRotationValue(45);
+	    }
+	  else if (minDist == dist_90)
+	    {
+	      _selectedTextPtr->setRotationValue(90);
+	    }
+	  else if (minDist == dist_135)
+	    {
+	      _selectedTextPtr->setRotationValue(135);
+	    }
+	  else if (minDist == dist_180)
+	    {
+	      _selectedTextPtr->setRotationValue(180);
+	    }
+	  else if (minDist == dist_45n)
+	    {
+	      _selectedTextPtr->setRotationValue(-45);
+	    }
+	  else if (minDist == dist_90n)
+	    {
+	      _selectedTextPtr->setRotationValue(-90);
+	    }
+	  else if (minDist == dist_135n)
+	    {
+	      _selectedTextPtr->setRotationValue(-135);
+	    }
+	  else if (minDist == dist_180n)
+	    {
+	      _selectedTextPtr->setRotationValue(-180);
+	    }
+	}
+      else
+	{
+	  _selectedTextPtr->setRotationValue(angle);
+	  emit relevantChange();
+	}
     }
   else if (_moveGuideLine)
     {
@@ -2624,7 +2960,7 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 
 void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) 
 {
-  if (!(event->modifiers() & Qt::ControlModifier)) 
+  if (!event->modifiers())
     {
       IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(itemAt(event->scenePos(), QTransform()));
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(itemAt(event->scenePos(), QTransform()));
@@ -2907,21 +3243,31 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(CHANGETEXT, this);
 	  menu.addAction(action1);
-	  QAction *action2 = new QAction(COPYOBJECT, this);
+	  QAction *action2 = new QAction(ROTATETEXT, this);
 	  menu.addAction(action2);
-	  QAction *action3 = new QAction(DELETETEXT, this);
+	  QAction *action3 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action3);
-	  QAction *action4 = new QAction(ONEFORWARD, this);
-	  positionMenu.addAction(action4);
-	  QAction *action5 = new QAction(ONEBACKWARD, this);
+	  QAction *action4 = new QAction(DELETETEXT, this);
+	  menu.addAction(action4);
+	  QAction *action5 = new QAction(ONEFORWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(BRINGFORWARD, this);
+	  QAction *action6 = new QAction(ONEBACKWARD, this);
 	  positionMenu.addAction(action6);
-	  QAction *action7 = new QAction(BRINGBACKWARD, this);
+	  QAction *action7 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action7);
+	  QAction *action8 = new QAction(BRINGBACKWARD, this);
+	  positionMenu.addAction(action8);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
-	      emit TextContextMenuAction(action->text());
+	      if (action->text() == ROTATETEXT)
+		{
+		  _selectedTextPtr = text;
+		  _rotateText = true;
+		}
+	      else
+		{
+		  emit TextContextMenuAction(action->text());
+		}
 	    }
 	}
       else if (ellipse) 
@@ -2933,19 +3279,29 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action1);
-	  QAction *action2 = new QAction(DELETEELLIPSE, this);
+	  QAction *action2 = new QAction(ROTATEELLIPSE, this);
 	  menu.addAction(action2);
-	  QAction *action3 = new QAction(ONEFORWARD, this);
-	  positionMenu.addAction(action3);
-	  QAction *action4 = new QAction(ONEBACKWARD, this);
+	  QAction *action3 = new QAction(DELETEELLIPSE, this);
+	  menu.addAction(action3);
+	  QAction *action4 = new QAction(ONEFORWARD, this);
 	  positionMenu.addAction(action4);
-	  QAction *action5 = new QAction(BRINGFORWARD, this);
+	  QAction *action5 = new QAction(ONEBACKWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(BRINGBACKWARD, this);
+	  QAction *action6 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action6);
+	  QAction *action7 = new QAction(BRINGBACKWARD, this);
+	  positionMenu.addAction(action7);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
-	      emit EllipseContextMenuAction(action->text());
+	      if (action->text() == ROTATEELLIPSE)
+		{
+		  _selectedEllipsePtr = ellipse;
+		  _rotateEllipse = true;
+		}
+	      else
+		{
+		  emit EllipseContextMenuAction(action->text());
+		}
 	    }
 	}
       else if (rect) 
@@ -2957,19 +3313,29 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  menu.addMenu(&positionMenu);
 	  QAction *action1 = new QAction(COPYOBJECT, this);
 	  menu.addAction(action1);
-	  QAction *action2 = new QAction(DELETERECT, this);
+	  QAction *action2 = new QAction(ROTATERECT, this);
 	  menu.addAction(action2);
-	  QAction *action3 = new QAction(ONEFORWARD, this);
-	  positionMenu.addAction(action3);
-	  QAction *action4 = new QAction(ONEBACKWARD, this);
+	  QAction *action3 = new QAction(DELETERECT, this);
+	  menu.addAction(action3);
+	  QAction *action4 = new QAction(ONEFORWARD, this);
 	  positionMenu.addAction(action4);
-	  QAction *action5 = new QAction(BRINGFORWARD, this);
+	  QAction *action5 = new QAction(ONEBACKWARD, this);
 	  positionMenu.addAction(action5);
-	  QAction *action6 = new QAction(BRINGBACKWARD, this);
+	  QAction *action6 = new QAction(BRINGFORWARD, this);
 	  positionMenu.addAction(action6);
+	  QAction *action7 = new QAction(BRINGBACKWARD, this);
+	  positionMenu.addAction(action7);
 	  if (QAction *action = menu.exec(event->screenPos())) 
 	    {
-	      emit RectContextMenuAction(action->text());
+	      if (action->text() == ROTATERECT)
+		{
+		  _selectedRectPtr = rect;
+		  _rotateRect = true;
+		}
+	      else
+		{
+		  emit RectContextMenuAction(action->text());
+		}
 	    }
 	}
       else if (timeline)
@@ -3028,6 +3394,18 @@ bool Scene::isPreparingArea()
       _gettingDoubleArrowPoints || _gettingTimeLinePoints ||
       _gettingEllipseArea || _gettingRectArea || _gettingTextArea ||
       _gettingHorizontalGuideLine || _gettingVerticalGuideLine)
+    {
+      return true;
+    }
+  else
+    {
+      return false;
+    }
+}
+
+bool Scene::isRotating()
+{
+  if (_rotateEllipse || _rotateRect || _rotateText)
     {
       return true;
     }

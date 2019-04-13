@@ -57,9 +57,11 @@ public:
   QRectF itemsBoundingRect() const;
   OccurrenceItem* getSelectedOccurrence(); // Used by occurrence item
   void resetAreas();
+  void stopRotation();
 
   // Getters
   bool isPreparingArea();
+  bool isRotating();
 
 signals:
   void posChanged(IncidentNode *, qreal &dist);
