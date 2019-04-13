@@ -105,13 +105,13 @@ protected:
   // Overrides of events
   void mousePressEvent(QGraphicsSceneMouseEvent *event) override;
   void mouseMoveEvent(QGraphicsSceneMouseEvent *event) override;
-  void mouseReleaseEvent(QGraphicsSceneMouseEvent *event) override;
   
 private:
   // Private variables
   QColor _color;
   QColor _selectionColor;
   QPointF _originalPos;
+  QPointF _lastPos;
   int _id;
   int _width;
   int _order;

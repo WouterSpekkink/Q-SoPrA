@@ -101,13 +101,13 @@ void IncidentNode::mousePressEvent(QGraphicsSceneMouseEvent *event)
 
 void IncidentNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
 {
+  Scene *scene = qobject_cast<Scene*>(this->scene());
   if ((event->modifiers() & Qt::ShiftModifier) ||
       (isCopy() && (event->modifiers() & Qt::ControlModifier))) 
     {
       setCursor(Qt::SizeAllCursor);
       bool snappedHorizontal = false;
       bool snappedVertical = false;
-      Scene *scene = qobject_cast<Scene*>(this->scene());
       if (scene->isSnappingGuides())
 	{
 	  QRectF drawRect = sceneBoundingRect().marginsRemoved(QMargins(6,6,6,6));
@@ -231,17 +231,58 @@ void IncidentNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
   else 
     {
       setCursor(Qt::SizeVerCursor);
-      qreal oldX = _originalPos.x();
-      QPointF currentPos = this->scenePos();
-      qreal currentX = currentPos.x();
-      QPointF newPos = event->scenePos();
-      newPos.setX(currentX);
-      this->setPos(newPos);
+      bool snappedHorizontal = false;
+      Scene *scene = qobject_cast<Scene*>(this->scene());
+      if (scene->isSnappingGuides())
+	{
+	  QRectF drawRect = sceneBoundingRect().marginsRemoved(QMargins(6,6,6,6));
+	  QListIterator<QGraphicsItem*> it(scene->items());
+	  while (it.hasNext())
+	    {
+	      QGraphicsItem *item = it.next();
+	      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+	      if (guide)
+		{
+		  if (guide->isHorizontal())
+		    {
+		      qreal topDist = sqrt(pow(drawRect.top() - 
+					       guide->getOrientationPoint().y(), 2));
+		      qreal bottomDist = sqrt(pow(drawRect.bottom() -
+						  guide->getOrientationPoint().y(), 2));
+		      qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+		      if (topDist < 10 &&
+			  std::abs(eventDist) < 40 &&
+			  eventDist > 0)
+			{
+			  snappedHorizontal = true;
+			  this->setPos(this->scenePos().x(),
+				       guide->getOrientationPoint().y() + 20);
+			}
+		      else if (bottomDist < 10 &&
+			       std::abs(eventDist) < drawRect.height() &&
+			       eventDist < 0)
+			{
+			  snappedHorizontal = true;
+			  this->setPos(this->scenePos().x(),
+				       guide->getOrientationPoint().y() - 20);
+			}
+		    }
+		}
+	    }
+	}
+      if (!snappedHorizontal)
+	{
+	  QPointF currentPos = this->scenePos();
+	  qreal currentX = currentPos.x();
+	  QPointF newPos = event->scenePos();
+	  newPos.setX(currentX);
+	  this->setPos(newPos);
+	}
       if (_labelPtr != NULL) 
 	{
-	  _labelPtr->setNewPos(newPos);
+	  _labelPtr->setNewPos(this->scenePos());
 	}
-      if (newPos.x() == oldX) 
+      if (this->scenePos().x() == _originalPos.x()) 
 	{
 	  _dislodged = false;
 	}
@@ -250,53 +291,7 @@ void IncidentNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	  _dislodged = true;
 	}
     }
-  Scene *myScene = qobject_cast<Scene*>(scene());
-  myScene->relevantChange();
-}
-
-void IncidentNode::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)  
-{
-  if (event->modifiers() & Qt::AltModifier) 
-    {
-      QPointF newPos = event->scenePos();
-      this->setPos(newPos);
-      if (_labelPtr != NULL) 
-	{
-	  _labelPtr->setNewPos(newPos);
-	}
-      if (newPos.x() != _originalPos.x()) 
-	{
-	  _dislodged = true;
-	}
-      else 
-	{
-	  _dislodged = false;
-	}
-    }
-  else 
-    {
-      qreal oldX = _originalPos.x();
-      QPointF currentPos = this->scenePos();
-      qreal currentX = currentPos.x();
-      QPointF newPos = event->scenePos();
-      newPos.setX(currentX);
-      this->setPos(newPos);
-      if (_labelPtr != NULL) 
-	{
-	  _labelPtr->setNewPos(newPos);
-	}
-      if (newPos.x() == oldX) 
-	{
-	  _dislodged = false;
-	}
-      else 
-	{
-	  _dislodged = true;
-	}
-    }
-  setCursor(Qt::OpenHandCursor);
-  update();
-  QGraphicsItem::mouseReleaseEvent(event);
+  scene->relevantChange();
 }
 
 int IncidentNode::getCorrection() 
