@@ -138,7 +138,7 @@ void TextObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	{
 	  bool snappedHorizontal = false;
 	  bool snappedVertical = false;
-	  if (scene->isSnappingGuides())
+	  if (scene->isSnappingGuides() && (this->getRotationValue() == 0))
 	    {
 	      QListIterator<QGraphicsItem*> it(scene->items());
 	      while (it.hasNext())

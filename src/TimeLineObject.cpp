@@ -292,9 +292,144 @@ void TimeLineObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       else
 	{
-	  this->setStartX(this->getStartX() + newXDiff);
-	  this->setEndX(this->getEndX() + newXDiff);
-	  this->setY(event->scenePos().y());
+	  QRectF drawRect = this->sceneBoundingRect().marginsRemoved(QMargins(10, 10, 10, 10));
+	  qreal length = this->getEndX() - this->getStartX();
+	  bool snappedHorizontal = false;
+	  bool snappedVertical = false;
+	  if (scene->isSnappingGuides())
+	    {
+	      QListIterator<QGraphicsItem*> it(scene->items());
+	      while (it.hasNext())
+		{
+		  QGraphicsItem *item = it.next();
+		  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+		  if (guide)
+		    {
+		      if (guide->isHorizontal())
+			{
+			  qreal topDist = sqrt(pow(drawRect.top() -
+						   guide->getOrientationPoint().y(), 2));
+			  qreal bottomDist = sqrt(pow(drawRect.bottom() -
+						      guide->getOrientationPoint().y(), 2));
+			  qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+			  if (topDist < 10 &&
+			      abs(eventDist) < drawRect.height() &&
+			      eventDist > 0)
+			    {
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->setStartX(_memStartX);
+				  this->setEndX(_memEndX);
+				  this->setY(guide->getOrientationPoint().y() +
+					     drawRect.height() / 2);
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			      else
+				{
+				  this->setStartX(this->getStartX() + newXDiff);
+				  this->setEndX(this->getEndX() + newXDiff);
+				  this->setY(guide->getOrientationPoint().y() +
+					     drawRect.height() / 2);
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			    }
+			  else if (bottomDist < 10 &&
+			      abs(eventDist) < drawRect.height() &&
+			      eventDist < 0)
+			    {
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->setStartX(_memStartX);
+				  this->setEndX(_memStartX);
+				  this->setY(guide->getOrientationPoint().y() -
+					     drawRect.height() / 2);
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			      else
+				{
+				  this->setStartX(this->getStartX() + newXDiff);
+				  this->setEndX(this->getEndX() + newXDiff);
+				  this->setY(guide->getOrientationPoint().y() -
+					     drawRect.height() / 2);
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			    }
+			}
+		      else
+			{
+			  qreal leftDist = sqrt(pow(drawRect.left() -
+						    guide->getOrientationPoint().x(), 2));
+			  qreal rightDist = sqrt(pow(drawRect.right() -
+						     guide->getOrientationPoint().x(), 2));
+			  qreal eventDist = event->scenePos().x() - guide->getOrientationPoint().x();
+			  if (leftDist < 10 &&
+			      abs(eventDist) < 200 &&
+			      eventDist > 0)
+			    {
+			      snappedVertical = true;
+			      if (snappedHorizontal)
+				{
+				  this->setStartX(guide->getOrientationPoint().x());
+				  this->setEndX(this->getStartX() + length);
+				  this->setY(_memY);
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			      else
+				{
+				  this->setStartX(guide->getOrientationPoint().x());
+				  this->setEndX(this->getStartX() + length);
+				  this->setY(event->scenePos().y());
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			    }
+			  else if (rightDist < 10 &&
+			      abs(eventDist) < 200 &&
+			      eventDist < 0)
+			    {
+			      snappedVertical = true;
+			      if (snappedHorizontal)
+				{
+				  this->setEndX(guide->getOrientationPoint().x());
+				  this->setStartX(this->getEndX() - length);
+				  this->setY(_memY);
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			      else
+				{
+				  this->setEndX(guide->getOrientationPoint().x());
+				  this->setStartX(this->getEndX() - length);
+				  this->setY(event->scenePos().y());
+				  _memStartX = this->getStartX();
+				  _memEndX = this->getEndX();
+				  _memY = this->getY();
+				}
+			    }
+			}
+		    }
+		}
+	    }
+     	  if (!snappedHorizontal && !snappedVertical)
+	    {
+	      this->setStartX(this->getStartX() + newXDiff);
+	      this->setEndX(this->getEndX() + newXDiff);
+	      this->setY(event->scenePos().y());
+	    }
 	}
       _lastEventPos = event->scenePos();
       scene->relevantChange();

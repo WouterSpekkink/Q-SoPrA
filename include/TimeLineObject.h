@@ -98,6 +98,9 @@ private:
   qreal _lastEndX;
   qreal _lastY;
   QPointF _lastCenterPos;
+  qreal _memStartX;
+  qreal _memEndX;
+  qreal _memY;
   QColor _color;
   int _penWidth;
   bool _firstTick;

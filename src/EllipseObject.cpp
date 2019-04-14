@@ -23,7 +23,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets>
 #include "../include/EllipseObject.h"
 #include "../include/Scene.h"
-
+#include <QtMath>
 
 EllipseObject::EllipseObject() 
 {
@@ -320,11 +320,118 @@ void EllipseObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       else
 	{
-	  this->moveCenter(this->
-			   mapToScene(this->getCenter()) +
-			   this->
-			   mapFromScene(QPointF(newXDiff, newYDiff)));
-    }
+	  bool snappedHorizontal = false;
+	  bool snappedVertical = false;
+	  if (scene->isSnappingGuides() && this->getRotationValue() == 0)
+	    {
+	      qreal height = std::abs(this->getTop() - this->getBottom());
+	      qreal width = std::abs(this->getRight() - this->getLeft());
+	      QListIterator<QGraphicsItem*> it(scene->items());
+	      while (it.hasNext())
+		{
+		  QGraphicsItem *item = it.next();
+		  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+		  if (guide)
+		    {
+		      if (guide->isHorizontal())
+			{
+			  qreal topDist = sqrt(pow(this->getTop() -
+						   guide->getOrientationPoint().y(), 2));
+			  qreal bottomDist = sqrt(pow(this->getBottom() -
+						      guide->getOrientationPoint().y(), 2));
+			  qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+			  if (topDist < 10 &&
+			      std::abs(eventDist) < height &&
+			      eventDist > 0)
+			    {
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->moveCenter(QPointF(_memPos.x(),
+							   guide->getOrientationPoint().y() + height / 2));
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			      else
+				{
+				  this->moveCenter(QPointF(this->mapToScene(this->getCenter()).x() + newXDiff,
+							   guide->getOrientationPoint().y() + height / 2));
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			    }
+			  else if (bottomDist < 10 &&
+				   std::abs(eventDist) <
+				   height &&
+				   eventDist < 0)
+			    {
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->moveCenter(QPointF(_memPos.x(),
+							   guide->getOrientationPoint().y() - height / 2));
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			      else
+				{
+				  this->moveCenter(QPointF(this->mapToScene(this->getCenter()).x() + newXDiff,
+							   guide->getOrientationPoint().y() - height / 2));
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			    }
+			}
+		      else
+			{
+			  qreal leftDist = sqrt(pow(this->getLeft() -
+						    guide->getOrientationPoint().x(), 2));
+			  qreal rightDist = sqrt(pow(this->getRight() -
+						     guide->getOrientationPoint().x(), 2));
+			  qreal eventDist = event->scenePos().x() - guide->getOrientationPoint().x();
+			  if (leftDist < 10 &&
+			      std::abs(eventDist) < width &&
+			      eventDist > 0)
+			    {
+			      snappedVertical = true;
+			      if (snappedHorizontal)
+				{
+				  this->moveCenter(QPointF(guide->getOrientationPoint().x() + width / 2,
+							   _memPos.y()));							       
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			      else
+				{
+				  this->moveCenter(QPointF(guide->getOrientationPoint().x() + width / 2,
+							   this->mapToScene(this->getCenter()).y() + newYDiff));
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			    }
+			  else if (rightDist < 10 &&
+				   std::abs(eventDist) <
+				   width &&
+				   eventDist < 0)
+			    {
+			      snappedVertical = true;
+			      if (snappedHorizontal)
+				{
+				  this->moveCenter(QPointF(guide->getOrientationPoint().x() - width / 2,
+							   _memPos.y()));				
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			      else
+				{
+				  this->moveCenter(QPointF(guide->getOrientationPoint().x() - width / 2,
+							   this->mapToScene(this->getCenter()).y() + newYDiff));
+				  _memPos = this->mapToScene(this->getCenter());
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	  if (!snappedHorizontal && !snappedVertical)
+	    {			  
+	      this->moveCenter(this->mapToScene(this->getCenter()) +
+			       this->mapFromScene(QPointF(newXDiff, newYDiff)));
+	    }
+	}
       _lastEventPos = event->scenePos();
       this->setRotationValue(this->getRotationValue());
       scene->relevantChange();

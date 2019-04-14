@@ -97,6 +97,7 @@ private:
   QRectF _drawRect;
   QPointF _lastPos;
   QPointF _lastEventPos;
+  QPointF _memPos;
   QColor _color;
   QColor _fillColor;
   qreal _rotation;

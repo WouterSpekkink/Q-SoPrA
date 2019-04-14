@@ -983,6 +983,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  emit resetItemSelection();
 	  _selectedTextPtr = text;
 	  QGraphicsScene::mousePressEvent(event);
+		  
 	}
       else if (ellipse) 
 	{
