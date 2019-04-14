@@ -85,6 +85,8 @@ private:
   QPointF _lastStartPos;
   QPointF _lastCenterPos;
   QPointF _lastEndPos;
+  QPointF _memStartPos;
+  QPointF _memEndPos;
   QColor _color;
   QLineF _tempLine1;
   QLineF _tempLine2;
@@ -97,6 +99,7 @@ private:
   bool _arrow1On;
   bool _arrow2On;
   bool _moving;
+  bool _manipulating;
   int _penWidth;
   int _penStyle;
   

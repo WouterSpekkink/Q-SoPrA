@@ -126,7 +126,6 @@ protected:
 private:
   // Private variables
   bool _moveOn;
-  bool _lineMoveOn;
   bool _rotateEllipse;
   bool _rotateRect;
   bool _rotateText;

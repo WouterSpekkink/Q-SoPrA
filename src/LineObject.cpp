@@ -21,6 +21,7 @@ LineObject::LineObject(QPointF startPos,
   setAcceptHoverEvents(true);
   updatePosition();
   _moving = false;
+  _manipulating = false;
 }
 
 
@@ -201,12 +202,19 @@ int LineObject::type() const
 
 void LineObject::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
-  _moving = true;
-  _lastEventPos = event->scenePos();
-  _lastStartPos = this->getStartPos();
-  _lastEndPos = this->getEndPos();
-  _lastCenterPos = event->scenePos();
-  QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+  if (event->modifiers() & Qt::ShiftModifier)
+    {
+      _manipulating = true;
+    }
+  else
+    {
+      _moving = true;
+      _lastEventPos = event->scenePos();
+      _lastStartPos = this->getStartPos();
+      _lastEndPos = this->getEndPos();
+      _lastCenterPos = event->scenePos();
+      QApplication::setOverrideCursor(Qt::ClosedHandCursor);
+    }
 }
 
 void LineObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
@@ -238,12 +246,183 @@ void LineObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 	}
       else
 	{
-	  this->setStartPos(this->mapToScene(this->getStartPos() +
-					     QPointF(newXDiff, newYDiff)));
-	  this->setEndPos(this->mapToScene(this->getEndPos() +
-					   QPointF(newXDiff, newYDiff)));
+	  bool snappedHorizontal = false;
+	  bool snappedVertical = false;
+	  if (scene->isSnappingGuides())
+	    {
+	      QListIterator<QGraphicsItem*> it(scene->items());
+	      while (it.hasNext())
+		{
+		  QGraphicsItem *item = it.next();
+		  GuideLine *guide = qgraphicsitem_cast<GuideLine*>(item);
+		  if (guide)
+		    {
+		      if (guide->isHorizontal())
+			{
+			  qreal startDist = sqrt(pow(_startPos.y() -
+						   guide->getOrientationPoint().y(), 2));
+			  qreal endDist = sqrt(pow(_endPos.y() -
+						   guide->getOrientationPoint().y(), 2));
+			  qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
+			  if (startDist < 10 &&
+			      abs(eventDist) < 100 &&
+			      eventDist > 0)
+			    {
+			      QPointF diffPoint = this->getEndPos() - this->getStartPos();
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->setStartPos(QPointF(_memStartPos.x(),
+							    guide->getOrientationPoint().y()));
+				  this->setEndPos(this->getStartPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			      else
+				{
+				  this->setStartPos(QPointF(this->getStartPos().x() + newXDiff,
+							    guide->getOrientationPoint().y()));
+				  this->setEndPos(this->getStartPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			    }
+			  else if (endDist < 10 &&
+			      abs(eventDist) < 100 &&
+			      eventDist < 0)
+			    {
+			      QPointF diffPoint = this->getStartPos() - this->getEndPos();
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->setEndPos(QPointF(_memEndPos.x(),
+							  guide->getOrientationPoint().y()));
+				  this->setStartPos(this->getEndPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			      else
+				{
+				  this->setEndPos(QPointF(this->getEndPos().x() + newXDiff,
+							  guide->getOrientationPoint().y()));
+				  this->setStartPos(this->getEndPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			    }
+			}
+		      else
+			{
+			  qreal startDist = sqrt(pow(_startPos.x() -
+						     guide->getOrientationPoint().x(), 2));
+			  qreal endDist = sqrt(pow(_endPos.x() -
+						   guide->getOrientationPoint().x(), 2));
+			  qreal eventDist = event->scenePos().x() - guide->getOrientationPoint().x();
+			  if (startDist < 10 &&
+			      abs(eventDist) < 100 &&
+			      eventDist > 0)
+			    {
+			      QPointF diffPoint = this->getEndPos() - this->getStartPos();
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->setStartPos(QPointF(guide->getOrientationPoint().x(),
+							    _memStartPos.y()));
+				  this->setEndPos(this->getStartPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			      else
+				{
+				  this->setStartPos(QPointF(guide->getOrientationPoint().x(),
+							    this->getStartPos().y() + newYDiff));
+				  this->setEndPos(this->getStartPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			    }
+			  else if (endDist < 10 &&
+				   abs(eventDist) < 100 &&
+				   eventDist < 0)
+			    {
+			      QPointF diffPoint = this->getStartPos() - this->getEndPos();
+			      snappedHorizontal = true;
+			      if (snappedVertical)
+				{
+				  this->setEndPos(QPointF(guide->getOrientationPoint().x(),
+							  _memEndPos.y()));
+				  this->setStartPos(this->getEndPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			      else
+				{
+				  this->setEndPos(QPointF(guide->getOrientationPoint().x(),
+							  this->getEndPos().y() + newYDiff));
+				  this->setStartPos(this->getEndPos() + diffPoint);
+				  _memStartPos = this->getStartPos();
+				  _memEndPos = this->getEndPos();
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	  if (!snappedHorizontal && !snappedVertical)
+	    {
+	      this->setStartPos(this->mapToScene(this->getStartPos() +
+						 QPointF(newXDiff, newYDiff)));
+	      this->setEndPos(this->mapToScene(this->getEndPos() +
+					       QPointF(newXDiff, newYDiff)));
+	    }
 	}
       _lastEventPos = event->scenePos();
+      scene->relevantChange();
+    }
+  else if (_manipulating)
+    {
+      QPointF start = this->getStartPos();
+      QPointF end = this->getEndPos();
+      qreal distStart = sqrt(pow((event->scenePos().x() - start.x()), 2) +
+			     pow((event->scenePos().y() - start.y()), 2));
+      qreal distEnd = sqrt(pow((event->scenePos().x() - end.x()), 2) +
+			   pow((event->scenePos().y() - end.y()), 2));
+      if (distStart < distEnd) 
+	{
+	  if (event->modifiers() & Qt::ControlModifier) 
+	    {
+	      if (abs((event->scenePos().y() - end.y()) / (event->scenePos().x() - end.x())) < 1) 
+		{
+		  this->setStartPos(event->scenePos().x(), end.y());
+		}
+	      else 
+		{
+		  this->setStartPos(end.x(), event->scenePos().y());
+		}
+	    }
+	  else 
+	    {
+	      this->setStartPos(event->scenePos());
+	    }
+	}
+      else 
+	{
+	  if (event->modifiers() & Qt::ControlModifier) 
+	    {
+	      if (abs((event->scenePos().y() - start.y()) / (event->scenePos().x() - start.x())) < 1) 
+		{
+		  this->setEndPos(event->scenePos().x(), start.y());
+		}
+	      else 
+		{
+		  this->setEndPos(start.x(), event->scenePos().y());
+		}
+	    }
+	  else 
+	    {
+	      this->setEndPos(event->scenePos());
+	    }
+	}
       scene->relevantChange();
     }
 }
@@ -251,6 +430,7 @@ void LineObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 void LineObject::mouseReleaseEvent(QGraphicsSceneMouseEvent *) 
 {
   _moving = false;
+  _manipulating = false;
   QApplication::restoreOverrideCursor();
 }
 

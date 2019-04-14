@@ -47,7 +47,6 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _tempTimeLinePtr = NULL;
   _snapGuides = false;
   _moveOn = false;
-  _lineMoveOn = false;
   _rotateEllipse = false;
   _rotateRect = false;
   _rotateText = false;
@@ -736,7 +735,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      line->setSelected(true);
 	      _selectedLinePtr = line;
 	      emit resetItemSelection();
-	      _lineMoveOn = true;
+	      QGraphicsScene::mousePressEvent(event);
 	    }
 	  else if (ellipse) 
 	    {
@@ -1011,7 +1010,6 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
 {
   _moveOn = false;
-  _lineMoveOn = false;
   _rotateEllipse = false;
   _rotateRect = false;
   _rotateText = false;
@@ -1120,6 +1118,11 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);
       OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);
+      LineObject *line = qgraphicsitem_cast<LineObject*>(current);
+      TextObject *text = qgraphicsitem_cast<TextObject*>(current);
+      EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(current);
+      RectObject *rect = qgraphicsitem_cast<RectObject*>(current);
+      TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(current);
       if (incident) 
 	{
 	  incident->setCursor(Qt::OpenHandCursor);
@@ -1135,6 +1138,26 @@ void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
       else if (occurrence) 
 	{
 	  occurrence->setCursor(Qt::OpenHandCursor);
+	}
+      else if (line)
+	{
+	  sendEvent(line, event);
+	}
+      else if (text)
+	{
+	  sendEvent(text, event);
+	}
+      else if (ellipse)
+	{
+	  sendEvent(ellipse, event);
+	}
+      else if (rect)
+	{
+	  sendEvent(rect, event);
+	}
+      else if (timeline)
+	{
+	  sendEvent(timeline, event);
 	}
     }
   _selectedIncidentNodePtr = NULL;
@@ -1895,53 +1918,6 @@ void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
       else if (_selectedAbstractNodePtr) 
 	{
 	  emit moveItems(_selectedAbstractNodePtr, event->scenePos());
-	}
-      emit relevantChange();
-    }
-  else if (_lineMoveOn) 
-    {
-      _lastMousePos = event->scenePos();
-      QPointF start = _selectedLinePtr->getStartPos();
-      QPointF end = _selectedLinePtr->getEndPos();
-      qreal distStart = sqrt(pow((_lastMousePos.x() - start.x()), 2) +
-			     pow((_lastMousePos.y() - start.y()), 2));
-      qreal distEnd = sqrt(pow((_lastMousePos.x() - end.x()), 2) +
-			   pow((_lastMousePos.y() - end.y()), 2));
-      if (distStart < distEnd) 
-	{
-	  if (event->modifiers() & Qt::ControlModifier) 
-	    {
-	      if (abs((_lastMousePos.y() - end.y()) / (_lastMousePos.x() - end.x())) < 1) 
-		{
-		  _selectedLinePtr->setStartPos(_lastMousePos.x(), end.y());
-		}
-	      else 
-		{
-		  _selectedLinePtr->setStartPos(end.x(), _lastMousePos.y());
-		}
-	    }
-	  else 
-	    {
-	      _selectedLinePtr->setStartPos(_lastMousePos);
-	    }
-	}
-      else 
-	{
-	  if (event->modifiers() & Qt::ControlModifier) 
-	    {
-	      if (abs((_lastMousePos.y() - start.y()) / (_lastMousePos.x() - start.x())) < 1) 
-		{
-		  _selectedLinePtr->setEndPos(_lastMousePos.x(), start.y());
-		}
-	      else 
-		{
-		  _selectedLinePtr->setEndPos(start.x(), _lastMousePos.y());
-		}
-	    }
-	  else 
-	    {
-	      _selectedLinePtr->setEndPos(_lastMousePos);
-	    }
 	}
       emit relevantChange();
     }
