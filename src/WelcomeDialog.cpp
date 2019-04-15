@@ -420,6 +420,12 @@ void WelcomeDialog::newDatabase()
 		      "plot text, "
 		      "casename text, "
 		      "checked integer)");
+	  query->exec("CREATE TABLE saved_eg_plots_guides "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "xpos real, "
+		      "ypos real, "
+		      "horizontal integer)");
 	  query->exec("CREATE TABLE saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -607,6 +613,12 @@ void WelcomeDialog::newDatabase()
 		      "plot text, "
 		      "casename, "
 		      "checked)");
+	  query->exec("CREATE TABLE saved_ng_plots_guides "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "xpos real, "
+		      "ypos real, "
+		      "horizontal integer)");
 	  query->exec("CREATE TABLE saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -768,6 +780,12 @@ void WelcomeDialog::newDatabase()
 		      "plot text, "
 		      "casename text, "
 		      "checked integer)");
+	  query->exec("CREATE TABLE saved_og_plots_guides "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "xpos real, "
+		      "ypos real, "
+		      "horizontal integer)");
 	  query->exec("CREATE TABLE cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
@@ -1157,6 +1175,12 @@ void WelcomeDialog::openDatabase()
 		      "plot text, "
 		      "casename text, "
 		      "checked integer)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_guides "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "xpos real, "
+		      "ypos real, "
+		      "horizontal integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1344,6 +1368,12 @@ void WelcomeDialog::openDatabase()
 		      "plot text, "
 		      "casename, "
 		      "checked)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_guides "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "xpos real, "
+		      "ypos real, "
+		      "horizontal integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1513,6 +1543,12 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "incident integer, "
 		      "casename text)");
+	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_guides "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "plot text, "
+		      "xpos real, "
+		      "ypos real, "
+		      "horizontal integer)");
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
 	  _exitStatus = 0;

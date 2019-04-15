@@ -570,13 +570,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
-  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
-  guidesLayout->addWidget(guideLinesLabel);
-  guidesLayout->addWidget(addHorizontalGuideLineButton);
-  guidesLayout->addWidget(addVerticalGuideLineButton);
-  guidesLayout->addWidget(snapGuidesButton);
-  guidesLayout->setAlignment(Qt::AlignRight);
-  drawHelpLayout->addLayout(guidesLayout);
   mainLayout->addLayout(drawHelpLayout);
 
   QPointer<QHBoxLayout> timeLineLayout = new QHBoxLayout;
@@ -752,6 +745,13 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   zoomSlider->setMaximumWidth(100);
   drawOptionsLeftLayout->addWidget(contractCurrentGraphButton);
   contractCurrentGraphButton->setMaximumWidth(contractCurrentGraphButton->sizeHint().width());
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
+  guidesLayout->setAlignment(Qt::AlignLeft);
+  drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -4183,6 +4183,11 @@ void EventGraphWidget::saveCurrentPlot()
 			"WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_eg_plots_guides
+	  query->prepare("DELETE FROM saved_eg_plots_guides "
+			"WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
@@ -5009,6 +5014,37 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":plot", name);
 	  query->bindValue(":casename", casename);
 	  query->bindValue(":checked", checked);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, _guidesVector.size());
+      saveProgress->setWindowTitle("Saving guides");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_eg_plots_guides "
+		     "(plot, xpos, ypos, horizontal) "
+		     "VALUES (:plot, :xpos, :ypos, :horizontal)");
+      QVectorIterator<GuideLine*> it14(_guidesVector);
+      while (it14.hasNext())
+	{
+	  GuideLine *guide = it14.next();
+	  qreal xpos = guide->getOrientationPoint().x();
+	  qreal ypos = guide->getOrientationPoint().y();
+	  int horizontal = 0;
+	  if (guide->isHorizontal())
+	    {
+	      horizontal = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":xpos", xpos);
+	  query->bindValue(":ypos", ypos);
+	  query->bindValue(":horizontal", horizontal);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -5854,12 +5890,33 @@ void EventGraphWidget::seePlots()
 	    {
 	      item->setCheckState(Qt::Unchecked);
 	    }
+	}      
+      query->prepare("SELECT xpos, ypos, horizontal "
+		     "FROM saved_eg_plots_guides "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next())
+	{
+	  qreal xpos = query->value(0).toReal();
+	  qreal ypos = query->value(1).toReal();
+	  int horizontal = query->value(2).toInt();
+	  bool isHorizontal = false;
+	  if (horizontal == 1)
+	    {
+	      isHorizontal = true;
+	    }
+	  GuideLine* guide = new GuideLine(isHorizontal);
+	  _guidesVector.push_back(guide);
+	  scene->addItem(guide);
+	  guide->setOrientationPoint(QPointF(xpos, ypos));
 	}
       caseListWidget->setEnabled(true);
       if (!_contractedMap.empty())
 	{
 	  _contracted = true;
 	}
+      fixZValues();
       plotLabel->setText(plot);
       changeLabel->setText("");
       scene->update();
@@ -5971,6 +6028,11 @@ void EventGraphWidget::seePlots()
       query->exec();
       // saved_eg_plots_cases
       query->prepare("DELETE FROM saved_eg_plots_cases "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      // saved_eg_plots_guides
+      query->prepare("DELETE FROM saved_eg_plots_guides "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();

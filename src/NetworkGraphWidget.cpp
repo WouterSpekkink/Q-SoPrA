@@ -468,13 +468,6 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
-  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
-  guidesLayout->addWidget(guideLinesLabel);
-  guidesLayout->addWidget(addHorizontalGuideLineButton);
-  guidesLayout->addWidget(addVerticalGuideLineButton);
-  guidesLayout->addWidget(snapGuidesButton);
-  guidesLayout->setAlignment(Qt::AlignRight);
-  drawHelpLayout->addLayout(guidesLayout);
   mainLayout->addLayout(drawHelpLayout);
   
   QPointer<QHBoxLayout> screenLayout = new QHBoxLayout;
@@ -618,6 +611,13 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
+  guidesLayout->setAlignment(Qt::AlignLeft);
+  drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -5470,10 +5470,15 @@ void NetworkGraphWidget::saveCurrentPlot()
 			"WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_n_plots_guides
+	  query->prepare("DELETE FROM saved_ng_plots_guides "
+			"WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
-	  // Insert new data into saved_eg_plots and then write data.
+	  // Insert new data into saved_ng_plots and then write data.
 	  QColor color = scene->backgroundBrush().color();
 	  int red = color.red();
 	  int green = color.green();
@@ -6101,7 +6106,7 @@ void NetworkGraphWidget::saveCurrentPlot()
       query->bindValue(":weighton", weighton);
       query->bindValue(":labelson", labelson);
       query->exec();
-          saveProgress = new ProgressBar(0, 1, caseListWidget->count());
+      saveProgress = new ProgressBar(0, 1, caseListWidget->count());
       saveProgress->setWindowTitle("Saving cases");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
       saveProgress->setModal(true);
@@ -6122,6 +6127,37 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":plot", name);
 	  query->bindValue(":casename", casename);
 	  query->bindValue(":checked", checked);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, _guidesVector.size());
+      saveProgress->setWindowTitle("Saving guides");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_ng_plots_guides "
+		     "(plot, xpos, ypos, horizontal) "
+		     "VALUES (:plot, :xpos, :ypos, :horizontal)");
+      QVectorIterator<GuideLine*> it14(_guidesVector);
+      while (it14.hasNext())
+	{
+	  GuideLine *guide = it14.next();
+	  qreal xpos = guide->getOrientationPoint().x();
+	  qreal ypos = guide->getOrientationPoint().y();
+	  int horizontal = 0;
+	  if (guide->isHorizontal())
+	    {
+	      horizontal = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":xpos", xpos);
+	  query->bindValue(":ypos", ypos);
+	  query->bindValue(":horizontal", horizontal);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -6745,6 +6781,27 @@ void NetworkGraphWidget::seePlots()
 	      item->setCheckState(Qt::Unchecked);
 	    }
 	}
+            query->prepare("SELECT xpos, ypos, horizontal "
+		     "FROM saved_ng_plots_guides "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next())
+	{
+	  qreal xpos = query->value(0).toReal();
+	  qreal ypos = query->value(1).toReal();
+	  int horizontal = query->value(2).toInt();
+	  bool isHorizontal = false;
+	  if (horizontal == 1)
+	    {
+	      isHorizontal = true;
+	    }
+	  GuideLine* guide = new GuideLine(isHorizontal);
+	  _guidesVector.push_back(guide);
+	  scene->addItem(guide);
+	  guide->setOrientationPoint(QPointF(xpos, ypos));
+	}
+      fixZValues();
       caseListWidget->setEnabled(true);
       // Now let's do the final processing
       checkCongruency();
@@ -6826,6 +6883,11 @@ void NetworkGraphWidget::seePlots()
       // saved_ng_plots_cases
       query->prepare("DELETE FROM saved_ng_plots_cases "
 		     "WHERE plot = :plot");
+      query->exec();
+      // saved_ng_plots_guides
+      query->prepare("DELETE FROM saved_ng_plots_guides "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
       query->exec();
       delete query;
       seePlots();

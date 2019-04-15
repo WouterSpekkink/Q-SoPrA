@@ -427,13 +427,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(fillOpacitySlider);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
-  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
-  guidesLayout->addWidget(guideLinesLabel);
-  guidesLayout->addWidget(addHorizontalGuideLineButton);
-  guidesLayout->addWidget(addVerticalGuideLineButton);
-  guidesLayout->addWidget(snapGuidesButton);
-  guidesLayout->setAlignment(Qt::AlignRight);
-  drawHelpLayout->addLayout(guidesLayout);
   mainLayout->addLayout(drawHelpLayout);
 
  QPointer<QHBoxLayout> timeLineLayout = new QHBoxLayout;
@@ -523,7 +516,13 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
-
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
+  guidesLayout->setAlignment(Qt::AlignLeft);
+  drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -4758,6 +4757,11 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 			 "WHERE plot = :plot");
 	  query->bindValue(":plot", name);
 	  query->exec();
+	  // saved_og_plots_guides
+	  query->prepare("DELETE FROM saved_og_plots_guides "
+			"WHERE plot = :plot");
+	  query->bindValue(":plot", name);
+	  query->exec();
 	}
       else 
 	{
@@ -5358,6 +5362,37 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       plotLabel->setText(name);
       changeLabel->setText("");
       delete saveProgress;
+      saveProgress = new ProgressBar(0, 1, _guidesVector.size());
+      saveProgress->setWindowTitle("Saving guides");
+      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+      saveProgress->setModal(true);
+      counter = 1;
+      saveProgress->show();
+      query->prepare("INSERT INTO saved_og_plots_guides "
+		     "(plot, xpos, ypos, horizontal) "
+		     "VALUES (:plot, :xpos, :ypos, :horizontal)");
+      QVectorIterator<GuideLine*> it14(_guidesVector);
+      while (it14.hasNext())
+	{
+	  GuideLine *guide = it14.next();
+	  qreal xpos = guide->getOrientationPoint().x();
+	  qreal ypos = guide->getOrientationPoint().y();
+	  int horizontal = 0;
+	  if (guide->isHorizontal())
+	    {
+	      horizontal = 1;
+	    }
+	  query->bindValue(":plot", name);
+	  query->bindValue(":xpos", xpos);
+	  query->bindValue(":ypos", ypos);
+	  query->bindValue(":horizontal", horizontal);
+	  query->exec();
+	  counter++;
+	  saveProgress->setProgress(counter);
+	  qApp->processEvents();
+	}
+      saveProgress->close();
+      delete saveProgress;
       delete query;
       QSqlDatabase::database().commit();
     }
@@ -5821,6 +5856,27 @@ void OccurrenceGraphWidget::seePlots()
 	      item->setCheckState(Qt::Unchecked);
 	    }
 	}
+      query->prepare("SELECT xpos, ypos, horizontal "
+		     "FROM saved_og_plots_guides "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      while (query->next())
+	{
+	  qreal xpos = query->value(0).toReal();
+	  qreal ypos = query->value(1).toReal();
+	  int horizontal = query->value(2).toInt();
+	  bool isHorizontal = false;
+	  if (horizontal == 1)
+	    {
+	      isHorizontal = true;
+	    }
+	  GuideLine* guide = new GuideLine(isHorizontal);
+	  _guidesVector.push_back(guide);
+	  scene->addItem(guide);
+	  guide->setOrientationPoint(QPointF(xpos, ypos));
+	}
+      fixZValues();
       caseListWidget->setEnabled(true);
       _distance = 70;
       plotLabel->setText(plot);
@@ -5864,8 +5920,8 @@ void OccurrenceGraphWidget::seePlots()
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
-      // saved_eg_plots_occurrence_labels
-      query->prepare("DELETE FROM saved_eg_plots_occurrence_labels "
+      // saved_og_plots_occurrence_labels
+      query->prepare("DELETE FROM saved_og_plots_occurrence_labels "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
@@ -5901,6 +5957,12 @@ void OccurrenceGraphWidget::seePlots()
       query->exec();
       // saved_og_plots_cases
       query->prepare("DELETE FROM saved_og_plots_cases "
+		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);
+      query->exec();
+      delete query;
+      // saved_og_plots_cases
+      query->prepare("DELETE FROM saved_og_plots_guides "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();

@@ -60,6 +60,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "TextObject.h"
 #include "RelationshipsWidget.h"
 #include "ModeColorDialog.h"
+#include "GuideLine.h"
 
 class AttributesWidget;
 class RelationshipsWidget;
@@ -137,6 +138,9 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void addHorizontalGuideLine(const QPointF &pos);
+  void addVerticalGuideLine(const QPointF &pos);
+  void toggleSnapGuides();
   void setPenStyle();
   void setPenWidth();
   void setLineColor();
@@ -154,6 +158,8 @@ private slots:
   void deleteEllipse();
   void processRectContextMenu(const QString &action);
   void deleteRect();
+  void processGuideLineContextMenu(const QString &action);
+  void deleteGuideLine();
   void duplicateLine();
   void duplicateText();
   void duplicateEllipse();
@@ -214,6 +220,7 @@ private:
   QPointer<QLabel> lineColorLabel;
   QPointer<QLabel> fillColorLabel;
   QPointer<QLabel> fillOpacityLabel;
+  QPointer<QLabel> guideLinesLabel;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -251,6 +258,9 @@ private:
   QPointer<QPushButton> addTextButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
+  QPointer<QPushButton> addHorizontalGuideLineButton;
+  QPointer<QPushButton> addVerticalGuideLineButton;
+  QPointer<QPushButton> snapGuidesButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<DeselectableListWidget> linkageListWidget;
   QPointer<QSlider> zoomSlider;
@@ -268,7 +278,7 @@ private:
   QColor _currentFillColor;
   
   // Private data vectors
-  QVector<IncidentNode*> _eventVector;
+  QVector<IncidentNode*> _incidentNodeVector;
   QVector<AbstractNode*> _abstractNodeVector;
   QVector<Linkage*> _edgeVector;
   QVector<QString> _presentTypes;
@@ -277,7 +287,8 @@ private:
   QVector<EllipseObject*> _ellipseVector;
   QVector<RectObject*> _rectVector;
   QVector<QGraphicsItem*> _currentData;
-
+  QVector<GuideLine*> _guidesVector;
+  
   // Pointers to other widgets
   // Do not delete
   AttributesWidget *_attributesWidgetPtr;

@@ -12,7 +12,7 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
+DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
 CFLAGS        = -m64 -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -m64 -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtSvg -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtSql -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -I. -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64
@@ -32,8 +32,8 @@ DEL_DIR       = rmdir
 MOVE          = mv -f
 TAR           = tar -cf
 COMPRESS      = gzip -9f
-DISTNAME      = Q-SoPrA1.0.0
-DISTDIR = /home/wouter/Programming/WorkRelated/Q-SoPrA/.tmp/Q-SoPrA1.0.0
+DISTNAME      = Q-SoPrA0.9.0
+DISTDIR = /home/wouter/Programming/WorkRelated/Q-SoPrA/.tmp/Q-SoPrA0.9.0
 LINK          = g++
 LFLAGS        = -m64 -Wl,-O1
 LIBS          = $(SUBLIBS) -L/usr/X11R6/lib64 -lQt5Svg -lQt5OpenGL -lQt5Widgets -lQt5Gui -lQt5Sql -lQt5Core -lGL -lpthread 
@@ -3472,7 +3472,24 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/ZoomableListView.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EditEntityDialog.o src/EditEntityDialog.cpp
 
-EllipseObject.o: src/EllipseObject.cpp include/EllipseObject.h
+EllipseObject.o: src/EllipseObject.cpp include/EllipseObject.h \
+		include/Scene.h \
+		include/IncidentNode.h \
+		include/Linkage.h \
+		include/AbstractNode.h \
+		include/SupportingFunctions.h \
+		include/OccurrenceItem.h \
+		include/NetworkNode.h \
+		include/Constants.h \
+		include/NetworkNodeLabel.h \
+		include/IncidentNodeLabel.h \
+		include/LineObject.h \
+		include/TextObject.h \
+		include/AbstractNodeLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
+		include/TimeLineObject.h \
+		include/GuideLine.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o EllipseObject.o src/EllipseObject.cpp
 
 EntitiesAttributesTable.o: src/EntitiesAttributesTable.cpp include/EntitiesAttributesTable.h \
@@ -4757,7 +4774,24 @@ RecordDialog.o: src/RecordDialog.cpp include/RecordDialog.h \
 		include/Constants.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RecordDialog.o src/RecordDialog.cpp
 
-RectObject.o: src/RectObject.cpp include/RectObject.h
+RectObject.o: src/RectObject.cpp include/RectObject.h \
+		include/Scene.h \
+		include/IncidentNode.h \
+		include/Linkage.h \
+		include/AbstractNode.h \
+		include/SupportingFunctions.h \
+		include/OccurrenceItem.h \
+		include/NetworkNode.h \
+		include/Constants.h \
+		include/NetworkNodeLabel.h \
+		include/IncidentNodeLabel.h \
+		include/LineObject.h \
+		include/TextObject.h \
+		include/EllipseObject.h \
+		include/AbstractNodeLabel.h \
+		include/OccurrenceLabel.h \
+		include/TimeLineObject.h \
+		include/GuideLine.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RectObject.o src/RectObject.cpp
 
 RelationalTable.o: src/RelationalTable.cpp include/RelationalTable.h \
@@ -5025,7 +5059,24 @@ SupportingFunctions.o: src/SupportingFunctions.cpp include/SupportingFunctions.h
 TextEdit.o: src/TextEdit.cpp include/TextEdit.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o TextEdit.o src/TextEdit.cpp
 
-TextObject.o: src/TextObject.cpp include/TextObject.h
+TextObject.o: src/TextObject.cpp include/TextObject.h \
+		include/Scene.h \
+		include/IncidentNode.h \
+		include/Linkage.h \
+		include/AbstractNode.h \
+		include/SupportingFunctions.h \
+		include/OccurrenceItem.h \
+		include/NetworkNode.h \
+		include/Constants.h \
+		include/NetworkNodeLabel.h \
+		include/IncidentNodeLabel.h \
+		include/LineObject.h \
+		include/EllipseObject.h \
+		include/AbstractNodeLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
+		include/TimeLineObject.h \
+		include/GuideLine.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o TextObject.o src/TextObject.cpp
 
 TimeLineObject.o: src/TimeLineObject.cpp include/TimeLineObject.h \

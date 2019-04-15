@@ -79,6 +79,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   lineColorLabel = new QLabel(tr("<b>Line / Text color:</b>"), this);
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
+  guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -197,6 +198,17 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   fillOpacitySlider->setMaximum(255);
   fillOpacitySlider->setValue(0);
   fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+  addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
+  addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
+  addHorizontalGuideLineButton->setMinimumSize(40, 40);
+  addHorizontalGuideLineButton->setMaximumSize(40, 40);
+  addVerticalGuideLineButton = new QPushButton(QIcon("./images/guide_vertical.png"), "", this);
+  addVerticalGuideLineButton->setIconSize(QSize(20, 20));
+  addVerticalGuideLineButton->setMinimumSize(40, 40);
+  addVerticalGuideLineButton->setMaximumSize(40, 40);
+  snapGuidesButton = new QPushButton(tr("Toggle snap guides"), this);
+  snapGuidesButton->setCheckable(true);
+
   
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
@@ -245,6 +257,9 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(changeLineColorButton, SIGNAL(clicked()), this, SLOT(setLineColor()));
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
   connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
+  connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
+  connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
+  connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(attributesTreeView->selectionModel(),
@@ -288,10 +303,16 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(sendLinePoints(const QPointF&, const QPointF&)),
 	  this, SLOT(addLineObject(const QPointF&, const QPointF&)));
+  connect(scene, SIGNAL(GuideLineContextMenuAction(const QString &)),
+	  this, SLOT(processGuideLineContextMenu(const QString &)));
   connect(scene, SIGNAL(sendSingleArrowPoints(const QPointF&, const QPointF&)),
 	  this, SLOT(addSingleArrowObject(const QPointF&, const QPointF&)));
   connect(scene, SIGNAL(sendDoubleArrowPoints(const QPointF&, const QPointF&)),
 	  this, SLOT(addDoubleArrowObject(const QPointF&, const QPointF&)));
+  connect(scene, SIGNAL(sendHorizontalGuideLinePos(const QPointF&)),
+	  this, SLOT(addHorizontalGuideLine(const QPointF&)));
+  connect(scene, SIGNAL(sendVerticalGuideLinePos(const QPointF&)),
+	  this, SLOT(addVerticalGuideLine(const QPointF&)));
   connect(scene, SIGNAL(sendEllipseArea(const QRectF&)), this, SLOT(addEllipseObject(const QRectF&)));
   connect(scene, SIGNAL(sendRectArea(const QRectF&)), this, SLOT(addRectObject(const QRectF&)));
   connect(scene, SIGNAL(sendTextArea(const QRectF&, const qreal&)),
@@ -421,6 +442,13 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
+  QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
+  guidesLayout->addWidget(guideLinesLabel);
+  guidesLayout->addWidget(addHorizontalGuideLineButton);
+  guidesLayout->addWidget(addVerticalGuideLineButton);
+  guidesLayout->addWidget(snapGuidesButton);
+  guidesLayout->setAlignment(Qt::AlignLeft);
+  drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
 
@@ -439,10 +467,23 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
 
 HierarchyGraphWidget::~HierarchyGraphWidget()
 {
+  qDeleteAll(_edgeVector);
+  _edgeVector.clear();
+  _abstractNodeVector.clear();
+  _incidentNodeVector.clear();
+  qDeleteAll(_lineVector);
+  _lineVector.clear();
+  qDeleteAll(_textVector);
+  _textVector.clear();
+  qDeleteAll(_ellipseVector);
+  _ellipseVector.clear();
+  qDeleteAll(_rectVector);
+  _rectVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
   delete view;
   delete scene;
 }
-
 
 void HierarchyGraphWidget::setOpenGL(bool state)
 {
@@ -946,7 +987,7 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
 	  partners.push_back(abstractNode);
 	}
     }
-  QVectorIterator<IncidentNode*> it2(_eventVector);
+  QVectorIterator<IncidentNode*> it2(_incidentNodeVector);
   while (it2.hasNext()) 
     {
       IncidentNode *event = it2.next();
@@ -1158,7 +1199,7 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 	      scene->addItem(newLinkage);
 	    }
 	}
-      QVectorIterator<IncidentNode*> it3(_eventVector);
+      QVectorIterator<IncidentNode*> it3(_incidentNodeVector);
       while (it3.hasNext()) 
 	{
 	  IncidentNode *event = it3.next();
@@ -1502,7 +1543,7 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item)
 	  item->setBackground(fillColor);
 	  QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
-	  QVectorIterator<IncidentNode*> it(_eventVector);
+	  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
 	  while (it.hasNext()) 
 	    {
 	      IncidentNode *current = it.next();
@@ -2342,6 +2383,36 @@ void HierarchyGraphWidget::setFillOpacity(int value)
     }
 }
 
+void HierarchyGraphWidget::addHorizontalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(true);
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+}
+
+void HierarchyGraphWidget::addVerticalGuideLine(const QPointF &pos)
+{
+  GuideLine *guide = new GuideLine(false);
+  _guidesVector.push_back(guide);
+  scene->addItem(guide);
+  guide->setOrientationPoint(pos);
+  fixZValues();
+}
+
+void HierarchyGraphWidget::toggleSnapGuides()
+{
+  if (snapGuidesButton->isChecked())
+    {
+      scene->setSnapGuides(true);
+    }
+  else
+    {
+      scene->setSnapGuides(false);
+    }
+}
+
 void HierarchyGraphWidget::processShapeSelection()
 {
   if (scene->selectedItems().size() == 1)
@@ -2761,6 +2832,28 @@ void HierarchyGraphWidget::duplicateRect()
     }
 }
 
+void HierarchyGraphWidget::processGuideLineContextMenu(const QString &action) 
+{
+  if (action == DELETEGUIDEACTION) 
+    {
+      deleteGuideLine();
+    }
+}
+
+void HierarchyGraphWidget::deleteGuideLine()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      GuideLine *guide = qgraphicsitem_cast<GuideLine*>(scene->selectedItems().first());
+      if (guide) 
+	{
+	  delete guide;
+	  _guidesVector.removeOne(guide);
+	}
+    }  
+}
+
+
 void HierarchyGraphWidget::objectOneForward() 
 {
   int maxZ = -1;
@@ -3033,31 +3126,40 @@ void HierarchyGraphWidget::fixZValues()
 	  maxZ = current->zValue();
 	}
     }
-  for (int i = 4; i != maxZ; i++) 
+  if (maxZ > 3)
     {
-      bool currentZFound = false;
-      QListIterator<QGraphicsItem*> it2(scene->items());
-      while (it2.hasNext()) 
+      for (int i = 4; i != maxZ; i++) 
 	{
-	  QGraphicsItem* current = it2.next();
-	  if (current->zValue() == i) 
+	  bool currentZFound = false;
+	  QListIterator<QGraphicsItem*> it2(scene->items());
+	  while (it2.hasNext()) 
 	    {
-	      currentZFound = true;
-	      break;
-	    }
-	}
-      if (!currentZFound) 
-	{
-	  QListIterator<QGraphicsItem*> it3(scene->items());
-	  while (it3.hasNext()) 
-	    {
-	      QGraphicsItem* current = it3.next();
-	      if (current->zValue() > i) 
+	      QGraphicsItem *current = it2.next();
+	      if (current->zValue() == i) 
 		{
-		  current->setZValue(current->zValue() - 1);
+		  currentZFound = true;
+		  break;
+		}
+	    }
+	  if (!currentZFound) 
+	    {
+	      QListIterator<QGraphicsItem*> it3(scene->items());
+	      while (it3.hasNext()) 
+		{
+		  QGraphicsItem *current = it3.next();
+		  if (current->zValue() > i) 
+		    {
+		      current->setZValue(current->zValue() - 1);
+		    }
 		}
 	    }
 	}
+    }
+  QVectorIterator<GuideLine*> it4(_guidesVector);
+  while (it4.hasNext())
+    {
+      GuideLine *guide = it4.next();
+      guide->setZValue(maxZ + 1);
     }
 }
 
@@ -3927,7 +4029,7 @@ void HierarchyGraphWidget::setOrigin(AbstractNode *origin)
 
 void HierarchyGraphWidget::setEvents(QVector<IncidentNode*> eventVector) 
 {
-  _eventVector = eventVector;
+  _incidentNodeVector = eventVector;
 }
 
 void HierarchyGraphWidget::setAbstractNodes(QVector<AbstractNode*> abstractNodeVector) 
@@ -4314,7 +4416,7 @@ void HierarchyGraphWidget::setButtons()
 void HierarchyGraphWidget::cleanUp() 
 {
   setComment();
-  _eventVector.clear();
+  _incidentNodeVector.clear();
   _abstractNodeVector.clear();
   _edgeVector.clear();
   _origin = NULL;
@@ -4330,6 +4432,10 @@ void HierarchyGraphWidget::cleanUp()
   _ellipseVector.clear();
   qDeleteAll(_rectVector);
   _rectVector.clear();
+  qDeleteAll(_guidesVector);
+  _guidesVector.clear();
+  snapGuidesButton->setChecked(false);
+  toggleSnapGuides();
   retrieveData();
   eventListWidget->setRowCount(0);
   linkageListWidget->setRowCount(0);

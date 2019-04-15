@@ -19,7 +19,6 @@ QRectF GuideLine::boundingRect() const
   return _strokePath.boundingRect().marginsAdded(QMargins(10,10,10,10));
 }
 
-
 void GuideLine::updatePosition() 
 {
   calculate();

@@ -85,9 +85,22 @@ void SavedPlotsDialog::cancelAndClose()
 
 void SavedPlotsDialog::loadPlot() 
 {
-  _exitStatus = 0;
-  _selectedPlot = plotsComboBox->currentText();
-  this->close();
+  if (plotsComboBox->currentText() == DEFAULT)
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<b>No plot selected</b>");
+      warningBox->setInformativeText("You need to select a plot to load it.");
+      warningBox->exec();
+      delete warningBox;
+    }
+  else
+    {
+      _exitStatus = 0;
+      _selectedPlot = plotsComboBox->currentText();
+      this->close();
+    }
 }
 
 void SavedPlotsDialog::removePlot() 
