@@ -162,6 +162,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
+  clearPlotButton = new QPushButton(tr("Clear plot"), this);
+  clearPlotButton->setEnabled(false);
 
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -386,6 +388,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(exportMatrixButton, SIGNAL(clicked()), this, SLOT(exportMatrix()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
+  connect(clearPlotButton, SIGNAL(clicked()), this, SLOT(clearPlot()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
     
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -397,8 +400,13 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   plotOptionsLayout->addWidget(changeLabel);
   plotOptionsLayout->addWidget(incongruencyLabel);
   plotOptionsLayout->addSpacerItem(new QSpacerItem(100,0));
-  topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
+  topLayout->addLayout(plotOptionsLayout);
+
+  QPointer<QHBoxLayout> clearLayout = new QHBoxLayout;
+  clearLayout->addWidget(clearPlotButton);
+  clearLayout->setAlignment(Qt::AlignRight);
+  topLayout->addLayout(clearLayout);
   mainLayout->addLayout(topLayout);
 
   QPointer<QFrame> topLine = new QFrame();
@@ -1109,6 +1117,7 @@ void OccurrenceGraphWidget::addAttribute()
 	{
 	  _presentAttributes.push_back(attribute);
 	  savePlotButton->setEnabled(true);
+	  clearPlotButton->setEnabled(true);
 	  QSqlQuery *query = new QSqlQuery;
 	  if (entity) 
 	    {
@@ -1366,6 +1375,7 @@ void OccurrenceGraphWidget::addAttributes()
       delete query4;      
       // Set some settings
       savePlotButton->setEnabled(true);
+      clearPlotButton->setEnabled(true);
       delete attributeDialog;
       setRangeControls();
       scene->update();
@@ -1428,6 +1438,7 @@ void OccurrenceGraphWidget::addRelationship()
 	{
 	  _presentRelationships.push_back(combi);
 	  savePlotButton->setEnabled(true);
+	  clearPlotButton->setEnabled(true);
 	  QString description = query->value(0).toString();
 	  QSqlDatabase::database().transaction();
 	  query2->bindValue(":relationship", relationship);
@@ -1575,6 +1586,7 @@ void OccurrenceGraphWidget::addRelationships()
 	    {
 	      _presentRelationships.push_back(combi);
 	      savePlotButton->setEnabled(true);
+	      clearPlotButton->setEnabled(true);
 	      query2->bindValue(":relationship", relationship);
 	      query2->bindValue(":type", type);
 	      query2->exec();
@@ -1748,6 +1760,7 @@ void OccurrenceGraphWidget::removeAttributeMode()
       incidentLabelsOnlyButton->setChecked(false);
       attributeLabelsOnlyButton->setChecked(false);
       savePlotButton->setEnabled(false);
+      clearPlotButton->setEnabled(false);
       caseListWidget->setEnabled(false);
       setGraphControls(false);
     }
@@ -1798,6 +1811,7 @@ void OccurrenceGraphWidget::removeRelationshipMode()
       attributeLabelsOnlyButton->setChecked(false);
       caseListWidget->setEnabled(false);
       savePlotButton->setEnabled(false);
+      clearPlotButton->setEnabled(false);
       setGraphControls(false);
     }
   wireLinkages();
@@ -5412,6 +5426,7 @@ void OccurrenceGraphWidget::seePlots()
   if (savedPlotsDialog->getExitStatus() == 0) 
     {
       savePlotButton->setEnabled(true);
+      clearPlotButton->setEnabled(true);
       cleanUp();
       QString plot = savedPlotsDialog->getSelectedPlot();
       QSqlQuery *query = new QSqlQuery;
@@ -5986,6 +6001,27 @@ void OccurrenceGraphWidget::seePlots()
     }
 }
 
+void OccurrenceGraphWidget::clearPlot()
+{
+  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->addButton(QMessageBox::Yes);
+  warningBox->addButton(QMessageBox::No);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Are you sure?</h2>");
+  warningBox->setInformativeText("Clearing the plot cannot be undone. "
+				 "Are you sure you want to proceed?");
+  if (warningBox->exec() == QMessageBox::Yes) 
+    {
+      delete warningBox;
+      cleanUp();
+    }
+  else 
+    {
+      delete warningBox;
+      return;
+    }
+}
+
 void OccurrenceGraphWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
 {
   _eventGraphWidgetPtr = eventGraphWidgetPtr;
@@ -6027,6 +6063,8 @@ void OccurrenceGraphWidget::cleanUp()
   incidentLabelsOnlyButton->setChecked(false);
   attributeLabelsOnlyButton->setChecked(false);
   setGraphControls(false);
+  clearPlotButton->setEnabled(false);
+  savePlotButton->setEnabled(false);
 }
 
 void OccurrenceGraphWidget::finalBusiness() 

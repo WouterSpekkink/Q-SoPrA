@@ -187,6 +187,7 @@ private slots:
   void fixZValues();
   void saveCurrentPlot();
   void seePlots();
+  void clearPlot();
   void cleanUp();
   void finalBusiness();
   bool eventFilter(QObject *object, QEvent *event);
@@ -233,6 +234,7 @@ private:
   QPointer<QLabel> guideLinesLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
+  QPointer<QPushButton> clearPlotButton;
   QPointer<QPushButton> toggleLegendButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> toggleTimeLineButton;
