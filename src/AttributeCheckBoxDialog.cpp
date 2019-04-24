@@ -41,6 +41,7 @@ AttributeCheckBoxDialog::AttributeCheckBoxDialog(QWidget *parent, QString type)
   attributesTreeView->setSortingEnabled(true);
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
   attributesTreeView->installEventFilter(this);
+  attributesTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
   attributesFilterField = new QLineEdit(this);
 
@@ -51,6 +52,8 @@ AttributeCheckBoxDialog::AttributeCheckBoxDialog(QWidget *parent, QString type)
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(changeFilter(const QString &)));
+  connect(attributesTreeView, SIGNAL(customContextMenuRequested(QPoint)),
+	  this, SLOT(customContextMenu(QPoint)));
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(attributeLabel);
@@ -219,7 +222,62 @@ void AttributeCheckBoxDialog::changeFilter(const QString &text)
   QRegExp regExp(text, Qt::CaseInsensitive);
   treeFilter->setFilterRegExp(regExp);
 }
- 
+
+void AttributeCheckBoxDialog::customContextMenu(const QPoint &point)
+{
+  QPoint globalPos = attributesTreeView->mapToGlobal(point);
+  QModelIndex index = attributesTreeView->indexAt(point);
+  attributesTreeView->selectionModel()->select(index, QItemSelectionModel::Current);
+  if (index.isValid())
+    {
+      QStandardItem *item = attributesTree->itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
+      if (item->hasChildren())
+	{
+	  QMenu *menu = new QMenu;
+	  QAction *action1 = new QAction(SELECTALLCHILDRENACTION, this);
+	  QAction *action2 = new QAction(DESELECTALLCHILDRENACTION, this);
+	  menu->addAction(action1);
+	  menu->addAction(action2);
+	  if (QAction *action = menu->exec(globalPos))
+	    {
+	      if (action->text() == SELECTALLCHILDRENACTION)
+		{
+		  selectAllChildren(attributesTree, attributesTree->indexFromItem(item));
+		}
+	      else if (action->text() == DESELECTALLCHILDRENACTION)
+		{
+		  deselectAllChildren(attributesTree, attributesTree->indexFromItem(item));
+		}
+	    }
+	  delete menu;
+	  delete action1;
+	  delete action2;
+	}
+    }
+}
+
+void AttributeCheckBoxDialog::selectAllChildren(const QAbstractItemModel *model,
+						const QModelIndex index)
+{
+  for (int i = 0; i != model->rowCount(index); i++)
+    {
+      QModelIndex currentIndex = model->index(i, 0, index);
+      QStandardItem *currentItem = attributesTree->itemFromIndex(currentIndex);
+      currentItem->setCheckState(Qt::Checked);
+    }
+}
+
+  void AttributeCheckBoxDialog::deselectAllChildren(const QAbstractItemModel *model,
+						    const QModelIndex index)
+{
+  for (int i = 0; i != model->rowCount(index); i++)
+    {
+      QModelIndex currentIndex = model->index(i, 0, index);
+      QStandardItem *currentItem = attributesTree->itemFromIndex(currentIndex);
+      currentItem->setCheckState(Qt::Unchecked);
+    }
+}
+
 void AttributeCheckBoxDialog::cancelAndClose() 
 {
   _exitStatus = 1;

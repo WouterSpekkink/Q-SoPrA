@@ -59,6 +59,9 @@ private slots:
   void cancelAndClose();
   void saveAndClose();
   void getChecks(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void customContextMenu(const QPoint &point);
+  void selectAllChildren(const QAbstractItemModel *item, const QModelIndex index);
+  void deselectAllChildren(const QAbstractItemModel *item, const QModelIndex index);
     
 private:
   // Interface elements

@@ -1251,13 +1251,13 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
   QString type = targetIndex.parent().data(Qt::DisplayRole).toString();
   if (targetIndex.parent().isValid()) 
     {
-      QMenu menu;
+      QMenu *menu = new QMenu();
       QAction *action1 = new QAction(ASSIGNRELATIONSHIPACTION, this);
       QAction *action2 = new QAction(UNASSIGNRELATIONSHIPACTION, this);
       QAction *action3 = new QAction(UNASSIGNALLACTION, this);
-      menu.addAction(action1);
-      menu.addAction(action2);
-      menu.addAction(action3);
+      menu->addAction(action1);
+      menu->addAction(action2);
+      menu->addAction(action3);
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
@@ -1288,7 +1288,7 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
 	{
 	  action3->setEnabled(false);
 	}
-      if (QAction *action = menu.exec(globalPos)) 
+      if (QAction *action = menu->exec(globalPos)) 
 	{
 	  if (action->text() == ASSIGNRELATIONSHIPACTION) 
 	    {
@@ -1303,15 +1303,20 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
 	      unassignAll();
 	    }
 	}
+      delete query;
+      delete action1;
+      delete action2;
+      delete action3;
+      delete menu;
     }
   else if (targetIndex.isValid())
     {
-      QMenu menu;
+      QMenu *menu = new QMenu();
       QAction *action1 = new QAction(ADDRELATIONSHIPACTION, this);
       QAction *action2 = new QAction(EDITRELATIONSHIPTYPEACTION, this);
-      menu.addAction(action1);
-      menu.addAction(action2);
-      if (QAction *action = menu.exec(globalPos)) 
+      menu->addAction(action1);
+      menu->addAction(action2);
+      if (QAction *action = menu->exec(globalPos)) 
 	{
 	  if (action->text() == ADDRELATIONSHIPACTION) 
 	    {
@@ -1322,19 +1327,24 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
 	      editType();
 	    }
 	}
+      delete action1;
+      delete action2;
+      delete menu;
     }
   else
     {
-      QMenu menu;
+      QMenu *menu = new QMenu();
       QAction *action1 = new QAction(ADDRELATIONSHIPTYPEACTION, this);
-      menu.addAction(action1);
-      if (QAction *action = menu.exec(globalPos)) 
+      menu->addAction(action1);
+      if (QAction *action = menu->exec(globalPos)) 
 	{
 	  if (action->text() == ADDRELATIONSHIPTYPEACTION) 
 	    {
 	      newType();
 	    }
 	}
+      delete action1;
+      delete menu;
     }
 }
 
