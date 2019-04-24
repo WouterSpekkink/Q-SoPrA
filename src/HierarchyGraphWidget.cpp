@@ -3165,7 +3165,7 @@ void HierarchyGraphWidget::fixZValues()
 
 void HierarchyGraphWidget::exportSvg() 
 {
-  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.)"));
+  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.svg)"));
   if (!fileName.trimmed().isEmpty()) 
     {
       if (!fileName.endsWith(".svg")) 

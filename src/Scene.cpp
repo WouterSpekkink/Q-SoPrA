@@ -571,6 +571,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  abstractNode = abstractNodeLabel->getAbstractNode();
 		}
+	      if (occurrenceLabel) 
+		{
+		  occurrence = occurrenceLabel->getOccurrence();
+		}
 	      if (linkage) 
 		{
 		  clearSelection();
@@ -625,7 +629,12 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  clearSelection();
 		  occurrence->setSelected(true);
 		  _selectedOccurrencePtr = occurrence;
-		  _moveOn = true;
+		  qDebug() << occurrence->isGrouped();
+		  if (!occurrence->isGrouped())
+		    {
+		      qDebug() << "WHAT?";
+		      _moveOn = true;
+		    }
 		  QGraphicsScene::mousePressEvent(event);
 		}
 	      else if (line) 
@@ -916,6 +925,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  clearSelection();
 		  occurrence->setSelected(true);
 		  _selectedOccurrencePtr = occurrence;
+		  QGraphicsScene::mousePressEvent(event);
 		}
 	      else if (line) 
 		{

@@ -4517,7 +4517,7 @@ void OccurrenceGraphWidget::setVisibility()
 
 void OccurrenceGraphWidget::exportSvg() 
 {
-  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.)"));
+  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.svg)"));
   if (!fileName.trimmed().isEmpty()) 
     {
       if (!fileName.endsWith(".svg")) 
@@ -4825,10 +4825,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_og_plots_occurrence_items "
 		     "(plot, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
-		     "oriypos, red, green, blue, alpha, hidden, perm, relationship) "
+		     "oriypos, red, green, blue, alpha, hidden, perm, relationship, grouped) "
 		     "VALUES (:plot, :incident, :order, :attribute, :width, :curxpos, :curypos, "
 		     ":orixpos, :oriypos, :red, :green, :blue, :alpha, :hidden, :perm, "
-		     ":relationship)");
+		     ":relationship, :grouped)");
       QVectorIterator<OccurrenceItem*> it(allOccurrences);
       while (it.hasNext()) 
 	{
@@ -4849,6 +4849,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int hidden = 1;
 	  int perm = 0;
 	  int relationship = 0;
+	  int grouped = 0;
 	  if (currentItem->isVisible()) 
 	    {
 	      hidden = 0;
@@ -4860,6 +4861,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  if (_relationshipOccurrenceVector.contains(currentItem)) 
 	    {
 	      relationship = 1;
+	    }
+	  if (currentItem->isGrouped())
+	    {
+	      grouped = 1;
 	    }
 	  query->bindValue(":plot", name);
 	  query->bindValue(":incident", incident);
@@ -4877,6 +4882,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":perm", perm);
 	  query->bindValue(":relationship", relationship);
+	  query->bindValue(":grouped", grouped);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -5456,7 +5462,7 @@ void OccurrenceGraphWidget::seePlots()
 	  _attributeLabelsOnly = false;
 	}
       query->prepare("SELECT incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
-		     "oriypos, red, green, blue, alpha, hidden, perm, relationship "
+		     "oriypos, red, green, blue, alpha, hidden, perm, relationship, grouped "
 		     "FROM saved_og_plots_occurrence_items "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -5479,6 +5485,7 @@ void OccurrenceGraphWidget::seePlots()
 	  int hidden = query->value(12).toInt();
 	  int perm = query->value(13).toInt();
 	  int relationship = query->value(14).toInt();
+	  int grouped = query->value(15).toInt();
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT description FROM incidents WHERE id = :id");
 	  query2->bindValue(":id", id);
@@ -5527,6 +5534,14 @@ void OccurrenceGraphWidget::seePlots()
 	    {
 	      currentItem->setPermHidden(false);
 	    }
+	  if (grouped == 0)
+	    {
+ 	      currentItem->setGrouped(false);
+	    }
+	  else
+	    {
+	      currentItem->setGrouped(true);
+	    }	  
 	}
       query->prepare("SELECT incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, hidden, relationship "

@@ -650,7 +650,8 @@ void WelcomeDialog::newDatabase()
 		      "alpha integer, "
 		      "hidden integer, "
 		      "perm integer, "
-		      "relationship integer)"); 
+		      "relationship integer, "
+		      "grouped integer)"); 
 	  query->exec("CREATE TABLE saved_og_plots_occurrence_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1405,7 +1406,8 @@ void WelcomeDialog::openDatabase()
 		      "alpha integer, "
 		      "hidden integer, "
 		      "perm integer, "
-		      "relationship integer)");
+		      "relationship integer, "
+		      "grouped integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
