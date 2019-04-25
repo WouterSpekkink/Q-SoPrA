@@ -629,10 +629,8 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		  clearSelection();
 		  occurrence->setSelected(true);
 		  _selectedOccurrencePtr = occurrence;
-		  qDebug() << occurrence->isGrouped();
 		  if (!occurrence->isGrouped())
 		    {
-		      qDebug() << "WHAT?";
 		      _moveOn = true;
 		    }
 		  QGraphicsScene::mousePressEvent(event);

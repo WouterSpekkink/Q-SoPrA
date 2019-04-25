@@ -10758,6 +10758,7 @@ void EventGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
+	  setChangeLabel();
 	}
     }
 }
@@ -10771,6 +10772,7 @@ void EventGraphWidget::deleteText()
 	{
 	  delete text;
 	  _textVector.removeOne(text);
+	  setChangeLabel();
 	}
     }
 }
@@ -10798,6 +10800,7 @@ void EventGraphWidget::copyDescriptionToText()
 	  newText->setPos(pos);
 	  newText->setZValue(6);
 	  newText->adjustSize();
+	  setChangeLabel();
 	}
       else if (abstractNode) 
 	{
@@ -10810,6 +10813,7 @@ void EventGraphWidget::copyDescriptionToText()
 	  newText->setPos(pos);
 	  newText->setZValue(6);
 	  newText->adjustSize();
+	  setChangeLabel();
 	}
     }
 }
@@ -10841,6 +10845,7 @@ void EventGraphWidget::duplicateText()
 	      newText->setFont(text->font());
 	      newText->adjustSize();
 	      newText->setTextWidth(newText->textWidth() + 50);
+	      setChangeLabel();
 	    }
 	  delete textDialog;
 	}
@@ -10884,6 +10889,7 @@ void EventGraphWidget::deleteEllipse()
 	{
 	  delete ellipse;
 	  _ellipseVector.removeOne(ellipse);
+	  setChangeLabel();
 	}
     }  
 }
@@ -10910,6 +10916,7 @@ void EventGraphWidget::duplicateEllipse()
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+	  setChangeLabel();
 	}
     }
 }
@@ -10951,6 +10958,7 @@ void EventGraphWidget::deleteRect()
 	{
 	  delete rect;
 	  _rectVector.removeOne(rect);
+	  setChangeLabel();
 	}
     }  
 }
@@ -10977,6 +10985,7 @@ void EventGraphWidget::duplicateRect()
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
 	  newRect->moveCenter(newRect->mapFromScene(pos));
+	  setChangeLabel();
 	}
     }
 }
@@ -11027,6 +11036,7 @@ void EventGraphWidget::timeLineToggleFirstTick()
 	  bool state = timeline->getFirstTick();
 	  state = !state;
 	  timeline->setFirstTick(state);
+	  setChangeLabel();
 	}
     }  
 }
@@ -11041,6 +11051,7 @@ void EventGraphWidget::timeLineToggleForceLastTick()
 	  bool state = timeline->getForceLastTick();
 	  state = !state;
 	  timeline->setForceLastTick(state);
+	  setChangeLabel();
 	}
     }  
 }
@@ -11054,6 +11065,7 @@ void EventGraphWidget::deleteTimeLine()
 	{
 	  delete timeline;
 	  _timeLineVector.removeOne(timeline);
+	  setChangeLabel();
 	}
     }  
 }
@@ -11078,6 +11090,7 @@ void EventGraphWidget::duplicateTimeLine()
 	  _timeLineVector.push_back(newTimeLine);
 	  newTimeLine->setZValue(timeline->zValue());
 	  scene->addItem(newTimeLine);
+	  setChangeLabel();
 	}
     }
 }
@@ -11087,6 +11100,7 @@ void EventGraphWidget::processGuideLineContextMenu(const QString &action)
   if (action == DELETEGUIDEACTION) 
     {
       deleteGuideLine();
+      setChangeLabel();
     }
 }
 
@@ -11099,6 +11113,7 @@ void EventGraphWidget::deleteGuideLine()
 	{
 	  delete guide;
 	  _guidesVector.removeOne(guide);
+	  setChangeLabel();
 	}
     }  
 }

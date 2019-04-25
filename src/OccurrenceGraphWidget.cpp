@@ -3233,6 +3233,7 @@ void OccurrenceGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
+	  setChangeLabel();
 	}
     }
 }
@@ -3246,6 +3247,7 @@ void OccurrenceGraphWidget::deleteText()
 	{
 	  delete text;
 	  _textVector.removeOne(text);
+	  setChangeLabel();
 	}
     }
 }
@@ -3279,6 +3281,7 @@ void OccurrenceGraphWidget::duplicateText()
 	      newText->setTextWidth(newText->textWidth() + 50);
 	    }
 	  delete textDialog;
+	  setChangeLabel();
 	}
     }
 }
@@ -3320,6 +3323,7 @@ void OccurrenceGraphWidget::deleteEllipse()
 	{
 	  delete ellipse;
 	  _ellipseVector.removeOne(ellipse);
+	  setChangeLabel();
 	}
     }  
 }
@@ -3346,6 +3350,7 @@ void OccurrenceGraphWidget::duplicateEllipse()
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+	  setChangeLabel();
 	}
     }
 }
@@ -3387,6 +3392,7 @@ void OccurrenceGraphWidget::deleteRect()
 	{
 	  delete rect;
 	  _rectVector.removeOne(rect);
+	  setChangeLabel();
 	}
     }  
 }
@@ -3413,6 +3419,7 @@ void OccurrenceGraphWidget::duplicateRect()
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
 	  newRect->moveCenter(newRect->mapFromScene(pos));
+	  setChangeLabel();
 	}
     }
 }
@@ -3463,6 +3470,7 @@ void OccurrenceGraphWidget::timeLineToggleFirstTick()
 	  bool state = timeline->getFirstTick();
 	  state = !state;
 	  timeline->setFirstTick(state);
+	  setChangeLabel();
 	}
     }  
 }
@@ -3477,6 +3485,7 @@ void OccurrenceGraphWidget::timeLineToggleForceLastTick()
 	  bool state = timeline->getForceLastTick();
 	  state = !state;
 	  timeline->setForceLastTick(state);
+	  setChangeLabel();
 	}
     }  
 }
@@ -3490,6 +3499,7 @@ void OccurrenceGraphWidget::deleteTimeLine()
 	{
 	  delete timeline;
 	  _timeLineVector.removeOne(timeline);
+	  setChangeLabel();
 	}
     }  
 }
@@ -3514,6 +3524,7 @@ void OccurrenceGraphWidget::duplicateTimeLine()
 	  _timeLineVector.push_back(newTimeLine);
 	  newTimeLine->setZValue(timeline->zValue());
 	  scene->addItem(newTimeLine);
+	  setChangeLabel();
 	}
     }
 }
@@ -5916,6 +5927,8 @@ void OccurrenceGraphWidget::seePlots()
       lowerRangeDial->setValue(lowerbound);
       upperRangeDial->setValue(upperbound);
       setGraphControls(true);
+      savePlotButton->setEnabled(true);
+      clearPlotButton->setEnabled(true);
       if (_incidentLabelsOnly)
 	{
 	  incidentLabelsOnlyButton->setChecked(true);
@@ -6014,6 +6027,7 @@ void OccurrenceGraphWidget::clearPlot()
     {
       delete warningBox;
       cleanUp();
+      changeLabel->setText("");
     }
   else 
     {

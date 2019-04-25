@@ -2738,6 +2738,7 @@ void NetworkGraphWidget::changeText()
 	      text->setPlainText(newText);
 	    }
 	  delete textDialog;
+	  setChangeLabel();
 	}
     }
 }
@@ -2751,6 +2752,7 @@ void NetworkGraphWidget::deleteText()
 	{
 	  delete text;
 	  _textVector.removeOne(text);
+	  setChangeLabel();
 	}
     }
 }
@@ -2782,6 +2784,7 @@ void NetworkGraphWidget::duplicateText()
 	      newText->setFont(text->font());
 	      newText->adjustSize();
 	      newText->setTextWidth(newText->textWidth() + 50);
+	      setChangeLabel();
 	    }
 	  delete textDialog;
 	}
@@ -2825,6 +2828,7 @@ void NetworkGraphWidget::deleteEllipse()
 	{
 	  delete ellipse;
 	  _ellipseVector.removeOne(ellipse);
+	  setChangeLabel();
 	}
     }  
 }
@@ -2851,6 +2855,7 @@ void NetworkGraphWidget::duplicateEllipse()
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
+	  setChangeLabel();
 	}
     }
 }
@@ -2892,6 +2897,7 @@ void NetworkGraphWidget::deleteRect()
 	{
 	  delete rect;
 	  _rectVector.removeOne(rect);
+	  setChangeLabel();
 	}
     }  
 }
@@ -2918,6 +2924,7 @@ void NetworkGraphWidget::duplicateRect()
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
 	  newRect->moveCenter(newRect->mapFromScene(pos));
+	  setChangeLabel();
 	}
     }
 }
