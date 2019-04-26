@@ -1028,6 +1028,7 @@ void MainWindow::switchToHierarchyView(AbstractNode *selectedAbstractNode)
       egw->setComment();
       HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
       hgw->cleanUp();
+      hgw->setLabelSize(egw->getLabelSize());
       hgw->setEvents(egw->getIncidentNodes());
       hgw->setAbstractNodes(egw->getAbstractNodes());
       hgw->setEdges(egw->getEdgeVector());

@@ -41,8 +41,8 @@ void OccurrenceLabel::setNewPos(QPointF nodePos, qreal xOffsetincrement, qreal y
   _xOffset += xOffsetincrement;
   _yOffset += yOffsetincrement;
   QPointF newPos = nodePos;
-  newPos.setX(newPos.x() - (textWidth() / 2) + _xOffset);
-  newPos.setY(newPos.y() - 12 + _yOffset);
+  newPos.setX(newPos.x() - (boundingRect().width() / 2) + _xOffset);
+  newPos.setY(newPos.y() - (boundingRect().height() / 2) + _yOffset);
   setPos(newPos);
 }
 

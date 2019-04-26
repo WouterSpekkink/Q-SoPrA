@@ -45,6 +45,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
   
   infoWidget = new QWidget(this);
+  graphicsWidget = new QWidget(this);
   attWidget = new QWidget(this);
   commentWidget = new QWidget(this);
   legendWidget = new QWidget(this); 
@@ -80,6 +81,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
+  labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), graphicsWidget);
   
   timeStampField = new QLineEdit(infoWidget);
   timeStampField->setReadOnly(true);
@@ -140,7 +142,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   exitButton->setStyleSheet("QPushButton {color: blue; font-weight: bold}");
   valueButton = new QPushButton(tr("Store value"), attWidget);
   valueButton->setEnabled(false);
-  colorByAttributeButton = new QPushButton(tr("Create mode"), legendWidget);
+  addModeButton = new QPushButton(tr("Create mode"), legendWidget);
   removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
   removeModeButton->setEnabled(false);
   moveModeUpButton = new QPushButton(tr("Up"), legendWidget);
@@ -152,6 +154,11 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   hideLinkageTypeButton->setEnabled(false);
   showLinkageTypeButton = new QPushButton(tr("Show"), legendWidget);
   showLinkageTypeButton->setEnabled(false);
+  increaseLabelSizeButton = new QPushButton(tr("+"), graphicsWidget);
+  decreaseLabelSizeButton = new QPushButton(tr("-"), graphicsWidget);
+  toggleGraphicsControlsButton = new QPushButton(tr("Toggle controls"), this);
+  toggleGraphicsControlsButton->setCheckable(true);
+  backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
 
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -232,6 +239,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   
   connect(toggleDetailsButton, SIGNAL(clicked()), this, SLOT(toggleDetails()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
+  connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
+  connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(seeAttributesButton, SIGNAL(clicked()), this, SLOT(showAttributes()));
   connect(assignAttributeButton, SIGNAL(clicked()), this, SLOT(assignAttribute()));
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
@@ -272,11 +281,13 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(attributesFilterField, SIGNAL(textChanged(const QString &)),
   	  this, SLOT(changeFilter(const QString &)));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
-  connect(colorByAttributeButton, SIGNAL(clicked()), this, SLOT(colorByAttribute()));
+  connect(addModeButton, SIGNAL(clicked()), this, SLOT(addMode()));
   connect(removeModeButton, SIGNAL(clicked()), this, SLOT(removeMode()));
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
+  connect(increaseLabelSizeButton, SIGNAL(clicked()), this, SLOT(increaseLabelSize()));
+  connect(decreaseLabelSizeButton, SIGNAL(clicked()), this, SLOT(decreaseLabelSize()));
   connect(eventListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
@@ -422,7 +433,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   modeButtonsLayout->addWidget(moveModeUpButton);
   modeButtonsLayout->addWidget(moveModeDownButton);
   legendLayout->addLayout(modeButtonsLayout);
-  legendLayout->addWidget(colorByAttributeButton);
+  legendLayout->addWidget(addModeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(linkageListWidget);
@@ -432,6 +443,19 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
   screenLayout->addWidget(legendWidget);				   
+
+  QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
+  graphicsControlsLayout->addWidget(backgroundColorButton);
+  graphicsControlsLayout->addWidget(labelSizeLabel);
+  QPointer<QHBoxLayout> labelSizeLayout = new QHBoxLayout;
+  labelSizeLayout->addWidget(increaseLabelSizeButton);
+  labelSizeLayout->addWidget(decreaseLabelSizeButton);
+  graphicsControlsLayout->addLayout(labelSizeLayout);
+  graphicsWidget->setMaximumWidth(175);
+  graphicsWidget->setMinimumWidth(175);
+  graphicsWidget->setLayout(graphicsControlsLayout);
+  graphicsControlsLayout->setAlignment(Qt::AlignBottom);
+  screenLayout->addWidget(graphicsWidget);
   
   mainLayout->addLayout(screenLayout);
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
@@ -456,21 +480,28 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   drawOptionsRightLayout->addWidget(exportSvgButton);
   drawOptionsRightLayout->addWidget(exitButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
+  drawOptionsRightLayout->addWidget(toggleGraphicsControlsButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);
   drawOptionsRightLayout->setAlignment(Qt::AlignRight);
   mainLayout->addLayout(drawOptionsLayout);
     
   setLayout(mainLayout);
+  graphicsWidget->hide();
   attWidget->hide();
   legendWidget->hide();
 }
 
 HierarchyGraphWidget::~HierarchyGraphWidget()
 {
-  qDeleteAll(_edgeVector);
-  _edgeVector.clear();
   _abstractNodeVector.clear();
   _incidentNodeVector.clear();
+  qDeleteAll(_abstractNodeLabelVector);
+  _abstractNodeLabelVector.clear();
+  qDeleteAll(_incidentNodeLabelVector);
+  _incidentNodeLabelVector.clear();
+  qDeleteAll(_tempEdges);
+  _tempEdges.clear();
+  _edgeVector.clear();
   qDeleteAll(_lineVector);
   _lineVector.clear();
   qDeleteAll(_textVector);
@@ -527,6 +558,19 @@ void HierarchyGraphWidget::toggleDetails()
   else 
     {
       infoWidget->hide();
+    }
+  rescale();
+}
+
+void HierarchyGraphWidget::toggleGraphicsControls() 
+{
+  if (graphicsWidget->isHidden()) 
+    {
+      graphicsWidget->show();
+    }
+  else 
+    {
+      graphicsWidget->hide();
     }
   rescale();
 }
@@ -832,7 +876,9 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
   newOrigin->setAttributes(origin->getAttributes());
   newOrigin->setOrder(origin->getOrder());
   newOrigin->setZValue(3);
+  _tempAbstractNodeVector.push_back(newOrigin);
   AbstractNodeLabel *abstractNodeLabel = new AbstractNodeLabel(newOrigin);
+  _abstractNodeLabelVector.push_back(abstractNodeLabel);
   newOrigin->setLabel(abstractNodeLabel);
   QTableWidgetItem *item = new QTableWidgetItem(newOrigin->getMode());
   item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -853,6 +899,9 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
       eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
       eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
       eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(newOrigin->getColor());
+      QVariant textColorVar = QVariant(newOrigin->getLabel()->defaultTextColor().rgb());
+      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+	->setData(Qt::UserRole, textColorVar);
       eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 	setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -866,21 +915,18 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
     {
       QString label = "P-" + QString::number(newOrigin->getOrder());
       abstractNodeLabel->setPlainText(label);
-      abstractNodeLabel->setTextWidth(abstractNodeLabel->boundingRect().width());
     }
   else if (newOrigin->getConstraint() == SEMIPATHS ||
 	   newOrigin->getConstraint() == SEMIPATHSATT) 
     {
       QString label = "S-" + QString::number(newOrigin->getOrder());
       abstractNodeLabel->setPlainText(label);
-      abstractNodeLabel->setTextWidth(abstractNodeLabel->boundingRect().width());
     }
   else if (newOrigin->getConstraint() == NOCONSTRAINT ||
 	   newOrigin->getConstraint() == NOCONSTRAINTATT) 
     {
       QString label = "N-" + QString::number(newOrigin->getOrder());
       abstractNodeLabel->setPlainText(label);
-      abstractNodeLabel->setTextWidth(abstractNodeLabel->boundingRect().width());
     }
   newOrigin->setPos(QPointF(newOrigin->scenePos().x(),
 			    newOrigin->scenePos().y() - layer * 80));
@@ -890,6 +936,7 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
   abstractNodeLabel->setNewPos(newOrigin->scenePos());
   abstractNodeLabel->setZValue(4);
   abstractNodeLabel->setDefaultTextColor(Qt::black);
+  abstractNodeLabel->setFontSize(_labelSize);
   scene->addItem(newOrigin);
   scene->addItem(abstractNodeLabel);
   qreal yPos = 0 + (layer * 80);
@@ -913,6 +960,35 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
 	  newAbstractNode->setPos(newAbstractNode->getOriginalPos());
 	  newAbstractNode->setOrder(abstractNode->getOrder());
 	  newAbstractNode->setZValue(3);
+	  _tempAbstractNodeVector.push_back(newAbstractNode);
+	  AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
+	  _abstractNodeLabelVector.push_back(newAbstractNodeLabel);
+	  newAbstractNode->setLabel(newAbstractNodeLabel);
+	  if (newAbstractNode->getConstraint() == PATHS ||
+	      newAbstractNode->getConstraint() == PATHSATT) 
+	    {
+	      QString label = "P-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	    }
+	  else if (newAbstractNode->getConstraint() == SEMIPATHS ||
+		   newAbstractNode->getConstraint() == SEMIPATHSATT) 
+	    {
+	      QString label = "S-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	    }
+	  else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
+		   newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
+	    {
+	      QString label = "N-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	    }
+	  qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
+	  newAbstractNodeLabel->setOffset(QPointF(xOffset,0));
+	  newAbstractNodeLabel->setNewPos(newAbstractNode->scenePos());
+	  newAbstractNodeLabel->setZValue(4);
+	  newAbstractNodeLabel->setDefaultTextColor(Qt::black);
+	  newAbstractNodeLabel->setFontSize(_labelSize);
+	  currentLayer.push_back(newAbstractNode);
 	  bool found = false;
 	  if (newAbstractNode->getMode() != "") 
 	    {
@@ -943,41 +1019,17 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
 		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 		    setBackground(newAbstractNode->getColor());
+		  QVariant textColorVar = QVariant(newAbstractNode->getLabel()->
+						   defaultTextColor().rgb());
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
+										     textColorVar);
 		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		}
 	    }
-	  AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
-	  newAbstractNode->setLabel(newAbstractNodeLabel);
-	  if (newAbstractNode->getConstraint() == PATHS ||
-	      newAbstractNode->getConstraint() == PATHSATT) 
-	    {
-	      QString label = "P-" + QString::number(newAbstractNode->getOrder());
-	      newAbstractNodeLabel->setPlainText(label);
-	      newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
-	    }
-	  else if (newAbstractNode->getConstraint() == SEMIPATHS ||
-		   newAbstractNode->getConstraint() == SEMIPATHSATT) 
-	    {
-	      QString label = "S-" + QString::number(newAbstractNode->getOrder());
-	      newAbstractNodeLabel->setPlainText(label);
-	      newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
-	    }
-	  else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
-		   newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
-	    {
-	      QString label = "N-" + QString::number(newAbstractNode->getOrder());
-	      newAbstractNodeLabel->setPlainText(label);
-	      newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
-	    }
-	  qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
-	  newAbstractNodeLabel->setOffset(QPointF(xOffset,0));
-	  newAbstractNodeLabel->setNewPos(newAbstractNode->scenePos());
-	  newAbstractNodeLabel->setZValue(4);
-	  newAbstractNodeLabel->setDefaultTextColor(Qt::black);
-	  currentLayer.push_back(newAbstractNode);
 	  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+	  _tempEdges.push_back(newLinkage);
 	  newLinkage->setZValue(2);
 	  newLinkage->setStartItem(newAbstractNode);
 	  newLinkage->setEndItem(newOrigin);
@@ -1000,6 +1052,19 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
 	  newEvent->setColor(event->getColor());
 	  newEvent->setPos(newEvent->getOriginalPos());
 	  newEvent->setZValue(3);
+	  _tempIncidentNodeVector.push_back(newEvent);
+	  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
+	  _incidentNodeLabelVector.push_back(text);
+	  newEvent->setLabel(text);
+	  text->setPlainText(QString::number(newEvent->getOrder()));
+	  QPointF currentPos = newEvent->scenePos();
+	  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
+	  currentPos.setY(currentPos.y() -12);
+	  text->setPos(currentPos);    
+	  text->setZValue(4);
+	  text->setDefaultTextColor(Qt::black);
+	  text->setFontSize(_labelSize);
+	  currentLayer.push_back(newEvent);
 	  bool found = false;
 	  if (newEvent->getMode() != "") 
 	    {
@@ -1030,23 +1095,16 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
 		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 		    setBackground(newEvent->getColor());
+		  QVariant textColorVar = QVariant(newEvent->getLabel()->defaultTextColor().rgb());
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
+										     textColorVar);
 		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		}
 	    }
-	  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
-	  newEvent->setLabel(text);
-	  text->setPlainText(QString::number(newEvent->getOrder()));
-	  text->setTextWidth(text->boundingRect().width());
-	  QPointF currentPos = newEvent->scenePos();
-	  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
-	  currentPos.setY(currentPos.y() -12);
-	  text->setPos(currentPos);    
-	  text->setZValue(4);
-	  text->setDefaultTextColor(Qt::black);
-	  currentLayer.push_back(newEvent);
 	  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+	  _tempEdges.push_back(newLinkage);
 	  newLinkage->setZValue(2);
 	  newLinkage->setStartItem(newEvent);
 	  newLinkage->setEndItem(newOrigin);
@@ -1125,6 +1183,7 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 	      newAbstractNode->setPos(newAbstractNode->getOriginalPos());
 	      newAbstractNode->setOrder(abstractNode->getOrder());
 	      newAbstractNode->setZValue(3);
+	      _tempAbstractNodeVector.push_back(newAbstractNode);
 	      bool found = false;
 	      if (newAbstractNode->getMode() != "") 
 		{
@@ -1155,33 +1214,35 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 		      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 			setBackground(newAbstractNode->getColor());
+		      QVariant textColorVar = QVariant(newAbstractNode->getLabel()
+						       ->defaultTextColor().rgb());
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+			setData(Qt::UserRole, textColorVar);
 		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 			setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 				 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		    }
 		}
 	      AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
+	      _abstractNodeLabelVector.push_back(newAbstractNodeLabel);
 	      newAbstractNode->setLabel(newAbstractNodeLabel);
 	      if (newAbstractNode->getConstraint() == PATHS ||
 		  newAbstractNode->getConstraint() == PATHSATT) 
 		{
 		  QString label = "P-" + QString::number(newAbstractNode->getOrder());
 		  newAbstractNodeLabel->setPlainText(label);
-		  newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 		}
 	      else if (newAbstractNode->getConstraint() == SEMIPATHS ||
 		       newAbstractNode->getConstraint() == SEMIPATHSATT) 
 		{
 		  QString label = "S-" + QString::number(newAbstractNode->getOrder());
 		  newAbstractNodeLabel->setPlainText(label);
-		  newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 		}
 	      else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
 		       newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
 		{
 		  QString label = "N-" + QString::number(newAbstractNode->getOrder());
 		  newAbstractNodeLabel->setPlainText(label);
-		  newAbstractNodeLabel->setTextWidth(newAbstractNodeLabel->boundingRect().width());
 		}
 	      qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
 	      newAbstractNodeLabel->setOffset(QPointF(xOffset, 0));
@@ -1191,6 +1252,7 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 	      currentLayer.push_back(newAbstractNode);
 	      partners.push_back(abstractNode);
 	      Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+	      _tempEdges.push_back(newLinkage);
 	      newLinkage->setZValue(2);
 	      newLinkage->setStartItem(newAbstractNode);
 	      newLinkage->setEndItem(partLayer[it]);
@@ -1221,13 +1283,16 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 		}
 	      if (!found) 
 		{
-		  IncidentNode *newEvent = new IncidentNode(40, event->data(Qt::ToolTipRole).toString(),
-						      QPointF(0, yPos), event->getId(), event->getOrder());
+		  IncidentNode *newEvent = new IncidentNode(40,
+							    event->data(Qt::ToolTipRole).toString(),
+							    QPointF(0, yPos), event->getId(),
+							    event->getOrder());
 		  newEvent->setCopy(true);
 		  newEvent->setMode(event->getMode());
 		  newEvent->setColor(event->getColor());
 		  newEvent->setPos(newEvent->getOriginalPos());
 		  newEvent->setZValue(3);
+		  _tempIncidentNodeVector.push_back(newEvent);
 		  bool found = false;
 		  if (newEvent->getMode() != "") 
 		    {
@@ -1258,24 +1323,31 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 			  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 			  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 			    setBackground(newEvent->getColor());
+			  QVariant textColorVar = QVariant(newEvent->
+							   getLabel()->defaultTextColor().rgb());
+			  eventListWidget->item(eventListWidget->
+						rowCount() - 1, 1)->setData(Qt::UserRole,
+									    textColorVar);
 			  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 			    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 				     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 			}
 		    }
 		  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
+		  _incidentNodeLabelVector.push_back(text);
 		  newEvent->setLabel(text);
 		  text->setPlainText(QString::number(newEvent->getOrder()));
-		  text->setTextWidth(text->boundingRect().width());
 		  QPointF currentPos = newEvent->scenePos();
 		  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
 		  currentPos.setY(currentPos.y() -12);
 		  text->setPos(currentPos);    
 		  text->setZValue(4);
 		  text->setDefaultTextColor(Qt::black);
+		  text->setFontSize(_labelSize);
 		  currentLayer.push_back(newEvent);
 		  partners.push_back(event);
 		  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
+		  _tempEdges.push_back(newLinkage);
 		  newLinkage->setZValue(2);
 		  newLinkage->setStartItem(newEvent);
 		  newLinkage->setEndItem(partLayer[it]);
@@ -1474,6 +1546,7 @@ void HierarchyGraphWidget::getEdges()
 	  if (valid) 
 	    {
 	      Linkage *newLinkage = new Linkage(originalType, "", 0);
+	      _tempEdges.push_back(newLinkage);
 	      newLinkage->setZValue(2);
 	      newLinkage->setStartItem(source);
 	      newLinkage->setEndItem(target);
@@ -1528,12 +1601,25 @@ void HierarchyGraphWidget::getEdges()
   updateLinkages();
 }
 
+void HierarchyGraphWidget::setBackgroundColor() 
+{
+  QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+  colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+  if (colorDialog->exec()) 
+    {
+      QColor color = colorDialog->selectedColor();
+      scene->setBackgroundBrush(QBrush(color));
+    }
+  delete colorDialog;
+}
+
 void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item) 
 {
    if (item->column() == 1) 
     {
       QColor currentFill = item->background().color();
-      QColor currentText = QColor("black");
+      QVariant textColorVar = item->data(Qt::UserRole);
+      QColor currentText = QColor::fromRgb(textColorVar.toUInt());
       QPointer<ModeColorDialog> colorDialog = new ModeColorDialog(this, currentFill, currentText);
       colorDialog->exec();
       if (colorDialog->getExitStatus() == 0)
@@ -1541,9 +1627,10 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item)
 	  QColor fillColor = colorDialog->getFillColor();
 	  QColor textColor = colorDialog->getTextColor();
 	  item->setBackground(fillColor);
+	  item->setData(Qt::UserRole, textColorVar);
 	  QTableWidgetItem* neighbour = eventListWidget->item(item->row(), 0);
 	  QString mode = neighbour->data(Qt::DisplayRole).toString();
-	  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+	  QVectorIterator<IncidentNode*> it(_tempIncidentNodeVector);
 	  while (it.hasNext()) 
 	    {
 	      IncidentNode *current = it.next();
@@ -1553,7 +1640,7 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item)
 		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
-	  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+	  QVectorIterator<AbstractNode*> it2(_tempAbstractNodeVector);
 	  while (it2.hasNext()) 
 	    {
 	      AbstractNode *current = it2.next();
@@ -1567,7 +1654,7 @@ void HierarchyGraphWidget::changeModeColor(QTableWidgetItem *item)
     }
 }
 
-void HierarchyGraphWidget::colorByAttribute() 
+void HierarchyGraphWidget::addMode() 
 {
   QPointer<AttributeColorDialog> attributeColorDialog = new AttributeColorDialog(this, INCIDENT);
   attributeColorDialog->exec();
@@ -1666,6 +1753,9 @@ void HierarchyGraphWidget::colorByAttribute()
 	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
 	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(color);
+	  QVariant textColorVar = QVariant(textColor.rgb());
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+	    ->setData(Qt::UserRole, textColorVar);
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -1809,10 +1899,28 @@ void HierarchyGraphWidget::disableModeButtons()
 
 void HierarchyGraphWidget::restoreModeColors() 
 {
+  QVectorIterator<IncidentNode *> it(_tempIncidentNodeVector);
+  while (it.hasNext()) 
+    {
+      IncidentNode *incidentNode = it.next();
+      incidentNode->setColor(Qt::white);
+      incidentNode->getLabel()->setDefaultTextColor(Qt::black);
+      incidentNode->setMode("");
+    }
+  QVectorIterator<AbstractNode*> it2(_tempAbstractNodeVector);
+  while (it2.hasNext()) 
+    {
+      AbstractNode *abstractNode = it2.next();
+      abstractNode->setColor(Qt::white);
+      abstractNode->getLabel()->setDefaultTextColor(Qt::black);
+      abstractNode->setMode("");
+    }
   for (int i = 0; i != eventListWidget->rowCount(); i++) 
     {
       QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
       QColor color = eventListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = eventListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVector<QString> attributeVector;
       attributeVector.push_back(currentMode);
       QSqlQuery *query = new QSqlQuery;
@@ -1845,6 +1953,7 @@ void HierarchyGraphWidget::restoreModeColors()
 		  if (currentIncidentNode && currentIncidentNode->getId() == currentIncident) 
 		    {
 		      currentIncidentNode->setColor(color);
+		      currentIncidentNode->getLabel()->setDefaultTextColor(textColor);
 		      currentIncidentNode->setMode(currentMode);
 		    }
 		}
@@ -1860,6 +1969,7 @@ void HierarchyGraphWidget::restoreModeColors()
 		  if (attributes.contains(currentAttribute)) 
 		    {
 		      currentAbstractNode->setColor(color);
+		      currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
 		      currentAbstractNode->setMode(currentMode);
 		    }
 		}
@@ -1871,6 +1981,8 @@ void HierarchyGraphWidget::restoreModeColors()
     {
       QString mode = eventListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
       QColor color = eventListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = eventListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QListIterator<QGraphicsItem*> it(scene->items());
       while (it.hasNext()) 
 	{
@@ -1880,10 +1992,12 @@ void HierarchyGraphWidget::restoreModeColors()
 	  if (currentIncidentNode && currentIncidentNode->getMode() == mode) 
 	    {
 	      currentIncidentNode->setColor(color);
+	      currentIncidentNode->getLabel()->setDefaultTextColor(textColor);
 	    }
 	  else if (currentAbstractNode && currentAbstractNode->getMode() == mode) 
 	    {
 	      currentAbstractNode->setColor(color);
+	      currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
 	    }
 	}
     }
@@ -1897,13 +2011,17 @@ void HierarchyGraphWidget::moveModeUp()
       int currentRow = eventListWidget->row(eventListWidget->currentItem());
       QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow,0);
       QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+      QVariant currentTextColorVar = eventListWidget->item(currentRow, 1)->data(Qt::UserRole);
       int newRow = currentRow - 1;
       QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
       QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+      QVariant otherTextColorVar = eventListWidget->item(newRow, 1)->data(Qt::UserRole);
       eventListWidget->setItem(newRow, 0, currentItem);
       eventListWidget->item(newRow, 1)->setBackground(currentColor);
+      eventListWidget->item(newRow, 1)->setData(Qt::UserRole, currentTextColorVar);
       eventListWidget->setItem(currentRow, 0, otherItem);
       eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+      eventListWidget->item(currentRow, 1)->setData(Qt::UserRole, otherTextColorVar);
       restoreModeColors();
       QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
       eventListWidget->setCurrentIndex(newIndex);
@@ -1920,17 +2038,61 @@ void HierarchyGraphWidget::moveModeDown()
       int currentRow = eventListWidget->row(eventListWidget->currentItem());
       QTableWidgetItem *currentItem = eventListWidget->takeItem(currentRow, 0);
       QColor currentColor = eventListWidget->item(currentRow, 1)->background().color();
+      QVariant currentTextColorVar = eventListWidget->item(currentRow, 1)->data(Qt::UserRole);
       int newRow = currentRow + 1;
       QTableWidgetItem *otherItem = eventListWidget->takeItem(newRow, 0);
-      QColor otherColor = eventListWidget->item(newRow, 1)->background().color();;
+      QColor otherColor = eventListWidget->item(newRow, 1)->background().color();
+      QVariant otherTextColorVar = eventListWidget->item(newRow, 1)->data(Qt::UserRole);
       eventListWidget->setItem(newRow, 0, currentItem);
       eventListWidget->item(newRow, 1)->setBackground(currentColor);
+      eventListWidget->item(newRow, 1)->setData(Qt::UserRole, currentTextColorVar);
       eventListWidget->setItem(currentRow, 0, otherItem);
       eventListWidget->item(currentRow, 1)->setBackground(otherColor);
+      eventListWidget->item(currentRow, 1)->setData(Qt::UserRole, otherTextColorVar);
       restoreModeColors();
       QModelIndex newIndex = eventListWidget->model()->index(newRow, 0);
       eventListWidget->setCurrentIndex(newIndex);
       setModeButtons(eventListWidget->currentItem());
+    }
+}
+
+void HierarchyGraphWidget::increaseLabelSize()
+{
+  if (_labelSize < 100)
+    {
+      _labelSize++;
+      QVectorIterator<IncidentNodeLabel*> it(_incidentNodeLabelVector);
+      while (it.hasNext())
+	{
+	  IncidentNodeLabel *currentLabel = it.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      QVectorIterator<AbstractNodeLabel*> it2(_abstractNodeLabelVector);
+      while (it2.hasNext())
+	{
+	  AbstractNodeLabel *currentLabel = it2.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+    }
+}
+
+void HierarchyGraphWidget::decreaseLabelSize()
+{
+  if (_labelSize > 1)
+    {
+      _labelSize--;
+      QVectorIterator<IncidentNodeLabel*> it(_incidentNodeLabelVector);
+      while (it.hasNext())
+	{
+	  IncidentNodeLabel *currentLabel = it.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      QVectorIterator<AbstractNodeLabel*> it2(_abstractNodeLabelVector);
+      while (it2.hasNext())
+	{
+	  AbstractNodeLabel *currentLabel = it2.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
     }
 }
 
@@ -2691,7 +2853,6 @@ void HierarchyGraphWidget::duplicateText()
 	      newText->setFont(text->font());
 	      newText->adjustSize();
 	      newText->setTextWidth(newText->textWidth() + 50);
-
 	    }
 	  delete textDialog;
 	}
@@ -4021,6 +4182,11 @@ void HierarchyGraphWidget::resetTexts()
     }
 }
 
+void HierarchyGraphWidget::setLabelSize(int size)
+{
+  _labelSize = size;
+}
+
 void HierarchyGraphWidget::setOrigin(AbstractNode *origin) 
 {
   _origin = origin;
@@ -4418,7 +4584,13 @@ void HierarchyGraphWidget::cleanUp()
   setComment();
   _incidentNodeVector.clear();
   _abstractNodeVector.clear();
+  qDeleteAll(_abstractNodeLabelVector);
+  _abstractNodeLabelVector.clear();
+  qDeleteAll(_incidentNodeLabelVector);
+  _incidentNodeLabelVector.clear();
   _edgeVector.clear();
+  qDeleteAll(_tempEdges);
+  _tempEdges.clear();
   _origin = NULL;
   scene->clear();
   _currentData.clear();

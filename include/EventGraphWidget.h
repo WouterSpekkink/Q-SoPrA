@@ -102,7 +102,8 @@ public:
   QVector<IncidentNode*> getIncidentNodes();
   QVector<Linkage*> getEdgeVector();
   QVector<QString> getCheckedCases();
-
+  int getLabelSize();
+  
   // Functions that need to be exposed
   void resetTree();
   void checkCongruency();
@@ -182,7 +183,9 @@ private slots:
   void seePlots();
   void setChangeLabel();
   void updateLinkages();
-  void plotLabels();
+  void toggleLabels();
+  void increaseLabelSize();
+  void decreaseLabelSize();
   void processLowerRange(int value);
   void processUpperRange(int value);
   void setVisibility();
@@ -366,6 +369,7 @@ private:
   QPointer<QLabel> timeLineColorLabel;
   QPointer<QLabel> guideLinesLabel;
   QPointer<QLabel> fillOpacityLabel;
+  QPointer<QLabel> labelSizeLabel;
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
   QPointer<QPushButton> removeLinkageTypeButton;
@@ -386,7 +390,9 @@ private:
   QPointer<QPushButton> exportTableButton;
   QPointer<QPushButton> exportNodesButton;
   QPointer<QPushButton> exportEdgesButton;
-  QPointer<QPushButton> plotLabelsButton;
+  QPointer<QPushButton> toggleLabelsButton;
+  QPointer<QPushButton> increaseLabelSizeButton;
+  QPointer<QPushButton> decreaseLabelSizeButton;
   QPointer<QPushButton> addModeButton;
   QPointer<QPushButton> addModesButton;
   QPointer<QPushButton> eventColorButton;
@@ -459,6 +465,7 @@ private:
   qreal _distance;
   int _vectorPos;
   int _selectedIncident;
+  int _labelSize;
   bool _labelsVisible;
   bool _commentBool;
   bool _contracted;

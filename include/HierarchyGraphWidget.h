@@ -85,6 +85,7 @@ public:
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
   void setOpenGL(bool state);
   void setAntialiasing(bool state);
+  void setLabelSize(int size);
 
   // Getters
   void getEdges();
@@ -99,15 +100,19 @@ private slots:
   void setComment();
   void toggleDetails();
   void toggleLegend();
+  void toggleGraphicsControls();
+  void setBackgroundColor();
   void rescale();
   void changeModeColor(QTableWidgetItem *item);
-  void colorByAttribute();
+  void addMode();
   void removeMode();
   void restoreModeColors();
   void moveModeUp();
   void moveModeDown();
   void setModeButtons(QTableWidgetItem *item);
   void disableModeButtons();
+  void increaseLabelSize();
+  void decreaseLabelSize();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void retrieveData();
   void showAttributes();
@@ -204,6 +209,7 @@ private:
   QPointer<QWidget> attWidget;
   QPointer<QWidget> commentWidget;
   QPointer<QWidget> legendWidget;
+  QPointer<QWidget> graphicsWidget;
   QPointer<QLabel> timeStampLabel;
   QPointer<QLabel> sourceLabel;
   QPointer<QLabel> descriptionLabel;
@@ -221,6 +227,7 @@ private:
   QPointer<QLabel> fillColorLabel;
   QPointer<QLabel> fillOpacityLabel;
   QPointer<QLabel> guideLinesLabel;
+  QPointer<QLabel> labelSizeLabel;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<QLineEdit> timeStampField;
   QPointer<QLineEdit> sourceField;
@@ -231,6 +238,7 @@ private:
   QPointer<QTextEdit> commentField;
   QPointer<QPushButton> toggleDetailsButton;
   QPointer<QPushButton> toggleLegendButton;
+  QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> seeAttributesButton;
   QPointer<QPushButton> seeCommentsButton;
   QPointer<QPushButton> assignAttributeButton;
@@ -243,7 +251,7 @@ private:
   QPointer<QPushButton> resetTextsButton;
   QPointer<QPushButton> exitButton;
   QPointer<QPushButton> exportSvgButton;
-  QPointer<QPushButton> colorByAttributeButton;
+  QPointer<QPushButton> addModeButton;
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> restoreModeColorsButton;
   QPointer<QPushButton> moveModeUpButton;
@@ -261,6 +269,9 @@ private:
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;
+  QPointer<QPushButton> increaseLabelSizeButton;
+  QPointer<QPushButton> decreaseLabelSizeButton;
+  QPointer<QPushButton> backgroundColorButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<DeselectableListWidget> linkageListWidget;
   QPointer<QSlider> zoomSlider;
@@ -274,13 +285,19 @@ private:
   bool _commentBool;
   int _currentPenStyle;
   int _currentPenWidth;
+  int _labelSize;
   QColor _currentLineColor;
   QColor _currentFillColor;
   
   // Private data vectors
   QVector<IncidentNode*> _incidentNodeVector;
+  QVector<IncidentNode*> _tempIncidentNodeVector;
   QVector<AbstractNode*> _abstractNodeVector;
+  QVector<AbstractNode*> _tempAbstractNodeVector;
+  QVector<IncidentNodeLabel*> _incidentNodeLabelVector;
+  QVector<AbstractNodeLabel*> _abstractNodeLabelVector;
   QVector<Linkage*> _edgeVector;
+  QVector<Linkage*> _tempEdges;
   QVector<QString> _presentTypes;
   QVector<LineObject*> _lineVector;
   QVector<TextObject*> _textVector;

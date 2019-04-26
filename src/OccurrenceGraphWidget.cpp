@@ -1171,7 +1171,6 @@ void OccurrenceGraphWidget::addAttribute()
 		      QString text = QString::number(order) + " - " + attribute;
 		      label->setPlainText(text);
 		      label->setDefaultTextColor(textColor);
-		      label->setTextWidth(label->boundingRect().width());
 		      label->setNewPos(newOccurrence->scenePos());
 		      _attributeLabelVector.push_back(label);
 		      newOccurrence->setLabel(label);
@@ -1328,7 +1327,6 @@ void OccurrenceGraphWidget::addAttributes()
 		      QString text = QString::number(order) + " - " + currentAttribute;
 		      label->setPlainText(text);
 		      label->setDefaultTextColor(Qt::black);
-		      label->setTextWidth(label->boundingRect().width());
 		      label->setNewPos(newOccurrence->scenePos());
 		      _attributeLabelVector.push_back(label);
 		      newOccurrence->setLabel(label);
@@ -1464,7 +1462,6 @@ void OccurrenceGraphWidget::addRelationship()
 	      QString text = QString::number(order) + " - " + combi;
 	      label->setPlainText(text);
 	      label->setDefaultTextColor(textColor);
-	      label->setTextWidth(label->boundingRect().width());
 	      label->setNewPos(newOccurrence->scenePos());
 	      _relationshipLabelVector.push_back(label);
 	      newOccurrence->setLabel(label);
@@ -1613,7 +1610,6 @@ void OccurrenceGraphWidget::addRelationships()
 		  QString text = QString::number(order) + " - " + combi;
 		  label->setPlainText(text);
 		  label->setDefaultTextColor(Qt::black);
-		  label->setTextWidth(label->boundingRect().width());
 		  label->setNewPos(newOccurrence->scenePos());
 		  _relationshipLabelVector.push_back(label);
 		  newOccurrence->setLabel(label);
@@ -2184,7 +2180,6 @@ void OccurrenceGraphWidget::reset()
 	  newLabel->setDefaultTextColor(textColor);
 	  current->show();
 	  current->setLabel(newLabel);
-	  newLabel->setTextWidth(current->getLabel()->boundingRect().width());
 	  current->getLabel()->show();
 	  current->getLabel()->setNewPos(current->scenePos());
 	  scene->addItem(current->getLabel());
@@ -2217,7 +2212,6 @@ void OccurrenceGraphWidget::reset()
 	  newLabel->setDefaultTextColor(textColor);
 	  current->show();
 	  current->setLabel(newLabel);
-	  newLabel->setTextWidth(current->getLabel()->boundingRect().width());
 	  current->getLabel()->show();
 	  current->getLabel()->setNewPos(current->scenePos());
 	  scene->addItem(current->getLabel());
@@ -2278,7 +2272,6 @@ void OccurrenceGraphWidget::matchEventGraph()
 		      newLabel->setPlainText(text);
 		      newLabel->setDefaultTextColor(textColor);
 		      occurrence->setLabel(newLabel);
-		      newLabel->setTextWidth(occurrence->getLabel()->boundingRect().width());
 		      occurrence->show();
 		      occurrence->getLabel()->show();
 		      occurrence->setPos(abstractNode->scenePos().x(), 0);
@@ -2332,7 +2325,6 @@ void OccurrenceGraphWidget::matchEventGraph()
 		      newLabel->setPlainText(text);
 		      newLabel->setDefaultTextColor(textColor);
 		      occurrence->setLabel(newLabel);
-		      newLabel->setTextWidth(occurrence->getLabel()->boundingRect().width());
 		      occurrence->show();
 		      occurrence->getLabel()->show();
 		      occurrence->setPos(abstractNode->scenePos().x(), 0);
@@ -2414,7 +2406,6 @@ void OccurrenceGraphWidget::matchEventGraph()
 		  QString text = type + QString::number(abstractNode->getOrder()) + " - " + currentAttribute;
 		  label->setPlainText(text);
 		  label->setDefaultTextColor(Qt::black);
-		  label->setTextWidth(label->boundingRect().width());
 		  label->setNewPos(newOccurrence->scenePos());
 		  _attributeLabelVector.push_back(label);
 		  newOccurrence->setLabel(label);
@@ -3964,7 +3955,6 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	  QString text = QString::number(currentOccurrence->getOrder());
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -4013,7 +4003,6 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	    currentOccurrence->getAttribute();
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -4036,7 +4025,6 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	    currentOccurrence->getAttribute();
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -4072,7 +4060,6 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	  QString text = currentOccurrence->getAttribute();
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -4094,7 +4081,6 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	  QString text = currentOccurrence->getAttribute();
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -4121,7 +4107,6 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	    currentOccurrence->getAttribute();
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -4144,7 +4129,6 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	    currentOccurrence->getAttribute();
 	  newLabel->setPlainText(text);
 	  newLabel->setDefaultTextColor(oldLabel->defaultTextColor());
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
@@ -5189,7 +5173,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  QString desc = currentText->toPlainText();
 	  qreal xpos = currentText->scenePos().x();
 	  qreal ypos = currentText->scenePos().y();
-	  int width = currentText->textWidth();
+	  qreal width = currentText->textWidth();
 	  int size = currentText->font().pointSize();
 	  qreal rotation = currentText->getRotationValue();
 	  int zValue = currentText->zValue();
@@ -5598,7 +5582,6 @@ void OccurrenceGraphWidget::seePlots()
 		{
 		  OccurrenceLabel *currentLabel = new OccurrenceLabel(currentItem);
 		  currentLabel->setPlainText(text);
-		  currentLabel->setTextWidth(currentLabel->boundingRect().width());
 		  currentLabel->setPos(QPointF(currentX, currentY));
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
@@ -5758,7 +5741,7 @@ void OccurrenceGraphWidget::seePlots()
 	  QString desc = query->value(0).toString();
 	  qreal xpos = query->value(1).toReal();
 	  qreal ypos = query->value(2).toReal();
-	  int width = query->value(3).toInt();
+	  qreal width = query->value(3).toReal();
 	  int size = query->value(4).toInt();
 	  qreal rotation = query->value(5).toReal();
 	  int zValue = query->value(6).toInt();

@@ -24,6 +24,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #define INCIDENTNODELABEL_H
 
 #include <QGraphicsTextItem>
+#include <QFontMetrics>
 #include "IncidentNode.h"
 
 class IncidentNodeLabel : public QGraphicsTextItem
@@ -37,10 +38,12 @@ public:
   // Setters
   void setNewPos(QPointF nodePos, qreal xOffsetIncrement = 0, qreal yOffsetIncrement = 0);
   void setOffset(QPointF offset);
+  void setFontSize(int size);
   
   // Getters
   IncidentNode* getNode();
   QPointF getOffset();
+  int getFontSize();
 
   // Type checking
   enum {Type = UserType + 3};

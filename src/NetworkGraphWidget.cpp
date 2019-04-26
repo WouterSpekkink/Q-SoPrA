@@ -5614,18 +5614,25 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, name, tip, "
-		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
+		     "red, green, blue, alpha, textred, textgreen, textblue, textalpha, hidden) "
+		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, "
+		     ":textred, :textgreen, :textblue, :textalpha, :hidden)");
       for (int i = 0; i != nodeListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = nodeListWidget->item(i, 0);
 	  QString title = item->data(Qt::DisplayRole).toString();
 	  QString tip = item->data(Qt::ToolTipRole).toString();
 	  QColor color = nodeListWidget->item(i, 1)->background().color();
+	  QVariant textColorVar = item->data(Qt::UserRole);
+	  QColor textColor = QColor::fromRgb(textColorVar.toUInt());
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
+	  int textred = textColor.red();
+	  int textgreen = textColor.green();
+	  int textblue = textColor.blue();
+	  int textalpha = textColor.alpha();
 	  int hidden = 0;
 	  if (nodeListWidget->item(i, 0)->background() == QColor(Qt::gray)) 
 	    {
@@ -5638,6 +5645,10 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":textred", textred);
+	  query->bindValue(":textgreen", textgreen);
+	  query->bindValue(":textblue", textblue);
+	  query->bindValue(":textalpha", textalpha);
 	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
@@ -5911,7 +5922,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  QString desc = currentText->toPlainText();
 	  qreal xpos = currentText->scenePos().x();
 	  qreal ypos = currentText->scenePos().y();
-	  int width = currentText->textWidth();
+	  qreal width = currentText->textWidth();
 	  int size = currentText->font().pointSize();
 	  qreal rotation = currentText->getRotationValue();
 	  int zValue = currentText->zValue();
@@ -6299,7 +6310,8 @@ void NetworkGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->prepare("SELECT name, tip, red, green, blue, alpha, hidden "
+      query->prepare("SELECT name, tip, red, green, blue, alpha, "
+		     "textred, textgreen, textblue, textalpha, hidden "
 		     "FROM saved_ng_plots_nodelegend "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6312,8 +6324,13 @@ void NetworkGraphWidget::seePlots()
 	  int green = query->value(3).toInt();
 	  int blue = query->value(4).toInt();
 	  int alpha = query->value(5).toInt();
-	  int hidden = query->value(6).toInt();
+	  int textred = query->value(6).toInt();
+	  int textgreen = query->value(7).toInt();
+	  int textblue = query->value(8).toInt();
+	  int textalpha = query->value(9).toInt();
+	  int hidden = query->value(10).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
+	  QColor textColor = QColor(textred, textgreen, textblue, textalpha);
 	  QTableWidgetItem *item = new QTableWidgetItem(name);
 	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
 	  item->setToolTip(tip);
@@ -6322,6 +6339,9 @@ void NetworkGraphWidget::seePlots()
 	  nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
 	  nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
+	  QVariant textColorVar = QVariant(textColor.rgb());
+	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
+									     textColorVar);
 	  nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
 	    setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -6601,7 +6621,7 @@ void NetworkGraphWidget::seePlots()
 	  QString desc = query->value(0).toString();
 	  qreal xpos = query->value(1).toReal();
 	  qreal ypos = query->value(2).toReal();
-	  int width = query->value(3).toInt();
+	  qreal width = query->value(3).toReal();
 	  int size = query->value(4).toInt();
 	  qreal rotation = query->value(5).toReal();
 	  int zValue = query->value(6).toInt();

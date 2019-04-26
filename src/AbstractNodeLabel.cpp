@@ -41,8 +41,8 @@ void AbstractNodeLabel::setNewPos(QPointF nodePos, qreal xOffsetincrement, qreal
   _xOffset += xOffsetincrement;
   _yOffset += yOffsetincrement;
   QPointF newPos = nodePos;
-  newPos.setX(newPos.x() - (textWidth() / 2) + _xOffset);
-  newPos.setY(newPos.y() - 12 + _yOffset);
+  newPos.setX(newPos.x() - (boundingRect().width() / 2) + _xOffset);
+  newPos.setY(newPos.y() - (boundingRect().height() / 2) + _yOffset);
   setPos(newPos);
 }
 
@@ -55,4 +55,17 @@ void AbstractNodeLabel::setOffset(QPointF offset)
 {
   _xOffset = offset.x();
   _yOffset = offset.y();
+}
+
+void AbstractNodeLabel::setFontSize(int size)
+{
+  QFont font = this->font();
+  font.setPointSize(size);
+  this->setFont(font);
+  this->setNewPos(this->getAbstractNode()->scenePos());
+}
+
+int AbstractNodeLabel::getFontSize()
+{
+  return this->font().pointSize();
 }

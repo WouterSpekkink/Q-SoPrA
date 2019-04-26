@@ -29,7 +29,6 @@ IncidentNodeLabel::IncidentNodeLabel(IncidentNode *incidentNode)
   _node = incidentNode;
   _xOffset = 0;
   _yOffset = 0;
-  
 }
 
 IncidentNode* IncidentNodeLabel::getNode()
@@ -42,8 +41,8 @@ void IncidentNodeLabel::setNewPos(QPointF nodePos, qreal xOffsetincrement, qreal
   _xOffset += xOffsetincrement;
   _yOffset += yOffsetincrement;
   QPointF newPos = nodePos;
-  newPos.setX(newPos.x() - (textWidth() / 2) + _xOffset);
-  newPos.setY(newPos.y() - 12 + _yOffset);
+  newPos.setX(newPos.x() - (boundingRect().width() / 2) + _xOffset);
+  newPos.setY(newPos.y() - (boundingRect().height() / 2) + _yOffset);
   setPos(newPos);
 }
 
@@ -56,4 +55,17 @@ void IncidentNodeLabel::setOffset(QPointF offset)
 {
   _xOffset = offset.x();
   _yOffset = offset.y();
+}
+
+void IncidentNodeLabel::setFontSize(int size)
+{
+  QFont font = this->font();
+  font.setPointSize(size);
+  this->setFont(font);
+  this->setNewPos(this->getNode()->scenePos());
+}
+
+int IncidentNodeLabel::getFontSize()
+{
+  return this->font().pointSize();
 }

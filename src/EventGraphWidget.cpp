@@ -36,6 +36,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _distance = 0;
   _vectorPos = 0;
   _labelsVisible = true;
+  _labelSize = 10;
   _contracted = false;
   _currentMajorInterval = 100.0;
   _currentMinorDivision = 2.0;
@@ -131,6 +132,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   timeLineColorLabel = new QLabel(tr("<b>Color:</b>"), timeLineWidget);
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
+  labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), graphicsWidget);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -212,9 +214,11 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   seeComponentsButton = new QPushButton(tr("Components"), infoWidget);
   seeComponentsButton->setEnabled(false);
   nextEventButton->setEnabled(false);
-  plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
+  toggleLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
+  increaseLabelSizeButton = new QPushButton(tr("+"), graphicsWidget);
+  decreaseLabelSizeButton = new QPushButton(tr("-"), graphicsWidget);
   addModeButton = new QPushButton(tr("Create single mode"), legendWidget);
-  addModesButton = new QPushButton(tr("Create multiple modes"), legendWidget);
+  addModesButton = new QPushButton(tr("Create muliple modes"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
@@ -386,7 +390,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addLinkageTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
-  connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
+  connect(toggleLabelsButton, SIGNAL(clicked()), this, SLOT(toggleLabels()));
+  connect(increaseLabelSizeButton, SIGNAL(clicked()), this, SLOT(increaseLabelSize()));
+  connect(decreaseLabelSizeButton, SIGNAL(clicked()), this, SLOT(decreaseLabelSize()));
   connect(addModeButton, SIGNAL(clicked()), this, SLOT(addMode()));
   connect(addModesButton, SIGNAL(clicked()), this, SLOT(addModes()));
   connect(eventColorButton, SIGNAL(clicked()), this, SLOT(setEventColor()));
@@ -697,7 +703,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(eventColorButton);
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
-  graphicsControlsLayout->addWidget(plotLabelsButton);
+  graphicsControlsLayout->addWidget(toggleLabelsButton);
+  graphicsControlsLayout->addWidget(labelSizeLabel);
+  QPointer<QHBoxLayout> labelSizeLayout = new QHBoxLayout;
+  labelSizeLayout->addWidget(increaseLabelSizeButton);
+  labelSizeLayout->addWidget(decreaseLabelSizeButton);
+  graphicsControlsLayout->addLayout(labelSizeLayout);
   QPointer<QFrame> sepLine = new QFrame();
   sepLine->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine);
@@ -3216,14 +3227,10 @@ void EventGraphWidget::getLabels()
       query->exec();
       query->first();
       QString order = query->value(0).toString();
-      QPointF currentPos = currentItem->scenePos();
       QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(currentItem);
       currentItem->setLabel(text);
       text->setPlainText(order);
-      text->setTextWidth(text->boundingRect().width());
-      currentPos.setX(currentPos.x() - (text->textWidth() / 2));
-      currentPos.setY(currentPos.y() -12);
-      text->setPos(currentPos);    
+      text->setNewPos(currentItem->scenePos());    
       text->setZValue(4);
       text->setDefaultTextColor(Qt::black);
       _incidentNodeLabelVector.push_back(text);
@@ -4208,8 +4215,8 @@ void EventGraphWidget::saveCurrentPlot()
 	}
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_eg_plots_settings "
-		     "(plot, lowerbound, upperbound, labelson) "
-		     "VALUES (:plot, :lowerbound, :upperbound, :labelson)");
+		     "(plot, lowerbound, upperbound, labelson, labelsize) "
+		     "VALUES (:plot, :lowerbound, :upperbound, :labelson, :labelsize)");
       query->bindValue(":plot", name);
       query->bindValue(":lowerbound", lowerRangeDial->value());
       query->bindValue(":upperbound", upperRangeDial->value());
@@ -4219,6 +4226,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  labelson = 1;
 	}
       query->bindValue(":labelson", labelson);
+      query->bindValue(":labelsize", _labelSize);
       query->exec();      
       query->prepare("INSERT INTO saved_eg_plots_incident_nodes "
 		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
@@ -4615,17 +4623,24 @@ void EventGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_legend (plot, name, tip, "
 		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha)");
+		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, "
+		     ":textred, :textgreen, :textblue, :textalpha)");
       for (int i = 0; i != eventListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = eventListWidget->item(i, 0);
 	  QString title = item->data(Qt::DisplayRole).toString();
 	  QString tip = item->data(Qt::ToolTipRole).toString();
 	  QColor color = eventListWidget->item(i, 1)->background().color();
+	  QVariant textColorVar = item->data(Qt::UserRole);
+	  QColor textColor = QColor::fromRgb(textColorVar.toUInt());
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
+	  int textred = textColor.red();
+	  int textgreen = textColor.green();
+	  int textblue = textColor.blue();
+	  int textalpha = textColor.alpha();
 	  query->bindValue(":plot", name);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
@@ -4633,6 +4648,10 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":textred", textred);
+	  query->bindValue(":textgreen", textgreen);
+	  query->bindValue(":textblue", textblue);
+	  query->bindValue(":textalpha", textalpha);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -4779,7 +4798,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  QString desc = currentText->toPlainText();
 	  qreal xpos = currentText->scenePos().x();
 	  qreal ypos = currentText->scenePos().y();
-	  int width = currentText->textWidth();
+	  qreal width = currentText->textWidth();
 	  int size = currentText->font().pointSize();
 	  qreal rotation = currentText->getRotationValue();
 	  int zValue = currentText->zValue();
@@ -5087,7 +5106,7 @@ void EventGraphWidget::seePlots()
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       int index = coderComboBox->findText(coder);
       coderComboBox->setCurrentIndex(index);
-      query->prepare("SELECT lowerbound, upperbound, labelson "
+      query->prepare("SELECT lowerbound, upperbound, labelson, labelsize "
 		     "FROM saved_eg_plots_settings "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5096,6 +5115,7 @@ void EventGraphWidget::seePlots()
       int lowerbound = query->value(0).toInt();
       int upperbound = query->value(1).toInt();
       int labelson = query->value(2).toInt();
+      int labelsize = query->value(3).toInt();
       if (labelson == 1)
 	{
 	  _labelsVisible = true;
@@ -5104,6 +5124,7 @@ void EventGraphWidget::seePlots()
 	{
 	  _labelsVisible = false;
 	}
+      _labelSize = labelsize;
       query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		     "dislodged, mode, red, green, blue, alpha, hidden "
 		     "FROM saved_eg_plots_incident_nodes "
@@ -5191,11 +5212,11 @@ void EventGraphWidget::seePlots()
 		{
 		  IncidentNodeLabel *currentLabel = new IncidentNodeLabel(currentItem);
 		  currentLabel->setPlainText(text);
-		  currentLabel->setTextWidth(currentLabel->boundingRect().width());
 		  currentLabel->setPos(QPointF(currentX, currentY));
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
 		  currentLabel->setZValue(4);
+		  currentLabel->setFontSize(_labelSize);
 		  currentItem->setLabel(currentLabel);
 		  _incidentNodeLabelVector.push_back(currentLabel);
 		  scene->addItem(currentLabel);
@@ -5389,11 +5410,11 @@ void EventGraphWidget::seePlots()
 		{
 		  AbstractNodeLabel *currentLabel = new AbstractNodeLabel(currentAbstractNode);
 		  currentLabel->setPlainText(text);
-		  currentLabel->setTextWidth(currentLabel->boundingRect().width());
 		  currentLabel->setPos(QPointF(currentX, currentY));
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
 		  currentLabel->setZValue(4);
+		  currentLabel->setFontSize(_labelSize);
 		  currentAbstractNode->setLabel(currentLabel);
 		  _abstractNodeLabelVector.push_back(currentLabel);
 		  scene->addItem(currentLabel);
@@ -5597,7 +5618,8 @@ void EventGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->prepare("SELECT name, tip, red, green, blue, alpha "
+      query->prepare("SELECT name, tip, red, green, blue, alpha, "
+		     "textred, textgreen, textblue, textalpha"
 		     "FROM saved_eg_plots_legend "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5610,7 +5632,12 @@ void EventGraphWidget::seePlots()
 	  int green = query->value(3).toInt();
 	  int blue = query->value(4).toInt();
 	  int alpha = query->value(5).toInt();
+	  int textred = query->value(6).toInt();
+	  int textgreen = query->value(7).toInt();
+	  int textblue = query->value(8).toInt();
+	  int textalpha = query->value(9).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
+	  QColor textColor = QColor(textred, textgreen, textblue, textalpha);
 	  QTableWidgetItem *item = new QTableWidgetItem(name);
 	  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
 	  item->setToolTip(tip);
@@ -5619,6 +5646,9 @@ void EventGraphWidget::seePlots()
 	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
 	  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(color);
+	  QVariant textColorVar = QVariant(textColor.rgb());
+	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
+									     textColorVar);
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
@@ -5713,7 +5743,7 @@ void EventGraphWidget::seePlots()
 	  QString desc = query->value(0).toString();
 	  qreal xpos = query->value(1).toReal();
 	  qreal ypos = query->value(2).toReal();
-	  int width = query->value(3).toInt();
+	  qreal width = query->value(3).toReal();
 	  int size = query->value(4).toInt();
 	  qreal rotation = query->value(5).toReal();
 	  int zValue = query->value(6).toInt();
@@ -6880,7 +6910,7 @@ void EventGraphWidget::removeLinkageType()
   disableLinkageButtons();
 }
 
-void EventGraphWidget::plotLabels() 
+void EventGraphWidget::toggleLabels() 
 {
   QVectorIterator<IncidentNodeLabel*> it(_incidentNodeLabelVector);
   while (it.hasNext()) 
@@ -6917,6 +6947,48 @@ void EventGraphWidget::plotLabels()
 	}
     }
   _labelsVisible = !(_labelsVisible);
+}
+
+void EventGraphWidget::increaseLabelSize()
+{
+  if (_labelSize < 100)
+    {
+      _labelSize++;
+      QVectorIterator<IncidentNodeLabel*> it(_incidentNodeLabelVector);
+      while (it.hasNext())
+	{
+	  IncidentNodeLabel *currentLabel = it.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      QVectorIterator<AbstractNodeLabel*> it2(_abstractNodeLabelVector);
+      while (it2.hasNext())
+	{
+	  AbstractNodeLabel *currentLabel = it2.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      setChangeLabel();
+    }
+}
+
+void EventGraphWidget::decreaseLabelSize()
+{
+  if (_labelSize > 1)
+    {
+      _labelSize--;
+      QVectorIterator<IncidentNodeLabel*> it(_incidentNodeLabelVector);
+      while (it.hasNext())
+	{
+	  IncidentNodeLabel *currentLabel = it.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      QVectorIterator<AbstractNodeLabel*> it2(_abstractNodeLabelVector);
+      while (it2.hasNext())
+	{
+	  AbstractNodeLabel *currentLabel = it2.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      setChangeLabel();
+    }
 }
 
 void EventGraphWidget::processLowerRange(int value) 
@@ -7910,6 +7982,7 @@ void EventGraphWidget::colligateEvents()
 	      abstractNodeLabel->setNewPos(current->scenePos());
 	      abstractNodeLabel->setZValue(4);
 	      abstractNodeLabel->setDefaultTextColor(Qt::black);
+	      abstractNodeLabel->setFontSize(_labelSize);
 	      _abstractNodeLabelVector.push_back(abstractNodeLabel);
 	      scene->addItem(abstractNodeLabel);
 	      rewireLinkages(current, tempIncidents);
@@ -8351,7 +8424,6 @@ void EventGraphWidget::updateAbstractNodeOrder()
 	{
 	  QString label = "P-" + QString::number(current->getOrder());
 	  newLabel->setPlainText(label);
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
       
 	}
       else if (current->getConstraint() == SEMIPATHS ||
@@ -8359,14 +8431,12 @@ void EventGraphWidget::updateAbstractNodeOrder()
 	{
 	  QString label = "S-" + QString::number(current->getOrder());
 	  newLabel->setPlainText(label);
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	}
       else if (current->getConstraint() == NOCONSTRAINT ||
 	       current->getConstraint() == NOCONSTRAINTATT) 
 	{
 	  QString label = "N-" + QString::number(current->getOrder());
 	  newLabel->setPlainText(label);
-	  newLabel->setTextWidth(newLabel->boundingRect().width());
 	}
       current->setLabel(newLabel);
       _abstractNodeLabelVector.push_back(newLabel);
@@ -8375,6 +8445,7 @@ void EventGraphWidget::updateAbstractNodeOrder()
       newLabel->setNewPos(current->scenePos());
       newLabel->setZValue(4);
       newLabel->setDefaultTextColor(labelColor);
+      newLabel->setFontSize(_labelSize);
       scene->addItem(newLabel);
       if (_labelsVisible == false || !current->isVisible())
 	{
@@ -10004,7 +10075,6 @@ void EventGraphWidget::acceptLinkage()
 		  while (query->next()) 
 		    {
 		      int mateHead = query->value(0).toInt();
-	
 		      query2->bindValue(":coder", _selectedCoder);
 		      query2->bindValue(":type", type);
 		      query2->bindValue(":tail", tail);
@@ -11671,6 +11741,11 @@ void EventGraphWidget::finalBusiness()
   cleanUp();
 }
 
+int EventGraphWidget::getLabelSize()
+{
+  return _labelSize;
+}
+
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) 
 {
   if (event->type() == QEvent::MouseButtonRelease)
@@ -11736,3 +11811,4 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event)
     }
   return false;
 }
+
