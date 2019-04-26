@@ -4623,12 +4623,20 @@ void OccurrenceGraphWidget::exportMatrix()
   QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
-      allOccurrences.push_back(it.next());
+      OccurrenceItem *current = it.next();
+      if (current->isVisible())
+	{
+	  allOccurrences.push_back(current);
+	}
     }
   QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
-      allOccurrences.push_back(it2.next());
+      OccurrenceItem *current = it2.next();
+      if (current->isVisible())
+	{
+	  allOccurrences.push_back(current);
+	}
     }
   // Then we make a matrix (in the form of a vector of vectors).
   QVector<QVector<int>> matrix;
