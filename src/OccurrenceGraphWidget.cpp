@@ -5986,7 +5986,6 @@ void OccurrenceGraphWidget::seePlots()
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
-      delete query;
       // saved_og_plots_cases
       query->prepare("DELETE FROM saved_og_plots_guides "
 		     "WHERE plot = :plot");
