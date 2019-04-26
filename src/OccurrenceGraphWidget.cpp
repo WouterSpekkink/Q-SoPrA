@@ -35,6 +35,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   _incidentLabelsOnly = false;
   _attributeLabelsOnly = false;
   _matched = false;
+  _labelSize = 10;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
@@ -114,6 +115,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   timeLineColorLabel = new QLabel(tr("<b>Color:</b>"), timeLineWidget);
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
+  labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), graphicsWidget);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -164,7 +166,9 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   seePlotsButton = new QPushButton(tr("Saved plots"), this);
   clearPlotButton = new QPushButton(tr("Clear plot"), this);
   clearPlotButton->setEnabled(false);
-
+  increaseLabelSizeButton = new QPushButton("+", this);
+  decreaseLabelSizeButton = new QPushButton("-", this);
+  
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
   addLineButton->setMinimumSize(40, 40);
@@ -377,6 +381,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
   connect(incidentLabelsOnlyButton, SIGNAL(clicked()), this, SLOT(toggleIncidentLabelsOnly()));
   connect(attributeLabelsOnlyButton, SIGNAL(clicked()), this, SLOT(toggleAttributeLabelsOnly()));
+  connect(increaseLabelSizeButton, SIGNAL(clicked()), this, SLOT(increaseLabelSize()));
+  connect(decreaseLabelSizeButton, SIGNAL(clicked()), this, SLOT(decreaseLabelSize()));
   connect(backgroundColorButton, SIGNAL(clicked()), this, SLOT(setBackgroundColor()));
   connect(increaseDistanceButton, SIGNAL(clicked()), this, SLOT(increaseDistance()));
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
@@ -487,6 +493,11 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(plotLabelsButton);
   graphicsControlsLayout->addWidget(incidentLabelsOnlyButton);
   graphicsControlsLayout->addWidget(attributeLabelsOnlyButton);
+  graphicsControlsLayout->addWidget(labelSizeLabel);
+  QPointer<QHBoxLayout> labelSizeLayout = new QHBoxLayout;
+  labelSizeLayout->addWidget(increaseLabelSizeButton);
+  labelSizeLayout->addWidget(decreaseLabelSizeButton);
+  graphicsControlsLayout->addLayout(labelSizeLayout);  
   QPointer<QFrame> sepLine = new QFrame();
   sepLine->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine);
@@ -1051,6 +1062,8 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   addHorizontalGuideLineButton->setEnabled(state);
   addVerticalGuideLineButton->setEnabled(state);
   snapGuidesButton->setEnabled(state);
+  increaseLabelSizeButton->setEnabled(state);
+  decreaseLabelSizeButton->setEnabled(state);
 }
 
 void OccurrenceGraphWidget::updateCases() 
@@ -4145,6 +4158,48 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
   setVisibility();
 }
 
+void OccurrenceGraphWidget::increaseLabelSize()
+{
+  if (_labelSize < 100)
+    {
+      _labelSize++;
+      QVectorIterator<OccurrenceLabel*> it(_attributeLabelVector);
+      while (it.hasNext())
+	{
+	  OccurrenceLabel *currentLabel = it.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      QVectorIterator<OccurrenceLabel*> it2(_relationshipLabelVector);
+      while (it2.hasNext())
+	{
+	  OccurrenceLabel *currentLabel = it2.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      setChangeLabel();
+    }
+}
+
+void OccurrenceGraphWidget::decreaseLabelSize()
+{
+    if (_labelSize > 1)
+    {
+      _labelSize--;
+      QVectorIterator<OccurrenceLabel*> it(_attributeLabelVector);
+      while (it.hasNext())
+	{
+	  OccurrenceLabel *currentLabel = it.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      QVectorIterator<OccurrenceLabel*> it2(_relationshipLabelVector);
+      while (it2.hasNext())
+	{
+	  OccurrenceLabel *currentLabel = it2.next();
+	  currentLabel->setFontSize(_labelSize);
+	}
+      setChangeLabel();
+    }
+}
+
 void OccurrenceGraphWidget::setBackgroundColor() 
 {
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
@@ -4789,9 +4844,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       query->prepare("INSERT INTO saved_og_plots_settings "
 		     "(plot, lowerbound, upperbound, labelson, incidentlabelsonly, "
-		     "attributelabelsonly) "
+		     "attributelabelsonly, labelsize) "
 		     "VALUES (:plot, :lowerbound, :upperbound, :labelson, :incidentlabelsonly, "
-		     ":attributelabelsonly)");
+		     ":attributelabelsonly, :labelsize)");
       query->bindValue(":plot", name);
       query->bindValue(":lowerbound", lowerRangeDial->value());
       query->bindValue(":upperbound", upperRangeDial->value());
@@ -4813,6 +4868,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	}
       query->bindValue(":incidentlabelsonly", incidentlabelsonly);
       query->bindValue(":attributelabelsonly", attributelabelsonly);
+      query->bindValue(":labelsize", _labelSize);
       query->exec();      
       QVector<OccurrenceItem*> allOccurrences;
       QVectorIterator<OccurrenceItem*> aIt(_attributeOccurrenceVector);
@@ -5436,7 +5492,7 @@ void OccurrenceGraphWidget::seePlots()
       int blue = query->value(2).toInt();
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       query->prepare("SELECT lowerbound, upperbound, labelson, incidentlabelsonly, "
-		     "attributelabelsonly "
+		     "attributelabelsonly, labelsize "
 		     "FROM saved_og_plots_settings "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5447,6 +5503,7 @@ void OccurrenceGraphWidget::seePlots()
       int labelson = query->value(2).toInt();
       int incidentlabelsonly = query->value(3).toInt();
       int attributelabelsonly = query->value(4).toInt();
+      int labelsize = query->value(5).toInt();
       if (labelson == 1)
 	{
 	  _labelsVisible = true;
@@ -5471,6 +5528,7 @@ void OccurrenceGraphWidget::seePlots()
 	{
 	  _attributeLabelsOnly = false;
 	}
+      _labelSize = labelsize;
       query->prepare("SELECT incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
 		     "oriypos, red, green, blue, alpha, hidden, perm, relationship, grouped "
 		     "FROM saved_og_plots_occurrence_items "
@@ -6061,6 +6119,7 @@ void OccurrenceGraphWidget::cleanUp()
   setGraphControls(false);
   clearPlotButton->setEnabled(false);
   savePlotButton->setEnabled(false);
+  _labelSize = 10;
 }
 
 void OccurrenceGraphWidget::finalBusiness() 

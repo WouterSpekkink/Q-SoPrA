@@ -28,7 +28,7 @@ OccurrenceLabel::OccurrenceLabel(OccurrenceItem *occurrencePtr)
 {
   _occurrencePtr = occurrencePtr;
   _xOffset = 0;
-  _yOffset = -30;
+  _yOffset = -boundingRect().height();
 }
 
 OccurrenceItem* OccurrenceLabel::getOccurrence()
@@ -55,4 +55,18 @@ void OccurrenceLabel::setOffset(QPointF offset)
 {
   _xOffset = offset.x();
   _yOffset = offset.y();
+}
+
+void OccurrenceLabel::setFontSize(int size)
+{
+  QFont font = this->font();
+  font.setPointSize(size);
+  this->setFont(font);
+  _yOffset = -boundingRect().height();
+  this->setNewPos(this->getOccurrence()->scenePos());
+}
+
+int OccurrenceLabel::getFontSize()
+{
+  return this->font().pointSize();
 }

@@ -37,10 +37,12 @@ public:
   // Setters
   void setNewPos(QPointF nodePos, qreal xOffsetIncrement = 0, qreal yOffsetIncrement = 0);
   void setOffset(QPointF offset);
+  void setFontSize(int size);
   
   // Getters
   OccurrenceItem* getOccurrence();
   QPointF getOffset();
+  int getFontSize();
   
   // Type checking
   enum {Type = UserType + 3};

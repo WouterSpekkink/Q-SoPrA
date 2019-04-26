@@ -215,8 +215,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   seeComponentsButton->setEnabled(false);
   nextEventButton->setEnabled(false);
   toggleLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
-  increaseLabelSizeButton = new QPushButton(tr("+"), graphicsWidget);
-  decreaseLabelSizeButton = new QPushButton(tr("-"), graphicsWidget);
+  increaseLabelSizeButton = new QPushButton("+", graphicsWidget);
+  decreaseLabelSizeButton = new QPushButton("-", graphicsWidget);
   addModeButton = new QPushButton(tr("Create single mode"), legendWidget);
   addModesButton = new QPushButton(tr("Create muliple modes"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
@@ -1157,6 +1157,8 @@ void EventGraphWidget::setGraphControls(bool state)
   addVerticalGuideLineButton->setEnabled(state);
   fillOpacitySlider->setEnabled(state);
   snapGuidesButton->setEnabled(state);
+  increaseLabelSizeButton->setEnabled(state);
+  decreaseLabelSizeButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -3291,6 +3293,7 @@ void EventGraphWidget::cleanUp()
   snapGuidesButton->setChecked(false);
   toggleSnapGuides();
   _labelsVisible = true;
+  _labelSize = 10;
   setGraphControls(false);
 }
 

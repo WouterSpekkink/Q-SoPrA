@@ -121,6 +121,8 @@ private slots:
   void setBackgroundColor();
   void increaseDistance();
   void decreaseDistance();
+  void increaseLabelSize();
+  void decreaseLabelSize();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
   void setGraphControls(bool status);
@@ -232,6 +234,7 @@ private:
   QPointer<QLabel> timeLineColorLabel;
   QPointer<QLabel> fillOpacityLabel;
   QPointer<QLabel> guideLinesLabel;
+  QPointer<QLabel> labelSizeLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> clearPlotButton;
@@ -267,6 +270,8 @@ private:
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;
+  QPointer<QPushButton> increaseLabelSizeButton;
+  QPointer<QPushButton> decreaseLabelSizeButton;
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -294,14 +299,15 @@ private:
   bool _matched;
   int _currentPenStyle;
   int _currentPenWidth;
+  int _currentTimeLineWidth;
+  int _labelSize;
   QColor _currentLineColor;
   QColor _currentFillColor;
+  QColor _currentTimeLineColor;
   qreal _currentMajorInterval;
   qreal _currentMinorDivision;
   qreal _currentMajorTickSize;
   qreal _currentMinorTickSize;
-  int _currentTimeLineWidth;
-  QColor _currentTimeLineColor;
   
   // Pointer to other widget
   // Do not delete
