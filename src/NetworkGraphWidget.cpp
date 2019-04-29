@@ -4078,6 +4078,7 @@ void NetworkGraphWidget::restoreModeColors()
 	    }
 	}
     }
+  setChangeLabel();
 }
 
 void NetworkGraphWidget::moveModeUp() 
@@ -4691,6 +4692,7 @@ void NetworkGraphWidget::changeModeColor(QTableWidgetItem *item)
 		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
+	  setChangeLabel();
 	}
     }
 }
@@ -5623,7 +5625,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  QString title = item->data(Qt::DisplayRole).toString();
 	  QString tip = item->data(Qt::ToolTipRole).toString();
 	  QColor color = nodeListWidget->item(i, 1)->background().color();
-	  QVariant textColorVar = item->data(Qt::UserRole);
+	  QVariant textColorVar = nodeListWidget->item(i, 1)->data(Qt::UserRole);
 	  QColor textColor = QColor::fromRgb(textColorVar.toUInt());
 	  int red = color.red();
 	  int green = color.green();

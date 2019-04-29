@@ -4625,7 +4625,7 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_legend (plot, name, tip, "
-		     "red, green, blue, alpha) "
+		     "red, green, blue, alpha, textred, textgreen, textblue, textalpha) "
 		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, "
 		     ":textred, :textgreen, :textblue, :textalpha)");
       for (int i = 0; i != eventListWidget->rowCount(); i++) 
@@ -4634,7 +4634,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  QString title = item->data(Qt::DisplayRole).toString();
 	  QString tip = item->data(Qt::ToolTipRole).toString();
 	  QColor color = eventListWidget->item(i, 1)->background().color();
-	  QVariant textColorVar = item->data(Qt::UserRole);
+	  QVariant textColorVar = eventListWidget->item(i, 1)->data(Qt::UserRole);
 	  QColor textColor = QColor::fromRgb(textColorVar.toUInt());
 	  int red = color.red();
 	  int green = color.green();
@@ -5622,7 +5622,7 @@ void EventGraphWidget::seePlots()
 	    }
 	}
       query->prepare("SELECT name, tip, red, green, blue, alpha, "
-		     "textred, textgreen, textblue, textalpha"
+		     "textred, textgreen, textblue, textalpha "
 		     "FROM saved_eg_plots_legend "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6620,6 +6620,7 @@ void EventGraphWidget::restoreModeColors()
 	    }
 	}
     }
+  setChangeLabel();
 }
 
 void EventGraphWidget::moveModeUp() 
@@ -6804,6 +6805,7 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item)
 		  current->getLabel()->setDefaultTextColor(textColor);
 		}
 	    }
+	  setChangeLabel();
 	}
     }
 }
