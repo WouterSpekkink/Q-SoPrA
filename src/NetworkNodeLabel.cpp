@@ -27,7 +27,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 NetworkNodeLabel::NetworkNodeLabel(NetworkNode *networkNodePtr) 
 {
-  //setFlag(QGraphicsItem::ItemIsSelectable);
   setFlag(QGraphicsItem::ItemIsMovable);
   _networkNodePtr = networkNodePtr;
   _xOffset = 20;
@@ -77,24 +76,28 @@ int NetworkNodeLabel::type() const
 
 void NetworkNodeLabel::increaseFontSize() 
 {
-  if (_fontSize != 24) 
+  if (_fontSize < 100) 
     {
       _fontSize++;
+      QFont newFont = this->font();
+      newFont.setPointSizeF(_fontSize);
+      _yOffset -= 1;
+      this->setFont(newFont);
+      this->setNewPos(this->getNode()->scenePos());
     }
-  QFont newFont = this->font();
-  newFont.setPointSizeF(_fontSize);
-  this->setFont(newFont);
 }
 
 void NetworkNodeLabel::decreaseFontSize() 
 {
-  if (_fontSize != 12) 
+  if (_fontSize > 5) 
     {
       _fontSize--;
+      QFont newFont = this->font();
+      newFont.setPointSizeF(_fontSize);
+      _yOffset += 1; 
+      this->setFont(newFont);
+      this->setNewPos(this->getNode()->scenePos());
     }
-  QFont newFont = this->font();
-  newFont.setPointSizeF(_fontSize);
-  this->setFont(newFont);
 }
 
 void NetworkNodeLabel::setFontSize(int size) 

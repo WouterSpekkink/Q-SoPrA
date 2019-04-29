@@ -73,11 +73,6 @@ Scene::Scene(QObject *parent) : QGraphicsScene(parent)
   _lineStart = QPointF();
   _lineEnd = QPointF();
   _drawArea = QRectF();
-  _tempLinePtr = NULL;
-  _tempEllipsePtr = NULL;
-  _tempRectPtr = NULL;
-  _tempTextPtr = NULL;
-  _tempTimeLinePtr = NULL;
   _currentPenStyle = 1;
   _currentPenWidth = 1;
   _currentLineColor = QColor(Qt::black);
@@ -161,6 +156,38 @@ void Scene::resetAreas()
   _rectAreaStarted = false;
   _gettingTextArea = false;
   _textAreaStarted = false;
+  _gettingHorizontalGuideLine = false;
+  _gettingVerticalGuideLine = false;
+  if (_tempEllipsePtr)
+    {
+      delete _tempEllipsePtr;
+      _tempEllipsePtr = NULL;
+    }
+  if (_tempGuideLinePtr)
+    {
+      delete _tempGuideLinePtr;
+      _tempGuideLinePtr = NULL;
+    }
+  if (_tempLinePtr)
+    {
+      delete _tempLinePtr;
+      _tempLinePtr = NULL;
+    }
+  if (_tempRectPtr)
+    {
+      delete _tempRectPtr;
+      _tempRectPtr = NULL;
+    }
+  if (_tempTextPtr)
+    {
+      delete _tempTextPtr;
+      _tempTextPtr = NULL;
+    }
+  if (_tempTimeLinePtr)
+    {
+      delete _tempTimeLinePtr;
+      _tempTimeLinePtr = NULL;
+    }
   QApplication::restoreOverrideCursor();
 }
 
@@ -433,10 +460,17 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
   if (_eventWidthChange) 
     {
       _eventWidthChange = false;
+      return;
     }
   if (_massMoveNodes) 
     {
       _massMoveNodes = false;
+      return;
+    }
+  if (event->button() == Qt::RightButton && isPreparingArea())
+    {
+      resetAreas();
+      return;
     }
   if (_gettingHorizontalGuideLine)
     {
@@ -445,15 +479,17 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
       if (_tempGuideLinePtr)
 	{
 	  delete _tempGuideLinePtr;
-	    }
+	  _tempGuideLinePtr = NULL;
+	}
     }
-  if (_gettingVerticalGuideLine)
+  else if (_gettingVerticalGuideLine)
     {
       emit sendVerticalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
       _gettingVerticalGuideLine = false;
       if (_tempGuideLinePtr)
 	{
 	  delete _tempGuideLinePtr;
+	  _tempGuideLinePtr = NULL;
 	}
     }
   stopRotation();
@@ -989,8 +1025,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	  text->setSelected(true);
 	  emit resetItemSelection();
 	  _selectedTextPtr = text;
-	  QGraphicsScene::mousePressEvent(event);
-		  
+	  QGraphicsScene::mousePressEvent(event);		  
 	}
       else if (ellipse) 
 	{

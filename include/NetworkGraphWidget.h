@@ -261,6 +261,7 @@ private:
   QPointer<QLabel> fillColorLabel;
   QPointer<QLabel> fillOpacityLabel;
   QPointer<QLabel> guideLinesLabel;
+  QPointer<QLabel> labelSizeLabel;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> penStyleComboBox;
   QPointer<DeselectableListWidget> nodeListWidget;

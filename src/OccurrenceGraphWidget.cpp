@@ -4181,7 +4181,7 @@ void OccurrenceGraphWidget::increaseLabelSize()
 
 void OccurrenceGraphWidget::decreaseLabelSize()
 {
-    if (_labelSize > 1)
+    if (_labelSize > 5)
     {
       _labelSize--;
       QVectorIterator<OccurrenceLabel*> it(_attributeLabelVector);

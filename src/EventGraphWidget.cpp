@@ -6977,7 +6977,7 @@ void EventGraphWidget::increaseLabelSize()
 
 void EventGraphWidget::decreaseLabelSize()
 {
-  if (_labelSize > 1)
+  if (_labelSize > 5)
     {
       _labelSize--;
       QVectorIterator<IncidentNodeLabel*> it(_incidentNodeLabelVector);

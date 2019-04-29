@@ -76,7 +76,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
   weightLabel = new QLabel(tr("<b>Minimum occurrence:</b>"), graphicsWidget);
   nodeLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
-  edgeLegendLabel = new QLabel(tr("<b>Edge legend:</b>"), legendWidget);
+  edgeLegendLabel = new QLabel(tr("<b>Edges:</b>"), legendWidget);
   nameLabel = new QLabel(tr("<b>Name:</b<"), infoWidget);
   descriptionLabel = new QLabel(tr("<b>Description:</b>"), infoWidget);
   attributesLabel = new QLabel(tr("<b>Attributes:</b>"), infoWidget);
@@ -94,6 +94,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
+  labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), this);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
@@ -558,6 +559,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(labelColorButton);
   graphicsControlsLayout->addWidget(backgroundColorButton);
   graphicsControlsLayout->addWidget(toggleLabelsButton);
+  graphicsControlsLayout->addWidget(labelSizeLabel);
   QPointer<QHBoxLayout> fontSizeLayout = new QHBoxLayout;
   fontSizeLayout->addWidget(increaseFontSizeButton);
   fontSizeLayout->addWidget(decreaseFontSizeButton);
