@@ -28,7 +28,8 @@ OccurrenceLabel::OccurrenceLabel(OccurrenceItem *occurrencePtr)
 {
   _occurrencePtr = occurrencePtr;
   _xOffset = 0;
-  _yOffset = -boundingRect().height();
+  setDefaultTextColor(-1);
+  _yOffset = -20 - (boundingRect().height() / 2);
 }
 
 OccurrenceItem* OccurrenceLabel::getOccurrence()
@@ -62,7 +63,7 @@ void OccurrenceLabel::setFontSize(int size)
   QFont font = this->font();
   font.setPointSize(size);
   this->setFont(font);
-  _yOffset = -boundingRect().height();
+  _yOffset = -20 - (boundingRect().height() / 2);
   this->setNewPos(this->getOccurrence()->scenePos());
 }
 

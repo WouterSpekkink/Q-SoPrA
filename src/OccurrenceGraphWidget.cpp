@@ -683,6 +683,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      if (!attributeIncidents.contains(id))
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "1";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -693,6 +694,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      if (!orderPairs.contains(currentPair))
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "2";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -751,6 +753,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      if (!observed.contains(currentExpected))
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "3";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -822,6 +825,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      if (query->isNull(0)) 
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "4";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -834,6 +838,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      if (query2->isNull(0)) 
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "5";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -843,6 +848,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      else if (query2->value(0).toInt() != order) 
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "6";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -908,6 +914,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      if (!found) 
 		{
 		  incongruencyLabel->setText("Incongruency detected");
+		  qDebug() << "7";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -934,13 +941,14 @@ void OccurrenceGraphWidget::checkCongruency()
     {
       QString currentCase = query->value(0).toString();
       caseVector.push_back(currentCase);
-	}
+    }
   QVectorIterator<QString> cit(caseVector);
   while (cit.hasNext())
     {
       if (!currentVector.contains(cit.next()))
 	{
 	  incongruencyLabel->setText("Incongruency detected");
+	  qDebug() << "8";
 	  delete query;
 	  return;
 	}
@@ -951,6 +959,7 @@ void OccurrenceGraphWidget::checkCongruency()
       if (!caseVector.contains(cit2.next()))
 	{
 	  incongruencyLabel->setText("Incongruency detected");
+	  qDebug() << "9";
 	  delete query;
 	  return;
 	}
@@ -6076,12 +6085,14 @@ void OccurrenceGraphWidget::clearPlot()
       delete warningBox;
       cleanUp();
       changeLabel->setText("");
+      plotLabel->setText("Unsaved plot");
     }
   else 
     {
       delete warningBox;
       return;
     }
+  updateCases();
 }
 
 void OccurrenceGraphWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 
