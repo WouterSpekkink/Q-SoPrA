@@ -1019,6 +1019,8 @@ void AbstractionDialog::findTailsLowerBound(QSet<int> *pMark, int currentInciden
 
 QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds) 
 {
+  // SHOULD I CHECK HERE IF A LINKAGE IS ONLY TIED TO THE FIRST OR THE LAST OF AN INCIDENT?
+  // YES, AND I SHOULD CREATE AN EXCEPTION FOR THEM.
   QVector<bool> result;
   QVectorIterator<QString> it(_presentTypes);
   while (it.hasNext()) 
@@ -1037,11 +1039,37 @@ QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds)
 	}
       delete query;
       QVectorIterator<int> it2(observed);
+
+      QVector<int> included;
+
       bool status = false;
       while (it2.hasNext()) 
 	{
 	  int currentObserved = it2.next();
 	  if (incidentIds.contains(currentObserved)) 
+	    {
+	      included.push_back(currentObserved);
+	    }
+	}
+
+      if (included.size() > 2)
+	{
+	  status = true;
+	}
+      else if (included.size() == 2)
+	{
+	  if (!(included[0] == incidentIds.first() &&
+		included[1] == incidentIds.last()) ||
+	      !(included[1] == incidentIds.first() &&
+		included[0] == incidentIds.last()))
+	    {
+	      status = true;
+	    }
+	}
+      else if (included.size() == 1)
+	{
+	  if (!included[0] == incidentIds.first() &&
+	      !included[0] == incidentIds.last())
 	    {
 	      status = true;
 	    }

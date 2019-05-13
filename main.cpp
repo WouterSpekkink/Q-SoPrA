@@ -1,4 +1,3 @@
-
 /*
 
 Qualitative Social Process Analysis (Q-SoPrA)
