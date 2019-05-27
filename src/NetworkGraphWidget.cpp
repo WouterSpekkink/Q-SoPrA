@@ -6837,6 +6837,7 @@ void NetworkGraphWidget::seePlots()
       // Now let's do the final processing
       checkCongruency();
       setVisibility();
+      setGraphControls(true);
       plotLabel->setText(plot);
       changeLabel->setText("");
       view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);

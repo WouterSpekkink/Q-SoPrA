@@ -1071,8 +1071,8 @@ QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds)
 	}
       else if (included.size() == 1)
 	{
-	  if (!included[0] == incidentIds.first() &&
-	      !included[0] == incidentIds.last())
+	  if (included[0] != incidentIds.first() &&
+	      included[0] != incidentIds.last())
 	    {
 	      status = true;
 	    }
