@@ -5915,7 +5915,7 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_texts "
-		     "(plot, desc, xpos, ypos, width, size, rotation, zvalue "
+		     "(plot, desc, xpos, ypos, width, size, rotation, zvalue, "
 		     "red, green, blue, alpha) "
 		     "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
