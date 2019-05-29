@@ -110,6 +110,7 @@ void TextObject::mousePressEvent(QGraphicsSceneMouseEvent *event)
 void TextObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 {
   Scene *scene = qobject_cast<Scene*>(this->scene());
+  QRectF boundsRect = this->sceneBoundingRect();
   if (_moving)
     {
       this->resetTransform();
@@ -149,13 +150,13 @@ void TextObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 		    {
 		      if (guide->isHorizontal())
 			{
-			  qreal topDist = sqrt(pow(this->sceneBoundingRect().top() -
+			  qreal topDist = sqrt(pow(boundsRect.top() -
 						   guide->getOrientationPoint().y(), 2));
-			  qreal bottomDist = sqrt(pow(this->sceneBoundingRect().bottom() -
+			  qreal bottomDist = sqrt(pow(boundsRect.bottom() -
 						      guide->getOrientationPoint().y(), 2));
 			  qreal eventDist = event->scenePos().y() - guide->getOrientationPoint().y();
 			  if (topDist < 10 &&
-			      abs(eventDist) < this->sceneBoundingRect().height() &&
+			      abs(eventDist) < boundsRect.height() &&
 			      eventDist > 0)
 			    {
 			      snappedHorizontal = true;
@@ -173,7 +174,7 @@ void TextObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 				}
 			    }
 			  else if (bottomDist < 10 &&
-			      abs(eventDist) < this->sceneBoundingRect().height() &&
+			      abs(eventDist) < boundsRect.height() &&
 			      eventDist < 0)
 			    {
 			      snappedHorizontal = true;
@@ -181,29 +182,27 @@ void TextObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 				{
 				  this->setPos(_memPos.x(),
 							   guide->getOrientationPoint().y() -
-							   this->
-							   sceneBoundingRect().height());
+							   boundsRect.height());
 				  _memPos = this->scenePos();
 				}
 			      else
 				{
 				  this->setPos(currentPos.x() + newXDiff,
 							   guide->getOrientationPoint().y() -
-							   this->
-							   sceneBoundingRect().height());
+							   boundsRect.height());
 				  _memPos = this->scenePos();
 				}
 			    }
 			}
 		      else
 			{
-			  qreal leftDist = sqrt(pow(this->sceneBoundingRect().left() -
+			  qreal leftDist = sqrt(pow(boundsRect.left() -
 						    guide->getOrientationPoint().x(), 2));
-			  qreal rightDist = sqrt(pow(this->sceneBoundingRect().right() -
+			  qreal rightDist = sqrt(pow(boundsRect.right() -
 						    guide->getOrientationPoint().x(), 2));
 			  qreal eventDist = event->scenePos().x() - guide->getOrientationPoint().x();
 			  if (leftDist < 10 &&
-			      abs(eventDist) < this->sceneBoundingRect().width() &&
+			      abs(eventDist) < boundsRect.width() &&
 			      eventDist > 0)
 			    {
 			      snappedVertical = true;
@@ -221,23 +220,21 @@ void TextObject::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
 				}
 			    }
 			  else if (rightDist < 10 &&
-			      abs(eventDist) < this->sceneBoundingRect().width() &&
+			      abs(eventDist) < boundsRect.width() &&
 			      eventDist < 0)
 			    {
 			      snappedVertical = true;
 			      if (snappedHorizontal)
 				{
 				  this->setPos(guide->getOrientationPoint().x() -
-							   this->
-							   sceneBoundingRect().width(),
+							   boundsRect.width(),
 							   _memPos.y());
 				  _memPos = this->scenePos();
 				}
 			      else
 				{
 				  this->setPos(guide->getOrientationPoint().x() -
-							   this->
-							   sceneBoundingRect().width(),
+							   boundsRect.width(),
 							   currentPos.y() + newYDiff);
 				  _memPos = this->scenePos();
 				}

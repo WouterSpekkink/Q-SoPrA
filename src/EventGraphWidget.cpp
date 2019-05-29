@@ -4431,10 +4431,10 @@ void EventGraphWidget::saveCurrentPlot()
 		      "VALUES(:plot, :attribute, :abstractnode, :value)");
       QSqlQuery *query3 = new QSqlQuery;
       query3->prepare("INSERT INTO saved_eg_plots_abstract_nodes "
-		      "(plot, eventid, ch_order, colligation, timing, description, comment, width, "
+		      "(plot, eventid, ch_order, abstraction, timing, description, comment, width, "
 		      "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
 		      "red, green, blue, alpha, hidden) "
-		      "VALUES (:plot, :eventid, :ch_order, :colligation, :timing, :description, "
+		      "VALUES (:plot, :eventid, :ch_order, :abstraction, :timing, :description, "
 		      ":comment, :width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
 		      ":red, :green, :blue, :alpha, :hidden)");;
       QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
@@ -4491,7 +4491,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query3->bindValue(":plot", name);
 	  query3->bindValue(":eventid", currentAbstractNode->getId());
 	  query3->bindValue(":ch_order", currentAbstractNode->getOrder());
-	  query3->bindValue(":colligation", currentAbstractNode->getConstraint());
+	  query3->bindValue(":abstraction", currentAbstractNode->getConstraint());
 	  query3->bindValue(":timing", timing);
 	  query3->bindValue(":description", description);
 	  query3->bindValue(":comment", comment);
@@ -5235,7 +5235,7 @@ void EventGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->prepare("SELECT eventid, ch_order, colligation, timing, description, comment, width, "
+      query->prepare("SELECT eventid, ch_order, abstraction, timing, description, comment, width, "
 		     "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
 		     "hidden "
 		     "FROM saved_eg_plots_abstract_nodes "
@@ -7744,9 +7744,9 @@ void EventGraphWidget::exportEdges()
 void EventGraphWidget::processIncidentNodeContextMenu(const QString &action) 
 {
   retrieveData();
-  if (action == COLLIGATEACTION) 
+  if (action == ABSTRACTACTION) 
     {
-      colligateEvents();
+      abstractEvents();
     }
   else if (action == DISAGGREGATEACTION) 
     {
@@ -7754,7 +7754,7 @@ void EventGraphWidget::processIncidentNodeContextMenu(const QString &action)
     }
   else if (action == MAKEABSTRACTNODEACTION) 
     {
-      colligateEvents();
+      abstractEvents();
     }
   else if (action == RECOLOREVENTSACTION) 
     {
@@ -7814,7 +7814,7 @@ void EventGraphWidget::processIncidentNodeContextMenu(const QString &action)
     }
 }
 
-void EventGraphWidget::colligateEvents() 
+void EventGraphWidget::abstractEvents() 
 {
   if (_currentData.size() > 0) 
     {

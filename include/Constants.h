@@ -39,7 +39,7 @@ extern QString PAST;
 extern QString FUTURE;
 extern QString MANUAL;
 extern QString ASSISTED;
-extern QString COLLIGATEACTION;
+extern QString ABSTRACTACTION;
 extern QString MASSMOVEINCIDENTNODESACTION;
 extern QString MASSMOVEABSTRACTNODESACTION;
 extern QString MAKEABSTRACTNODEACTION;

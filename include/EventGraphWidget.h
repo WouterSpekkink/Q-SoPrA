@@ -207,7 +207,7 @@ private slots:
   void hideLinkageType();
   void showLinkageType();
   void processIncidentNodeContextMenu(const QString &action);
-  void colligateEvents();
+  void abstractEvents();
   void disaggregateEvent();
   void updateAbstractNodeIds(AbstractNode* abstractNode);
   void updateAbstractNodeOrder();

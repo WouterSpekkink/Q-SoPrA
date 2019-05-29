@@ -2074,22 +2074,22 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       if (incident && !incident->isCopy()) 
 	{
 	  QMenu *menu = new QMenu();
-	  QMenu *colligationMenu = new QMenu("Abstraction");
+	  QMenu *abstractionMenu = new QMenu("Abstraction");
 	  QMenu *colorMenu = new QMenu("Colouring");
 	  QMenu *posMenu = new QMenu("Positioning");
 	  QMenu *selectionMenu = new QMenu("Selection");
 	  QMenu *linkageMenu = new QMenu("Linkages");
 	  QMenu *descMenu = new QMenu("Description");
-	  menu->addMenu(colligationMenu);
+	  menu->addMenu(abstractionMenu);
 	  menu->addMenu(colorMenu);
 	  menu->addMenu(posMenu);
 	  menu->addMenu(selectionMenu);
 	  menu->addMenu(linkageMenu);
 	  menu->addMenu(descMenu);
-	  QAction *action1 = new QAction(COLLIGATEACTION, this);
-	  colligationMenu->addAction(action1);
+	  QAction *action1 = new QAction(ABSTRACTACTION, this);
+	  abstractionMenu->addAction(action1);
 	  QAction *action2 = new QAction(MAKEABSTRACTNODEACTION, this);
-	  colligationMenu->addAction(action2);
+	  abstractionMenu->addAction(action2);
 	  QAction *action3= new QAction(RECOLOREVENTSACTION, this);
 	  colorMenu->addAction(action3);
 	  QAction *action4 = new QAction(RECOLORLABELSACTION, this);
@@ -2175,7 +2175,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action15;
 	  delete action16;
 	  delete menu;
-	  delete colligationMenu;
+	  delete abstractionMenu;
 	  delete colorMenu;
 	  delete posMenu;
 	  delete selectionMenu;
@@ -2185,20 +2185,20 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       else if (abstractNode && !abstractNode->isCopy()) 
 	{
 	  QMenu *menu = new QMenu;
-	  QMenu *colligationMenu = new QMenu("Abstraction");
+	  QMenu *abstractionMenu = new QMenu("Abstraction");
 	  QMenu *colorMenu = new QMenu("Colouring");
 	  QMenu *posMenu = new QMenu("Positioning");
 	  QMenu *selectionMenu = new QMenu("Selection");
 	  QMenu *descMenu = new QMenu("Description");
-	  menu->addMenu(colligationMenu);
+	  menu->addMenu(abstractionMenu);
 	  menu->addMenu(colorMenu);
 	  menu->addMenu(posMenu);
 	  menu->addMenu(selectionMenu);
 	  menu->addMenu(descMenu);
-	  QAction *action1 = new QAction(COLLIGATEACTION, this);
-	  colligationMenu->addAction(action1);
+	  QAction *action1 = new QAction(ABSTRACTACTION, this);
+	  abstractionMenu->addAction(action1);
 	  QAction *action2 = new QAction(DISAGGREGATEACTION, this);
-	  colligationMenu->addAction(action2);
+	  abstractionMenu->addAction(action2);
 	  QAction *action3= new QAction(RECOLOREVENTSACTION, this);
 	  colorMenu->addAction(action3);
 	  QAction *action4 = new QAction(RECOLORLABELSACTION, this);
@@ -2272,7 +2272,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action14;
 	  delete action15;
 	  delete menu;
-	  delete colligationMenu;
+	  delete abstractionMenu;
 	  delete colorMenu;
 	  delete posMenu;
 	  delete selectionMenu;
