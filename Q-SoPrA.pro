@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = Q-SoPrA
 INCLUDEPATH += .
-CONFIG += c++11
+CONFIG += c++11 
 QT += widgets sql svg opengl
 VERSION = 0.9.0
 DEFINES += VERSION_STRING=\\\"$${VERSION}\\\"

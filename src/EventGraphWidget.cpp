@@ -9659,8 +9659,8 @@ void EventGraphWidget::seeLinkageEvidence()
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
       if (linkage)
 	{
-	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage);
-	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage);
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
 	  int tail = startIncidentNode->getId();
 	  int head = endIncidentNode->getId();
 	  QString type = linkage->getType();

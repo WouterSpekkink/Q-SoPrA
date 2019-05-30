@@ -39,8 +39,11 @@ EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, 
   commentLabel = new QLabel(tr("<b>Comment:</b>"), this);
 
   tailTextField = new QTextEdit(this);
+  tailTextField->setEnabled(false);
   headTextField = new QTextEdit(this);
+  headTextField->setEnabled(false);
   commentField = new QTextEdit(this);
+  commentField->setEnabled(false);
   
   closeButton = new QPushButton(tr("Close dialog"), this);
 
@@ -53,12 +56,15 @@ EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, 
   detailsLayout->addWidget(coderLabel);
   detailsLayout->addWidget(coderReportLabel);
   mainLayout->addLayout(detailsLayout);
-  QPointer<QHBoxLayout> topFieldsLayout;
-  QPointer<QVBoxLayout> leftTopFieldsLayout;
+  QPointer<QFrame> topLine = new QFrame;
+  topLine->setFrameShape(QFrame::HLine);
+  mainLayout->addWidget(topLine);
+  QPointer<QHBoxLayout> topFieldsLayout = new QHBoxLayout;
+  QPointer<QVBoxLayout> leftTopFieldsLayout= new QVBoxLayout;
   leftTopFieldsLayout->addWidget(tailLabel);
   leftTopFieldsLayout->addWidget(tailTextField);
   topFieldsLayout->addLayout(leftTopFieldsLayout);
-  QPointer<QVBoxLayout> rightTopFieldsLayout;
+  QPointer<QVBoxLayout> rightTopFieldsLayout = new QVBoxLayout;
   rightTopFieldsLayout->addWidget(headLabel);
   rightTopFieldsLayout->addWidget(headTextField);
   topFieldsLayout->addLayout(rightTopFieldsLayout);
