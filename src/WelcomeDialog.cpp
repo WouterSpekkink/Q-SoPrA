@@ -163,6 +163,14 @@ void WelcomeDialog::newDatabase()
 		      "head integer, "
 		      "type text, "
 		      "coder text)");
+	  query->exec("CREATE TABLE linkages_sources "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "tail integer, "
+		      "head integer, "
+		      "type text, "
+		      "coder text, "
+		      "tail_text text, "
+		      "head_text text)");
 	  query->exec("CREATE TABLE coders "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text)");
@@ -923,6 +931,14 @@ void WelcomeDialog::openDatabase()
 		      "head integer, "
 		      "type text, "
 		      "coder text)");
+	  query->exec("CREATE TABLE IF NOT EXISTS linkages_sources "
+		      "(id integer PRIMARY KEY AUTOINCREMENT, "
+		      "tail integer, "
+		      "head integer, "
+		      "type text, "
+		      "coder text, "
+		      "tail_text text, "
+		      "head_text text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS coders "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text)");
@@ -1935,6 +1951,41 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkages ADD COLUMN coder text;");
+	    }
+	  columns.clear();
+	  query->exec("PRAGMA table_info(linkages_sources)");
+	  while (query->next())
+	    {
+	      columns.push_back(query->value(0).toString());
+	    }
+	  if (!columns.contains("id"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources "
+			  "ADD COLUMN id integer PRIMARY KEY AUTOINCREMENT;");
+	    }
+	  if (!columns.contains("tail"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN tail integer;");
+	    }
+	  if (!columns.contains("head"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN head integer;");
+	    }
+	  if (!columns.contains("type"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN type text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN coder text;");
+	    }
+	  if (!columns.contains("tail_text"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN tail_text text;");
+	    }
+	  if (!columns.contains("head_text"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN head_text text;");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(coders)");

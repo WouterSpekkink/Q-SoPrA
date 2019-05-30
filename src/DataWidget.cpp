@@ -541,7 +541,13 @@ void DataWidget::removeRow()
 	  query->prepare("DELETE FROM linkages WHERE tail = :tail");
 	  query->bindValue(":tail", id);
 	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources WHERE tail = :tail");
+	  query->bindValue(":tail", id);
+	  query->exec();
 	  query->prepare("DELETE FROM linkages WHERE head = :head");
+	  query->bindValue(":head", id);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources WHERE head = :head");
 	  query->bindValue(":head", id);
 	  query->exec();
 	  query->prepare("DELETE FROM linkage_comments WHERE tail = :tail");

@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   hierarchyGraphWidget = new HierarchyGraphWidget(this);
   rawAttributesTableWidget = new RawAttributesTable(this);
   rawRelationshipsTableWidget = new RawRelationshipsTable(this);
+  rawLinkagesTableWidget = new RawLinkagesTable(this);
   incidentsAttributesTableWidget = new IncidentsAttributesTable(this);
   entitiesAttributesTableWidget = new EntitiesAttributesTable(this);
   missingAttributesTableWidget = new MissingAttributesTable(this);
@@ -132,11 +133,12 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   stacked->addWidget(hierarchyGraphWidget); // 8
   stacked->addWidget(rawAttributesTableWidget); // 9
   stacked->addWidget(rawRelationshipsTableWidget); // 10
-  stacked->addWidget(incidentsAttributesTableWidget); // 11
-  stacked->addWidget(entitiesAttributesTableWidget); // 12
-  stacked->addWidget(missingAttributesTableWidget); // 13
-  stacked->addWidget(missingRelationshipsTableWidget); // 14
-  stacked->addWidget(casingWidget); // 15
+  stacked->addWidget(rawLinkagesTableWidget); // 11
+  stacked->addWidget(incidentsAttributesTableWidget); // 12
+  stacked->addWidget(entitiesAttributesTableWidget); // 13
+  stacked->addWidget(missingAttributesTableWidget); // 14
+  stacked->addWidget(missingRelationshipsTableWidget); // 15
+  stacked->addWidget(casingWidget); // 16
 
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(AbstractNode *)),
@@ -178,6 +180,7 @@ MainWindow::~MainWindow()
   stacked->removeWidget(hierarchyGraphWidget); 
   stacked->removeWidget(rawAttributesTableWidget); 
   stacked->removeWidget(rawRelationshipsTableWidget);
+  stacked->removeWidget(rawLinkagesTableWidget);
   stacked->removeWidget(incidentsAttributesTableWidget);
   stacked->removeWidget(entitiesAttributesTableWidget);
   stacked->removeWidget(missingAttributesTableWidget);
@@ -196,6 +199,7 @@ MainWindow::~MainWindow()
   delete hierarchyGraphWidget;
   delete rawAttributesTableWidget;
   delete rawRelationshipsTableWidget;
+  delete rawLinkagesTableWidget;
   delete incidentsAttributesTableWidget;
   delete entitiesAttributesTableWidget;
   delete missingAttributesTableWidget;
@@ -268,6 +272,11 @@ void MainWindow::createActions()
   connect(rawRelationshipsTableViewAct, SIGNAL(triggered()),
 	  this, SLOT(switchToRawRelationshipsTableView()));
 
+  rawLinkagesTableViewAct = new QAction(tr("&Linkages texts table"), this);
+  rawLinkagesTableViewAct->setStatusTip("Switch to linkages texts table");
+  connect(rawLinkagesTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToRawLinkagesTableView()));
+  
   incidentsAttributesTableViewAct = new QAction(tr("&Incidents-Attributes table"), this);
   incidentsAttributesTableViewAct->setStatusTip("Switch to incidents-attributes table");
   connect(incidentsAttributesTableViewAct, SIGNAL(triggered()),
@@ -418,6 +427,7 @@ void MainWindow::createMenus()
   codingTextsMenu = new QMenu("Coding texts");
   codingTextsMenu->addAction(rawAttributesTableViewAct);
   codingTextsMenu->addAction(rawRelationshipsTableViewAct);
+  codingTextsMenu->addAction(rawLinkagesTableViewAct);
 
   attributeTablesMenu = new QMenu("Attribute tables");
   attributeTablesMenu->addAction(incidentsAttributesTableViewAct);
@@ -936,7 +946,7 @@ void MainWindow::switchToCasingView()
       lw->setLinkageComment();
       EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
       egw->setComment();
-      CasingWidget *cw = qobject_cast<CasingWidget*>(stacked->widget(15));
+      CasingWidget *cw = qobject_cast<CasingWidget*>(stacked->widget(16));
       cw->updateTable();
       stacked->setCurrentWidget(casingWidget);
     }
@@ -1069,13 +1079,25 @@ void MainWindow::switchToRawRelationshipsTableView()
     }
 }
 
+void MainWindow::switchToRawLinkagesTableView() 
+{
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      // Still need to figure out what else needs to happen here.
+      RawLinkagesTable *rlt = qobject_cast<RawLinkagesTable*>(stacked->widget(11));
+      rlt->updateTable();
+      stacked->setCurrentWidget(rawLinkagesTableWidget);
+    }
+}
+
 void MainWindow::switchToIncidentsAttributesTableView() 
 {
   JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
   if (jw->checkChanges())
     {
       // Still need to figure out what else needs to happen here.
-      IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(11));
+      IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(12));
       iat->attributesModel->select();
       iat->updateTable();
       stacked->setCurrentWidget(incidentsAttributesTableWidget);
@@ -1088,7 +1110,7 @@ void MainWindow::switchToEntitiesAttributesTableView()
   if (jw->checkChanges())
     {
       // Still need to figure out what else needs to happen here.
-      EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(12));
+      EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(13));
       eat->attributesModel->select();
       eat->updateTable();
       stacked->setCurrentWidget(entitiesAttributesTableWidget);
@@ -1101,7 +1123,7 @@ void MainWindow::switchToMissingAttributesTableView()
   if (jw->checkChanges())
     {
       // Still need to figure out what else needs to happen here.
-      MissingAttributesTable *mat = qobject_cast<MissingAttributesTable*>(stacked->widget(13));
+      MissingAttributesTable *mat = qobject_cast<MissingAttributesTable*>(stacked->widget(14));
       mat->updateTable();
       stacked->setCurrentWidget(missingAttributesTableWidget);
     }
@@ -1113,7 +1135,7 @@ void MainWindow::switchToMissingRelationshipsTableView()
   if (jw->checkChanges())
     {
       // Still need to figure out what else needs to happen here.
-      MissingRelationshipsTable *mrt = qobject_cast<MissingRelationshipsTable*>(stacked->widget(14));
+      MissingRelationshipsTable *mrt = qobject_cast<MissingRelationshipsTable*>(stacked->widget(15));
       mrt->updateTable();
       stacked->setCurrentWidget(missingRelationshipsTableWidget);
     }

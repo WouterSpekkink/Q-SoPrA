@@ -9618,7 +9618,11 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
 
 void EventGraphWidget::processLinkageContextMenu(const QString &action) 
 {
-  if (action == REMOVELINKAGEACTION) 
+  if (action == SEELINKAGEEVIDENCEACTION)
+    {
+      seeLinkageEvidence();
+    }
+  else if (action == REMOVELINKAGEACTION) 
     {
       removeLinkage();
     }
@@ -9648,6 +9652,29 @@ void EventGraphWidget::processLinkageContextMenu(const QString &action)
     }
 }
 
+void EventGraphWidget::seeLinkageEvidence()
+{
+ if (scene->selectedItems().size() == 1) 
+    {
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
+      if (linkage)
+	{
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage);
+	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage);
+	  int tail = startIncidentNode->getId();
+	  int head = endIncidentNode->getId();
+	  QString type = linkage->getType();
+	  QString coder = _selectedCoder;
+	  if (linkage->getPenStyle() == 4)
+	    {
+	      coder = _selectedCompare;
+	    }
+	  QPointer<EvidenceDialog> evidenceDialog = new EvidenceDialog(tail, head, type, coder, this);
+	  evidenceDialog->exec();
+	}
+    }
+}
+
 void EventGraphWidget::removeLinkage() 
 {
   if (scene->selectedItems().size() == 1) 
@@ -9662,6 +9689,13 @@ void EventGraphWidget::removeLinkage()
 	  QString type = linkage->getType();
 	  QSqlQuery *query =  new QSqlQuery;
 	  query->prepare("DELETE FROM linkages "
+			 "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", head);
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", type);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources "
 			 "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
@@ -9700,6 +9734,14 @@ void EventGraphWidget::removeNormalLinkage()
 		  QString type = linkage->getType();
 		  QSqlQuery *query =  new QSqlQuery;
 		  query->prepare("DELETE FROM linkages "
+				 "WHERE tail = :tail AND head = :head "
+				 "AND coder = :coder AND type = :type");
+		  query->bindValue(":tail", tail);
+		  query->bindValue(":head", head);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->bindValue(":type", type);
+		  query->exec();
+		  query->prepare("DELETE FROM linkages_sources "
 				 "WHERE tail = :tail AND head = :head "
 				 "AND coder = :coder AND type = :type");
 		  query->bindValue(":tail", tail);

@@ -45,6 +45,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "HierarchyGraphWidget.h"
 #include "RawAttributesTable.h"
 #include "RawRelationshipsTable.h"
+#include "RawLinkagesTable.h"
 #include "IncidentsAttributesTable.h"
 #include "EntitiesAttributesTable.h"
 #include "MissingAttributesTable.h"
@@ -82,6 +83,7 @@ private slots:
   void switchToHierarchyView(AbstractNode *selectedAbstractNode);
   void switchToRawAttributesTableView();
   void switchToRawRelationshipsTableView();
+  void switchToRawLinkagesTableView();
   void switchToIncidentsAttributesTableView();
   void switchToEntitiesAttributesTableView();
   void switchToMissingAttributesTableView();
@@ -123,6 +125,7 @@ private:
   QPointer<QWidget> hierarchyGraphWidget;
   QPointer<QWidget> rawAttributesTableWidget;
   QPointer<QWidget> rawRelationshipsTableWidget;
+  QPointer<QWidget> rawLinkagesTableWidget;
   QPointer<QWidget> incidentsAttributesTableWidget;
   QPointer<QWidget> entitiesAttributesTableWidget;
   QPointer<QWidget> missingAttributesTableWidget;
@@ -157,6 +160,7 @@ private:
   QPointer<QAction> occurrenceGraphViewAct;
   QPointer<QAction> rawAttributesTableViewAct;
   QPointer<QAction> rawRelationshipsTableViewAct;
+  QPointer<QAction> rawLinkagesTableViewAct;
   QPointer<QAction> incidentsAttributesTableViewAct;
   QPointer<QAction> entitiesAttributesTableViewAct;
   QPointer<QAction> missingAttributesTableViewAct;

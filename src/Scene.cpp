@@ -2283,35 +2283,40 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  linkage->setSelected(true);
 	  QMenu *menu = new QMenu;
-	  QAction *action1 = new QAction(REMOVELINKAGEACTION, this);
-	  QAction *action2 = new QAction(KEEPLINKAGEACTION, this);
-	  QAction *action3 = new QAction(ACCEPTLINKAGEACTION, this);
-	  QAction *action4 = new QAction(REJECTLINKAGEACTION, this);
-	  QAction *action5 = new QAction(IGNOREMEACTION, this);
-	  QAction *action6 = new QAction(REMOVENORMALLINKAGEACTION, this);
-	  QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
+	  QAction *action1 = new QAction(SEELINKAGEEVIDENCEACTION, this);
+	  QAction *action2 = new QAction(REMOVELINKAGEACTION, this);
+	  QAction *action3 = new QAction(KEEPLINKAGEACTION, this);
+	  QAction *action4 = new QAction(ACCEPTLINKAGEACTION, this);
+	  QAction *action5 = new QAction(REJECTLINKAGEACTION, this);
+	  QAction *action6 = new QAction(IGNOREMEACTION, this);
+	  QAction *action7 = new QAction(REMOVENORMALLINKAGEACTION, this);
+	  QAction *action8 = new QAction(CHANGECOMMENTACTION, this);
 	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getStart());
 	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getEnd());
 	  if (linkage->getPenStyle() == 3) 
 	    {
 	      menu->addAction(action1);
 	      menu->addAction(action2);
+	      menu->addAction(action3);
 	    }
 	  else if (linkage->getPenStyle() == 4) 
 	    {
-	      menu->addAction(action3);
+	      menu->addAction(action1);
 	      menu->addAction(action4);
+	      menu->addAction(action5);
 	    }
 	  else if (linkage->getPenStyle() == 2) 
 	    {
 	      menu->addAction(action1);
 	      menu->addAction(action2);
-	      menu->addAction(action5);
+	      menu->addAction(action3);
+	      menu->addAction(action6);
 	    }
 	  else if (linkage->getPenStyle() == 1 && startIncidentNode && endIncidentNode) 
 	    {
-	      menu->addAction(action6);
+	      menu->addAction(action1);
 	      menu->addAction(action7);
+	      menu->addAction(action8);
 	    }
 	  if (QAction *action = menu->exec(event->screenPos())) 
 	    {
@@ -2324,6 +2329,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action5;
 	  delete action6;
 	  delete action7;
+	  delete action8;
 	  delete menu;
 	}
       else if (node) 

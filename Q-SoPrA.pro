@@ -57,6 +57,7 @@ HEADERS += include/AbstractionDialog.h \
            include/EventSequenceDatabase.h \
            include/EventTableModel.h \
            include/EventTextDialog.h \
+           include/EvidenceDialog.h \
            include/ExportTransitionMatrixDialog.h \
            include/GuideLine.h \
            include/GraphicsView.h \
@@ -92,6 +93,7 @@ HEADERS += include/AbstractionDialog.h \
            include/QueryModel.h \
            include/RawAttributesTable.h \
            include/RawRelationshipsTable.h \
+           include/RawLinkagesTable.h \
            include/RecordDialog.h \
            include/RectObject.h \
            include/RelationalTable.h \
@@ -149,6 +151,7 @@ SOURCES += main.cpp \
            src/EventSequenceDatabase.cpp \
            src/EventTableModel.cpp \
            src/EventTextDialog.cpp \
+           src/EvidenceDialog.cpp \
            src/ExportTransitionMatrixDialog.cpp \
            src/GuideLine.cpp \
            src/GraphicsView.cpp \
@@ -184,6 +187,7 @@ SOURCES += main.cpp \
            src/QueryModel.cpp \
            src/RawAttributesTable.cpp \
            src/RawRelationshipsTable.cpp \
+           src/RawLinkagesTable.cpp \
            src/RecordDialog.cpp \
            src/RectObject.cpp \
            src/RelationalTable.cpp \

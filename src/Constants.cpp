@@ -52,6 +52,7 @@ QString SETWIDTHACTION = "Set width";
 QString RECOLOREVENTSACTION = "Recolor selected events";
 QString RECOLORLABELSACTION = "Recolor selected labels";
 QString COLORLINEAGEACTION = "Color lineage";
+QString SEELINKAGEEVIDENCEACTION = "See linkage evidence";
 QString REMOVELINKAGEACTION = "Remove linkage";
 QString KEEPLINKAGEACTION = "Keep linkage";
 QString ACCEPTLINKAGEACTION = "Accept linkage";

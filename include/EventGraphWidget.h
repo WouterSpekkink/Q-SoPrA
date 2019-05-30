@@ -75,6 +75,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "EventTextDialog.h"
 #include "AttributeCheckBoxDialog.h"
 #include "GuideLine.h"
+#include "EvidenceDialog.h"
 
 // Need a forward declaration here
 class AttributesWidget;
@@ -239,6 +240,7 @@ private slots:
   void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void setEventWidth();
   void processLinkageContextMenu(const QString &action);
+  void seeLinkageEvidence();
   void removeLinkage();
   void keepLinkage();
   void acceptLinkage();
@@ -462,22 +464,22 @@ private:
   QString _selectedCoder;
   QString _selectedCompare;
   AbstractNode* _selectedAbstractNode;
-  qreal _distance;
   int _vectorPos;
   int _selectedIncident;
   int _labelSize;
+  int _currentPenStyle;
+  int _currentPenWidth;
+  int _currentTimeLineWidth;
   bool _labelsVisible;
   bool _commentBool;
   bool _contracted;
+  qreal _distance;
   qreal _currentMajorInterval;
   qreal _currentMinorDivision;
-  int _currentPenStyle;
-  int _currentPenWidth;
-  QColor _currentLineColor;
-  QColor _currentFillColor;
   qreal _currentMajorTickSize;
   qreal _currentMinorTickSize;
-  int _currentTimeLineWidth;
+  QColor _currentLineColor;
+  QColor _currentFillColor;
   QColor _currentTimeLineColor;
 
   // Private data vectors

@@ -111,6 +111,10 @@ private slots:
   void pause(int time);
   void setLink();
   void unsetLink();
+  void sourceTexts(const int tail, const int head);
+  void highlightText();
+  void selectTailText();
+  void selectHeadText();
   void findPastPaths(QSet<int> *pIgnore, int currentIncident);
   void findFuturePaths(QSet<int> *pIgnore, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
