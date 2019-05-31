@@ -2074,22 +2074,22 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       if (incident && !incident->isCopy()) 
 	{
 	  QMenu *menu = new QMenu();
-	  QMenu *colligationMenu = new QMenu("Abstraction");
+	  QMenu *abstractionMenu = new QMenu("Abstraction");
 	  QMenu *colorMenu = new QMenu("Colouring");
 	  QMenu *posMenu = new QMenu("Positioning");
 	  QMenu *selectionMenu = new QMenu("Selection");
 	  QMenu *linkageMenu = new QMenu("Linkages");
 	  QMenu *descMenu = new QMenu("Description");
-	  menu->addMenu(colligationMenu);
+	  menu->addMenu(abstractionMenu);
 	  menu->addMenu(colorMenu);
 	  menu->addMenu(posMenu);
 	  menu->addMenu(selectionMenu);
 	  menu->addMenu(linkageMenu);
 	  menu->addMenu(descMenu);
-	  QAction *action1 = new QAction(COLLIGATEACTION, this);
-	  colligationMenu->addAction(action1);
+	  QAction *action1 = new QAction(ABSTRACTACTION, this);
+	  abstractionMenu->addAction(action1);
 	  QAction *action2 = new QAction(MAKEABSTRACTNODEACTION, this);
-	  colligationMenu->addAction(action2);
+	  abstractionMenu->addAction(action2);
 	  QAction *action3= new QAction(RECOLOREVENTSACTION, this);
 	  colorMenu->addAction(action3);
 	  QAction *action4 = new QAction(RECOLORLABELSACTION, this);
@@ -2175,7 +2175,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action15;
 	  delete action16;
 	  delete menu;
-	  delete colligationMenu;
+	  delete abstractionMenu;
 	  delete colorMenu;
 	  delete posMenu;
 	  delete selectionMenu;
@@ -2185,20 +2185,20 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       else if (abstractNode && !abstractNode->isCopy()) 
 	{
 	  QMenu *menu = new QMenu;
-	  QMenu *colligationMenu = new QMenu("Abstraction");
+	  QMenu *abstractionMenu = new QMenu("Abstraction");
 	  QMenu *colorMenu = new QMenu("Colouring");
 	  QMenu *posMenu = new QMenu("Positioning");
 	  QMenu *selectionMenu = new QMenu("Selection");
 	  QMenu *descMenu = new QMenu("Description");
-	  menu->addMenu(colligationMenu);
+	  menu->addMenu(abstractionMenu);
 	  menu->addMenu(colorMenu);
 	  menu->addMenu(posMenu);
 	  menu->addMenu(selectionMenu);
 	  menu->addMenu(descMenu);
-	  QAction *action1 = new QAction(COLLIGATEACTION, this);
-	  colligationMenu->addAction(action1);
+	  QAction *action1 = new QAction(ABSTRACTACTION, this);
+	  abstractionMenu->addAction(action1);
 	  QAction *action2 = new QAction(DISAGGREGATEACTION, this);
-	  colligationMenu->addAction(action2);
+	  abstractionMenu->addAction(action2);
 	  QAction *action3= new QAction(RECOLOREVENTSACTION, this);
 	  colorMenu->addAction(action3);
 	  QAction *action4 = new QAction(RECOLORLABELSACTION, this);
@@ -2272,7 +2272,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action14;
 	  delete action15;
 	  delete menu;
-	  delete colligationMenu;
+	  delete abstractionMenu;
 	  delete colorMenu;
 	  delete posMenu;
 	  delete selectionMenu;
@@ -2283,34 +2283,37 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  clearSelection();
 	  linkage->setSelected(true);
 	  QMenu *menu = new QMenu;
-	  QAction *action1 = new QAction(REMOVELINKAGEACTION, this);
-	  QAction *action2 = new QAction(KEEPLINKAGEACTION, this);
-	  QAction *action3 = new QAction(ACCEPTLINKAGEACTION, this);
-	  QAction *action4 = new QAction(REJECTLINKAGEACTION, this);
-	  QAction *action5 = new QAction(IGNOREMEACTION, this);
-	  QAction *action6 = new QAction(REMOVENORMALLINKAGEACTION, this);
-	  QAction *action7 = new QAction(CHANGECOMMENTACTION, this);
+	  QAction *action1 = new QAction(SEELINKAGEEVIDENCEACTION, this);
+	  QAction *action2 = new QAction(REMOVELINKAGEACTION, this);
+	  QAction *action3 = new QAction(KEEPLINKAGEACTION, this);
+	  QAction *action4 = new QAction(ACCEPTLINKAGEACTION, this);
+	  QAction *action5 = new QAction(REJECTLINKAGEACTION, this);
+	  QAction *action6 = new QAction(IGNOREMEACTION, this);
+	  QAction *action7 = new QAction(REMOVENORMALLINKAGEACTION, this);
 	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getStart());
 	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getEnd());
 	  if (linkage->getPenStyle() == 3) 
 	    {
 	      menu->addAction(action1);
 	      menu->addAction(action2);
+	      menu->addAction(action3);
 	    }
 	  else if (linkage->getPenStyle() == 4) 
 	    {
-	      menu->addAction(action3);
+	      menu->addAction(action1);
 	      menu->addAction(action4);
+	      menu->addAction(action5);
 	    }
 	  else if (linkage->getPenStyle() == 2) 
 	    {
 	      menu->addAction(action1);
 	      menu->addAction(action2);
-	      menu->addAction(action5);
+	      menu->addAction(action3);
+	      menu->addAction(action6);
 	    }
 	  else if (linkage->getPenStyle() == 1 && startIncidentNode && endIncidentNode) 
 	    {
-	      menu->addAction(action6);
+	      menu->addAction(action1);
 	      menu->addAction(action7);
 	    }
 	  if (QAction *action = menu->exec(event->screenPos())) 

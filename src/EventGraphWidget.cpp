@@ -3174,19 +3174,19 @@ void EventGraphWidget::plotEdges(QString type)
 
 void EventGraphWidget::layoutGraph() 
 {
-  QVector<IncidentNode *>::iterator it4;
-  for (it4 = _incidentNodeVector.begin(); it4 != _incidentNodeVector.end(); it4++) 
+  QVector<IncidentNode *>::iterator it;
+  for (it = _incidentNodeVector.begin(); it != _incidentNodeVector.end(); it++) 
     {
-      IncidentNode *current = *it4;
-      QVector<IncidentNode *>::iterator it5;
+      IncidentNode *current = *it;
+      QVector<IncidentNode *>::iterator it2;
       QVector<IncidentNode *> partners;
-      for (it5 = it4 + 1; it5 != _incidentNodeVector.end(); it5++) 
+      for (it2 = it + 1; it2 != _incidentNodeVector.end(); it2++) 
 	{
-	  IncidentNode *second = *it5;
-	  QVectorIterator<Linkage *> it6(_edgeVector);
-	  while (it6.hasNext()) 
+	  IncidentNode *second = *it2;
+	  QVectorIterator<Linkage *> it3(_edgeVector);
+	  while (it3.hasNext()) 
 	    {
-	      Linkage *edge = it6.next();
+	      Linkage *edge = it3.next();
 	      // Basically we just ask whether the current events are linked.
 	      if ((edge->getStart() == current &&
 		   edge->getEnd() == second) ||
@@ -3200,10 +3200,10 @@ void EventGraphWidget::layoutGraph()
       qreal originHeight = current->scenePos().y();
       std::sort(partners.begin(), partners.end(), eventLessThan);
       int partnerCount = partners.size();
-      QVectorIterator<IncidentNode *> it7(partners);
-      while (it7.hasNext()) 
+      QVectorIterator<IncidentNode *> it4(partners);
+      while (it4.hasNext()) 
 	{
-	  IncidentNode *currentPartner = it7.next();
+	  IncidentNode *currentPartner = it4.next();
 	  qreal partnerHeight = originHeight;
 	  if (partners.size() > 1) 
 	    {
@@ -3722,6 +3722,7 @@ void EventGraphWidget::setPlotButtons()
       addLinkageTypeButton->setEnabled(false);
     }
   if (coderComboBox->currentText() != DEFAULT &&
+      coderComboBox->currentText() == _selectedCoder &&
       _presentTypes.contains(typeComboBox->currentText())) 
     {
       compareComboBox->clear();
@@ -4431,10 +4432,10 @@ void EventGraphWidget::saveCurrentPlot()
 		      "VALUES(:plot, :attribute, :abstractnode, :value)");
       QSqlQuery *query3 = new QSqlQuery;
       query3->prepare("INSERT INTO saved_eg_plots_abstract_nodes "
-		      "(plot, eventid, ch_order, colligation, timing, description, comment, width, "
+		      "(plot, eventid, ch_order, abstraction, timing, description, comment, width, "
 		      "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
 		      "red, green, blue, alpha, hidden) "
-		      "VALUES (:plot, :eventid, :ch_order, :colligation, :timing, :description, "
+		      "VALUES (:plot, :eventid, :ch_order, :abstraction, :timing, :description, "
 		      ":comment, :width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
 		      ":red, :green, :blue, :alpha, :hidden)");;
       QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
@@ -4491,7 +4492,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query3->bindValue(":plot", name);
 	  query3->bindValue(":eventid", currentAbstractNode->getId());
 	  query3->bindValue(":ch_order", currentAbstractNode->getOrder());
-	  query3->bindValue(":colligation", currentAbstractNode->getConstraint());
+	  query3->bindValue(":abstraction", currentAbstractNode->getConstraint());
 	  query3->bindValue(":timing", timing);
 	  query3->bindValue(":description", description);
 	  query3->bindValue(":comment", comment);
@@ -5235,7 +5236,7 @@ void EventGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->prepare("SELECT eventid, ch_order, colligation, timing, description, comment, width, "
+      query->prepare("SELECT eventid, ch_order, abstraction, timing, description, comment, width, "
 		     "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
 		     "hidden "
 		     "FROM saved_eg_plots_abstract_nodes "
@@ -6494,7 +6495,7 @@ void EventGraphWidget::setLinkageButtons(QTableWidgetItem *item)
 	      break;
 	    }
 	}
-      if (_presentTypes.size() > 1) 
+      if (_presentTypes.size() > 0) 
 	{
 	  removeLinkageTypeButton->setEnabled(true);
 	}
@@ -6878,7 +6879,6 @@ void EventGraphWidget::showLinkageType()
 
 void EventGraphWidget::removeLinkageType() 
 {
-  setChangeLabel();
   QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
   QVectorIterator<Linkage*> it (_edgeVector);
   while (it.hasNext()) 
@@ -6910,9 +6910,19 @@ void EventGraphWidget::removeLinkageType()
 	  _presentTypes.removeOne(type);
 	}
     }
-  setHeights();
-  setPlotButtons();
-  disableLinkageButtons();
+  if (_presentTypes.size() > 0)
+    {
+      setChangeLabel();
+      setHeights();
+      setPlotButtons();
+      disableLinkageButtons();
+    }
+  else
+    {
+      cleanUp();
+      changeLabel->setText("");
+      removeLinkageTypeButton->setEnabled(false);
+    }
 }
 
 void EventGraphWidget::toggleLabels() 
@@ -7119,10 +7129,21 @@ void EventGraphWidget::setVisibility()
 	  current->hide();
 	}
     }
+  QVector<Linkage*> tempEdges;
   QVectorIterator<Linkage*> it3(_edgeVector);
   while (it3.hasNext()) 
     {
-      Linkage *currentEdge = it3.next();
+      tempEdges.push_back(it3.next());
+    }
+  QVectorIterator<Linkage*> it4(_compareVector);
+  while (it4.hasNext()) 
+    {
+      tempEdges.push_back(it4.next());
+    }
+  QVectorIterator<Linkage*> it5(tempEdges);
+  while (it5.hasNext())
+    {
+      Linkage *currentEdge = it5.next();
       if (currentEdge->isMassHidden()) 
 	{
 	  currentEdge->hide();
@@ -7141,10 +7162,10 @@ void EventGraphWidget::setVisibility()
 	    }
 	}
     }
-  QVectorIterator<IncidentNodeLabel*> it4(_incidentNodeLabelVector);
-  while (it4.hasNext()) 
+  QVectorIterator<IncidentNodeLabel*> it6(_incidentNodeLabelVector);
+  while (it6.hasNext()) 
     {
-      IncidentNodeLabel *currentText = it4.next();
+      IncidentNodeLabel *currentText = it6.next();
       IncidentNode *currentParent = currentText->getNode();
       if (!(currentParent->isVisible())) 
 	{
@@ -7158,10 +7179,10 @@ void EventGraphWidget::setVisibility()
 	    }
 	}
     }
-  QVectorIterator<AbstractNodeLabel*> it5(_abstractNodeLabelVector);
-  while (it5.hasNext()) 
+  QVectorIterator<AbstractNodeLabel*> it7(_abstractNodeLabelVector);
+  while (it7.hasNext()) 
     {
-      AbstractNodeLabel *currentText = it5.next();
+      AbstractNodeLabel *currentText = it7.next();
       AbstractNode *currentParent = currentText->getAbstractNode();
       if (!(currentParent->isVisible())) 
 	{
@@ -7744,9 +7765,9 @@ void EventGraphWidget::exportEdges()
 void EventGraphWidget::processIncidentNodeContextMenu(const QString &action) 
 {
   retrieveData();
-  if (action == COLLIGATEACTION) 
+  if (action == ABSTRACTACTION) 
     {
-      colligateEvents();
+      abstractEvents();
     }
   else if (action == DISAGGREGATEACTION) 
     {
@@ -7754,7 +7775,7 @@ void EventGraphWidget::processIncidentNodeContextMenu(const QString &action)
     }
   else if (action == MAKEABSTRACTNODEACTION) 
     {
-      colligateEvents();
+      abstractEvents();
     }
   else if (action == RECOLOREVENTSACTION) 
     {
@@ -7814,7 +7835,7 @@ void EventGraphWidget::processIncidentNodeContextMenu(const QString &action)
     }
 }
 
-void EventGraphWidget::colligateEvents() 
+void EventGraphWidget::abstractEvents() 
 {
   if (_currentData.size() > 0) 
     {
@@ -9618,7 +9639,11 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
 
 void EventGraphWidget::processLinkageContextMenu(const QString &action) 
 {
-  if (action == REMOVELINKAGEACTION) 
+  if (action == SEELINKAGEEVIDENCEACTION)
+    {
+      seeLinkageEvidence();
+    }
+  else if (action == REMOVELINKAGEACTION) 
     {
       removeLinkage();
     }
@@ -9642,9 +9667,30 @@ void EventGraphWidget::processLinkageContextMenu(const QString &action)
     {
       removeNormalLinkage();
     }
-  else if (action == CHANGECOMMENTACTION) 
+}
+
+void EventGraphWidget::seeLinkageEvidence()
+{
+ if (scene->selectedItems().size() == 1) 
     {
-      changeLinkageComment();
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
+      if (linkage)
+	{
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
+	  int tail = startIncidentNode->getId();
+	  int head = endIncidentNode->getId();
+	  QString type = linkage->getType();
+	  QString coder = _selectedCoder;
+	  if (linkage->getPenStyle() == 4)
+	    {
+	      coder = _selectedCompare;
+	    }
+	  QPointer<EvidenceDialog> evidenceDialog = new EvidenceDialog(tail, head, type, coder, this);
+	  evidenceDialog->exec();
+	  QString comment = evidenceDialog->getComment();
+	  linkage->setToolTip(comment);
+	}
     }
 }
 
@@ -9662,6 +9708,13 @@ void EventGraphWidget::removeLinkage()
 	  QString type = linkage->getType();
 	  QSqlQuery *query =  new QSqlQuery;
 	  query->prepare("DELETE FROM linkages "
+			 "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", head);
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", type);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources "
 			 "WHERE tail = :tail AND head = :head AND coder = :coder AND type = :type");
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
@@ -9707,6 +9760,14 @@ void EventGraphWidget::removeNormalLinkage()
 		  query->bindValue(":coder", _selectedCoder);
 		  query->bindValue(":type", type);
 		  query->exec();
+		  query->prepare("DELETE FROM linkages_sources "
+				 "WHERE tail = :tail AND head = :head "
+				 "AND coder = :coder AND type = :type");
+		  query->bindValue(":tail", tail);
+		  query->bindValue(":head", head);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->bindValue(":type", type);
+		  query->exec();
 		  delete query;
 		  delete linkage;
 		  _edgeVector.removeOne(linkage);
@@ -9731,111 +9792,6 @@ void EventGraphWidget::removeNormalLinkage()
 	}
     }
   setHeights();
-}
-
-void EventGraphWidget::changeLinkageComment() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
-      int tail = 0;
-      int head = 0;
-      QString type = linkage->getType();
-      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
-      IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
-      AbstractNode *startAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getStart());
-      AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getEnd());
-      if (startIncidentNode) 
-	{
-	  tail = startIncidentNode->getId();
-	}
-      else if (startAbstractNode) 
-	{
-	  tail = startAbstractNode->getId();
-	}
-      if (endIncidentNode) 
-	{
-	  head = endIncidentNode->getId();
-	}
-      else if (endAbstractNode) 
-	{
-	  head = endAbstractNode->getId();
-	}
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
-      query->bindValue(":id", tail);
-      query->exec();
-      query->first();
-      tail = query->value(0).toInt();
-      query->bindValue(":id", head);
-      query->exec();
-      query->first();
-      head = query->value(0).toInt();
-      query->prepare("SELECT comment FROM linkage_comments "
-		     "WHERE type = :type AND tail = :tail AND head = :head");
-      query->bindValue(":type", type);
-      query->bindValue(":tail", tail);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      QString comment = "";
-      bool empty = true;
-      if (!query->isNull(0)) 
-	{
-	  comment = query->value(0).toString();
-	  empty = false;
-	}
-      if (linkage) 
-	{
-	  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-	  textDialog->submitText(comment);
-	  textDialog->setWindowTitle("Set comment");
-	  textDialog->setLabel("Comment:");
-	  textDialog->setEmptyAllowed(true);
-	  textDialog->exec();
-	  if (textDialog->getExitStatus() == 0) 
-	    {
-	      QString newComment = textDialog->getText();
-	      if (newComment != "") 
-		{
-		  if (empty) 
-		    {
-		      query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
-				     "VALUES (:comment, :coder, :type, :tail, :head)");
-		    }
-		  else 
-		    {
-		      query->prepare("UPDATE linkage_comments "
-				     "SET comment = :comment, coder = :coder "
-				     "WHERE type = :type AND tail = :tail AND head = :head");
-		    }
-		  query->bindValue(":comment", newComment);
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", type);
-		  query->bindValue(":tail", tail);
-		  query->bindValue(":head", head);
-		  query->exec();
-		  QString toolTip = breakString(_selectedCoder + " - " + newComment);
-		  linkage->setToolTip(toolTip);
-		}
-	      else 
-		{
-		  if (empty) 
-		    {
-		      query->prepare("DELETE FROM linkage_comments "
-				     "WHERE type = :type AND tail = :tail AND head = :head");
-		      query->bindValue(":type", type);
-		      query->bindValue(":tail", tail);
-		      query->bindValue(":head", head);
-		      query->exec();
-		      QString toolTip = "no comment";
-		      linkage->setToolTip(toolTip);
-		    }
-		}
-	    }
-	}
-      delete query;
-    }
 }
 
 void EventGraphWidget::ignoreLinkage() 

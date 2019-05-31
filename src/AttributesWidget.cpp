@@ -1126,9 +1126,9 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
 		     "WHERE attribute = :att AND inc = :incident AND source_text = :text");
-      query->bindValue("att", attribute);
-      query->bindValue("inc", incident);
-      query->bindValue("text", sourceText);
+      query->bindValue(":att", attribute);
+      query->bindValue(":inc", incident);
+      query->bindValue(":text", sourceText);
       query->exec();
       query->first();
       if (query->isNull(0)) 

@@ -27,14 +27,15 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   _codingType = MANUAL;
   _selectedType = "";
   _selectedDirection = "";
-  _selectedCoder == "";
+  _selectedCoder = "";
   _tailDescriptionFilter = "";
   _tailRawFilter = "";
   _tailCommentFilter = "";
   _headDescriptionFilter = "";
   _headRawFilter = "";
   _headCommentFilter = "";
-
+  _originalLinkageType = "";
+  _originalCodingMode = "";
   _commentBool = false;
   _linkageCommentBool = false;
   
@@ -125,6 +126,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   selectTypeButton = new QPushButton(tr("Load selected linkage"), this);
   selectTypeButton->setStyleSheet("QPushButton {font-weight: bold}");
   selectTypeButton->setEnabled(false);
+  switchLinkageTypeButton = new QPushButton(tr("Switch linkage type"), this);
+  switchLinkageTypeButton->setEnabled(false);
   manualCodingButton = new QPushButton(tr("Manual coding"), this);
   manualCodingButton->setCheckable(true);
   manualCodingButton->setChecked(true);
@@ -165,10 +168,16 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   setLinkButton->setEnabled(false);
   unsetLinkButton =new QPushButton(tr("Not linked"), this);
   unsetLinkButton->setEnabled(false);
-
+  markEvidenceButton = new QPushButton(tr("Mark evidence"), this);
+  markEvidenceButton->setEnabled(false);
+  clearEvidenceButton = new QPushButton(tr("Clear evidence"), this);
+  clearEvidenceButton->setEnabled(false);
+  
   linkageCommentField->installEventFilter(this);
   headCommentField->installEventFilter(this);
   tailCommentField->installEventFilter(this);
+  tailRawField->viewport()->installEventFilter(this);
+  headRawField->viewport()->installEventFilter(this);
   setButtons(false);
   
   connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
@@ -180,6 +189,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editLinkageType()));
   connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
   connect(selectTypeButton, SIGNAL(clicked()), this, SLOT(setLinkageType()));
+  connect(switchLinkageTypeButton, SIGNAL(clicked()), this, SLOT(switchLinkageType()));
   connect(manualCodingButton, SIGNAL(clicked()), this, SLOT(checkManualButton()));
   connect(assistedCodingButton, SIGNAL(clicked()), this, SLOT(checkAssistedButton()));
   connect(tailDescriptionFilterField, SIGNAL(textChanged(const QString &)),
@@ -221,6 +231,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   connect(headCommentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(setLinkButton, SIGNAL(clicked()), this, SLOT(setLink()));
   connect(unsetLinkButton, SIGNAL(clicked()), this, SLOT(unsetLink()));
+  connect(markEvidenceButton, SIGNAL(clicked()), this, SLOT(markEvidence()));
+  connect(clearEvidenceButton, SIGNAL(clicked()), this, SLOT(clearEvidence()));
   connect(linkageCommentField, SIGNAL(textChanged()), this, SLOT(setLinkageCommentBool()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 
@@ -367,6 +379,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   linkageQuestionFeedbackLabel->setMinimumWidth(180);
   middleLayout->setAlignment(linkageQuestionFeedbackLabel, Qt::AlignHCenter | Qt::AlignVCenter);
   middleLayout->addSpacerItem(new QSpacerItem(200, 40));
+  middleLayout->addWidget(switchLinkageTypeButton);
+  middleLayout->setAlignment(switchLinkageTypeButton, Qt::AlignHCenter | Qt::AlignVCenter);
   middleLayout->addSpacerItem(new QSpacerItem(240, 40));
   middleLayout->addWidget(linkageFeedbackLabel);
   linkageFeedbackLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -378,6 +392,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   middleLayout->addWidget(unsetLinkButton);
   unsetLinkButton->setMaximumWidth(unsetLinkButton->sizeHint().width());
   middleLayout->setAlignment(unsetLinkButton, Qt::AlignHCenter | Qt::AlignVCenter);
+  middleLayout->addWidget(markEvidenceButton);
+  markEvidenceButton->setMaximumWidth(markEvidenceButton->sizeHint().width());
+  middleLayout->setAlignment(markEvidenceButton, Qt::AlignHCenter | Qt::AlignVCenter);
+  middleLayout->addWidget(clearEvidenceButton);
+  clearEvidenceButton->setMaximumWidth(clearEvidenceButton->sizeHint().width());
+  middleLayout->setAlignment(clearEvidenceButton, Qt::AlignHCenter | Qt::AlignVCenter);
   fieldsLayout->addLayout(middleLayout);
   QPointer<QFrame> sepLineRight = new QFrame();
   sepLineRight->setFrameShape(QFrame::VLine);
@@ -563,6 +583,9 @@ void LinkagesWidget::removeCoder()
 	  query->prepare("DELETE FROM linkages WHERE coder = :name");
 	  query->bindValue(":name", coderComboBox->currentText());
 	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources WHERE coder = :name");
+	  query->bindValue(":name", coderComboBox->currentText());
+	  query->exec();
 	  query->prepare("DELETE FROM coders_to_linkage_types WHERE coder = :name");
 	  query->bindValue(":name", coderComboBox->currentText());
 	  query->exec();
@@ -680,6 +703,9 @@ void LinkagesWidget::removeLinkageType()
 	  query->prepare("DELETE FROM linkages WHERE type = :name");
 	  query->bindValue(":name", typeComboBox->currentText());
 	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources WHERE type = :name");
+	  query->bindValue(":name", typeComboBox->currentText());
+	  query->exec();
 	  query->prepare("DELETE FROM coders_to_linkage_types WHERE type = :name");
 	  query->bindValue(":name", typeComboBox->currentText());
 	  query->exec();
@@ -737,7 +763,7 @@ void LinkagesWidget::retrieveCoders()
 void LinkagesWidget::retrieveLinkages() 
 {
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name, description FROM linkage_types");
+  query->exec("SELECT name, description FROM linkage_types ORDER BY name ASC");
   while (query->next()) 
     {
       QString name = query->value(0).toString();
@@ -788,6 +814,7 @@ void LinkagesWidget::setLinkageType()
   if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) 
     {
       _selectedType = typeComboBox->currentText();
+      _originalLinkageType = _selectedType;
       _selectedCoder = coderComboBox->currentText();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT coder, type FROM coders_to_linkage_types "
@@ -842,8 +869,138 @@ void LinkagesWidget::setLinkageType()
     }
 }
 
+void LinkagesWidget::switchLinkageType()
+{
+  QSqlQuery *query = new QSqlQuery;
+  if (_selectedType != _originalLinkageType)
+    {
+      _selectedType = _originalLinkageType;
+      _codingType = _originalCodingMode;
+      query->prepare("SELECT description, question, direction "
+		     "FROM linkage_types WHERE name = :name");
+      query->bindValue(":name", _selectedType);
+      query->exec();
+      query->first();
+      QString description = query->value(0).toString();
+      QString question = query->value(1).toString();
+      QString direction = query->value(2).toString();
+      QString label = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
+      linkageTypeFeedbackLabel->setText(label);
+      QString toolTip = breakString(description);
+      linkageTypeFeedbackLabel->setToolTip(toolTip);
+      linkageQuestionFeedbackLabel->setText(question);
+      linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
+						     sizeHint().height());
+      
+      retrieveData();
+      switchLinkageTypeButton->setText("Switch linkage type");
+      setButtons(true);
+    }
+  else
+    {
+      QVector<QString> types;
+      query->exec("SELECT name, description FROM linkage_types ORDER BY name ASC");
+      while (query->next()) 
+	{
+	  QString currentType = query->value(0).toString();
+	  if (currentType != _selectedType)
+	    {
+	      types.push_back(currentType);
+	    }
+	}
+      QPointer<ComboBoxDialog> dialog = new ComboBoxDialog(this, types);
+      dialog->exec();
+      if (dialog->getExitStatus() == 0)
+	{
+	  QString newType = dialog->getSelection();
+	  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", _selectedType);
+	  query->exec();
+	  query->first();
+	  int tailIndex = query->value(0).toInt();
+	  int headIndex = query->value(1).toInt();
+	  query->prepare("SELECT coder, type FROM coders_to_linkage_types "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", newType);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0)) 
+	    {
+	      QSqlQuery *query2 = new QSqlQuery;
+	      query2->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	      query2->bindValue(":type", newType);
+	      query2->exec();
+	      query2->first();
+	      QString direction = query2->value(0).toString();
+	      query2->prepare("INSERT INTO coders_to_linkage_types (coder, type, tail, head) "
+			      "VALUES (:coder, :type, :tail, :head)");
+	      query2->bindValue(":coder", _selectedCoder);
+	      query2->bindValue(":type", newType);
+	      if (direction == PAST) 
+		{
+		  if (_selectedDirection == PAST)
+		    {
+		      query2->bindValue(":tail", tailIndex);
+		      query2->bindValue(":head", headIndex);
+		    }
+		  else
+		    {
+		      query2->bindValue(":tail", headIndex);
+		      query2->bindValue(":head", tailIndex);
+		    }
+		}
+	      else if (direction == FUTURE) 
+		{
+		  if (_selectedDirection == FUTURE)
+		    {
+		      query2->bindValue(":tail", tailIndex);
+		      query2->bindValue(":head", headIndex);
+		    }
+		  else
+		    {
+		      query2->bindValue(":tail", headIndex);
+		      query2->bindValue(":head", tailIndex);
+		    }
+		}
+	      query2->exec();
+	      delete query2;
+	    }
+	  _codingType = MANUAL;
+	  _selectedType =  newType;
+	  query->prepare("SELECT description, question "
+			 "FROM linkage_types WHERE name = :name");
+	  query->bindValue(":name", _selectedType);
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  QString question = query->value(1).toString();
+	  QString label = "<FONT SIZE = 3>--[" + _selectedType + "]--></FONT>";
+	  linkageTypeFeedbackLabel->setText(label);
+	  QString toolTip = breakString(description);
+	  linkageTypeFeedbackLabel->setToolTip(toolTip);
+	  linkageQuestionFeedbackLabel->setText(question);
+	  linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
+							 sizeHint().height());
+	  setButtons(false);
+	  setLinkButton->setEnabled(true);
+	  unsetLinkButton->setEnabled(true);
+	  switchLinkageTypeButton->setEnabled(true);
+	  switchLinkageTypeButton->setText("Switch back");
+	  retrieveData();
+	}
+      delete dialog;
+    }
+  delete query;
+}
+
 void LinkagesWidget::retrieveData() 
 {
+  _markedTailEvidence.clear();
+  _markedHeadEvidence.clear();
+  markEvidenceButton->setEnabled(false);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
 		 "WHERE coder = :coder AND type = :type");
@@ -853,6 +1010,7 @@ void LinkagesWidget::retrieveData()
   query->first();
   int tailIndex = 0;
   int headIndex = 0;
+  
   if (!(query->isNull(0))) 
     {
       tailIndex = query->value(0).toInt();
@@ -999,12 +1157,32 @@ void LinkagesWidget::retrieveData()
       linkageCommentField->blockSignals(false);
       linkageCommentField->setToolTip("No comment available");
     }
+  query->prepare("SELECT istail, source_text FROM linkages_sources "
+		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+  query->bindValue(":tail", tailId);
+  query->bindValue(":head", headId);
+  query->bindValue(":type", _selectedType);
+  query->bindValue(":coder", _selectedCoder);
+  query->exec();
+  while (query->next())
+    {
+      if (query->value(0).toInt() == 1)
+	{
+	  _markedTailEvidence.push_back(query->value(1).toString());
+	}
+      else
+	{
+	  _markedHeadEvidence.push_back(query->value(1).toString());
+	}
+    }
+  highlightText();
   delete query;
 }
 
 void LinkagesWidget::checkManualButton() 
 {
   _codingType = MANUAL;
+  _originalCodingMode = MANUAL;
   manualCodingButton->setChecked(true);
   assistedCodingButton->setChecked(false);
   QSqlQuery *query = new QSqlQuery;
@@ -1055,6 +1233,7 @@ void LinkagesWidget::checkManualButton()
 void LinkagesWidget::checkAssistedButton() 
 {
   _codingType = ASSISTED;
+  _originalCodingMode = ASSISTED;
   assistedCodingButton->setChecked(true);
   manualCodingButton->setChecked(false);
   unsetLinkButton->setEnabled(true);
@@ -1093,6 +1272,21 @@ void LinkagesWidget::setHeadCommentFilter(const QString &text)
 
 void LinkagesWidget::previousTailDescription() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_tailDescriptionFilter != "") 
@@ -1156,6 +1350,21 @@ void LinkagesWidget::previousTailDescription()
 
 void LinkagesWidget::nextTailDescription() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_tailDescriptionFilter != "") 
@@ -1219,6 +1428,21 @@ void LinkagesWidget::nextTailDescription()
 
 void LinkagesWidget::previousTailRaw() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_tailRawFilter != "") 
@@ -1282,6 +1506,36 @@ void LinkagesWidget::previousTailRaw()
   
 void LinkagesWidget::nextTailRaw() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
+    if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_tailRawFilter != "") 
@@ -1345,6 +1599,21 @@ void LinkagesWidget::nextTailRaw()
 
 void LinkagesWidget::previousTailComment() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_tailCommentFilter != "") 
@@ -1408,6 +1677,21 @@ void LinkagesWidget::previousTailComment()
 
 void LinkagesWidget::nextTailComment() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_tailCommentFilter != "") 
@@ -1471,6 +1755,21 @@ void LinkagesWidget::nextTailComment()
 
 void LinkagesWidget::previousHeadDescription() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_headDescriptionFilter != "") 
@@ -1546,6 +1845,21 @@ void LinkagesWidget::previousHeadDescription()
 
 void LinkagesWidget::nextHeadDescription() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_headDescriptionFilter != "") 
@@ -1621,6 +1935,21 @@ void LinkagesWidget::nextHeadDescription()
 
 void LinkagesWidget::previousHeadRaw() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_headRawFilter != "") 
@@ -1696,6 +2025,21 @@ void LinkagesWidget::previousHeadRaw()
 
 void LinkagesWidget::nextHeadRaw() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_headRawFilter != "") 
@@ -1771,6 +2115,21 @@ void LinkagesWidget::nextHeadRaw()
 
 void LinkagesWidget::previousHeadComment() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_headCommentFilter != "") 
@@ -1846,6 +2205,21 @@ void LinkagesWidget::previousHeadComment()
 
 void LinkagesWidget::nextHeadComment() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   if (_headCommentFilter != "") 
@@ -1921,6 +2295,21 @@ void LinkagesWidget::nextHeadComment()
 
 void LinkagesWidget::previousTail() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
@@ -1985,6 +2374,21 @@ void LinkagesWidget::previousTail()
 
 void LinkagesWidget::nextTail() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   incidentsModel->select();
@@ -2090,6 +2494,21 @@ void LinkagesWidget::markTail()
 
 void LinkagesWidget::previousMarkedTail() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
@@ -2165,6 +2584,21 @@ void LinkagesWidget::previousMarkedTail()
 
 void LinkagesWidget::nextMarkedTail() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
@@ -2245,6 +2679,21 @@ void LinkagesWidget::nextMarkedTail()
 
 void LinkagesWidget::jumpTo() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   incidentsModel->select();
@@ -2283,6 +2732,21 @@ void LinkagesWidget::jumpTo()
 
 void LinkagesWidget::previousHead() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
@@ -2362,6 +2826,21 @@ void LinkagesWidget::previousHead()
 
 void LinkagesWidget::nextHead() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   incidentsModel->select();
@@ -2463,6 +2942,21 @@ void LinkagesWidget::markHead()
 
 void LinkagesWidget::previousMarkedHead() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
@@ -2542,6 +3036,21 @@ void LinkagesWidget::previousMarkedHead()
 
 void LinkagesWidget::nextMarkedHead() 
 {
+  if (linkageFeedbackLabel->text() == "" &&
+      (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but a linkage was not set. "
+				     "Evidence is not stored for unset linkages.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
   setComments();
   setLinkageComment();
   incidentsModel->select();
@@ -2744,24 +3253,24 @@ void LinkagesWidget::pause(int time)
     #endif*/
 }
 
- void LinkagesWidget::setLink() 
- {
+void LinkagesWidget::setLink() 
+{
   setComments();
   setLinkageComment();
   if (_codingType == MANUAL) 
     {
-  setLinkButton->setEnabled(false);
-  unsetLinkButton->setEnabled(true);
-  unsetLinkButton->setFocus();
-}
+      setLinkButton->setEnabled(false);
+      unsetLinkButton->setEnabled(true);
+      unsetLinkButton->setFocus();
+    }
   incidentsModel->select();
   while (incidentsModel->canFetchMore()) 
     {
-  incidentsModel->fetchMore();
-}
+      incidentsModel->fetchMore();
+    }
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-    "WHERE coder = :coder AND type = :type");
+		 "WHERE coder = :coder AND type = :type");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
   query->exec();
@@ -2783,7 +3292,7 @@ void LinkagesWidget::pause(int time)
   int headId = 0;
   headId = query->value(0).toInt();
   query->prepare("SELECT tail, head FROM linkages "
-    "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", tailId);
   query->bindValue(":head", headId);
   query->bindValue(":type", _selectedType);
@@ -2792,211 +3301,230 @@ void LinkagesWidget::pause(int time)
   query->first();
   if (query->isNull(0)) 
     {
-  query->prepare("INSERT INTO linkages (tail, head, type, coder) "
-    "VALUES (:tail, :head, :type, :coder)");
-  query->bindValue(":tail", tailId);
-  query->bindValue(":head", headId);
-  query->bindValue(":type", _selectedType);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-}
+      query->prepare("INSERT INTO linkages (tail, head, type, coder) "
+		     "VALUES (:tail, :head, :type, :coder)");
+      query->bindValue(":tail", tailId);
+      query->bindValue(":head", headId);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
+      storeEvidence(tailId, headId);
+      highlightText();
+    }
   if (linkageFeedbackLabel->text() != "LINKED") 
     {
-  linkageFeedbackLabel->setText("LINKED");
-  linkageFeedbackLabel->adjustSize();
-  linkageFeedbackLabel->repaint();
-}
+      linkageFeedbackLabel->setText("LINKED");
+      linkageFeedbackLabel->adjustSize();
+      linkageFeedbackLabel->repaint();
+    }
   qApp->processEvents();
   QApplication::setOverrideCursor(Qt::WaitCursor);
   if (_codingType == ASSISTED && _selectedDirection == PAST) 
     {
-  QSet<int> ignore;
-  if (headIndex != 1) 
-    {
-  findPastPaths(&ignore, tailIndex);
-  for (int i = headIndex - 1; i != 0; i--) 
-    {
-  bool found = false;
-  if (ignore.contains(i)) 
-    {
-  found = true;
-}
-  if (!found) 
-    {
-  if (headIndex != 1) 
-    {
-  headIndex = i;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET head = :head "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":head", headIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
-  delete query;
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  return;
-}
-  else 
-    {
-  if (tailIndex != incidentsModel->rowCount()) 
-    {
-  tailIndex++;
-  headIndex = tailIndex - 1;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET tail = :tail, head = :head "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":head", headIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
-  delete query;
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  return; 
-}
-}
-}
-  else 
-    {
-  if (i == 1) 
-    {
-  if (tailIndex != incidentsModel->rowCount()) 
-    {
-  tailIndex++;
-  headIndex = tailIndex - 1;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET tail = :tail, head = :head "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":head", headIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  delete query;
-  return; 
-}
-}
-}
-}
-}
-  else 
-    {
-  if (tailIndex != incidentsModel->rowCount()) 
-    {
-  tailIndex++;
-  headIndex = tailIndex - 1;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET tail = :tail, head = :head "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":head", headIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  delete query;
-  return; 
-}
-}
-}
+      QSet<int> ignore;
+      if (headIndex != 1) 
+	{
+	  findPastPaths(&ignore, tailIndex);
+	  for (int i = headIndex - 1; i != 0; i--) 
+	    {
+	      bool found = false;
+	      if (ignore.contains(i)) 
+		{
+		  found = true;
+		}
+	      if (!found) 
+		{
+		  if (headIndex != 1) 
+		    {
+		      headIndex = i;
+		      query->prepare("UPDATE coders_to_linkage_types "
+				     "SET head = :head "
+				     "WHERE coder = :coder AND type = :type");
+		      query->bindValue(":head", headIndex);
+		      query->bindValue(":coder", _selectedCoder);
+		      query->bindValue(":type", _selectedType);
+		      query->exec();
+		      pause(500);
+		      retrieveData();
+		      delete query;
+		      QApplication::restoreOverrideCursor();
+		      qApp->processEvents();
+		      return;
+		    }
+		  else 
+		    {
+		      if (tailIndex != incidentsModel->rowCount()) 
+			{
+			  tailIndex++;
+			  headIndex = tailIndex - 1;
+			  query->prepare("UPDATE coders_to_linkage_types "
+					 "SET tail = :tail, head = :head "
+					 "WHERE coder = :coder AND type = :type");
+			  query->bindValue(":tail", tailIndex);
+			  query->bindValue(":head", headIndex);
+			  query->bindValue(":coder", _selectedCoder);
+			  query->bindValue(":type", _selectedType);
+			  query->exec();
+			  pause(500);
+			  retrieveData();
+			  delete query;
+			  QApplication::restoreOverrideCursor();
+			  qApp->processEvents();
+			  return; 
+			}
+		    }
+		}
+	      else 
+		{
+		  if (i == 1) 
+		    {
+		      if (tailIndex != incidentsModel->rowCount()) 
+			{
+			  tailIndex++;
+			  headIndex = tailIndex - 1;
+			  query->prepare("UPDATE coders_to_linkage_types "
+					 "SET tail = :tail, head = :head "
+					 "WHERE coder = :coder AND type = :type");
+			  query->bindValue(":tail", tailIndex);
+			  query->bindValue(":head", headIndex);
+			  query->bindValue(":coder", _selectedCoder);
+			  query->bindValue(":type", _selectedType);
+			  query->exec();
+			  pause(500);
+			  retrieveData();
+			  QApplication::restoreOverrideCursor();
+			  qApp->processEvents();
+			  delete query;
+			  return; 
+			}
+		    }
+		}
+	    }
+	}
+      else 
+	{
+	  if (tailIndex != incidentsModel->rowCount()) 
+	    {
+	      tailIndex++;
+	      headIndex = tailIndex - 1;
+	      query->prepare("UPDATE coders_to_linkage_types "
+			     "SET tail = :tail, head = :head "
+			     "WHERE coder = :coder AND type = :type");
+	      query->bindValue(":tail", tailIndex);
+	      query->bindValue(":head", headIndex);
+	      query->bindValue(":coder", _selectedCoder);
+	      query->bindValue(":type", _selectedType);
+	      query->exec();
+	      pause(500);
+	      retrieveData();
+	      QApplication::restoreOverrideCursor();
+	      qApp->processEvents();
+	      delete query;
+	      return; 
+	    }
+	}
+    }
   else if (_codingType == ASSISTED && _selectedDirection == FUTURE) 
     {
-  QSet<int> ignore;
-  if (tailIndex != 1) 
-    {
-  findFuturePaths(&ignore, tailIndex);
-  for (int i = tailIndex - 1; i != 0; i--) 
-    {
-  bool found = false;
-  if (ignore.contains(i)) 
-    {
-  found = true;
-}
-  if (!found) 
-    {
-  tailIndex = i;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET tail = :tail "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
-  delete query;
+      QSet<int> ignore;
+      if (tailIndex != 1) 
+	{
+	  findFuturePaths(&ignore, tailIndex);
+	  for (int i = tailIndex - 1; i != 0; i--) 
+	    {
+	      bool found = false;
+	      if (ignore.contains(i)) 
+		{
+		  found = true;
+		}
+	      if (!found) 
+		{
+		  tailIndex = i;
+		  query->prepare("UPDATE coders_to_linkage_types "
+				 "SET tail = :tail "
+				 "WHERE coder = :coder AND type = :type");
+		  query->bindValue(":tail", tailIndex);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->bindValue(":type", _selectedType);
+		  query->exec();
+		  pause(500);
+		  retrieveData();
+		  delete query;
+		  QApplication::restoreOverrideCursor();
+		  qApp->processEvents();
+		  return;
+		}
+	      else 
+		{
+		  if (i == 1) 
+		    {
+		      if (headIndex != incidentsModel->rowCount()) 
+			{
+			  headIndex++;
+			  tailIndex = headIndex - 1;
+			  query->prepare("UPDATE coders_to_linkage_types "
+					 "SET tail = :tail, head = :head "
+					 "WHERE coder = :coder AND type = :type");
+			  query->bindValue(":tail", tailIndex);
+			  query->bindValue(":head", headIndex);
+			  query->bindValue(":coder", _selectedCoder);
+			  query->bindValue(":type", _selectedType);
+			  query->exec();
+			  pause(500);
+			  retrieveData();
+			  delete query;
+			  QApplication::restoreOverrideCursor();
+			  qApp->processEvents();
+			  return;
+			}
+		    }
+		}
+	    }
+	}
+      else 
+	{
+	  headIndex++;
+	  tailIndex = headIndex - 1;
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET tail = :tail, head = :head "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":tail", tailIndex);
+	  query->bindValue(":head", headIndex);
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", _selectedType);
+	  query->exec();
+	  pause(500);
+	  retrieveData();
+	  delete query;
+	  QApplication::restoreOverrideCursor();
+	  qApp->processEvents();
+	  return;
+	}
+    }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
-  return;
-}
-  else 
-    {
-  if (i == 1) 
-    {
-  if (headIndex != incidentsModel->rowCount()) 
-    {
-  headIndex++;
-  tailIndex = headIndex - 1;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET tail = :tail, head = :head "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":head", headIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
   delete query;
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  return;
 }
-}
-}
-}
-}
-  else 
-    {
-  headIndex++;
-  tailIndex = headIndex - 1;
-  query->prepare("UPDATE coders_to_linkage_types "
-    "SET tail = :tail, head = :head "
-    "WHERE coder = :coder AND type = :type");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":head", headIndex);
-  query->bindValue(":coder", _selectedCoder);
-  query->bindValue(":type", _selectedType);
-  query->exec();
-  pause(500);
-  retrieveData();
-  delete query;
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  return;
-}
-}
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
-  delete query;
- }
 
 void LinkagesWidget::unsetLink() 
 {
+  if (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty())
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("You have marked evidence, but are removing a linkage. "
+				     "Evidence is not stored for unset linkages. Any evidence "
+				     "associated with this linkage will be lost when the linkage "
+				     "is removed.");
+      if (warningBox->exec() == QMessageBox::No) 
+	{
+	  return;
+	}
+    }
+  clearEvidence();
   setComments();
   setLinkageComment();
   if (_codingType == MANUAL) 
@@ -3050,10 +3578,17 @@ void LinkagesWidget::unsetLink()
       query->bindValue(":type", _selectedType);
       query->bindValue(":coder", _selectedCoder);
       query->exec();
+      query->prepare("DELETE FROM linkages_sources "
+		     "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+      query->bindValue(":tail", tailId);
+      query->bindValue(":head", headId);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":coder", _selectedCoder);
     }
   linkageFeedbackLabel->setText("");
   linkageFeedbackLabel->adjustSize();
   linkageFeedbackLabel->repaint();
+  highlightText();
   qApp->processEvents();
   QApplication::setOverrideCursor(Qt::WaitCursor);
   if (_codingType == ASSISTED && _selectedDirection == PAST) 
@@ -3236,6 +3771,319 @@ void LinkagesWidget::unsetLink()
   delete query;
 }
 
+void LinkagesWidget::markEvidence()
+{
+  if (_codingType == MANUAL)
+    {
+      setLink();
+    }
+  QString tailText = tailRawField->textCursor().selectedText().trimmed();
+  QString headText = headRawField->textCursor().selectedText().trimmed();
+  if (tailText != "")
+    {
+      _markedTailEvidence.push_back(tailText);
+    }
+  if (headText != "")
+    {
+      _markedHeadEvidence.push_back(headText);
+    }
+  if (linkageFeedbackLabel->text() == "LINKED")
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT tail, head FROM coders_to_linkage_types "
+		     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      query->first();
+      int tailIndex = 0;
+      int headIndex = 0;
+      tailIndex = query->value(0).toInt();
+      headIndex = query->value(1).toInt();
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :tail");
+      query->bindValue(":tail", tailIndex);
+      query->exec();
+      query->first();
+      int tailId = 0;
+      tailId = query->value(0).toInt();
+      query->prepare("SELECT id FROM incidents WHERE ch_order = :head");
+      query->bindValue(":head", headIndex);
+      query->exec();
+      query->first();
+      int headId = 0;
+      headId = query->value(0).toInt(); 
+      storeEvidence(tailId, headId);
+    }
+  QTextCursor tailCursor = tailRawField->textCursor();
+  tailCursor.clearSelection();
+  tailRawField->setTextCursor(tailCursor);
+  QTextCursor headCursor = headRawField->textCursor();
+  headCursor.clearSelection();
+  headRawField->setTextCursor(headCursor);
+  highlightText();
+}
+
+void LinkagesWidget::clearEvidence()
+{
+  QVectorIterator<QString> it(_markedTailEvidence);
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
+		 "WHERE coder = :coder AND type = :type");
+  query->bindValue(":coder", _selectedCoder);
+  query->bindValue(":type", _selectedType);
+  query->exec();
+  query->first();
+  int tailIndex = 0;
+  int headIndex = 0;
+  tailIndex = query->value(0).toInt();
+  headIndex = query->value(1).toInt();
+  query->prepare("SELECT id FROM incidents WHERE ch_order = :tail");
+  query->bindValue(":tail", tailIndex);
+  query->exec();
+  query->first();
+  int tailId = 0;
+  tailId = query->value(0).toInt();
+  query->prepare("SELECT id FROM incidents WHERE ch_order = :head");
+  query->bindValue(":head", headIndex);
+  query->exec();
+  query->first();
+  int headId = 0;
+  headId = query->value(0).toInt(); 
+  query->prepare("DELETE FROM linkages_sources "
+		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+  query->bindValue(":tail", tailId);
+  query->bindValue(":head", headId);
+  query->bindValue(":type", _selectedType);
+  query->bindValue(":coder", _selectedCoder);
+  query->exec();
+  _markedTailEvidence.clear();
+  _markedHeadEvidence.clear();
+  delete query;
+  highlightText();
+}
+
+void LinkagesWidget::storeEvidence(const int tail, const int head)
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("DELETE FROM linkages_sources "
+		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+  query->bindValue(":tail", tail);
+  query->bindValue(":head", head);
+  query->bindValue(":type", _selectedType);
+  query->bindValue(":coder", _selectedCoder);
+  query->exec();
+  QVectorIterator<QString> it(_markedTailEvidence);
+  while (it.hasNext())
+    {
+      QString currentEvidence = it.next();
+      query->prepare("INSERT INTO linkages_sources "
+		     "(tail, head, type, coder, istail, source_text) "
+		     "VALUES (:tail, :head, :type, :coder, :istail, :source_text)");
+      query->bindValue(":tail", tail);
+      query->bindValue(":head", head);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":istail", 1);
+      query->bindValue(":source_text", currentEvidence);
+      query->exec();
+    }
+  QVectorIterator<QString> it2(_markedHeadEvidence);
+  while (it2.hasNext())
+    {
+      QString currentEvidence = it2.next();
+      query->prepare("INSERT INTO linkages_sources "
+		     "(tail, head, type, coder, istail, source_text) "
+		     "VALUES (:tail, :head, :type, :coder, :istail, :source_text)");
+      query->bindValue(":tail", tail);
+      query->bindValue(":head", head);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":istail", 0);
+      query->bindValue(":source_text", currentEvidence);
+      query->exec();
+    }
+  delete query;
+}
+
+void LinkagesWidget::highlightText() 
+{
+  QTextCursor currentTailPos = tailRawField->textCursor();
+  QTextCursor currentHeadPos = headRawField->textCursor();
+  int tailBarPos = tailRawField->verticalScrollBar()->value();
+  int headBarPos = headRawField->verticalScrollBar()->value();
+  QTextCharFormat format;
+  format.setFontWeight(QFont::Normal);
+  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+  tailRawField->selectAll();
+  tailRawField->textCursor().mergeCharFormat(format);
+  QTextCursor tailCursor = tailRawField->textCursor();
+  tailCursor.movePosition(QTextCursor::Start);
+  tailRawField->setTextCursor(tailCursor);
+  headRawField->selectAll();
+  headRawField->textCursor().mergeCharFormat(format);
+  QTextCursor headCursor = headRawField->textCursor();
+  headCursor.movePosition(QTextCursor::Start);
+  headRawField->setTextCursor(headCursor);
+  QVectorIterator<QString> it(_markedTailEvidence);
+  while (it.hasNext())
+  {
+    QString tailText = it.next();
+    QVector<QString> tailBlocks = splitLines(tailText);
+    QVectorIterator<QString> it2(tailBlocks);
+    while (it2.hasNext()) 
+      {
+	QString currentLine = it2.next();
+	while (tailRawField->find(currentLine, QTextDocument::FindWholeWords)) 
+	  {
+	    format.setFontWeight(QFont::Bold);
+	    format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	    format.setUnderlineColor(Qt::blue);
+	    tailRawField->textCursor().mergeCharFormat(format);
+	  }
+      }
+    tailCursor = tailRawField->textCursor();
+    tailCursor.movePosition(QTextCursor::Start);
+    tailRawField->setTextCursor(tailCursor);
+  }
+  tailRawField->setTextCursor(currentTailPos);
+  QVectorIterator<QString> it3(_markedHeadEvidence);
+  while (it3.hasNext())
+    {
+      QString headText = it3.next();
+      QVector<QString> headBlocks = splitLines(headText);
+      QVectorIterator<QString> it4(headBlocks);
+      while (it4.hasNext()) 
+	{
+	  QString currentLine = it4.next();
+	  while (headRawField->find(currentLine, QTextDocument::FindWholeWords)) 
+	    {
+	      format.setFontWeight(QFont::Bold);
+	      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+	      format.setUnderlineColor(Qt::blue);
+	      headRawField->textCursor().mergeCharFormat(format);
+	    }
+	}
+      headCursor = headRawField->textCursor();
+      headCursor.movePosition(QTextCursor::Start);
+      headRawField->setTextCursor(headCursor);
+    }
+  headRawField->setTextCursor(currentHeadPos);
+  tailRawField->verticalScrollBar()->setValue(tailBarPos);
+  headRawField->verticalScrollBar()->setValue(headBarPos);
+  if (_markedTailEvidence.empty() && _markedHeadEvidence.empty())
+    {
+      clearEvidenceButton->setEnabled(false);
+    }
+  else
+    {
+      clearEvidenceButton->setEnabled(true);
+    }
+}
+
+void LinkagesWidget::selectTailText() 
+{
+  if (tailRawField->textCursor().selectedText().trimmed() != "") 
+    {
+      int end = 0;
+      int begin = 0;
+      QTextCursor selectCursor = tailRawField->textCursor();
+      if (tailRawField->textCursor().anchor() >= tailRawField->textCursor().position()) 
+	{
+	  begin = tailRawField->textCursor().position();
+	  end = tailRawField->textCursor().anchor();
+	}
+      else 
+	{
+	  begin = tailRawField->textCursor().anchor();
+	  end = tailRawField->textCursor().position();
+	}
+      selectCursor.setPosition(begin);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      tailRawField->setTextCursor(selectCursor);
+      while (tailRawField->textCursor().selectedText()[0].isSpace()) 
+	{
+	  begin++;
+	  selectCursor.setPosition(begin);
+	  selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	  tailRawField->setTextCursor(selectCursor);
+	}
+      while (tailRawField->textCursor().selectedText()[tailRawField->textCursor().
+						       selectedText().length() - 1].isSpace()) 
+	{
+	  end--;
+	  selectCursor.setPosition(begin);
+	  selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	  tailRawField->setTextCursor(selectCursor);
+	}
+      selectCursor.setPosition(begin);
+      selectCursor.movePosition(QTextCursor::StartOfWord);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      if (!tailRawField->toPlainText()[end].isPunct()) 
+	{
+	  selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+	}
+      tailRawField->setTextCursor(selectCursor);
+    }
+  markEvidenceButton->setEnabled(false);
+  if (tailRawField->textCursor().selectedText() != "" ||
+      headRawField->textCursor().selectedText() != "")
+    {
+      markEvidenceButton->setEnabled(true);
+    }
+}
+
+void LinkagesWidget::selectHeadText() 
+{
+  if (headRawField->textCursor().selectedText().trimmed() != "") 
+    {
+      int end = 0;
+      int begin = 0;
+      QTextCursor selectCursor = headRawField->textCursor();
+      if (headRawField->textCursor().anchor() >= headRawField->textCursor().position()) 
+	{
+	  begin = headRawField->textCursor().position();
+	  end = headRawField->textCursor().anchor();
+	}
+      else 
+	{
+	  begin = headRawField->textCursor().anchor();
+	  end = headRawField->textCursor().position();
+	}
+      selectCursor.setPosition(begin);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      headRawField->setTextCursor(selectCursor);
+      while (headRawField->textCursor().selectedText()[0].isSpace()) 
+	{
+	  begin++;
+	  selectCursor.setPosition(begin);
+	  selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	  headRawField->setTextCursor(selectCursor);
+	}
+      while (headRawField->textCursor().selectedText()[headRawField->textCursor().
+						       selectedText().length() - 1].isSpace()) 
+	{
+	  end--;
+	  selectCursor.setPosition(begin);
+	  selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+	  headRawField->setTextCursor(selectCursor);
+	}
+      selectCursor.setPosition(begin);
+      selectCursor.movePosition(QTextCursor::StartOfWord);
+      selectCursor.setPosition(end, QTextCursor::KeepAnchor);
+      if (!headRawField->toPlainText()[end].isPunct()) 
+	{
+	  selectCursor.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+	}
+      headRawField->setTextCursor(selectCursor);
+    }
+  markEvidenceButton->setEnabled(false);
+  if (tailRawField->textCursor().selectedText() != "" ||
+      headRawField->textCursor().selectedText() != "")
+    {
+      markEvidenceButton->setEnabled(true);
+    }
+}
+
 void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, int currentIncident) 
 {
   QSqlDatabase::database().transaction();
@@ -3359,6 +4207,7 @@ void LinkagesWidget::setButtons(bool status)
   headDescriptionFilterField->setEnabled(status);
   headRawFilterField->setEnabled(status);
   headCommentFilterField->setEnabled(status);
+  switchLinkageTypeButton->setEnabled(status);
 }
 
 bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 
@@ -3381,6 +4230,14 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
 		}
 	    }
 	}
+    }
+  else if (object == tailRawField->viewport() && event->type() == QEvent::MouseButtonRelease)
+    {
+      selectTailText();	
+    }
+  else if (object == headRawField->viewport() && event->type() == QEvent::MouseButtonRelease)
+    {
+      selectHeadText();
     }
   return false;
 }

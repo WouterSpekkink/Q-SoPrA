@@ -70,6 +70,7 @@ private slots:
   void setTypeButton();
   void setButtons(bool status);
   void setLinkageType();
+  void switchLinkageType();
   void checkManualButton();
   void checkAssistedButton();
   void retrieveCoders();
@@ -111,6 +112,12 @@ private slots:
   void pause(int time);
   void setLink();
   void unsetLink();
+  void markEvidence();
+  void clearEvidence();
+  void storeEvidence(const int tail, const int head);
+  void highlightText();
+  void selectTailText();
+  void selectHeadText();
   void findPastPaths(QSet<int> *pIgnore, int currentIncident);
   void findFuturePaths(QSet<int> *pIgnore, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
@@ -205,7 +212,14 @@ private:
   QPointer<QPushButton> jumpButton;
   QPointer<QPushButton> setLinkButton;
   QPointer<QPushButton> unsetLinkButton;
+  QPointer<QPushButton> switchLinkageTypeButton;
+  QPointer<QPushButton> markEvidenceButton;
+  QPointer<QPushButton> clearEvidenceButton;
 
+  // Private data vectors
+  QVector<QString> _markedTailEvidence;
+  QVector<QString> _markedHeadEvidence;
+  
   // Private variables
   QString _codingType;
   QString _selectedType;
@@ -217,10 +231,10 @@ private:
   QString _headDescriptionFilter;
   QString _headRawFilter;
   QString _headCommentFilter;
+  QString _originalLinkageType;
+  QString _originalCodingMode;
   bool _commentBool;
   bool _linkageCommentBool;
 };
-
-
 
 #endif
