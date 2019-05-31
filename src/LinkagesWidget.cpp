@@ -34,7 +34,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   _headDescriptionFilter = "";
   _headRawFilter = "";
   _headCommentFilter = "";
-
+  _originalLinkageType = "";
+  _originalCodingMode = "";
   _commentBool = false;
   _linkageCommentBool = false;
   
@@ -125,6 +126,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   selectTypeButton = new QPushButton(tr("Load selected linkage"), this);
   selectTypeButton->setStyleSheet("QPushButton {font-weight: bold}");
   selectTypeButton->setEnabled(false);
+  switchLinkageTypeButton = new QPushButton(tr("Switch linkage type"), this);
+  switchLinkageTypeButton->setEnabled(false);
   manualCodingButton = new QPushButton(tr("Manual coding"), this);
   manualCodingButton->setCheckable(true);
   manualCodingButton->setChecked(true);
@@ -186,6 +189,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editLinkageType()));
   connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
   connect(selectTypeButton, SIGNAL(clicked()), this, SLOT(setLinkageType()));
+  connect(switchLinkageTypeButton, SIGNAL(clicked()), this, SLOT(switchLinkageType()));
   connect(manualCodingButton, SIGNAL(clicked()), this, SLOT(checkManualButton()));
   connect(assistedCodingButton, SIGNAL(clicked()), this, SLOT(checkAssistedButton()));
   connect(tailDescriptionFilterField, SIGNAL(textChanged(const QString &)),
@@ -375,6 +379,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   linkageQuestionFeedbackLabel->setMinimumWidth(180);
   middleLayout->setAlignment(linkageQuestionFeedbackLabel, Qt::AlignHCenter | Qt::AlignVCenter);
   middleLayout->addSpacerItem(new QSpacerItem(200, 40));
+  middleLayout->addWidget(switchLinkageTypeButton);
+  middleLayout->setAlignment(switchLinkageTypeButton, Qt::AlignHCenter | Qt::AlignVCenter);
   middleLayout->addSpacerItem(new QSpacerItem(240, 40));
   middleLayout->addWidget(linkageFeedbackLabel);
   linkageFeedbackLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
@@ -757,7 +763,7 @@ void LinkagesWidget::retrieveCoders()
 void LinkagesWidget::retrieveLinkages() 
 {
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name, description FROM linkage_types");
+  query->exec("SELECT name, description FROM linkage_types ORDER BY name ASC");
   while (query->next()) 
     {
       QString name = query->value(0).toString();
@@ -808,6 +814,7 @@ void LinkagesWidget::setLinkageType()
   if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) 
     {
       _selectedType = typeComboBox->currentText();
+      _originalLinkageType = _selectedType;
       _selectedCoder = coderComboBox->currentText();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT coder, type FROM coders_to_linkage_types "
@@ -862,6 +869,133 @@ void LinkagesWidget::setLinkageType()
     }
 }
 
+void LinkagesWidget::switchLinkageType()
+{
+  QSqlQuery *query = new QSqlQuery;
+  if (_selectedType != _originalLinkageType)
+    {
+      _selectedType = _originalLinkageType;
+      _codingType = _originalCodingMode;
+      query->prepare("SELECT description, question, direction "
+		     "FROM linkage_types WHERE name = :name");
+      query->bindValue(":name", _selectedType);
+      query->exec();
+      query->first();
+      QString description = query->value(0).toString();
+      QString question = query->value(1).toString();
+      QString direction = query->value(2).toString();
+      QString label = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
+      linkageTypeFeedbackLabel->setText(label);
+      QString toolTip = breakString(description);
+      linkageTypeFeedbackLabel->setToolTip(toolTip);
+      linkageQuestionFeedbackLabel->setText(question);
+      linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
+						     sizeHint().height());
+      
+      retrieveData();
+      switchLinkageTypeButton->setText("Switch linkage type");
+      setButtons(true);
+    }
+  else
+    {
+      QVector<QString> types;
+      query->exec("SELECT name, description FROM linkage_types ORDER BY name ASC");
+      while (query->next()) 
+	{
+	  QString currentType = query->value(0).toString();
+	  if (currentType != _selectedType)
+	    {
+	      types.push_back(currentType);
+	    }
+	}
+      QPointer<ComboBoxDialog> dialog = new ComboBoxDialog(this, types);
+      dialog->exec();
+      if (dialog->getExitStatus() == 0)
+	{
+	  QString newType = dialog->getSelection();
+	  query->prepare("SELECT tail, head FROM coders_to_linkage_types "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", _selectedType);
+	  query->exec();
+	  query->first();
+	  int tailIndex = query->value(0).toInt();
+	  int headIndex = query->value(1).toInt();
+	  query->prepare("SELECT coder, type FROM coders_to_linkage_types "
+			 "WHERE coder = :coder AND type = :type");
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", newType);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0)) 
+	    {
+	      QSqlQuery *query2 = new QSqlQuery;
+	      query2->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	      query2->bindValue(":type", newType);
+	      query2->exec();
+	      query2->first();
+	      QString direction = query2->value(0).toString();
+	      query2->prepare("INSERT INTO coders_to_linkage_types (coder, type, tail, head) "
+			      "VALUES (:coder, :type, :tail, :head)");
+	      query2->bindValue(":coder", _selectedCoder);
+	      query2->bindValue(":type", newType);
+	      if (direction == PAST) 
+		{
+		  if (_selectedDirection == PAST)
+		    {
+		      query2->bindValue(":tail", tailIndex);
+		      query2->bindValue(":head", headIndex);
+		    }
+		  else
+		    {
+		      query2->bindValue(":tail", headIndex);
+		      query2->bindValue(":head", tailIndex);
+		    }
+		}
+	      else if (direction == FUTURE) 
+		{
+		  if (_selectedDirection == FUTURE)
+		    {
+		      query2->bindValue(":tail", tailIndex);
+		      query2->bindValue(":head", headIndex);
+		    }
+		  else
+		    {
+		      query2->bindValue(":tail", headIndex);
+		      query2->bindValue(":head", tailIndex);
+		    }
+		}
+	      query2->exec();
+	      delete query2;
+	    }
+	  _codingType = MANUAL;
+	  _selectedType =  newType;
+	  query->prepare("SELECT description, question "
+			 "FROM linkage_types WHERE name = :name");
+	  query->bindValue(":name", _selectedType);
+	  query->exec();
+	  query->first();
+	  QString description = query->value(0).toString();
+	  QString question = query->value(1).toString();
+	  QString label = "<FONT SIZE = 3>--[" + _selectedType + "]--></FONT>";
+	  linkageTypeFeedbackLabel->setText(label);
+	  QString toolTip = breakString(description);
+	  linkageTypeFeedbackLabel->setToolTip(toolTip);
+	  linkageQuestionFeedbackLabel->setText(question);
+	  linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
+							 sizeHint().height());
+	  setButtons(false);
+	  setLinkButton->setEnabled(true);
+	  unsetLinkButton->setEnabled(true);
+	  switchLinkageTypeButton->setEnabled(true);
+	  switchLinkageTypeButton->setText("Switch back");
+	  retrieveData();
+	}
+      delete dialog;
+    }
+  delete query;
+}
+
 void LinkagesWidget::retrieveData() 
 {
   _markedTailEvidence.clear();
@@ -876,6 +1010,7 @@ void LinkagesWidget::retrieveData()
   query->first();
   int tailIndex = 0;
   int headIndex = 0;
+  
   if (!(query->isNull(0))) 
     {
       tailIndex = query->value(0).toInt();
@@ -1047,6 +1182,7 @@ void LinkagesWidget::retrieveData()
 void LinkagesWidget::checkManualButton() 
 {
   _codingType = MANUAL;
+  _originalCodingMode = MANUAL;
   manualCodingButton->setChecked(true);
   assistedCodingButton->setChecked(false);
   QSqlQuery *query = new QSqlQuery;
@@ -1097,6 +1233,7 @@ void LinkagesWidget::checkManualButton()
 void LinkagesWidget::checkAssistedButton() 
 {
   _codingType = ASSISTED;
+  _originalCodingMode = ASSISTED;
   assistedCodingButton->setChecked(true);
   manualCodingButton->setChecked(false);
   unsetLinkButton->setEnabled(true);
@@ -4070,6 +4207,7 @@ void LinkagesWidget::setButtons(bool status)
   headDescriptionFilterField->setEnabled(status);
   headRawFilterField->setEnabled(status);
   headCommentFilterField->setEnabled(status);
+  switchLinkageTypeButton->setEnabled(status);
 }
 
 bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 

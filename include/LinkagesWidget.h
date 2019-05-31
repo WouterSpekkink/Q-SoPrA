@@ -70,6 +70,7 @@ private slots:
   void setTypeButton();
   void setButtons(bool status);
   void setLinkageType();
+  void switchLinkageType();
   void checkManualButton();
   void checkAssistedButton();
   void retrieveCoders();
@@ -211,6 +212,7 @@ private:
   QPointer<QPushButton> jumpButton;
   QPointer<QPushButton> setLinkButton;
   QPointer<QPushButton> unsetLinkButton;
+  QPointer<QPushButton> switchLinkageTypeButton;
   QPointer<QPushButton> markEvidenceButton;
   QPointer<QPushButton> clearEvidenceButton;
 
@@ -229,6 +231,8 @@ private:
   QString _headDescriptionFilter;
   QString _headRawFilter;
   QString _headCommentFilter;
+  QString _originalLinkageType;
+  QString _originalCodingMode;
   bool _commentBool;
   bool _linkageCommentBool;
 };
