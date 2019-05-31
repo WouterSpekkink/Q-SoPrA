@@ -1184,6 +1184,32 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 	      newAbstractNode->setOrder(abstractNode->getOrder());
 	      newAbstractNode->setZValue(3);
 	      _tempAbstractNodeVector.push_back(newAbstractNode);
+	      AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
+	      _abstractNodeLabelVector.push_back(newAbstractNodeLabel);
+	      newAbstractNode->setLabel(newAbstractNodeLabel);
+	      if (newAbstractNode->getConstraint() == PATHS ||
+		  newAbstractNode->getConstraint() == PATHSATT) 
+		{
+		  QString label = "P-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		}
+	      else if (newAbstractNode->getConstraint() == SEMIPATHS ||
+		       newAbstractNode->getConstraint() == SEMIPATHSATT) 
+		{
+		  QString label = "S-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		}
+	      else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
+		       newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
+		{
+		  QString label = "N-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		}
+	      qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
+	      newAbstractNodeLabel->setOffset(QPointF(xOffset, 0));
+	      newAbstractNodeLabel->setNewPos(newAbstractNode->scenePos());
+	      newAbstractNodeLabel->setZValue(4);
+	      newAbstractNodeLabel->setDefaultTextColor(Qt::black);
 	      bool found = false;
 	      if (newAbstractNode->getMode() != "") 
 		{
@@ -1223,32 +1249,6 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 				 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 		    }
 		}
-	      AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
-	      _abstractNodeLabelVector.push_back(newAbstractNodeLabel);
-	      newAbstractNode->setLabel(newAbstractNodeLabel);
-	      if (newAbstractNode->getConstraint() == PATHS ||
-		  newAbstractNode->getConstraint() == PATHSATT) 
-		{
-		  QString label = "P-" + QString::number(newAbstractNode->getOrder());
-		  newAbstractNodeLabel->setPlainText(label);
-		}
-	      else if (newAbstractNode->getConstraint() == SEMIPATHS ||
-		       newAbstractNode->getConstraint() == SEMIPATHSATT) 
-		{
-		  QString label = "S-" + QString::number(newAbstractNode->getOrder());
-		  newAbstractNodeLabel->setPlainText(label);
-		}
-	      else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
-		       newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
-		{
-		  QString label = "N-" + QString::number(newAbstractNode->getOrder());
-		  newAbstractNodeLabel->setPlainText(label);
-		}
-	      qreal xOffset = (newAbstractNode->getWidth() / 2) - 20;
-	      newAbstractNodeLabel->setOffset(QPointF(xOffset, 0));
-	      newAbstractNodeLabel->setNewPos(newAbstractNode->scenePos());
-	      newAbstractNodeLabel->setZValue(4);
-	      newAbstractNodeLabel->setDefaultTextColor(Qt::black);
 	      currentLayer.push_back(newAbstractNode);
 	      partners.push_back(abstractNode);
 	      Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
@@ -1294,6 +1294,17 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 		  newEvent->setZValue(3);
 		  _tempIncidentNodeVector.push_back(newEvent);
 		  bool found = false;
+		  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
+		  _incidentNodeLabelVector.push_back(text);
+		  newEvent->setLabel(text);
+		  text->setPlainText(QString::number(newEvent->getOrder()));
+		  QPointF currentPos = newEvent->scenePos();
+		  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
+		  currentPos.setY(currentPos.y() -12);
+		  text->setPos(currentPos);    
+		  text->setZValue(4);
+		  text->setDefaultTextColor(Qt::black);
+		  text->setFontSize(_labelSize);
 		  if (newEvent->getMode() != "") 
 		    {
 		      QSqlQuery *query = new QSqlQuery;
@@ -1333,17 +1344,6 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 				     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 			}
 		    }
-		  QPointer<IncidentNodeLabel> text = new IncidentNodeLabel(newEvent);
-		  _incidentNodeLabelVector.push_back(text);
-		  newEvent->setLabel(text);
-		  text->setPlainText(QString::number(newEvent->getOrder()));
-		  QPointF currentPos = newEvent->scenePos();
-		  currentPos.setX(currentPos.x() - (text->textWidth() / 2));
-		  currentPos.setY(currentPos.y() -12);
-		  text->setPos(currentPos);    
-		  text->setZValue(4);
-		  text->setDefaultTextColor(Qt::black);
-		  text->setFontSize(_labelSize);
 		  currentLayer.push_back(newEvent);
 		  partners.push_back(event);
 		  Linkage *newLinkage = new Linkage("Hierarchy", "", 0);
@@ -4584,6 +4584,10 @@ void HierarchyGraphWidget::cleanUp()
   setComment();
   _incidentNodeVector.clear();
   _abstractNodeVector.clear();
+  qDeleteAll(_tempIncidentNodeVector);
+  _tempIncidentNodeVector.clear();
+  qDeleteAll(_tempAbstractNodeVector);
+  _tempAbstractNodeVector.clear();
   qDeleteAll(_abstractNodeLabelVector);
   _abstractNodeLabelVector.clear();
   qDeleteAll(_incidentNodeLabelVector);
