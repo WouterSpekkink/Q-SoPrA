@@ -3174,19 +3174,19 @@ void EventGraphWidget::plotEdges(QString type)
 
 void EventGraphWidget::layoutGraph() 
 {
-  QVector<IncidentNode *>::iterator it4;
-  for (it4 = _incidentNodeVector.begin(); it4 != _incidentNodeVector.end(); it4++) 
+  QVector<IncidentNode *>::iterator it;
+  for (it = _incidentNodeVector.begin(); it != _incidentNodeVector.end(); it++) 
     {
-      IncidentNode *current = *it4;
-      QVector<IncidentNode *>::iterator it5;
+      IncidentNode *current = *it;
+      QVector<IncidentNode *>::iterator it2;
       QVector<IncidentNode *> partners;
-      for (it5 = it4 + 1; it5 != _incidentNodeVector.end(); it5++) 
+      for (it2 = it + 1; it2 != _incidentNodeVector.end(); it2++) 
 	{
-	  IncidentNode *second = *it5;
-	  QVectorIterator<Linkage *> it6(_edgeVector);
-	  while (it6.hasNext()) 
+	  IncidentNode *second = *it2;
+	  QVectorIterator<Linkage *> it3(_edgeVector);
+	  while (it3.hasNext()) 
 	    {
-	      Linkage *edge = it6.next();
+	      Linkage *edge = it3.next();
 	      // Basically we just ask whether the current events are linked.
 	      if ((edge->getStart() == current &&
 		   edge->getEnd() == second) ||
@@ -3200,10 +3200,10 @@ void EventGraphWidget::layoutGraph()
       qreal originHeight = current->scenePos().y();
       std::sort(partners.begin(), partners.end(), eventLessThan);
       int partnerCount = partners.size();
-      QVectorIterator<IncidentNode *> it7(partners);
-      while (it7.hasNext()) 
+      QVectorIterator<IncidentNode *> it4(partners);
+      while (it4.hasNext()) 
 	{
-	  IncidentNode *currentPartner = it7.next();
+	  IncidentNode *currentPartner = it4.next();
 	  qreal partnerHeight = originHeight;
 	  if (partners.size() > 1) 
 	    {
@@ -3722,6 +3722,7 @@ void EventGraphWidget::setPlotButtons()
       addLinkageTypeButton->setEnabled(false);
     }
   if (coderComboBox->currentText() != DEFAULT &&
+      coderComboBox->currentText() == _selectedCoder &&
       _presentTypes.contains(typeComboBox->currentText())) 
     {
       compareComboBox->clear();
@@ -6494,7 +6495,7 @@ void EventGraphWidget::setLinkageButtons(QTableWidgetItem *item)
 	      break;
 	    }
 	}
-      if (_presentTypes.size() > 1) 
+      if (_presentTypes.size() > 0) 
 	{
 	  removeLinkageTypeButton->setEnabled(true);
 	}
@@ -6878,7 +6879,6 @@ void EventGraphWidget::showLinkageType()
 
 void EventGraphWidget::removeLinkageType() 
 {
-  setChangeLabel();
   QString text = linkageListWidget->currentItem()->data(Qt::DisplayRole).toString();
   QVectorIterator<Linkage*> it (_edgeVector);
   while (it.hasNext()) 
@@ -6910,9 +6910,19 @@ void EventGraphWidget::removeLinkageType()
 	  _presentTypes.removeOne(type);
 	}
     }
-  setHeights();
-  setPlotButtons();
-  disableLinkageButtons();
+  if (_presentTypes.size() > 0)
+    {
+      setChangeLabel();
+      setHeights();
+      setPlotButtons();
+      disableLinkageButtons();
+    }
+  else
+    {
+      cleanUp();
+      changeLabel->setText("");
+      removeLinkageTypeButton->setEnabled(false);
+    }
 }
 
 void EventGraphWidget::toggleLabels() 
@@ -7119,10 +7129,21 @@ void EventGraphWidget::setVisibility()
 	  current->hide();
 	}
     }
+  QVector<Linkage*> tempEdges;
   QVectorIterator<Linkage*> it3(_edgeVector);
   while (it3.hasNext()) 
     {
-      Linkage *currentEdge = it3.next();
+      tempEdges.push_back(it3.next());
+    }
+  QVectorIterator<Linkage*> it4(_compareVector);
+  while (it4.hasNext()) 
+    {
+      tempEdges.push_back(it4.next());
+    }
+  QVectorIterator<Linkage*> it5(tempEdges);
+  while (it5.hasNext())
+    {
+      Linkage *currentEdge = it5.next();
       if (currentEdge->isMassHidden()) 
 	{
 	  currentEdge->hide();
@@ -7141,10 +7162,10 @@ void EventGraphWidget::setVisibility()
 	    }
 	}
     }
-  QVectorIterator<IncidentNodeLabel*> it4(_incidentNodeLabelVector);
-  while (it4.hasNext()) 
+  QVectorIterator<IncidentNodeLabel*> it6(_incidentNodeLabelVector);
+  while (it6.hasNext()) 
     {
-      IncidentNodeLabel *currentText = it4.next();
+      IncidentNodeLabel *currentText = it6.next();
       IncidentNode *currentParent = currentText->getNode();
       if (!(currentParent->isVisible())) 
 	{
@@ -7158,10 +7179,10 @@ void EventGraphWidget::setVisibility()
 	    }
 	}
     }
-  QVectorIterator<AbstractNodeLabel*> it5(_abstractNodeLabelVector);
-  while (it5.hasNext()) 
+  QVectorIterator<AbstractNodeLabel*> it7(_abstractNodeLabelVector);
+  while (it7.hasNext()) 
     {
-      AbstractNodeLabel *currentText = it5.next();
+      AbstractNodeLabel *currentText = it7.next();
       AbstractNode *currentParent = currentText->getAbstractNode();
       if (!(currentParent->isVisible())) 
 	{

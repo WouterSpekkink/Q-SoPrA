@@ -86,7 +86,6 @@ void Linkage::updatePosition()
 void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
   painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
-  
   calculate();
   if (line().length() > 0)
     {

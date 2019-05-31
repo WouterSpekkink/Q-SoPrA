@@ -3677,6 +3677,12 @@ void LinkagesWidget::markEvidence()
       headId = query->value(0).toInt(); 
       storeEvidence(tailId, headId);
     }
+  QTextCursor tailCursor = tailRawField->textCursor();
+  tailCursor.clearSelection();
+  tailRawField->setTextCursor(tailCursor);
+  QTextCursor headCursor = headRawField->textCursor();
+  headCursor.clearSelection();
+  headRawField->setTextCursor(headCursor);
   highlightText();
 }
 
