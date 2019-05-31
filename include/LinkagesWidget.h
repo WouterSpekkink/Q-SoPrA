@@ -111,7 +111,9 @@ private slots:
   void pause(int time);
   void setLink();
   void unsetLink();
-  void sourceTexts(const int tail, const int head);
+  void markEvidence();
+  void clearEvidence();
+  void storeEvidence(const int tail, const int head);
   void highlightText();
   void selectTailText();
   void selectHeadText();
@@ -209,7 +211,13 @@ private:
   QPointer<QPushButton> jumpButton;
   QPointer<QPushButton> setLinkButton;
   QPointer<QPushButton> unsetLinkButton;
+  QPointer<QPushButton> markEvidenceButton;
+  QPointer<QPushButton> clearEvidenceButton;
 
+  // Private data vectors
+  QVector<QString> _markedTailEvidence;
+  QVector<QString> _markedHeadEvidence;
+  
   // Private variables
   QString _codingType;
   QString _selectedType;
@@ -224,7 +232,5 @@ private:
   bool _commentBool;
   bool _linkageCommentBool;
 };
-
-
 
 #endif

@@ -9646,10 +9646,6 @@ void EventGraphWidget::processLinkageContextMenu(const QString &action)
     {
       removeNormalLinkage();
     }
-  else if (action == CHANGECOMMENTACTION) 
-    {
-      changeLinkageComment();
-    }
 }
 
 void EventGraphWidget::seeLinkageEvidence()
@@ -9671,6 +9667,8 @@ void EventGraphWidget::seeLinkageEvidence()
 	    }
 	  QPointer<EvidenceDialog> evidenceDialog = new EvidenceDialog(tail, head, type, coder, this);
 	  evidenceDialog->exec();
+	  QString comment = evidenceDialog->getComment();
+	  linkage->setToolTip(comment);
 	}
     }
 }
@@ -9773,111 +9771,6 @@ void EventGraphWidget::removeNormalLinkage()
 	}
     }
   setHeights();
-}
-
-void EventGraphWidget::changeLinkageComment() 
-{
-  if (scene->selectedItems().size() == 1) 
-    {
-      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
-      int tail = 0;
-      int head = 0;
-      QString type = linkage->getType();
-      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
-      IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
-      AbstractNode *startAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getStart());
-      AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(linkage->getEnd());
-      if (startIncidentNode) 
-	{
-	  tail = startIncidentNode->getId();
-	}
-      else if (startAbstractNode) 
-	{
-	  tail = startAbstractNode->getId();
-	}
-      if (endIncidentNode) 
-	{
-	  head = endIncidentNode->getId();
-	}
-      else if (endAbstractNode) 
-	{
-	  head = endAbstractNode->getId();
-	}
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
-      query->bindValue(":id", tail);
-      query->exec();
-      query->first();
-      tail = query->value(0).toInt();
-      query->bindValue(":id", head);
-      query->exec();
-      query->first();
-      head = query->value(0).toInt();
-      query->prepare("SELECT comment FROM linkage_comments "
-		     "WHERE type = :type AND tail = :tail AND head = :head");
-      query->bindValue(":type", type);
-      query->bindValue(":tail", tail);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      QString comment = "";
-      bool empty = true;
-      if (!query->isNull(0)) 
-	{
-	  comment = query->value(0).toString();
-	  empty = false;
-	}
-      if (linkage) 
-	{
-	  QPointer<LargeTextDialog> textDialog = new LargeTextDialog(this);
-	  textDialog->submitText(comment);
-	  textDialog->setWindowTitle("Set comment");
-	  textDialog->setLabel("Comment:");
-	  textDialog->setEmptyAllowed(true);
-	  textDialog->exec();
-	  if (textDialog->getExitStatus() == 0) 
-	    {
-	      QString newComment = textDialog->getText();
-	      if (newComment != "") 
-		{
-		  if (empty) 
-		    {
-		      query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
-				     "VALUES (:comment, :coder, :type, :tail, :head)");
-		    }
-		  else 
-		    {
-		      query->prepare("UPDATE linkage_comments "
-				     "SET comment = :comment, coder = :coder "
-				     "WHERE type = :type AND tail = :tail AND head = :head");
-		    }
-		  query->bindValue(":comment", newComment);
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", type);
-		  query->bindValue(":tail", tail);
-		  query->bindValue(":head", head);
-		  query->exec();
-		  QString toolTip = breakString(_selectedCoder + " - " + newComment);
-		  linkage->setToolTip(toolTip);
-		}
-	      else 
-		{
-		  if (empty) 
-		    {
-		      query->prepare("DELETE FROM linkage_comments "
-				     "WHERE type = :type AND tail = :tail AND head = :head");
-		      query->bindValue(":type", type);
-		      query->bindValue(":tail", tail);
-		      query->bindValue(":head", head);
-		      query->exec();
-		      QString toolTip = "no comment";
-		      linkage->setToolTip(toolTip);
-		    }
-		}
-	    }
-	}
-      delete query;
-    }
 }
 
 void EventGraphWidget::ignoreLinkage() 

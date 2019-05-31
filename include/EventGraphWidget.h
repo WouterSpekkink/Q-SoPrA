@@ -247,7 +247,6 @@ private slots:
   void rejectLinkage();
   void ignoreLinkage();
   void removeNormalLinkage();
-  void changeLinkageComment();
   void addLineObject(const QPointF &start, const QPointF &end);
   void addSingleArrowObject(const QPointF &start, const QPointF &end);
   void addDoubleArrowObject(const QPointF &start, const QPointF &end);

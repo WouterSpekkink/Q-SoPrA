@@ -2290,7 +2290,6 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  QAction *action5 = new QAction(REJECTLINKAGEACTION, this);
 	  QAction *action6 = new QAction(IGNOREMEACTION, this);
 	  QAction *action7 = new QAction(REMOVENORMALLINKAGEACTION, this);
-	  QAction *action8 = new QAction(CHANGECOMMENTACTION, this);
 	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getStart());
 	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getEnd());
 	  if (linkage->getPenStyle() == 3) 
@@ -2316,7 +2315,6 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	    {
 	      menu->addAction(action1);
 	      menu->addAction(action7);
-	      menu->addAction(action8);
 	    }
 	  if (QAction *action = menu->exec(event->screenPos())) 
 	    {
@@ -2329,7 +2327,6 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action5;
 	  delete action6;
 	  delete action7;
-	  delete action8;
 	  delete menu;
 	}
       else if (node) 

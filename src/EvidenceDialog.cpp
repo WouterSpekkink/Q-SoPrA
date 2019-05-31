@@ -29,6 +29,7 @@ EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, 
   _head = head;
   _type = type;
   _coder = coder;
+  _comment = QString();
   
   typeLabel = new QLabel(tr("<b>Linkage type:</b>"), this);
   coderLabel = new QLabel(tr("<b>Coder:</b>"), this);
@@ -39,22 +40,27 @@ EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, 
   commentLabel = new QLabel(tr("<b>Comment:</b>"), this);
 
   tailTextField = new QTextEdit(this);
-  tailTextField->setEnabled(false);
+  tailTextField->setReadOnly(true);
   headTextField = new QTextEdit(this);
-  headTextField->setEnabled(false);
+  headTextField->setReadOnly(true);
   commentField = new QTextEdit(this);
-  commentField->setEnabled(false);
   
-  closeButton = new QPushButton(tr("Close dialog"), this);
+  saveCloseButton = new QPushButton(tr("Close dialog"), this);
 
-  connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
+  connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> detailsLayout = new QHBoxLayout;
-  detailsLayout->addWidget(typeLabel);
-  detailsLayout->addWidget(typeReportLabel);
-  detailsLayout->addWidget(coderLabel);
-  detailsLayout->addWidget(coderReportLabel);
+  QPointer<QHBoxLayout> detailsLeftLayout = new QHBoxLayout;
+  QPointer<QHBoxLayout> detailsRightLayout = new QHBoxLayout;
+  detailsLeftLayout->addWidget(typeLabel);
+  detailsLeftLayout->addWidget(typeReportLabel);
+  detailsLeftLayout->setAlignment(Qt::AlignLeft);
+  detailsLayout->addLayout(detailsLeftLayout);
+  detailsRightLayout->addWidget(coderLabel);
+  detailsRightLayout->addWidget(coderReportLabel);
+  detailsRightLayout->setAlignment(Qt::AlignLeft);
+  detailsLayout->addLayout(detailsRightLayout);
   mainLayout->addLayout(detailsLayout);
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
@@ -63,16 +69,18 @@ EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, 
   QPointer<QVBoxLayout> leftTopFieldsLayout= new QVBoxLayout;
   leftTopFieldsLayout->addWidget(tailLabel);
   leftTopFieldsLayout->addWidget(tailTextField);
+  tailTextField->setMinimumWidth(500);
   topFieldsLayout->addLayout(leftTopFieldsLayout);
   QPointer<QVBoxLayout> rightTopFieldsLayout = new QVBoxLayout;
   rightTopFieldsLayout->addWidget(headLabel);
   rightTopFieldsLayout->addWidget(headTextField);
+  headTextField->setMinimumWidth(500);
   topFieldsLayout->addLayout(rightTopFieldsLayout);
   mainLayout->addLayout(topFieldsLayout);
   mainLayout->addWidget(commentLabel);
   mainLayout->addWidget(commentField);
-  mainLayout->addWidget(closeButton);
-  closeButton->setMaximumWidth(closeButton->sizeHint().width());
+  mainLayout->addWidget(saveCloseButton);
+  saveCloseButton->setMaximumWidth(saveCloseButton->sizeHint().width());
 
   setLayout(mainLayout);
   getData();
@@ -80,27 +88,105 @@ EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, 
 
 void EvidenceDialog::getData()
 {
+  QTextCursor currentTailPos = tailTextField->textCursor();
+  QTextCursor currentHeadPos = headTextField->textCursor();
+  QTextCharFormat format;
+  format.setFontWeight(QFont::Normal);
+  format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+  tailTextField->selectAll();
+  tailTextField->textCursor().mergeCharFormat(format);
+  QTextCursor tailCursor = tailTextField->textCursor();
+  tailCursor.movePosition(QTextCursor::Start);
+  tailTextField->setTextCursor(tailCursor);
+  headTextField->selectAll();
+  headTextField->textCursor().mergeCharFormat(format);
+  QTextCursor headCursor = headTextField->textCursor();
+  headCursor.movePosition(QTextCursor::Start);
+  headTextField->setTextCursor(headCursor);
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail_text, head_text FROM linkages_sources "
+  query->prepare("SELECT raw, ch_order FROM incidents "
+		 "WHERE id = :tail");
+  query->bindValue(":tail", _tail);
+  query->exec();
+  query->first();
+  int tailOrder = -1;
+  if (!query->isNull(0))
+    {
+      tailTextField->setPlainText(query->value(0).toString());
+      tailOrder = query->value(1).toInt();
+    }
+  query->prepare("SELECT raw, ch_order FROM incidents "
+		 "WHERE id = :head");
+  query->bindValue(":head", _head);
+  query->exec();
+  query->first();
+  int headOrder = -1;
+  if (!query->isNull(0))
+    {
+      headTextField->setPlainText(query->value(0).toString());
+      headOrder = query->value(1).toInt();
+    }
+  query->prepare("SELECT istail, source_text FROM linkages_sources "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", _tail);
   query->bindValue(":head", _head);
   query->bindValue(":type", _type);
   query->bindValue(":coder", _coder);
   query->exec();
-  query->first();
-  if (!query->isNull(0))
+  while (query->next())
     {
-      tailTextField->setPlainText(query->value(0).toString());
+      bool isTail = false;
+      if (query->value(0).toInt() == true)
+	{
+	  isTail = true;
+	}
+      if (!query->isNull(1) && isTail)
+	{
+	  QString tailText = query->value(1).toString();
+	  QVector<QString> tailBlocks = splitLines(tailText);
+	  QVectorIterator<QString> it(tailBlocks);
+	  while (it.hasNext()) 
+	    {
+	      QString currentLine = it.next();
+	      while (tailTextField->find(currentLine, QTextDocument::FindWholeWords)) 
+		{
+		  format.setFontWeight(QFont::Bold);
+		  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+		  format.setUnderlineColor(Qt::blue);
+		  tailTextField->textCursor().mergeCharFormat(format);
+		}
+	    }
+	  tailCursor = tailTextField->textCursor();
+	  tailCursor.movePosition(QTextCursor::Start);
+	  tailTextField->setTextCursor(tailCursor);
+	}
+      else if (!query->isNull(1) && !isTail)
+	{
+	  QString headText = query->value(1).toString();
+	  QVector<QString> headBlocks = splitLines(headText);
+	  QVectorIterator<QString> it(headBlocks);
+	  while (it.hasNext()) 
+	    {
+	      QString currentLine = it.next();
+	      while (headTextField->find(currentLine, QTextDocument::FindWholeWords)) 
+		{
+		  format.setFontWeight(QFont::Bold);
+		  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+		  format.setUnderlineColor(Qt::blue);
+		  headTextField->textCursor().mergeCharFormat(format);
+		}
+	    }
+	  headCursor = headTextField->textCursor();
+	  headCursor.movePosition(QTextCursor::Start);
+	  headTextField->setTextCursor(headCursor);
+	}
     }
-  if (!query->isNull(1))
-    {
-      headTextField->setPlainText(query->value(1).toString());
-    }
+  currentTailPos.movePosition(QTextCursor::Start);
+  currentHeadPos.movePosition(QTextCursor::Start);
   query->prepare("SELECT comment FROM linkage_comments "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
-  query->bindValue(":tail", _tail);
-  query->bindValue(":head", _head);
+  query->bindValue(":tail", tailOrder);
+  query->bindValue(":head", headOrder);
   query->bindValue(":type", _type);
   query->bindValue(":coder", _coder);
   query->exec();
@@ -110,4 +196,59 @@ void EvidenceDialog::getData()
       commentField->setPlainText(query->value(0).toString());
     }
   delete query;
+  tailTextField->verticalScrollBar()->setValue(0);
+  headTextField->verticalScrollBar()->setValue(0);
+}
+
+void EvidenceDialog::saveAndClose()
+{
+  QString currentComment = commentField->toPlainText();
+  if (currentComment != "")
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE id = :tail");
+      query->bindValue(":tail", _tail);
+      query->exec();
+      query->first();
+      int tailOrder = query->value(0).toInt();
+      query->prepare("SELECT ch_order FROM incidents "
+		     "WHERE id = :head");
+      query->bindValue(":head", _head);
+      query->exec();
+      query->first();
+      int headOrder = query->value(0).toInt();
+      query->prepare("SELECT comment FROM linkage_comments "
+		     "WHERE type = :type AND tail = :tail AND head = :head");
+      query->bindValue(":type", _type);
+      query->bindValue(":tail", tailOrder);
+      query->bindValue(":head", headOrder);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) 
+	{
+	  query->prepare("UPDATE linkage_comments "
+			 "SET comment = :comment, coder = :coder "
+			 "WHERE type = :type AND tail = :tail AND head = :head");
+	}
+      else
+	{
+	  query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
+			 "VALUES (:comment, :coder, :type, :tail, :head)");
+	}
+      query->bindValue(":comment", currentComment);
+      query->bindValue(":coder", _coder);
+      query->bindValue(":type", _type);
+      query->bindValue(":tail", tailOrder);
+      query->bindValue(":head", headOrder);
+      query->exec();      
+      delete query;
+      _comment = _coder + " - " + currentComment;
+    }
+  this->close();
+}
+
+QString EvidenceDialog::getComment()
+{
+  return _comment;
 }

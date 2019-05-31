@@ -169,8 +169,8 @@ void WelcomeDialog::newDatabase()
 		      "head integer, "
 		      "type text, "
 		      "coder text, "
-		      "tail_text text, "
-		      "head_text text)");
+		      "istail integer, "
+		      "source_text text)");
 	  query->exec("CREATE TABLE coders "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text)");
@@ -194,6 +194,15 @@ void WelcomeDialog::newDatabase()
 		      "(attributes_record, "
 		      "relationships_record) "
 		      "VALUES (1, 1)");
+	  query->exec("CREATE TABLE linkages_sources_reference "
+		      "(code integer, "
+		      "label text)");
+	  query->exec("INSERT INTO linkages_sources_reference "
+		      "(code, label) "
+		      "VALUES (0, 'Head')");
+	  query->exec("INSERT INTO linkages_sources_reference "
+		      "(code, label) "
+		      "VALUES (1, 'Tail')");
 	  query->exec("CREATE TABLE saved_eg_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -937,8 +946,8 @@ void WelcomeDialog::openDatabase()
 		      "head integer, "
 		      "type text, "
 		      "coder text, "
-		      "tail_text text, "
-		      "head_text text)");
+		      "istail integer, "
+		      "source_text text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS coders "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text)");
@@ -966,6 +975,21 @@ void WelcomeDialog::openDatabase()
 			  "(attributes_record, "
 			  "relationships_record) "
 			  "VALUES (1, 1)");
+	    }
+	  query->exec("CREATE TABLE IF NOT EXISTS linkages_sources_reference "
+		      "(code integer, "
+		      "label text)");
+	  query->exec("SELECT * FROM linkages_sources_reference");
+	  query->first();
+	  if (query->isNull(0))
+	    
+	    {
+	      query->exec("INSERT INTO linkages_sources_reference "
+			  "(code, label) "
+			  "VALUES (0, 'Head')");
+	      query->exec("INSERT INTO linkages_sources_reference "
+			  "(code, label) "
+			  "VALUES (1, 'Tail')");
 	    }
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1979,13 +2003,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE linkages_sources ADD COLUMN coder text;");
 	    }
-	  if (!columns.contains("tail_text"))
+	  if (!columns.contains("istail"))
 	    {
-	      query->exec("ALTER TABLE linkages_sources ADD COLUMN tail_text text;");
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN istail integer;");
 	    }
-	  if (!columns.contains("head_text"))
+	  if (!columns.contains("source_text"))
 	    {
-	      query->exec("ALTER TABLE linkages_sources ADD COLUMN head_text text;");
+	      query->exec("ALTER TABLE linkages_sources ADD COLUMN source_text text;");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(coders)");
@@ -2073,6 +2097,33 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("relationships_record"))
 	    {
 	      query->exec("ALTER TABLE save_data ADD COLUMN relationships_record integer;");
+	    }
+	  columns.clear();
+	  query->exec("PRAGMA table_info(linkages_sources_reference)");
+	  while (query->next())
+	    {
+	      columns.push_back(query->value(0).toString());
+	    }
+	  bool referencesmissing = false;
+	  if (!columns.contains("code"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources_reference ADD COLUMN code integer;");
+	      referencesmissing = true;
+	    }
+	  if (!columns.contains("label"))
+	    {
+	      query->exec("ALTER TABLE linkages_sources_reference ADD COLUMN label text;");
+	      referencesmissing = true;
+	    }
+	  if (referencesmissing)
+	    {
+	      query->exec("DELETE FROM linkages_sources_reference");
+	      query->exec("INSERT INTO linkages_sources_reference "
+			  "(code, label) "
+			  "VALUES (0, 'Head')");
+	      query->exec("INSERT INTO linkages_sources_reference "
+			  "(code, label) "
+			  "VALUES (1, 'Tail')");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(saved_eg_plots)");

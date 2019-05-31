@@ -86,8 +86,6 @@ void Linkage::updatePosition()
 void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
   painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
-  //  painter->setClipping(true);
-  // painter->setClipRect(option->exposedRect);
   
   calculate();
   if (line().length() > 0)

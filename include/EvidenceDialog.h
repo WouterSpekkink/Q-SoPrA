@@ -29,8 +29,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QDialog>
+#include <QtWidgets/QScrollBar>
 #include <QPointer>
 #include <QtSql>
+#include "SupportingFunctions.h"
 
 class EvidenceDialog : public QDialog
 {
@@ -42,9 +44,13 @@ public:
 		 QWidget *parent = 0);
   ~EvidenceDialog() {};
 
+  //Getters
+  QString getComment();
+		      
 private slots:
   // Private member functions
   void getData();
+  void saveAndClose();
 
 private:
   // Interface elements
@@ -58,13 +64,14 @@ private:
   QPointer<QTextEdit> tailTextField;
   QPointer<QTextEdit> headTextField;
   QPointer<QTextEdit> commentField;
-  QPointer<QPushButton> closeButton;
+  QPointer<QPushButton> saveCloseButton;
 
   // Private variables
   int _tail;
   int _head;
   QString _type;
   QString _coder;
+  QString _comment;
 };
 
 #endif

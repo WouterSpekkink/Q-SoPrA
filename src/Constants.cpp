@@ -65,7 +65,6 @@ QString CLOSEGAPACTION = "Close gap";
 QString CHANGEDESCRIPTIONACTION = "Edit event description";
 QString IGNOREMEACTION = "Ignore";
 QString REMOVENORMALLINKAGEACTION = "Remove";
-QString CHANGECOMMENTACTION = "Change linkage comment";
 QString ENTITY = "Entity";
 QString INCIDENT = "Incident";
 QString ABSTRACTNODE = "Abstract Node";

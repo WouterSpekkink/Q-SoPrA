@@ -38,18 +38,17 @@ RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent)
   // We set the tail and head columns to show the corresponding order variables
   linkagesModel->setRelation(1, QSqlRelation("incidents", "id", "ch_order"));
   linkagesModel->setRelation(2, QSqlRelation("incidents", "id", "ch_order"));
+  linkagesModel->setRelation(5, QSqlRelation("linkages_sources_reference", "code", "label"));
   // Then we set how the data are displayed.
   linkagesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Tail"));
   linkagesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Head"));
   linkagesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Type"));
   linkagesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Coder"));
-  linkagesModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Tail text"));
-  linkagesModel->setHeaderData(6, Qt::Horizontal, QObject::tr("Head text"));
+  linkagesModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Source"));
+  linkagesModel->setHeaderData(6, Qt::Horizontal, QObject::tr("Source text"));
   tableView->setColumnHidden(0, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setSectionsMovable(true);
-  tableView->setColumnWidth(5, 600);
-  tableView->setColumnWidth(6, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);
@@ -69,8 +68,8 @@ RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent)
   filterComboBox->addItem("Head");
   filterComboBox->addItem("Type");
   filterComboBox->addItem("Coder");
-  filterComboBox->addItem("Tail text");
-  filterComboBox->addItem("Head text");
+  filterComboBox->addItem("Source");
+  filterComboBox->addItem("Source text");
   filter->setFilterKeyColumn(1);
   
   exportTableButton = new QPushButton(tr("Export visible table"), this);
@@ -146,11 +145,11 @@ void RawLinkagesTable::setFilterColumn()
     {
       filter->setFilterKeyColumn(4);
     }
-  else if (filterComboBox->currentText() == "Tail text") 
+  else if (filterComboBox->currentText() == "Source") 
     {
       filter->setFilterKeyColumn(5);
     }
-  else if (filterComboBox->currentText() == "Head text") 
+  else if (filterComboBox->currentText() == "Source text") 
     {
       filter->setFilterKeyColumn(6);
     }
@@ -176,8 +175,8 @@ void RawLinkagesTable::exportTable()
 	      << "Head" << ","
 	      << "Type" << ","
 	      << "Coder" << ","
-	      << "Source Text" << ","
-	      << "Tail Text" << "\n";
+	      << "Source" << ","
+	      << "Source Text" << "\n";
       // Then we iterate through the visible table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
 	{
@@ -185,14 +184,14 @@ void RawLinkagesTable::exportTable()
 	  QString head = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
 	  QString type = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
 	  QString coder = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-	  QString tailText = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
-	  QString headText = tableView->model()->index(i, 6).data(Qt::DisplayRole).toString();
+	  QString source = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
+	  QString sourceText = tableView->model()->index(i, 6).data(Qt::DisplayRole).toString();
 	  fileOut << tail.toStdString() << ","
 		  << head.toStdString() << ","
 		  << "\"" << doubleQuote(type).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(coder).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(tailText).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(headText).toStdString() << "\"" << "\n";
+		  << "\"" << doubleQuote(source).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(sourceText).toStdString() << "\"" << "\n";
 	}
       // And that should be it!
       fileOut.close();
