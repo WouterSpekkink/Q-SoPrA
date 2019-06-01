@@ -161,6 +161,7 @@ private slots:
   void getEdges(QString coder, QString type, QColor color);
   void plotEdges(QString type);
   void layoutGraph();
+  void redoLayout();
   void getLabels();
   void addLabels();
   void cleanUp();	     
@@ -431,6 +432,7 @@ private:
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;
+  QPointer<QPushButton> redoLayoutButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;

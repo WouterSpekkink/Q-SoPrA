@@ -231,8 +231,6 @@ private:
   QString _headDescriptionFilter;
   QString _headRawFilter;
   QString _headCommentFilter;
-  QString _originalLinkageType;
-  QString _originalCodingMode;
   bool _commentBool;
   bool _linkageCommentBool;
 };

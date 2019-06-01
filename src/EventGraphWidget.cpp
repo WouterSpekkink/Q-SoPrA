@@ -187,7 +187,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   caseListWidget->setEnabled(false);
   
   plotButton = new QPushButton(tr("Plot new"), this);
-  addLinkageTypeButton = new QPushButton(tr("Add linkage"), this);
+  addLinkageTypeButton = new QPushButton(tr("Add linkage type"), this);
   addLinkageTypeButton->setEnabled(false);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
@@ -252,6 +252,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   removeLinkageTypeButton = new QPushButton(tr("Remove from plot"), legendWidget);
   removeLinkageTypeButton->setEnabled(false);
   contractCurrentGraphButton = new QPushButton(tr("Contract current graph"), this);
+  redoLayoutButton = new QPushButton(tr("Redo layout"), this);
 
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -493,6 +494,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
   connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
   connect(contractCurrentGraphButton, SIGNAL(clicked()), this, SLOT(contractCurrentGraph()));
+  connect(redoLayoutButton, SIGNAL(clicked()), this, SLOT(redoLayout()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -756,6 +758,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   zoomSlider->setMaximumWidth(100);
   drawOptionsLeftLayout->addWidget(contractCurrentGraphButton);
   contractCurrentGraphButton->setMaximumWidth(contractCurrentGraphButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(redoLayoutButton);
+  redoLayoutButton->setMaximumWidth(redoLayoutButton->sizeHint().width());
   QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
@@ -1159,6 +1163,7 @@ void EventGraphWidget::setGraphControls(bool state)
   snapGuidesButton->setEnabled(state);
   increaseLabelSizeButton->setEnabled(state);
   decreaseLabelSizeButton->setEnabled(state);
+  redoLayoutButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -3174,12 +3179,12 @@ void EventGraphWidget::plotEdges(QString type)
 
 void EventGraphWidget::layoutGraph() 
 {
-  QVector<IncidentNode *>::iterator it;
+  QVector<IncidentNode*>::iterator it;
   for (it = _incidentNodeVector.begin(); it != _incidentNodeVector.end(); it++) 
     {
       IncidentNode *current = *it;
-      QVector<IncidentNode *>::iterator it2;
-      QVector<IncidentNode *> partners;
+      QVector<IncidentNode*>::iterator it2;
+      QVector<IncidentNode*> partners;
       for (it2 = it + 1; it2 != _incidentNodeVector.end(); it2++) 
 	{
 	  IncidentNode *second = *it2;
@@ -3200,7 +3205,7 @@ void EventGraphWidget::layoutGraph()
       qreal originHeight = current->scenePos().y();
       std::sort(partners.begin(), partners.end(), eventLessThan);
       int partnerCount = partners.size();
-      QVectorIterator<IncidentNode *> it4(partners);
+      QVectorIterator<IncidentNode*> it4(partners);
       while (it4.hasNext()) 
 	{
 	  IncidentNode *currentPartner = it4.next();
@@ -3213,6 +3218,74 @@ void EventGraphWidget::layoutGraph()
 	  partnerCount--;
 	}
     }
+}
+
+void EventGraphWidget::redoLayout()
+{
+  QVector<QGraphicsItem*> allEvents;
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext())
+    {
+      allEvents.push_back(it.next());
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext())
+    {
+      allEvents.push_back(it2.next());
+    }
+  std::sort(allEvents.begin(), allEvents.end(), componentsSort);
+  QVector<QGraphicsItem*>::iterator it3;
+  for (it3 = allEvents.begin(); it3 != allEvents.end(); it3++) 
+    {
+      QGraphicsItem *current = *it3;
+      QVector<QGraphicsItem*>::iterator it4;
+      QVector<QGraphicsItem*> partners;
+      for (it4 = it3 + 1; it4 != allEvents.end(); it4++) 
+	{
+	  QGraphicsItem *second = *it4;
+	  QVectorIterator<Linkage *> it5(_edgeVector);
+	  while (it5.hasNext()) 
+	    {
+	      Linkage *edge = it5.next();
+	      // Basically we just ask whether the current events are linked.
+	      if ((edge->getStart() == current &&
+		   edge->getEnd() == second) ||
+		  (edge->getEnd() == current &&
+		   edge->getStart() == second)) 
+		{
+		  partners.push_back(second);
+		}
+	    }
+	}
+      qreal originHeight = current->scenePos().y();
+      std::sort(partners.begin(), partners.end(), eventLessThan);
+      int partnerCount = partners.size();
+      QVectorIterator<QGraphicsItem*> it6(partners);
+      while (it6.hasNext()) 
+	{
+	  QGraphicsItem *currentPartner = it6.next();
+	  qreal partnerHeight = originHeight;
+	  if (partners.size() > 1) 
+	    {
+	      partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
+	    }
+	  currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
+	  partnerCount--;
+	}
+    }
+  QVectorIterator<IncidentNodeLabel*> it7(_incidentNodeLabelVector);
+  while (it7.hasNext())
+    {
+      IncidentNodeLabel *currentLabel = it7.next();
+      currentLabel->setNewPos(currentLabel->getNode()->scenePos());
+    }
+  QVectorIterator<AbstractNodeLabel*> it8(_abstractNodeLabelVector);
+  while (it8.hasNext())
+    {
+      AbstractNodeLabel *currentLabel = it8.next();
+      currentLabel->setNewPos(currentLabel->getAbstractNode()->scenePos());
+    }
+  updateLinkages();
 }
 
 void EventGraphWidget::getLabels() 
@@ -3756,7 +3829,7 @@ void EventGraphWidget::getLinkageDetails()
       coderComboBox->addItem(currentCoder);
       coderComboBox->blockSignals(false);
     }
-  query->exec("SELECT name FROM linkage_types");
+  query->exec("SELECT name FROM linkage_types ORDER BY name ASC");
   while (query->next()) 
     {
       QString currentType = query->value(0).toString();
@@ -3898,7 +3971,7 @@ void EventGraphWidget::addLinkageType()
   plotEdges(currentType);
   setHeights();
   checkCongruency();
-  updateLinkages();
+  redoLayout();
   addLinkageTypeButton->setEnabled(false);
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
@@ -9726,6 +9799,8 @@ void EventGraphWidget::removeLinkage()
 	  _edgeVector.removeOne(linkage);
 	}
     }
+  setChangeLabel();
+  setHeights();
   setVisibility();
 }
 
@@ -9771,6 +9846,8 @@ void EventGraphWidget::removeNormalLinkage()
 		  delete query;
 		  delete linkage;
 		  _edgeVector.removeOne(linkage);
+		  setChangeLabel();
+		  setHeights();
 		  return;
 		}
 	      else 
@@ -9791,7 +9868,6 @@ void EventGraphWidget::removeNormalLinkage()
 	    }
 	}
     }
-  setHeights();
 }
 
 void EventGraphWidget::ignoreLinkage() 
