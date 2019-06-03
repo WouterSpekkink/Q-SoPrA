@@ -120,6 +120,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   expandLayoutButton = new QPushButton(tr("Expand"), this);
   contractLayoutButton = new QPushButton(tr("Contract"), this);
   springLayoutButton = new QPushButton(tr("Spring layout"), this);
+  frLayoutButton = new QPushButton(tr("Fruchterman-Reingold layout"), this);
   circularLayoutButton = new QPushButton(tr("Circular layout"), this);
   previousNodeButton = new QPushButton(tr("<<"), infoWidget);
   previousNodeButton->setEnabled(false);   
@@ -322,6 +323,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(springLayoutButton, SIGNAL(clicked()), this, SLOT(springLayout()));
+  connect(frLayoutButton, SIGNAL(clicked()), this, SLOT(frLayout()));
   connect(circularLayoutButton, SIGNAL(clicked()), this, SLOT(circularLayout()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
@@ -603,6 +605,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(springLayoutButton);
   springLayoutButton->setMaximumWidth(springLayoutButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(frLayoutButton);
+  frLayoutButton->setMaximumWidth(frLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(circularLayoutButton);
   circularLayoutButton->setMaximumWidth(circularLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(expandLayoutButton);
@@ -1808,26 +1812,55 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color)
 void NetworkGraphWidget::springLayout() 
 {
   qApp->setOverrideCursor(Qt::WaitCursor);
-  QVectorIterator<NetworkNode*> it(_networkNodeVector);
-  while (it.hasNext()) 
+  QVector<QGraphicsItem*> edges;
+  QVector<NetworkNode*> nodes;  
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext())
     {
-      NetworkNode* currentNode = it.next();
-      qreal x = (qrand() % 5000) - 2500;
-      qreal y = (qrand() % 5000) - 2500;
-      currentNode->setPos(x, y);
-    }
-  for(int i = 0; i != 7; i++) 
-    {
-      QListIterator<QGraphicsItem*> it(scene->items());
-      while (it.hasNext()) 
+      QGraphicsItem *current = it.next();
+      DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(current);
+      UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(current);
+      NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(current);
+      if (directed)
 	{
-	  DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(it.peekNext());
-	  UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(it.peekNext());
+	  edges.push_back(directed);
+	}
+      else if (undirected)
+	{
+	  edges.push_back(undirected);
+	}
+      else if (node)
+	{
+	  nodes.push_back(node);
+	  qreal x = qrand() % 5000;
+	  qreal y = qrand() % 5000;
+	  node->setPos(x, y);
+	}
+    }
+  qreal a = 0.0;
+  qreal da = 2.0 * Pi / nodes.size();
+  QVectorIterator<NetworkNode*> cit(nodes);
+  while (cit.hasNext())
+    {
+      NetworkNode *node = cit.next();
+      QPointF newPos = QPointF();
+      newPos.setX(nodes.size() * cos(a));
+      newPos.setY(nodes.size() * sin(a));
+      node->setPos(newPos);
+      a += da;
+    }
+  for(int i = 0; i != 100; i++) 
+    {
+      QVectorIterator<QGraphicsItem*> it2(edges);
+      while (it2.hasNext())
+	{
+	  QGraphicsItem *current = it2.next();
+	  DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(current);
+	  UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(current);
 	  if (directed) 
 	    {
-	      DirectedEdge *currentEdge = qgraphicsitem_cast<DirectedEdge*>(it.next());
-	      NetworkNode *currentSource = currentEdge->getStart();
-	      NetworkNode *currentTarget = currentEdge->getEnd();
+	      NetworkNode *currentSource = directed->getStart();
+	      NetworkNode *currentTarget = directed->getEnd();
 	      qreal dist = qSqrt(qPow(currentSource->pos().x() -
 				      currentTarget->pos().x(), 2) +
 				 qPow(currentSource->pos().y() -
@@ -1849,45 +1882,12 @@ void NetworkGraphWidget::springLayout()
 		  currentSource->getLabel()->setNewPos(currentSource->scenePos());
 		  currentTarget->setPos(targetPoint);
 		  currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
-		}
-	      QVectorIterator<NetworkNode*> it(_networkNodeVector);
-	      while (it.hasNext()) 
-		{
-		  NetworkNode *first = it.next();
-		  QVectorIterator<NetworkNode*> it2(_networkNodeVector);
-		  while (it2.hasNext()) 
-		    {
-		      NetworkNode *second = it2.next();
-		      dist = qSqrt(qPow(first->pos().x() -
-					second->pos().x(), 2) +
-				   qPow(first->pos().y() -
-					second->pos().y(), 2));
-		      if (dist < 80) 
-			{
-			  QPointF firstPoint = first->scenePos();
-			  QPointF secondPoint = second->scenePos();
-			  qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
-			  qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
-			  QPointF midPoint = QPointF(mX, mY);
-			  qreal firstXDiff = firstPoint.x() - midPoint.x();
-			  qreal firstYDiff = firstPoint.y() - midPoint.y();
-			  first->setPos(first->scenePos().x() + firstXDiff,
-					first->scenePos().y() + firstYDiff);
-			  first->getLabel()->setNewPos(first->scenePos());
-			  qreal secondXDiff = secondPoint.x() - midPoint.x();
-			  qreal secondYDiff = secondPoint.y() - midPoint.y();
-			  second->setPos(second->scenePos().x() + secondXDiff,
-					 second->scenePos().y() + secondYDiff);
-			  second->getLabel()->setNewPos(second->scenePos());
-			}
-		    }
 		}
 	    }
 	  else if (undirected) 
 	    {
-	      UndirectedEdge *currentEdge = qgraphicsitem_cast<UndirectedEdge*>(it.next());
-	      NetworkNode *currentSource = currentEdge->getStart();
-	      NetworkNode *currentTarget = currentEdge->getEnd();
+	      NetworkNode *currentSource = undirected->getStart();
+	      NetworkNode *currentTarget = undirected->getEnd();
 	      qreal dist = qSqrt(qPow(currentSource->pos().x() -
 				      currentTarget->pos().x(), 2) +
 				 qPow(currentSource->pos().y() -
@@ -1910,42 +1910,38 @@ void NetworkGraphWidget::springLayout()
 		  currentTarget->setPos(targetPoint);
 		  currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
 		}
-	      QVectorIterator<NetworkNode*> it(_networkNodeVector);
-	      while (it.hasNext()) 
-		{
-		  NetworkNode *first = it.next();
-		  QVectorIterator<NetworkNode*> it2(_networkNodeVector);
-		  while (it2.hasNext()) 
-		    {
-		      NetworkNode *second = it2.next();
-		      dist = qSqrt(qPow(first->pos().x() -
-					second->pos().x(), 2) +
-				   qPow(first->pos().y() -
-					second->pos().y(), 2));
-		      if (dist < 80) 
-			{
-			  QPointF firstPoint = first->scenePos();
-			  QPointF secondPoint = second->scenePos();
-			  qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
-			  qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
-			  QPointF midPoint = QPointF(mX, mY);
-			  qreal firstXDiff = firstPoint.x() - midPoint.x();
-			  qreal firstYDiff = firstPoint.y() - midPoint.y();
-			  first->setPos(first->scenePos().x() + firstXDiff,
-					first->scenePos().y() + firstYDiff);
-			  first->getLabel()->setNewPos(first->scenePos());
-			  qreal secondXDiff = secondPoint.x() - midPoint.x();
-			  qreal secondYDiff = secondPoint.y() - midPoint.y();
-			  second->setPos(second->scenePos().x() + secondXDiff,
-					 second->scenePos().y() + secondYDiff);
-			  second->getLabel()->setNewPos(second->scenePos());
-			}
-		    }
-		}
 	    }
-	  else 
+	}
+      QVectorIterator<NetworkNode*> it3(nodes);
+      while (it3.hasNext()) 
+	{
+	  NetworkNode *first = it3.next();
+	  QVectorIterator<NetworkNode*> it4(nodes);
+	  while (it4.hasNext()) 
 	    {
-	      it.next();
+	      NetworkNode *second = it4.next();
+	      qreal dist = qSqrt(qPow(first->pos().x() -
+				      second->pos().x(), 2) +
+				 qPow(first->pos().y() -
+				      second->pos().y(), 2));
+	      if (dist < 100) 
+		{
+		  QPointF firstPoint = first->scenePos();
+		  QPointF secondPoint = second->scenePos();
+		  qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
+		  qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
+		  QPointF midPoint = QPointF(mX, mY);
+		  qreal firstXDiff = firstPoint.x() - midPoint.x();
+		  qreal firstYDiff = firstPoint.y() - midPoint.y();
+		  first->setPos(first->scenePos().x() + firstXDiff,
+				first->scenePos().y() + firstYDiff);
+		  first->getLabel()->setNewPos(first->scenePos());
+		  qreal secondXDiff = secondPoint.x() - midPoint.x();
+		  qreal secondYDiff = secondPoint.y() - midPoint.y();
+		  second->setPos(second->scenePos().x() + secondXDiff,
+				 second->scenePos().y() + secondYDiff);
+		  second->getLabel()->setNewPos(second->scenePos());
+		}
 	    }
 	}
     }
@@ -1953,6 +1949,183 @@ void NetworkGraphWidget::springLayout()
   qApp->restoreOverrideCursor();
   qApp->processEvents();
 }
+
+void NetworkGraphWidget::frLayout() 
+{
+  qApp->setOverrideCursor(Qt::WaitCursor);
+  QVector<QGraphicsItem*> edges;
+  QVector<NetworkNode*> nodes;
+  QMap<NetworkNode*, QPointF> defaultDisplacement;
+  QListIterator<QGraphicsItem*> it(scene->items());
+  while (it.hasNext())
+    {
+      QGraphicsItem *current = it.next();
+      DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(current);
+      UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(current);
+      NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(current);
+      if (directed)
+	{
+	  edges.push_back(directed);
+	}
+      else if (undirected)
+	{
+	  edges.push_back(undirected);
+	}
+      else if (node)
+	{
+	  nodes.push_back(node);
+	  qreal x = qrand() % 5000;
+	  qreal y = qrand() % 5000;
+	  node->setPos(x, y);
+	  defaultDisplacement.insert(node, QPointF());
+	}
+    }
+  qreal a = 0.0;
+  qreal da = 2.0 * Pi / nodes.size();
+  QVectorIterator<NetworkNode*> cit(nodes);
+  while (cit.hasNext())
+    {
+      NetworkNode *node = cit.next();
+      QPointF newPos = QPointF();
+      newPos.setX(nodes.size() * cos(a));
+      newPos.setY(nodes.size() * sin(a));
+      node->setPos(newPos);
+      a += da;
+    }
+  qreal k = 15;
+  qreal temp = 10 * qSqrt(nodes.size());
+  for (int i = 0; i != 50; i++)
+    {
+      QMap<NetworkNode*, QPointF> displacement = defaultDisplacement;
+      QVectorIterator<NetworkNode*> it2(nodes);
+      while (it2.hasNext())
+	{ 
+	  NetworkNode *one = it2.next();
+	  QPointF displacementOne = displacement.value(one);
+	  QVectorIterator<NetworkNode*> it3(nodes);
+	  while (it3.hasNext())
+	    {
+	      NetworkNode *two = it3.next();
+	      QPointF displacementTwo = displacement.value(two);
+	      if (one != two)
+		{
+		  QPointF diff = one->pos() - two->pos();
+		  qreal distance = qSqrt(qPow(one->pos().x() - two->pos().x(), 2) +
+					 qPow(one->pos().y() - two->pos().y(), 2));
+		  if (distance < 5000.0)
+		    {
+		      double repulsion = (k*k) / distance;
+		      displacementOne += diff / distance * repulsion;
+		      displacement.insert(one, displacementOne);
+		      displacementTwo -= diff / distance * repulsion;
+		      displacement.insert(two, displacementTwo);
+		    }
+		}
+	    }
+	}
+      QVectorIterator<QGraphicsItem*> it4(edges);
+      while (it4.hasNext())
+	{
+	  QGraphicsItem *current = it4.next();
+	  DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(current);
+	  UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(current);
+	  if (directed)
+	    {
+	      NetworkNode *tail = directed->getStart();
+	      QPointF displacementTail = displacement.value(tail);
+	      NetworkNode *head = directed->getEnd();
+	      QPointF displacementHead = displacement.value(head);
+	      QPointF diff = tail->pos() - head->pos();
+	      qreal distance = qSqrt(qPow(tail->pos().x() - head->pos().x(), 2) +
+				     qPow(tail->pos().y() - head->pos().y(), 2));
+	      if (distance > 250.0)
+		{
+		  qreal attraction = distance * distance / k;
+		  displacementTail -= diff / distance * attraction;
+		  displacement.insert(tail, displacementTail);
+		  displacementHead += diff / distance * attraction;
+		  displacement.insert(head, displacementHead);
+		}
+	    }
+	  else if (undirected)
+	    {
+	      NetworkNode *tail = undirected->getStart();
+	      QPointF displacementTail = displacement.value(tail);
+	      NetworkNode *head = undirected->getEnd();
+	      QPointF displacementHead = displacement.value(head);
+	      QPointF diff = tail->pos() - head->pos();
+	      qreal distance = qSqrt(qPow(tail->pos().x() - head->pos().x(), 2) +
+				     qPow(tail->pos().y() - head->pos().y(), 2));
+	      if (distance > 250.0)
+		{
+		  qreal attraction = distance * distance / k;
+		  displacementTail -= diff / distance * attraction;
+		  displacement.insert(tail, displacementTail);
+		  displacementHead += diff / distance * attraction;
+		  displacement.insert(head, displacementHead);
+		}
+	    }
+	}
+      QVectorIterator<NetworkNode*> it5(nodes);
+      while (it5.hasNext())
+	{
+	  NetworkNode *node = it5.next();
+	  QPointF disp = displacement.value(node);
+	  qreal norm = qSqrt(pow(disp.x(),2) + pow(disp.y(),2));
+	  if (norm > 1.0)
+	    {
+	      qreal capped = std::min(norm, temp);
+	      QPointF cappedDisp = disp / norm * capped;
+	      node->setPos(node->pos() + cappedDisp);
+	      node->getLabel()->setNewPos(node->scenePos());
+	    }
+	}
+      if (temp > 1.5)
+	{
+	  temp *= 0.85;
+	}
+      else
+	{
+	  temp = 1.5;
+	}
+      QVectorIterator<NetworkNode*> it6(nodes);
+      while (it6.hasNext()) 
+	{
+	  NetworkNode *first = it6.next();
+	  QVectorIterator<NetworkNode*> it7(nodes);
+	  while (it7.hasNext()) 
+	    {
+	      NetworkNode *second = it7.next();
+	      qreal dist = qSqrt(qPow(first->pos().x() -
+				      second->pos().x(), 2) +
+				 qPow(first->pos().y() -
+				      second->pos().y(), 2));
+	      if (dist < 50) 
+		{
+		  QPointF firstPoint = first->scenePos();
+		  QPointF secondPoint = second->scenePos();
+		  qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
+		  qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
+		  QPointF midPoint = QPointF(mX, mY);
+		  qreal firstXDiff = firstPoint.x() - midPoint.x();
+		  qreal firstYDiff = firstPoint.y() - midPoint.y();
+		  first->setPos(first->scenePos().x() + firstXDiff,
+				first->scenePos().y() + firstYDiff);
+		  first->getLabel()->setNewPos(first->scenePos());
+		  qreal secondXDiff = secondPoint.x() - midPoint.x();
+		  qreal secondYDiff = secondPoint.y() - midPoint.y();
+		  second->setPos(second->scenePos().x() + secondXDiff,
+				 second->scenePos().y() + secondYDiff);
+		  second->getLabel()->setNewPos(second->scenePos());
+		}
+	    }
+	}
+    }
+  view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
+  qApp->restoreOverrideCursor();
+  qApp->processEvents();
+}
+
 
 void NetworkGraphWidget::circularLayout() 
 {

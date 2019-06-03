@@ -170,6 +170,7 @@ private slots:
   void setChangeLabel();
   void updateEdges();
   void springLayout();
+  void frLayout();
   void circularLayout();
   void expandLayout();
   void contractLayout();
@@ -306,6 +307,7 @@ private:
   QPointer<QPushButton> mergeButton;
   QPointer<QPushButton> removeTypeButton;
   QPointer<QPushButton> springLayoutButton;
+  QPointer<QPushButton> frLayoutButton;
   QPointer<QPushButton> circularLayoutButton;
   QPointer<QPushButton> expandLayoutButton;
   QPointer<QPushButton> contractLayoutButton;

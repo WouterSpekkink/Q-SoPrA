@@ -6079,7 +6079,7 @@ void EventGraphWidget::seePlots()
       query->bindValue(":plot", plot);
       query->exec();
       // saved_eg_plots_attributes_to_abstract_nodes
-      query->prepare("DELETE FROM saved_eg_plots_incidents_to_abstract_nodes "
+      query->prepare("DELETE FROM saved_eg_plots_attributes_to_abstract_nodes "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
