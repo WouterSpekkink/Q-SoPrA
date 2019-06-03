@@ -1019,14 +1019,18 @@ void AbstractionDialog::findTailsLowerBound(QSet<int> *pMark, int currentInciden
 
 QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds) 
 {
-  // SHOULD I CHECK HERE IF A LINKAGE IS ONLY TIED TO THE FIRST OR THE LAST OF AN INCIDENT?
-  // YES, AND I SHOULD CREATE AN EXCEPTION FOR THEM.
+  // We create a vector that indicates for each type of linkage whether it is present
+  // in the current selection.
   QVector<bool> result;
   QVectorIterator<QString> it(_presentTypes);
   while (it.hasNext()) 
     {
       QString currentType = it.next();
+      // 'observed' is a vector that holds all incidents that are connected by
+      // a linkage of this type.
       QVector<int> observed;
+      // We also need a vector to store our linkages, which we will do as pairs.
+      QVector<QPair<int, int>> edges;
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT tail, head FROM linkages "
 		     "WHERE type = :type");
@@ -1034,14 +1038,19 @@ QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds)
       query->exec();
       while (query->next()) 
 	{
-	  observed.push_back(query->value(0).toInt());
-	  observed.push_back(query->value(1).toInt());
+	  int tail = query->value(0).toInt();
+	  int head = query->value(1).toInt();
+	  observed.push_back(tail);
+	  observed.push_back(head);
+	  edges.push_back(QPair<int,int>(tail, head));
 	}
       delete query;
+      // We iteratore throuhg the 'observed' vector to see if our current selection
+      // has incidents included in them. We put these in a vector called 'included'.
       QVectorIterator<int> it2(observed);
-
       QVector<int> included;
-
+      // Status will record the presence of linkages. We need to make exceptions for
+      // some cases.
       bool status = false;
       while (it2.hasNext()) 
 	{
@@ -1051,30 +1060,57 @@ QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds)
 	      included.push_back(currentObserved);
 	    }
 	}
-
+      // If we have more than two incidents connected by a linkage of this type
+      // then we should always consider the linkage as present.
       if (included.size() > 2)
 	{
 	  status = true;
 	}
-      else if (included.size() == 2)
+      // If there are only one or two linkages connected by this kind of linkage, then
+      // there might be situations that should count as exceptions. 
+      else if (included.size() <= 2 && included.size() > 0)
 	{
-	  if (incidentIds.size() > 2)
+	  // We need to see if any of the incidents in our selection are connected by
+	  // the current type of linkage. It might just be the first and the last incidents
+	  // that are both connected to an 'outsider', in which case we don't want to count
+	  // this linkage type as present.
+	  QVectorIterator<int> it3(incidentIds);
+	  while (it3.hasNext())
 	    {
-	      if (!(included[0] == incidentIds.first() &&
-		    included[1] == incidentIds.last()) ||
-		  !(included[1] == incidentIds.first() &&
-		    included[0] == incidentIds.last()))
+	      int first = it3.next();
+	      QVectorIterator<int> it4(incidentIds);
+	      while (it4.hasNext())
 		{
-		  status = true;
+		  int second = it4.next();
+		  if (first != second)
+		    {
+		      // Depending on the direction of the linkage, the order of
+		      // tail and head might be different. We therefore consider
+		      // two cases for each pair of incidents.
+		      QPair<int, int> caseOne = QPair<int, int>(first, second);
+		      QPair<int, int> caseTwo = QPair<int, int>(second, first);
+		      if (edges.contains(caseOne) || edges.contains(caseTwo))
+			{
+			  status = true;
+			}
+		    }
 		}
 	    }
-	}
-      else if (included.size() == 1)
-	{
+	  // Now we still need to make sure that if there is a linkage with 'outsiders'
+	  // This linkage does only exist with either the first or the last member of
+	  // the current selection.	 
 	  if (included[0] != incidentIds.first() &&
 	      included[0] != incidentIds.last())
 	    {
 	      status = true;
+	    }
+	  if (included.size() == 2)
+	    {
+	      if (included[1] != incidentIds.first() &&
+		  included[1] != incidentIds.last())
+		{
+		  status = true;
+		}
 	    }
 	}
       result.push_back(status);
