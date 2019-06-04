@@ -1960,6 +1960,7 @@ void NetworkGraphWidget::springLayout()
       NetworkNode *node = it5.next();
       QPointF newPosition = newPos.value(node);
       node->setPos(newPosition);
+      node->getLabel()->setNewPos(node->scenePos());
     }
   bool overlapping = true;
   while (overlapping)
