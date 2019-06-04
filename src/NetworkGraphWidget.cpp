@@ -160,6 +160,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   exportNodesButton = new QPushButton(tr("Export nodes"), graphicsWidget);
   exportEdgesButton = new QPushButton(tr("Export edges"), graphicsWidget);
+  exportRelationalEventsButton = new QPushButton(tr("Export relational events"), graphicsWidget);
   setFilteredButton = new QPushButton(tr("Filter on"), legendWidget);
   setFilteredButton->setCheckable(true);
   setFilteredButton->setChecked(true);
@@ -200,7 +201,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   addLineButton->setIconSize(QSize(20, 20));
   addLineButton->setMinimumSize(40, 40);
   addLineButton->setMaximumSize(40, 40);
-  addSingleArrowButton = new QPushButton(QIcon("./images/single_arrow_object.png"), "", this);
+  addSingleArrowButton = new QPushButton(QIcon("./imasges/single_arrow_object.png"), "", this);
   addSingleArrowButton->setIconSize(QSize(20, 20));
   addSingleArrowButton->setMinimumSize(40, 40);
   addSingleArrowButton->setMaximumSize(40, 40);
@@ -375,6 +376,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(exportNodesButton, SIGNAL(clicked()), this, SLOT(exportNodes()));
   connect(exportEdgesButton, SIGNAL(clicked()), this, SLOT(exportEdges()));
+  connect(exportRelationalEventsButton, SIGNAL(clicked()), this, SLOT(exportRelationalEvents()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
   connect(addLineButton, SIGNAL(clicked()), scene, SLOT(prepLinePoints()));
@@ -599,6 +601,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(exportSvgButton);
   graphicsControlsLayout->addWidget(exportNodesButton);
   graphicsControlsLayout->addWidget(exportEdgesButton);
+  graphicsControlsLayout->addWidget(exportRelationalEventsButton);
   graphicsWidget->setMaximumWidth(175);
   graphicsWidget->setMinimumWidth(175);
   graphicsWidget->setLayout(graphicsControlsLayout);
@@ -5443,6 +5446,104 @@ void NetworkGraphWidget::exportEdges()
 	}
       // And that should be it!
       fileOut.close();
+    }
+}
+
+void NetworkGraphWidget::exportRelationalEvents()
+{
+  // We let the user set the file name and location.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if(!fileName.endsWith(".csv")) 
+	{
+	  fileName.append(".csv");
+	}
+      // And we create a file outstream.  
+      std::ofstream fileOut(fileName.toStdString().c_str());
+      // Let us first create the file header.
+      fileOut << "Order " << ","
+	      << "Timing " << ","
+	      << "Source" << ","
+	      << "Target" << ","
+	      << "Interaction" << "\n";
+      // Now we need to gather the information we wish to output.
+      QMultiMap<int, QGraphicsItem*> interactions;
+      QVectorIterator<DirectedEdge*> it(_directedVector);
+      while (it.hasNext()) 
+	{
+	  DirectedEdge *directed = it.next();
+	  if (directed->isVisible()) 
+	    {
+	      QList<int> incidents = directed->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      QListIterator<int> it2(incidents);
+	      while (it2.hasNext())
+		{
+		  int incident = it2.next();
+		  interactions.insert(incident, directed);
+		}
+	    }
+	}
+      QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
+      while (it3.hasNext()) 
+	{
+	  UndirectedEdge *undirected = it3.next();
+	  if (undirected->isVisible()) 
+	    {
+	      QList<int> incidents = undirected->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      QListIterator<int> it4(incidents);
+	      while (it4.hasNext())
+		{
+		  int incident = it4.next();
+		  interactions.insert(incident, undirected);
+		}
+	    }
+	}
+      // Then we write the file.
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT timestamp FROM incidents WHERE ch_order = :ch_order");
+      QList<int> incidents = interactions.keys();
+      std::sort(incidents.begin(), incidents.end());
+      QListIterator<int> it5(incidents);
+      while (it5.hasNext())
+	{
+	  int incident = it5.next();
+	  query->bindValue(":ch_order", incident);
+	  query->exec();
+	  query->first();
+	  QString timing = query->value(0).toString();
+	  QList<QGraphicsItem*> relationships = interactions.values(incident);
+	  QListIterator<QGraphicsItem*> it6(relationships);
+	  while (it6.hasNext())
+	    {
+	      QGraphicsItem *current = it6.next();
+	      DirectedEdge *directed = qgraphicsitem_cast<DirectedEdge*>(current);
+	      UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(current);
+	      QString type = QString();
+	      QString source = QString();
+	      QString target = QString();
+	      if (directed)
+		{
+		  type = directed->getType();
+		  source = directed->getStart()->getName();
+		  target = directed->getEnd()->getName();
+		}
+	      else if (undirected)
+		{
+		  type = undirected->getType();
+		  source = undirected->getStart()->getName();
+		  target = undirected->getEnd()->getName();
+		}
+	      fileOut << incident << ","
+		      << "\"" << doubleQuote(timing).toStdString() << "\"" << ","
+		      << "\"" << doubleQuote(source).toStdString() << "\"" << ","
+		      << "\"" << doubleQuote(target).toStdString() << "\"" << ","
+		      << "\"" << doubleQuote(type).toStdString() << "\"" << "\n";
+	    }
+	}
+      delete query;
     }
 }
 

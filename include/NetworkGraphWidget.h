@@ -165,6 +165,7 @@ private slots:
   void exportSvg();
   void exportNodes();
   void exportEdges();
+  void exportRelationalEvents();
   void saveCurrentPlot();
   void seePlots();
   void setChangeLabel();
@@ -298,6 +299,7 @@ private:
   QPointer<QPushButton> exportSvgButton;
   QPointer<QPushButton> exportNodesButton;
   QPointer<QPushButton> exportEdgesButton;
+  QPointer<QPushButton> exportRelationalEventsButton;
   QPointer<QPushButton> setFilteredButton;
   QPointer<QPushButton> unsetFilteredButton;
   QPointer<QPushButton> hideTypeButton;
