@@ -133,6 +133,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), graphicsWidget);
+  layoutLabel = new QLabel(tr("<b>Layout:</b>"), this);
   
   coderComboBox = new QComboBox(this);
   coderComboBox->addItem(DEFAULT);
@@ -197,10 +198,22 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   exportTableButton = new QPushButton(tr("Export table"), graphicsWidget);
   exportNodesButton = new QPushButton(tr("Export nodes"), graphicsWidget);
   exportEdgesButton = new QPushButton(tr("Export edges"), graphicsWidget);
-  increaseDistanceButton = new QPushButton("< >", this);
-  decreaseDistanceButton = new QPushButton("> <", this);
-  expandButton = new QPushButton(tr("Expand"), this);
-  contractButton = new QPushButton(tr("Contract"), this);
+  increaseDistanceButton = new QPushButton(QIcon("./images/expand_horizontal.png"), "", this);
+  increaseDistanceButton->setIconSize(QSize(20, 20));
+  increaseDistanceButton->setMinimumSize(40, 40);
+  increaseDistanceButton->setMaximumSize(40, 40);
+  decreaseDistanceButton = new QPushButton(QIcon("./images/contract_horizontal.png"), "", this);
+  decreaseDistanceButton->setIconSize(QSize(20, 20));
+  decreaseDistanceButton->setMinimumSize(40, 40);
+  decreaseDistanceButton->setMaximumSize(40, 40);
+  expandButton = new QPushButton(QIcon("./images/expand_vertical.png"), "", this);
+  expandButton->setIconSize(QSize(20, 20));
+  expandButton->setMinimumSize(40, 40);
+  expandButton->setMaximumSize(40, 40);
+  contractButton = new QPushButton(QIcon("./images/contract_vertical.png"), "", this);
+  contractButton->setIconSize(QSize(20, 20));
+  contractButton->setMinimumSize(40, 40);
+  contractButton->setMaximumSize(40, 40);
   compareButton = new QPushButton(tr("Compare"), this);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
   toggleDetailsButton->setCheckable(true);
@@ -251,7 +264,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   showLinkageTypeButton->setEnabled(false);
   removeLinkageTypeButton = new QPushButton(tr("Remove from plot"), legendWidget);
   removeLinkageTypeButton->setEnabled(false);
-  contractCurrentGraphButton = new QPushButton(tr("Contract current graph"), this);
+  minimiseCurrentGraphButton = new QPushButton(tr("Minimise current graph"), this);
   redoLayoutButton = new QPushButton(tr("Redo layout"), this);
 
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
@@ -493,7 +506,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
   connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
-  connect(contractCurrentGraphButton, SIGNAL(clicked()), this, SLOT(contractCurrentGraph()));
+  connect(minimiseCurrentGraphButton, SIGNAL(clicked()), this, SLOT(minimiseCurrentGraph()));
   connect(redoLayoutButton, SIGNAL(clicked()), this, SLOT(redoLayout()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
@@ -744,22 +757,33 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(toggleDetailsButton);
   toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
+  QPointer<QFrame> vertLineOne = new QFrame();
+  vertLineOne->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineOne);
+  drawOptionsLayout->addWidget(layoutLabel);
+  layoutLabel->setMaximumWidth(layoutLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(increaseDistanceButton);
-  drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   decreaseDistanceButton->setMaximumWidth(decreaseDistanceButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(expandButton);
-  drawOptionsLeftLayout->addWidget(contractButton);
   expandButton->setMaximumWidth(expandButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(contractButton);
   contractButton->setMaximumWidth(contractButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(minimiseCurrentGraphButton);
+  minimiseCurrentGraphButton->setMaximumWidth(minimiseCurrentGraphButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(redoLayoutButton);
+  redoLayoutButton->setMaximumWidth(redoLayoutButton->sizeHint().width());
+  QPointer<QFrame> vertLineTwo = new QFrame();
+  vertLineTwo->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineTwo);
   drawOptionsLeftLayout->addWidget(zoomLabel);
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
-  drawOptionsLeftLayout->addWidget(contractCurrentGraphButton);
-  contractCurrentGraphButton->setMaximumWidth(contractCurrentGraphButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(redoLayoutButton);
-  redoLayoutButton->setMaximumWidth(redoLayoutButton->sizeHint().width());
+  QPointer<QFrame> vertLineThree = new QFrame();
+  vertLineThree->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineThree);
   QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
@@ -769,6 +793,9 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
+  QPointer<QFrame> vertLineFour = new QFrame();
+  vertLineFour->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineFour);
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
   drawOptionsRightLayout->addWidget(toggleLegendButton);
@@ -1135,7 +1162,7 @@ void EventGraphWidget::setGraphControls(bool state)
   zoomSlider->setEnabled(state);
   expandButton->setEnabled(state);
   contractButton->setEnabled(state);
-  contractCurrentGraphButton->setEnabled(state);
+  minimiseCurrentGraphButton->setEnabled(state);
   increaseDistanceButton->setEnabled(state);
   decreaseDistanceButton->setEnabled(state);
   addLineButton->setEnabled(state);
@@ -3580,7 +3607,7 @@ void EventGraphWidget::contractGraph()
     }
 }
 
-void EventGraphWidget::contractCurrentGraph()
+void EventGraphWidget::minimiseCurrentGraph()
 {
   _contracted = true;
   QVector<QGraphicsItem*> allEvents;

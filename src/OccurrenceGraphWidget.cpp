@@ -116,6 +116,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   guideLinesLabel = new QLabel(tr("<b>Add guides:</b>"), this);
   labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), graphicsWidget);
+  layoutLabel = new QLabel(tr("<b>Layout:</b>"), this);
   
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
@@ -157,8 +158,14 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   attributeLabelsOnlyButton = new QPushButton(tr("Attribute labels only"), graphicsWidget);
   attributeLabelsOnlyButton->setCheckable(true);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
-  increaseDistanceButton = new QPushButton(tr("< >"), this);
-  decreaseDistanceButton = new QPushButton(tr("> <"), this);
+  increaseDistanceButton = new QPushButton(QIcon("./images/expand_horizontal.png"), "", this);
+  increaseDistanceButton->setIconSize(QSize(20, 20));
+  increaseDistanceButton->setMinimumSize(40, 40);
+  increaseDistanceButton->setMaximumSize(40, 40);
+  decreaseDistanceButton = new QPushButton(QIcon("./images/contract_horizontal.png"), "", this);
+  decreaseDistanceButton->setIconSize(QSize(20, 20));
+  decreaseDistanceButton->setMinimumSize(40, 40);
+  decreaseDistanceButton->setMaximumSize(40, 40);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   exportMatrixButton = new QPushButton(tr("Export matrix"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
@@ -527,14 +534,26 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   mainLayout->addLayout(screenLayout);
   QPointer<QHBoxLayout> drawOptionsLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
+  drawOptionsLeftLayout->addWidget(layoutLabel);
+  layoutLabel->setMaximumWidth(layoutLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(increaseDistanceButton);
-  drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   decreaseDistanceButton->setMaximumWidth(decreaseDistanceButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(matchEventGraphButton);
+  matchEventGraphButton->setMaximumWidth(matchEventGraphButton->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(restoreButton);
+  restoreButton->setMaximumWidth(restoreButton->sizeHint().width());
+  QPointer<QFrame> vertLineOne = new QFrame();
+  vertLineOne->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineOne);
   drawOptionsLeftLayout->addWidget(zoomLabel);
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
+  QPointer<QFrame> vertLineTwo = new QFrame();
+  vertLineTwo->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineTwo);
   QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
@@ -544,10 +563,11 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
+  QPointer<QFrame> vertLineThree = new QFrame();
+  vertLineThree->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineThree);
 
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
-  drawOptionsRightLayout->addWidget(matchEventGraphButton);
-  drawOptionsRightLayout->addWidget(restoreButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsRightLayout->addWidget(toggleGraphicsControlsButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);

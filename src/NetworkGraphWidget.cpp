@@ -95,10 +95,16 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   fillColorLabel = new QLabel(tr("<b>Fill color:</b>"), this);	
   fillOpacityLabel = new QLabel(tr("<b>Opacity:</b>"), this);
   labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), this);
+  layoutLabel = new QLabel(tr("<b>Layout:</b>"), this);
   
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
 
+  layoutComboBox = new QComboBox(this);
+  layoutComboBox->addItem(SPRINGLAYOUT);
+  layoutComboBox->addItem(FRLAYOUT);
+  layoutComboBox->addItem(CIRCULARLAYOUT);
+  
   nameField = new QLineEdit(infoWidget);
   nameField->setReadOnly(true);
   attributesFilterField = new QLineEdit(infoWidget);
@@ -117,11 +123,15 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   toggleGraphicsControlsButton->setCheckable(true);
   toggleDetailsButton = new QPushButton(tr("Toggle details"), this);
   toggleDetailsButton->setCheckable(true);
-  expandLayoutButton = new QPushButton(tr("Expand"), this);
-  contractLayoutButton = new QPushButton(tr("Contract"), this);
-  springLayoutButton = new QPushButton(tr("Spring layout"), this);
-  frLayoutButton = new QPushButton(tr("Fruchterman-Reingold layout"), this);
-  circularLayoutButton = new QPushButton(tr("Circular layout"), this);
+  expandLayoutButton = new QPushButton(QIcon("./images/expand_network.png"), "", this);
+  expandLayoutButton->setIconSize(QSize(20, 20));
+  expandLayoutButton->setMinimumSize(40, 40);
+  expandLayoutButton->setMaximumSize(40, 40);
+  contractLayoutButton = new QPushButton(QIcon("./images/contract_network.png"), "", this);
+  contractLayoutButton->setIconSize(QSize(20, 20));
+  contractLayoutButton->setMinimumSize(40, 40);
+  contractLayoutButton->setMaximumSize(40, 40);
+  layoutButton = new QPushButton(tr("Run layout"), this);
   previousNodeButton = new QPushButton(tr("<<"), infoWidget);
   previousNodeButton->setEnabled(false);   
   nextNodeButton = new QPushButton(tr(">>"), infoWidget);
@@ -322,9 +332,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(springLayoutButton, SIGNAL(clicked()), this, SLOT(springLayout()));
-  connect(frLayoutButton, SIGNAL(clicked()), this, SLOT(frLayout()));
-  connect(circularLayoutButton, SIGNAL(clicked()), this, SLOT(circularLayout()));
+  connect(layoutButton, SIGNAL(clicked()), this, SLOT(makeLayout()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotNewGraph()));
   connect(addButton, SIGNAL(clicked()), this, SLOT(addRelationshipType()));
@@ -603,20 +611,29 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(toggleDetailsButton);
   toggleDetailsButton->setMaximumWidth(toggleDetailsButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(springLayoutButton);
-  springLayoutButton->setMaximumWidth(springLayoutButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(frLayoutButton);
-  frLayoutButton->setMaximumWidth(frLayoutButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(circularLayoutButton);
-  circularLayoutButton->setMaximumWidth(circularLayoutButton->sizeHint().width());
+  QPointer<QFrame> vertLineOne = new QFrame();
+  vertLineOne->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineOne);
+  drawOptionsLeftLayout->addWidget(layoutLabel);
+  layoutLabel->setMaximumWidth(layoutLabel->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(layoutComboBox);
+  layoutComboBox->setMaximumWidth(layoutComboBox->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(layoutButton);
+  layoutButton->setMaximumWidth(layoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(expandLayoutButton);
   expandLayoutButton->setMaximumWidth(expandLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(contractLayoutButton);
   contractLayoutButton->setMaximumWidth(contractLayoutButton->sizeHint().width());
+  QPointer<QFrame> vertLineTwo = new QFrame();
+  vertLineTwo->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineTwo);
   drawOptionsLeftLayout->addWidget(zoomLabel);
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   drawOptionsLeftLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
+  QPointer<QFrame> vertLineThree = new QFrame();
+  vertLineThree->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineThree);
   QPointer<QHBoxLayout> guidesLayout = new QHBoxLayout;
   guidesLayout->addWidget(guideLinesLabel);
   guidesLayout->addWidget(addHorizontalGuideLineButton);
@@ -626,7 +643,11 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addLayout(guidesLayout);
   drawOptionsLayout->addLayout(drawOptionsLeftLayout);
   drawOptionsLeftLayout->setAlignment(Qt::AlignLeft);
-
+  drawOptionsLayout->setAlignment(drawOptionsLeftLayout, Qt::AlignLeft);
+  QPointer<QFrame> vertLineFour = new QFrame();
+  vertLineFour->setFrameShape(QFrame::VLine);
+  drawOptionsLeftLayout->addWidget(vertLineFour);
+  
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsRightLayout->addWidget(toggleGraphicsControlsButton);
@@ -940,8 +961,6 @@ void NetworkGraphWidget::setGraphControls(bool state)
   zoomSlider->setEnabled(state);
   expandLayoutButton->setEnabled(state);
   contractLayoutButton->setEnabled(state);
-  springLayoutButton->setEnabled(state);
-  circularLayoutButton->setEnabled(state);
   lowerRangeDial->setEnabled(state);
   upperRangeDial->setEnabled(state);
   lowerRangeSpinBox->setEnabled(state);
@@ -961,6 +980,8 @@ void NetworkGraphWidget::setGraphControls(bool state)
   addHorizontalGuideLineButton->setEnabled(state);
   addVerticalGuideLineButton->setEnabled(state);
   snapGuidesButton->setEnabled(state);
+  layoutButton->setEnabled(state);
+  layoutComboBox->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -1809,11 +1830,28 @@ void NetworkGraphWidget::plotUndirectedEdges(QString type, QColor color)
   updateEdges();
 }
 
+void NetworkGraphWidget::makeLayout()
+{
+  if (layoutComboBox->currentText() == SPRINGLAYOUT)
+    {
+      springLayout();
+    }
+  else if (layoutComboBox->currentText() == FRLAYOUT)
+    {
+      frLayout();
+    }
+  else if (layoutComboBox->currentText() == CIRCULARLAYOUT)
+    {
+      circularLayout();
+    }
+}
+
 void NetworkGraphWidget::springLayout() 
 {
   qApp->setOverrideCursor(Qt::WaitCursor);
   QVector<QGraphicsItem*> edges;
-  QVector<NetworkNode*> nodes;  
+  QVector<NetworkNode*> nodes;
+  QMap<NetworkNode*, QPointF> newPos;
   QListIterator<QGraphicsItem*> it(scene->items());
   while (it.hasNext())
     {
@@ -1831,23 +1869,15 @@ void NetworkGraphWidget::springLayout()
 	}
       else if (node)
 	{
-	  nodes.push_back(node);
 	  qreal x = qrand() % 5000;
 	  qreal y = qrand() % 5000;
 	  node->setPos(x, y);
+	  if (node->isVisible())
+	    {
+	      newPos.insert(node, node->scenePos());
+	      nodes.push_back(node);
+	    }
 	}
-    }
-  qreal a = 0.0;
-  qreal da = 2.0 * Pi / nodes.size();
-  QVectorIterator<NetworkNode*> cit(nodes);
-  while (cit.hasNext())
-    {
-      NetworkNode *node = cit.next();
-      QPointF newPos = QPointF();
-      newPos.setX(nodes.size() * cos(a));
-      newPos.setY(nodes.size() * sin(a));
-      node->setPos(newPos);
-      a += da;
     }
   for(int i = 0; i != 100; i++) 
     {
@@ -1859,56 +1889,44 @@ void NetworkGraphWidget::springLayout()
 	  UndirectedEdge *undirected = qgraphicsitem_cast<UndirectedEdge*>(current);
 	  if (directed) 
 	    {
-	      NetworkNode *currentSource = directed->getStart();
-	      NetworkNode *currentTarget = directed->getEnd();
-	      qreal dist = qSqrt(qPow(currentSource->pos().x() -
-				      currentTarget->pos().x(), 2) +
-				 qPow(currentSource->pos().y() -
-				      currentTarget->pos().y(), 2));
-	      if (dist > 50) 
+	      if (directed->isVisible())
 		{
-		  QPointF sourcePos = currentSource->scenePos();
-		  QPointF targetPos = currentTarget->scenePos();
-		  qreal mX = (sourcePos.x() + targetPos.x()) / 2;
-		  qreal mY = (sourcePos.y() + targetPos.y()) / 2;
-		  QPointF midPoint = QPointF(mX, mY);
-		  qreal mX2 = (sourcePos.x() + midPoint.x()) / 2;
-		  qreal mY2 = (sourcePos.y() + midPoint.y()) / 2;
-		  QPointF sourcePoint = QPoint(mX2, mY2);
-		  qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
-		  qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
-		  QPointF targetPoint = QPoint(mX3, mY3);
-		  currentSource->setPos(sourcePoint);
-		  currentSource->getLabel()->setNewPos(currentSource->scenePos());
-		  currentTarget->setPos(targetPoint);
-		  currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
+		  NetworkNode *tail = directed->getStart();
+		  NetworkNode *head = directed->getEnd();
+		  QPointF tailPos = newPos.value(tail);
+		  QPointF headPos = newPos.value(head);
+		  qreal dist = qSqrt(qPow(tailPos.x() - headPos.x(), 2) +
+				     qPow(tailPos.y() - headPos.y(), 2));
+		  if (dist > 200) 
+		    {
+		      QPointF diff = 0.9 * (tailPos - headPos);
+		      tailPos = headPos + diff; 
+		      diff = 0.9 * (headPos - tailPos);
+		      headPos = tailPos + diff;
+		      newPos.insert(tail, tailPos);
+		      newPos.insert(head, headPos);
+		    }
 		}
 	    }
 	  else if (undirected) 
 	    {
-	      NetworkNode *currentSource = undirected->getStart();
-	      NetworkNode *currentTarget = undirected->getEnd();
-	      qreal dist = qSqrt(qPow(currentSource->pos().x() -
-				      currentTarget->pos().x(), 2) +
-				 qPow(currentSource->pos().y() -
-				      currentTarget->pos().y(), 2));
-	      if (dist > 50) 
+	      if (undirected->isVisible())
 		{
-		  QPointF sourcePos = currentSource->scenePos();
-		  QPointF targetPos = currentTarget->scenePos();
-		  qreal mX = (sourcePos.x() + targetPos.x()) / 2;
-		  qreal mY = (sourcePos.y() + targetPos.y()) / 2;
-		  QPointF midPoint = QPointF(mX, mY);
-		  qreal mX2 = (sourcePos.x() + midPoint.x()) / 2;
-		  qreal mY2 = (sourcePos.y() + midPoint.y()) / 2;
-		  QPointF sourcePoint = QPoint(mX2, mY2);
-		  qreal mX3 = (targetPos.x() + midPoint.x()) / 2;
-		  qreal mY3 = (targetPos.y() + midPoint.y()) / 2;
-		  QPointF targetPoint = QPoint(mX3, mY3);
-		  currentSource->setPos(sourcePoint);
-		  currentSource->getLabel()->setNewPos(currentSource->scenePos());
-		  currentTarget->setPos(targetPoint);
-		  currentTarget->getLabel()->setNewPos(currentTarget->scenePos());
+		  NetworkNode *tail = undirected->getStart();
+		  NetworkNode *head = undirected->getEnd();
+		  QPointF tailPos = newPos.value(tail);
+		  QPointF headPos = newPos.value(head);
+		  qreal dist = qSqrt(qPow(tailPos.x() - headPos.x(), 2) +
+				     qPow(tailPos.y() - headPos.y(), 2));
+		  if (dist > 150) 
+		    {
+		      QPointF diff = 0.9 * (tailPos - headPos);
+		      tailPos = headPos + diff; 
+		      diff = 0.9 * (headPos - tailPos);
+		      headPos = tailPos + diff;
+		      newPos.insert(tail, tailPos);
+		      newPos.insert(head, headPos);
+		    }
 		}
 	    }
 	}
@@ -1920,27 +1938,57 @@ void NetworkGraphWidget::springLayout()
 	  while (it4.hasNext()) 
 	    {
 	      NetworkNode *second = it4.next();
-	      qreal dist = qSqrt(qPow(first->pos().x() -
-				      second->pos().x(), 2) +
-				 qPow(first->pos().y() -
-				      second->pos().y(), 2));
-	      if (dist < 100) 
+	      QPointF firstPos = newPos.value(first);
+	      QPointF secondPos = newPos.value(second);
+	      qreal dist = qSqrt(qPow(firstPos.x() - secondPos.x(), 2) +
+				 qPow(firstPos.y() - secondPos.y(), 2));
+	      if (dist < 200) 
 		{
-		  QPointF firstPoint = first->scenePos();
-		  QPointF secondPoint = second->scenePos();
-		  qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
-		  qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
-		  QPointF midPoint = QPointF(mX, mY);
-		  qreal firstXDiff = firstPoint.x() - midPoint.x();
-		  qreal firstYDiff = firstPoint.y() - midPoint.y();
-		  first->setPos(first->scenePos().x() + firstXDiff,
-				first->scenePos().y() + firstYDiff);
-		  first->getLabel()->setNewPos(first->scenePos());
-		  qreal secondXDiff = secondPoint.x() - midPoint.x();
-		  qreal secondYDiff = secondPoint.y() - midPoint.y();
-		  second->setPos(second->scenePos().x() + secondXDiff,
-				 second->scenePos().y() + secondYDiff);
-		  second->getLabel()->setNewPos(second->scenePos());
+		  QPointF diff = 1.5 * (firstPos - secondPos);
+		  firstPos = secondPos + diff; 
+		  diff = 0.9 * (secondPos - firstPos);
+		  secondPos = firstPos + diff;
+		  newPos.insert(first, firstPos);
+		  newPos.insert(second, secondPos);
+		}
+	    }
+	}
+    }
+  QVectorIterator<NetworkNode*> it5(_networkNodeVector);
+  while (it5.hasNext())
+    {
+      NetworkNode *node = it5.next();
+      QPointF newPosition = newPos.value(node);
+      node->setPos(newPosition);
+    }
+  bool overlapping = true;
+  while (overlapping)
+    {
+      overlapping = false;
+      it5.toFront();
+      while (it5.hasNext())
+	{
+	  NetworkNode *first = it5.next();
+	  QVectorIterator<NetworkNode*> it6(_networkNodeVector);
+	  while (it6.hasNext())
+	    {
+	      NetworkNode* second = it6.next();
+	      QPointF firstPos = first->scenePos();
+	      QPointF secondPos = second->scenePos();
+	      qreal dist = qSqrt(qPow(firstPos.x() - secondPos.x(), 2) +
+				 qPow(firstPos.y() - secondPos.y(), 2));
+	      if (first != second)
+		{
+		  if (dist < 50)
+		    {
+		      overlapping = true;
+		      QPointF displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
+		      first->setPos(firstPos + displacement);
+		      first->getLabel()->setNewPos(first->scenePos());
+		      displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
+		      second->setPos(secondPos + displacement);
+		      second->getLabel()->setPos(second->scenePos());
+		    }
 		}
 	    }
 	}
@@ -1965,19 +2013,25 @@ void NetworkGraphWidget::frLayout()
       NetworkNode *node = qgraphicsitem_cast<NetworkNode*>(current);
       if (directed)
 	{
-	  edges.push_back(directed);
+	  if (directed->isVisible())
+	    {
+	      edges.push_back(directed);
+	    }
 	}
       else if (undirected)
 	{
-	  edges.push_back(undirected);
+	  if (undirected->isVisible())
+	    {
+	      edges.push_back(undirected);
+	    }
 	}
       else if (node)
 	{
-	  nodes.push_back(node);
-	  qreal x = qrand() % 5000;
-	  qreal y = qrand() % 5000;
-	  node->setPos(x, y);
-	  defaultDisplacement.insert(node, QPointF());
+	  if (node->isVisible())
+	    {
+	      nodes.push_back(node);
+	      defaultDisplacement.insert(node, QPointF());
+	    }
 	}
     }
   qreal a = 0.0;
@@ -2080,13 +2134,13 @@ void NetworkGraphWidget::frLayout()
 	      node->getLabel()->setNewPos(node->scenePos());
 	    }
 	}
-      if (temp > 1.5)
+      if (temp > 1.1)
 	{
 	  temp *= 0.85;
 	}
       else
 	{
-	  temp = 1.5;
+	  temp = 1.1;
 	}
       QVectorIterator<NetworkNode*> it6(nodes);
       while (it6.hasNext()) 
@@ -2096,26 +2150,18 @@ void NetworkGraphWidget::frLayout()
 	  while (it7.hasNext()) 
 	    {
 	      NetworkNode *second = it7.next();
-	      qreal dist = qSqrt(qPow(first->pos().x() -
-				      second->pos().x(), 2) +
-				 qPow(first->pos().y() -
-				      second->pos().y(), 2));
+	      QPointF firstPos = first->scenePos();
+	      QPointF secondPos = second->scenePos();
+	      qreal dist = qSqrt(qPow(firstPos.x() -
+				      secondPos.x(), 2) +
+				 qPow(firstPos.y() -
+				      secondPos.y(), 2));
 	      if (dist < 50) 
 		{
-		  QPointF firstPoint = first->scenePos();
-		  QPointF secondPoint = second->scenePos();
-		  qreal mX = (firstPoint.x() + secondPoint.x()) / 2;
-		  qreal mY = (firstPoint.y() + secondPoint.y()) / 2;
-		  QPointF midPoint = QPointF(mX, mY);
-		  qreal firstXDiff = firstPoint.x() - midPoint.x();
-		  qreal firstYDiff = firstPoint.y() - midPoint.y();
-		  first->setPos(first->scenePos().x() + firstXDiff,
-				first->scenePos().y() + firstYDiff);
+		  QPointF midPos = (firstPos + secondPos) / 2;
+		  first->setPos(firstPos + (firstPos - midPos));
 		  first->getLabel()->setNewPos(first->scenePos());
-		  qreal secondXDiff = secondPoint.x() - midPoint.x();
-		  qreal secondYDiff = secondPoint.y() - midPoint.y();
-		  second->setPos(second->scenePos().x() + secondXDiff,
-				 second->scenePos().y() + secondYDiff);
+		  second->setPos(secondPos + (secondPos - midPos));
 		  second->getLabel()->setNewPos(second->scenePos());
 		}
 	    }
@@ -2130,33 +2176,33 @@ void NetworkGraphWidget::frLayout()
 void NetworkGraphWidget::circularLayout() 
 {
   const qreal Pi = 3.14;
-  QVector<NetworkNode*> visible;
+  QVector<NetworkNode*> nodes;
   QVectorIterator<NetworkNode*> it(_networkNodeVector);
   while(it.hasNext()) 
     {
       NetworkNode *current = it.next();
       if (current->isVisible()) 
 	{
-	  visible.push_back(current);
+	  nodes.push_back(current);
 	}
     }
-  std::sort(visible.begin(), visible.end(), modeSort);
-  QVectorIterator<NetworkNode*> it2(visible);  
+  std::sort(nodes.begin(), nodes.end(), modeSort);
+  QVectorIterator<NetworkNode*> it2(nodes);  
   int count = 1;
   while (it2.hasNext()) 
     {
       NetworkNode *current = it2.next();
       if (current->isVisible()) 
 	{
-	  qreal x = 100 * cos(count * 2 * Pi / visible.size());
-	  qreal y = 100 * sin(count * 2 * Pi / visible.size());
+	  qreal x = 100 * cos(count * 2 * Pi / nodes.size());
+	  qreal y = 100 * sin(count * 2 * Pi / nodes.size());
 	  current->setPos(QPointF(x, y));
 	  current->getLabel()->setNewPos(current->scenePos());
 	  count++;
 	}
     }
-  NetworkNode *first = visible[0];
-  NetworkNode *second = visible[1];
+  NetworkNode *first = nodes[0];
+  NetworkNode *second = nodes[1];
   qreal dist = qSqrt(qPow(first->scenePos().x() -
 			  second->scenePos().x(), 2) +
 		     qPow(first->scenePos().y() -
@@ -4929,7 +4975,6 @@ void NetworkGraphWidget::plotNewGraph()
   delete colorDialog;
   plotDirectedEdges(_selectedType, color);
   plotUndirectedEdges(_selectedType, color);
-  springLayout();
   _presentTypes.push_back(_selectedType);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT directedness, description FROM relationship_types "
@@ -4960,6 +5005,7 @@ void NetworkGraphWidget::plotNewGraph()
   checkCongruency();
   caseListWidget->setEnabled(true);
   setVisibility();
+  springLayout();
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
   setGraphControls(true);
 }

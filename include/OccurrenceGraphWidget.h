@@ -235,6 +235,7 @@ private:
   QPointer<QLabel> fillOpacityLabel;
   QPointer<QLabel> guideLinesLabel;
   QPointer<QLabel> labelSizeLabel;
+  QPointer<QLabel> layoutLabel;
   QPointer<QPushButton> savePlotButton;
   QPointer<QPushButton> seePlotsButton;
   QPointer<QPushButton> clearPlotButton;

@@ -124,4 +124,7 @@ QString ONEBACKWARD = "Move backward";
 QString BRINGFORWARD = "Send to front";
 QString BRINGBACKWARD = "Send to back";
 QString COMPLETEDATASET = "Complete dataset";
+QString SPRINGLAYOUT = "Random spring";
+QString FRLAYOUT = "Fruchterman-Reingold";
+QString CIRCULARLAYOUT = "Circular";
 qreal Pi = 3.14;

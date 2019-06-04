@@ -126,6 +126,9 @@ extern QString ONEBACKWARD;
 extern QString BRINGFORWARD;
 extern QString BRINGBACKWARD;
 extern QString COMPLETEDATASET;
+extern QString SPRINGLAYOUT;
+extern QString FRLAYOUT;
+extern QString CIRCULARLAYOUT;
 extern qreal Pi;
 
 #endif

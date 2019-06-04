@@ -169,6 +169,7 @@ private slots:
   void seePlots();
   void setChangeLabel();
   void updateEdges();
+  void makeLayout();
   void springLayout();
   void frLayout();
   void circularLayout();
@@ -263,8 +264,10 @@ private:
   QPointer<QLabel> fillOpacityLabel;
   QPointer<QLabel> guideLinesLabel;
   QPointer<QLabel> labelSizeLabel;
+  QPointer<QLabel> layoutLabel;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> penStyleComboBox;
+  QPointer<QComboBox> layoutComboBox;
   QPointer<DeselectableListWidget> nodeListWidget;
   QPointer<DeselectableListWidget> edgeListWidget;
   QPointer<QListWidget> caseListWidget;
@@ -306,9 +309,7 @@ private:
   QPointer<QPushButton> removeModeButton;
   QPointer<QPushButton> mergeButton;
   QPointer<QPushButton> removeTypeButton;
-  QPointer<QPushButton> springLayoutButton;
-  QPointer<QPushButton> frLayoutButton;
-  QPointer<QPushButton> circularLayoutButton;
+  QPointer<QPushButton> layoutButton;
   QPointer<QPushButton> expandLayoutButton;
   QPointer<QPushButton> contractLayoutButton;
   QPointer<QPushButton> savePlotButton;

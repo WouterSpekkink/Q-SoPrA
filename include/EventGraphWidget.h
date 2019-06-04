@@ -169,7 +169,7 @@ private slots:
   void decreaseDistance();
   void expandGraph();
   void contractGraph();
-  void contractCurrentGraph();
+  void minimiseCurrentGraph();
   void restorePositions();
   void processMoveItems(QGraphicsItem* item, QPointF pos);
   void setPlotButtons();
@@ -372,6 +372,7 @@ private:
   QPointer<QLabel> guideLinesLabel;
   QPointer<QLabel> fillOpacityLabel;
   QPointer<QLabel> labelSizeLabel;
+  QPointer<QLabel> layoutLabel;
   QPointer<QPushButton> plotButton;
   QPointer<QPushButton> addLinkageTypeButton;
   QPointer<QPushButton> removeLinkageTypeButton;
@@ -418,7 +419,7 @@ private:
   QPointer<QPushButton> moveModeDownButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
-  QPointer<QPushButton> contractCurrentGraphButton;
+  QPointer<QPushButton> minimiseCurrentGraphButton;
   QPointer<QPushButton> addLineButton;
   QPointer<QPushButton> addSingleArrowButton;
   QPointer<QPushButton> addDoubleArrowButton;
