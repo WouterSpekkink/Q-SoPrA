@@ -5058,9 +5058,9 @@ void NetworkGraphWidget::addRelationshipType()
   delete query;
   addButton->setEnabled(false);
   setChangeLabel();
+  setVisibility();
   makeLayout();  
   updateEdges();
-  setVisibility();
 }
 
 void NetworkGraphWidget::removeRelationshipType() 
