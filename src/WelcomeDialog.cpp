@@ -489,12 +489,12 @@ void WelcomeDialog::newDatabase()
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
-		      "blue integer, "
 		      "green integer, "
+		      "blue integer, "
 		      "alpha integer "
 		      "textred integer, "
-		      "textblue integer, "
 		      "textgreen integer, "
+		      "textblue integer, "
 		      "textalpha integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_edgelegend "
@@ -503,8 +503,8 @@ void WelcomeDialog::newDatabase()
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
-		      "blue integer, "
 		      "green integer, "
+		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_directed "
@@ -1277,12 +1277,12 @@ void WelcomeDialog::openDatabase()
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
-		      "blue integer, "
 		      "green integer, "
+		      "blue integer, "
 		      "alpha integer, "
 		      "textred integer, "
-		      "textblue integer, "
 		      "textgreen integer, "
+		      "textblue integer, "
 		      "textalpha integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_edgelegend "
@@ -1291,8 +1291,8 @@ void WelcomeDialog::openDatabase()
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
-		      "blue integer, "
 		      "green integer, "
+		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_directed "
@@ -3559,22 +3559,22 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("textred"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
-			  "ADD COLUMN red integer;");
+			  "ADD COLUMN textred integer;");
 	    }
 	  if (!columns.contains("textgreen"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
-			  "ADD COLUMN green integer;");
+			  "ADD COLUMN textgreen integer;");
 	    }
 	  if (!columns.contains("textblue"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
-			  "ADD COLUMN blue integer;");
+			  "ADD COLUMN textblue integer;");
 	    }
 	  if (!columns.contains("textalpha"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
-			  "ADD COLUMN alpha integer;");
+			  "ADD COLUMN textalpha integer;");
 	    }
 	  if (!columns.contains("hidden"))
 	    {

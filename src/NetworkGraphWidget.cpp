@@ -4672,6 +4672,7 @@ void NetworkGraphWidget::activateFilter()
 	  current->setFiltered(true);
 	}
     }
+  updateWeightControls();
   setVisibility();
 }
 
@@ -4700,6 +4701,7 @@ void NetworkGraphWidget::deactivateFilter()
 	  current->setFiltered(false);
 	}
     }
+  updateWeightControls();
   setVisibility();
 }
 
@@ -4729,6 +4731,7 @@ void NetworkGraphWidget::hideType()
 	  current->setMassHidden(true);
 	}
     }
+  updateWeightControls();
   setVisibility();
 }
 
@@ -4758,6 +4761,7 @@ void NetworkGraphWidget::showType()
 	  current->setMassHidden(false);
 	}
     }
+  updateWeightControls();
   setVisibility();
 }
 
@@ -5054,7 +5058,7 @@ void NetworkGraphWidget::addRelationshipType()
   delete query;
   addButton->setEnabled(false);
   setChangeLabel();
-  springLayout();
+  makeLayout();  
   updateEdges();
   setVisibility();
 }
@@ -5301,23 +5305,33 @@ void NetworkGraphWidget::setWeightControls()
   while (it.hasNext())
     {
       DirectedEdge *directed = it.next();
-      if (_presentTypes.contains(directed->getType()))
+      if (directed->isVisible())
 	{
-	  QList<int> incidents = directed->getIncidents().toList();
-	  std::sort(incidents.begin(), incidents.end());
-	  QListIterator<int> it2(incidents);
-	  int count = 0;
-	  while (it2.hasNext())
+	  if (_presentTypes.contains(directed->getType()))
 	    {
-	      int incident = it2.next();
-	      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+	      QList<int> incidents = directed->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      int count = 0;
+	      if (directed->isFiltered())
 		{
-		  count++;
+		  QListIterator<int> it2(incidents);
+		  while (it2.hasNext())
+		    {
+		      int incident = it2.next();
+		      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+			{
+			  count++;
+			}
+		    }
 		}
-	    }
-	  if (count > _maxWeight)
-	    {
-	      _maxWeight = count;
+	      else
+		{
+		  count = incidents.size();
+		}
+	      if (count > _maxWeight)
+		{
+		  _maxWeight = count;
+		}
 	    }
 	}
     }
@@ -5325,23 +5339,33 @@ void NetworkGraphWidget::setWeightControls()
   while (it2.hasNext())
     {
       UndirectedEdge *undirected = it2.next();
-      if (_presentTypes.contains(undirected->getType()))
+      if (undirected->isVisible())
 	{
-	  QList<int> incidents = undirected->getIncidents().toList();
-	  std::sort(incidents.begin(), incidents.end());
-	  QListIterator<int> it3(incidents);
-	  int count = 0;
-	  while (it3.hasNext())
+	  if (_presentTypes.contains(undirected->getType()))
 	    {
-	      int incident = it3.next();
-	      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+	      QList<int> incidents = undirected->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      int count = 0;
+	      QListIterator<int> it3(incidents);
+	      if (undirected->isFiltered())
 		{
-		  count++;
+		  while (it3.hasNext())
+		    {
+		      int incident = it3.next();
+		      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+			{
+			  count++;
+			}
+		    }
 		}
-	    }
-	  if (count > _maxWeight)
-	    {
-	      _maxWeight = count;
+	      else
+		{
+		  count = incidents.size();
+		}
+	      if (count > _maxWeight)
+		{
+		  _maxWeight = count;
+		}
 	    }
 	}
     }
@@ -5357,47 +5381,67 @@ void NetworkGraphWidget::updateWeightControls()
   while (it.hasNext())
     {
       DirectedEdge *directed = it.next();
-      if (_presentTypes.contains(directed->getType()))
+      if (directed->isVisible())
 	{
-	  QList<int> incidents = directed->getIncidents().toList();
-	  std::sort(incidents.begin(), incidents.end());
-	  QListIterator<int> it2(incidents);
-	  int count = 0;
-	  while (it2.hasNext())
+	  if (_presentTypes.contains(directed->getType()))
 	    {
-	      int incident = it2.next();
-	      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+	      QList<int> incidents = directed->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      int count = 0;
+	      if (directed->isFiltered())
 		{
-		  count++;
+		  QListIterator<int> it2(incidents);
+		  while (it2.hasNext())
+		    {
+		      int incident = it2.next();
+		      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+			{
+			  count++;
+			}
+		    }
 		}
-	    }
-	  if (count > _maxWeight)
-	    {
-	      _maxWeight = count;
+	      else
+		{
+		  count = incidents.size();
+		}
+	      if (count > _maxWeight)
+		{
+		  _maxWeight = count;
+		}
 	    }
 	}
     }
   QVectorIterator<UndirectedEdge*> it2(_undirectedVector);
   while (it2.hasNext())
     {
-      UndirectedEdge *undirected = it2.next();      
-      if (_presentTypes.contains(undirected->getType()))
+      UndirectedEdge *undirected = it2.next();
+      if (undirected->isVisible())
 	{
-	  QList<int> incidents = undirected->getIncidents().toList();
-	  std::sort(incidents.begin(), incidents.end());
-	  QListIterator<int> it3(incidents);
-	  int count = 0;
-	  while (it3.hasNext())
+	  if (_presentTypes.contains(undirected->getType()))
 	    {
-	      int incident = it3.next();
-	      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+	      QList<int> incidents = undirected->getIncidents().toList();
+	      std::sort(incidents.begin(), incidents.end());
+	      int count = 0;
+	      if (undirected->isFiltered())
 		{
-		  count++;
+		  QListIterator<int> it3(incidents);
+		  while (it3.hasNext())
+		    {
+		      int incident = it3.next();
+		      if (incident >= lowerRangeDial->value() && incident <= upperRangeDial->value())
+			{
+			  count++;
+			}
+		    }
 		}
-	    }
-	  if (count > _maxWeight)
-	    {
-	      _maxWeight = count;
+	      else
+		{
+		  count = incidents.size();
+		}
+	      if (count > _maxWeight)
+		{
+		  _maxWeight = count;
+		}
 	    }
 	}
     }
@@ -6660,10 +6704,7 @@ void NetworkGraphWidget::seePlots()
 		    {
 		      currentEdge->hide();
 		    }
-		  else 
-		    {
-		      scene->addItem(currentEdge);
-		    }
+		  scene->addItem(currentEdge);
 		  _directedVector.push_back(currentEdge);
 		  break;
 		}
@@ -6726,10 +6767,7 @@ void NetworkGraphWidget::seePlots()
 		    {
 		      currentEdge->hide();
 		    }
-		  else 
-		    {
-		      scene->addItem(currentEdge);
-		    }
+		  scene->addItem(currentEdge);
 		  _undirectedVector.push_back(currentEdge);
 		  break;
 		}
@@ -7307,14 +7345,21 @@ void NetworkGraphWidget::setVisibility()
 	  QList<int> incidents = currentDirected->getIncidents().toList();
 	  std::sort(incidents.begin(), incidents.end());
 	  int count = 0;
-	  QListIterator<int> incIt(incidents);
-	  while (incIt.hasNext())
+	  if (currentDirected->isFiltered())
 	    {
-	      int current = incIt.next();
-	      if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+	      QListIterator<int> incIt(incidents);
+	      while (incIt.hasNext())
 		{
-		  count++;
+		  int current = incIt.next();
+		  if (current >= lowerRangeDial->value() && current <= upperRangeDial->value())
+		    {
+		      count++;
+		    }
 		}
+	    }
+	  else
+	    {
+	      count = incidents.size();
 	    }
 	  if (count < weightSpinBox->value())
 	    {
@@ -7332,8 +7377,9 @@ void NetworkGraphWidget::setVisibility()
 		    }
 		  else
 		    {
-		      qreal normalizedWeight = ((originalWeight - weightSpinBox->value()) /
-						(_maxWeight - weightSpinBox->value())) * (5.0f * 1.0f) + 1.0f ;
+		      qreal normalizedWeight =
+			((originalWeight - weightSpinBox->value()) /
+			 (_maxWeight - weightSpinBox->value())) * (5.0f * 1.0f) + 1.0f ;
 		      currentDirected->setPenWidth(normalizedWeight);
 		    }
 		}
