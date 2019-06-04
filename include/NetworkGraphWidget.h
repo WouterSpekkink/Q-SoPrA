@@ -171,7 +171,6 @@ private slots:
   void updateEdges();
   void makeLayout();
   void springLayout();
-  void frLayout();
   void circularLayout();
   void expandLayout();
   void contractLayout();
