@@ -201,7 +201,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   addLineButton->setIconSize(QSize(20, 20));
   addLineButton->setMinimumSize(40, 40);
   addLineButton->setMaximumSize(40, 40);
-  addSingleArrowButton = new QPushButton(QIcon("./imasges/single_arrow_object.png"), "", this);
+  addSingleArrowButton = new QPushButton(QIcon("./images/single_arrow_object.png"), "", this);
   addSingleArrowButton->setIconSize(QSize(20, 20));
   addSingleArrowButton->setMinimumSize(40, 40);
   addSingleArrowButton->setMaximumSize(40, 40);

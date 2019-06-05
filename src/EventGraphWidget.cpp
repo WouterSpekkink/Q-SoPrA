@@ -231,7 +231,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   increaseLabelSizeButton = new QPushButton("+", graphicsWidget);
   decreaseLabelSizeButton = new QPushButton("-", graphicsWidget);
   addModeButton = new QPushButton(tr("Create single mode"), legendWidget);
-  addModesButton = new QPushButton(tr("Create muliple modes"), legendWidget);
+  addModesButton = new QPushButton(tr("Create multiple modes"), legendWidget);
   eventColorButton = new QPushButton(tr("Set event color"), graphicsWidget);
   labelColorButton = new QPushButton(tr("Set label color"), graphicsWidget);
   backgroundColorButton = new QPushButton(tr("Change background"), graphicsWidget);
