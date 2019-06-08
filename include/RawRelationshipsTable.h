@@ -86,6 +86,10 @@ private:
   QPointer<QPushButton> editRelationshipButton;
   QPointer<QComboBox> filterComboBox;
 
+  // Private variables
+  int _lastSortedHeader;
+  bool _lastSortedAscending;
+  
   // Pointer to other widget
   // Do not remove
   QPointer<RelationshipsWidget> _relationshipsWidgetPtr;

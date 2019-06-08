@@ -24,6 +24,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent) 
 {
+  _lastSortedHeader = 0;
+  _lastSortedAscending = true;
+  
   // We first create our model, our table, the view and the filter of the view
   attributesModel = new QueryModel(this);
 
@@ -35,10 +38,12 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   
   // Then we set how the data are displayed.
-  attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
+  attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, "
+			    "source_text "
 			    "FROM incident_attributes "
 			    "INNER JOIN attributes_to_incidents_sources ON " 
-			    "incident_attributes.name = attributes_to_incidents_sources.attribute "
+			    "incident_attributes.name = "
+			    "attributes_to_incidents_sources.attribute "
 			    "LEFT JOIN incidents ON "
 			    "attributes_to_incidents_sources.incident = incidents.id "
 			    "UNION ALL "
@@ -129,74 +134,297 @@ void RawAttributesTable::resetHeader(int header)
 
 void RawAttributesTable::sortHeader(int header) 
 {
-  if (header == 0) 
+  if (header == _lastSortedHeader)
     {
-      attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
-				"FROM incident_attributes "
-				"INNER JOIN attributes_to_incidents_sources ON " 
-				"incident_attributes.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"UNION ALL "
-				"SELECT name, entities.description, ch_order, source_text "
-				"FROM entities "
-				"INNER JOIN attributes_to_incidents_sources ON "
-				"entities.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"ORDER BY name ASC");
+      if (_lastSortedAscending)
+	{
+	  if (header == 0) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY name DESC");
+	    }
+	  else if (header == 1) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY incident_attributes.description DESC");
+	    }
+	  else if (header == 2) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY ch_order DESC");
+	    }
+	  else if (header == 3) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY source_text DESC");
+	    }
+	}
+      else
+	{
+	  if (header == 0) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY name ASC");
+	    }
+	  else if (header == 1) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY incident_attributes.description ASC");
+	    }
+	  else if (header == 2) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY ch_order ASC");
+	    }
+	  else if (header == 3) 
+	    {
+	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY source_text ASC");
+	    }
+	}
+      _lastSortedAscending = !_lastSortedAscending;
     }
-  else if (header == 1) 
+  else
     {
-      attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
-				"FROM incident_attributes "
-				"INNER JOIN attributes_to_incidents_sources ON " 
-				"incident_attributes.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"UNION ALL "
-				"SELECT name, entities.description, ch_order, source_text "
-				"FROM entities "
-				"INNER JOIN attributes_to_incidents_sources ON "
-				"entities.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"ORDER BY incident_attributes.description ASC");
+      if (header == 0) 
+	{
+	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+				    "ch_order, source_text "
+				    "FROM incident_attributes "
+				    "INNER JOIN attributes_to_incidents_sources ON " 
+				    "incident_attributes.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "UNION ALL "
+				    "SELECT name, entities.description, ch_order, "
+				    "source_text "
+				    "FROM entities "
+				    "INNER JOIN attributes_to_incidents_sources ON "
+				    "entities.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "ORDER BY name ASC");
+	}
+      else if (header == 1) 
+	{
+	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+				    "ch_order, source_text "
+				    "FROM incident_attributes "
+				    "INNER JOIN attributes_to_incidents_sources ON " 
+				    "incident_attributes.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "UNION ALL "
+				    "SELECT name, entities.description, ch_order, "
+				    "source_text "
+				    "FROM entities "
+				    "INNER JOIN attributes_to_incidents_sources ON "
+				    "entities.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "ORDER BY incident_attributes.description ASC");
+	}
+      else if (header == 2) 
+	{
+	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+				    "ch_order, source_text "
+				    "FROM incident_attributes "
+				    "INNER JOIN attributes_to_incidents_sources ON " 
+				    "incident_attributes.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "UNION ALL "
+				    "SELECT name, entities.description, ch_order, "
+				    "source_text "
+				    "FROM entities "
+				    "INNER JOIN attributes_to_incidents_sources ON "
+				    "entities.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "ORDER BY ch_order ASC");
+	}
+      else if (header == 3) 
+	{
+	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+				    "ch_order, source_text "
+				    "FROM incident_attributes "
+				    "INNER JOIN attributes_to_incidents_sources ON " 
+				    "incident_attributes.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "UNION ALL "
+				    "SELECT name, entities.description, ch_order, "
+				    "source_text "
+				    "FROM entities "
+				    "INNER JOIN attributes_to_incidents_sources ON "
+				    "entities.name = "
+				    "attributes_to_incidents_sources.attribute "
+				    "LEFT JOIN incidents ON "
+				    "attributes_to_incidents_sources.incident = "
+				    "incidents.id "
+				    "ORDER BY source_text ASC");
+	}
+      _lastSortedAscending = true;
     }
-  else if (header == 2) 
-    {
-      attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
-				"FROM incident_attributes "
-				"INNER JOIN attributes_to_incidents_sources ON " 
-				"incident_attributes.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"UNION ALL "
-				"SELECT name, entities.description, ch_order, source_text "
-				"FROM entities "
-				"INNER JOIN attributes_to_incidents_sources ON "
-				"entities.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"ORDER BY ch_order ASC");
-    }
-  else if (header == 3) 
-    {
-      attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, source_text "
-				"FROM incident_attributes "
-				"INNER JOIN attributes_to_incidents_sources ON " 
-				"incident_attributes.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"UNION ALL "
-				"SELECT name, entities.description, ch_order, source_text "
-				"FROM entities "
-				"INNER JOIN attributes_to_incidents_sources ON "
-				"entities.name = attributes_to_incidents_sources.attribute "
-				"LEFT JOIN incidents ON "
-				"attributes_to_incidents_sources.incident = incidents.id "
-				"ORDER BY source_text ASC");
-    }
+  _lastSortedHeader = header;
   updateTable();
 }
 

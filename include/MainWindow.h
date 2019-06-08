@@ -53,6 +53,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "SupportingFunctions.h"
 #include "Constants.h"
 #include "CasingWidget.h"
+#include "AttributeCoverageTable.h"
 
 class MainWindow : public QMainWindow
 {
@@ -88,6 +89,7 @@ private slots:
   void switchToEntitiesAttributesTableView();
   void switchToMissingAttributesTableView();
   void switchToMissingRelationshipsTableView();
+  void switchToAttributeCoverageTableView();
   void exportIncidentAttributes();
   void importIncidentAttributes();
   void exportEntities();
@@ -130,6 +132,7 @@ private:
   QPointer<QWidget> entitiesAttributesTableWidget;
   QPointer<QWidget> missingAttributesTableWidget;
   QPointer<QWidget> missingRelationshipsTableWidget;
+  QPointer<QWidget> attributeCoverageTableWidget;
 
   // Menus and actions
   QPointer<QMenuBar> menuBar;
@@ -144,6 +147,7 @@ private:
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
   QPointer<QMenu> codingTextsMenu;
+  QPointer<QMenu> coverageMenu;
   QPointer<QMenu> attributeTablesMenu;
   QPointer<QMenu> missingTablesMenu;
   QPointer<QAction> exitAct;
@@ -165,6 +169,7 @@ private:
   QPointer<QAction> entitiesAttributesTableViewAct;
   QPointer<QAction> missingAttributesTableViewAct;
   QPointer<QAction> missingRelationshipsTableViewAct;
+  QPointer<QAction> attributeCoverageTableViewAct;
   QPointer<QAction> exportIncidentAttributesAct;
   QPointer<QAction> importIncidentAttributesAct;
   QPointer<QAction> exportEntitiesAct;

@@ -119,7 +119,24 @@ void EntitiesAttributesTable::resetHeader(const int &header)
 
 void EntitiesAttributesTable::sortHeader(const int &header) 
 {
-  attributesModel->sort(header, Qt::AscendingOrder);
+  if (header == _lastSortedHeader)
+    {
+      if (_lastSortedAscending)
+	{
+	  attributesModel->sort(header, Qt::DescendingOrder);
+	}
+      else
+	{
+	  attributesModel->sort(header, Qt::AscendingOrder);
+	}
+      _lastSortedAscending = !_lastSortedAscending;
+    }
+  else
+    {
+      attributesModel->sort(header, Qt::AscendingOrder);
+      _lastSortedAscending = true;
+    }
+  _lastSortedHeader = header;
   updateTable();
 }
 

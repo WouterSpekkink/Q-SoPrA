@@ -24,6 +24,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent) 
 {
+  _lastSortedHeader = 1;
+  _lastSortedAscending = true;
+  
   // We first create our model, our table, the view and the filter of the view
   linkagesModel = new RelationalTable(this);
   linkagesModel->setTable("linkages_sources");
@@ -54,6 +57,8 @@ RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent)
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
+
+  linkagesModel->sort(1, Qt::AscendingOrder);
   
   updateTable();
   
@@ -116,7 +121,24 @@ void RawLinkagesTable::resetHeader(int header)
 
 void RawLinkagesTable::sortHeader(int header) 
 {
-  linkagesModel->sort(header, Qt::AscendingOrder);
+  if (header == _lastSortedHeader)
+    {
+      if (_lastSortedAscending)
+	{
+	  linkagesModel->sort(header, Qt::DescendingOrder);
+	}
+      else
+	{
+	  linkagesModel->sort(header, Qt::AscendingOrder);
+	}
+      _lastSortedAscending = !_lastSortedAscending;
+    }
+  else
+    {
+      linkagesModel->sort(header, Qt::AscendingOrder);
+      _lastSortedAscending = true;
+    }
+  _lastSortedHeader = header;
   updateTable();
 }
 

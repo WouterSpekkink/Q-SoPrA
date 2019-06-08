@@ -80,6 +80,10 @@ private:
   QPointer<QPushButton> exportNormalMatrixButton;
   QPointer<QPushButton> exportValuedMatrixButton;
   QPointer<QComboBox> filterComboBox;
+
+  // Private variables
+  int _lastSortedHeader;
+  bool _lastSortedAscending;
 };
 
 #endif

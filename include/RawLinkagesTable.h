@@ -70,6 +70,10 @@ private:
   QPointer<QPushButton> exportTableButton;
   QPointer<QComboBox> filterComboBox;
 
+  // Private variables
+  int _lastSortedHeader;
+  bool _lastSortedAscending;
+  
 };
 
 #endif

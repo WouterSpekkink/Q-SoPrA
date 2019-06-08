@@ -20,16 +20,15 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef MISSINGATTRIBUTESTABLE_H
-#define MISSINGATTRIBUTESTABLE_H
+#ifndef ATTRIBUTECOVERAGETABLE_H
+#define ATTRIBUTECOVERAGETABLE_H
 
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLineEdit>
-#include <QtWidgets/QCheckBox>
-#include <QtCore>
+#include <QStandardItemModel>
 #include <QtSql>
 #include <QTableView>
 #include <QHeaderView>
@@ -37,33 +36,46 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
-#include <QSignalMapper>
-#include "EventQueryModel.h"
+#include "QueryModel.h"
 #include "ZoomableTableView.h"
-#include "CheckBoxDelegate.h"
 
-class MissingAttributesTable : public QWidget
+class AttributeCoverageTable : public QWidget
 {
   Q_OBJECT
 
   // MainWindow needs access to this class
   friend class MainWindow;
-
+  
 public:
   // Constructor and destructor
-  MissingAttributesTable(QWidget *parent = 0);
-  ~MissingAttributesTable() {};
+  AttributeCoverageTable(QWidget *parent=0);
+  ~AttributeCoverageTable() {};
 
 private slots:
-  // Private member functions
+  void buildModel();
   void updateTable();
   void resetHeader(int header);
+  void sortHeader(int header);
+  void changeFilter(const QString &text);
+  void setFilterColumn();
+  void findChildren(QString father, QVector<QString> *children, bool entity);
+  void exportTable();
   
 private:
   // Interface elements
-  QPointer<EventQueryModel> model;
+  QPointer<QStandardItemModel> attributesModel;
   QPointer<ZoomableTableView> tableView;
-
+  QPointer<QSortFilterProxyModel> filter;
+  QPointer<QLabel> filterComboLabel;
+  QPointer<QLabel> filterFieldLabel;
+  QPointer<QPushButton> exportTableButton;
+  QPointer<QLineEdit> filterField;
+  QPointer<QComboBox> filterComboBox;
+  
+  // Private variables
+  int _lastSortedHeader;
+  bool _lastSortedAscending;
+  
 };
 
 #endif

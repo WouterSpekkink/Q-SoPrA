@@ -24,6 +24,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(parent) 
 {
+  _lastSortedHeader = 1;
+  _lastSortedAscending = true;
+  
   // We first create our model, our table, the view and the filter of the view
   attributesModel = new RelationalTable(this);
   attributesModel->setTable("attributes_to_incidents");
@@ -51,6 +54,8 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
 
+  attributesModel->sort(1, Qt::AscendingOrder);
+  
   // We add the controls.
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
   filterFieldLabel = new QLabel(tr("<b>Filter:</b>"), this);
@@ -119,7 +124,24 @@ void IncidentsAttributesTable::resetHeader(int header)
 
 void IncidentsAttributesTable::sortHeader(int header) 
 {
-  attributesModel->sort(header, Qt::AscendingOrder);
+   if (header == _lastSortedHeader)
+    {
+      if (_lastSortedAscending)
+	{
+	  attributesModel->sort(header, Qt::DescendingOrder);
+	}
+      else
+	{
+	  attributesModel->sort(header, Qt::AscendingOrder);
+	}
+      _lastSortedAscending = !_lastSortedAscending;
+    }
+  else
+    {
+      attributesModel->sort(header, Qt::AscendingOrder);
+      _lastSortedAscending = true;
+    }
+  _lastSortedHeader = header;
   updateTable();
 }
 

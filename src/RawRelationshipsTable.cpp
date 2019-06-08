@@ -24,6 +24,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent) 
 {
+  _lastSortedHeader = 0;
+  _lastSortedAscending = true;
+  
   // We first create our model, our table, the view and the filter of the view
   relationshipsModel = new RelationalTable(this);
   relationshipsModel->setTable("relationships_to_incidents_sources");
@@ -50,7 +53,7 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent)
   tableView->horizontalHeader()->setSectionsMovable(true);
   tableView->horizontalHeader()->swapSections(3, 0);
   tableView->horizontalHeader()->swapSections(3, 2);
-  tableView->setColumnWidth(1, 100);
+  tableView->setColumnWidth(0, 100);
   tableView->setColumnWidth(1, 400);
   tableView->setColumnWidth(2, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
@@ -134,7 +137,24 @@ void RawRelationshipsTable::resetHeader(int header)
 
 void RawRelationshipsTable::sortHeader(int header) 
 {
-  relationshipsModel->sort(header, Qt::AscendingOrder);
+   if (header == _lastSortedHeader)
+    {
+      if (_lastSortedAscending)
+	{
+	  relationshipsModel->sort(header, Qt::DescendingOrder);
+	}
+      else
+	{
+	  relationshipsModel->sort(header, Qt::AscendingOrder);
+	}
+      _lastSortedAscending = !_lastSortedAscending;
+    }
+  else
+    {
+      relationshipsModel->sort(header, Qt::AscendingOrder);
+      _lastSortedAscending = true;
+    }
+  _lastSortedHeader = header;
   updateTable();
 }
 

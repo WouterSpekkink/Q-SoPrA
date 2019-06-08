@@ -28,6 +28,7 @@ HEADERS += include/AbstractionDialog.h \
            include/AbstractNodeLabel.h \
            include/AttributeCheckBoxDialog.h \
            include/AttributeColorDialog.h \
+           include/AttributeCoverageTable.h \
            include/AttributeDialog.h \
            include/AttributeIndexDialog.h \
            include/AttributeSelectionDialog.h \
@@ -123,6 +124,7 @@ SOURCES += main.cpp \
            src/AbstractNodeLabel.cpp \
            src/AttributeCheckBoxDialog.cpp \
            src/AttributeColorDialog.cpp \
+           src/AttributeCoverageTable.cpp \
            src/AttributeDialog.cpp \
            src/AttributeIndexDialog.cpp \
            src/AttributeSelectionDialog.cpp \

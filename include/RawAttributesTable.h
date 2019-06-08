@@ -88,6 +88,10 @@ private:
   QPointer<QPushButton> editAttributeButton;
   QPointer<QComboBox> filterComboBox;
 
+  // Private variables
+  int _lastSortedHeader;
+  bool _lastSortedAscending;
+
   // Pointers to other widgets
   // Do not delete
   QPointer<EventGraphWidget> _eventGraphWidgetPtr;
