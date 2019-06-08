@@ -101,6 +101,7 @@ HEADERS += include/AbstractionDialog.h \
            include/RelationshipCheckBoxDialog.h \
            include/RelationshipColorDialog.h \
            include/RelationshipComboBoxDialog.h \
+           include/RelationshipCoverageTable.h \
            include/RelationshipsDialog.h \
            include/RelationshipsWidget.h \
            include/RelationshipTreeFilter.h \
@@ -196,6 +197,7 @@ SOURCES += main.cpp \
            src/RelationshipCheckBoxDialog.cpp \
            src/RelationshipColorDialog.cpp \
            src/RelationshipComboBoxDialog.cpp \
+           src/RelationshipCoverageTable.cpp \
            src/RelationshipsDialog.cpp \
            src/RelationshipsWidget.cpp \
            src/RelationshipTreeFilter.cpp \

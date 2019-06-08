@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   missingAttributesTableWidget = new MissingAttributesTable(this);
   missingRelationshipsTableWidget = new MissingRelationshipsTable(this);
   attributeCoverageTableWidget = new AttributeCoverageTable(this);
+  relationshipCoverageTableWidget = new RelationshipCoverageTable(this);
 
   // Some of these widgets need some pointers to each other to communicate properly.
   //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -141,6 +142,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   stacked->addWidget(missingRelationshipsTableWidget); // 15
   stacked->addWidget(casingWidget); // 16
   stacked->addWidget(attributeCoverageTableWidget); //17
+  stacked->addWidget(relationshipCoverageTableWidget); //18
 
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(AbstractNode *)),
@@ -189,6 +191,7 @@ MainWindow::~MainWindow()
   stacked->removeWidget(missingRelationshipsTableWidget);
   stacked->removeWidget(casingWidget);
   stacked->removeWidget(attributeCoverageTableWidget);
+  stacked->removeWidget(relationshipCoverageTableWidget);
 
   delete dataWidget;
   delete attributesWidget;
@@ -208,6 +211,7 @@ MainWindow::~MainWindow()
   delete missingAttributesTableWidget;
   delete missingRelationshipsTableWidget;
   delete attributeCoverageTableWidget;
+  delete relationshipCoverageTableWidget;
   delete stacked;
 }
 
@@ -305,6 +309,11 @@ void MainWindow::createActions()
   attributeCoverageTableViewAct->setStatusTip("Switch to attribute coverage table");
   connect(attributeCoverageTableViewAct, SIGNAL(triggered()),
 	  this, SLOT(switchToAttributeCoverageTableView()));
+
+  relationshipCoverageTableViewAct = new QAction(tr("&Relationship coverage table"), this);
+  relationshipCoverageTableViewAct->setStatusTip("Switch to relationship coverage table");
+  connect(relationshipCoverageTableViewAct, SIGNAL(triggered()),
+	  this, SLOT(switchToRelationshipCoverageTableView()));
   
   // Code management actions
   exportIncidentAttributesAct = new QAction(tr("&Export incident attributes coding tree"), this);
@@ -440,6 +449,7 @@ void MainWindow::createMenus()
 
   coverageMenu = new QMenu("Code coverage");
   coverageMenu->addAction(attributeCoverageTableViewAct);
+  coverageMenu->addAction(relationshipCoverageTableViewAct);
 
   attributeTablesMenu = new QMenu("Attribute tables");
   attributeTablesMenu->addAction(incidentsAttributesTableViewAct);
@@ -1114,6 +1124,19 @@ void MainWindow::switchToAttributeCoverageTableView()
       stacked->setCurrentWidget(attributeCoverageTableWidget);
     }
 }
+
+
+void MainWindow::switchToRelationshipCoverageTableView()
+{
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  if (jw->checkChanges())
+    {
+      RelationshipCoverageTable *rct = qobject_cast<RelationshipCoverageTable*>(stacked->widget(18));
+      rct->updateTable();
+      stacked->setCurrentWidget(relationshipCoverageTableWidget);
+    }
+}
+
 
 void MainWindow::switchToIncidentsAttributesTableView() 
 {

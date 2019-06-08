@@ -54,6 +54,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "Constants.h"
 #include "CasingWidget.h"
 #include "AttributeCoverageTable.h"
+#include "RelationshipCoverageTable.h"
 
 class MainWindow : public QMainWindow
 {
@@ -90,6 +91,7 @@ private slots:
   void switchToMissingAttributesTableView();
   void switchToMissingRelationshipsTableView();
   void switchToAttributeCoverageTableView();
+  void switchToRelationshipCoverageTableView();
   void exportIncidentAttributes();
   void importIncidentAttributes();
   void exportEntities();
@@ -133,6 +135,7 @@ private:
   QPointer<QWidget> missingAttributesTableWidget;
   QPointer<QWidget> missingRelationshipsTableWidget;
   QPointer<QWidget> attributeCoverageTableWidget;
+  QPointer<QWidget> relationshipCoverageTableWidget;
 
   // Menus and actions
   QPointer<QMenuBar> menuBar;
@@ -170,6 +173,7 @@ private:
   QPointer<QAction> missingAttributesTableViewAct;
   QPointer<QAction> missingRelationshipsTableViewAct;
   QPointer<QAction> attributeCoverageTableViewAct;
+  QPointer<QAction> relationshipCoverageTableViewAct;
   QPointer<QAction> exportIncidentAttributesAct;
   QPointer<QAction> importIncidentAttributesAct;
   QPointer<QAction> exportEntitiesAct;

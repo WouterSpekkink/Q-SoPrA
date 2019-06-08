@@ -126,6 +126,7 @@ SOURCES       = main.cpp \
 		src/RelationshipCheckBoxDialog.cpp \
 		src/RelationshipColorDialog.cpp \
 		src/RelationshipComboBoxDialog.cpp \
+		src/RelationshipCoverageTable.cpp \
 		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
 		src/RelationshipTreeFilter.cpp \
@@ -204,6 +205,7 @@ SOURCES       = main.cpp \
 		moc_RelationshipCheckBoxDialog.cpp \
 		moc_RelationshipColorDialog.cpp \
 		moc_RelationshipComboBoxDialog.cpp \
+		moc_RelationshipCoverageTable.cpp \
 		moc_RelationshipsDialog.cpp \
 		moc_RelationshipsWidget.cpp \
 		moc_RelationshipTreeFilter.cpp \
@@ -294,6 +296,7 @@ OBJECTS       = main.o \
 		RelationshipCheckBoxDialog.o \
 		RelationshipColorDialog.o \
 		RelationshipComboBoxDialog.o \
+		RelationshipCoverageTable.o \
 		RelationshipsDialog.o \
 		RelationshipsWidget.o \
 		RelationshipTreeFilter.o \
@@ -373,6 +376,7 @@ OBJECTS       = main.o \
 		moc_RelationshipCheckBoxDialog.o \
 		moc_RelationshipColorDialog.o \
 		moc_RelationshipComboBoxDialog.o \
+		moc_RelationshipCoverageTable.o \
 		moc_RelationshipsDialog.o \
 		moc_RelationshipsWidget.o \
 		moc_RelationshipTreeFilter.o \
@@ -526,6 +530,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/RelationshipCheckBoxDialog.h \
 		include/RelationshipColorDialog.h \
 		include/RelationshipComboBoxDialog.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipsDialog.h \
 		include/RelationshipsWidget.h \
 		include/RelationshipTreeFilter.h \
@@ -620,6 +625,7 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/RelationshipCheckBoxDialog.cpp \
 		src/RelationshipColorDialog.cpp \
 		src/RelationshipComboBoxDialog.cpp \
+		src/RelationshipCoverageTable.cpp \
 		src/RelationshipsDialog.cpp \
 		src/RelationshipsWidget.cpp \
 		src/RelationshipTreeFilter.cpp \
@@ -803,8 +809,8 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents include/AbstractionDialog.h include/AbstractNode.h include/AbstractNodeLabel.h include/AttributeCheckBoxDialog.h include/AttributeColorDialog.h include/AttributeCoverageTable.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventTextDialog.h include/EvidenceDialog.h include/ExportTransitionMatrixDialog.h include/GuideLine.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentNode.h include/IncidentNodeLabel.h include/IncidentsAttributesTable.h include/InheritanceDialog.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/Linkage.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/ModeColorDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RawLinkagesTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipCheckBoxDialog.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextEdit.h include/TextObject.h include/TimeLineObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/AbstractionDialog.cpp src/AbstractNode.cpp src/AbstractNodeLabel.cpp src/AttributeCheckBoxDialog.cpp src/AttributeColorDialog.cpp src/AttributeCoverageTable.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventTextDialog.cpp src/EvidenceDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GuideLine.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentNode.cpp src/IncidentNodeLabel.cpp src/IncidentsAttributesTable.cpp src/InheritanceDialog.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/Linkage.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/ModeColorDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RawLinkagesTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipCheckBoxDialog.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextEdit.cpp src/TextObject.cpp src/TimeLineObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/AbstractionDialog.h include/AbstractNode.h include/AbstractNodeLabel.h include/AttributeCheckBoxDialog.h include/AttributeColorDialog.h include/AttributeCoverageTable.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventTextDialog.h include/EvidenceDialog.h include/ExportTransitionMatrixDialog.h include/GuideLine.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentNode.h include/IncidentNodeLabel.h include/IncidentsAttributesTable.h include/InheritanceDialog.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/Linkage.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/ModeColorDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RawLinkagesTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipCheckBoxDialog.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipCoverageTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextEdit.h include/TextObject.h include/TimeLineObject.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/AbstractionDialog.cpp src/AbstractNode.cpp src/AbstractNodeLabel.cpp src/AttributeCheckBoxDialog.cpp src/AttributeColorDialog.cpp src/AttributeCoverageTable.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventTextDialog.cpp src/EvidenceDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GuideLine.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentNode.cpp src/IncidentNodeLabel.cpp src/IncidentsAttributesTable.cpp src/InheritanceDialog.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/Linkage.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/ModeColorDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RawLinkagesTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipCheckBoxDialog.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipCoverageTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextEdit.cpp src/TextObject.cpp src/TimeLineObject.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -830,9 +836,9 @@ benchmark: first
 
 compiler_rcc_make_all:
 compiler_rcc_clean:
-compiler_moc_header_make_all: moc_AbstractionDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AbstractionDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AbstractionDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AbstractionDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 moc_AbstractionDialog.cpp: include/SortFunctions.h \
 		include/IncidentNode.h \
 		include/OccurrenceItem.h \
@@ -918,6 +924,7 @@ moc_AbstractionDialog.cpp: include/SortFunctions.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1055,6 +1062,7 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1166,6 +1174,7 @@ moc_CasingWidget.cpp: include/Constants.h \
 		include/MissingRelationshipsTable.h \
 		include/CasingWidget.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1273,6 +1282,7 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1381,6 +1391,7 @@ moc_EditEntityDialog.cpp: include/EntitiesFilter.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1492,6 +1503,7 @@ moc_EntitiesFilter.cpp: include/RelationshipsDialog.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1590,6 +1602,7 @@ moc_EntityDialog.cpp: include/DeselectableTreeViewEntities.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1700,6 +1713,7 @@ moc_EventGraphWidget.cpp: include/IncidentNodeLabel.h \
 		include/CasingWidget.h \
 		include/CaseDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/EventGraphWidget.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
@@ -1842,6 +1856,7 @@ moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1984,6 +1999,7 @@ moc_LinkagesWidget.cpp: include/Constants.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2087,6 +2103,7 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2296,6 +2313,7 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceLabel.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2402,6 +2420,7 @@ moc_RawAttributesTable.cpp: include/QueryModel.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2498,6 +2517,7 @@ moc_RawRelationshipsTable.cpp: include/RelationalTable.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2551,6 +2571,14 @@ moc_RelationshipComboBoxDialog.cpp: include/Constants.h \
 		include/RelationshipComboBoxDialog.h \
 		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
 	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtOpenGL -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationshipComboBoxDialog.h -o moc_RelationshipComboBoxDialog.cpp
+
+moc_RelationshipCoverageTable.cpp: include/QueryModel.h \
+		include/SupportingFunctions.h \
+		include/ZoomableTableView.h \
+		include/Constants.h \
+		include/RelationshipCoverageTable.h \
+		/usr/lib/x86_64-linux-gnu/qt5/bin/moc
+	/usr/lib/x86_64-linux-gnu/qt5/bin/moc $(DEFINES) -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++-64 -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/home/wouter/Programming/WorkRelated/Q-SoPrA -I/usr/include/x86_64-linux-gnu/qt5 -I/usr/include/x86_64-linux-gnu/qt5/QtSvg -I/usr/include/x86_64-linux-gnu/qt5/QtOpenGL -I/usr/include/x86_64-linux-gnu/qt5/QtWidgets -I/usr/include/x86_64-linux-gnu/qt5/QtGui -I/usr/include/x86_64-linux-gnu/qt5/QtSql -I/usr/include/x86_64-linux-gnu/qt5/QtCore -I/usr/include/c++/6 -I/usr/include/x86_64-linux-gnu/c++/6 -I/usr/include/c++/6/backward -I/usr/lib/gcc/x86_64-linux-gnu/6/include -I/usr/local/include -I/usr/lib/gcc/x86_64-linux-gnu/6/include-fixed -I/usr/include/x86_64-linux-gnu -I/usr/include include/RelationshipCoverageTable.h -o moc_RelationshipCoverageTable.cpp
 
 moc_RelationshipsDialog.cpp: include/EntitiesFilter.h \
 		include/RelationshipsDialog.h \
@@ -2635,6 +2663,7 @@ moc_RelationshipsDialog.cpp: include/EntitiesFilter.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2732,6 +2761,7 @@ moc_RelationshipsWidget.cpp: include/AttributeDialog.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2918,7 +2948,8 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/MissingRelationshipsTable.h \
 		include/CasingWidget.h \
 		include/CaseDialog.h \
-		include/AttributeCoverageTable.h
+		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
 AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
@@ -3007,6 +3038,7 @@ AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3167,6 +3199,7 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/CasingWidget.h \
 		include/CaseDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AttributesWidget.o src/AttributesWidget.cpp
 
@@ -3258,6 +3291,7 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3357,6 +3391,7 @@ CasingWidget.o: src/CasingWidget.cpp include/CasingWidget.h \
 		include/EventQueryModel.h \
 		include/MissingRelationshipsTable.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3463,6 +3498,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3573,6 +3609,7 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3700,6 +3737,7 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3796,6 +3834,7 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3896,6 +3935,7 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4051,6 +4091,7 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4145,6 +4186,7 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4343,6 +4385,7 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4450,7 +4493,8 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/MissingRelationshipsTable.h \
 		include/CasingWidget.h \
 		include/CaseDialog.h \
-		include/AttributeCoverageTable.h
+		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainWindow.o src/MainWindow.cpp
 
 MergeAttributesDialog.o: src/MergeAttributesDialog.cpp include/MergeAttributesDialog.h \
@@ -4680,6 +4724,7 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4809,6 +4854,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4903,6 +4949,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4968,6 +5015,13 @@ RelationshipComboBoxDialog.o: src/RelationshipComboBoxDialog.cpp include/Relatio
 		include/Constants.h \
 		include/SupportingFunctions.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipComboBoxDialog.o src/RelationshipComboBoxDialog.cpp
+
+RelationshipCoverageTable.o: src/RelationshipCoverageTable.cpp include/RelationshipCoverageTable.h \
+		include/QueryModel.h \
+		include/SupportingFunctions.h \
+		include/ZoomableTableView.h \
+		include/Constants.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RelationshipCoverageTable.o src/RelationshipCoverageTable.cpp
 
 RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h \
 		include/EntitiesFilter.h \
@@ -5052,6 +5106,7 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5148,6 +5203,7 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/CaseDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
+		include/RelationshipCoverageTable.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5459,6 +5515,9 @@ moc_RelationshipColorDialog.o: moc_RelationshipColorDialog.cpp
 
 moc_RelationshipComboBoxDialog.o: moc_RelationshipComboBoxDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipComboBoxDialog.o moc_RelationshipComboBoxDialog.cpp
+
+moc_RelationshipCoverageTable.o: moc_RelationshipCoverageTable.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipCoverageTable.o moc_RelationshipCoverageTable.cpp
 
 moc_RelationshipsDialog.o: moc_RelationshipsDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_RelationshipsDialog.o moc_RelationshipsDialog.cpp
