@@ -32,9 +32,10 @@ QVariant EventTableModel::data(const QModelIndex &index, int role) const
     { // This is always the column with the boolean variable
       if (role == Qt::CheckStateRole) 
 	{ // Only do the below when we are setting the checkbox.
-	  // We want to fetch the state of the boolean from the sql table.
-	  QModelIndex cbIndex = index.sibling(index.row(), 7);
-	  int checked = QSqlTableModel::data(cbIndex).toInt();
+	  // We can simply fetch the value from the current index
+	  int checked = QSqlTableModel::data(index).toInt();
+	  // If checked == 1, then it evaluates to true in the if-statement below.
+	  // If checked == 0, the statement evaluates to false.
 	  if (checked)
 	    {
 	      return Qt::Checked;
@@ -77,7 +78,6 @@ QVariant EventTableModel::data(const QModelIndex &index, int role) const
       */
       return QSqlTableModel::data(index, role);
     }
-  
   return QVariant(); // This prevents a compiler warning.
 }
 
@@ -94,23 +94,13 @@ bool EventTableModel::setData(const QModelIndex & index,
       // Writing the data when the check box is set to checked.
       if (value == Qt::Checked) 
 	{
-	  QSqlQuery *query = new QSqlQuery;
-	  int order = index.row() + 1;
-	  query->prepare("UPDATE incidents SET mark = 1 WHERE ch_order = :order");
-	  query->bindValue(":order", order);
-	  query->exec();
-	  delete query;
+	  // Let's write the new value
 	  return setData(index, 1);
 	  // Writing the data when the check box is set to unchecked
 	}
       else if (value == Qt::Unchecked) 
 	{
-	  QSqlQuery *query = new QSqlQuery;
-	  int order = index.row() + 1;
-	  query->prepare("UPDATE incidents SET mark = 0 WHERE ch_order = :order");
-	  query->bindValue(":order", order);
-	  query->exec();
-	  delete query;
+	  // Let's write the new value
 	  return setData(index, 0);
 	}
     }
