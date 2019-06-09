@@ -14,7 +14,7 @@ Q-SoPrA is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.
-
+b
 You should have received a copy of the GNU General Public License
 along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,25 +33,16 @@ QVariant EventTableModel::data(const QModelIndex &index, int role) const
       if (role == Qt::CheckStateRole) 
 	{ // Only do the below when we are setting the checkbox.
 	  // We want to fetch the state of the boolean from the sql table.
-	  QSqlQuery *query = new QSqlQuery;
-	  int order = index.row() + 1;
-	  query->prepare("SELECT mark FROM incidents WHERE ch_order = :order");
-	  query->bindValue(":order", order);
-	  query->exec();
-	  query->first();
-	  int mark = query->value(0).toInt();
-	  // Return the appropriate check state based on the state of mar.
-	  if (mark == 1) 
+	  QModelIndex cbIndex = index.sibling(index.row(), 7);
+	  int checked = QSqlTableModel::data(cbIndex).toInt();
+	  if (checked)
 	    {
-	      delete query;
 	      return Qt::Checked;
 	    }
-	  else if (mark == 0) 
+	  else
 	    {
-	      delete query;
 	      return Qt::Unchecked;
 	    }
-	  delete query;
 	}
       else 
 	{
@@ -109,7 +100,7 @@ bool EventTableModel::setData(const QModelIndex & index,
 	  query->bindValue(":order", order);
 	  query->exec();
 	  delete query;
-	  return true;
+	  return setData(index, 1);
 	  // Writing the data when the check box is set to unchecked
 	}
       else if (value == Qt::Unchecked) 
@@ -120,7 +111,7 @@ bool EventTableModel::setData(const QModelIndex & index,
 	  query->bindValue(":order", order);
 	  query->exec();
 	  delete query;
-	  return true;
+	  return setData(index, 0);
 	}
     }
   // In all other situations revert to default behaviour.

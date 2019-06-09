@@ -24,6 +24,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #define EVENTTABLEMODEL_H
 
 #include <QtSql>
+#include <QModelIndex>
 #include "SupportingFunctions.h"
 
 class EventTableModel : public QSqlTableModel
@@ -37,7 +38,7 @@ public:
 
   // Override of publif functions
   QVariant data(const QModelIndex &index, int role) const;
-  bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole);
+  bool setData(const QModelIndex &index, const QVariant& value, int role = Qt::EditRole);
   Qt::ItemFlags flags(const QModelIndex & index) const;
 };
 
