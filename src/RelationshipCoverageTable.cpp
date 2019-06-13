@@ -43,6 +43,7 @@ RelationshipCoverageTable::RelationshipCoverageTable(QWidget *parent) : QWidget(
   tableView->setColumnWidth(0, 400);
   tableView->setColumnWidth(1, 300);
   tableView->setColumnWidth(2, 800);
+  tableView->setColumnWidth(3, 150);
   tableView->horizontalHeader()->setStretchLastSection(true);
 
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
@@ -56,7 +57,8 @@ RelationshipCoverageTable::RelationshipCoverageTable(QWidget *parent) : QWidget(
   filterComboBox->addItem("Relationship");
   filterComboBox->addItem("Type");
   filterComboBox->addItem("Description");
-  filterComboBox->addItem("Coverage");
+  filterComboBox->addItem("Coverage absolute");
+  filterComboBox->addItem("Coverage percentage");
   
   connect(filterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(changeFilter(const QString &)));
@@ -93,6 +95,9 @@ void RelationshipCoverageTable::buildModel()
 		  "WHERE name = :name");
   query3->prepare("SELECT COUNT(*) FROM relationships_to_incidents "
 		  "WHERE relationship = :relationship AND type = :type");
+  query->exec("SELECT COUNT(*) FROM incidents");
+  query->first();
+  int totalIncidents = query->value(0).toInt();
   query->exec("SELECT name, type FROM entity_relationships");
   while (query->next())
     {
@@ -122,19 +127,23 @@ void RelationshipCoverageTable::buildModel()
       query3->bindValue(":type", type);
       query3->exec();
       query3->first();
-      int coverage = query3->value(0).toInt();
-      QString coverageString = QString::number(coverage);
+      int coverageAbs = query3->value(0).toInt();
+      QString coverageAbsString = QString::number(coverageAbs);
+      float coveragePerc = (float) coverageAbs / totalIncidents * 100.0;
+      coveragePerc = std::round(coveragePerc * 100) / 100;
+      QString coveragePercString = QString::number(coveragePerc);
       QVector<QString> currentData;
       currentData.push_back(description);
       currentData.push_back(type);
-      currentData.push_back(coverageString);
+      currentData.push_back(coverageAbsString);
+      currentData.push_back(coveragePercString);
       data.insert(itemName, currentData);      
     }
   delete query;
   delete query2;
   delete query3;
   // Now we can build our data model
-  relationshipsModel = new QStandardItemModel(data.size(), 4);
+  relationshipsModel = new QStandardItemModel(data.size(), 5);
   QMapIterator<QString, QVector<QString>> it(data);
   int row = 0;
   while (it.hasNext())
@@ -144,23 +153,28 @@ void RelationshipCoverageTable::buildModel()
       QVector<QString> currentData = it.value();
       QString currentDescription = currentData[0];
       QString currentType = currentData[1];
-      int currentCoverage = currentData[2].toInt();
+      int currentAbsCoverage = currentData[2].toInt();
+      float currentPercCoverage = currentData[3].toFloat();
       QStandardItem *nameItem = new QStandardItem(relationship);
       QStandardItem *descriptionItem = new QStandardItem(currentDescription);
       QStandardItem *typeItem = new QStandardItem(currentType);
-      QStandardItem *coverageItem = new QStandardItem();
-      coverageItem->setData(QVariant(currentCoverage), Qt::DisplayRole);
+      QStandardItem *coverageAbsItem = new QStandardItem();
+      coverageAbsItem->setData(QVariant(currentAbsCoverage), Qt::DisplayRole);
+      QStandardItem *coveragePercItem = new QStandardItem();
+      coveragePercItem->setData(QVariant(currentPercCoverage), Qt::DisplayRole);
       relationshipsModel->setItem(row, 0, nameItem);
       relationshipsModel->setItem(row, 1, typeItem);
       relationshipsModel->setItem(row, 2, descriptionItem);
-      relationshipsModel->setItem(row, 3, coverageItem);
+      relationshipsModel->setItem(row, 3, coverageAbsItem);
+      relationshipsModel->setItem(row, 4, coveragePercItem);
       row++;
     }
   // Let's set our headers
   relationshipsModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Relationship"));
   relationshipsModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Type"));
   relationshipsModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Description"));
-  relationshipsModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Coverage"));
+  relationshipsModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Coverage absolute"));
+  relationshipsModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Coverage percentage"));
 }
 
 void RelationshipCoverageTable::updateTable()
@@ -213,15 +227,19 @@ void RelationshipCoverageTable::setFilterColumn()
     }
   else if (filterComboBox->currentText() == "Type") 
     {
-      filter->setFilterKeyColumn(2);
+      filter->setFilterKeyColumn(1);
     }
   else if (filterComboBox->currentText() == "Description") 
     {
-      filter->setFilterKeyColumn(1);
+      filter->setFilterKeyColumn(2);
     }
-  else if (filterComboBox->currentText() == "Coverage") 
+  else if (filterComboBox->currentText() == "Coverage absolute") 
     {
-      filter->setFilterKeyColumn(5);
+      filter->setFilterKeyColumn(3);
+    }
+    else if (filterComboBox->currentText() == "Coverage percentage") 
+    {
+      filter->setFilterKeyColumn(4);
     }
 }
 
@@ -238,18 +256,20 @@ void RelationshipCoverageTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first need to write the header row.
-      fileOut << "Relationship,Type,Description,Coverage\n";
+      fileOut << "Relationship,Type,Description,Coverage absolute,Coverage percentage\n";
       // And then we can write the rest of the table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++)
 	{
 	  QString relationship = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
 	  QString type  = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
 	  QString description = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-	  QString coverage = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+	  QString coverageAbs = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+	  QString coveragePerc = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
 	  fileOut << "\"" << doubleQuote(relationship).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(type).toStdString() << "\"" <<  ","
 		  << "\"" << doubleQuote(description).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(coverage).toStdString() << "\"" << "\n";
+		  << "\"" << doubleQuote(coverageAbs).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(coveragePerc).toStdString() << "\"" << "\n";
 	}
     }
 }

@@ -41,7 +41,8 @@ AttributeCoverageTable::AttributeCoverageTable(QWidget *parent) : QWidget(parent
   tableView->setWordWrap(true);
   tableView->setTextElideMode(Qt::ElideMiddle);
   tableView->setColumnWidth(0, 400);
-  tableView->setColumnWidth(1, 600);
+  tableView->setColumnWidth(1, 500);
+  tableView->setColumnWidth(5, 150);
   tableView->horizontalHeader()->setStretchLastSection(true);
 
   filterComboLabel = new QLabel(tr("<b>Pick filter column:</b>"), this);
