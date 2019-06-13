@@ -57,7 +57,8 @@ AttributeCoverageTable::AttributeCoverageTable(QWidget *parent) : QWidget(parent
   filterComboBox->addItem("Type");
   filterComboBox->addItem("Parent");
   filterComboBox->addItem("Hierarchy level");
-  filterComboBox->addItem("Coverage");
+  filterComboBox->addItem("Coverage absolute");
+  filterComboBox->addItem("Coverage percentage");
   
   connect(filterField, SIGNAL(textChanged(const QString &)),
 	  this, SLOT(changeFilter(const QString &)));
@@ -94,6 +95,9 @@ void AttributeCoverageTable::buildModel()
 		  "WHERE name = :name");
   query3->prepare("SELECT incident FROM attributes_to_incidents "
 		  "WHERE attribute = :attribute");
+  query->exec("SELECT COUNT(*) FROM incidents");
+  query->first();
+  int totalIncidents = query->value(0).toInt();
   query->exec("SELECT name, description, father FROM incident_attributes");
   while (query->next())
     {
@@ -133,14 +137,18 @@ void AttributeCoverageTable::buildModel()
 	      incidents.insert(query3->value(0).toInt());
 	    }
 	}
-      int coverage = incidents.size();
-      QString coverageString = QString::number(coverage);
+      int coverageAbs = incidents.size();
+      QString coverageAbsString = QString::number(coverageAbs);
+      float coveragePerc = (float) coverageAbs / totalIncidents * 100.0;
+      coveragePerc = std::roundf(coveragePerc * 100)  / 100;
+      QString coveragePercString = QString::number(coveragePerc);
       QString type = "Attribute";
       QVector<QString> currentData;
       currentData.push_back(description);
       currentData.push_back(parent);
       currentData.push_back(levelString);
-      currentData.push_back(coverageString);
+      currentData.push_back(coverageAbsString);
+      currentData.push_back(coveragePercString);
       currentData.push_back(type);
       data.insert(name, currentData);      
     }
@@ -185,14 +193,18 @@ void AttributeCoverageTable::buildModel()
 	      incidents.insert(query3->value(0).toInt());
 	    }
 	}
-      int coverage = incidents.size();
-      QString coverageString = QString::number(coverage);
+      int coverageAbs = incidents.size();
+      QString coverageAbsString = QString::number(coverageAbs);
+      float coveragePerc = (float) coverageAbs / totalIncidents * 100.0;
+      coveragePerc = std::roundf(coveragePerc * 100) / 100;
+      QString coveragePercString = QString::number(coveragePerc);
       QString type = "Entity";
       QVector<QString> currentData;
       currentData.push_back(description);
       currentData.push_back(parent);
       currentData.push_back(levelString);
-      currentData.push_back(coverageString);
+      currentData.push_back(coverageAbsString);
+      currentData.push_back(coveragePercString);
       currentData.push_back(type);
       data.insert(name, currentData);      
     }
@@ -200,7 +212,7 @@ void AttributeCoverageTable::buildModel()
   delete query2;
   delete query3;
   // Now we can build our data model
-  attributesModel = new QStandardItemModel(data.size(), 6);
+  attributesModel = new QStandardItemModel(data.size(), 7);
   QMapIterator<QString, QVector<QString>> it(data);
   int row = 0;
   while (it.hasNext())
@@ -211,22 +223,26 @@ void AttributeCoverageTable::buildModel()
       QString currentDescription = currentData[0];
       QString currentParent = currentData[1];
       int currentLevel = currentData[2].toInt();
-      int currentCoverage = currentData[3].toInt();
-      QString currentType = currentData[4];
+      int currentAbsCoverage = currentData[3].toInt();
+      float currentPercCoverage = currentData[4].toFloat();
+      QString currentType = currentData[5];
       QStandardItem *nameItem = new QStandardItem(attribute);
       QStandardItem *descriptionItem = new QStandardItem(currentDescription);
       QStandardItem *typeItem = new QStandardItem(currentType);
       QStandardItem *parentItem = new QStandardItem(currentParent);
       QStandardItem *levelItem = new QStandardItem();
       levelItem->setData(QVariant(currentLevel), Qt::DisplayRole);
-      QStandardItem *coverageItem = new QStandardItem();
-      coverageItem->setData(QVariant(currentCoverage), Qt::DisplayRole);
+      QStandardItem *coverageAbsItem = new QStandardItem();
+      coverageAbsItem->setData(QVariant(currentAbsCoverage), Qt::DisplayRole);
+      QStandardItem *coveragePercItem = new QStandardItem();
+      coveragePercItem->setData(QVariant(currentPercCoverage), Qt::DisplayRole);
       attributesModel->setItem(row, 0, nameItem);
       attributesModel->setItem(row, 1, descriptionItem);
       attributesModel->setItem(row, 2, typeItem);
       attributesModel->setItem(row, 3, parentItem);
       attributesModel->setItem(row, 4, levelItem);
-      attributesModel->setItem(row, 5, coverageItem);
+      attributesModel->setItem(row, 5, coverageAbsItem);
+      attributesModel->setItem(row, 6, coveragePercItem);
       row++;
     }
   // Let's set our headers
@@ -235,7 +251,8 @@ void AttributeCoverageTable::buildModel()
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Type"));
   attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Parent"));
   attributesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Hierarchy level"));
-  attributesModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Coverage"));
+  attributesModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Coverage absolute"));
+  attributesModel->setHeaderData(6, Qt::Horizontal, QObject::tr("Coverage percentage"));
 }
 
 void AttributeCoverageTable::updateTable()
@@ -302,9 +319,13 @@ void AttributeCoverageTable::setFilterColumn()
     {
       filter->setFilterKeyColumn(4);
     }
-  else if (filterComboBox->currentText() == "Coverage") 
+  else if (filterComboBox->currentText() == "Coverage absolute") 
     {
       filter->setFilterKeyColumn(5);
+    }
+  else if (filterComboBox->currentText() == "Coverage percentage") 
+    {
+      filter->setFilterKeyColumn(6);
     }
 }
 
@@ -345,7 +366,7 @@ void AttributeCoverageTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first need to write the header row.
-      fileOut << "Attribute,Description,Parent,Type,Hierarchy Level,Coverage\n";
+      fileOut << "Attribute,Description,Parent,Type,Hierarchy Level,Coverage absolute,Coverage percentage\n";
       // And then we can write the rest of the table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++)
 	{
@@ -354,13 +375,15 @@ void AttributeCoverageTable::exportTable()
 	  QString parent = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
 	  QString type = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
 	  QString level = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-	  QString coverage = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
+	  QString coverageAbs = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
+	  QString coveragePerc = tableView->model()->index(i, 6).data(Qt::DisplayRole).toString();
 	  fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(description).toStdString() << "\"" <<  ","
 		  << "\"" << doubleQuote(parent).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(type).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(level).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(coverage).toStdString() << "\"" << "\n";
+		  << "\"" << doubleQuote(coverageAbs).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(coveragePerc).toStdString() << "\"" << "\n";
 	}
     }
 }
