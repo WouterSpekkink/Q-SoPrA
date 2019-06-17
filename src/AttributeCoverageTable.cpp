@@ -462,6 +462,7 @@ void AttributeCoverageTable::exportConcordancePlot()
 	  qreal x = 0.0;
 	  QGraphicsTextItem *text = new QGraphicsTextItem();
 	  text->setPlainText(attribute);
+	  // We create a label for the current attribute.
 	  drawItems.push_back(text);
 	  scene->addItem(text);
 	  qreal textWidth = text->boundingRect().width();

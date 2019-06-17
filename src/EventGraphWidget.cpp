@@ -11785,6 +11785,11 @@ int EventGraphWidget::getLabelSize()
   return _labelSize;
 }
 
+qreal EventGraphWidget::getDistance()
+{
+  return _distance;
+}
+
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) 
 {
   if (event->type() == QEvent::MouseButtonRelease)

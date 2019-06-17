@@ -23,6 +23,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef RELATIONSHIPCOVERAGETABLE_H
 #define RELATIONSHIPCOVERAGETABLE_H
 
+#include <QtWidgets>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
@@ -32,6 +33,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtSql>
 #include <QTableView>
 #include <QHeaderView>
+#include <QGraphicsScene>
+#include <QSvgGenerator>
 #include <QSortFilterProxyModel>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -60,6 +63,7 @@ private slots:
   void changeFilter(const QString &text);
   void setFilterColumn();
   void exportTable();
+  void exportConcordancePlot();
   
 private:
   // Interface elements
@@ -69,6 +73,7 @@ private:
   QPointer<QLabel> filterComboLabel;
   QPointer<QLabel> filterFieldLabel;
   QPointer<QPushButton> exportTableButton;
+  QPointer<QPushButton> exportConcordancePlotButton;
   QPointer<QLineEdit> filterField;
   QPointer<QComboBox> filterComboBox;
   

@@ -295,7 +295,8 @@ private:
   QPointer<QComboBox> penStyleComboBox;
 
   // Private variables
-  int _distance;
+  qreal _distance;
+  qreal _originalDistance;
   bool _labelsVisible;
   bool _incidentLabelsOnly;
   bool _attributeLabelsOnly;

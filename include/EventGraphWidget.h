@@ -104,6 +104,7 @@ public:
   QVector<Linkage*> getEdgeVector();
   QVector<QString> getCheckedCases();
   int getLabelSize();
+  qreal getDistance();
   
   // Functions that need to be exposed
   void resetTree();

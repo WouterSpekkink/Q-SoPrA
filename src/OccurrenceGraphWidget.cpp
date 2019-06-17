@@ -30,7 +30,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 {
-  _distance = 70;
+  _distance = 70.0;
+  _originalDistance = _distance;
   _labelsVisible = true;
   _incidentLabelsOnly = false;
   _attributeLabelsOnly = false;
@@ -167,7 +168,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   decreaseDistanceButton->setMinimumSize(40, 40);
   decreaseDistanceButton->setMaximumSize(40, 40);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
-  exportConcordanceButton = new QPushButton(tr("Export concordance"), graphicsWidget); 
+  exportConcordanceButton = new QPushButton(tr("Export line plot"), graphicsWidget); 
   exportMatrixButton = new QPushButton(tr("Export matrix"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
@@ -2200,6 +2201,7 @@ void OccurrenceGraphWidget::restore()
 void OccurrenceGraphWidget::reset() 
 {
   _matched = false;
+  _distance = _originalDistance;
   QVector<OccurrenceItem*>::iterator it;
   for (it = _attributeOccurrenceVector.begin(); it != _attributeOccurrenceVector.end();) 
     {
@@ -2271,6 +2273,8 @@ void OccurrenceGraphWidget::matchEventGraph()
 {
   reset();
   _matched = true;
+  _originalDistance = _distance;
+  _distance = _eventGraphWidgetPtr->getDistance();
   QVector<IncidentNode*> incidents = _eventGraphWidgetPtr->getIncidentNodes();
   if (incidents.size() > 0) 
     {
@@ -4651,35 +4655,33 @@ void OccurrenceGraphWidget::exportConcordancePlot()
       QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
       while (it.hasNext()) 
 	{
-	  OccurrenceItem *current = it.next();
-	  if (current->isVisible())
-	    {
-	      allOccurrences.push_back(current);
-	    }
+	  allOccurrences.push_back(it.next());
 	}
       QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
       while (it2.hasNext()) 
 	{
-	  OccurrenceItem *current = it2.next();
-	  if (current->isVisible())
-	    {
-	      allOccurrences.push_back(current);
-	    }
+	  allOccurrences.push_back(it2.next());
 	}
       // Let us sort the occurrences.
       std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
       // Now we can normalise the distances.
       QMap<OccurrenceItem*, qreal> positions;
-      OccurrenceItem *first = allOccurrences.first();
       QVectorIterator<OccurrenceItem*> it3(allOccurrences);
-      while (it3.hasNext()) 
+      // We need to remember the furthest distance for our rectangles.
+      qreal rectWidth = 0.0;
+      while (it3.hasNext())
 	{
 	  OccurrenceItem *current = it3.next();
-	  qreal distance = current->scenePos().x() - first->scenePos().x();
+	  qreal distance = current->scenePos().x() - 0.0;
 	  qreal newDistance = distance / _distance;
-	  positions.insert(current, first->scenePos().x() + newDistance);
+	  positions.insert(current, 0.0 + newDistance);
+	  if (newDistance > rectWidth)
+	    {
+	      rectWidth = newDistance;
+	    }
 	}
-         // Then we need to identify the items we need to export;
+      rectWidth += 1.0;
+      // Then we need to identify the attributes and relationships we need to export;
       QVector<QString> items;
       for (int i = 0; i != attributeListWidget->rowCount(); i++) 
 	{
@@ -4696,11 +4698,24 @@ void OccurrenceGraphWidget::exportConcordancePlot()
       while (it4.hasNext()) 
 	{
 	  QString currentItem = it4.next();
+	  // We create a label for our current occurrence item.
+	  QGraphicsTextItem *text = new QGraphicsTextItem;
+	  text->setPlainText(currentItem);
+	  drawItems.push_back(text);
+	  tempScene->addItem(text);
+	  qreal textWidth = text->boundingRect().width();
+	  text->setPos(0.0 - (textWidth + 20.0), y + 5.0);
+	  // Let's also create a rectangle.
+	  QGraphicsRectItem *rect = new QGraphicsRectItem();
+	  rect->setPen(QPen(Qt::gray, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+	  rect->setRect(0.0, y - 1.0, rectWidth, 42);
+	  drawItems.push_back(rect);
+	  tempScene->addItem(rect);
 	  QVectorIterator<OccurrenceItem*> it5(allOccurrences);
 	  while (it5.hasNext()) 
 	    {
 	      OccurrenceItem *occurrence = it5.next();
-	      if (occurrence->getAttribute() == currentItem)
+	      if (occurrence->getAttribute() == currentItem && occurrence->isVisible())
 		{
 		  qreal x = positions.value(occurrence);
 		  QGraphicsLineItem *line = new QGraphicsLineItem();
