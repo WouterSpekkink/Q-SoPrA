@@ -65,6 +65,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "AttributeCheckBoxDialog.h"
 #include "RelationshipCheckBoxDialog.h"
 #include "GuideLine.h"
+#include "ConcordanceDialog.h"
 
 class EventGraphWidget;
 
@@ -132,7 +133,7 @@ private slots:
   void setRangeControls();
   void exportSvg();
   void exportMatrix();
-  void exportConcordancePlot();
+  void viewConcordancePlot();
   void setChangeLabel();
   void updateLinkages();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
@@ -258,7 +259,7 @@ private:
   QPointer<QPushButton> removeAttributeModeButton;
   QPointer<QPushButton> removeRelationshipModeButton;
   QPointer<QPushButton> exportSvgButton;
-  QPointer<QPushButton> exportConcordanceButton;
+  QPointer<QPushButton> viewConcordanceButton;
   QPointer<QPushButton> exportMatrixButton;
   QPointer<QPushButton> addLineButton;
   QPointer<QPushButton> addSingleArrowButton;

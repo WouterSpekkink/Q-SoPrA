@@ -36,12 +36,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSortFilterProxyModel>
 #include <QMessageBox>
 #include <QFileDialog>
-#include <QGraphicsScene>
-#include <QSvgGenerator>
 #include <fstream>
 #include "QueryModel.h"
 #include "ZoomableTableView.h"
-#include "RectObject.h"
+#include "ConcordanceDialog.h"
 
 class AttributeCoverageTable : public QWidget
 {
@@ -64,7 +62,7 @@ private slots:
   void setFilterColumn();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void exportTable();
-  void exportConcordancePlot();
+  void viewConcordancePlot();
   
 private:
   // Interface elements
@@ -74,7 +72,7 @@ private:
   QPointer<QLabel> filterComboLabel;
   QPointer<QLabel> filterFieldLabel;
   QPointer<QPushButton> exportTableButton;
-  QPointer<QPushButton> exportConcordancePlotButton;
+  QPointer<QPushButton> viewConcordancePlotButton;
   QPointer<QLineEdit> filterField;
   QPointer<QComboBox> filterComboBox;
   

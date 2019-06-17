@@ -39,6 +39,7 @@ HEADERS += include/AbstractionDialog.h \
            include/CasingWidget.h \
            include/CheckBoxDelegate.h \
            include/ComboBoxDialog.h \
+           include/ConcordanceDialog.h \
            include/Constants.h \
            include/DataWidget.h \
            include/DeselectableListWidget.h \
@@ -136,6 +137,7 @@ SOURCES += main.cpp \
            src/CasingWidget.cpp \
            src/CheckBoxDelegate.cpp \
            src/ComboBoxDialog.cpp \
+           src/ConcordanceDialog.cpp \
            src/Constants.cpp \
            src/DataWidget.cpp \
            src/DeselectableListWidget.cpp \

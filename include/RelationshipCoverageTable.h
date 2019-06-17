@@ -33,8 +33,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtSql>
 #include <QTableView>
 #include <QHeaderView>
-#include <QGraphicsScene>
-#include <QSvgGenerator>
 #include <QSortFilterProxyModel>
 #include <QMessageBox>
 #include <QFileDialog>
@@ -42,6 +40,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "QueryModel.h"
 #include "ZoomableTableView.h"
 #include "Constants.h"
+#include "ConcordanceDialog.h"
 
 class RelationshipCoverageTable : public QWidget
 {
@@ -63,7 +62,7 @@ private slots:
   void changeFilter(const QString &text);
   void setFilterColumn();
   void exportTable();
-  void exportConcordancePlot();
+  void viewConcordancePlot();
   
 private:
   // Interface elements
@@ -73,7 +72,7 @@ private:
   QPointer<QLabel> filterComboLabel;
   QPointer<QLabel> filterFieldLabel;
   QPointer<QPushButton> exportTableButton;
-  QPointer<QPushButton> exportConcordancePlotButton;
+  QPointer<QPushButton> viewConcordancePlotButton;
   QPointer<QLineEdit> filterField;
   QPointer<QComboBox> filterComboBox;
   

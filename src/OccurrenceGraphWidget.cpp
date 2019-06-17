@@ -168,7 +168,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   decreaseDistanceButton->setMinimumSize(40, 40);
   decreaseDistanceButton->setMaximumSize(40, 40);
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
-  exportConcordanceButton = new QPushButton(tr("Export line plot"), graphicsWidget); 
+  viewConcordanceButton = new QPushButton(tr("View line plot"), graphicsWidget); 
   exportMatrixButton = new QPushButton(tr("Export matrix"), graphicsWidget);
   savePlotButton = new QPushButton(tr("Save plot"), this);
   savePlotButton->setEnabled(false);
@@ -400,7 +400,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
-  connect(exportConcordanceButton, SIGNAL(clicked()), this, SLOT(exportConcordancePlot()));  
+  connect(viewConcordanceButton, SIGNAL(clicked()), this, SLOT(viewConcordancePlot()));  
   connect(exportMatrixButton, SIGNAL(clicked()), this, SLOT(exportMatrix()));
   connect(savePlotButton, SIGNAL(clicked()), this, SLOT(saveCurrentPlot()));
   connect(seePlotsButton, SIGNAL(clicked()), this, SLOT(seePlots()));
@@ -527,7 +527,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   sepLine2->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine2);
   graphicsControlsLayout->addWidget(exportSvgButton);
-  graphicsControlsLayout->addWidget(exportConcordanceButton);
+  graphicsControlsLayout->addWidget(viewConcordanceButton);
   graphicsControlsLayout->addWidget(exportMatrixButton);
   graphicsWidget->setMaximumWidth(175);
   graphicsWidget->setMinimumWidth(175);
@@ -4636,117 +4636,88 @@ void OccurrenceGraphWidget::exportSvg()
     }
 }
 
-void OccurrenceGraphWidget::exportConcordancePlot()
+void OccurrenceGraphWidget::viewConcordancePlot()
 {
-  // First we let the user set a file name
-  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),"", tr("svg files (*.svg)"));
-  if (!fileName.trimmed().isEmpty()) 
+  // We create a vector to manage the memory of our temporary graphics.
+  QVector<QGraphicsItem*> drawItems;
+  // Then we put all occurrences in one vector.
+  QVector<OccurrenceItem*> allOccurrences;
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+  while (it.hasNext()) 
     {
-      if (!fileName.endsWith(".svg")) 
-	{
-	  fileName.append(".svg");
-	}
-      // We create a temporary scene
-      QGraphicsScene *tempScene = new QGraphicsScene();
-      // We also create a vector to manage the memory of our temporary graphics.
-      QVector<QGraphicsItem*> drawItems;
-      // Then we put all occurrences in one vector.
-      QVector<OccurrenceItem*> allOccurrences;
-      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
-      while (it.hasNext()) 
-	{
-	  allOccurrences.push_back(it.next());
-	}
-      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
-      while (it2.hasNext()) 
-	{
-	  allOccurrences.push_back(it2.next());
-	}
-      // Let us sort the occurrences.
-      std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
-      // Now we can normalise the distances.
-      QMap<OccurrenceItem*, qreal> positions;
-      QVectorIterator<OccurrenceItem*> it3(allOccurrences);
-      // We need to remember the furthest distance for our rectangles.
-      qreal rectWidth = 0.0;
-      while (it3.hasNext())
-	{
-	  OccurrenceItem *current = it3.next();
-	  qreal distance = current->scenePos().x() - 0.0;
-	  qreal newDistance = distance / _distance;
-	  positions.insert(current, 0.0 + newDistance);
-	  if (newDistance > rectWidth)
-	    {
-	      rectWidth = newDistance;
-	    }
-	}
-      rectWidth += 1.0;
-      // Then we need to identify the attributes and relationships we need to export;
-      QVector<QString> items;
-      for (int i = 0; i != attributeListWidget->rowCount(); i++) 
-	{
-	  QString currentAttribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-	  items.push_back(currentAttribute);
-	}
-      for (int i = 0; i != relationshipListWidget->rowCount(); i++) 
-	{
-	  QString currentRelationship = relationshipListWidget->item(i,0)->data(Qt::DisplayRole).toString();
-	  items.push_back(currentRelationship);
-	}
-      QVectorIterator<QString> it4(items);
-      qreal y = 0.0;
-      while (it4.hasNext()) 
-	{
-	  QString currentItem = it4.next();
-	  // We create a label for our current occurrence item.
-	  QGraphicsTextItem *text = new QGraphicsTextItem;
-	  text->setPlainText(currentItem);
-	  drawItems.push_back(text);
-	  tempScene->addItem(text);
-	  qreal textWidth = text->boundingRect().width();
-	  text->setPos(0.0 - (textWidth + 20.0), y + 5.0);
-	  // Let's also create a rectangle.
-	  QGraphicsRectItem *rect = new QGraphicsRectItem();
-	  rect->setPen(QPen(Qt::gray, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
-	  rect->setRect(0.0, y - 1.0, rectWidth, 42);
-	  drawItems.push_back(rect);
-	  tempScene->addItem(rect);
-	  QVectorIterator<OccurrenceItem*> it5(allOccurrences);
-	  while (it5.hasNext()) 
-	    {
-	      OccurrenceItem *occurrence = it5.next();
-	      if (occurrence->getAttribute() == currentItem && occurrence->isVisible())
-		{
-		  qreal x = positions.value(occurrence);
-		  QGraphicsLineItem *line = new QGraphicsLineItem();
-		  line->setPen(QPen(Qt::black, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
-		  line->setLine(x, y, x, y + 40.0);
-		  drawItems.push_back(line);
-		  tempScene->addItem(line);
-		}
-	    }
-	  y += 42.0;
-	}
-      // Now we create the svg object
-      QSvgGenerator gen;
-      gen.setFileName(fileName);
-      QRectF currentRect = tempScene->itemsBoundingRect();
-      currentRect.setX(currentRect.x());
-      currentRect.setY(currentRect.y());
-      currentRect.setWidth(currentRect.width());
-      currentRect.setHeight(currentRect.height());
-      gen.setSize(QSize(currentRect.width(), currentRect.height()));
-      gen.setViewBox(QRect(0, 0, currentRect.width(), currentRect.height()));
-      int dpiX = qApp->desktop()->logicalDpiX();
-      gen.setResolution(dpiX);
-      QPainter painter;
-      painter.begin(&gen);
-      tempScene->render(&painter);
-      painter.end();
-      qDeleteAll(drawItems);
-      drawItems.clear();
-      delete tempScene;
+      allOccurrences.push_back(it.next());
     }
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+  while (it2.hasNext()) 
+    {
+      allOccurrences.push_back(it2.next());
+    }
+  // Let us sort the occurrences.
+  std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
+  // Now we can normalise the distances.
+  QMap<OccurrenceItem*, qreal> positions;
+  QVectorIterator<OccurrenceItem*> it3(allOccurrences);
+  // We need to remember the furthest distance for our rectangles.
+  qreal rectWidth = 0.0;
+  while (it3.hasNext())
+    {
+      OccurrenceItem *current = it3.next();
+      qreal distance = current->scenePos().x() - 0.0;
+      qreal newDistance = distance / _distance;
+      positions.insert(current, 0.0 + newDistance);
+      if (newDistance > rectWidth)
+	{
+	  rectWidth = newDistance;
+	}
+    }
+  rectWidth += 1.0;
+  // Then we need to identify the attributes and relationships we need to export;
+  QVector<QString> items;
+  for (int i = 0; i != attributeListWidget->rowCount(); i++) 
+    {
+      QString currentAttribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      items.push_back(currentAttribute);
+    }
+  for (int i = 0; i != relationshipListWidget->rowCount(); i++) 
+    {
+      QString currentRelationship = relationshipListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      items.push_back(currentRelationship);
+    }
+  QVectorIterator<QString> it4(items);
+  qreal y = 0.0;
+  while (it4.hasNext()) 
+    {
+      QString currentItem = it4.next();
+      // We create a label for our current occurrence item.
+      QGraphicsTextItem *text = new QGraphicsTextItem;
+      text->setPlainText(currentItem);
+      drawItems.push_back(text);
+      qreal textWidth = text->boundingRect().width();
+      text->setPos(0.0 - (textWidth + 20.0), y + 5.0);
+      // Let's also create a rectangle.
+      QGraphicsRectItem *rect = new QGraphicsRectItem();
+      rect->setPen(QPen(Qt::gray, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+      rect->setRect(0.0, y - 1.0, rectWidth, 42);
+      drawItems.push_back(rect);
+      QVectorIterator<OccurrenceItem*> it5(allOccurrences);
+      while (it5.hasNext()) 
+	{
+	  OccurrenceItem *occurrence = it5.next();
+	  if (occurrence->getAttribute() == currentItem && occurrence->isVisible())
+	    {
+	      qreal x = positions.value(occurrence);
+	      QGraphicsLineItem *line = new QGraphicsLineItem();
+	      line->setPen(QPen(Qt::black, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+	      line->setLine(x, y, x, y + 40.0);
+	      drawItems.push_back(line);
+	    }
+	}
+      y += 42.0;
+    }
+  // Now we create the dialog
+  QPointer<ConcordanceDialog> dialog = new ConcordanceDialog(this, drawItems);
+  dialog->setWindowTitle("Line plot");
+  dialog->exec();
 }
 
 void OccurrenceGraphWidget::exportMatrix() 
