@@ -49,6 +49,7 @@ AttributeCoverageTable::AttributeCoverageTable(QWidget *parent) : QWidget(parent
   filterFieldLabel = new QLabel(tr("<b>Filter:</b>"), this);
 
   exportTableButton = new QPushButton(tr("Export table"), this);
+  exportConcordancePlotButton = new QPushButton(tr("Export concordance plot"), this);
   
   filterField = new QLineEdit(this);
 
@@ -70,6 +71,7 @@ AttributeCoverageTable::AttributeCoverageTable(QWidget *parent) : QWidget(parent
   connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setFilterColumn()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
+  connect(exportConcordancePlotButton, SIGNAL(clicked()), this, SLOT(exportConcordancePlot()));
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
@@ -79,6 +81,7 @@ AttributeCoverageTable::AttributeCoverageTable(QWidget *parent) : QWidget(parent
   filterLayout->addWidget(filterFieldLabel);
   filterLayout->addWidget(filterField);
   filterLayout->addWidget(exportTableButton);
+  filterLayout->addWidget(exportConcordancePlotButton);
   mainLayout->addLayout(filterLayout);
   
   setLayout(mainLayout);
@@ -331,8 +334,8 @@ void AttributeCoverageTable::setFilterColumn()
 }
 
 void AttributeCoverageTable::findChildren(QString father,
-					   QVector<QString> *children,
-					   bool entity) 
+					  QVector<QString> *children,
+					  bool entity) 
 {
   QSqlQuery *query = new QSqlQuery;
   if (entity) 
@@ -367,14 +370,15 @@ void AttributeCoverageTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first need to write the header row.
-      fileOut << "Attribute,Description,Parent,Type,Hierarchy Level,Coverage absolute,Coverage percentage\n";
+      fileOut << "Attribute,Description,Parent,Type,Hierarchy Level, "
+	"Coverage absolute,Coverage percentage\n";
       // And then we can write the rest of the table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++)
 	{
 	  QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
 	  QString description = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
-	  QString parent = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-	  QString type = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+	  QString type = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+	  QString parent = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
 	  QString level = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
 	  QString coverageAbs = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
 	  QString coveragePerc = tableView->model()->index(i, 6).data(Qt::DisplayRole).toString();
@@ -387,4 +391,123 @@ void AttributeCoverageTable::exportTable()
 		  << "\"" << doubleQuote(coveragePerc).toStdString() << "\"" << "\n";
 	}
     }
+}
+
+
+void AttributeCoverageTable::exportConcordancePlot()
+{
+  // We will need queries for various tasks.
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT ch_order FROM incidents "
+		  "WHERE id = :id");
+  // We let the user pick a file name.
+  QString fileName = QFileDialog::getSaveFileName(this, tr("New svg file"),""
+						  , tr("svg files (*.svg)"));
+  if (!fileName.trimmed().isEmpty()) 
+    {
+      if (!fileName.endsWith(".svg")) 
+	{
+	  fileName.append(".svg");
+	}
+      // We create a graphics scene to contain our plot
+      QGraphicsScene *scene = new QGraphicsScene(this);
+      // Then we determine how many possible lines there can be in the plot.
+      // This is equivalent to the total number of incidents in the dataset.
+      query->exec("SELECT COUNT(*) FROM incidents");
+      query->first();
+      qreal totalIncidents = query->value(0).toReal();
+      // We will use count for an iterator.
+      int count = query->value(0).toInt();
+      // We also need to set an initial y-coordinate for our first bar.
+      // We will set this coordinate to other values as we move to our list of attributes.
+      qreal y = 0.0;
+      // We create a vector to manage the memory of our items.
+      QVector<QGraphicsItem*> drawItems;
+      // Now we need to fetch each visible attribute in turn.
+      for (int i = 0; i != tableView->verticalHeader()->count(); i++)
+	{
+	  QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
+	  QString type = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+	  bool entity = false;
+	  if (type == "Entity")
+	    {
+	      entity = true;
+	    }
+	  // We will also need to fetch the children of the current attribute
+	  QVector<QString> attributes;
+	  attributes.push_back(attribute);
+	  findChildren(attribute, &attributes, entity);
+	  // Now let's find all hits.
+	  QSet<int> hits;
+	  QVectorIterator<QString> it(attributes);
+	  while (it.hasNext())
+	    {
+	      QString currentAttribute = it.next();
+	      query->prepare("SELECT incident FROM attributes_to_incidents "
+			     "WHERE attribute = :attribute");
+	      query->bindValue(":attribute", currentAttribute);
+	      query->exec();
+	      while (query->next())
+		{
+		  int incident = query->value(0).toInt();
+		  query2->bindValue(":id", incident);
+		  query2->exec();
+		  query2->first();
+		  hits.insert(query2->value(0).toInt());
+		}
+	    }
+	  // We need to set the initial x-position
+	  // We will increment this for every incident.
+	  qreal x = 0.0;
+	  QGraphicsTextItem *text = new QGraphicsTextItem();
+	  text->setPlainText(attribute);
+	  drawItems.push_back(text);
+	  scene->addItem(text);
+	  qreal textWidth = text->boundingRect().width();
+	  text->setPos(0.0 - (textWidth + 20.0), y + 5.0);
+	  // We create a rectangle to draw around our lines.
+	  QGraphicsRectItem *rect = new QGraphicsRectItem();
+	  rect->setPen(QPen(Qt::gray, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+	  rect->setRect(x, y - 1.0, totalIncidents, 42);
+	  drawItems.push_back(rect);
+	  scene->addItem(rect);
+	  // Now we will create the lines for our plot objects.
+	  for (int j = 0; j != count; j++)
+	    {
+	      if (hits.contains(j))
+		{
+		  QGraphicsLineItem *line = new QGraphicsLineItem();
+		  line->setPen(QPen(Qt::black, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+		  line->setLine(x, y, x, y + 40.0);
+		  drawItems.push_back(line);
+		  scene->addItem(line);
+		}
+	      x += 1.0;
+	    }
+	  // We need to change the y-coordinate for each variable.
+	  y += 42.0;
+	}
+      // Now we create the svg object
+      QSvgGenerator gen;
+      gen.setFileName(fileName);
+      QRectF currentRect = scene->itemsBoundingRect();
+      currentRect.setX(currentRect.x());
+      currentRect.setY(currentRect.y());
+      currentRect.setWidth(currentRect.width());
+      currentRect.setHeight(currentRect.height());
+      gen.setSize(QSize(currentRect.width(), currentRect.height()));
+      gen.setViewBox(QRect(0, 0, currentRect.width(), currentRect.height()));
+      int dpiX = qApp->desktop()->logicalDpiX();
+      gen.setResolution(dpiX);
+      QPainter painter;
+      painter.begin(&gen);
+      scene->render(&painter);
+      painter.end();
+      qDeleteAll(drawItems);
+      drawItems.clear();
+      delete scene;
+    }
+  delete query;
+  delete query2;
 }

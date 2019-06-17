@@ -3411,11 +3411,10 @@ void EventGraphWidget::increaseDistance()
       temp.push_back(it2.next());
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
-  QVectorIterator<QGraphicsItem*> it3(temp);  
-  int unit = 0;
-  qreal last = -9999;
-  if (_distance < 300) 
+  QGraphicsItem *first = temp.first();
+  if (_distance < 1000.0)
     {
+      QVectorIterator<QGraphicsItem*> it3(temp);  
       while (it3.hasNext()) 
 	{
 	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
@@ -3423,46 +3422,34 @@ void EventGraphWidget::increaseDistance()
 	  if (incidentNode) 
 	    {
 	      incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
-	      qreal oldX = incidentNode->scenePos().x();
-	      if (last != oldX) 
+	      if (incidentNode != first)
 		{
-		  unit++;
+		  qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
+		  qreal newDistance = distance * 1.1;
+		  incidentNode->setPos(QPointF(first->scenePos().x() +
+					       newDistance, incidentNode->scenePos().y()));
+		  incidentNode->setPos(QPointF(first->scenePos().x() +
+					       newDistance, incidentNode->scenePos().y()));
+		  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
 		}
-	      if (last == -9999) 
-		{
-		  last = incidentNode->scenePos().x();
-		}
-	      QPointF newPos = QPointF(oldX + unit, incidentNode->pos().y());
-	      IncidentNodeLabel *currentLabel = incidentNode->getLabel();
-	      currentLabel->setNewPos(newPos);
-	      incidentNode->setOriginalPos(newPos);
-	      incidentNode->setPos(newPos);
-	      last = oldX;
 	    }
 	  else if (abstractNode) 
 	    {
 	      abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
-	      qreal oldX = abstractNode->scenePos().x();
-	      if (last != oldX) 
+	      if (abstractNode != first)
 		{
-		  unit++;
+		  qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
+		  qreal newDistance = distance * 1.1;
+		  abstractNode->setPos(QPointF(first->scenePos().x() +
+					       newDistance, abstractNode->scenePos().y()));
+		  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
 		}
-	      if (last == -9999) 
-		{
-		  last = abstractNode->scenePos().x();
-		}
-	      QPointF newPos = QPointF(oldX + unit, abstractNode->pos().y());
-	      AbstractNodeLabel *currentLabel = abstractNode->getLabel();
-	      currentLabel->setNewPos(newPos);
-	      abstractNode->setOriginalPos(newPos);
-	      abstractNode->setPos(newPos);
-	      last = oldX;
 	    }
 	}
-      _distance += 1.0;
+      _distance *= 1.1;
     }
 }
-
+  
 void EventGraphWidget::decreaseDistance() 
 {
   QVector<QGraphicsItem*> temp;
@@ -3477,11 +3464,10 @@ void EventGraphWidget::decreaseDistance()
       temp.push_back(it2.next());
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
-  QVectorIterator<QGraphicsItem*> it3(temp);  
-  int unit = 0;
-  qreal last = -9999;
-  if (_distance > 35) 
+  QGraphicsItem *first = temp.first();
+  if (_distance > 35.0) 
     {
+      QVectorIterator<QGraphicsItem*> it3(temp);  
       while (it3.hasNext()) 
 	{
 	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
@@ -3489,45 +3475,34 @@ void EventGraphWidget::decreaseDistance()
 	  if (incidentNode) 
 	    {
 	      incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
-	      qreal oldX = incidentNode->scenePos().x();
-	      if (last != oldX) 
+	      if (incidentNode != first)
 		{
-		  unit++;
-		}      
-	      if (last == -9999) 
-		{
-		  last = incidentNode->scenePos().x();
-		}      
-	      QPointF newPos = QPointF(oldX - unit, incidentNode->pos().y());
-	      IncidentNodeLabel *currentLabel = incidentNode->getLabel();
-	      currentLabel->setNewPos(newPos);
-	      incidentNode->setOriginalPos(newPos);
-	      incidentNode->setPos(newPos);
-	      last = oldX;
+		  qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
+		  qreal newDistance = distance * 0.9;
+		  incidentNode->setPos(QPointF(first->scenePos().x() +
+					       newDistance, incidentNode->scenePos().y()));
+		  incidentNode->setPos(QPointF(first->scenePos().x() +
+					       newDistance, incidentNode->scenePos().y()));
+		  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
+		}
 	    }
 	  else if (abstractNode) 
 	    {
 	      abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
-	      qreal oldX = abstractNode->scenePos().x();
-	      if (last != oldX) 
+	      if (abstractNode != first)
 		{
-		  unit++;
-		}      
-	      if (last == -9999) 
-		{
-		  last = abstractNode->scenePos().x();
-		}      
-	      QPointF newPos = QPointF(oldX, abstractNode->pos().y());
-	      AbstractNodeLabel *currentLabel = abstractNode->getLabel();
-	      currentLabel->setNewPos(newPos);
-	      abstractNode->setOriginalPos(newPos);
-	      abstractNode->setPos(newPos);
-	      last = oldX;
+		  qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
+		  qreal newDistance = distance * 0.9;
+		  abstractNode->setPos(QPointF(first->scenePos().x() +
+					       newDistance, abstractNode->scenePos().y()));
+		  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+		}
 	    }
 	}
-      _distance -= 1.0;
+      _distance *= 0.9;
     }
 }
+	
 
 void EventGraphWidget::expandGraph() 
 {

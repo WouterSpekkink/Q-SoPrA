@@ -132,6 +132,7 @@ private slots:
   void setRangeControls();
   void exportSvg();
   void exportMatrix();
+  void exportConcordancePlot();
   void setChangeLabel();
   void updateLinkages();
   void processMoveItems(QGraphicsItem *item, QPointF pos);
@@ -257,6 +258,7 @@ private:
   QPointer<QPushButton> removeAttributeModeButton;
   QPointer<QPushButton> removeRelationshipModeButton;
   QPointer<QPushButton> exportSvgButton;
+  QPointer<QPushButton> exportConcordanceButton;
   QPointer<QPushButton> exportMatrixButton;
   QPointer<QPushButton> addLineButton;
   QPointer<QPushButton> addSingleArrowButton;

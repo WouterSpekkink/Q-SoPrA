@@ -23,6 +23,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef ATTRIBUTECOVERAGETABLE_H
 #define ATTRIBUTECOVERAGETABLE_H
 
+#include <QtWidgets>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QHBoxLayout>
@@ -35,9 +36,12 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QSortFilterProxyModel>
 #include <QMessageBox>
 #include <QFileDialog>
+#include <QGraphicsScene>
+#include <QSvgGenerator>
 #include <fstream>
 #include "QueryModel.h"
 #include "ZoomableTableView.h"
+#include "RectObject.h"
 
 class AttributeCoverageTable : public QWidget
 {
@@ -60,6 +64,7 @@ private slots:
   void setFilterColumn();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void exportTable();
+  void exportConcordancePlot();
   
 private:
   // Interface elements
@@ -69,6 +74,7 @@ private:
   QPointer<QLabel> filterComboLabel;
   QPointer<QLabel> filterFieldLabel;
   QPointer<QPushButton> exportTableButton;
+  QPointer<QPushButton> exportConcordancePlotButton;
   QPointer<QLineEdit> filterField;
   QPointer<QComboBox> filterComboBox;
   
