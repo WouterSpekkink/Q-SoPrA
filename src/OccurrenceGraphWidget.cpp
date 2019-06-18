@@ -4654,6 +4654,8 @@ void OccurrenceGraphWidget::viewConcordancePlot()
     }
   // Let us sort the occurrences.
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
+  // We need to take our first occurrence item as an orientation point.
+  OccurrenceItem *first = allOccurrences.first();
   // Now we can normalise the distances.
   QMap<OccurrenceItem*, qreal> positions;
   QVectorIterator<OccurrenceItem*> it3(allOccurrences);
@@ -4662,9 +4664,9 @@ void OccurrenceGraphWidget::viewConcordancePlot()
   while (it3.hasNext())
     {
       OccurrenceItem *current = it3.next();
-      qreal distance = current->scenePos().x() - 0.0;
+      qreal distance = current->scenePos().x() - first->scenePos().x();
       qreal newDistance = distance / _distance;
-      positions.insert(current, 0.0 + newDistance);
+      positions.insert(current, first->scenePos().x() + newDistance);
       if (newDistance > rectWidth)
 	{
 	  rectWidth = newDistance;
@@ -4693,11 +4695,22 @@ void OccurrenceGraphWidget::viewConcordancePlot()
       text->setPlainText(currentItem);
       drawItems.push_back(text);
       qreal textWidth = text->boundingRect().width();
-      text->setPos(0.0 - (textWidth + 20.0), y + 5.0);
+      text->setPos(first->scenePos().x() - (textWidth + 30.0), y + 5.0);
+      // Let us also add labels for the boundaries of the plots
+      QGraphicsTextItem *lowerBound = new QGraphicsTextItem;
+      lowerBound->setPlainText(QString::number(first->getOrder()));
+      drawItems.push_back(lowerBound);
+      textWidth = lowerBound->boundingRect().width();
+      lowerBound->setPos(first->scenePos().x() - (textWidth + 5.0), y + 5.0);
+      QGraphicsTextItem *upperBound = new QGraphicsTextItem;
+      upperBound->setPlainText(QString::number(allOccurrences.last()->getOrder()));
+      drawItems.push_back(upperBound);
+      textWidth = upperBound->boundingRect().width();
+      upperBound->setPos(positions.value(allOccurrences.last()) + 5.0, y + 5.0);
       // Let's also create a rectangle.
       QGraphicsRectItem *rect = new QGraphicsRectItem();
       rect->setPen(QPen(Qt::gray, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
-      rect->setRect(0.0, y - 1.0, rectWidth, 42);
+      rect->setRect(first->scenePos().x(), y - 1.0, rectWidth, 42);
       drawItems.push_back(rect);
       QVectorIterator<OccurrenceItem*> it5(allOccurrences);
       while (it5.hasNext()) 
