@@ -161,8 +161,11 @@ private slots:
   void plotIncidents();
   void getEdges(QString coder, QString type, QColor color);
   void plotEdges(QString type);
+  void makeLayout();
   void layoutGraph();
   void redoLayout();
+  void dateLayout();
+  void noOverlap();
   void getLabels();
   void addLabels();
   void cleanUp();	     
@@ -420,7 +423,6 @@ private:
   QPointer<QPushButton> moveModeDownButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
-  QPointer<QPushButton> minimiseCurrentGraphButton;
   QPointer<QPushButton> addLineButton;
   QPointer<QPushButton> addSingleArrowButton;
   QPointer<QPushButton> addDoubleArrowButton;
@@ -434,7 +436,7 @@ private:
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;
-  QPointer<QPushButton> redoLayoutButton;
+  QPointer<QPushButton> makeLayoutButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
@@ -448,6 +450,7 @@ private:
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> compareComboBox;
   QPointer<QComboBox> penStyleComboBox;
+  QPointer<QComboBox> layoutComboBox;
   QPointer<QSpinBox> penWidthSpinBox;
   QPointer<QSpinBox> timeLineWidthSpinBox;
   QPointer<QDial> lowerRangeDial;

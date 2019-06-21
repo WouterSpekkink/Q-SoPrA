@@ -151,7 +151,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   addRelationshipsButton = new QPushButton(tr("Add multiple relationships"), legendWidget);
   removeRelationshipModeButton = new QPushButton(tr("Remove relationship"), legendWidget);
   removeRelationshipModeButton->setEnabled(false);
-  matchEventGraphButton = new QPushButton(tr("Match current event graph"), this);
+  makeLayoutButton = new QPushButton(tr("Run layout"), this);
   restoreButton = new QPushButton(tr("Restore to original"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   incidentLabelsOnlyButton = new QPushButton(tr("Incident labels only"), graphicsWidget);
@@ -288,6 +288,11 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   penWidthSpinBox = new QSpinBox(this);
   penWidthSpinBox->setMinimum(1);
   penWidthSpinBox->setMaximum(20);
+
+  layoutComboBox = new QComboBox(this);
+  layoutComboBox->addItem(REDOLAYOUT);
+  layoutComboBox->addItem(MATCHEVENTGRAPH);
+  layoutComboBox->addItem(DATELAYOUT);
   
   view->viewport()->installEventFilter(this);
   
@@ -315,7 +320,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(changeRelationshipModeColor(QTableWidgetItem *)));
   connect(removeAttributeModeButton, SIGNAL(clicked()), this, SLOT(removeAttributeMode()));
   connect(removeRelationshipModeButton, SIGNAL(clicked()), this, SLOT(removeRelationshipMode()));
-  connect(matchEventGraphButton, SIGNAL(clicked()), this, SLOT(matchEventGraph()));
+  connect(makeLayoutButton, SIGNAL(clicked()), this, SLOT(makeLayout()));
   connect(restoreButton, SIGNAL(clicked()), this, SLOT(restore()));
   connect(addLineButton, SIGNAL(clicked()), scene, SLOT(prepLinePoints()));
   connect(addSingleArrowButton, SIGNAL(clicked()), scene, SLOT(prepSingleArrowPoints()));
@@ -540,12 +545,14 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> drawOptionsLeftLayout = new QHBoxLayout;
   drawOptionsLeftLayout->addWidget(layoutLabel);
   layoutLabel->setMaximumWidth(layoutLabel->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(layoutComboBox);
+  layoutComboBox->setMaximumWidth(layoutComboBox->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(makeLayoutButton);
+  makeLayoutButton->setMaximumWidth(makeLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(increaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   decreaseDistanceButton->setMaximumWidth(decreaseDistanceButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(matchEventGraphButton);
-  matchEventGraphButton->setMaximumWidth(matchEventGraphButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(restoreButton);
   restoreButton->setMaximumWidth(restoreButton->sizeHint().width());
   QPointer<QFrame> vertLineOne = new QFrame();
@@ -2183,8 +2190,28 @@ void OccurrenceGraphWidget::wireLinkages()
   updateLinkages();
 }
 
+void OccurrenceGraphWidget::makeLayout()
+{
+  if (layoutComboBox->currentText() == REDOLAYOUT)
+    {
+      restore();
+    }
+  else if (layoutComboBox->currentText() == MATCHEVENTGRAPH)
+    {
+      matchEventGraph();
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUT)
+    {
+      dateLayout();
+    }
+}
+
 void OccurrenceGraphWidget::restore() 
 {
+  layoutComboBox->clear();
+  layoutComboBox->addItem(REDOLAYOUT);
+  layoutComboBox->addItem(MATCHEVENTGRAPH);
+  layoutComboBox->addItem(DATELAYOUT);
   reset();
   for (int i = 0; i != caseListWidget->count(); i++)
     {
@@ -2269,11 +2296,226 @@ void OccurrenceGraphWidget::reset()
   setVisibility();
 }
 
+void OccurrenceGraphWidget::dateLayout()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT timestamp FROM incidents "
+		 "WHERE id = :id");
+  QVector<OccurrenceItem*> visible;
+  QVector<OccurrenceItem*> allOccurrences;
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+  while (it.hasNext())
+    {
+      OccurrenceItem *occurrence = it.next();
+      if (occurrence->isVisible())
+	{
+	  visible.push_back(occurrence);
+	}
+      allOccurrences.push_back(occurrence);
+    }
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+  while (it2.hasNext())
+    {
+      OccurrenceItem *occurrence = it2.next();
+      if (occurrence->isVisible())
+	{
+	  visible.push_back(occurrence);
+	}
+      allOccurrences.push_back(occurrence);
+    }
+  std::sort(visible.begin(), visible.end(), occurrencesSort);
+  OccurrenceItem *first = visible.first();
+  query->bindValue(":id", first->getId());
+  query->exec();
+  query->first();
+  QString firstDateString = query->value(0).toString();
+  QDate firstDate;
+  if (firstDateString.length() == 4) // We are dealing with a year only.
+    {
+      firstDate = QDate::fromString(firstDateString, "yyyy");
+    }
+  if (firstDateString.length() == 7) // We are dealing with a month and year.
+    {
+      if (firstDateString[2] == '/')
+	{
+	  firstDate = QDate::fromString(firstDateString, "MM/yyyy");
+	}
+      else if (firstDateString[2] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "MM-yyyy");
+	}
+      else if (firstDateString[4] == '\\') 
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy\\MM");
+	}
+      else if (firstDateString[4] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy-MM");
+	}
+    }
+  if (firstDateString.length() == 10) // We are dealing with a day, month and year.
+    {
+      if (firstDateString[2] == '/')
+	{
+	  firstDate = QDate::fromString(firstDateString, "dd/MM/yyyy");
+	}
+      else if (firstDateString[2] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "dd-MM-yyyy");
+	}
+      else if (firstDateString[4] == '\\') 
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy\\MM\\dd");
+	}
+      else if (firstDateString[4] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy-MM-dd");
+	}
+    }
+  if (!firstDate.isValid())
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<b>No valid starting date</b>");
+      warningBox->setInformativeText("The date of the first visible incident must be a valid date "
+				     "for this function to work.");
+      warningBox->exec();
+      delete warningBox;
+      delete query;
+      return;
+    }
+  else
+    {
+      int total = visible.size();
+      int validTotal = 0;
+      QMap<OccurrenceItem*, qint64> days;
+      qreal lastValid = 0.0;
+      QVectorIterator<OccurrenceItem*> it4(visible);
+      while (it4.hasNext())
+	{
+	  OccurrenceItem *occurrence = it4.next();
+	  int id = occurrence->getId();
+	  query->bindValue(":id", id);
+	  query->exec();
+	  query->first();
+	  QString dateString = query->value(0).toString();
+	  QDate date;
+	  if (dateString.length() == 4) // We are dealing with a year only.
+	    {
+	      date = QDate::fromString(dateString, "yyyy");
+	    }
+	  if (dateString.length() == 7) // We are dealing with a month and year.
+	    {
+	      if (dateString[2] == '/')
+		{
+		  date = QDate::fromString(dateString, "MM/yyyy");
+		}
+	      else if (dateString[2] == '-')
+		{
+		  date = QDate::fromString(dateString, "MM-yyyy");
+		}
+	      else if (dateString[4] == '\\') 
+		{
+		  date = QDate::fromString(dateString, "yyyy\\MM");
+		}
+	      else if (dateString[4] == '-')
+		{
+		  date = QDate::fromString(dateString, "yyyy-MM");
+		}
+	    }
+	  if (dateString.length() == 10) // We are dealing with a day, month and year.
+	    {
+	      if (dateString[2] == '/')
+		{
+		  date = QDate::fromString(dateString, "dd/MM/yyyy");
+		}
+	      else if (dateString[2] == '-')
+		{
+		  date = QDate::fromString(dateString, "dd-MM-yyyy");
+		}
+	      else if (dateString[4] == '\\') 
+		{
+		  date = QDate::fromString(dateString, "yyyy\\MM\\dd");
+		}
+	      else if (dateString[4] == '-')
+		{
+		  date = QDate::fromString(dateString, "yyyy-MM-dd");
+		}
+	    }
+	  if (date.isValid())
+	    {
+	      days.insert(occurrence, firstDate.daysTo(date));
+	      validTotal++;
+	    }
+	}
+      qreal validPerc = (qreal) validTotal / (qreal) total * 100;
+      validPerc = std::roundf(validPerc * 100) / 100; 
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Dates found:</h2>");
+      warningBox->setInformativeText(QString::number(validPerc) + "% of the currently visible "
+				     "nodes have a valid date set as time stamp. "
+				     "Do you wish to continue?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  delete warningBox;
+	  first->setPos(0, first->scenePos().y());
+	  first->getLabel()->setNewPos(first->scenePos());
+	  it4.toFront();
+	  while (it4.hasNext())
+	    {
+	      OccurrenceItem *occurrence = it4.next();
+	      if (occurrence != first)
+		{
+		  if (days.contains(occurrence))
+		    {
+		      qint64 daysTo = days.value(occurrence);
+		      qreal x = (_distance / 10) * daysTo;
+		      if (x >= lastValid)
+			{
+			  occurrence->setPos(x, occurrence->scenePos().y());
+			  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+			}
+		      else
+			{
+			  occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
+			  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+			}
+		      lastValid = x;
+		    }
+		  else
+		    {
+		      occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
+		      occurrence->getLabel()->setNewPos(occurrence->scenePos()); 
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  delete warningBox;
+	  delete query;
+	  return;
+	}
+    }
+  updateLinkages();
+  groupOccurrences();
+  wireLinkages();
+  setVisibility();
+  delete query;
+}
+
 void OccurrenceGraphWidget::matchEventGraph() 
 {
   reset();
   _matched = true;
   _originalDistance = _distance;
+  layoutComboBox->clear();
+  layoutComboBox->addItem(REDOLAYOUT);
+  layoutComboBox->addItem(MATCHEVENTGRAPH);
   _distance = _eventGraphWidgetPtr->getDistance();
   QVector<IncidentNode*> incidents = _eventGraphWidgetPtr->getIncidentNodes();
   if (incidents.size() > 0) 
@@ -4264,22 +4506,20 @@ void OccurrenceGraphWidget::increaseDistance()
     }
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
   OccurrenceItem *first = allOccurrences.first();
-  if (_distance < 300.0)
+  QVectorIterator<OccurrenceItem*> it3(allOccurrences);
+  while (it3.hasNext())
     {
-      QVectorIterator<OccurrenceItem*> it3(allOccurrences);
-      while (it3.hasNext())
+      OccurrenceItem *current = it3.next();
+      if (current != first)
 	{
-	  OccurrenceItem *current = it3.next();
-	  if (current != first)
-	    {
-	      qreal distance = current->scenePos().x() - first->scenePos().x();
-	      qreal newDistance = distance * 1.1;
-	      current->setPos(QPointF(first->scenePos().x() + newDistance, current->scenePos().y()));
-	      current->getLabel()->setNewPos(current->scenePos());
-	    }
+	  qreal distance = current->scenePos().x() - first->scenePos().x();
+	  qreal newDistance = distance * 1.1;
+	  current->setPos(QPointF(first->scenePos().x() + newDistance, current->scenePos().y()));
+	  current->getLabel()->setNewPos(current->scenePos());
 	}
-      _distance *= 1.1;
     }
+  _distance *= 1.1;
+  updateLinkages();
 }
 
 void OccurrenceGraphWidget::decreaseDistance() 
@@ -4297,22 +4537,20 @@ void OccurrenceGraphWidget::decreaseDistance()
     }
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
   OccurrenceItem *first = allOccurrences.first();
-  if (_distance > 40.0)
+  QVectorIterator<OccurrenceItem*> it3(allOccurrences);
+  while (it3.hasNext())
     {
-      QVectorIterator<OccurrenceItem*> it3(allOccurrences);
-      while (it3.hasNext())
+      OccurrenceItem *current = it3.next();
+      if (current != first)
 	{
-	  OccurrenceItem *current = it3.next();
-	  if (current != first)
-	    {
-	      qreal distance = current->scenePos().x() - first->scenePos().x();
-	      qreal newDistance = distance * 0.9;
-	      current->setPos(QPointF(first->scenePos().x() + newDistance, current->scenePos().y()));
-	      current->getLabel()->setNewPos(current->scenePos());
-	    }
+	  qreal distance = current->scenePos().x() - first->scenePos().x();
+	  qreal newDistance = distance * 0.9;
+	  current->setPos(QPointF(first->scenePos().x() + newDistance, current->scenePos().y()));
+	  current->getLabel()->setNewPos(current->scenePos());
 	}
-      _distance *= 0.9;
     }
+  _distance *= 0.9;
+  updateLinkages();
 }
 
 void OccurrenceGraphWidget::setRangeControls() 
@@ -4531,7 +4769,7 @@ void OccurrenceGraphWidget::setVisibility()
 	  if(!tail->isVisible()) 
 	    {
 	      show = false;
-	    }
+	    } 
 	  if (head) 
 	    {
 	      if (!head->isVisible()) 
@@ -4645,12 +4883,20 @@ void OccurrenceGraphWidget::viewConcordancePlot()
   QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
     {
-      allOccurrences.push_back(it.next());
+      OccurrenceItem *current = it.next();
+      if (current->isVisible())
+	{
+	  allOccurrences.push_back(current);
+	}
     }
   QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
   while (it2.hasNext()) 
     {
-      allOccurrences.push_back(it2.next());
+      OccurrenceItem *current = it2.next();
+      if (current->isVisible())
+	{
+	  allOccurrences.push_back(current);
+	}
     }
   // Let us sort the occurrences.
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);

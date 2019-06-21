@@ -114,7 +114,9 @@ private slots:
   void wireLinkages();
   void groupOccurrences();
   void reset();
+  void makeLayout();
   void matchEventGraph();
+  void dateLayout();
   void restore();
   void plotLabels();
   void toggleIncidentLabelsOnly();
@@ -248,7 +250,7 @@ private:
   QPointer<QPushButton> addAttributesButton;
   QPointer<QPushButton> addRelationshipButton;
   QPointer<QPushButton> addRelationshipsButton;
-  QPointer<QPushButton> matchEventGraphButton;
+  QPointer<QPushButton> makeLayoutButton;
   QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> incidentLabelsOnlyButton;
@@ -294,6 +296,7 @@ private:
   QPointer<QSlider> minorTickSizeSlider;
   QPointer<QSlider> fillOpacitySlider;
   QPointer<QComboBox> penStyleComboBox;
+  QPointer<QComboBox> layoutComboBox;
 
   // Private variables
   qreal _distance;

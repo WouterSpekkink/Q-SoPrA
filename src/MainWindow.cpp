@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   missingRelationshipsTableWidget = new MissingRelationshipsTable(this);
   attributeCoverageTableWidget = new AttributeCoverageTable(this);
   relationshipCoverageTableWidget = new RelationshipCoverageTable(this);
-
+  
   // Some of these widgets need some pointers to each other to communicate properly.
   //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);

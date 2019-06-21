@@ -33,7 +33,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _selectedAbstractNode = NULL;
   _selectedIncident = 0;
   _commentBool = false;
-  _distance = 0;
+  _distance = 70;
   _vectorPos = 0;
   _labelsVisible = true;
   _labelSize = 10;
@@ -144,6 +144,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   compareComboBox = new QComboBox(this);
   compareComboBox->addItem(DEFAULT);
 
+  layoutComboBox = new QComboBox(this);
+  layoutComboBox->addItem(REDOLAYOUT);
+  layoutComboBox->addItem(MINIMISELAYOUT);
+  layoutComboBox->addItem(DATELAYOUT);
+  layoutComboBox->addItem(NOOVERLAP);
+  
   lowerRangeDial = new QDial(graphicsWidget);
   lowerRangeDial->setEnabled(false);
   lowerRangeDial->setSingleStep(1);
@@ -264,9 +270,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   showLinkageTypeButton->setEnabled(false);
   removeLinkageTypeButton = new QPushButton(tr("Remove from plot"), legendWidget);
   removeLinkageTypeButton->setEnabled(false);
-  minimiseCurrentGraphButton = new QPushButton(tr("Minimise current graph"), this);
-  redoLayoutButton = new QPushButton(tr("Redo layout"), this);
-
+  makeLayoutButton = new QPushButton(tr("Run layout"), this);
+  
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
   addLineButton->setMinimumSize(40, 40);
@@ -506,8 +511,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(decreaseDistanceButton, SIGNAL(clicked()), this, SLOT(decreaseDistance()));
   connect(expandButton, SIGNAL(clicked()), this, SLOT(expandGraph()));
   connect(contractButton, SIGNAL(clicked()), this, SLOT(contractGraph()));
-  connect(minimiseCurrentGraphButton, SIGNAL(clicked()), this, SLOT(minimiseCurrentGraph()));
-  connect(redoLayoutButton, SIGNAL(clicked()), this, SLOT(redoLayout()));
+  connect(makeLayoutButton, SIGNAL(clicked()), this, SLOT(makeLayout()));
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(lowerRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
@@ -760,8 +764,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QFrame> vertLineOne = new QFrame();
   vertLineOne->setFrameShape(QFrame::VLine);
   drawOptionsLeftLayout->addWidget(vertLineOne);
-  drawOptionsLayout->addWidget(layoutLabel);
+  drawOptionsLeftLayout->addWidget(layoutLabel);
   layoutLabel->setMaximumWidth(layoutLabel->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(layoutComboBox);
+  layoutComboBox->setMaximumWidth(layoutComboBox->sizeHint().width());
+  drawOptionsLeftLayout->addWidget(makeLayoutButton);
+  makeLayoutButton->setMaximumWidth(makeLayoutButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(increaseDistanceButton);
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
@@ -770,10 +778,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   expandButton->setMaximumWidth(expandButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(contractButton);
   contractButton->setMaximumWidth(contractButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(minimiseCurrentGraphButton);
-  minimiseCurrentGraphButton->setMaximumWidth(minimiseCurrentGraphButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(redoLayoutButton);
-  redoLayoutButton->setMaximumWidth(redoLayoutButton->sizeHint().width());
   QPointer<QFrame> vertLineTwo = new QFrame();
   vertLineTwo->setFrameShape(QFrame::VLine);
   drawOptionsLeftLayout->addWidget(vertLineTwo);
@@ -1162,7 +1166,6 @@ void EventGraphWidget::setGraphControls(bool state)
   zoomSlider->setEnabled(state);
   expandButton->setEnabled(state);
   contractButton->setEnabled(state);
-  minimiseCurrentGraphButton->setEnabled(state);
   increaseDistanceButton->setEnabled(state);
   decreaseDistanceButton->setEnabled(state);
   addLineButton->setEnabled(state);
@@ -1190,7 +1193,8 @@ void EventGraphWidget::setGraphControls(bool state)
   snapGuidesButton->setEnabled(state);
   increaseLabelSizeButton->setEnabled(state);
   decreaseLabelSizeButton->setEnabled(state);
-  redoLayoutButton->setEnabled(state);
+  layoutComboBox->setEnabled(state);
+  makeLayoutButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -1730,6 +1734,7 @@ void EventGraphWidget::nextDataItem()
 	      QString raw = query->value(2).toString();
 	      QString comment = query->value(3).toString();
 	      QString source = query->value(4).toString();
+	      timeStampField->setText(timeStamp);
 	      descriptionField->setText(description);
 	      rawField->setText(raw);
 	      commentField->setText(comment);
@@ -3204,6 +3209,26 @@ void EventGraphWidget::plotEdges(QString type)
     }
 }
 
+void EventGraphWidget::makeLayout()
+{
+  if (layoutComboBox->currentText() == REDOLAYOUT)
+    {
+      redoLayout();
+    }
+  else if (layoutComboBox->currentText() == MINIMISELAYOUT)
+    {
+      minimiseCurrentGraph();
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUT)
+    {
+      dateLayout();
+    }
+  else if (layoutComboBox->currentText() == NOOVERLAP)
+    {
+      noOverlap();
+    }
+}
+
 void EventGraphWidget::layoutGraph() 
 {
   QVector<IncidentNode*>::iterator it;
@@ -3315,6 +3340,402 @@ void EventGraphWidget::redoLayout()
   updateLinkages();
 }
 
+void EventGraphWidget::dateLayout()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT timestamp FROM incidents "
+		 "WHERE id = :id");
+  QVector<IncidentNode*> visible;
+  QVector<QGraphicsItem*> allEvents;
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext())
+    {
+      IncidentNode *incident = it.next();
+      if (incident->isVisible())
+	{
+	  visible.push_back(incident);
+	}
+      allEvents.push_back(incident);
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext())
+    {
+      AbstractNode *abstract = it2.next();
+      if (abstract->isVisible())
+	{
+	  QVector<IncidentNode*> incidents = abstract->getIncidents();
+	  QVectorIterator<IncidentNode*> it3(incidents);
+	  while (it3.hasNext())
+	    {
+	      visible.push_back(it3.next());
+	    }
+	}
+      allEvents.push_back(abstract);
+    }
+  std::sort(visible.begin(), visible.end(), componentsSort);
+  IncidentNode *first = visible.first();
+  query->bindValue(":id", first->getId());
+  query->exec();
+  query->first();
+  QString firstDateString = query->value(0).toString();
+  QDate firstDate;
+  if (firstDateString.length() == 4) // We are dealing with a year only.
+    {
+      firstDate = QDate::fromString(firstDateString, "yyyy");
+    }
+  if (firstDateString.length() == 7) // We are dealing with a month and year.
+    {
+      if (firstDateString[2] == '/')
+	{
+	  firstDate = QDate::fromString(firstDateString, "MM/yyyy");
+	}
+      else if (firstDateString[2] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "MM-yyyy");
+	}
+      else if (firstDateString[4] == '\\') 
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy\\MM");
+	}
+      else if (firstDateString[4] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy-MM");
+	}
+    }
+  if (firstDateString.length() == 10) // We are dealing with a day, month and year.
+    {
+      if (firstDateString[2] == '/')
+	{
+	  firstDate = QDate::fromString(firstDateString, "dd/MM/yyyy");
+	}
+      else if (firstDateString[2] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "dd-MM-yyyy");
+	}
+      else if (firstDateString[4] == '\\') 
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy\\MM\\dd");
+	}
+      else if (firstDateString[4] == '-')
+	{
+	  firstDate = QDate::fromString(firstDateString, "yyyy-MM-dd");
+	}
+    }
+  if (!firstDate.isValid())
+    {
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<b>No valid starting date</b>");
+      warningBox->setInformativeText("The date of the first visible incident must be a valid date "
+				     "for this function to work.");
+      warningBox->exec();
+      delete warningBox;
+      delete query;
+      return;
+    }
+  else
+    {
+      int total = visible.size();
+      int validTotal = 0;
+      QMap<IncidentNode*, qint64> days;
+      qreal lastValid = 0.0;
+      QVectorIterator<IncidentNode*> it4(visible);
+      while (it4.hasNext())
+	{
+	  IncidentNode *incident = it4.next();
+	  int id = incident->getId();
+	  query->bindValue(":id", id);
+	  query->exec();
+	  query->first();
+	  QString dateString = query->value(0).toString();
+	  QDate date;
+	  if (dateString.length() == 4) // We are dealing with a year only.
+	    {
+	      date = QDate::fromString(dateString, "yyyy");
+	    }
+	  if (dateString.length() == 7) // We are dealing with a month and year.
+	    {
+	      if (dateString[2] == '/')
+		{
+		  date = QDate::fromString(dateString, "MM/yyyy");
+		}
+	      else if (dateString[2] == '-')
+		{
+		  date = QDate::fromString(dateString, "MM-yyyy");
+		}
+	      else if (dateString[4] == '\\') 
+		{
+		  date = QDate::fromString(dateString, "yyyy\\MM");
+		}
+	      else if (dateString[4] == '-')
+		{
+		  date = QDate::fromString(dateString, "yyyy-MM");
+		}
+	    }
+	  if (dateString.length() == 10) // We are dealing with a day, month and year.
+	    {
+	      if (dateString[2] == '/')
+		{
+		  date = QDate::fromString(dateString, "dd/MM/yyyy");
+		}
+	      else if (dateString[2] == '-')
+		{
+		  date = QDate::fromString(dateString, "dd-MM-yyyy");
+		}
+	      else if (dateString[4] == '\\') 
+		{
+		  date = QDate::fromString(dateString, "yyyy\\MM\\dd");
+		}
+	      else if (dateString[4] == '-')
+		{
+		  date = QDate::fromString(dateString, "yyyy-MM-dd");
+		}
+	    }
+	  if (date.isValid())
+	    {
+	      days.insert(incident, firstDate.daysTo(date));
+	      validTotal++;
+	    }
+	}
+      qreal validPerc = (qreal) validTotal / (qreal) total * 100;
+      validPerc = std::roundf(validPerc * 100) / 100; 
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Dates found:</h2>");
+      warningBox->setInformativeText(QString::number(validPerc) + "% of the currently visible "
+				     "nodes have a valid date set as time stamp. "
+				     "Do you wish to continue?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  delete warningBox;
+	  first->setPos(0, first->scenePos().y());
+	  first->getLabel()->setNewPos(first->scenePos());
+	  it4.toFront();
+	  while (it4.hasNext())
+	    {
+	      IncidentNode *incident = it4.next();
+	      if (incident != first)
+		{
+		  if (days.contains(incident))
+		    {
+		      qint64 daysTo = days.value(incident);
+		      qreal x = (_distance / 10) * daysTo;
+		      if (x >= lastValid)
+			{
+			  incident->setPos(x, incident->scenePos().y());
+			  incident->getLabel()->setNewPos(incident->scenePos());
+			}
+		      else
+			{
+			  incident->setPos(lastValid + _distance, incident->scenePos().y());
+			  incident->getLabel()->setNewPos(incident->scenePos());
+			}
+		      lastValid = x;
+		    }
+		  else
+		    {
+		      incident->setPos(lastValid + _distance, incident->scenePos().y());
+		      incident->getLabel()->setNewPos(incident->scenePos()); 
+		    }
+		}
+	    }
+	  it2.toFront();
+	  while (it2.hasNext())
+	    {
+	      AbstractNode *abstract = it2.next();
+	      QVector<IncidentNode*> incidents = abstract->getIncidents();
+	      std::sort(incidents.begin(), incidents.end(), componentsSort);
+	      IncidentNode *first = incidents.first();
+	      IncidentNode *last = incidents.last();
+	      int oldWidth = abstract->getWidth();
+	      int newWidth = last->scenePos().x() - first->scenePos().x() + last->getWidth();
+	      abstract->setPos(first->scenePos().x(), first->scenePos().y());
+	      int diff = (newWidth - oldWidth) / 2;
+	      abstract->setWidth(newWidth);
+	      abstract->getLabel()->setNewPos(abstract->scenePos(), diff);
+	    }
+	  bool overlap = true;
+	  while (overlap)
+	    {
+	      overlap = false;
+	      QVectorIterator<QGraphicsItem*> it5(allEvents);
+	      while (it5.hasNext())
+		{
+		  QGraphicsItem *first = it5.next();
+		  QVectorIterator<QGraphicsItem*> it6(allEvents);
+		  while (it6.hasNext())
+		    {
+		      QGraphicsItem *second = it6.next();
+		      if (first != second)
+			{
+			  qreal dist = qSqrt(qPow(first->scenePos().x() - second->scenePos().x(), 2) + 
+					     qPow(first->scenePos().y() - second->scenePos().y(), 2));
+			  if (dist < 40)
+			    {
+			      overlap = true;
+			      if (first->scenePos().y() > second->scenePos().y())
+				{
+				  first->setPos(first->scenePos().x(), first->scenePos().y() + 30);
+				  second->setPos(second->scenePos().x(), second->scenePos().y() - 30);
+				  IncidentNode *incidentFirst = qgraphicsitem_cast<IncidentNode*>(first);
+				  AbstractNode *abstractFirst = qgraphicsitem_cast<AbstractNode*>(first);
+				  IncidentNode *incidentSecond = qgraphicsitem_cast<IncidentNode*>(second);
+				  AbstractNode *abstractSecond = qgraphicsitem_cast<AbstractNode*>(second);
+				  if (incidentFirst)
+				    {
+				      incidentFirst->getLabel()->setNewPos(incidentFirst->scenePos());
+				    }
+				  else if (abstractFirst)
+				    {
+				      abstractFirst->getLabel()->setNewPos(abstractFirst->scenePos());
+				    }
+				  if (incidentSecond)
+				    {
+				      incidentSecond->getLabel()->setNewPos(incidentSecond->scenePos());
+				    }
+				  else if (abstractSecond)
+				    {
+				      abstractSecond->getLabel()->setNewPos(abstractSecond->scenePos());
+				    }
+				}
+			      else
+				{
+				  first->setPos(first->scenePos().x(), first->scenePos().y() - 30);
+				  second->setPos(second->scenePos().x(), second->scenePos().y() + 30);
+				  IncidentNode *incidentFirst = qgraphicsitem_cast<IncidentNode*>(first);
+				  AbstractNode *abstractFirst = qgraphicsitem_cast<AbstractNode*>(first);
+				  IncidentNode *incidentSecond = qgraphicsitem_cast<IncidentNode*>(second);
+				  AbstractNode *abstractSecond = qgraphicsitem_cast<AbstractNode*>(second);
+				  if (incidentFirst)
+				    {
+				      incidentFirst->getLabel()->setNewPos(incidentFirst->scenePos());
+				    }
+				  else if (abstractFirst)
+				    {
+				      abstractFirst->getLabel()->setNewPos(abstractFirst->scenePos());
+				    }
+				  if (incidentSecond)
+				    {
+				      incidentSecond->getLabel()->setNewPos(incidentSecond->scenePos());
+				    }
+				  else if (abstractSecond)
+				    {
+				      abstractSecond->getLabel()->setNewPos(abstractSecond->scenePos());
+				    }
+				}
+			    }
+			}
+		    }
+		}
+	    }
+	}
+      else
+	{
+	  delete warningBox;
+	  delete query;
+	  return;
+	}
+    }
+  updateLinkages();
+  delete query;
+}
+
+void EventGraphWidget::noOverlap()
+{
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QVector<QGraphicsItem*> allEvents;
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext())
+    {
+      allEvents.push_back(it.next());
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext())
+    {
+      allEvents.push_back(it2.next());
+    }
+  std::sort(allEvents.begin(), allEvents.end(), componentsSort);
+  bool overlap = true;
+  while (overlap)
+    {
+      overlap = false;
+      QVectorIterator<QGraphicsItem*> it3(allEvents);
+      while (it3.hasNext())
+	{
+	  QGraphicsItem *first = it3.next();
+	  QVectorIterator<QGraphicsItem*> it4(allEvents);
+	  while (it4.hasNext())
+	    {
+	      QGraphicsItem *second = it4.next();
+	      if (first != second)
+		{
+		  qreal dist = qSqrt(qPow(first->scenePos().x() - second->scenePos().x(), 2) + 
+				     qPow(first->scenePos().y() - second->scenePos().y(), 2));
+		  if (dist < 70)
+		    {
+		      overlap = true;
+		      if (first->scenePos().y() > second->scenePos().y())
+			{
+			  first->setPos(first->scenePos().x(), first->scenePos().y() + 30);
+			  second->setPos(second->scenePos().x(), second->scenePos().y() - 30);
+			  IncidentNode *incidentFirst = qgraphicsitem_cast<IncidentNode*>(first);
+			  AbstractNode *abstractFirst = qgraphicsitem_cast<AbstractNode*>(first);
+			  IncidentNode *incidentSecond = qgraphicsitem_cast<IncidentNode*>(second);
+			  AbstractNode *abstractSecond = qgraphicsitem_cast<AbstractNode*>(second);
+			  if (incidentFirst)
+			    {
+			      incidentFirst->getLabel()->setNewPos(incidentFirst->scenePos());
+			    }
+			  else if (abstractFirst)
+			    {
+			      abstractFirst->getLabel()->setNewPos(abstractFirst->scenePos());
+			    }
+			  if (incidentSecond)
+			    {
+			      incidentSecond->getLabel()->setNewPos(incidentSecond->scenePos());
+			    }
+			  else if (abstractSecond)
+			    {
+			      abstractSecond->getLabel()->setNewPos(abstractSecond->scenePos());
+			    }
+			}
+		      else
+			{
+			  first->setPos(first->scenePos().x(), first->scenePos().y() - 30);
+			  second->setPos(second->scenePos().x(), second->scenePos().y() + 30);
+			  IncidentNode *incidentFirst = qgraphicsitem_cast<IncidentNode*>(first);
+			  AbstractNode *abstractFirst = qgraphicsitem_cast<AbstractNode*>(first);
+			  IncidentNode *incidentSecond = qgraphicsitem_cast<IncidentNode*>(second);
+			  AbstractNode *abstractSecond = qgraphicsitem_cast<AbstractNode*>(second);
+			  if (incidentFirst)
+			    {
+			      incidentFirst->getLabel()->setNewPos(incidentFirst->scenePos());
+			    }
+			  else if (abstractFirst)
+			    {
+			      abstractFirst->getLabel()->setNewPos(abstractFirst->scenePos());
+			    }
+			  if (incidentSecond)
+			    {
+			      incidentSecond->getLabel()->setNewPos(incidentSecond->scenePos());
+			    }
+			  else if (abstractSecond)
+			    {
+			      abstractSecond->getLabel()->setNewPos(abstractSecond->scenePos());
+			    }
+			}
+		    }
+		}
+	    }
+	}
+    }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+}
+
 void EventGraphWidget::getLabels() 
 {
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
@@ -3412,42 +3833,43 @@ void EventGraphWidget::increaseDistance()
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
   QGraphicsItem *first = temp.first();
-  if (_distance < 1000.0)
+  QVectorIterator<QGraphicsItem*> it3(temp);  
+  while (it3.hasNext()) 
     {
-      QVectorIterator<QGraphicsItem*> it3(temp);  
-      while (it3.hasNext()) 
+      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.peekNext());
+      if (incidentNode) 
 	{
-	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
-	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.peekNext());
-	  if (incidentNode) 
+	  incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
+	  if (incidentNode != first)
 	    {
-	      incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
-	      if (incidentNode != first)
-		{
-		  qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
-		  qreal newDistance = distance * 1.1;
-		  incidentNode->setPos(QPointF(first->scenePos().x() +
-					       newDistance, incidentNode->scenePos().y()));
-		  incidentNode->setPos(QPointF(first->scenePos().x() +
-					       newDistance, incidentNode->scenePos().y()));
-		  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
-		}
-	    }
-	  else if (abstractNode) 
-	    {
-	      abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
-	      if (abstractNode != first)
-		{
-		  qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
-		  qreal newDistance = distance * 1.1;
-		  abstractNode->setPos(QPointF(first->scenePos().x() +
-					       newDistance, abstractNode->scenePos().y()));
-		  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
-		}
+	      qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
+	      qreal newDistance = distance * 1.1;
+	      incidentNode->setPos(QPointF(first->scenePos().x() +
+					   newDistance, incidentNode->scenePos().y()));
+	      incidentNode->setPos(QPointF(first->scenePos().x() +
+					   newDistance, incidentNode->scenePos().y()));
+	      incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
 	    }
 	}
-      _distance *= 1.1;
+      else if (abstractNode) 
+	{
+	  abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
+	  if (abstractNode != first)
+	    {
+	      qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
+	      qreal newDistance = distance * 1.1;
+	      abstractNode->setPos(QPointF(first->scenePos().x() +
+					   newDistance, abstractNode->scenePos().y()));
+	      int oldWidth = abstractNode->getWidth();
+	      int newWidth = oldWidth * 0.9;
+	      int diff = (newWidth - oldWidth) / 2;
+	      abstractNode->setWidth(newWidth);
+	      abstractNode->getLabel()->setNewPos(abstractNode->scenePos(), diff);
+	    }
+	}
     }
+  _distance *= 1.1;
 }
   
 void EventGraphWidget::decreaseDistance() 
@@ -3465,42 +3887,43 @@ void EventGraphWidget::decreaseDistance()
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
   QGraphicsItem *first = temp.first();
-  if (_distance > 35.0) 
+  QVectorIterator<QGraphicsItem*> it3(temp);  
+  while (it3.hasNext()) 
     {
-      QVectorIterator<QGraphicsItem*> it3(temp);  
-      while (it3.hasNext()) 
+      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
+      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.peekNext());
+      if (incidentNode) 
 	{
-	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
-	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.peekNext());
-	  if (incidentNode) 
+	  incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
+	  if (incidentNode != first)
 	    {
-	      incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
-	      if (incidentNode != first)
-		{
-		  qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
-		  qreal newDistance = distance * 0.9;
-		  incidentNode->setPos(QPointF(first->scenePos().x() +
-					       newDistance, incidentNode->scenePos().y()));
-		  incidentNode->setPos(QPointF(first->scenePos().x() +
-					       newDistance, incidentNode->scenePos().y()));
-		  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
-		}
-	    }
-	  else if (abstractNode) 
-	    {
-	      abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
-	      if (abstractNode != first)
-		{
-		  qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
-		  qreal newDistance = distance * 0.9;
-		  abstractNode->setPos(QPointF(first->scenePos().x() +
-					       newDistance, abstractNode->scenePos().y()));
-		  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
-		}
+	      qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
+	      qreal newDistance = distance * 0.9;
+	      incidentNode->setPos(QPointF(first->scenePos().x() +
+					   newDistance, incidentNode->scenePos().y()));
+	      incidentNode->setPos(QPointF(first->scenePos().x() +
+					   newDistance, incidentNode->scenePos().y()));
+	      incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
 	    }
 	}
-      _distance *= 0.9;
+      else if (abstractNode) 
+	{
+	  abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
+	  if (abstractNode != first)
+	    {
+	      qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
+	      qreal newDistance = distance * 0.9;
+	      abstractNode->setPos(QPointF(first->scenePos().x() +
+					   newDistance, abstractNode->scenePos().y()));
+	      int oldWidth = abstractNode->getWidth();
+	      int newWidth = oldWidth * 0.9;
+	      int diff = (newWidth - oldWidth) / 2;
+	      abstractNode->setWidth(newWidth);
+	      abstractNode->getLabel()->setNewPos(abstractNode->scenePos(), diff);
+	    }
+	}
     }
+  _distance *= 0.9;
 }
 	
 
@@ -7975,9 +8398,9 @@ void EventGraphWidget::abstractEvents()
 	      QPointF originalPos = QPointF(xPos, yPos);
 	      QString description = abstractionDialog->getDescription();
 	      AbstractNode *current = new AbstractNode(width, description, originalPos,
-						   _abstractNodeVector.size() + 1,
-						   abstractionDialog->getConstraint(),
-						   tempIncidents);
+						       _abstractNodeVector.size() + 1,
+						       abstractionDialog->getConstraint(),
+						       tempIncidents);
 	      current->setPos(originalPos);
 	      current->setZValue(3);
 	      QVectorIterator<QGraphicsItem*> it3(_currentData);

@@ -129,6 +129,12 @@ extern QString COMPLETEDATASET;
 extern QString SPRINGLAYOUT;
 extern QString FRLAYOUT;
 extern QString CIRCULARLAYOUT;
+extern QString MINIMISELAYOUT;
+extern QString REDOLAYOUT;
+extern QString DATELAYOUT;
+extern QString NOOVERLAP;
+extern QString MATCHEVENTGRAPH;
+
 extern qreal Pi;
 
 #endif

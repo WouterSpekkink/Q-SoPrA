@@ -127,4 +127,10 @@ QString BRINGBACKWARD = "Send to back";
 QString COMPLETEDATASET = "Complete dataset";
 QString SPRINGLAYOUT = "Force-directed";
 QString CIRCULARLAYOUT = "Circular";
+QString MINIMISELAYOUT = "Contract current layout";
+QString REDOLAYOUT = "Redo layout";
+QString DATELAYOUT = "Time stamp layout";
+QString NOOVERLAP = "No overlap";
+QString MATCHEVENTGRAPH = "Match event graph";
+
 qreal Pi = 3.14;
