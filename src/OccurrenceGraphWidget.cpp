@@ -4675,21 +4675,29 @@ void OccurrenceGraphWidget::viewConcordancePlot()
   rectWidth += 1.0;
   // Then we need to identify the attributes and relationships we need to export;
   QVector<QString> items;
+  // We also want to store the colors so that we can assign them to our lines
+  QVector<QColor> colors;
   for (int i = 0; i != attributeListWidget->rowCount(); i++) 
     {
-      QString currentAttribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QString currentAttribute = attributeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+      QColor currentColor = attributeListWidget->item(i, 1)->background().color(); 
       items.push_back(currentAttribute);
+      colors.push_back(currentColor);
     }
   for (int i = 0; i != relationshipListWidget->rowCount(); i++) 
     {
       QString currentRelationship = relationshipListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor currentColor = relationshipListWidget->item(i, 1)->background().color(); 
       items.push_back(currentRelationship);
+      colors.push_back(currentColor);
     }
   QVectorIterator<QString> it4(items);
   qreal y = 0.0;
+  int colorIterator = 0;
   while (it4.hasNext()) 
     {
       QString currentItem = it4.next();
+      QColor currentColor = colors[colorIterator];
       // We create a label for our current occurrence item.
       QGraphicsTextItem *text = new QGraphicsTextItem;
       text->setPlainText(currentItem);
@@ -4710,7 +4718,7 @@ void OccurrenceGraphWidget::viewConcordancePlot()
       // Let's also create a rectangle.
       QGraphicsRectItem *rect = new QGraphicsRectItem();
       rect->setPen(QPen(Qt::gray, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
-      rect->setRect(first->scenePos().x(), y - 1.0, rectWidth, 42);
+      rect->setRect(first->scenePos().x() - 1.0, y - 1.0, rectWidth + 1, 42);
       drawItems.push_back(rect);
       QVectorIterator<OccurrenceItem*> it5(allOccurrences);
       while (it5.hasNext()) 
@@ -4720,15 +4728,50 @@ void OccurrenceGraphWidget::viewConcordancePlot()
 	    {
 	      qreal x = positions.value(occurrence);
 	      QGraphicsLineItem *line = new QGraphicsLineItem();
-	      line->setPen(QPen(Qt::black, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+	      line->setPen(QPen(currentColor, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
 	      line->setLine(x, y, x, y + 40.0);
+	      line->setData(1, x);
 	      drawItems.push_back(line);
 	    }
 	}
       y += 42.0;
+      colorIterator++;
+    }
+  QVectorIterator<QGraphicsItem*> it5(drawItems);
+  while (it5.hasNext())
+    {
+      QGraphicsItem *first = it5.next();
+      QGraphicsLineItem *firstLine = qgraphicsitem_cast<QGraphicsLineItem*>(first);
+      if (firstLine)
+	{
+	    QVectorIterator<QGraphicsItem*> it6(drawItems);
+	    while (it6.hasNext())
+	      {
+		QGraphicsItem *second = it6.next();
+		QGraphicsLineItem *secondLine = qgraphicsitem_cast<QGraphicsLineItem*>(second);
+		if (secondLine)
+		  {
+		    if (firstLine != secondLine)
+		      {
+			
+			if (firstLine->data(1) == secondLine->data(1))
+			  {
+			    QColor firstColor = firstLine->pen().color();
+			    QColor secondColor = secondLine->pen().color();
+			    int red  = (firstColor.red() + secondColor.red()) / 2;
+			    int green  = (firstColor.green() + secondColor.green()) / 2;
+			    int blue  = (firstColor.blue() + secondColor.blue()) / 2;
+			    QColor blendColor = QColor(red, green, blue);
+			    firstLine->setPen(QPen(blendColor, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+			    secondLine->setPen(QPen(blendColor, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+			  }
+		      }
+		  }
+	      }
+	}
     }
   // Now we create the dialog
-  QPointer<ConcordanceDialog> dialog = new ConcordanceDialog(this, drawItems);
+  QPointer<ConcordanceDialog> dialog = new ConcordanceDialog(this, drawItems, true);
   dialog->setWindowTitle("Line plot");
   dialog->exec();
 }

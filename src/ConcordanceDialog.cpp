@@ -23,9 +23,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/ConcordanceDialog.h"
 
 ConcordanceDialog::ConcordanceDialog(QWidget *parent,
-				     QVector<QGraphicsItem*> drawItems)
+				     QVector<QGraphicsItem*> drawItems,
+				     bool linePlot)
 : QDialog(parent), _drawItems(drawItems)
 {
+  _colorsOn = linePlot;
   scene = new Scene(this);
   QVectorIterator<QGraphicsItem*> it(_drawItems);
   while (it.hasNext())
@@ -42,7 +44,7 @@ ConcordanceDialog::ConcordanceDialog(QWidget *parent,
   currentRect.setWidth(currentRect.width() + 100);
   currentRect.setHeight(currentRect.height() + 100);
   scene->setSceneRect(currentRect);
-
+  
   zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
 
   QString sliderSheet = QString("QSlider::groove:horizontal { "
@@ -73,9 +75,17 @@ ConcordanceDialog::ConcordanceDialog(QWidget *parent,
   
   exportButton = new QPushButton(tr("Export plot"), this);
   closeButton = new QPushButton(tr("Close dialog"), this);
+  if (linePlot)
+    {
+      toggleColorsButton = new QPushButton(tr("toggle colors"), this);
+    }
 
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
+  if (linePlot)
+    {
+      connect(toggleColorsButton, SIGNAL(clicked()), this, SLOT(toggleColors()));
+    }
   connect(exportButton, SIGNAL(clicked()), this, SLOT(exportPlot()));
   connect(closeButton, SIGNAL(clicked()), this, SLOT(close()));
 
@@ -86,6 +96,11 @@ ConcordanceDialog::ConcordanceDialog(QWidget *parent,
   zoomLabel->setMaximumWidth(zoomLabel->sizeHint().width());
   buttonLayout->addWidget(zoomSlider);
   zoomSlider->setMaximumWidth(100);
+  if (linePlot)
+    {
+      buttonLayout->addWidget(toggleColorsButton);
+      toggleColorsButton->setMaximumWidth(toggleColorsButton->sizeHint().width());
+    }
   buttonLayout->addWidget(exportButton);
   exportButton->setMaximumWidth(exportButton->sizeHint().width());
   buttonLayout->addWidget(closeButton);
@@ -93,6 +108,20 @@ ConcordanceDialog::ConcordanceDialog(QWidget *parent,
   buttonLayout->setAlignment(Qt::AlignRight);
   mainLayout->addLayout(buttonLayout);
   setLayout(mainLayout);
+
+  if (_colorsOn)
+    {
+      QVectorIterator<QGraphicsItem*> it(_drawItems);
+      while (it.hasNext())
+	{
+	  QGraphicsItem *current = it.next();
+	  QGraphicsLineItem *line = qgraphicsitem_cast<QGraphicsLineItem*>(current);
+	  if (line)
+	    {
+	      originalColors.insert(line, line->pen().color());
+	    }
+	}
+    }
 }
 
 ConcordanceDialog::~ConcordanceDialog()
@@ -130,6 +159,37 @@ void ConcordanceDialog::resetZoomSlider()
 {
   zoomSlider->setValue(0);
   zoomSlider->setSliderPosition(0);
+}
+
+void ConcordanceDialog::toggleColors()
+{
+  QVectorIterator<QGraphicsItem*> it(_drawItems);
+  if (_colorsOn)
+    {
+      while (it.hasNext())
+	{
+	  QGraphicsItem *current = it.next();
+	  QGraphicsLineItem *line = qgraphicsitem_cast<QGraphicsLineItem*>(current);
+	  if (line)
+	    {
+	      line->setPen(QPen(Qt::black, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+	    }
+	}
+    }
+  else
+    {
+      while (it.hasNext())
+	{
+	  QGraphicsItem *current = it.next();
+	  QGraphicsLineItem *line = qgraphicsitem_cast<QGraphicsLineItem*>(current);
+	  QColor color = originalColors.value(line);
+	  if (line)
+	    {
+	      line->setPen(QPen(color, 1, Qt::PenStyle(1), Qt::SquareCap, Qt::MiterJoin));
+	    }
+	}
+    }
+  _colorsOn = !_colorsOn;
 }
 
 void ConcordanceDialog::exportPlot()

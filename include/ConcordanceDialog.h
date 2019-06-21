@@ -40,12 +40,14 @@ class ConcordanceDialog : public QDialog
   
 public:
   ConcordanceDialog(QWidget *parent = 0,
-		    QVector<QGraphicsItem*> drawItems = QVector<QGraphicsItem*>());
+		    QVector<QGraphicsItem*> drawItems = QVector<QGraphicsItem*>(),
+		    bool linePlot = false);
     ~ConcordanceDialog();
 private slots:
   void exportPlot();
   void processZoomSliderChange(int value);
   void resetZoomSlider();
+  void toggleColors();
   bool eventFilter(QObject *object, QEvent *event);
   
 private:
@@ -55,10 +57,15 @@ private:
   QPointer<QLabel> zoomLabel;
   QPointer<QPushButton> exportButton;
   QPointer<QPushButton> closeButton;
+  QPointer<QPushButton> toggleColorsButton;
   QPointer<QSlider> zoomSlider;
   
-  // Private data vector
+  // Private data vectors
+  QMap<QGraphicsLineItem*, QColor> originalColors;
   QVector<QGraphicsItem*> _drawItems;
+
+  // Private variables
+  bool _colorsOn;
 };
 
 #endif
