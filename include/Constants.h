@@ -133,6 +133,7 @@ extern QString MINIMISELAYOUT;
 extern QString REDOLAYOUT;
 extern QString DATELAYOUT;
 extern QString NOOVERLAP;
+extern QString REDUCEOVERLAP;
 extern QString MATCHEVENTGRAPH;
 
 extern qreal Pi;

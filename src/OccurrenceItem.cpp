@@ -147,6 +147,11 @@ void OccurrenceItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event)
     }
 }
 
+void OccurrenceItem::setLastPos(QPointF lastPos)
+{
+  _lastPos = lastPos;
+}
+
 QPointF OccurrenceItem::getLastPos()
 {
   return _lastPos;
@@ -271,4 +276,5 @@ bool OccurrenceItem::isGrouped()
 {
   return _grouped;
 }
+
 

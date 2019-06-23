@@ -293,6 +293,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   layoutComboBox->addItem(REDOLAYOUT);
   layoutComboBox->addItem(MATCHEVENTGRAPH);
   layoutComboBox->addItem(DATELAYOUT);
+  layoutComboBox->addItem(REDUCEOVERLAP);
   
   view->viewport()->installEventFilter(this);
   
@@ -2192,26 +2193,31 @@ void OccurrenceGraphWidget::wireLinkages()
 
 void OccurrenceGraphWidget::makeLayout()
 {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   if (layoutComboBox->currentText() == REDOLAYOUT)
     {
       restore();
     }
   else if (layoutComboBox->currentText() == MATCHEVENTGRAPH)
     {
+      restore();
       matchEventGraph();
     }
   else if (layoutComboBox->currentText() == DATELAYOUT)
     {
+      restore();
       dateLayout();
     }
+  else if (layoutComboBox->currentText() == REDUCEOVERLAP)
+    {
+      reduceOverlap();
+    }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void OccurrenceGraphWidget::restore() 
 {
-  layoutComboBox->clear();
-  layoutComboBox->addItem(REDOLAYOUT);
-  layoutComboBox->addItem(MATCHEVENTGRAPH);
-  layoutComboBox->addItem(DATELAYOUT);
   reset();
   for (int i = 0; i != caseListWidget->count(); i++)
     {
@@ -2294,6 +2300,144 @@ void OccurrenceGraphWidget::reset()
 	}
     }
   setVisibility();
+}
+
+void OccurrenceGraphWidget::reduceOverlap()
+{
+  // Let's first group all occurrences together
+  QVector<OccurrenceItem*> allOccurrences;
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+  while (it.hasNext())
+    {
+      allOccurrences.push_back(it.next());
+    }
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+  while (it2.hasNext())
+    {
+      allOccurrences.push_back(it2.next());
+    }
+  // We need to make a while loop that continues to run as long as there
+  // is still something that overlaps
+  bool overlapping = true; // We assume that something overlaps initially.
+  while (overlapping)
+    {
+      // We reset this boolean on every run.
+      overlapping = false;
+      // Then we iterate through everything to remove the overlap.
+      QVectorIterator<OccurrenceItem*> it3(allOccurrences);
+      while (it3.hasNext())
+	{
+	  OccurrenceItem *first = it3.next();
+	  QVectorIterator<OccurrenceItem*> it4(allOccurrences);
+	  while (it4.hasNext())
+	    {
+	      OccurrenceItem *second = it4.next();
+	      // Make sure that we are not looking at the same occurrence twice.
+	      if (first != second)
+		{
+		  // Let's calculate the distance between these two items.
+		  qreal dist = qSqrt(qPow(first->scenePos().x() - second->scenePos().x(), 2) +
+				     qPow(first->scenePos().y() - second->scenePos().y(), 2));
+		  // If they overlap
+		  if (dist < 40)
+		    {
+		      overlapping = true; // We need another run
+		      // Let's see which node needs to move in which direction.
+		      if (first->scenePos().y() > second->scenePos().y())
+			{
+			  first->setPos(first->scenePos().x(), first->scenePos().y() + 30);
+			  second->setPos(second->scenePos().x(), second->scenePos().y() - 30);
+			  first->getLabel()->setNewPos(first->scenePos());
+			  second->getLabel()->setNewPos(second->scenePos());
+			}
+		      else // Same stuff for moving in the other direction
+			{
+			  first->setPos(first->scenePos().x(), first->scenePos().y() - 30);
+			  second->setPos(second->scenePos().x(), second->scenePos().y() + 30);
+			  first->getLabel()->setNewPos(first->scenePos());
+			  second->getLabel()->setNewPos(second->scenePos());
+			}
+		    }
+		}
+	    }
+	}
+    }
+  softGrouping();
+}
+
+void OccurrenceGraphWidget::softGrouping()
+{
+  // First we gather all occurrences
+  QVector<OccurrenceItem*> allOccurrences;
+  QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+  while (it.hasNext())
+    {
+      OccurrenceItem *occurrence = it.next();
+      if (occurrence->isVisible())
+	{
+	  allOccurrences.push_back(occurrence);
+	}
+    }
+  QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+  while (it2.hasNext())
+    {
+      OccurrenceItem *occurrence = it2.next();
+      if (occurrence->isVisible())
+	{
+	  allOccurrences.push_back(occurrence);
+	}
+    }
+  // Let's sort the occurrences.
+  std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
+  // And let's now regroup the grouped items.
+  QVector<OccurrenceItem*> finished;
+  QVector<OccurrenceItem*>::iterator it3;
+  for (it3 = allOccurrences.begin(); it3 != allOccurrences.end(); it3++) 
+    {
+      OccurrenceItem *first = *it3;
+      if (first->isGrouped())
+	{
+	  QVector<OccurrenceItem*> group;
+	  if (!finished.contains(first)) 
+	    {
+	      group.push_back(first);
+	      finished.push_back(first);
+	      QVector<OccurrenceItem*>::iterator it4;
+	      for (it4 = it3 + 1; it4 != allOccurrences.end(); it4++) 
+		{
+		  OccurrenceItem *second = *it4;
+		  if (second->isGrouped())
+		    {
+		      if (!finished.contains(second)) 
+			{
+			  // First we need to check if they are in the same x coordinate
+			  if (second->scenePos().x() == first->scenePos().x()) 
+			    {
+			      group.push_back(second);
+			      finished.push_back(second);
+			    }
+			}
+		    }
+		}
+	    }
+	  // Now we should have a finished group.
+	  std::sort(group.begin(), group.end(), attributeLessThan);
+	  if (!group.empty())
+	    {
+	      qreal x = group.first()->scenePos().x();
+	      qreal startY = group.first()->scenePos().y();
+	      int dist = 80;
+	      QVector<OccurrenceItem*>::iterator it5;
+	      for (it5 = group.begin(); it5 != group.end(); it5++) 
+		{
+		  OccurrenceItem *current = *it5;
+		  current->setPos(x, startY - dist);
+		  current->getLabel()->setNewPos(current->scenePos());
+		  dist += 80;
+		}
+	    }
+	}
+    }
 }
 
 void OccurrenceGraphWidget::dateLayout()
@@ -2450,7 +2594,9 @@ void OccurrenceGraphWidget::dateLayout()
 	    }
 	}
       qreal validPerc = (qreal) validTotal / (qreal) total * 100;
-      validPerc = std::roundf(validPerc * 100) / 100; 
+      validPerc = std::roundf(validPerc * 100) / 100;
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
@@ -2461,6 +2607,7 @@ void OccurrenceGraphWidget::dateLayout()
 				     "Do you wish to continue?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
+	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  delete warningBox;
 	  first->setPos(0, first->scenePos().y());
 	  first->getLabel()->setNewPos(first->scenePos());
@@ -2513,9 +2660,6 @@ void OccurrenceGraphWidget::matchEventGraph()
   reset();
   _matched = true;
   _originalDistance = _distance;
-  layoutComboBox->clear();
-  layoutComboBox->addItem(REDOLAYOUT);
-  layoutComboBox->addItem(MATCHEVENTGRAPH);
   _distance = _eventGraphWidgetPtr->getDistance();
   QVector<IncidentNode*> incidents = _eventGraphWidgetPtr->getIncidentNodes();
   if (incidents.size() > 0) 

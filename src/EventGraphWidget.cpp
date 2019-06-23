@@ -3211,6 +3211,7 @@ void EventGraphWidget::plotEdges(QString type)
 
 void EventGraphWidget::makeLayout()
 {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   if (layoutComboBox->currentText() == REDOLAYOUT)
     {
       redoLayout();
@@ -3227,6 +3228,8 @@ void EventGraphWidget::makeLayout()
     {
       noOverlap();
     }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void EventGraphWidget::layoutGraph() 
@@ -3499,7 +3502,9 @@ void EventGraphWidget::dateLayout()
 	    }
 	}
       qreal validPerc = (qreal) validTotal / (qreal) total * 100;
-      validPerc = std::roundf(validPerc * 100) / 100; 
+      validPerc = std::roundf(validPerc * 100) / 100;
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
@@ -3510,6 +3515,7 @@ void EventGraphWidget::dateLayout()
 				     "Do you wish to continue?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
+	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  delete warningBox;
 	  first->setPos(0, first->scenePos().y());
 	  first->getLabel()->setNewPos(first->scenePos());
@@ -3557,80 +3563,8 @@ void EventGraphWidget::dateLayout()
 	      abstract->setWidth(newWidth);
 	      abstract->getLabel()->setNewPos(abstract->scenePos(), diff);
 	    }
-	  bool overlap = true;
-	  while (overlap)
-	    {
-	      overlap = false;
-	      QVectorIterator<QGraphicsItem*> it5(allEvents);
-	      while (it5.hasNext())
-		{
-		  QGraphicsItem *first = it5.next();
-		  QVectorIterator<QGraphicsItem*> it6(allEvents);
-		  while (it6.hasNext())
-		    {
-		      QGraphicsItem *second = it6.next();
-		      if (first != second)
-			{
-			  qreal dist = qSqrt(qPow(first->scenePos().x() - second->scenePos().x(), 2) + 
-					     qPow(first->scenePos().y() - second->scenePos().y(), 2));
-			  if (dist < 40)
-			    {
-			      overlap = true;
-			      if (first->scenePos().y() > second->scenePos().y())
-				{
-				  first->setPos(first->scenePos().x(), first->scenePos().y() + 30);
-				  second->setPos(second->scenePos().x(), second->scenePos().y() - 30);
-				  IncidentNode *incidentFirst = qgraphicsitem_cast<IncidentNode*>(first);
-				  AbstractNode *abstractFirst = qgraphicsitem_cast<AbstractNode*>(first);
-				  IncidentNode *incidentSecond = qgraphicsitem_cast<IncidentNode*>(second);
-				  AbstractNode *abstractSecond = qgraphicsitem_cast<AbstractNode*>(second);
-				  if (incidentFirst)
-				    {
-				      incidentFirst->getLabel()->setNewPos(incidentFirst->scenePos());
-				    }
-				  else if (abstractFirst)
-				    {
-				      abstractFirst->getLabel()->setNewPos(abstractFirst->scenePos());
-				    }
-				  if (incidentSecond)
-				    {
-				      incidentSecond->getLabel()->setNewPos(incidentSecond->scenePos());
-				    }
-				  else if (abstractSecond)
-				    {
-				      abstractSecond->getLabel()->setNewPos(abstractSecond->scenePos());
-				    }
-				}
-			      else
-				{
-				  first->setPos(first->scenePos().x(), first->scenePos().y() - 30);
-				  second->setPos(second->scenePos().x(), second->scenePos().y() + 30);
-				  IncidentNode *incidentFirst = qgraphicsitem_cast<IncidentNode*>(first);
-				  AbstractNode *abstractFirst = qgraphicsitem_cast<AbstractNode*>(first);
-				  IncidentNode *incidentSecond = qgraphicsitem_cast<IncidentNode*>(second);
-				  AbstractNode *abstractSecond = qgraphicsitem_cast<AbstractNode*>(second);
-				  if (incidentFirst)
-				    {
-				      incidentFirst->getLabel()->setNewPos(incidentFirst->scenePos());
-				    }
-				  else if (abstractFirst)
-				    {
-				      abstractFirst->getLabel()->setNewPos(abstractFirst->scenePos());
-				    }
-				  if (incidentSecond)
-				    {
-				      incidentSecond->getLabel()->setNewPos(incidentSecond->scenePos());
-				    }
-				  else if (abstractSecond)
-				    {
-				      abstractSecond->getLabel()->setNewPos(abstractSecond->scenePos());
-				    }
-				}
-			    }
-			}
-		    }
-		}
-	    }
+	  // Let's make sure that we have no overlap.
+	  noOverlap();
 	}
       else
 	{
@@ -3645,7 +3579,6 @@ void EventGraphWidget::dateLayout()
 
 void EventGraphWidget::noOverlap()
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   QVector<QGraphicsItem*> allEvents;
   QVectorIterator<IncidentNode*> it(_incidentNodeVector);
   while (it.hasNext())
@@ -3732,8 +3665,6 @@ void EventGraphWidget::noOverlap()
 	    }
 	}
     }
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
 }
 
 void EventGraphWidget::getLabels() 

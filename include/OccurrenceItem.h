@@ -35,6 +35,7 @@ public:
   void setAttribute(const QString &attribute);
   void setPermHidden(bool state);
   void setGrouped(bool state);
+  void setLastPos(QPointF lastPos);
   
   // Getters
   int getCorrection();

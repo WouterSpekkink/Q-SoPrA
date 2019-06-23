@@ -117,6 +117,8 @@ private slots:
   void makeLayout();
   void matchEventGraph();
   void dateLayout();
+  void reduceOverlap();
+  void softGrouping();
   void restore();
   void plotLabels();
   void toggleIncidentLabelsOnly();
