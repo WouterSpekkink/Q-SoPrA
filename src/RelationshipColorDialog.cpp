@@ -207,6 +207,7 @@ void RelationshipColorDialog::saveAndClose()
   if (_chosenRelationship == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving"); 
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<b>No relationship chosen.</b>");

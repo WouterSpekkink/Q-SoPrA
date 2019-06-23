@@ -243,6 +243,7 @@ void SimpleAttributeSelectionDialog::saveAndClose()
   if (_chosenAttribute == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Selecting attribute");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No attribute chosen.");

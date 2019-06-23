@@ -533,6 +533,7 @@ void EntityDialog::mergeAttributes()
       if (mergeDialog->getExitStatus() == 0) 
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Merging attributes");
 	  warningBox->addButton(QMessageBox::Yes);
 	  warningBox->addButton(QMessageBox::No);
 	  warningBox->setIcon(QMessageBox::Warning);
@@ -750,6 +751,7 @@ void EntityDialog::saveAndClose()
       _name.contains("<") || _name.contains(">")) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name contains illegal character.");
@@ -765,6 +767,7 @@ void EntityDialog::saveAndClose()
   if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Description missing.");
@@ -776,6 +779,7 @@ void EntityDialog::saveAndClose()
   if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name missing.");
@@ -787,6 +791,7 @@ void EntityDialog::saveAndClose()
   if (_name == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Invalid name.");
@@ -798,6 +803,7 @@ void EntityDialog::saveAndClose()
   if (_name == ENTITIES) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Invalid name.");
@@ -816,6 +822,7 @@ void EntityDialog::saveAndClose()
   if (!empty && _name != _oldName) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Duplicate name.");
@@ -832,6 +839,7 @@ void EntityDialog::saveAndClose()
   if (!empty) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving entity");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Attribute name.");

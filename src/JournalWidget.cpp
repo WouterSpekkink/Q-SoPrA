@@ -173,6 +173,7 @@ void JournalWidget::removeEntry()
   if (tableView->currentIndex().isValid()) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing entry");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -257,6 +258,7 @@ bool JournalWidget::checkChanges()
   if (saveChangesButton->isEnabled())
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Changing widget");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);

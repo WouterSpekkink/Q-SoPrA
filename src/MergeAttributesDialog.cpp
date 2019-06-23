@@ -189,6 +189,7 @@ void MergeAttributesDialog::saveAndClose()
   if (_chosenAttribute == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Merging attributes");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No attribute chosen.");

@@ -103,6 +103,7 @@ void EventTextDialog::saveAndClose()
   if (_text == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving event");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Event description required.");
@@ -114,6 +115,7 @@ void EventTextDialog::saveAndClose()
   if (_timing == "")
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving event");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Timing required.");

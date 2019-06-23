@@ -84,6 +84,7 @@ void SimpleTextDialog::saveAndClose()
   if (_text == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving text");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Text required.");

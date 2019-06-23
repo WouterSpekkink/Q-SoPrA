@@ -108,6 +108,7 @@ void CaseDialog::saveAndClose()
   if (_description == "") 
 {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Saving case");
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Description missing.");
@@ -119,6 +120,7 @@ void CaseDialog::saveAndClose()
   if (_name == "") 
 {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Saving case");
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Name missing.");
@@ -136,6 +138,7 @@ void CaseDialog::saveAndClose()
   if (!query->isNull(0) && _name != _oldName) 
     {
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Saving case");
     warningBox->addButton(QMessageBox::Ok);
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("Duplicate name.");

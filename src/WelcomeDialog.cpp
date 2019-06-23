@@ -72,6 +72,7 @@ void WelcomeDialog::newDatabase()
       if (!ok) 
 	{
 	  QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	  errorBox->setWindowTitle("Error");
 	  errorBox->setText(tr("<b>ERROR</b>"));
 	  errorBox->setInformativeText("Creation of new database failed.");
 	  errorBox->exec();
@@ -844,6 +845,7 @@ void WelcomeDialog::openDatabase()
       if (!ok) 
 	{
 	  QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	  errorBox->setWindowTitle("Error");
 	  errorBox->setText(tr("<b>ERROR</b>"));
 	  errorBox->setInformativeText("Could not open the database.");
 	  errorBox->exec();

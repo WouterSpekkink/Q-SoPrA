@@ -75,6 +75,9 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   findFieldLabel = new QLabel(tr("<b>Search:</b>"), this);
   findField = new QLineEdit(this);
 
+  // For timestamp validation
+  validateTimestampsLabel = new QLabel(tr("<b>Timestamp validation:<b>"), this);
+  
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident", this);
   editRecordButton = new QPushButton("Edit incident", this);
@@ -86,6 +89,7 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   removeRowButton = new QPushButton("Remove incident", this);
   findPreviousButton = new QPushButton("Find previous", this);
   findNextButton = new QPushButton("Find next", this);
+  validateTimestampsButton = new QPushButton("Validate", this);
 
   // We disable some buttons initially.
   editRecordButton->setEnabled(false);
@@ -105,6 +109,7 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   connect(moveDownButton, SIGNAL(clicked()), this, SLOT(moveDown()));
   connect(duplicateRowButton, SIGNAL(clicked()), this, SLOT(duplicateRow()));
   connect(removeRowButton, SIGNAL(clicked()), this, SLOT(removeRow()));
+  connect(validateTimestampsButton, SIGNAL(clicked()), this, SLOT(validateTimestamps()));
   connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)),
 	  this, SLOT(resetHeader(int)));
   connect(tableView, SIGNAL(doubleClicked(const QModelIndex &)),
@@ -124,6 +129,8 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
   QPointer<QHBoxLayout> findLayout = new QHBoxLayout;
+  findLayout->addWidget(validateTimestampsLabel);
+  findLayout->addWidget(validateTimestampsButton);
   findLayout->addWidget(findSelectLabel);
   findLayout->addWidget(findComboBox);
   findLayout->addWidget(findFieldLabel);
@@ -506,6 +513,7 @@ void DataWidget::removeRow()
   if (tableView->currentIndex().isValid()) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing row");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -847,6 +855,149 @@ void DataWidget::setButtons()
       insertRecordAfterButton->setEnabled(false);
       moveDownButton->setEnabled(false);
     }    
+}
+
+void DataWidget::validateTimestamps()
+{
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  qreal daysProgress = -1;
+  QDate lastDate;
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("UPDATE incidents SET mark = 1 "
+		  "WHERE ch_order = :ch_order");
+  query->exec("SELECT COUNT(*) FROM incidents");
+  query->first();
+  int total = query->value(0).toInt();
+  int valid = 0;
+  query->exec("SELECT timestamp, ch_order FROM incidents "
+	      "ORDER BY ch_order ASC");
+  QDate firstDate;
+  while (query->next())
+    {
+      QString dateString = query->value(0).toString();
+      int order = query->value(1).toInt();
+      QDate date;
+      int currentPrecision = 0;
+      if (dateString.length() == 4) // We are dealing with a year only.
+	{
+	  date = QDate::fromString(dateString, "yyyy");
+	  currentPrecision = 1;
+	}
+      if (dateString.length() == 7) // We are dealing with a month and year.
+	{
+	  if (dateString[2] == '/')
+	    {
+	      date = QDate::fromString(dateString, "MM/yyyy");
+	    }
+	  else if (dateString[2] == '-')
+	    {
+	      date = QDate::fromString(dateString, "MM-yyyy");
+	    }
+	  else if (dateString[4] == '\\') 
+	    {
+	      date = QDate::fromString(dateString, "yyyy\\MM");
+	    }
+	  else if (dateString[4] == '-')
+	    {
+	      date = QDate::fromString(dateString, "yyyy-MM");
+	    }
+	  currentPrecision = 2;
+	}
+      if (dateString.length() == 10) // We are dealing with a day, month and year.
+	{
+	  if (dateString[2] == '/')
+	    {
+	      date = QDate::fromString(dateString, "dd/MM/yyyy");
+	    }
+	  else if (dateString[2] == '-')
+	    {
+	      date = QDate::fromString(dateString, "dd-MM-yyyy");
+	    }
+	  else if (dateString[4] == '\\') 
+	    {
+	      date = QDate::fromString(dateString, "yyyy\\MM\\dd");
+	    }
+	  else if (dateString[4] == '-')
+	    {
+	      date = QDate::fromString(dateString, "yyyy-MM-dd");
+	    }
+	  currentPrecision = 2;
+	}
+      if (date.isValid())
+	{
+	  valid++;
+	  if (daysProgress == -1)
+	    {
+	      firstDate = date;
+	      daysProgress = 0;
+	      lastDate = date;
+	    }
+	  else
+	    {
+	      qint64 days = firstDate.daysTo(date);
+	      if (days < daysProgress)
+		{
+		  bool precisionDifference = false;
+		  if (currentPrecision == 2 &&
+		      date.month() == lastDate.month())
+		    {
+		      precisionDifference = true;
+		    }
+		  else if (currentPrecision == 1 &&
+			   date.year() == lastDate.year())
+		    {
+		      precisionDifference = true;
+		    }
+		  if (!precisionDifference)
+		    {
+		      QApplication::restoreOverrideCursor();
+		      qApp->processEvents();
+		      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		      warningBox->setWindowTitle("Timestamp validation");
+		      warningBox->addButton(QMessageBox::Ok);
+		      QPointer<QAbstractButton> markButton = warningBox->
+			addButton(tr("Mark"), QMessageBox::NoRole);
+		      warningBox->setIcon(QMessageBox::Warning);
+		      warningBox->setText("<b>Possible problem detected</b>");
+		      warningBox->setInformativeText("Incident " +
+						     QString::number(order) +
+						     " is incorrectly positioned in the "
+						     "chronological order.");
+		      warningBox->exec();
+		      if (warningBox->clickedButton() == markButton)
+			{
+			  query2->bindValue(":ch_order", order);
+			  query2->exec();
+			}
+		      delete warningBox;
+		      QApplication::setOverrideCursor(Qt::WaitCursor);
+		    }
+		}
+	      else
+		{
+		  daysProgress = days;
+		  lastDate = date;
+		}
+	    }
+	}
+    }
+  delete query;
+  delete query2;
+  incidentsModel->select();
+  updateTable();
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+  qreal validPerc = std::roundf(((qreal) valid / (qreal) total) * 10000) / 100;
+  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->setWindowTitle("Timestamp validation");
+  warningBox->addButton(QMessageBox::Ok);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Dates found:</h2>");
+  warningBox->setInformativeText(QString::number(validPerc) + "% of the incidents "
+				 "have a valid date set as time stamp.");
+  warningBox->exec();
+  delete warningBox;
 }
 
 bool DataWidget::eventFilter(QObject *object, QEvent *event)

@@ -3541,6 +3541,7 @@ void NetworkGraphWidget::multimodeTransformation()
 	  if (currentRel ==  name) 
 	    {
 	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->setWindowTitle("Making transformation");
 	      warningBox->addButton(QMessageBox::Ok);
 	      warningBox->setIcon(QMessageBox::Warning);
 	      warningBox->setText("Name already exists.");
@@ -5570,6 +5571,7 @@ void NetworkGraphWidget::saveCurrentPlot()
       else 
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Saving plot");
 	  warningBox->addButton(QMessageBox::Yes);
 	  warningBox->addButton(QMessageBox::No);
 	  warningBox->setIcon(QMessageBox::Warning);

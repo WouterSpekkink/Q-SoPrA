@@ -191,6 +191,7 @@ void LinkageTypeDialog::saveAndClose()
   if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving linkage type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Description required.");
@@ -202,6 +203,7 @@ void LinkageTypeDialog::saveAndClose()
   if (_question == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving linkage type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Question required.");
@@ -213,6 +215,7 @@ void LinkageTypeDialog::saveAndClose()
   if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving linkage type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name required.");
@@ -231,6 +234,7 @@ void LinkageTypeDialog::saveAndClose()
   if (!empty && _name != _subName) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving linkage type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Duplicate name.");

@@ -66,6 +66,7 @@ void ComboBoxDialog::saveAndClose()
   if (_selection == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving selection");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No selection made.");

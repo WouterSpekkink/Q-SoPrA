@@ -69,6 +69,7 @@ private slots:
   void setButtons();
   void findPrevious();
   void findNext();
+  void validateTimestamps();
   void setFindKey(const QString &text);
   bool eventFilter(QObject *object, QEvent *event);
   
@@ -78,6 +79,7 @@ private:
   QPointer<ZoomableTableView> tableView;
   QPointer<QLabel> findSelectLabel;
   QPointer<QLabel> findFieldLabel;
+  QPointer<QLabel> validateTimestampsLabel;
   QPointer<QComboBox> findComboBox;
   QPointer<QLineEdit> findField;
   QPointer<QPushButton> appendRecordButton;
@@ -90,6 +92,7 @@ private:
   QPointer<QPushButton> removeRowButton;
   QPointer<QPushButton> findPreviousButton;
   QPointer<QPushButton> findNextButton;
+  QPointer<QPushButton> validateTimestampsButton;
 
   // Private variables.
   QString _currentData;

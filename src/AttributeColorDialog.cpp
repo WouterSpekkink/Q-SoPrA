@@ -296,6 +296,7 @@ void AttributeColorDialog::saveAndClose()
   if (_chosenAttribute == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Select colors"); 
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No attribute chosen.");

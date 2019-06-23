@@ -565,6 +565,7 @@ void RelationshipsDialog::saveAndClose()
   if (selectedSourceLabel->text() == DEFAULT) 
     {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setWindowTitle("Saving relationship");
       errorBox->setText(tr("<b>No source selected</b>"));
       errorBox->setInformativeText("You did not select a source for this relationship.");
       errorBox->exec();
@@ -574,6 +575,7 @@ void RelationshipsDialog::saveAndClose()
   if (selectedTargetLabel->text() == DEFAULT) 
     {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setWindowTitle("Saving relationship");
       errorBox->setText(tr("<b>No target selected</b>"));
       errorBox->setInformativeText("You did not select a target for this relationship.");
       errorBox->exec();
@@ -621,6 +623,7 @@ void RelationshipsDialog::saveAndClose()
 	  else 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Saving relationship");
 	      errorBox->setInformativeText("An identical relationship already exists, "
 					   "where the currently selected source and target are reversed.");
 	      errorBox->exec();
@@ -637,6 +640,7 @@ void RelationshipsDialog::saveAndClose()
   else 
     {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setWindowTitle("Saving relationship");
       errorBox->setText(tr("<b>Relationship already exists</b>"));
       errorBox->setInformativeText("An identical relationship already exists.");
       errorBox->exec();

@@ -266,6 +266,7 @@ void CasingWidget::removeCase()
     {
       QString selection = comboDialog->getSelection();
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing case");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);

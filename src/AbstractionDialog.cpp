@@ -51,11 +51,12 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   descriptionLabel = new QLabel(tr("<b>Event description:</b>"), this);
   timingLabel = new QLabel(tr("<b>Timing:</b>"), this);
 
-  pathsBasedCheckBox = new QCheckBox("Paths-based constraints", this);
-  pathsBasedCheckBox->setEnabled(false);
-  semiPathsBasedCheckBox = new QCheckBox("Semipaths-based constraints", this);
-  semiPathsBasedCheckBox->setEnabled(false);
-  noConstraintsCheckBox = new QCheckBox("No constraints", this);
+  pathsBasedRadioButton = new QRadioButton("Paths-based constraints", this);
+  pathsBasedRadioButton->setEnabled(false);
+  semiPathsBasedRadioButton = new QRadioButton("Semipaths-based constraints", this);
+  semiPathsBasedRadioButton->setEnabled(false);
+  noConstraintsRadioButton = new QRadioButton("No constraints", this);
+  noConstraintsRadioButton->setChecked(true);
   
   eventDescriptionField = new QTextEdit(this);
 
@@ -72,9 +73,6 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
     {
       setAttributeButton->setEnabled(false);
     }
-  connect(pathsBasedCheckBox, SIGNAL(clicked()), this, SLOT(processPathsCheck()));
-  connect(semiPathsBasedCheckBox, SIGNAL(clicked()), this, SLOT(processSemipathsCheck()));
-  connect(noConstraintsCheckBox, SIGNAL(clicked()), this, SLOT(processNoPathsCheck()));
   connect(setAttributeButton, SIGNAL(clicked()), this, SLOT(selectAttribute()));
   connect(clearAttributeButton, SIGNAL(clicked()), this, SLOT(clearAttribute()));
   connect(inheritAttributesButton, SIGNAL(clicked()), this, SLOT(inheritAttributes()));
@@ -87,9 +85,9 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   QPointer<QVBoxLayout> leftLayout = new QVBoxLayout;
   QPointer<QVBoxLayout> constraintsLayout = new QVBoxLayout;
   constraintsLayout->addWidget(constraintsLabel);
-  constraintsLayout->addWidget(pathsBasedCheckBox);
-  constraintsLayout->addWidget(semiPathsBasedCheckBox);
-  constraintsLayout->addWidget(noConstraintsCheckBox);
+  constraintsLayout->addWidget(pathsBasedRadioButton);
+  constraintsLayout->addWidget(semiPathsBasedRadioButton);
+  constraintsLayout->addWidget(noConstraintsRadioButton);
   leftLayout->addLayout(constraintsLayout);
 
   QPointer<QFrame> sepLine = new QFrame;
@@ -238,6 +236,7 @@ void AbstractionDialog::inheritAttributes()
       else
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Inheriting attributes");
 	  warningBox->addButton(QMessageBox::Ok);
 	  warningBox->setIcon(QMessageBox::Warning);
 	  warningBox->setText("<b>No attributes detected</b>");
@@ -319,6 +318,7 @@ void AbstractionDialog::inheritSharedAttributes()
       else
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Inheriting attributes");
 	  warningBox->addButton(QMessageBox::Ok);
 	  warningBox->setIcon(QMessageBox::Warning);
 	  warningBox->setText("<b>No attributes detected</b>");
@@ -510,6 +510,7 @@ void AbstractionDialog::prepareEvents()
       else 
 	{
 	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Selecting incidents");
 	  warningBox->addButton(QMessageBox::Ok);
 	  warningBox->setIcon(QMessageBox::Warning);
 	  warningBox->setText("<b>No incidents selected</b>");
@@ -725,47 +726,21 @@ void AbstractionDialog::evaluateConstraints()
 {
   if (_pathsAllowed)
     {
-      pathsBasedCheckBox->setEnabled(true);
+      pathsBasedRadioButton->setEnabled(true);
     }
   else
     {
-      pathsBasedCheckBox->setEnabled(false);
-      if (pathsBasedCheckBox->checkState() == Qt::Checked)
-	{
-	  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
-	}
+      pathsBasedRadioButton->setEnabled(false);
     }
   if (_semiPathsAllowed)
     {
-      semiPathsBasedCheckBox->setEnabled(true);
+      semiPathsBasedRadioButton->setEnabled(true);
     }
   else
     {
-      semiPathsBasedCheckBox->setEnabled(false);
-      if (semiPathsBasedCheckBox->checkState() == Qt::Checked)
-	{
-	  semiPathsBasedCheckBox->setCheckState(Qt::Unchecked);
-	}
+      semiPathsBasedRadioButton->setEnabled(false);
     }
-}
-
-void AbstractionDialog::processPathsCheck()
-{
-  semiPathsBasedCheckBox->setCheckState(Qt::Unchecked);
-  noConstraintsCheckBox->setChecked(Qt::Unchecked);
-}
-
-void AbstractionDialog::processSemipathsCheck()
-{
-  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
-  noConstraintsCheckBox->setCheckState(Qt::Unchecked);
-}
-
-
-void AbstractionDialog::processNoPathsCheck()
-{
-  pathsBasedCheckBox->setCheckState(Qt::Unchecked);
-  semiPathsBasedCheckBox->setCheckState(Qt::Unchecked);
+  noConstraintsRadioButton->setChecked(true);
 }
 
 void AbstractionDialog::findChildren(QString father,
@@ -1125,23 +1100,10 @@ void AbstractionDialog::cancelAndClose()
 
 void AbstractionDialog::saveAndClose()
 {
-  if (pathsBasedCheckBox->checkState() == Qt::Unchecked &&
-      semiPathsBasedCheckBox->checkState() == Qt::Unchecked &&
-      noConstraintsCheckBox->checkState() == Qt::Unchecked)
+  if (eventDescriptionField->toPlainText() == "")
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<b>No constraint selected</b>");
-      warningBox->setInformativeText("One of the options for constraints on the creation "
-				     "of the abstract event must be selected");
-      warningBox->exec();
-      delete warningBox;
-      return;
-    }
-  else if (eventDescriptionField->toPlainText() == "")
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving event");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<b>No description given</b>");
@@ -1153,6 +1115,7 @@ void AbstractionDialog::saveAndClose()
   else if (timingField->text() == "")
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving event");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<b>No timing given</b>");
@@ -1164,15 +1127,15 @@ void AbstractionDialog::saveAndClose()
   else
     {
       _exitStatus = 0;
-      if (pathsBasedCheckBox->checkState() == Qt::Checked)
+      if (pathsBasedRadioButton->isChecked())
 	{
 	  _chosenConstraint = PATHS;
 	}
-      else if (semiPathsBasedCheckBox->checkState() == Qt::Checked)
+      else if (semiPathsBasedRadioButton->isChecked())
 	{
 	  _chosenConstraint = SEMIPATHS;
 	}
-      else if (noConstraintsCheckBox->checkState() == Qt::Checked)
+      else if (noConstraintsRadioButton->isChecked())
 	{
 	  _chosenConstraint = NOCONSTRAINT;
 	}

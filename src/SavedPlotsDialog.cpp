@@ -88,6 +88,7 @@ void SavedPlotsDialog::loadPlot()
   if (plotsComboBox->currentText() == DEFAULT)
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Loading plot");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<b>No plot selected</b>");
@@ -108,11 +109,12 @@ void SavedPlotsDialog::removePlot()
   if (plotsComboBox->currentText() != DEFAULT) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Deleting plot");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("Removing a plot cannot be undone. "
+      warningBox->setInformativeText("Deleting a plot cannot be undone. "
 				     "Are you sure you want to remove this plot?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{

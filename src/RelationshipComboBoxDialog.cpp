@@ -87,6 +87,7 @@ void RelationshipComboBoxDialog::saveAndClose()
   if (_selection == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Selecting relationship");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No relationship selected.");
@@ -98,6 +99,7 @@ void RelationshipComboBoxDialog::saveAndClose()
   if (!includeTailCheckBox->isChecked() && !includeHeadCheckBox->isChecked()) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Selecting relationship");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Tail and head both unchecked.");

@@ -89,6 +89,7 @@ void LargeTextDialog::saveAndClose()
   if (_text == "" && !_emptyAllowed) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving text");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Text required.");

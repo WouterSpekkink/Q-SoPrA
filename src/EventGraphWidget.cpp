@@ -2345,6 +2345,7 @@ void EventGraphWidget::resetTexts()
       if (_selectedIncident != 0) 
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Resetting texts");
 	  warningBox->addButton(QMessageBox::Yes);
 	  warningBox->addButton(QMessageBox::No);
 	  warningBox->setIcon(QMessageBox::Warning);
@@ -3382,8 +3383,11 @@ void EventGraphWidget::redoLayout()
 void EventGraphWidget::dateLayout()
 {
   QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
   query->prepare("SELECT timestamp FROM incidents "
 		 "WHERE id = :id");
+  query2->prepare("UPDATE incidents SET mark = 1 "
+		  "WHERE id = :id");
   QVector<IncidentNode*> visible;
   QVector<QGraphicsItem*> allEvents;
   QVectorIterator<IncidentNode*> it(_incidentNodeVector);
@@ -3463,6 +3467,7 @@ void EventGraphWidget::dateLayout()
   if (!firstDate.isValid())
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Checking timestamps");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<b>No valid starting date</b>");
@@ -3471,6 +3476,7 @@ void EventGraphWidget::dateLayout()
       warningBox->exec();
       delete warningBox;
       delete query;
+      delete query2;
       return;
     }
   else
@@ -3479,8 +3485,10 @@ void EventGraphWidget::dateLayout()
       int validTotal = 0;
       QMap<IncidentNode*, qint64> days;
       QMap<IncidentNode*, int> precision;
+      QMap<IncidentNode*, QDate> dates;
       qreal lastValid = 0.0;
       int lastPrecision = 0;
+      QDate lastDate;
       QVectorIterator<IncidentNode*> it4(visible);
       while (it4.hasNext())
 	{
@@ -3537,6 +3545,7 @@ void EventGraphWidget::dateLayout()
 	    {
 	      days.insert(incident, firstDate.daysTo(date));
 	      validTotal++;
+	      dates.insert(incident, date);
 	      if (dateString.length() == 4)
 		{
 		  precision.insert(incident, 1);
@@ -3556,12 +3565,13 @@ void EventGraphWidget::dateLayout()
       QApplication::restoreOverrideCursor();
       qApp->processEvents();
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Checking timestamps");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Dates found:</h2>");
       warningBox->setInformativeText(QString::number(validPerc) + "% of the currently visible "
-				     "nodes have a valid date set as time stamp. "
+				     "nodes have a valid date set as timestamp. "
 				     "Do you wish to continue?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
@@ -3578,32 +3588,56 @@ void EventGraphWidget::dateLayout()
 		{
 		  qint64 daysTo = days.value(incident);
 		  qreal x = (_distance / 10) * daysTo;
+		  QDate currentDate = dates.value(incident);
+		  bool precisionDifference = false;
 		  if (x >= lastValid)
 		    {
 		      incident->setPos(x, incident->scenePos().y());
 		      incident->getLabel()->setNewPos(incident->scenePos());
 		      lastValid = x;
 		      lastPrecision = precision.value(incident);
+		      lastDate = dates.value(incident);
+		    }
+		  else if (precision.value(incident) <= lastPrecision)
+		    {
+		      if (precision.value(incident) == 2 &&
+			  currentDate.month() == lastDate.month())
+			{
+			  precisionDifference = true;
+			}
+		      else if (precision.value(incident) == 1 &&
+			       currentDate.year() == lastDate.year())
+			{
+			  precisionDifference = true;
+			}
+		    }
+		  if (!precisionDifference)
+		    {
+		      QApplication::restoreOverrideCursor();
+		      qApp->processEvents();
+		      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+		      warningBox->setWindowTitle("Checking timestamps");
+		      warningBox->addButton(QMessageBox::Ok);
+		      QPointer<QAbstractButton> markButton = warningBox->
+			addButton(tr("Mark"), QMessageBox::NoRole);
+		      warningBox->setIcon(QMessageBox::Warning);
+		      warningBox->setText("<b>Possible problem detected</b>");
+		      warningBox->setInformativeText("Incident " +
+						     QString::number(incident->getOrder()) +
+						     " is incorrectly positioned in the "
+						     "chronological order and may cause "
+						     "problems for the layout.");
+		      warningBox->exec();
+		      if (warningBox->clickedButton() == markButton)
+			{
+			  query2->bindValue(":id", incident->getId());
+			  query2->exec();
+			}
+		      delete warningBox;
+		      QApplication::setOverrideCursor(Qt::WaitCursor);
 		    }
 		  else
 		    {
-		      if (precision.value(incident) > lastPrecision)
-			{
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-			  warningBox->addButton(QMessageBox::Ok);
-			  warningBox->setIcon(QMessageBox::Warning);
-			  warningBox->setText("<b>Possible problem detected</b>");
-			  warningBox->setInformativeText("Incident " +
-							 QString::number(incident->getOrder()) +
-							 " is incorrectly positioned in the "
-							 "chronological order and may cause "
-							 "problems for the layout.");
-			  warningBox->exec();
-			  delete warningBox;
-			  QApplication::setOverrideCursor(Qt::WaitCursor);
-			}
 		      QVectorIterator<IncidentNode*> it5 = it4;
 		      bool resolved = false;
 		      bool foundValid = false;
@@ -3692,11 +3726,13 @@ void EventGraphWidget::dateLayout()
 	{
 	  delete warningBox;
 	  delete query;
+	  delete query2;
 	  return;
 	}
     }
   updateLinkages();
   delete query;
+  delete query2;
 }
 
 void EventGraphWidget::noOverlap()
@@ -4622,6 +4658,7 @@ void EventGraphWidget::saveCurrentPlot()
       else 
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Saving plot");
 	  warningBox->addButton(QMessageBox::Yes);
 	  warningBox->addButton(QMessageBox::No);
 	  warningBox->setIcon(QMessageBox::Warning);
@@ -9642,16 +9679,6 @@ void EventGraphWidget::settleEvent()
 	  abstractNode->setOriginalPos(current->scenePos());
 	}
     }
-  else 
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<b>Multiple events selected</b>");
-      warningBox->setInformativeText("You can only settle one event at a time.");
-      warningBox->exec();
-      delete warningBox;
-    }
 }
 
 void EventGraphWidget::normalizeDistance() 
@@ -9719,16 +9746,6 @@ void EventGraphWidget::normalizeDistance()
 	    }
 	}
     }
-  else 
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<b>Multiple events selected</b>");
-      warningBox->setInformativeText("You can only normalize one event at a time.");
-      warningBox->exec();
-      delete warningBox;
-    }
 }
 
 void EventGraphWidget::makeParallel() 
@@ -9772,16 +9789,6 @@ void EventGraphWidget::makeParallel()
 		}
 	    } 
 	}
-    }
-  else 
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<b>Multiple events required </b>");
-      warningBox->setInformativeText("You cannot perform this action on a single event.");
-      warningBox->exec();
-      delete warningBox;
     }
 }
 
@@ -9885,16 +9892,6 @@ void EventGraphWidget::closeGap()
 		}
 	    }
 	}
-    }
-  else 
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<b>Multiple events selected</b>");
-      warningBox->setInformativeText("You can only normalize one event at a time.");
-      warningBox->exec();
-      delete warningBox;
     }
 }
 
@@ -10291,6 +10288,7 @@ void EventGraphWidget::removeNormalLinkage()
       if (linkage) 
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Removing linkage");
 	  warningBox->addButton(QMessageBox::Yes);
 	  warningBox->addButton(QMessageBox::No);
 	  warningBox->setIcon(QMessageBox::Warning);
@@ -10332,11 +10330,12 @@ void EventGraphWidget::removeNormalLinkage()
 	      else 
 		{
 		  QPointer<QMessageBox> warningBox2 = new QMessageBox(this);
+		  warningBox->setWindowTitle("Removing linkage");
 		  warningBox2->addButton(QMessageBox::Ok);
 		  warningBox2->setIcon(QMessageBox::Warning);
 		  warningBox2->setText("<h2>Cannot remove this linkage</h2>");
-		  warningBox2->setInformativeText("You cannot remove linkages that have abstracted events "
-						  "as tail and/or head.");
+		  warningBox2->setInformativeText("You cannot remove linkages that have abstracted "
+						  "events as tail and/or head.");
 		  warningBox2->exec();
 		}
 	    }

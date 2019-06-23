@@ -166,6 +166,7 @@ void RelationshipTypeDialog::saveAndClose()
       _name.contains("--->") || _name.contains("<-->")) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving relationship type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name contains illegal character.");
@@ -181,6 +182,7 @@ void RelationshipTypeDialog::saveAndClose()
   if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving relationship type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Description required.");
@@ -192,6 +194,7 @@ void RelationshipTypeDialog::saveAndClose()
   if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving relationship type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name required.");
@@ -203,6 +206,7 @@ void RelationshipTypeDialog::saveAndClose()
   if (_name == TRANSFORMED || _name == MERGED)
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving relationship type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Forbidden name.");
@@ -222,6 +226,7 @@ void RelationshipTypeDialog::saveAndClose()
   if (!empty && _name != _subName) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Saving relationship type");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Duplicate name.");

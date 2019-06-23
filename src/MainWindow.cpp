@@ -514,6 +514,7 @@ void MainWindow::importFromCsv()
 	  if (tokens[0] != "Timing" && tokens[0] != "timing") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"Timing\" in first column.");
 	      errorBox->exec();
@@ -523,6 +524,7 @@ void MainWindow::importFromCsv()
 	  if (tokens[1] != "Description" && tokens[1] != "description") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"Description\" "
 					   "in second column.");
@@ -533,6 +535,7 @@ void MainWindow::importFromCsv()
 	  if (tokens[2] != "Raw" && tokens[2] != "raw") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"Raw\" in third column.");
 	      errorBox->exec();
@@ -542,6 +545,7 @@ void MainWindow::importFromCsv()
 	  if (tokens[3] != "Comments" && tokens[3] != "comments") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"Comments\" in "
 					   "fourth column.");
@@ -552,6 +556,7 @@ void MainWindow::importFromCsv()
 	  if (tokens[4] != "Source" && tokens[4] != "source") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"Source\" in "
 					   "fifth column.");
@@ -576,6 +581,7 @@ void MainWindow::importFromCsv()
 	  if (tokens[0] == "" || tokens[1] == "" || tokens[4] == "") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
 	      errorBox->exec();
@@ -1281,6 +1287,7 @@ void MainWindow::importIncidentAttributes()
 	  if (tokens[0] != "name") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"name\" in first column.");
 	      errorBox->exec();
@@ -1290,6 +1297,7 @@ void MainWindow::importIncidentAttributes()
 	  if (tokens[1] != "description") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"description\" "
 					   "in second column.");
@@ -1300,6 +1308,7 @@ void MainWindow::importIncidentAttributes()
 	  if (tokens[2] != "father") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"father\" in third column.");
 	      errorBox->exec();
@@ -1322,6 +1331,7 @@ void MainWindow::importIncidentAttributes()
 	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
 	      errorBox->exec();
@@ -1503,6 +1513,7 @@ void MainWindow::importEntities()
 	  if (tokens[0] != "name") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"name\" in first column.");
 	      errorBox->exec();
@@ -1512,6 +1523,7 @@ void MainWindow::importEntities()
 	  if (tokens[1] != "description") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"description\" "
 					   "in second column.");
@@ -1522,6 +1534,7 @@ void MainWindow::importEntities()
 	  if (tokens[2] != "father") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"father\" in third column.");
 	      errorBox->exec();
@@ -1544,6 +1557,7 @@ void MainWindow::importEntities()
 	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
 	      errorBox->exec();
@@ -1678,6 +1692,7 @@ void MainWindow::importRelTypes()
 	  if (tokens[0] != "name") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"name\" in first column.");
 	      errorBox->exec();
@@ -1687,6 +1702,7 @@ void MainWindow::importRelTypes()
 	  if (tokens[1] != "directedness") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"directedness\" "
 					   "in second column.");
@@ -1697,6 +1713,7 @@ void MainWindow::importRelTypes()
 	  if (tokens[2] != "description") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"description\" in third column.");
 	      errorBox->exec();
@@ -1719,6 +1736,7 @@ void MainWindow::importRelTypes()
 	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
 	      errorBox->exec();
@@ -1728,6 +1746,7 @@ void MainWindow::importRelTypes()
 	  else if (!(tokens[1] == DIRECTED.toStdString() || tokens[1] == UNDIRECTED.toStdString())) 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Encountered an invalid directedness value.");
 	      errorBox->exec();
@@ -1929,6 +1948,7 @@ void MainWindow::importEntityAttributes()
 	  if (tokens[0] != "name") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"name\" in first column.");
 	      errorBox->exec();
@@ -1938,6 +1958,7 @@ void MainWindow::importEntityAttributes()
 	  if (tokens[1] != "description") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"description\" "
 					   "in second column.");
@@ -1948,6 +1969,7 @@ void MainWindow::importEntityAttributes()
 	  if (tokens[2] != "father") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Expected \"father\" in third column.");
 	      errorBox->exec();
@@ -1970,6 +1992,7 @@ void MainWindow::importEntityAttributes()
 	  if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "") 
 	    {
 	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
+	      errorBox->setWindowTitle("Error");
 	      errorBox->setText(tr("<b>ERROR</b>"));
 	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
 	      errorBox->exec();

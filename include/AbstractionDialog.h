@@ -26,6 +26,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QWidget>
 #include <QtWidgets/QDialog>
 #include <QtWidgets/QCheckBox>
+#include <QtWidgets/QRadioButton>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
@@ -67,9 +68,6 @@ private slots:
   void prepareEvents();
   void checkConstraints(QVector<IncidentNode*> submittedIncidents);
   void evaluateConstraints();
-  void processPathsCheck();
-  void processSemipathsCheck();
-  void processNoPathsCheck();
   void findChildren(QString father, QVector<QString> *children, bool entity);
   void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
@@ -90,9 +88,9 @@ private:
   QPointer<QLabel> chosenAttributeLabel;
   QPointer<QLabel> descriptionLabel;
   QPointer<QLabel> timingLabel;
-  QPointer<QCheckBox> pathsBasedCheckBox;
-  QPointer<QCheckBox> semiPathsBasedCheckBox;
-  QPointer<QCheckBox> noConstraintsCheckBox;
+  QPointer<QRadioButton> pathsBasedRadioButton;
+  QPointer<QRadioButton> semiPathsBasedRadioButton;
+  QPointer<QRadioButton> noConstraintsRadioButton;
   QPointer<QTextEdit> eventDescriptionField;
   QPointer<QLineEdit> timingField;
   QPointer<QPushButton> setAttributeButton;

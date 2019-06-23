@@ -565,6 +565,7 @@ void LinkagesWidget::removeCoder()
   if (coderComboBox->currentText() != DEFAULT) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing coder"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -685,6 +686,7 @@ void LinkagesWidget::removeLinkageType()
   if (typeComboBox->currentText() != DEFAULT) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing linkage type"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1283,6 +1285,7 @@ void LinkagesWidget::previousTailDescription()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1361,6 +1364,7 @@ void LinkagesWidget::nextTailDescription()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1439,6 +1443,7 @@ void LinkagesWidget::previousTailRaw()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1517,6 +1522,7 @@ void LinkagesWidget::nextTailRaw()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1532,6 +1538,7 @@ void LinkagesWidget::nextTailRaw()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1610,6 +1617,7 @@ void LinkagesWidget::previousTailComment()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1688,6 +1696,7 @@ void LinkagesWidget::nextTailComment()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1766,6 +1775,7 @@ void LinkagesWidget::previousHeadDescription()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1856,6 +1866,7 @@ void LinkagesWidget::nextHeadDescription()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1946,6 +1957,7 @@ void LinkagesWidget::previousHeadRaw()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2036,6 +2048,7 @@ void LinkagesWidget::nextHeadRaw()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2126,6 +2139,7 @@ void LinkagesWidget::previousHeadComment()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2216,6 +2230,7 @@ void LinkagesWidget::nextHeadComment()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2306,6 +2321,7 @@ void LinkagesWidget::previousTail()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2385,6 +2401,7 @@ void LinkagesWidget::nextTail()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2505,6 +2522,7 @@ void LinkagesWidget::previousMarkedTail()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2690,6 +2708,7 @@ void LinkagesWidget::jumpTo()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2743,6 +2762,7 @@ void LinkagesWidget::previousHead()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2837,6 +2857,7 @@ void LinkagesWidget::nextHead()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2953,6 +2974,7 @@ void LinkagesWidget::previousMarkedHead()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -3047,6 +3069,7 @@ void LinkagesWidget::nextMarkedHead()
       (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty()))
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Jumping to incident"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -3518,6 +3541,7 @@ void LinkagesWidget::unsetLink()
   if (!_markedTailEvidence.empty() || !_markedHeadEvidence.empty())
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Unsetting linkage"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);

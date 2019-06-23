@@ -398,6 +398,7 @@ void MultimodeDialog::saveAndClose()
   if (_modeOne == DEFAULT || _modeTwo == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Making transformation");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No valid modes selected.");
@@ -409,6 +410,7 @@ void MultimodeDialog::saveAndClose()
   if (_modeOne == _modeTwo) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Making transformation");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Modes should be different.");
@@ -420,6 +422,7 @@ void MultimodeDialog::saveAndClose()
   if (_relationshipOne == DEFAULT || _relationshipTwo == DEFAULT) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Making transformation");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("No valid relationships selected.");
@@ -433,6 +436,7 @@ void MultimodeDialog::saveAndClose()
   if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Making transformation");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Description required.");
@@ -444,6 +448,7 @@ void MultimodeDialog::saveAndClose()
   if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Making transformation");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name required.");
@@ -474,6 +479,7 @@ void MultimodeDialog::saveAndClose()
   if (found) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Making transformation");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name already exists.");

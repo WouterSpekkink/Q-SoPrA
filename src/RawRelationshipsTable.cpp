@@ -194,6 +194,7 @@ void RawRelationshipsTable::removeText()
   if (tableView->currentIndex().isValid()) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing text");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);

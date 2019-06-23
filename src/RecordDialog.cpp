@@ -158,6 +158,7 @@ void RecordDialog::saveAndClose()
   if (_description == "") 
     {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setWindowTitle("Saving incident");
       errorBox->setText(tr("<b>ERROR</b>"));
       errorBox->setInformativeText("A description for the incident is required.");
       errorBox->exec();
@@ -166,14 +167,16 @@ void RecordDialog::saveAndClose()
   else if (_timeStamp == "") 
     {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setWindowTitle("Saving incident");
       errorBox->setText(tr("<b>ERROR</b>"));
-      errorBox->setInformativeText("A time stamp for the incident is required.");
+      errorBox->setInformativeText("A timestamp for the incident is required.");
       errorBox->exec();
       return;
     }
   else if (_source == "") 
     {
       QPointer<QMessageBox> errorBox = new QMessageBox(this);
+      errorBox->setWindowTitle("Saving incident");
       errorBox->setText(tr("<b>ERROR</b>"));
       errorBox->setInformativeText("A source for the incident is required.");
       errorBox->exec();

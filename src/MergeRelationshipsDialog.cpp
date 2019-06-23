@@ -143,6 +143,7 @@ void MergeRelationshipsDialog::saveAndClose()
   if (checked < 2) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Merging relationships");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Less than 2 relationships checked.");
@@ -171,6 +172,7 @@ void MergeRelationshipsDialog::saveAndClose()
   if (directedFound && undirectedFound) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Merging relationships");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Directedness is different.");
@@ -190,6 +192,7 @@ void MergeRelationshipsDialog::saveAndClose()
   if (_description == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Merging relationships");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Description required.");
@@ -201,6 +204,7 @@ void MergeRelationshipsDialog::saveAndClose()
   if (_name == "") 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Merging relationships");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name required.");
@@ -231,6 +235,7 @@ void MergeRelationshipsDialog::saveAndClose()
   if (found) 
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Merging relationships");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Name already exists.");

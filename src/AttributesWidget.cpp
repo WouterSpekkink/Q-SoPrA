@@ -1402,6 +1402,7 @@ void AttributesWidget::resetTexts()
   if (attributesTreeView->currentIndex().isValid()) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Resetting texts");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -2543,6 +2544,7 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
 void AttributesWidget::unassignAllEntities() 
 {
   QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->setWindowTitle("Unassiging entities");
   warningBox->addButton(QMessageBox::Yes);
   warningBox->addButton(QMessageBox::No);
   warningBox->setIcon(QMessageBox::Warning);
@@ -2597,6 +2599,7 @@ void AttributesWidget::unassignAllAttribute(QModelIndex &index)
 {
   QString selected = index.data().toString();
   QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->setWindowTitle("Unassigning attributes");
   warningBox->addButton(QMessageBox::Yes);
   warningBox->addButton(QMessageBox::No);
   warningBox->setIcon(QMessageBox::Warning);
@@ -2655,6 +2658,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
 	  if (mergeDialog->getExitStatus() == 0) 
 	    {
 	      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->setWindowTitle("Merging attributes");
 	      warningBox->addButton(QMessageBox::Yes);
 	      warningBox->addButton(QMessageBox::No);
 	      warningBox->setIcon(QMessageBox::Warning);

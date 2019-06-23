@@ -958,6 +958,7 @@ void RelationshipsWidget::resetTexts()
   if (relationshipsTreeView->currentIndex().isValid()) 
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Reset texts"); 
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
@@ -1351,6 +1352,7 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
 void RelationshipsWidget::unassignAll() 
 {
   QPointer<QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->setWindowTitle("Unassign relationships"); 
   warningBox->addButton(QMessageBox::Yes);
   warningBox->addButton(QMessageBox::No);
   warningBox->setIcon(QMessageBox::Warning);

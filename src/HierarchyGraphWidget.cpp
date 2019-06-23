@@ -4155,6 +4155,7 @@ void HierarchyGraphWidget::resetTexts()
       if (_selectedIncident != 0) 
 	{
 	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Resetting texts");
 	  warningBox->addButton(QMessageBox::Yes);
 	  warningBox->addButton(QMessageBox::No);
 	  warningBox->setIcon(QMessageBox::Warning);
