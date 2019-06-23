@@ -227,3 +227,15 @@ bool occurrencesSort(const OccurrenceItem *itemOne, const OccurrenceItem *itemTw
     }
 }
 
+bool occurrencesSortTwo(const OccurrenceItem *itemOne, const OccurrenceItem *itemTwo) 
+{
+  if (itemOne->getOrder() > itemTwo->getOrder()) 
+    {
+      return true;
+    }
+  else 
+    {
+      return false;
+    }
+}
+

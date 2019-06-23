@@ -2018,19 +2018,17 @@ void OccurrenceGraphWidget::groupOccurrences()
 	}
     }
   std::sort(allOccurrences.begin(), allOccurrences.end(), eventLessThan);
-  QVector<OccurrenceItem*> finished;
-  QVector<OccurrenceItem*> ignored;
+  QSet<OccurrenceItem*> finished;
+  QSet<OccurrenceItem*> ignored;
   QVector<OccurrenceItem*>::iterator it5;
   for (it5 = allOccurrences.begin(); it5 != allOccurrences.end(); it5++) 
     {
       OccurrenceItem *first = *it5;
       QVector<OccurrenceItem*> group;
-      QVector<QString> closedAttributes;
       if (!finished.contains(first) && !ignored.contains(first)) 
 	{
 	  group.push_back(first);
-	  finished.push_back(first);
-	  closedAttributes.push_back(first->getAttribute());
+	  finished.insert(first);
 	  QVector<OccurrenceItem*>::iterator it6;
 	  for (it6 = it5 + 1; it6 != allOccurrences.end(); it6++) 
 	    {
@@ -2040,45 +2038,40 @@ void OccurrenceGraphWidget::groupOccurrences()
 		  // First we need to check if they are in the same x coordinate
 		  if (second->scenePos().x() == first->scenePos().x()) 
 		    {
-		      // Next we need to check if they are of a different attribute.
-		      if (second->getAttribute() != first->getAttribute()) 
-			{
-			  // We also need to check if we perhaps already have an entity with this attribute.
-			  if (!closedAttributes.contains(second->getAttribute())) 
-			    {
-			      // Now we are sure that this entity belongs in this group.
-			      group.push_back(second);
-			      finished.push_back(second);
-			      closedAttributes.push_back(second->getAttribute());
-			    }
-			  else 
-			    {
-			      ignored.push_back(second);
-			    }
-			}
-		      else 
-			{
-			  ignored.push_back(second);
-			}
+		      // Now we are sure that this entity belongs in this group.
+		      group.push_back(second);
+		      finished.insert(second);
 		    }
 		}
 	    }
 	  // Now we should have a finished group.
+	  std::sort(group.begin(), group.end(), occurrencesSortTwo);
 	  std::sort(group.begin(), group.end(), attributeLessThan);
 	  qreal x = group.first()->scenePos().x();
 	  qreal startY = group.first()->scenePos().y();
 	  int dist = 80;
 	  QVector<OccurrenceItem*>::iterator it7;
+	  QMultiMap<int, QString> finishedAttributes;
 	  for (it7 = group.begin(); it7 != group.end(); it7++) 
 	    {
 	      OccurrenceItem *current = *it7;
-	      if (group.size() > 1) 
+	      QList<QString> attributes = finishedAttributes.values(current->getId());
+	      if (attributes.contains(current->getAttribute()))
 		{
-		  current->setGrouped(true);
+		  finished.remove(current);
+		  ignored.insert(current);
 		}
-	      current->setPos(x, startY - dist);
-	      current->getLabel()->setNewPos(current->scenePos());
-	      dist += 80;
+	      else
+		{
+		  if (group.size() > 1) 
+		    {
+		      current->setGrouped(true);
+		    }
+		  current->setPos(x, startY - dist);
+		  current->getLabel()->setNewPos(current->scenePos());
+		  finishedAttributes.insert(current->getId(), current->getAttribute());
+		  dist += 80;
+		}
 	    }
 	}
     }
@@ -2140,22 +2133,39 @@ void OccurrenceGraphWidget::wireLinkages()
 	      newLinkage->setCopy(true);
 	      _edgeVector.push_back(newLinkage);
 	      scene->addItem(newLinkage);
+	      QVectorIterator<OccurrenceItem*> it3(_attributeOccurrenceVector);
+	      while (it3.hasNext())
+		{
+		  OccurrenceItem *current = it3.next();
+		  if (current->isVisible() && current->getAttribute() == tempTarget->getAttribute() &&
+		      current->scenePos().x() == tempTarget->scenePos().x() &&
+		      current != tempTarget)
+		    {
+		      Linkage *newLinkageTwo = new Linkage(tempSource->getAttribute(), "");
+		      newLinkageTwo->setZValue(2);
+		      newLinkageTwo->setStartItem(tempSource);
+		      newLinkageTwo->setEndItem(current);
+		      newLinkageTwo->setCopy(true);
+		      _edgeVector.push_back(newLinkageTwo);
+		      scene->addItem(newLinkageTwo);
+		    }
+		}
 	    }
 	}
     }
   // And we do the same for the relationship->oriented occurrences
   std::sort(_relationshipOccurrenceVector.begin(), _relationshipOccurrenceVector.end(), eventLessThan);
-  QVectorIterator<OccurrenceItem*> it3(_relationshipOccurrenceVector);
-  while (it3.hasNext()) 
+  QVectorIterator<OccurrenceItem*> it4(_relationshipOccurrenceVector);
+  while (it4.hasNext()) 
     {
-      OccurrenceItem *tempSource = it3.next();
+      OccurrenceItem *tempSource = it4.next();
       OccurrenceItem *tempTarget = NULL;
       if (tempSource->isVisible()) 
 	{
-	  QVectorIterator<OccurrenceItem*> it4(_relationshipOccurrenceVector);
-	  while (it4.hasNext()) 
+	  QVectorIterator<OccurrenceItem*> it5(_relationshipOccurrenceVector);
+	  while (it5.hasNext()) 
 	    {
-	      OccurrenceItem *temp = it4.next();
+	      OccurrenceItem *temp = it5.next();
 	      if (temp->isVisible()) 
 		{
 		  if (tempSource->getAttribute() == temp->getAttribute()) 
@@ -2185,6 +2195,23 @@ void OccurrenceGraphWidget::wireLinkages()
 	      newLinkage->setCopy(true);
 	      _edgeVector.push_back(newLinkage);
 	      scene->addItem(newLinkage);
+	      QVectorIterator<OccurrenceItem*> it6(_relationshipOccurrenceVector);
+	      while (it6.hasNext())
+		{
+		  OccurrenceItem *current = it6.next();
+		  if (current->isVisible() && current->getAttribute() == tempTarget->getAttribute() &&
+		      current->scenePos().x() == tempTarget->scenePos().x() &&
+		      current != tempTarget)
+		    {
+		      Linkage *newLinkageTwo = new Linkage(tempSource->getAttribute(), "");
+		      newLinkageTwo->setZValue(2);
+		      newLinkageTwo->setStartItem(tempSource);
+		      newLinkageTwo->setEndItem(current);
+		      newLinkageTwo->setCopy(true);
+		      _edgeVector.push_back(newLinkageTwo);
+		      scene->addItem(newLinkageTwo);
+		    }
+		}
 	    }
 	}
     }
@@ -2421,6 +2448,7 @@ void OccurrenceGraphWidget::softGrouping()
 		}
 	    }
 	  // Now we should have a finished group.
+	  std::sort(group.begin(), group.end(), occurrencesSortTwo);
 	  std::sort(group.begin(), group.end(), attributeLessThan);
 	  if (!group.empty())
 	    {
@@ -2708,7 +2736,9 @@ void OccurrenceGraphWidget::matchEventGraph()
 		      newLabel->setDefaultTextColor(textColor);
 		      occurrence->setLabel(newLabel);
 		      occurrence->show();
+		      occurrence->setId(abstractNode->getId());
 		      occurrence->getLabel()->show();
+		      occurrence->setToolTip(breakString(abstractNode->getDescription()));
 		      occurrence->setPos(abstractNode->scenePos().x(), 0);
 		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 		      scene->addItem(occurrence->getLabel());
@@ -2761,6 +2791,7 @@ void OccurrenceGraphWidget::matchEventGraph()
 		      newLabel->setDefaultTextColor(textColor);
 		      occurrence->setLabel(newLabel);
 		      occurrence->show();
+		      occurrence->setId(abstractNode->getId());
 		      occurrence->getLabel()->show();
 		      occurrence->setPos(abstractNode->scenePos().x(), 0);
 		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
@@ -2811,9 +2842,9 @@ void OccurrenceGraphWidget::matchEventGraph()
 		      abstractNode = abstractNode->getAbstractNode();
 		    }
 		  QPointF position = QPointF(abstractNode->scenePos().x(), 0);
-		  // I am setting abstractNode id's to negatives to distinguish them from the incident ids.
-		  OccurrenceItem *newOccurrence = new OccurrenceItem(40, abstractNode->getDescription(),
-								     position, (abstractNode->getId() * -1),
+		  OccurrenceItem *newOccurrence = new OccurrenceItem(40,
+								     abstractNode->getDescription(),
+								     position, abstractNode->getId(),
 								     abstractNode->getOrder(),
 								     currentAttribute);
 		  newOccurrence->setPos(newOccurrence->getOriginalPos());
@@ -4819,7 +4850,7 @@ void OccurrenceGraphWidget::setVisibility()
 	      while (it4.hasNext()) 
 		{
 		  AbstractNode *currentAbstractNode = it4.next();
-		  if (currentAbstractNode->getId() == id * -1) 
+		  if (currentAbstractNode->getId() == id) 
 		    {
 		      QVector<IncidentNode*> contents = currentAbstractNode->getIncidents();
 		      QVectorIterator<IncidentNode*> it5(contents);

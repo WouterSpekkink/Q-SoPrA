@@ -8329,7 +8329,7 @@ void EventGraphWidget::abstractEvents()
 	      QPointF originalPos = QPointF(xPos, yPos);
 	      QString description = abstractionDialog->getDescription();
 	      AbstractNode *current = new AbstractNode(width, description, originalPos,
-						       _abstractNodeVector.size() + 1,
+						       _abstractNodeVector.size() + 1 * -1,
 						       abstractionDialog->getConstraint(),
 						       tempIncidents);
 	      current->setPos(originalPos);

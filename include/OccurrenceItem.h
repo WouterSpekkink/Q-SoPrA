@@ -36,6 +36,7 @@ public:
   void setPermHidden(bool state);
   void setGrouped(bool state);
   void setLastPos(QPointF lastPos);
+  void setId(int id);
   
   // Getters
   int getCorrection();

@@ -191,6 +191,11 @@ QPointF OccurrenceItem::getOriginalPos() const
   return _originalPos;
 }
 
+void OccurrenceItem::setId(int id)
+{
+  _id = id;
+}
+
 int OccurrenceItem::getId() const 
 {
   return _id;
