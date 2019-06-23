@@ -3278,30 +3278,66 @@ void EventGraphWidget::layoutGraph()
 void EventGraphWidget::redoLayout()
 {
   QVector<QGraphicsItem*> allEvents;
+  QVector<IncidentNode*> allIncidents;
   QVectorIterator<IncidentNode*> it(_incidentNodeVector);
   while (it.hasNext())
     {
-      allEvents.push_back(it.next());
+      IncidentNode *incident = it.next();
+      allEvents.push_back(incident);
+      allIncidents.push_back(incident);
     }
   QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
   while (it2.hasNext())
     {
-      allEvents.push_back(it2.next());
+      AbstractNode *abstract = it2.next();
+      allEvents.push_back(abstract);
+      QVector<IncidentNode*> incidents = abstract->getIncidents();
+      QVectorIterator<IncidentNode*> it3(incidents);
+      while (it3.hasNext())
+	{
+	  allIncidents.push_back(it3.next());
+	}
+    }
+  QVectorIterator<IncidentNode*> it4(allIncidents);
+  while (it4.hasNext())
+    {
+      IncidentNode *incident = it4.next();
+      int order = incident->getOrder();
+      qreal vertical = qrand() % 3000 - 1500;
+      QPointF position = QPointF((order *_distance), vertical);
+      incident->setPos(position);
+      incident->setOriginalPos(position);
     }
   std::sort(allEvents.begin(), allEvents.end(), componentsSort);
-  QVector<QGraphicsItem*>::iterator it3;
-  for (it3 = allEvents.begin(); it3 != allEvents.end(); it3++) 
+  it2.toFront();
+  while (it2.hasNext())
     {
-      QGraphicsItem *current = *it3;
-      QVector<QGraphicsItem*>::iterator it4;
+      AbstractNode *abstract = it2.next();
+      QVector<IncidentNode*> incidents = abstract->getIncidents();
+      std::sort(incidents.begin(), incidents.end(), componentsSort);
+      IncidentNode *first = incidents.first();
+      IncidentNode *last = incidents.last();
+      int oldWidth = abstract->getWidth();
+      int newWidth = last->scenePos().x() - first->scenePos().x() + last->getWidth();
+      abstract->setPos(first->scenePos().x(), first->scenePos().y());
+      int diff = (newWidth - oldWidth) / 2;
+      abstract->setWidth(newWidth);
+      abstract->getLabel()->setNewPos(abstract->scenePos(), diff);
+    }
+  QVector<QGraphicsItem*>::iterator it5;
+  for (it5 = allEvents.begin(); it5 != allEvents.end(); it5++) 
+    {
+      QGraphicsItem *current = *it5;
+      
+      QVector<QGraphicsItem*>::iterator it6;
       QVector<QGraphicsItem*> partners;
-      for (it4 = it3 + 1; it4 != allEvents.end(); it4++) 
+      for (it6 = it5 + 1; it6 != allEvents.end(); it6++) 
 	{
-	  QGraphicsItem *second = *it4;
-	  QVectorIterator<Linkage *> it5(_edgeVector);
-	  while (it5.hasNext()) 
+	  QGraphicsItem *second = *it6;
+	  QVectorIterator<Linkage *> it7(_edgeVector);
+	  while (it7.hasNext()) 
 	    {
-	      Linkage *edge = it5.next();
+	      Linkage *edge = it7.next();
 	      // Basically we just ask whether the current events are linked.
 	      if ((edge->getStart() == current &&
 		   edge->getEnd() == second) ||
@@ -3315,10 +3351,10 @@ void EventGraphWidget::redoLayout()
       qreal originHeight = current->scenePos().y();
       std::sort(partners.begin(), partners.end(), eventLessThan);
       int partnerCount = partners.size();
-      QVectorIterator<QGraphicsItem*> it6(partners);
-      while (it6.hasNext()) 
+      QVectorIterator<QGraphicsItem*> it8(partners);
+      while (it8.hasNext()) 
 	{
-	  QGraphicsItem *currentPartner = it6.next();
+	  QGraphicsItem *currentPartner = it8.next();
 	  qreal partnerHeight = originHeight;
 	  if (partners.size() > 1) 
 	    {
@@ -3328,16 +3364,16 @@ void EventGraphWidget::redoLayout()
 	  partnerCount--;
 	}
     }
-  QVectorIterator<IncidentNodeLabel*> it7(_incidentNodeLabelVector);
-  while (it7.hasNext())
+  QVectorIterator<IncidentNodeLabel*> it9(_incidentNodeLabelVector);
+  while (it9.hasNext())
     {
-      IncidentNodeLabel *currentLabel = it7.next();
+      IncidentNodeLabel *currentLabel = it9.next();
       currentLabel->setNewPos(currentLabel->getNode()->scenePos());
     }
-  QVectorIterator<AbstractNodeLabel*> it8(_abstractNodeLabelVector);
-  while (it8.hasNext())
+  QVectorIterator<AbstractNodeLabel*> it10(_abstractNodeLabelVector);
+  while (it10.hasNext())
     {
-      AbstractNodeLabel *currentLabel = it8.next();
+      AbstractNodeLabel *currentLabel = it10.next();
       currentLabel->setNewPos(currentLabel->getAbstractNode()->scenePos());
     }
   updateLinkages();
@@ -3442,7 +3478,9 @@ void EventGraphWidget::dateLayout()
       int total = visible.size();
       int validTotal = 0;
       QMap<IncidentNode*, qint64> days;
+      QMap<IncidentNode*, int> precision;
       qreal lastValid = 0.0;
+      int lastPrecision = 0;
       QVectorIterator<IncidentNode*> it4(visible);
       while (it4.hasNext())
 	{
@@ -3499,6 +3537,18 @@ void EventGraphWidget::dateLayout()
 	    {
 	      days.insert(incident, firstDate.daysTo(date));
 	      validTotal++;
+	      if (dateString.length() == 4)
+		{
+		  precision.insert(incident, 1);
+		}
+	      else if (dateString.length() == 7)
+		{
+		  precision.insert(incident, 2);
+		}
+	      else if (dateString.length() == 10)
+		{
+		  precision.insert(incident, 3);
+		}
 	    }
 	}
       qreal validPerc = (qreal) validTotal / (qreal) total * 100;
@@ -3520,31 +3570,103 @@ void EventGraphWidget::dateLayout()
 	  first->setPos(0, first->scenePos().y());
 	  first->getLabel()->setNewPos(first->scenePos());
 	  it4.toFront();
+	  it4.next(); // skip the first one.
 	  while (it4.hasNext())
 	    {
 	      IncidentNode *incident = it4.next();
-	      if (incident != first)
+	      if (days.contains(incident))
 		{
-		  if (days.contains(incident))
+		  qint64 daysTo = days.value(incident);
+		  qreal x = (_distance / 10) * daysTo;
+		  if (x >= lastValid)
 		    {
-		      qint64 daysTo = days.value(incident);
-		      qreal x = (_distance / 10) * daysTo;
-		      if (x >= lastValid)
+		      incident->setPos(x, incident->scenePos().y());
+		      incident->getLabel()->setNewPos(incident->scenePos());
+		      lastValid = x;
+		      lastPrecision = precision.value(incident);
+		    }
+		  else
+		    {
+		      if (precision.value(incident) > lastPrecision)
 			{
-			  incident->setPos(x, incident->scenePos().y());
-			  incident->getLabel()->setNewPos(incident->scenePos());
+			  QApplication::restoreOverrideCursor();
+			  qApp->processEvents();
+			  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+			  warningBox->addButton(QMessageBox::Ok);
+			  warningBox->setIcon(QMessageBox::Warning);
+			  warningBox->setText("<b>Possible problem detected</b>");
+			  warningBox->setInformativeText("Incident " +
+							 QString::number(incident->getOrder()) +
+							 " is incorrectly positioned in the "
+							 "chronological order and may cause "
+							 "problems for the layout.");
+			  warningBox->exec();
+			  delete warningBox;
+			  QApplication::setOverrideCursor(Qt::WaitCursor);
 			}
-		      else
+		      QVectorIterator<IncidentNode*> it5 = it4;
+		      bool resolved = false;
+		      bool foundValid = false;
+		      while (!foundValid)
+			{
+			  while (it5.hasNext())
+			    {
+			      IncidentNode *next = it5.next();
+			      if (days.contains(next))
+				{
+				  qint64 daysToNext = days.value(next);
+				  qreal xNext = (_distance / 10) * daysToNext;
+				  if (xNext >= lastValid)
+				    {
+				      qreal tempX = (lastValid + xNext) / 2;
+				      incident->setPos(tempX, incident->scenePos().y());
+				      incident->getLabel()->setNewPos(incident->scenePos());
+				      foundValid = true;
+				      resolved = true;
+				      break;
+				    }
+				}
+			    }
+			  foundValid = true;
+			}
+		      if (!resolved)
 			{
 			  incident->setPos(lastValid + _distance, incident->scenePos().y());
 			  incident->getLabel()->setNewPos(incident->scenePos());
 			}
-		      lastValid = x;
 		    }
-		  else
+		}
+	      else
+		{
+		  QVectorIterator<IncidentNode*> it5 = it4;
+		  bool foundValid = false;
+		  bool resolved = false;
+		  while (!foundValid)
+		    {
+		      while (it5.hasNext())
+			{
+			  IncidentNode *next = it5.next();
+			  if (days.contains(next))
+			    {
+			      qint64 daysToNext = days.value(next);
+			      qreal xNext = (_distance / 10) * daysToNext;
+			      if (xNext >= lastValid)
+				{
+				  qreal tempX = (lastValid + xNext) / 2;
+				  incident->setPos(tempX, incident->scenePos().y());
+				  incident->getLabel()->setNewPos(incident->scenePos());
+				  foundValid = true;
+				  resolved = true;
+				  break;
+				}
+			    }
+			}
+		      foundValid = true;
+		    }
+		  if (!resolved)
 		    {
 		      incident->setPos(lastValid + _distance, incident->scenePos().y());
-		      incident->getLabel()->setNewPos(incident->scenePos()); 
+		      incident->getLabel()->setNewPos(incident->scenePos());
 		    }
 		}
 	    }
@@ -9234,6 +9356,7 @@ void EventGraphWidget::exportTransitionMatrix()
       if (eventListWidget->rowCount() == 0) 
 	{
 	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Incorrectly sorted incident");
 	  warningBox->addButton(QMessageBox::Ok);
 	  warningBox->setIcon(QMessageBox::Warning);
 	  warningBox->setText("<b>No modes assigned</b>");

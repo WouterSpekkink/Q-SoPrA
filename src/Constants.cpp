@@ -133,5 +133,5 @@ QString DATELAYOUT = "Time stamp layout";
 QString NOOVERLAP = "No overlap";
 QString REDUCEOVERLAP = "Reduce overlap";
 QString MATCHEVENTGRAPH = "Match event graph";
-
+				  
 qreal Pi = 3.14;
