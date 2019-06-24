@@ -3575,6 +3575,7 @@ void EventGraphWidget::dateLayout()
 				     "Do you wish to continue?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
+	  bool warn = true;
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  delete warningBox;
 	  first->setPos(0, first->scenePos().y());
@@ -3610,63 +3611,72 @@ void EventGraphWidget::dateLayout()
 			{
 			  precisionDifference = true;
 			}
-		    }
-		  if (!precisionDifference)
-		    {
-		      QApplication::restoreOverrideCursor();
-		      qApp->processEvents();
-		      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		      warningBox->setWindowTitle("Checking timestamps");
-		      warningBox->addButton(QMessageBox::Ok);
-		      QPointer<QAbstractButton> markButton = warningBox->
-			addButton(tr("Mark"), QMessageBox::NoRole);
-		      warningBox->setIcon(QMessageBox::Warning);
-		      warningBox->setText("<b>Possible problem detected</b>");
-		      warningBox->setInformativeText("Incident " +
-						     QString::number(incident->getOrder()) +
-						     " is incorrectly positioned in the "
-						     "chronological order and may cause "
-						     "problems for the layout.");
-		      warningBox->exec();
-		      if (warningBox->clickedButton() == markButton)
+		      if (!precisionDifference)
 			{
-			  query2->bindValue(":id", incident->getId());
-			  query2->exec();
-			}
-		      delete warningBox;
-		      QApplication::setOverrideCursor(Qt::WaitCursor);
-		    }
-		  else
-		    {
-		      QVectorIterator<IncidentNode*> it5 = it4;
-		      bool resolved = false;
-		      bool foundValid = false;
-		      while (!foundValid)
-			{
-			  while (it5.hasNext())
+			  if (warn)
 			    {
-			      IncidentNode *next = it5.next();
-			      if (days.contains(next))
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+			      warningBox->setWindowTitle("Checking timestamps");
+			      warningBox->addButton(QMessageBox::Ok);
+			      QPointer<QAbstractButton> markButton = warningBox->
+				addButton(tr("Mark"), QMessageBox::NoRole);
+			      QPointer<QAbstractButton> skipButton = warningBox->
+				addButton(tr("Skip remaining warnings"), QMessageBox::NoRole);
+			      warningBox->setIcon(QMessageBox::Warning);
+			      warningBox->setText("<b>Possible problem detected</b>");
+			      warningBox->setInformativeText("Incident " +
+							     QString::number(incident->getOrder()) +
+							     " is incorrectly positioned in the "
+							     "chronological order and may cause "
+							     "problems for the layout.");
+			      warningBox->exec();
+			      if (warningBox->clickedButton() == markButton)
 				{
-				  qint64 daysToNext = days.value(next);
-				  qreal xNext = (_distance / 10) * daysToNext;
-				  if (xNext >= lastValid)
+				  query2->bindValue(":id", incident->getId());
+				  query2->exec();
+				}
+			      else if (warningBox->clickedButton() == skipButton)
+				{
+				  warn = false;
+				}
+			      delete warningBox;
+			      QApplication::setOverrideCursor(Qt::WaitCursor);
+			    }
+			}
+		      else
+			{
+			  QVectorIterator<IncidentNode*> it5 = it4;
+			  bool resolved = false;
+			  bool foundValid = false;
+			  while (!foundValid)
+			    {
+			      while (it5.hasNext())
+				{
+				  IncidentNode *next = it5.next();
+				  if (days.contains(next))
 				    {
-				      qreal tempX = (lastValid + xNext) / 2;
-				      incident->setPos(tempX, incident->scenePos().y());
-				      incident->getLabel()->setNewPos(incident->scenePos());
-				      foundValid = true;
-				      resolved = true;
-				      break;
+				      qint64 daysToNext = days.value(next);
+				      qreal xNext = (_distance / 10) * daysToNext;
+				      if (xNext >= lastValid)
+					{
+					  qreal tempX = (lastValid + xNext) / 2;
+					  incident->setPos(tempX, incident->scenePos().y());
+					  incident->getLabel()->setNewPos(incident->scenePos());
+					  foundValid = true;
+					  resolved = true;
+					  break;
+					}
 				    }
 				}
+			      foundValid = true;
 			    }
-			  foundValid = true;
-			}
-		      if (!resolved)
-			{
-			  incident->setPos(lastValid + _distance, incident->scenePos().y());
-			  incident->getLabel()->setNewPos(incident->scenePos());
+			  if (!resolved)
+			    {
+			      incident->setPos(lastValid + _distance, incident->scenePos().y());
+			      incident->getLabel()->setNewPos(incident->scenePos());
+			    }
 			}
 		    }
 		}
@@ -3963,6 +3973,7 @@ void EventGraphWidget::increaseDistance()
   
 void EventGraphWidget::decreaseDistance() 
 {
+  setChangeLabel();
   QVector<QGraphicsItem*> temp;
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
   QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
@@ -4013,11 +4024,13 @@ void EventGraphWidget::decreaseDistance()
 	}
     }
   _distance *= 0.9;
+  updateLinkages();
 }
 	
 
 void EventGraphWidget::expandGraph() 
 {
+  setChangeLabel();
   qreal virtualCenter = 0.0;
   int total = 0;
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
@@ -4053,10 +4066,12 @@ void EventGraphWidget::expandGraph()
       current->setPos(current->scenePos().x(), virtualCenter + diffY);
       current->getLabel()->setNewPos(current->scenePos());
     }
+  updateLinkages();
 }
 
 void EventGraphWidget::contractGraph() 
 {
+  setChangeLabel();
   qreal virtualCenter = 0.0;
   int total = 0;
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
@@ -4092,6 +4107,7 @@ void EventGraphWidget::contractGraph()
       current->setPos(current->scenePos().x(), virtualCenter + diffY);
       current->getLabel()->setNewPos(current->scenePos());
     }
+  updateLinkages();
 }
 
 void EventGraphWidget::minimiseCurrentGraph()

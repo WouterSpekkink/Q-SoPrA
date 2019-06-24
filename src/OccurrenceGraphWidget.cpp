@@ -152,7 +152,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   removeRelationshipModeButton = new QPushButton(tr("Remove relationship"), legendWidget);
   removeRelationshipModeButton->setEnabled(false);
   makeLayoutButton = new QPushButton(tr("Run layout"), this);
-  restoreButton = new QPushButton(tr("Restore to original"), this);
   plotLabelsButton = new QPushButton(tr("Toggle labels"), graphicsWidget);
   incidentLabelsOnlyButton = new QPushButton(tr("Incident labels only"), graphicsWidget);
   incidentLabelsOnlyButton->setCheckable(true);
@@ -322,7 +321,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(removeAttributeModeButton, SIGNAL(clicked()), this, SLOT(removeAttributeMode()));
   connect(removeRelationshipModeButton, SIGNAL(clicked()), this, SLOT(removeRelationshipMode()));
   connect(makeLayoutButton, SIGNAL(clicked()), this, SLOT(makeLayout()));
-  connect(restoreButton, SIGNAL(clicked()), this, SLOT(restore()));
   connect(addLineButton, SIGNAL(clicked()), scene, SLOT(prepLinePoints()));
   connect(addSingleArrowButton, SIGNAL(clicked()), scene, SLOT(prepSingleArrowPoints()));
   connect(addDoubleArrowButton, SIGNAL(clicked()), scene, SLOT(prepDoubleArrowPoints()));
@@ -554,8 +552,6 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   increaseDistanceButton->setMaximumWidth(increaseDistanceButton->sizeHint().width());
   drawOptionsLeftLayout->addWidget(decreaseDistanceButton);
   decreaseDistanceButton->setMaximumWidth(decreaseDistanceButton->sizeHint().width());
-  drawOptionsLeftLayout->addWidget(restoreButton);
-  restoreButton->setMaximumWidth(restoreButton->sizeHint().width());
   QPointer<QFrame> vertLineOne = new QFrame();
   vertLineOne->setFrameShape(QFrame::VLine);
   drawOptionsLeftLayout->addWidget(vertLineOne);
@@ -1283,6 +1279,7 @@ void OccurrenceGraphWidget::addAttribute()
 
 void OccurrenceGraphWidget::addAttributes() 
 {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   setChangeLabel();
   QPointer<AttributeCheckBoxDialog> attributeDialog = new AttributeCheckBoxDialog(this, INCIDENT);
   attributeDialog->exec();
@@ -1444,6 +1441,8 @@ void OccurrenceGraphWidget::addAttributes()
     {
       delete attributeDialog;
     }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 	 
 void OccurrenceGraphWidget::addRelationship() 
@@ -4670,6 +4669,7 @@ void OccurrenceGraphWidget::setBackgroundColor()
 
 void OccurrenceGraphWidget::increaseDistance() 
 {
+  setChangeLabel();
   QVector<OccurrenceItem*> allOccurrences;
   QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 
@@ -4701,6 +4701,7 @@ void OccurrenceGraphWidget::increaseDistance()
 
 void OccurrenceGraphWidget::decreaseDistance() 
 {
+  setChangeLabel();    
   QVector<OccurrenceItem*> allOccurrences;
   QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
   while (it.hasNext()) 

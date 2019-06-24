@@ -253,7 +253,6 @@ private:
   QPointer<QPushButton> addRelationshipButton;
   QPointer<QPushButton> addRelationshipsButton;
   QPointer<QPushButton> makeLayoutButton;
-  QPointer<QPushButton> restoreButton;
   QPointer<QPushButton> plotLabelsButton;
   QPointer<QPushButton> incidentLabelsOnlyButton;
   QPointer<QPushButton> attributeLabelsOnlyButton;

@@ -54,7 +54,6 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   tableView->setColumnWidth(4, parent->width()/4);
   tableView->setColumnWidth(5, parent->width()/5);
   tableView->setColumnWidth(6, parent->width()/8);
-  tableView->setColumnWidth(7, parent->width()/4);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setWordWrap(true);
@@ -922,7 +921,7 @@ void DataWidget::validateTimestamps()
 	    {
 	      date = QDate::fromString(dateString, "yyyy-MM-dd");
 	    }
-	  currentPrecision = 2;
+	  currentPrecision = 3;
 	}
       if (date.isValid())
 	{
@@ -958,6 +957,8 @@ void DataWidget::validateTimestamps()
 		      warningBox->addButton(QMessageBox::Ok);
 		      QPointer<QAbstractButton> markButton = warningBox->
 			addButton(tr("Mark"), QMessageBox::NoRole);
+		      QPointer<QAbstractButton> cancelButton = warningBox->
+			addButton(tr("Cancel"), QMessageBox::NoRole);
 		      warningBox->setIcon(QMessageBox::Warning);
 		      warningBox->setText("<b>Possible problem detected</b>");
 		      warningBox->setInformativeText("Incident " +
@@ -969,6 +970,14 @@ void DataWidget::validateTimestamps()
 			{
 			  query2->bindValue(":ch_order", order);
 			  query2->exec();
+			}
+		      else if (warningBox->clickedButton() == cancelButton)
+			{
+			  incidentsModel->select();
+			  updateTable();
+			  delete query;
+			  delete query2;
+			  return;
 			}
 		      delete warningBox;
 		      QApplication::setOverrideCursor(Qt::WaitCursor);
