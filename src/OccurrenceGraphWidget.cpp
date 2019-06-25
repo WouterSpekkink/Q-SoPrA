@@ -1279,12 +1279,12 @@ void OccurrenceGraphWidget::addAttribute()
 
 void OccurrenceGraphWidget::addAttributes() 
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   setChangeLabel();
   QPointer<AttributeCheckBoxDialog> attributeDialog = new AttributeCheckBoxDialog(this, INCIDENT);
   attributeDialog->exec();
   if (attributeDialog->getExitStatus() == 0)
     {
+      QApplication::setOverrideCursor(Qt::WaitCursor);
       // Let us first prepare a few queries
       QSqlQuery *query = new QSqlQuery;
       QSqlQuery *query2= new QSqlQuery;
@@ -1436,13 +1436,13 @@ void OccurrenceGraphWidget::addAttributes()
 	  caseListWidget->setEnabled(true);
 	}
       setGraphControls(true);
+      QApplication::restoreOverrideCursor();
+      qApp->processEvents();
     }
   else
     {
       delete attributeDialog;
     }
-  QApplication::restoreOverrideCursor();
-  qApp->processEvents();
 }
 	 
 void OccurrenceGraphWidget::addRelationship() 
