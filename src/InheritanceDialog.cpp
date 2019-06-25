@@ -39,6 +39,7 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
     {
       QString currentAttribute = it.next();
       QCheckBox *currentCheckBox = new QCheckBox(currentAttribute, checkBoxWidget);
+      _selection.push_back(currentAttribute);
       checkBoxVector.push_back(currentCheckBox);
     }
 
@@ -126,18 +127,16 @@ void InheritanceDialog::deselectAll()
 
 void InheritanceDialog::saveAndClose()
 {
-  QVectorIterator<QCheckBox*> it(checkBoxVector);
-  while (it.hasNext())
+  // I had to develop a somewhat messy way to fetch the results
+  // because Qt automatically adds ampersands to the texts of
+  // check boxes.
+  for (QVector<QCheckBox*>::size_type i = 0; i != checkBoxVector.size(); i++)
     {
-      QCheckBox *current = it.next();
+      QCheckBox *current = checkBoxVector[i];
       if (current->checkState() == Qt::Checked)
 	{
-	  QString currentAttribute = current->text();
-	  if (currentAttribute[0] == '&')
-	    {
-	      currentAttribute.remove(0, 1);
-	    }
-	  _selectedAttributes.push_back(currentAttribute);
+
+	  _selectedAttributes.push_back(_selection[i]);
 	}
     }
   _exitStatus = 0;

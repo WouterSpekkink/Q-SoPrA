@@ -71,6 +71,9 @@ private:
   // This one we need to delete and clear
   QVector<QCheckBox*> checkBoxVector;
 
+  // Private data vector
+  QVector<QString> _selection;
+  
   // Private variables
   int _exitStatus;
 
