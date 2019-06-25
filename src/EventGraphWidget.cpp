@@ -9027,9 +9027,9 @@ void EventGraphWidget::updateAbstractNodeIds(AbstractNode *abstractNode)
   while (it.hasNext()) 
     {
       AbstractNode *current = it.next();
-      if (current != abstractNode && current->getId() > abstractNode->getId()) 
+      if (current != abstractNode && current->getId() < abstractNode->getId()) 
 	{
-	  current->setNewId(current->getId() - 1);
+	  current->setNewId(current->getId() + 1);
 	}
     }
 }
