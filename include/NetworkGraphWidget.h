@@ -186,6 +186,7 @@ private slots:
   void addEllipseObject(const QRectF &area);
   void addRectObject(const QRectF &area);
   void addTextObject(const QRectF &area, const qreal &size);
+  void hideAnnotations();
   void addHorizontalGuideLine(const QPointF &pos);
   void addVerticalGuideLine(const QPointF &pos);
   void toggleSnapGuides();
@@ -324,6 +325,7 @@ private:
   QPointer<QPushButton> addEllipseButton;
   QPointer<QPushButton> addRectangleButton;
   QPointer<QPushButton> addTextButton;
+  QPointer<QPushButton> hideAnnotationsButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> addHorizontalGuideLineButton;

@@ -261,6 +261,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   changeTimeLineColorButton->setIconSize(QSize(20, 20));
   changeTimeLineColorButton->setMinimumSize(40, 40);
   changeTimeLineColorButton->setMaximumSize(40, 40);
+  hideAnnotationsButton = new QPushButton(tr("Hide annotations"), this);
+  hideAnnotationsButton->setCheckable(true);
   addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
   addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
   addHorizontalGuideLineButton->setMinimumSize(40, 40);
@@ -334,6 +336,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(changeFillColorButton, SIGNAL(clicked()), this, SLOT(setFillColor()));
   connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
   connect(addTimeLineButton, SIGNAL(clicked()), scene, SLOT(prepTimeLinePoints()));
+  connect(hideAnnotationsButton, SIGNAL(clicked()), this, SLOT(hideAnnotations()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
   connect(majorIntervalSlider, SIGNAL(valueChanged(int)), this, SLOT(setMajorIntervalBySlider()));
@@ -452,6 +455,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->addWidget(fillOpacityLabel);
   plotObjectsLayout->addWidget(fillOpacitySlider);
+  plotObjectsLayout->addWidget(hideAnnotationsButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
   mainLayout->addLayout(drawHelpLayout);
@@ -1100,6 +1104,7 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   snapGuidesButton->setEnabled(state);
   increaseLabelSizeButton->setEnabled(state);
   decreaseLabelSizeButton->setEnabled(state);
+  hideAnnotationsButton->setEnabled(state);
 }
 
 void OccurrenceGraphWidget::updateCases() 
@@ -4691,7 +4696,10 @@ void OccurrenceGraphWidget::increaseDistance()
 	  current->getLabel()->setNewPos(current->scenePos());
 	}
     }
-  _distance *= 1.1;
+  if (!_matched)
+    {
+      _distance *= 1.1;
+    }
   updateLinkages();
 }
 
@@ -4723,7 +4731,10 @@ void OccurrenceGraphWidget::decreaseDistance()
 	  current->getLabel()->setNewPos(current->scenePos());
 	}
     }
-  _distance *= 0.9;
+  if (!_matched)
+    {
+      _distance *= 0.9;
+    }
   updateLinkages();
 }
 
@@ -6067,6 +6078,7 @@ void OccurrenceGraphWidget::seePlots()
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) 
     {
+      hideAnnotationsButton->setChecked(false);
       savePlotButton->setEnabled(true);
       clearPlotButton->setEnabled(true);
       cleanUp();
@@ -6669,6 +6681,62 @@ void OccurrenceGraphWidget::clearPlot()
       return;
     }
   updateCases();
+  hideAnnotationsButton->setChecked(false);
+}
+
+void OccurrenceGraphWidget::hideAnnotations()
+{
+  QVectorIterator<EllipseObject*> it(_ellipseVector);
+  QVectorIterator<RectObject*> it2(_rectVector);
+  QVectorIterator<LineObject*> it3(_lineVector);
+  QVectorIterator<TextObject*> it4(_textVector);
+  QVectorIterator<TimeLineObject*> it5(_timeLineVector);
+  if (hideAnnotationsButton->isChecked())
+    {
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->hide();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->hide();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->hide();
+	}
+      while (it5.hasNext())
+	{
+	  it5.next()->hide();
+	}
+    }
+  else
+    {
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->show();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->show();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->show();
+	}
+      while (it5.hasNext())
+	{
+	  it5.next()->show();
+	}
+    }
 }
 
 void OccurrenceGraphWidget::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr) 

@@ -169,6 +169,7 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
+  void hideAnnotations();
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
@@ -264,6 +265,7 @@ private:
   QPointer<QPushButton> addEllipseButton;
   QPointer<QPushButton> addRectangleButton;
   QPointer<QPushButton> addTextButton;
+  QPointer<QPushButton> hideAnnotationsButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> addHorizontalGuideLineButton;

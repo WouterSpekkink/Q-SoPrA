@@ -186,6 +186,7 @@ private slots:
   void duplicateText();
   void duplicateEllipse();
   void duplicateRect();
+  void hideAnnotations();
   void processGuideLineContextMenu(const QString &action);
   void deleteGuideLine();
   void objectOneForward();
@@ -274,6 +275,7 @@ private:
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> addTimeLineButton;
   QPointer<QPushButton> changeTimeLineColorButton;
+  QPointer<QPushButton> hideAnnotationsButton;
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;

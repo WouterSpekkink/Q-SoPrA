@@ -242,6 +242,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   fillOpacitySlider->setMaximum(255);
   fillOpacitySlider->setValue(0);
   fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+  hideAnnotationsButton = new QPushButton(tr("Hide annotations"), this);
+  hideAnnotationsButton->setCheckable(true);
   addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
   addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
   addHorizontalGuideLineButton->setMinimumSize(40, 40);
@@ -394,6 +396,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(fillOpacitySlider, SIGNAL(valueChanged(int)), this, SLOT(setFillOpacity(int)));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
+  connect(hideAnnotationsButton, SIGNAL(clicked()), this, SLOT(hideAnnotations()));
   connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
   connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
   connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
@@ -478,6 +481,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->addWidget(fillOpacityLabel);
   plotObjectsLayout->addWidget(fillOpacitySlider);
+  plotObjectsLayout->addWidget(hideAnnotationsButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
   mainLayout->addLayout(drawHelpLayout);
@@ -983,6 +987,7 @@ void NetworkGraphWidget::setGraphControls(bool state)
   addVerticalGuideLineButton->setEnabled(state);
   snapGuidesButton->setEnabled(state);
   layoutButton->setEnabled(state);
+  hideAnnotationsButton->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -4779,6 +4784,52 @@ void NetworkGraphWidget::setPlotButton()
     }
 }
 
+void NetworkGraphWidget::hideAnnotations()
+{
+  QVectorIterator<EllipseObject*> it(_ellipseVector);
+  QVectorIterator<RectObject*> it2(_rectVector);
+  QVectorIterator<LineObject*> it3(_lineVector);
+  QVectorIterator<TextObject*> it4(_textVector);
+  if (hideAnnotationsButton->isChecked())
+    {
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->hide();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->hide();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->hide();
+	}
+    }
+  else
+    {
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->show();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->show();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->show();
+	}
+    }
+}
+
 void NetworkGraphWidget::plotNewGraph() 
 {
   cleanUp();
@@ -4836,6 +4887,7 @@ void NetworkGraphWidget::plotNewGraph()
   makeLayout();
   view->fitInView(this->scene->itemsBoundingRect(), Qt::KeepAspectRatio);
   setGraphControls(true);
+  hideAnnotationsButton->setChecked(false);
 }
 
 void NetworkGraphWidget::addRelationshipType() 
@@ -6385,6 +6437,7 @@ void NetworkGraphWidget::seePlots()
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) 
     {
+      hideAnnotationsButton->setChecked(false);
       savePlotButton->setEnabled(true);
       cleanUp();
       scene->clear();

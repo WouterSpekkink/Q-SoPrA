@@ -205,6 +205,8 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   fillOpacitySlider->setMaximum(255);
   fillOpacitySlider->setValue(0);
   fillOpacitySlider->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Preferred);
+  hideAnnotationsButton = new QPushButton(tr("Hide annotations"), this);
+  hideAnnotationsButton->setCheckable(true);
   addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
   addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
   addHorizontalGuideLineButton->setMinimumSize(40, 40);
@@ -271,6 +273,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
   connect(this, SIGNAL(sendLineColor(QColor &)), scene, SLOT(setLineColor(QColor &)));
   connect(this, SIGNAL(sendFillColor(QColor &)), scene, SLOT(setFillColor(QColor &)));
+  connect(hideAnnotationsButton, SIGNAL(clicked()), this, SLOT(hideAnnotations()));
   connect(attributesTreeView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(highlightText()));
@@ -354,6 +357,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->addWidget(fillOpacityLabel);
   plotObjectsLayout->addWidget(fillOpacitySlider);
+  plotObjectsLayout->addWidget(hideAnnotationsButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   mainLayout->addLayout(plotObjectsLayout);
   
@@ -4617,11 +4621,59 @@ void HierarchyGraphWidget::cleanUp()
   eventListWidget->setRowCount(0);
   linkageListWidget->setRowCount(0);
   _presentTypes.clear();
+  hideAnnotationsButton->setChecked(false);
+}
+
+void HierarchyGraphWidget::hideAnnotations()
+{
+  QVectorIterator<EllipseObject*> it(_ellipseVector);
+  QVectorIterator<RectObject*> it2(_rectVector);
+  QVectorIterator<LineObject*> it3(_lineVector);
+  QVectorIterator<TextObject*> it4(_textVector);
+  if (hideAnnotationsButton->isChecked())
+    {
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->hide();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->hide();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->hide();
+	}
+    }
+  else
+    {
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->show();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->show();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->show();
+	}
+    }
 }
 
 void HierarchyGraphWidget::switchBack() 
 {
   setComment();
+  hideAnnotationsButton->setChecked(false);
   emit goToEventGraph();
 }
 
