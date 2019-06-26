@@ -869,6 +869,7 @@ void DataWidget::validateTimestamps()
   query->first();
   int total = query->value(0).toInt();
   int valid = 0;
+  QVector<int> invalid;
   query->exec("SELECT timestamp, ch_order FROM incidents "
 	      "ORDER BY ch_order ASC");
   QDate firstDate;
@@ -925,6 +926,7 @@ void DataWidget::validateTimestamps()
 	}
       if (date.isValid())
 	{
+	  
 	  valid++;
 	  if (daysProgress == -1)
 	    {
@@ -990,6 +992,10 @@ void DataWidget::validateTimestamps()
 		}
 	    }
 	}
+      else
+	{
+	  invalid.push_back(order);
+	}
     }
   delete query;
   delete query2;
@@ -1001,11 +1007,41 @@ void DataWidget::validateTimestamps()
   QPointer <QMessageBox> warningBox = new QMessageBox(this);
   warningBox->setWindowTitle("Timestamp validation");
   warningBox->addButton(QMessageBox::Ok);
+  QPointer<QAbstractButton> showButton = warningBox->
+    addButton(tr("Show invalid"), QMessageBox::NoRole);
   warningBox->setIcon(QMessageBox::Warning);
   warningBox->setText("<h2>Dates found:</h2>");
   warningBox->setInformativeText(QString::number(validPerc) + "% of the incidents "
 				 "have a valid date set as time stamp.");
   warningBox->exec();
+  if (warningBox->clickedButton() == showButton)
+    {
+      QString incidents = QString();
+      QVectorIterator<int> it(invalid);
+      while (it.hasNext())
+	{
+	  int incident = it.next();
+	  if (incidents.size() < 25)
+	    {
+	      if (incident == invalid.first())
+		{
+		  incidents = incidents + QString::number(incident);
+		}
+	      else
+		{
+		  incidents = incidents + ", " + QString::number(incident);
+		}
+	    }
+	}
+      QPointer <QMessageBox> showBox = new QMessageBox(this);
+      showBox->setWindowTitle("Invalid timestamps");
+      showBox->addButton(QMessageBox::Ok);
+      showBox->setIcon(QMessageBox::Warning);
+      showBox->setText("<h2>Invalid timestamps:</h2>");
+      showBox->setInformativeText("The incidents with invalid timestamps are: " + incidents + ".\n\n (up to 25 incidents shown)");
+      showBox->exec();
+      delete showBox;
+    }
   delete warningBox;
 }
 
