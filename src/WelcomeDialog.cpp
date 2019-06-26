@@ -208,7 +208,6 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "coder text, "
-		      "distance real, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -649,6 +648,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "distance real, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -997,7 +997,6 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
 		      "coder text, "
-		      "distance real, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -1438,6 +1437,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "distance, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -2145,10 +2145,6 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots ADD COLUMN coder text;");
-	    }
-	  if (!columns.contains("distance"))
-	    {
-	      query->exec("ALTER TABLE saved_eg_plots ADD COLUMN distance real;");
 	    }
 	  if (!columns.contains("red"))
 	    {
@@ -4349,6 +4345,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("distance"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots "
+			  "ADD COLUMN distance text;");
 	    }
 	  if (!columns.contains("red"))
 	    {

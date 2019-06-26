@@ -104,7 +104,6 @@ public:
   QVector<Linkage*> getEdgeVector();
   QVector<QString> getCheckedCases();
   int getLabelSize();
-  qreal getDistance();
   
   // Functions that need to be exposed
   void resetTree();
@@ -297,6 +296,7 @@ private slots:
   void timeLineToggleForceLastTick();
   void deleteTimeLine();
   void duplicateTimeLine();
+  void hideAnnotations();
   void processGuideLineContextMenu(const QString &action);
   void deleteGuideLine();
   void objectOneForward();
@@ -430,6 +430,7 @@ private:
   QPointer<QPushButton> addRectangleButton;
   QPointer<QPushButton> addTextButton;
   QPointer<QPushButton> addTimeLineButton;
+  QPointer<QPushButton> hideAnnotationsButton;
   QPointer<QPushButton> changeLineColorButton;
   QPointer<QPushButton> changeFillColorButton;
   QPointer<QPushButton> changeTimeLineColorButton;

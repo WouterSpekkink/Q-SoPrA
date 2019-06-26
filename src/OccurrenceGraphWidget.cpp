@@ -31,7 +31,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 {
   _distance = 70.0;
-  _originalDistance = _distance;
   _labelsVisible = true;
   _incidentLabelsOnly = false;
   _attributeLabelsOnly = false;
@@ -2260,7 +2259,6 @@ void OccurrenceGraphWidget::restore()
 void OccurrenceGraphWidget::reset() 
 {
   _matched = false;
-  _distance = _originalDistance;
   QVector<OccurrenceItem*>::iterator it;
   for (it = _attributeOccurrenceVector.begin(); it != _attributeOccurrenceVector.end();) 
     {
@@ -2649,7 +2647,7 @@ void OccurrenceGraphWidget::dateLayout()
 		  if (days.contains(occurrence))
 		    {
 		      qint64 daysTo = days.value(occurrence);
-		      qreal x = (_distance / 10) * daysTo;
+		      qreal x = 5 * daysTo;
 		      if (x >= lastValid)
 			{
 			  occurrence->setPos(x, occurrence->scenePos().y());
@@ -2688,8 +2686,6 @@ void OccurrenceGraphWidget::matchEventGraph()
 {
   reset();
   _matched = true;
-  _originalDistance = _distance;
-  _distance = _eventGraphWidgetPtr->getDistance();
   QVector<IncidentNode*> incidents = _eventGraphWidgetPtr->getIncidentNodes();
   if (incidents.size() > 0) 
     {
@@ -5357,8 +5353,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int green = color.green();
 	  int blue = color.blue();
 	  query->prepare("UPDATE saved_og_plots "
-			 "SET red = :red, green = :green, blue = :blue "
+			 "SET distance = :distance, red = :red, green = :green, blue = :blue "
 			 "WHERE plot = :plot");
+	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -5427,9 +5424,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("INSERT INTO saved_og_plots (plot, red, green, blue) "
-			 "VALUES (:name, :red, :green, :blue)");
+	  query->prepare("INSERT INTO saved_og_plots (plot, distance, red, green, blue) "
+			 "VALUES (:name, :distance, :red, :green, :blue)");
 	  query->bindValue(":name", name);
+	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -6074,15 +6072,16 @@ void OccurrenceGraphWidget::seePlots()
       cleanUp();
       QString plot = savedPlotsDialog->getSelectedPlot();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT red, green, blue "
+      query->prepare("SELECT distance, red, green, blue "
 		     "FROM saved_og_plots "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
       query->first();
-      int red = query->value(0).toInt();
-      int green = query->value(1).toInt();
-      int blue = query->value(2).toInt();
+      _distance = query->value(0).toReal();
+      int red = query->value(1).toInt();
+      int green = query->value(2).toInt();
+      int blue = query->value(3).toInt();
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       query->prepare("SELECT lowerbound, upperbound, labelson, incidentlabelsonly, "
 		     "attributelabelsonly, labelsize "

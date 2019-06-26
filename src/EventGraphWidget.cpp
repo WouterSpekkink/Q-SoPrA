@@ -33,7 +33,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   _selectedAbstractNode = NULL;
   _selectedIncident = 0;
   _commentBool = false;
-  _distance = 70;
   _vectorPos = 0;
   _labelsVisible = true;
   _labelSize = 10;
@@ -357,6 +356,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   changeTimeLineColorButton->setIconSize(QSize(20, 20));
   changeTimeLineColorButton->setMinimumSize(40, 40);
   changeTimeLineColorButton->setMaximumSize(40, 40);
+  hideAnnotationsButton = new QPushButton(tr("Hide annotations"), this);
+  hideAnnotationsButton->setCheckable(true);
   addHorizontalGuideLineButton = new QPushButton(QIcon("./images/guide_horizontal.png"), "", this);
   addHorizontalGuideLineButton->setIconSize(QSize(20, 20));
   addHorizontalGuideLineButton->setMinimumSize(40, 40);
@@ -367,7 +368,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   addVerticalGuideLineButton->setMaximumSize(40, 40);
   snapGuidesButton = new QPushButton(tr("Toggle snap guides"), this);
   snapGuidesButton->setCheckable(true);
-    
+      
   penStyleComboBox = new QComboBox(this);
   penStyleComboBox->addItem("Solid");
   penStyleComboBox->setItemIcon(0, QIcon("./images/solid_line.png"));
@@ -445,6 +446,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(changeTimeLineColorButton, SIGNAL(clicked()), this, SLOT(setTimeLineColor()));
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setTimeLineWidth()));
   connect(timeLineWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setTimeLineWidth(int)));
+  connect(hideAnnotationsButton, SIGNAL(clicked()), this, SLOT(hideAnnotations()));
   connect(addHorizontalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepHorizontalGuideLine()));
   connect(addVerticalGuideLineButton, SIGNAL(clicked()), scene, SLOT(prepVerticalGuideLine()));
   connect(snapGuidesButton, SIGNAL(clicked()), this, SLOT(toggleSnapGuides()));
@@ -593,6 +595,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   plotObjectsLayout->addWidget(changeFillColorButton);
   plotObjectsLayout->addWidget(fillOpacityLabel);
   plotObjectsLayout->addWidget(fillOpacitySlider);
+  plotObjectsLayout->addWidget(hideAnnotationsButton);
   plotObjectsLayout->setAlignment(Qt::AlignLeft);
   drawHelpLayout->addLayout(plotObjectsLayout);
   mainLayout->addLayout(drawHelpLayout);
@@ -1195,6 +1198,7 @@ void EventGraphWidget::setGraphControls(bool state)
   decreaseLabelSizeButton->setEnabled(state);
   layoutComboBox->setEnabled(state);
   makeLayoutButton->setEnabled(state);
+  hideAnnotationsButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
@@ -3085,7 +3089,7 @@ void EventGraphWidget::getIncidents()
       int id = query2->value(0).toInt();
       QString toolTip = breakString(query->value(1).toString());
       qreal vertical = qrand() % 3000 - 1500;
-      QPointF position = QPointF((order *_distance), vertical);
+      QPointF position = QPointF((order * 70), vertical);
       IncidentNode *currentItem = new IncidentNode(40, toolTip, position, id, order);
       currentItem->setPos(currentItem->getOriginalPos());
       _incidentNodeVector.push_back(currentItem);
@@ -3305,7 +3309,7 @@ void EventGraphWidget::redoLayout()
       IncidentNode *incident = it4.next();
       int order = incident->getOrder();
       qreal vertical = qrand() % 3000 - 1500;
-      QPointF position = QPointF((order *_distance), vertical);
+      QPointF position = QPointF((order * 70), vertical);
       incident->setPos(position);
       incident->setOriginalPos(position);
     }
@@ -3578,8 +3582,6 @@ void EventGraphWidget::dateLayout()
 	  bool warn = true;
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  delete warningBox;
-	  first->setPos(0, first->scenePos().y());
-	  first->getLabel()->setNewPos(first->scenePos());
 	  it4.toFront();
 	  it4.next(); // skip the first one.
 	  while (it4.hasNext())
@@ -3588,7 +3590,7 @@ void EventGraphWidget::dateLayout()
 	      if (days.contains(incident))
 		{
 		  qint64 daysTo = days.value(incident);
-		  qreal x = (_distance / 10) * daysTo;
+		  qreal x = 5 * daysTo + first->scenePos().x();
 		  QDate currentDate = dates.value(incident);
 		  bool precisionDifference = false;
 		  if (x >= lastValid)
@@ -3658,10 +3660,11 @@ void EventGraphWidget::dateLayout()
 				  if (days.contains(next))
 				    {
 				      qint64 daysToNext = days.value(next);
-				      qreal xNext = (_distance / 10) * daysToNext;
+				      qreal xNext = 5 * daysToNext;
 				      if (xNext >= lastValid)
 					{
-					  qreal tempX = (lastValid + xNext) / 2;
+					  qreal tempX = (lastValid + xNext) / 2 +
+					    first->scenePos().x();
 					  incident->setPos(tempX, incident->scenePos().y());
 					  incident->getLabel()->setNewPos(incident->scenePos());
 					  foundValid = true;
@@ -3674,7 +3677,7 @@ void EventGraphWidget::dateLayout()
 			    }
 			  if (!resolved)
 			    {
-			      incident->setPos(lastValid + _distance, incident->scenePos().y());
+			      incident->setPos(lastValid + 70, incident->scenePos().y());
 			      incident->getLabel()->setNewPos(incident->scenePos());
 			    }
 			}
@@ -3693,10 +3696,10 @@ void EventGraphWidget::dateLayout()
 			  if (days.contains(next))
 			    {
 			      qint64 daysToNext = days.value(next);
-			      qreal xNext = (_distance / 10) * daysToNext;
+			      qreal xNext = 5 * daysToNext;
 			      if (xNext >= lastValid)
 				{
-				  qreal tempX = (lastValid + xNext) / 2;
+				  qreal tempX = (lastValid + xNext) / 2 + first->scenePos().x();
 				  incident->setPos(tempX, incident->scenePos().y());
 				  incident->getLabel()->setNewPos(incident->scenePos());
 				  foundValid = true;
@@ -3709,7 +3712,7 @@ void EventGraphWidget::dateLayout()
 		    }
 		  if (!resolved)
 		    {
-		      incident->setPos(lastValid + _distance, incident->scenePos().y());
+		      incident->setPos(lastValid + 70, incident->scenePos().y());
 		      incident->getLabel()->setNewPos(incident->scenePos());
 		    }
 		}
@@ -3924,11 +3927,19 @@ void EventGraphWidget::increaseDistance()
   QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
   while (it.hasNext()) 
     {
-      temp.push_back(it.next());
+      IncidentNode *incident = it.next();
+      if (incident->isVisible())
+	{
+	  temp.push_back(incident);
+	}
     }
   while (it2.hasNext()) 
     {
-      temp.push_back(it2.next());
+      AbstractNode *abstract = it2.next();
+      if (abstract->isVisible())
+	{
+	  temp.push_back(abstract);
+	}
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
   QGraphicsItem *first = temp.first();
@@ -3968,7 +3979,6 @@ void EventGraphWidget::increaseDistance()
 	    }
 	}
     }
-  _distance *= 1.1;
 }
   
 void EventGraphWidget::decreaseDistance() 
@@ -3979,11 +3989,19 @@ void EventGraphWidget::decreaseDistance()
   QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
   while (it.hasNext()) 
     {
-      temp.push_back(it.next());
+      IncidentNode *incident = it.next();
+      if (incident->isVisible())
+	{
+	  temp.push_back(incident);
+	}
     }
   while (it2.hasNext()) 
     {
-      temp.push_back(it2.next());
+      AbstractNode *abstract = it2.next();
+      if (abstract->isVisible())
+	{
+	  temp.push_back(abstract);
+	}
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
   QGraphicsItem *first = temp.first();
@@ -4023,11 +4041,9 @@ void EventGraphWidget::decreaseDistance()
 	    }
 	}
     }
-  _distance *= 0.9;
   updateLinkages();
 }
 	
-
 void EventGraphWidget::expandGraph() 
 {
   setChangeLabel();
@@ -4189,11 +4205,11 @@ void EventGraphWidget::minimiseCurrentGraph()
 	    {
 	      width = targetAbstractNode->getWidth();
 	    }
-	  if (current->scenePos().x() - target->scenePos().x() - width + 40 > _distance) 
+	  if (current->scenePos().x() - target->scenePos().x() - width + 40 > 70) 
 	    {
 	      qreal oldX = current->scenePos().x();
 	      current->setPos(target->scenePos().x() +
-			      _distance + width - 40, current->scenePos().y());
+			      70 + width - 40, current->scenePos().y());
 	      qreal newX = current->scenePos().x();
 	      qreal dist = oldX - newX;
 	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
@@ -4423,7 +4439,6 @@ void EventGraphWidget::plotGraph()
 	}
     }
   delete query;
-  _distance = 70;
   getIncidents();
   plotIncidents(); // Should allow for range to be set here.
   getEdges(_selectedCoder, currentType, color);
@@ -4440,6 +4455,7 @@ void EventGraphWidget::plotGraph()
   checkCongruency();
   updateLinkages();
   setGraphControls(true);
+  hideAnnotationsButton->setChecked(false);
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -4698,11 +4714,10 @@ void EventGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("UPDATE saved_eg_plots SET coder = :coder, distance = :distance, "
+	  query->prepare("UPDATE saved_eg_plots SET coder = :coder, "
 			 "red = :red, green = :green, blue = :blue "
 			 "WHERE plot = :name");
 	  query->bindValue(":coder", _selectedCoder);
-	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -4811,11 +4826,10 @@ void EventGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("INSERT INTO saved_eg_plots (plot, coder, distance, red, green, blue) "
-			 "VALUES (:name, :coder, :distance, :red, :green, :blue)");
+	  query->prepare("INSERT INTO saved_eg_plots (plot, coder, red, green, blue) "
+			 "VALUES (:name, :coder, :red, :green, :blue)");
 	  query->bindValue(":name", name);
 	  query->bindValue(":coder", _selectedCoder);
-	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -5695,21 +5709,21 @@ void EventGraphWidget::seePlots()
     {
       QApplication::setOverrideCursor(Qt::WaitCursor);
       savePlotButton->setEnabled(true);
+      hideAnnotationsButton->setChecked(false);
       cleanUp();
       scene->clear();
       QString plot = savedPlotsDialog->getSelectedPlot();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT coder, distance, red, green, blue "
+      query->prepare("SELECT coder, red, green, blue "
 		     "FROM saved_eg_plots "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
       query->first();
       QString coder = query->value(0).toString();
-      _distance = query->value(1).toReal();
-      int red = query->value(2).toInt();
-      int green = query->value(3).toInt();
-      int blue = query->value(4).toInt();
+      int red = query->value(1).toInt();
+      int green = query->value(2).toInt();
+      int blue = query->value(3).toInt();
       _selectedCoder = coder;
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       int index = coderComboBox->findText(coder);
@@ -8934,7 +8948,7 @@ void EventGraphWidget::disaggregateEvent()
 	  dist = nextUp->scenePos().x() - abstractNode->scenePos().x() - abstractNode->getWidth() + 40;
 	}
       QPointF currentPos = nextUp->scenePos();
-      if (dist < _distance) 
+      if (dist < 70) 
 	{
 	  QVectorIterator<QGraphicsItem*> it7(allEvents);
 	  while (it7.hasNext()) 
@@ -8948,7 +8962,7 @@ void EventGraphWidget::disaggregateEvent()
 		    {
 		      if (!components.contains(incidentNode)) 
 			{
-			  incidentNode->setPos(incidentNode->scenePos().x() + _distance - dist, incidentNode->scenePos().y());
+			  incidentNode->setPos(incidentNode->scenePos().x() + 70 - dist, incidentNode->scenePos().y());
 			  incidentNode->setOriginalPos(incidentNode->scenePos());
 			  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
 			}
@@ -8961,7 +8975,7 @@ void EventGraphWidget::disaggregateEvent()
 		      if (!components.contains(abstractNode)) 
 			{
 			  abstractNode->setPos(abstractNode->scenePos().x() +
-					       _distance - dist, abstractNode->scenePos().y());
+					       70 - dist, abstractNode->scenePos().y());
 			  abstractNode->setOriginalPos(abstractNode->scenePos());
 			  abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
 			}
@@ -9749,7 +9763,7 @@ void EventGraphWidget::normalizeDistance()
 	    {
 	      width = targetAbstractNode->getWidth();
 	    }
-	  current->setPos(target->scenePos().x() + _distance + width - 40, current->scenePos().y());
+	  current->setPos(target->scenePos().x() + 70 + width - 40, current->scenePos().y());
 	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
 	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
 	  if (incidentNode) 
@@ -9866,10 +9880,10 @@ void EventGraphWidget::closeGap()
 	    {
 	      width = targetAbstractNode->getWidth();
 	    }
-	  if (current->scenePos().x() - target->scenePos().x() - width + 40 > _distance) 
+	  if (current->scenePos().x() - target->scenePos().x() - width + 40 > 70) 
 	    {
 	      qreal oldX = current->scenePos().x();
-	      current->setPos(target->scenePos().x() + _distance + width - 40, current->scenePos().y());
+	      current->setPos(target->scenePos().x() + 70 + width - 40, current->scenePos().y());
 	      qreal newX = current->scenePos().x();
 	      qreal dist = oldX - newX;
 	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
@@ -11084,6 +11098,61 @@ void EventGraphWidget::setTimeLineColor()
     }
 }
 
+void EventGraphWidget::hideAnnotations()
+{
+  QVectorIterator<EllipseObject*> it(_ellipseVector);
+  QVectorIterator<RectObject*> it2(_rectVector);
+  QVectorIterator<LineObject*> it3(_lineVector);
+  QVectorIterator<TextObject*> it4(_textVector);
+  QVectorIterator<TimeLineObject*> it5(_timeLineVector);
+  if (hideAnnotationsButton->isChecked())
+    {
+      while (it.hasNext())
+	{
+	  it.next()->hide();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->hide();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->hide();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->hide();
+	}
+      while (it5.hasNext())
+	{
+	  it5.next()->hide();
+	}
+    }
+  else
+    {
+      while (it.hasNext())
+	{
+	  it.next()->show();
+	}
+      while (it2.hasNext())
+	{
+	  it2.next()->show();
+	}
+      while (it3.hasNext())
+	{
+	  it3.next()->show();
+	}
+      while (it4.hasNext())
+	{
+	  it4.next()->show();
+	}
+      while (it5.hasNext())
+	{
+	  it5.next()->show();
+	}
+    }
+}
+
 void EventGraphWidget::processShapeSelection()
 {
   if (scene->selectedItems().size() == 1)
@@ -12275,11 +12344,6 @@ void EventGraphWidget::finalBusiness()
 int EventGraphWidget::getLabelSize()
 {
   return _labelSize;
-}
-
-qreal EventGraphWidget::getDistance()
-{
-  return _distance;
 }
 
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) 

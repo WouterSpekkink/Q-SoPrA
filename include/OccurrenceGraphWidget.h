@@ -301,7 +301,6 @@ private:
 
   // Private variables
   qreal _distance;
-  qreal _originalDistance;
   bool _labelsVisible;
   bool _incidentLabelsOnly;
   bool _attributeLabelsOnly;
