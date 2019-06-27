@@ -63,7 +63,7 @@ QRectF Linkage::boundingRect() const
     }
   else
     {
-      return _strokePath.boundingRect();
+      return _strokePath.boundingRect().marginsAdded(QMargins(20,20,20,20));
     }
 }
 

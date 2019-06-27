@@ -660,6 +660,19 @@ void LinkagesWidget::editLinkageType()
 	  query->bindValue(":direction", direction);
 	  query->bindValue(":oldName", oldName);
 	  query->exec();
+	  query->prepare("UPDATE linkages "
+			 "SET type = :newType "
+			 "WHERE type = :oldType");
+	  query->bindValue(":newType", name);
+	  query->bindValue(":oldType", oldName);
+	  query->exec();
+	  query->prepare("UPDATE linkages_sources "
+			 "SET type = :newType "
+			 "WHERE type = :oldType");
+	  query->bindValue(":newType", name);
+	  query->bindValue(":oldType", oldName);
+	  query->exec();
+	  
 	  delete query;
 	  int current = typeComboBox->currentIndex();
 	  typeComboBox->setItemText(current, name);
@@ -871,6 +884,7 @@ void LinkagesWidget::setLinkageType()
 
 void LinkagesWidget::switchLinkageType()
 {
+  setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
   QVector<QString> types;
   query->exec("SELECT name, description FROM linkage_types ORDER BY name ASC");
