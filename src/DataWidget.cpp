@@ -926,7 +926,6 @@ void DataWidget::validateTimestamps()
 	}
       if (date.isValid())
 	{
-	  
 	  valid++;
 	  if (daysProgress == -1)
 	    {
@@ -1017,29 +1016,51 @@ void DataWidget::validateTimestamps()
   if (warningBox->clickedButton() == showButton)
     {
       QString incidents = QString();
+      QString incidentsFull = QString();
+      int count = 0;
       QVectorIterator<int> it(invalid);
       while (it.hasNext())
 	{
 	  int incident = it.next();
-	  if (incidents.size() < 25)
+	  if (count < 50)
 	    {
+	      count++;
 	      if (incident == invalid.first())
 		{
 		  incidents = incidents + QString::number(incident);
+		  incidentsFull = incidentsFull + QString::number(incident);
 		}
 	      else
 		{
 		  incidents = incidents + ", " + QString::number(incident);
+		  incidentsFull = incidentsFull + ", " + QString::number(incident);
 		}
 	    }
 	}
       QPointer <QMessageBox> showBox = new QMessageBox(this);
       showBox->setWindowTitle("Invalid timestamps");
       showBox->addButton(QMessageBox::Ok);
+      QPointer<QAbstractButton> exportButton = showBox->
+	addButton(tr("Export full list"), QMessageBox::NoRole);
       showBox->setIcon(QMessageBox::Warning);
       showBox->setText("<h2>Invalid timestamps:</h2>");
-      showBox->setInformativeText("The incidents with invalid timestamps are: " + incidents + ".\n\n (up to 25 incidents shown)");
+      showBox->setInformativeText("The incidents with invalid timestamps are: " + incidents + ".\n\n (up to 50 incidents shown)");
       showBox->exec();
+      if (showBox->clickedButton() == exportButton)
+	{
+	  QString fileName = QFileDialog::getSaveFileName(this, tr("New txt file"),"", tr("txt files (*.txt)"));
+	  if (!fileName.trimmed().isEmpty()) 
+	    {
+	      if (!fileName.endsWith(".txt")) 
+		{
+		  fileName.append(".txt");
+		}
+	      std::ofstream fileOut(fileName.toStdString().c_str());
+	      fileOut << "The incidents with invalid timestamps are: " +
+		incidentsFull.toStdString() + ".";
+	      fileOut.close();
+	    }
+	}
       delete showBox;
     }
   delete warningBox;

@@ -558,165 +558,173 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 	}
     }
   QVector<bool> linkagePresence = checkLinkagePresence(incidentId);
-  for (QVector<QString>::size_type lit = 0; lit != _presentTypes.size(); lit++) 
+  if (linkagePresence.contains(true))
     {
-      QString currentType = _presentTypes[lit];
-      if (linkagePresence[lit] == true) 
+      for (QVector<QString>::size_type lit = 0; lit != _presentTypes.size(); lit++) 
 	{
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-	  query->bindValue(":type", currentType);
-	  query->exec();
-	  query->first();
-	  QString direction = query->value(0).toString();
-	  QVectorIterator<IncidentNode*> dit(incidents);
-	  while (dit.hasNext()) 
+	  QString currentType = _presentTypes[lit];
+	  if (linkagePresence[lit] == true) 
 	    {
-	      QSet<int> markPaths;
-	      QSet<int> markSemiPaths;
-	      IncidentNode *departure = dit.next();
-	      // First we check the internal consistency;
-	      if (direction == PAST) 
-		{
-		  findHeadsLowerBound(&markPaths, departure->getId(), incidents.first()->getOrder(),
-				      currentType);
-		}
-	      else if (direction == FUTURE) 
-		{
-		  findHeadsUpperBound(&markPaths, departure->getId(), incidents.last()->getOrder(),
-				      currentType);
-		}
-	      QSet<int> items;
-	      items.insert(departure->getId());
-	      int lowerLimit = incidents.first()->getOrder();
-	      int upperLimit = incidents.last()->getOrder();
-	      findUndirectedPaths(&markSemiPaths, &items, lowerLimit, upperLimit, currentType);
-	      QVectorIterator<IncidentNode*> cit(incidents);
-	      while (cit.hasNext()) 
-		{
-		  IncidentNode *current = cit.next();
-		  bool pathsFound = false;
-		  bool semiPathsFound = false;
-		  if (current != departure) 
-		    {
-		      if (markPaths.contains(current->getId())) 
-			{
-			  pathsFound = true;
-			}
-		      if (markSemiPaths.contains(current->getId()))
-			{
-			  semiPathsFound = true;
-			}
-		      if (direction == PAST) 
-			{
-			  if (!pathsFound && current->getOrder() < departure->getOrder()) 
-			    {
-			      _pathsAllowed = false;
-			    }
-			}
-		      else if (direction == FUTURE) 
-			{
-			  if (!pathsFound && current->getOrder() > departure->getOrder()) 
-			    {
-			      _pathsAllowed = false;
-			    }
-			}
-		      if (!semiPathsFound) 
-			{
-			  _semiPathsAllowed = false;
-			}
-		    }
-		}
-	      // Then we check the external consistency.
-	      query->prepare("SELECT tail FROM linkages "
-			     "WHERE head = :head AND type = :type AND coder = :coder");
-	      query->bindValue(":head", departure->getId());
+	      QSqlQuery *query = new QSqlQuery;
+	      query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
 	      query->bindValue(":type", currentType);
-	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
-	      while (query->next()) 
+	      query->first();
+	      QString direction = query->value(0).toString();
+	      QVectorIterator<IncidentNode*> dit(incidents);
+	      while (dit.hasNext()) 
 		{
-		  QSet<int> markPathsTwo;
-		  int currentTail = query->value(0).toInt();
-		  if (!(incidentId.contains(currentTail))) 
+		  QSet<int> markPaths;
+		  QSet<int> markSemiPaths;
+		  IncidentNode *departure = dit.next();
+		  // First we check the internal consistency;
+		  if (direction == PAST) 
 		    {
-		      if (direction == PAST) 
+		      findHeadsLowerBound(&markPaths, departure->getId(), incidents.first()->getOrder(),
+					  currentType);
+		    }
+		  else if (direction == FUTURE) 
+		    {
+		      findHeadsUpperBound(&markPaths, departure->getId(), incidents.last()->getOrder(),
+					  currentType);
+		    }
+		  QSet<int> items;
+		  items.insert(departure->getId());
+		  int lowerLimit = incidents.first()->getOrder();
+		  int upperLimit = incidents.last()->getOrder();
+		  findUndirectedPaths(&markSemiPaths, &items, lowerLimit, upperLimit, currentType);
+		  QVectorIterator<IncidentNode*> cit(incidents);
+		  while (cit.hasNext()) 
+		    {
+		      IncidentNode *current = cit.next();
+		      bool pathsFound = false;
+		      bool semiPathsFound = false;
+		      if (current != departure) 
 			{
-			  findHeadsLowerBound(&markPathsTwo, currentTail,
-					      incidents.first()->getOrder(), currentType);
-			}
-		      else if (direction ==  FUTURE) 
-			{
-			  findHeadsUpperBound(&markPathsTwo, currentTail,
-					      incidents.last()->getOrder(), currentType);
-			}
-		      QVectorIterator<IncidentNode*> kit(incidents);
-		      while (kit.hasNext()) 
-			{
-			  IncidentNode *current = kit.next();
-			  bool pathsFoundTwo = false;
-			  if (markPathsTwo.contains(current->getId())) 
+			  if (markPaths.contains(current->getId())) 
 			    {
-			      pathsFoundTwo = true;
+			      pathsFound = true;
 			    }
-			  if (!pathsFoundTwo) 
+			  if (markSemiPaths.contains(current->getId()))
 			    {
-			      _pathsAllowed = false;
+			      semiPathsFound = true;
+			    }
+			  if (direction == PAST) 
+			    {
+			      if (!pathsFound && current->getOrder() < departure->getOrder()) 
+				{
+				  _pathsAllowed = false;
+				}
+			    }
+			  else if (direction == FUTURE) 
+			    {
+			      if (!pathsFound && current->getOrder() > departure->getOrder()) 
+				{
+				  _pathsAllowed = false;
+				}
+			    }
+			  if (!semiPathsFound) 
+			    {
+			      _semiPathsAllowed = false;
 			    }
 			}
 		    }
-		}
-	      query->prepare("SELECT head FROM linkages "
-			     "WHERE tail = :tail AND type = :type AND coder = :coder");
-	      query->bindValue(":tail", departure->getId());
-	      query->bindValue(":type", currentType);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while (query->next()) 
-		{
-		  int currentHead = query->value(0).toInt();
-		  if (!(incidentId.contains(currentHead))) 
+		  // Then we check the external consistency.
+		  query->prepare("SELECT tail FROM linkages "
+				 "WHERE head = :head AND type = :type AND coder = :coder");
+		  query->bindValue(":head", departure->getId());
+		  query->bindValue(":type", currentType);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->exec();
+		  while (query->next()) 
 		    {
-		      QVectorIterator<IncidentNode*> lit(incidents);
-		      while (lit.hasNext()) 
+		      QSet<int> markPathsTwo;
+		      int currentTail = query->value(0).toInt();
+		      if (!(incidentId.contains(currentTail))) 
 			{
-			  IncidentNode *current = lit.next();
-			  if (current != departure) 
+			  if (direction == PAST) 
 			    {
-			      QSet<int> markPathsThree;
-			      QSqlQuery *query2 = new QSqlQuery;
-			      query2->prepare("SELECT ch_order FROM incidents "
-					      "WHERE id = :currentHead");
-			      query2->bindValue(":currentHead", currentHead);
-			      query2->exec();
-			      query2->first();
-			      int headOrder = query2->value(0).toInt();
-			      if (direction == PAST) 
+			      findHeadsLowerBound(&markPathsTwo, currentTail,
+						  incidents.first()->getOrder(), currentType);
+			    }
+			  else if (direction ==  FUTURE) 
+			    {
+			      findHeadsUpperBound(&markPathsTwo, currentTail,
+						  incidents.last()->getOrder(), currentType);
+			    }
+			  QVectorIterator<IncidentNode*> kit(incidents);
+			  while (kit.hasNext()) 
+			    {
+			      IncidentNode *current = kit.next();
+			      bool pathsFoundTwo = false;
+			      if (markPathsTwo.contains(current->getId())) 
 				{
-				  findHeadsLowerBound(&markPathsThree, current->getId(),
-						      headOrder, currentType);
+				  pathsFoundTwo = true;
 				}
-			      else if (direction == FUTURE) 
-				{
-				  findHeadsUpperBound(&markPathsThree, current->getId(),
-						      headOrder, currentType);
-				}
-			      bool pathsFoundThree = false;
-			      if (markPathsThree.contains(currentHead)) 
-				{
-				  pathsFoundThree = true;
-				}
-			      if (!pathsFoundThree) 
+			      if (!pathsFoundTwo) 
 				{
 				  _pathsAllowed = false;
 				}
 			    }
 			}
 		    }
+		  query->prepare("SELECT head FROM linkages "
+				 "WHERE tail = :tail AND type = :type AND coder = :coder");
+		  query->bindValue(":tail", departure->getId());
+		  query->bindValue(":type", currentType);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->exec();
+		  while (query->next()) 
+		    {
+		      int currentHead = query->value(0).toInt();
+		      if (!(incidentId.contains(currentHead))) 
+			{
+			  QVectorIterator<IncidentNode*> lit(incidents);
+			  while (lit.hasNext()) 
+			    {
+			      IncidentNode *current = lit.next();
+			      if (current != departure) 
+				{
+				  QSet<int> markPathsThree;
+				  QSqlQuery *query2 = new QSqlQuery;
+				  query2->prepare("SELECT ch_order FROM incidents "
+						  "WHERE id = :currentHead");
+				  query2->bindValue(":currentHead", currentHead);
+				  query2->exec();
+				  query2->first();
+				  int headOrder = query2->value(0).toInt();
+				  if (direction == PAST) 
+				    {
+				      findHeadsLowerBound(&markPathsThree, current->getId(),
+							  headOrder, currentType);
+				    }
+				  else if (direction == FUTURE) 
+				    {
+				      findHeadsUpperBound(&markPathsThree, current->getId(),
+							  headOrder, currentType);
+				    }
+				  bool pathsFoundThree = false;
+				  if (markPathsThree.contains(currentHead)) 
+				    {
+				      pathsFoundThree = true;
+				    }
+				  if (!pathsFoundThree) 
+				    {
+				      _pathsAllowed = false;
+				    }
+				}
+			    }
+			}
+		    }
 		}
+	      delete query;
 	    }
-	  delete query;
 	}
+    }
+  else
+    {
+      _pathsAllowed = false;
+      _semiPathsAllowed = false;
     }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
@@ -1020,7 +1028,7 @@ QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds)
 	  edges.push_back(QPair<int,int>(tail, head));
 	}
       delete query;
-      // We iteratore throuhg the 'observed' vector to see if our current selection
+      // We iterate through the 'observed' vector to see if our current selection
       // has incidents included in them. We put these in a vector called 'included'.
       QVectorIterator<int> it2(observed);
       QVector<int> included;
