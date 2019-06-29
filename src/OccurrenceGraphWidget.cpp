@@ -1,4 +1,4 @@
-/*
+ /*
 
 Qualitative Social Process Analysis (Q-SoPrA)
 Copyright (C) 2019 University of Manchester  
@@ -45,8 +45,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   _currentMajorTickSize = 20.0;
   _currentMinorTickSize = 10.0;
   _currentTimeLineWidth = 1;
-  _currentLineColor = QColor(Qt::black);
-  _currentFillColor = QColor(Qt::black);
+  _currentLineColor = QColor(Qt::black);  _currentFillColor = QColor(Qt::black);
   _currentFillColor.setAlpha(0);
   _currentTimeLineColor = QColor(Qt::black);
   
@@ -2473,8 +2472,11 @@ void OccurrenceGraphWidget::softGrouping()
 void OccurrenceGraphWidget::dateLayout()
 {
   QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
   query->prepare("SELECT timestamp FROM incidents "
 		 "WHERE id = :id");
+  query2->prepare("UPDATE incidents SET mark = 1 "
+		  "WHERE id = :id");
   QVector<OccurrenceItem*> visible;
   QVector<OccurrenceItem*> allOccurrences;
   QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
@@ -2558,6 +2560,7 @@ void OccurrenceGraphWidget::dateLayout()
       warningBox->exec();
       delete warningBox;
       delete query;
+      delete query2;
       return;
     }
   else
@@ -2565,7 +2568,11 @@ void OccurrenceGraphWidget::dateLayout()
       int total = visible.size();
       int validTotal = 0;
       QMap<OccurrenceItem*, qint64> days;
+      QMap<OccurrenceItem*, int> precision;
+      QMap<OccurrenceItem*, QDate> dates;
       qreal lastValid = 0.0;
+      int lastPrecision = 0;
+      QDate lastDate;
       QVectorIterator<OccurrenceItem*> it4(visible);
       while (it4.hasNext())
 	{
@@ -2622,6 +2629,19 @@ void OccurrenceGraphWidget::dateLayout()
 	    {
 	      days.insert(occurrence, firstDate.daysTo(date));
 	      validTotal++;
+	      dates.insert(occurrence, date);
+	      if (dateString.length() == 4)
+		{
+		  precision.insert(occurrence, 1);
+		}
+	      else if (dateString.length() == 7)
+		{
+		  precision.insert(occurrence, 2);
+		}
+	      else if (dateString.length() == 10)
+		{
+		  precision.insert(occurrence, 3);
+		}
 	    }
 	}
       qreal validPerc = (qreal) validTotal / (qreal) total * 100;
@@ -2639,11 +2659,11 @@ void OccurrenceGraphWidget::dateLayout()
 				     "Do you wish to continue?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
+	  bool warn = true;
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  delete warningBox;
-	  first->setPos(0, first->scenePos().y());
-	  first->getLabel()->setNewPos(first->scenePos());
 	  it4.toFront();
+	  it4.next(); // skip the first one.
 	  while (it4.hasNext())
 	    {
 	      OccurrenceItem *occurrence = it4.next();
@@ -2653,22 +2673,127 @@ void OccurrenceGraphWidget::dateLayout()
 		    {
 		      qint64 daysTo = days.value(occurrence);
 		      qreal x = 5 * daysTo;
+		      QDate currentDate = dates.value(occurrence);
+		      bool precisionDifference = false;
 		      if (x >= lastValid)
 			{
 			  occurrence->setPos(x, occurrence->scenePos().y());
 			  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+			  lastValid = x;
+			  lastPrecision = precision.value(occurrence);
+			  lastDate = dates.value(occurrence);
 			}
-		      else
+		      else if (precision.value(occurrence) <= lastPrecision)
 			{
-			  occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
-			  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+			  if (precision.value(occurrence) == 2 &&
+			      currentDate.month() == lastDate.month())
+			    {
+			      precisionDifference = true;
+			    }
+			  else if (precision.value(occurrence) == 1 &&
+				   currentDate.year() == lastDate.year())
+			    {
+			      precisionDifference = true;
+			    }
+			  if (!precisionDifference)
+			    {
+			      if (warn)
+				{
+				  QApplication::restoreOverrideCursor();
+				  qApp->processEvents();
+				  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+				  warningBox->setWindowTitle("Checking timestamps");
+				  warningBox->addButton(QMessageBox::Ok);
+				  QPointer<QAbstractButton> markButton = warningBox->
+				    addButton(tr("Mark"), QMessageBox::NoRole);
+				  QPointer<QAbstractButton> skipButton = warningBox->
+				    addButton(tr("Skip remaining warnings"), QMessageBox::NoRole);
+				  warningBox->setIcon(QMessageBox::Warning);
+				  warningBox->setText("<b>Possible problem detected</b>");
+				  warningBox->setInformativeText("Incident " +
+								 QString::number(occurrence->getOrder()) +
+								 " is incorrectly positioned in the "
+								 "chronological order and may cause "
+								 "problems for the layout.");
+				  warningBox->exec();
+				  if (warningBox->clickedButton() == markButton)
+				    {
+				      query2->bindValue(":id", occurrence->getId());
+				      query2->exec();
+				    }
+				  else if (warningBox->clickedButton() == skipButton)
+				    {
+				      warn = false;
+				    }
+				  delete warningBox;
+				  QApplication::setOverrideCursor(Qt::WaitCursor);
+				}
+			    }
+			  else
+			    {
+			      QVectorIterator<OccurrenceItem*> it5 = it4;
+			      bool resolved = false;
+			      bool foundValid = false;
+			      while (!foundValid)
+				{
+				  while (it5.hasNext())
+				    {
+				      OccurrenceItem *next = it5.next();
+				      if (days.contains(next))
+					{
+					  qint64 daysToNext = days.value(next);
+					  qreal xNext = 5 * daysToNext;
+					  if (xNext >= lastValid)
+					    {
+					      qreal tempX = (lastValid + xNext) / 2 +
+						first->scenePos().x();
+					      occurrence->setPos(tempX, occurrence->scenePos().y());
+					      occurrence->getLabel()->setNewPos(occurrence->scenePos());
+					      foundValid = true;
+					      resolved = true;
+					      break;
+					    }
+					}
+				    }
+				  foundValid = true;
+				}
+			      if (!resolved)
+				{
+				  occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
+				  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+				}
+			    }
 			}
-		      lastValid = x;
 		    }
-		  else
+		  QVectorIterator<OccurrenceItem*> it5 = it4;
+		  bool foundValid = false;
+		  bool resolved = false;
+		  while (!foundValid)
+		    {
+		      while (it5.hasNext())
+			{
+			  OccurrenceItem *next = it5.next();
+			  if (days.contains(next))
+			    {
+			      qint64 daysToNext = days.value(next);
+			      qreal xNext = 5 * daysToNext;
+			      if (xNext >= lastValid)
+				{
+				  qreal tempX = (lastValid + xNext) / 2 + first->scenePos().x();
+				  occurrence->setPos(tempX, occurrence->scenePos().y());
+				  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+				  foundValid = true;
+				  resolved = true;
+				  break;
+				}
+			    }
+			}
+		      foundValid = true;
+		    }
+		  if (!resolved)
 		    {
 		      occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
-		      occurrence->getLabel()->setNewPos(occurrence->scenePos()); 
+		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 		    }
 		}
 	    }
@@ -2677,6 +2802,7 @@ void OccurrenceGraphWidget::dateLayout()
 	{
 	  delete warningBox;
 	  delete query;
+	  delete query2;
 	  return;
 	}
     }
