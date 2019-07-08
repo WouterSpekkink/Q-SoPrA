@@ -1017,8 +1017,9 @@ QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds)
       QVector<QPair<int, int>> edges;
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT tail, head FROM linkages "
-		     "WHERE type = :type");
+		     "WHERE type = :type AND coder = :coder ");
       query->bindValue(":type", currentType);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
