@@ -2887,7 +2887,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("lasttick"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_timelines "
-			  "ADD COLUMN lastttick integer;");
+			  "ADD COLUMN lasttick integer;");
 	    }
 	  if (!columns.contains("zvalue"))
 	    {
@@ -4780,7 +4780,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("lasttick"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_timelines "
-			  "ADD COLUMN lastttick integer;");
+			  "ADD COLUMN lasttick integer;");
 	    }
 	  if (!columns.contains("zvalue"))
 	    {

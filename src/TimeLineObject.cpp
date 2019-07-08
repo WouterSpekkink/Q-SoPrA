@@ -105,7 +105,7 @@ void TimeLineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
 	    {
 	      myPath.moveTo(QPointF(myPath.currentPosition().x() + minorTickInterval, _y));
 	      count++;
-	      if (minorTickInterval * count != _majorTickInterval)
+	      if (minorTickInterval * (qreal) count != _majorTickInterval)
 		{
 		  myPath.moveTo(QPointF(myPath.currentPosition().x(), (_y - _minorTickSize / 2)));
 		  myPath.lineTo(QPointF(myPath.currentPosition().x(), (_y + _minorTickSize / 2)));
