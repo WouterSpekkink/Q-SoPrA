@@ -557,7 +557,6 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 	  incidentId.push_back(event->getId());
 	}
     }
-  std::sort(incidentId.begin(), incidentId.end());
   QVector<bool> linkagePresence = checkLinkagePresence(incidentId);
   if (linkagePresence.contains(true))
     {
