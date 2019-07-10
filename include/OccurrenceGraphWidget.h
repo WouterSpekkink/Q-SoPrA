@@ -66,6 +66,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "RelationshipCheckBoxDialog.h"
 #include "GuideLine.h"
 #include "ConcordanceDialog.h"
+#include "TimeRangeDialog.h"
 
 class EventGraphWidget;
 
@@ -135,6 +136,7 @@ private slots:
   void processUpperRange(int value);
   void setVisibility();
   void setRangeControls();
+  void setTimeRange();
   void exportSvg();
   void exportMatrix();
   void viewConcordancePlot();
@@ -281,6 +283,7 @@ private:
   QPointer<QPushButton> snapGuidesButton;
   QPointer<QPushButton> increaseLabelSizeButton;
   QPointer<QPushButton> decreaseLabelSizeButton;
+  QPointer<QPushButton> setTimeRangeButton;
   QPointer<DeselectableListWidget> attributeListWidget;
   QPointer<DeselectableListWidget> relationshipListWidget;
   QPointer<QListWidget> caseListWidget;

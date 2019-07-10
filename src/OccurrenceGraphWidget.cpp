@@ -174,6 +174,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   clearPlotButton->setEnabled(false);
   increaseLabelSizeButton = new QPushButton("+", this);
   decreaseLabelSizeButton = new QPushButton("-", this);
+  setTimeRangeButton = new QPushButton(tr("Set time range"), graphicsWidget);
   
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -404,6 +405,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(upperRangeDial, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
   connect(lowerRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processLowerRange(int)));
   connect(upperRangeSpinBox, SIGNAL(valueChanged(int)), this, SLOT(processUpperRange(int)));
+  connect(setTimeRangeButton, SIGNAL(clicked()), this, SLOT(setTimeRange()));
   connect(exportSvgButton, SIGNAL(clicked()), this, SLOT(exportSvg()));
   connect(viewConcordanceButton, SIGNAL(clicked()), this, SLOT(viewConcordancePlot()));  
   connect(exportMatrixButton, SIGNAL(clicked()), this, SLOT(exportMatrix()));
@@ -529,6 +531,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   lowerRangeLayout->addWidget(lowerRangeDial);
   lowerRangeLayout->addWidget(lowerRangeSpinBox);
   graphicsControlsLayout->addLayout(lowerRangeLayout);
+  graphicsControlsLayout->addWidget(setTimeRangeButton);
   QPointer<QFrame> sepLine2 = new QFrame();
   sepLine2->setFrameShape(QFrame::HLine);
   graphicsControlsLayout->addWidget(sepLine2);
@@ -1104,6 +1107,7 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   increaseLabelSizeButton->setEnabled(state);
   decreaseLabelSizeButton->setEnabled(state);
   hideAnnotationsButton->setEnabled(state);
+  setTimeRangeButton->setEnabled(state);
 }
 
 void OccurrenceGraphWidget::updateCases() 
@@ -4913,6 +4917,112 @@ void OccurrenceGraphWidget::setRangeControls()
   lowerRangeDial->setValue(minOrder);
   upperRangeDial->setValue(maxOrder);
   upperRangeSpinBox->setValue(maxOrder);
+}
+
+void OccurrenceGraphWidget::setTimeRange()
+{
+  QPointer<TimeRangeDialog> timeRangeDialog = new TimeRangeDialog(this);
+  timeRangeDialog->exec();
+  if (timeRangeDialog->getExitStatus() == 0)
+    {
+      QDate startDate = timeRangeDialog->getStartDate();
+      QDate endDate = timeRangeDialog->getEndDate();
+      QDate currentStart;
+      int lowerBound = 1;
+      bool finished = false;
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT COUNT(*) FROM incidents");
+      query->first();
+      int upperBound = query->value(0).toInt();
+      query->exec("SELECT timestamp, ch_order FROM incidents "
+		  "ORDER BY ch_order ASC");
+      while (query->next())
+	{
+	  QString dateString = query->value(0).toString();
+	  int order = query->value(1).toInt();
+	  QDate date;
+	  if (dateString.length() == 4) // We are dealing with a year only.
+	    {
+	      date = QDate::fromString(dateString, "yyyy");
+	    }
+	  if (dateString.length() == 7) // We are dealing with a month and year.
+	    {
+	      if (dateString[2] == '/')
+		{
+		  date = QDate::fromString(dateString, "MM/yyyy");
+		}
+	      else if (dateString[2] == '-')
+		{
+		  date = QDate::fromString(dateString, "MM-yyyy");
+		}
+	      else if (dateString[4] == '\\') 
+		{
+		  date = QDate::fromString(dateString, "yyyy\\MM");
+		}
+	      else if (dateString[4] == '-')
+		{
+		  date = QDate::fromString(dateString, "yyyy-MM");
+		}
+	    }
+	  if (dateString.length() == 10) // We are dealing with a day, month and year.
+	    {
+	      if (dateString[2] == '/')
+		{
+		  date = QDate::fromString(dateString, "dd/MM/yyyy");
+		}
+	      else if (dateString[2] == '-')
+		{
+		  date = QDate::fromString(dateString, "dd-MM-yyyy");
+		}
+	      else if (dateString[4] == '\\') 
+		{
+		  date = QDate::fromString(dateString, "yyyy\\MM\\dd");
+		}
+	      else if (dateString[4] == '-')
+		{
+		  date = QDate::fromString(dateString, "yyyy-MM-dd");
+		}
+	    }
+	  if (date.isValid())
+	    {
+	      if (date.daysTo(startDate) <= 0)
+		{
+		  if (currentStart.isNull())
+		    {
+		      currentStart = date;
+		      lowerBound = order;
+		    }
+		}
+	      if (date.daysTo(endDate) >= 0 && !finished)
+		{
+		  upperBound = order;
+		}
+	      else if (date.daysTo(endDate) < 0)
+		{
+		  finished = true;
+		}
+	    }
+	}
+      if (currentStart.isNull())
+	{
+	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Setting time range");
+	  warningBox->addButton(QMessageBox::Ok);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("Range invalid.");
+	  warningBox->setInformativeText("The selected range does not match any dates in the "
+					 "data set.");
+	  warningBox->exec();
+	  delete warningBox;
+	  return;
+	}
+      lowerRangeDial->setValue(lowerBound);
+      lowerRangeSpinBox->setValue(lowerBound);
+      upperRangeDial->setValue(upperBound);
+      upperRangeSpinBox->setValue(upperBound);
+      setVisibility();
+    }
+  delete timeRangeDialog;
 }
 
 void OccurrenceGraphWidget::processLowerRange(int value) 

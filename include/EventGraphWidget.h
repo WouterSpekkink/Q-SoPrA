@@ -76,6 +76,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "AttributeCheckBoxDialog.h"
 #include "GuideLine.h"
 #include "EvidenceDialog.h"
+#include "TimeRangeDialog.h"
 
 // Need a forward declaration here
 class AttributesWidget;
@@ -193,6 +194,7 @@ private slots:
   void decreaseLabelSize();
   void processLowerRange(int value);
   void processUpperRange(int value);
+  void setTimeRange();
   void setVisibility();
   void setHeights();
   void setRangeControls();
@@ -438,6 +440,7 @@ private:
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;
   QPointer<QPushButton> makeLayoutButton;
+  QPointer<QPushButton> setTimeRangeButton;
   QPointer<DeselectableListWidget> eventListWidget;
   QPointer<QListWidget> caseListWidget;
   QPointer<QLineEdit> timeStampField;
