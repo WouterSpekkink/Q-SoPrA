@@ -116,6 +116,7 @@ HEADERS += include/AbstractionDialog.h \
            include/TextEdit.h \
            include/TextObject.h \
            include/TimeLineObject.h \
+           include/TimeRangeDialog.h \
            include/UndirectedEdge.h \
            include/WelcomeDialog.h \
            include/ZoomableListView.h \
@@ -213,6 +214,7 @@ SOURCES += main.cpp \
            src/TextEdit.cpp \
            src/TextObject.cpp \
            src/TimeLineObject.cpp \
+           src/TimeRangeDialog.cpp \
            src/UndirectedEdge.cpp \
            src/WelcomeDialog.cpp \
            src/ZoomableListView.cpp \

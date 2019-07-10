@@ -9670,6 +9670,11 @@ void EventGraphWidget::exportTransitionMatrix()
 	      fileOut.close();
 	    }
 	}
+      delete exportDialog;
+    }
+  else
+    {
+      delete exportDialog;
     }
 }
 

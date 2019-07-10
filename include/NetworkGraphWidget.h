@@ -68,6 +68,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ModeColorDialog.h"
 #include "AttributeCheckBoxDialog.h"
 #include "GuideLine.h"
+#include "TimeRangeDialog.h"
 
 class NetworkGraphWidget : public QWidget
 {
@@ -162,6 +163,7 @@ private slots:
   void setWeightControls();
   void updateRangeControls();
   void updateWeightControls();
+  void setTimeRange();
   void exportSvg();
   void exportNodes();
   void exportEdges();
@@ -331,6 +333,7 @@ private:
   QPointer<QPushButton> addHorizontalGuideLineButton;
   QPointer<QPushButton> addVerticalGuideLineButton;
   QPointer<QPushButton> snapGuidesButton;
+  QPointer<QPushButton> setTimeRangeButton;
   QPointer<QDial> lowerRangeDial;
   QPointer<QDial> upperRangeDial;
   QPointer<QSpinBox> lowerRangeSpinBox;
