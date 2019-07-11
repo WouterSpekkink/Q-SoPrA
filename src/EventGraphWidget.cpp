@@ -8000,8 +8000,11 @@ void EventGraphWidget::setTimeRange()
 					 "data set.");
 	  warningBox->exec();
 	  delete warningBox;
+	  delete timeRangeDialog;
+	  delete query;
 	  return;
 	}
+      delete query;
       lowerRangeDial->setValue(lowerBound);
       lowerRangeSpinBox->setValue(lowerBound);
       upperRangeDial->setValue(upperBound);
