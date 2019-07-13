@@ -1992,13 +1992,16 @@ void EventGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent)
       QModelIndex index = model->index(i, 0, parent);
       QString currentName = model->data(index).toString();
       QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      int fontSize = currentAttribute->font().pointSize();
       QFont font;
       font.setBold(false);
       font.setUnderline(false);
+      font.setPointSize(fontSize);
       QFont font2;
       font2.setItalic(true);
       font2.setBold(false);
       font2.setUnderline(false);
+      font2.setPointSize(fontSize);
       if (currentName != ENTITIES) 
 	{
 	  currentAttribute->setFont(font);
@@ -2014,6 +2017,27 @@ void EventGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent)
     }
 }
 
+void EventGraphWidget::changeTreeFontSize(QAbstractItemModel *model, QModelIndex parent, int size)
+{
+  for(int i = 0; i != model->rowCount(parent); i++) 
+    {
+      QModelIndex index = model->index(i, 0, parent);
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      QFont font = currentAttribute->font();
+      int fontSize = font.pointSize();
+      if ((size == -1 && fontSize >= 10) ||
+	  (size == 1 && fontSize <= 50))
+	{
+	  font.setPointSize(fontSize + size);
+	  currentAttribute->setFont(font);
+	  if (model->hasChildren(index)) 
+	    {
+	      changeTreeFontSize(model, index, size);
+	    }
+	}
+    }
+}
+
 void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 				    int incidentNode, QString type, QModelIndex parent) 
 {
@@ -2022,18 +2046,24 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
       QModelIndex index = model->index(i, 0, parent);
       QString currentName = model->data(index).toString();
       QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      int fontSize = currentAttribute->font().pointSize();
       QFont font;
       font.setBold(true);
+      font.setPointSize(fontSize);
       QFont font2;
       font2.setUnderline(true);
+      font2.setPointSize(fontSize);
       QFont font3;
       font3.setBold(true);
       font3.setUnderline(true);
+      font3.setPointSize(fontSize);
       QFont font4;
       font4.setItalic(true);
+      font4.setPointSize(fontSize);
       QFont font5;
       font5.setItalic(true);
       font5.setUnderline(true);
+      font5.setPointSize(fontSize);
       if (name != ENTITIES) 
 	{
 	  if (name == currentName) 
@@ -12483,9 +12513,27 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event)
 	  setButtons();
 	}
     }
-  else if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) 
+  else if (object == attributesTreeView)
     {
-      fixTree();
+      if (event->type() == QEvent::ChildRemoved) 
+	{
+	  fixTree();
+	}
+      else if (event->type() == QEvent::Wheel)
+	{
+	  QWheelEvent *wheelEvent = (QWheelEvent*) event;
+	  if(wheelEvent->modifiers() & Qt::ControlModifier) 
+	    {
+	      if (wheelEvent->angleDelta().y() > 0) 
+		{
+		  changeTreeFontSize(attributesTree, QModelIndex(), 1);
+		}
+	      else if (wheelEvent->angleDelta().y() < 0) 
+		{
+		  changeTreeFontSize(attributesTree, QModelIndex(), -1);
+		}
+	    }
+	} 
     }
   else if (object == zoomSlider)
     {

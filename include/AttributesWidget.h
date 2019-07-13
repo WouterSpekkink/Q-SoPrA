@@ -119,6 +119,8 @@ private slots:
   void mergeAttributes(QModelIndex &index);
   void boldSelected(QAbstractItemModel *model, QString name = "", QModelIndex parent = QModelIndex());
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
+  void changeTreeFontSize(QAbstractItemModel *model, QModelIndex parent = QModelIndex(),
+			  int size = 0);
   void finalBusiness();
   void setValueButton();
   void setValue();

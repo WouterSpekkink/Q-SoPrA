@@ -45,7 +45,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   attributesTreeView = new DeselectableTreeView(this);
   attributesTreeView->setHeaderHidden(true);
   attributesTreeView->setDragEnabled(true);
-  attributesTreeView->setAcceptDrops(true);
+  attributesTreeView->viewport()->setAcceptDrops(true);
   attributesTreeView->setDropIndicatorShown(true);
   attributesTreeView->setDragDropMode(QAbstractItemView::InternalMove);
   attributesTreeView->header()->setStretchLastSection(false);
@@ -1597,7 +1597,10 @@ void AttributesWidget::getValue()
       query->exec();
       query->first();
       int id = 0;
-      id = query->value(0).toInt();    
+      if (!query->isNull(0))
+	{
+	  id = query->value(0).toInt();
+	}
       query->prepare("SELECT attribute, value FROM attributes_to_incidents "
 		      "WHERE incident = :id AND attribute = :att");
       query->bindValue(":id", id);
@@ -1927,16 +1930,15 @@ void AttributesWidget::setButtons()
 	  if (currentAttribute != ENTITIES) 
 	    {
 	      assignAttributeButton->setEnabled(true);
-	      editAttributeButton->setEnabled(true);
 	    }
 	  else 
 	    {
 	      assignAttributeButton->setEnabled(false);
-	      editAttributeButton->setEnabled(false);
 	    }
 	  previousCodedButton->setEnabled(true);
 	  nextCodedButton->setEnabled(true);
 	}
+      editAttributeButton->setEnabled(true);
       delete query;
     }
   else 
@@ -2045,6 +2047,24 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
   QPoint globalPos = attributesTreeView->mapToGlobal(pos);
   QModelIndex targetIndex = attributesTreeView->indexAt(pos);
   QString selected = targetIndex.data().toString();
+  if (!targetIndex.isValid())
+    {
+      QMenu menu;
+      QAction *action1 = new QAction(ADDATTRIBUTEACTION, this);
+      menu.addAction(action1);
+      if (QAction *action = menu.exec(globalPos)) 
+	{
+	  if (action->text() == ADDATTRIBUTEACTION) 
+	    {
+	      attributesTreeView->clearSelection();
+	      const QModelIndex index;
+	      attributesTreeView->selectionModel()->
+		setCurrentIndex(index, QItemSelectionModel::Select);
+	      newAttribute();
+	    }
+	}
+      return;
+    }
   if (selected == ENTITIES) 
     {
       QMenu menu;
@@ -2140,7 +2160,11 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  query2->bindValue(":order", order);
 	  query2->exec();
 	  query2->first();
-	  int id = query2->value(0).toInt();
+	  int id = 0;
+	  if (!query2->isNull(0))
+	    {
+	      id = query2->value(0).toInt();
+	    }
 	  query2->prepare("SELECT attribute FROM attributes_to_incidents "
 			  "WHERE attribute = :entity AND incident = :id");
 	  query2->bindValue(":entity", selected);
@@ -2214,7 +2238,11 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  query2->bindValue(":order", order);
 	  query2->exec();
 	  query2->first();
-	  int id = query2->value(0).toInt();
+	  int id = 0;
+	  if (!query2->isNull(0))
+	    {
+	      id = query2->value(0).toInt();
+	    }
 	  query2->prepare("SELECT attribute FROM attributes_to_incidents "
 			  "WHERE attribute = :attribute AND incident = :id");
 	  query2->bindValue(":attribute", selected);
@@ -2768,18 +2796,24 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
       QModelIndex index = model->index(i, 0, parent);
       QString currentName = model->data(index).toString();
       QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      int fontSize = currentAttribute->font().pointSize();
       QFont font;
       font.setBold(true);
+      font.setPointSize(fontSize);
       QFont font2;
       font2.setUnderline(true);
+      font2.setPointSize(fontSize);
       QFont font3;
       font3.setBold(true);
       font3.setUnderline(true);
+      font3.setPointSize(fontSize);
       QFont font4;
       font4.setItalic(true);
+      font4.setPointSize(fontSize);
       QFont font5;
       font5.setItalic(true);
       font5.setUnderline(true);
+      font5.setPointSize(fontSize);
       if (name != ENTITIES) 
 	{
 	  if (name == currentName) 
@@ -2851,13 +2885,16 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent)
       QModelIndex index = model->index(i, 0, parent);
       QString currentName = model->data(index).toString();
       QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      int fontSize = currentAttribute->font().pointSize();
       QFont font;
       font.setBold(false);
       font.setUnderline(false);
+      font.setPointSize(fontSize);
       QFont font2;
       font2.setItalic(true);
       font2.setBold(false);
       font2.setUnderline(false);
+      font2.setPointSize(fontSize);
       if (currentName != ENTITIES) 
 	{
 	  currentAttribute->setFont(font);
@@ -2869,6 +2906,27 @@ void AttributesWidget::resetFont(QAbstractItemModel *model, QModelIndex parent)
       if (model->hasChildren(index)) 
 	{
 	  resetFont(model, index);
+	}
+    }
+}
+
+void AttributesWidget::changeTreeFontSize(QAbstractItemModel *model, QModelIndex parent, int size)
+{
+  for(int i = 0; i != model->rowCount(parent); i++) 
+    {
+      QModelIndex index = model->index(i, 0, parent);
+      QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
+      QFont font = currentAttribute->font();
+      int fontSize = font.pointSize();
+      if ((size == -1 && fontSize >= 10) ||
+	  (size == 1 && fontSize <= 50))
+	{
+	  font.setPointSize(fontSize + size);
+	  currentAttribute->setFont(font);
+	  if (model->hasChildren(index)) 
+	    {
+	      changeTreeFontSize(model, index, size);
+	    }
 	}
     }
 }
@@ -2931,9 +2989,27 @@ void AttributesWidget::resetTree()
 
 bool AttributesWidget::eventFilter(QObject *object, QEvent *event) 
 {
-  if (object == attributesTreeView && event->type() == QEvent::ChildRemoved) 
+  if (object == attributesTreeView)
     {
-      fixTree();
+      if (event->type() == QEvent::ChildRemoved) 
+	{
+	  fixTree();
+	}
+      else if (event->type() == QEvent::Wheel)
+	{
+	  QWheelEvent *wheelEvent = (QWheelEvent*) event;
+	  if(wheelEvent->modifiers() & Qt::ControlModifier) 
+	    {
+	      if (wheelEvent->angleDelta().y() > 0) 
+		{
+		  changeTreeFontSize(attributesTree, QModelIndex(), 1);
+		}
+	      else if (wheelEvent->angleDelta().y() < 0) 
+		{
+		  changeTreeFontSize(attributesTree, QModelIndex(), -1);
+		}
+	    }
+	} 
     }
   else if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) 
     {

@@ -119,6 +119,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
   aw->setStyleSheet(treeSheet);
   rw->setStyleSheet(treeSheet);
+  cw->setStyleSheet(treeSheet);
   egw->setStyleSheet(sliderSheet + treeSheet);
   ngw->setStyleSheet(sliderSheet + treeSheet);
   hgw->setStyleSheet(sliderSheet + treeSheet);
