@@ -1202,6 +1202,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
   if (jw->checkChanges())
     {
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Exiting program");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);

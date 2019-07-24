@@ -9566,7 +9566,7 @@ void EventGraphWidget::exportTransitionMatrix()
       if (eventListWidget->rowCount() == 0) 
 	{
 	  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	  warningBox->setWindowTitle("Incorrectly sorted incident");
+	  warningBox->setWindowTitle("Exporting transition matrix");
 	  warningBox->addButton(QMessageBox::Ok);
 	  warningBox->setIcon(QMessageBox::Warning);
 	  warningBox->setText("<b>No modes assigned</b>");
