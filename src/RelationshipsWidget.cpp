@@ -1253,12 +1253,14 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
   if (targetIndex.parent().isValid()) 
     {
       QMenu *menu = new QMenu();
-      QAction *action1 = new QAction(ASSIGNRELATIONSHIPACTION, this);
-      QAction *action2 = new QAction(UNASSIGNRELATIONSHIPACTION, this);
-      QAction *action3 = new QAction(UNASSIGNALLACTION, this);
+      QAction *action1 = new QAction(EDITRELATIONSHIPACTION, this);
+      QAction *action2 = new QAction(ASSIGNRELATIONSHIPACTION, this);
+      QAction *action3 = new QAction(UNASSIGNRELATIONSHIPACTION, this);
+      QAction *action4 = new QAction(UNASSIGNALLACTION, this);
       menu->addAction(action1);
       menu->addAction(action2);
       menu->addAction(action3);
+      menu->addAction(action4);
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
@@ -1277,7 +1279,7 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
       query->first();
       if (query->isNull(0)) 
 	{
-	  action2->setEnabled(false);
+	  action3->setEnabled(false);
 	}
       query->prepare("SELECT relationship FROM relationships_to_incidents "
 		     "WHERE relationship = :relationship AND type = :type");
@@ -1287,10 +1289,14 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
       query->first();
       if (query->isNull(0)) 
 	{
-	  action3->setEnabled(false);
+	  action4->setEnabled(false);
 	}
       if (QAction *action = menu->exec(globalPos)) 
 	{
+	  if (action->text() == EDITRELATIONSHIPACTION)
+	    {
+	      editRelationship();
+	    }
 	  if (action->text() == ASSIGNRELATIONSHIPACTION) 
 	    {
 	      assignRelationship();

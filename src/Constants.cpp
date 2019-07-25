@@ -111,6 +111,7 @@ QString MERGEATTRIBUTESACTION = "Merge attribute with...";
 QString COPYDESCRIPTIONTOTEXTACTION = "Copy description to text";
 QString COPYOBJECT = "Duplicate object";
 QString ADDRELATIONSHIPACTION = "Add relationship";
+QString EDITRELATIONSHIPACTION = "Edit relationship";
 QString ADDRELATIONSHIPTYPEACTION = "Add relationship type";
 QString EDITRELATIONSHIPTYPEACTION = "Edit relationship type";
 QString ADDATTRIBUTEACTION = "Add attribute";
