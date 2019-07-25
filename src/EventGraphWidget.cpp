@@ -1203,6 +1203,8 @@ void EventGraphWidget::setGraphControls(bool state)
   makeLayoutButton->setEnabled(state);
   hideAnnotationsButton->setEnabled(state);
   setTimeRangeButton->setEnabled(state);
+  exportTransitionMatrixButton->setEnabled(state);
+  restoreModeColorsButton->setEnabled(state);
 }
 
 void EventGraphWidget::updateCases() 
