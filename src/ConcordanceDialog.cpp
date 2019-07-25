@@ -77,7 +77,7 @@ ConcordanceDialog::ConcordanceDialog(QWidget *parent,
   closeButton = new QPushButton(tr("Close dialog"), this);
   if (linePlot)
     {
-      toggleColorsButton = new QPushButton(tr("toggle colors"), this);
+      toggleColorsButton = new QPushButton(tr("Toggle colors"), this);
     }
 
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
