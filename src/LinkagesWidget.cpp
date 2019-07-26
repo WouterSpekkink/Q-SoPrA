@@ -629,8 +629,30 @@ void LinkagesWidget::editLinkageType()
   if (typeComboBox->currentText() != DEFAULT) 
     {
       QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      QSqlQuery *query3 = new QSqlQuery;
+      QSqlQuery *query4 = new QSqlQuery;
+      QSqlQuery *query5 = new QSqlQuery;
+      query2->prepare("UPDATE linkages "
+		      "SET tail = :newTail, head = :newHead "
+		      "WHERE type = :type "
+		      "AND tail = :oldTail AND head = :oldHead");
+      query3->prepare("UPDATE linkages_sources "
+		      "SET tail = :newTail, head = :newHead, "
+		      "istail = :newIsTail "
+		      "WHERE type = :type "
+		      "AND tail = :oldTail AND head = :oldHead");
+      query4->prepare("UPDATE coders_to_linkage_types "
+		      "SET tail = :newTail, head = :newHead "
+		      "WHERE type =: type "
+		      "AND tail = :oldTail AND head = :oldHead");
+      query5->prepare("UPDATE linkage_comments "
+		      "SET tail = :newTail, head = :newHead "
+		      "WHERE type = :type "
+		      "AND tail = :oldTail AND head = :oldHead");
       QString oldName = typeComboBox->currentText();
-      query->prepare("SELECT description, question, direction FROM linkage_types "
+      query->prepare("SELECT description, question, "
+		     "direction FROM linkage_types "
 		     "WHERE name = :name");
       query->bindValue(":name", oldName);
       query->exec();
@@ -639,7 +661,6 @@ void LinkagesWidget::editLinkageType()
       QString question = query->value(1).toString();
       QString direction = query->value(2).toString();
       LinkageTypeDialog *linkageTypeDialog = new LinkageTypeDialog(this);
-      linkageTypeDialog->fixDirection();
       linkageTypeDialog->submitName(oldName);
       linkageTypeDialog->submitDescription(description);
       linkageTypeDialog->submitQuestion(question);
@@ -647,12 +668,19 @@ void LinkagesWidget::editLinkageType()
       linkageTypeDialog->exec();
       if (linkageTypeDialog->getExitStatus() == 0) 
 	{
+	  bool changedDirection = false;
 	  QString name = linkageTypeDialog->getName();
 	  description = linkageTypeDialog->getDescription();
 	  question = linkageTypeDialog->getQuestion();
+	  if (direction != linkageTypeDialog->getDirection())
+	    {
+	      changedDirection = true;
+	    }
 	  direction = linkageTypeDialog->getDirection();
 	  query->prepare("UPDATE linkage_types "
-			 "SET name = :name, description = :description, question = :question, "
+			 "SET name = :name, "
+			 "description = :description, "
+			 "question = :question, "
 			 "direction = :direction WHERE name = :oldName");
 	  query->bindValue(":name", name);
 	  query->bindValue(":description", description);
@@ -666,29 +694,131 @@ void LinkagesWidget::editLinkageType()
 	  query->bindValue(":newType", name);
 	  query->bindValue(":oldType", oldName);
 	  query->exec();
+	  if (changedDirection)
+	    {
+	      query->prepare("SELECT tail, head FROM linkages "
+			     "WHERE type = :type");
+	      query->bindValue(":type", name);
+	      query->exec();
+	      while (query->next())
+		{
+		  int oldTail = query->value(0).toInt();
+		  int oldHead = query->value(1).toInt();
+		  query2->bindValue(":newTail", oldHead);
+		  query2->bindValue(":newHead", oldTail);
+		  query2->bindValue(":type", name);
+		  query2->bindValue(":oldTail", oldTail);
+		  query2->bindValue(":oldHead", oldHead);
+		  query2->exec();
+		}
+	    }
 	  query->prepare("UPDATE linkages_sources "
 			 "SET type = :newType "
 			 "WHERE type = :oldType");
 	  query->bindValue(":newType", name);
 	  query->bindValue(":oldType", oldName);
 	  query->exec();
-	  
+	  if (changedDirection)
+	    {
+	      query->prepare("SELECT tail, head, istail "
+			     "FROM linkages_sources "
+			     "WHERE type = :type");
+	      query->bindValue(":type", name);
+	      query->exec();
+	      while (query->next())
+		{
+		  int oldTail = query->value(0).toInt();
+		  int oldHead = query->value(1).toInt();
+		  int oldIsTail = query->value(2).toInt();
+		  int newIsTail = 0;
+		  if (oldIsTail == 0)
+		    {
+		      newIsTail = 1;
+		    }
+		  query3->bindValue(":newTail", oldHead);
+		  query3->bindValue(":newHead", oldTail);
+		  query3->bindValue(":newIsTail", newIsTail);
+		  query3->bindValue(":type", name);
+		  query3->bindValue(":oldTail", oldTail);
+		  query3->bindValue(":oldHead", oldHead);
+		  query3->exec();
+		}
+	    }
+	  query->prepare("UPDATE coders_to_linkage_types "
+			 "SET type = :newType "
+			 "WHERE type = :oldType");
+	  query->bindValue(":newType", name);
+	  query->bindValue(":oldType", oldName);
+	  query->exec();
+	  if (changedDirection)
+	    {
+	      query->prepare("SELECT tail, head "
+			     "FROM coders_to_linkage_types "
+			     "WHERE type = :type");
+	      query->bindValue(":type", name);
+	      query->exec();
+	      while (query->next())
+		{
+		  int oldTail = query->value(0).toInt();
+		  int oldHead = query->value(1).toInt();
+		  query4->bindValue(":newTail", oldHead);
+		  query4->bindValue(":newHead", oldTail);
+		  query4->bindValue(":type", name);
+		  query4->bindValue(":oldTail", oldTail);
+		  query4->bindValue(":oldHead", oldHead);
+		  query4->exec();
+		}
+	    }
+	  query->prepare("UPDATE linkage_comments "
+			 "SET type = :newType "
+			 "WHERE type = :oldType");
+	  query->bindValue(":newType", name);
+	  query->bindValue(":oldType", oldName);
+	  query->exec();
+	  if (changedDirection)
+	    {
+	      query->prepare("SELECT tail, head "
+			     "FROM linkage_comments "
+			     "WHERE type = :type");
+	      query->bindValue(":type", name);
+	      query->exec();
+	      while (query->next())
+		{
+		  int oldTail = query->value(0).toInt();
+		  int oldHead = query->value(1).toInt();
+		  query5->bindValue(":newTail", oldHead);
+		  query5->bindValue(":newHead", oldTail);
+		  query5->bindValue(":type", name);
+		  query5->bindValue(":oldTail", oldTail);
+		  query5->bindValue(":oldHead", oldHead);
+		  query5->exec();
+		}
+	    }
 	  delete query;
+	  delete query2;
+	  delete query3;
+	  delete query4;
+	  delete query5;
 	  int current = typeComboBox->currentIndex();
 	  typeComboBox->setItemText(current, name);
-	  typeComboBox->setItemData(current, description, Qt::ToolTipRole);
-	  QString label  = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
+	  typeComboBox->setItemData(current, description, 
+				    Qt::ToolTipRole);
+	  QString label  = "<FONT SIZE = 3>--[" +
+	    typeComboBox->currentText() + "]--></FONT>";
 	  linkageTypeFeedbackLabel->setText(label);
 	  QString toolTip = breakString(description);
 	  linkageTypeFeedbackLabel->setToolTip(toolTip);
 	  linkageQuestionFeedbackLabel->setText(question);
 	  linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
-							 sizeHint().height());
-      
+							 sizeHint().height());      
 	}
       else 
 	{
 	  delete query;
+	  delete query2;
+	  delete query3;
+	  delete query4;
+	  delete query5;
 	}
       delete linkageTypeDialog;
     }
@@ -897,6 +1027,7 @@ void LinkagesWidget::switchLinkageType()
 	}
     }
   QPointer<ComboBoxDialog> dialog = new ComboBoxDialog(this, types);
+  dialog->setWindowTitle("Switch linkage type");
   dialog->exec();
   if (dialog->getExitStatus() == 0)
     {

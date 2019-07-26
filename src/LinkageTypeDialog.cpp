@@ -145,12 +145,6 @@ void LinkageTypeDialog::submitDirection(const QString &direction)
     }
 }
 
-void LinkageTypeDialog::fixDirection() 
-{
-  pastButton->setEnabled(false);
-  futureButton->setEnabled(false);
-}
-
 QString LinkageTypeDialog::getName() 
 {
   return _name;
@@ -195,7 +189,8 @@ void LinkageTypeDialog::saveAndClose()
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Description required.");
-      warningBox->setInformativeText("A linkage type requires a description.");
+      warningBox->setInformativeText("A linkage type requires a "
+				     "description.");
       warningBox->exec();
       delete warningBox;
       return;
@@ -207,7 +202,8 @@ void LinkageTypeDialog::saveAndClose()
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Question required.");
-      warningBox->setInformativeText("A linkage type requires a question.");
+      warningBox->setInformativeText("A linkage type requires "
+				     "a question.");
       warningBox->exec();
       delete warningBox;
       return;
@@ -238,7 +234,8 @@ void LinkageTypeDialog::saveAndClose()
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("Duplicate name.");
-      warningBox->setInformativeText("You cannot create linkage types with identical names.");
+      warningBox->setInformativeText("You cannot create linkage "
+				     "types with identical names.");
       warningBox->exec();
       delete warningBox;
       return;

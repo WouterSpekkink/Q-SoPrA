@@ -59,10 +59,6 @@ public:
   QString getDirection();
   int getExitStatus();
 
-  // Sometimes we don't want to enable
-  // selection of direction
-  void fixDirection();
-
 private slots:
   // Private member functions
   void setName(const QString &name);
