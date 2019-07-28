@@ -112,8 +112,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   attributesLabel = new QLabel(tr("<b>Attributes:</b>"), attWidget);
   attributesFilterLabel = new QLabel(tr("<b>Filter:</b>"), attWidget);
   valueLabel = new QLabel(tr("<b>Value:</b>"), attWidget);
-  incongruencyLabel = new QLabel(tr(""), this);
-  incongruencyLabel->setStyleSheet("QLabel {color : red;}");
+  incongruenceLabel = new QLabel(tr(""), this);
+  incongruenceLabel->setStyleSheet("QLabel {color : red;}");
   eventLegendLabel = new QLabel(tr("<b>Modes:</b>"), legendWidget);
   linkageLegendLabel = new QLabel(tr("<b>Linkages:</b>"), legendWidget);
   zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
@@ -257,7 +257,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   toggleLegendButton->setCheckable(true);
   removeModeButton = new QPushButton(tr("Remove mode"), legendWidget);
   removeModeButton->setEnabled(false);
-  restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  restoreModeColorsButton = new QPushButton(tr("Restore modes"), legendWidget);
   exportTransitionMatrixButton = new QPushButton(tr("Export transitions"), legendWidget);
   moveModeUpButton = new QPushButton(tr("Up"), legendWidget);
   moveModeUpButton->setEnabled(false);
@@ -271,6 +271,12 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   removeLinkageTypeButton->setEnabled(false);
   makeLayoutButton = new QPushButton(tr("Run layout"), this);
   setTimeRangeButton = new QPushButton(tr("Set time range"), graphicsWidget);
+  hideModeButton = new QPushButton(tr("Hide"), legendWidget);
+  hideModeButton->setCheckable(true);
+  hideModeButton->setChecked(false);
+  showModeButton = new QPushButton(tr("Show"), legendWidget);
+  showModeButton->setCheckable(true);
+  showModeButton->setChecked(true);
   
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -545,6 +551,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(restoreModeColorsButton, SIGNAL(clicked()), this, SLOT(restoreModeColors()));
   connect(moveModeUpButton, SIGNAL(clicked()), this, SLOT(moveModeUp()));
   connect(moveModeDownButton, SIGNAL(clicked()), this, SLOT(moveModeDown()));
+  connect(hideModeButton, SIGNAL(clicked()), this, SLOT(hideMode()));
+  connect(showModeButton, SIGNAL(clicked()), this, SLOT(showMode()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
     
@@ -561,7 +569,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
   plotOptionsLayout->addWidget(changeLabel);
-  plotOptionsLayout->addWidget(incongruencyLabel);
+  plotOptionsLayout->addWidget(incongruenceLabel);
   plotOptionsLayout->addSpacerItem(new QSpacerItem(100,0));
   topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
@@ -706,6 +714,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   modeButtonsLayout->addWidget(moveModeUpButton);
   modeButtonsLayout->addWidget(moveModeDownButton);
   legendLayout->addLayout(modeButtonsLayout);
+  QPointer<QHBoxLayout> hideShowModeButtonsLayout = new QHBoxLayout;
+  hideShowModeButtonsLayout->addWidget(hideModeButton);
+  hideShowModeButtonsLayout->addWidget(showModeButton);
+  legendLayout->addLayout(hideShowModeButtonsLayout);
   legendLayout->addWidget(addModeButton);
   legendLayout->addWidget(addModesButton);
   legendLayout->addWidget(removeModeButton);
@@ -855,7 +867,7 @@ EventGraphWidget::~EventGraphWidget()
   delete scene;
 }
 
-void EventGraphWidget::checkCongruency() 
+void EventGraphWidget::checkCongruence() 
 {
   if (_incidentNodeVector.size() > 0) 
     {
@@ -870,7 +882,7 @@ void EventGraphWidget::checkCongruency()
       std::sort(_incidentNodeVector.begin(), _incidentNodeVector.end(), componentsSort);
       if (temp.size() != _incidentNodeVector.size()) 
 	{
-	  incongruencyLabel->setText("Incongruency detected");
+	  incongruenceLabel->setText("Incongruence detected");
 	  delete query;
 	  return;
 	}
@@ -879,7 +891,7 @@ void EventGraphWidget::checkCongruency()
 	  IncidentNode *current = _incidentNodeVector[i];
 	  if (current->getId() != temp[i]) 
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
@@ -935,7 +947,7 @@ void EventGraphWidget::checkCongruency()
 		    }
 		  if (!found) 
 		    {
-		      incongruencyLabel->setText("Incongruency detected");
+		      incongruenceLabel->setText("Incongruence detected");
 		      delete query;
 		      return;
 		    }
@@ -970,7 +982,7 @@ void EventGraphWidget::checkCongruency()
 		}
 	      if (!found) 
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  delete query;
 		  return;
 		}
@@ -995,7 +1007,7 @@ void EventGraphWidget::checkCongruency()
 	{
 	  if (!currentVector.contains(cit.next()))
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
@@ -1005,13 +1017,13 @@ void EventGraphWidget::checkCongruency()
 	{
 	  if (!caseVector.contains(cit2.next()))
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
 	}
       delete query;
-      incongruencyLabel->setText("");
+      incongruenceLabel->setText("");
     }
 }
 
@@ -4488,7 +4500,7 @@ void EventGraphWidget::plotGraph()
   caseListWidget->setEnabled(true);
   setRangeControls();
   plotLabel->setText("Unsaved plot");
-  checkCongruency();
+  checkCongruence();
   updateLinkages();
   setGraphControls(true);
   hideAnnotationsButton->setChecked(false);
@@ -4552,7 +4564,7 @@ void EventGraphWidget::addLinkageType()
   getEdges(_selectedCoder, currentType, color);
   plotEdges(currentType);
   setHeights();
-  checkCongruency();
+  checkCongruence();
   redoLayout();
   addLinkageTypeButton->setEnabled(false);
   QApplication::restoreOverrideCursor();
@@ -4888,9 +4900,9 @@ void EventGraphWidget::saveCurrentPlot()
       query->exec();      
       query->prepare("INSERT INTO saved_eg_plots_incident_nodes "
 		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
-		     "dislodged, mode, red, green, blue, alpha, hidden) "
+		     "dislodged, mode, red, green, blue, alpha, hidden, masshidden) "
 		     "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
-		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden)");
+		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden, :masshidden)");
       QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, _incidentNodeVector.size());
       saveProgress->setWindowTitle("Saving event items");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
@@ -4916,6 +4928,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  int hidden = 1;
+	  int masshidden = 0;
 	  if (currentItem->isDislodged()) 
 	    {
 	      dislodged = 1;
@@ -4923,6 +4936,10 @@ void EventGraphWidget::saveCurrentPlot()
 	  if (currentItem->isVisible()) 
 	    {
 	      hidden = 0;
+	    }
+	  if (currentItem->isMassHidden())
+	    {
+	      masshidden = 1;
 	    }
 	  query->bindValue(":plot", name);
 	  query->bindValue(":incident", incident);
@@ -4939,6 +4956,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
 	  query->bindValue(":hidden", hidden);
+	  query->bindValue(":masshidden", masshidden);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -5088,10 +5106,10 @@ void EventGraphWidget::saveCurrentPlot()
       query3->prepare("INSERT INTO saved_eg_plots_abstract_nodes "
 		      "(plot, eventid, ch_order, abstraction, timing, description, comment, width, "
 		      "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
-		      "red, green, blue, alpha, hidden) "
+		      "red, green, blue, alpha, hidden, masshidden) "
 		      "VALUES (:plot, :eventid, :ch_order, :abstraction, :timing, :description, "
 		      ":comment, :width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
-		      ":red, :green, :blue, :alpha, :hidden)");;
+		      ":red, :green, :blue, :alpha, :hidden, :masshidden)");;
       QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
       while (it4.hasNext()) 
 	{
@@ -5135,6 +5153,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  int hidden = 1;
+	  int masshidden = 0;
 	  if (currentAbstractNode->isDislodged()) 
 	    {
 	      dislodged = 1;
@@ -5142,6 +5161,10 @@ void EventGraphWidget::saveCurrentPlot()
 	  if (currentAbstractNode->isVisible()) 
 	    {
 	      hidden = 0;
+	    }
+	  if (currentAbstractNode->isMassHidden())
+	    {
+	      masshidden = 1;
 	    }
 	  query3->bindValue(":plot", name);
 	  query3->bindValue(":eventid", currentAbstractNode->getId());
@@ -5162,6 +5185,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query3->bindValue(":blue", blue);
 	  query3->bindValue(":alpha", alpha);
 	  query3->bindValue(":hidden", hidden);
+	  query3->bindValue(":masshidden", masshidden);
 	  query3->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -5784,7 +5808,7 @@ void EventGraphWidget::seePlots()
 	}
       _labelSize = labelsize;
       query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
-		     "dislodged, mode, red, green, blue, alpha, hidden "
+		     "dislodged, mode, red, green, blue, alpha, hidden, masshidden "
 		     "FROM saved_eg_plots_incident_nodes "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -5805,6 +5829,7 @@ void EventGraphWidget::seePlots()
 	  int blue = query->value(11).toInt();
 	  int alpha = query->value(12).toInt();
 	  int hidden = query->value(13).toInt();
+	  int masshidden = query->value(14).toInt();
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT description FROM incidents WHERE id = :id");
 	  query2->bindValue(":id", id);
@@ -5840,6 +5865,10 @@ void EventGraphWidget::seePlots()
 	  else 
 	    {
 	      currentItem->show();
+	    }
+	  if (masshidden == 1)
+	    {
+	      currentItem->setMassHidden(true);
 	    }
 	}
       query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
@@ -5892,7 +5921,7 @@ void EventGraphWidget::seePlots()
 	}
       query->prepare("SELECT eventid, ch_order, abstraction, timing, description, comment, width, "
 		     "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
-		     "hidden "
+		     "hidden, masshidden "
 		     "FROM saved_eg_plots_abstract_nodes "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -5917,6 +5946,7 @@ void EventGraphWidget::seePlots()
 	  int blue = query->value(15).toInt();
 	  int alpha = query->value(16).toInt();
 	  int hidden = query->value(17).toInt();
+	  int masshidden = query->value(18).toInt();
 	  QPointF currentPos = QPointF(currentX, currentY);
 	  QPointF originalPos = QPointF(originalX, originalY);
 	  QColor color = QColor(red, green, blue, alpha);
@@ -5980,6 +6010,10 @@ void EventGraphWidget::seePlots()
 	  if (dislodged == 1) 
 	    {
 	      newAbstractNode->setDislodged(true);
+	    }
+	  if (masshidden == 1)
+	    {
+	      newAbstractNode->setMassHidden(true);
 	    }
 	  scene->addItem(newAbstractNode);
 	  _abstractNodeVector.push_back(newAbstractNode);
@@ -6614,7 +6648,7 @@ void EventGraphWidget::seePlots()
       setGraphControls(true);
       updateLinkages();
       setVisibility();
-      checkCongruency();
+      checkCongruence();
       delete query;
       QApplication::restoreOverrideCursor();
       qApp->processEvents();
@@ -7093,10 +7127,14 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item)
   if (text != "") 
     {
       removeModeButton->setEnabled(true);
+      hideModeButton->setEnabled(true);
+      showModeButton->setEnabled(true);
     }
   else 
     {
       removeModeButton->setEnabled(false);
+      hideModeButton->setEnabled(false);
+      showModeButton->setEnabled(false);
     }
   if (text != eventListWidget->item(0, 0)->data(Qt::DisplayRole).toString()) 
     {
@@ -7115,6 +7153,42 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item)
     {
       moveModeDownButton->setEnabled(false);
     }
+  bool hidden = false;
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext())
+    {
+      IncidentNode *current = it.next();
+      QString mode = current->getMode();
+      if (text == mode)
+	{
+	  hidden = current->isMassHidden();
+	  break;
+	}
+    }
+  if (!hidden)
+    {
+      QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+      while (it2.hasNext())
+	{
+	  AbstractNode *current = it2.next();
+	  QString mode = current->getMode();
+	  if (text == mode)
+	    {
+	      hidden = current->isMassHidden();
+	      break;
+	    }
+	}
+    }
+  if (hidden)
+    {
+      hideModeButton->setChecked(true);
+      showModeButton->setChecked(false);
+    }
+  else
+    {
+      hideModeButton->setChecked(false);
+      showModeButton->setChecked(true);
+    }
 }
 
 void EventGraphWidget::disableModeButtons() 
@@ -7122,8 +7196,69 @@ void EventGraphWidget::disableModeButtons()
   removeModeButton->setEnabled(false);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton->setEnabled(false);
+  hideModeButton->setEnabled(false);
+  showModeButton->setEnabled(false);
 }
 
+void EventGraphWidget::hideMode() 
+{
+  hideModeButton->setChecked(true);
+  showModeButton->setChecked(false);
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  eventListWidget->currentItem()->setBackground(Qt::gray);
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext()) 
+    {
+      IncidentNode *current = it.next();
+      QString mode = current->getMode();
+      if (text == mode) 
+	{
+	  current->setMassHidden(true);
+	}
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext()) 
+    {
+      AbstractNode *current = it2.next();
+      QString mode = current->getMode();
+      if (text == mode) 
+	{
+	  current->setMassHidden(true);
+	}
+    }
+  updateLinkages();
+  setVisibility();
+}
+
+void EventGraphWidget::showMode() 
+{
+  hideModeButton->setChecked(false);
+  showModeButton->setChecked(true);
+  QString text = eventListWidget->currentItem()->data(Qt::DisplayRole).toString();
+  eventListWidget->currentItem()->setBackground(Qt::transparent);
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext()) 
+    {
+      IncidentNode *current = it.next();
+      QString type = current->getMode();
+      if (text == type) 
+	{
+	  current->setMassHidden(false);
+	}
+    }
+  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
+  while (it2.hasNext()) 
+    {
+      AbstractNode *current = it2.next();
+      QString type = current->getMode();
+      if (text == type) 
+	{
+	  current->setMassHidden(false);
+	}
+    }
+  updateLinkages();
+  setVisibility();
+}
 
 void EventGraphWidget::setLinkageButtons(QTableWidgetItem *item) 
 {
@@ -7695,80 +7830,88 @@ void EventGraphWidget::setVisibility()
     {
       counter++;
       IncidentNode *currentItem = it.next();
-      if (currentItem->getAbstractNode() == NULL) 
-	{
-	  if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
-	    {
-	      currentItem->show();
-	    }  else 
-	    {
-	      currentItem->hide();
-	    }
-	}
-      else 
+      if (currentItem->isMassHidden())
 	{
 	  currentItem->hide();
-	  if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
-	    {
-	      currentItem->getAbstractNode()->show();
-	    }
-	  else 
-	    {
-	      currentItem->getAbstractNode()->hide();
-	    }
 	}
-    }
-  if (_checkedCases.size() > 0) 
-    {
-      it.toFront();
-      while (it.hasNext()) 
+      else
 	{
-	  IncidentNode *currentItem = it.next();
-	  QVectorIterator<QString> it2(_checkedCases);
-	  bool found = false;
-	  while (it2.hasNext()) 
+	  if (currentItem->getAbstractNode() == NULL) 
 	    {
-	      QString currentCase = it2.next();
-	      query->bindValue(":incident", currentItem->getId());
-	      query->bindValue(":casename", currentCase);
-	      query->exec();
-	      query->first();
-	      if (!query->isNull(0)) 
+	      if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
 		{
-		  found = true;
-		}
-	    }
-	  if (!found) 
-	    {
-	      if (currentItem->getAbstractNode() == NULL) 
-		{
-		  currentItem->hide();
+		  currentItem->show();
 		}
 	      else 
 		{
-		  bool keep = false;
-		  QVector<IncidentNode *> contents = currentItem->getAbstractNode()->getIncidents();
-		  QVectorIterator<IncidentNode *> it2(contents);
-		  while (it2.hasNext()) 
+		  currentItem->hide();
+		}
+	    }
+	  else 
+	    {
+	      currentItem->hide();
+	      if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
+		{
+		  currentItem->getAbstractNode()->show();
+		}
+	      else 
+		{
+		  currentItem->getAbstractNode()->hide();
+		}
+	    }
+	}
+      if (_checkedCases.size() > 0) 
+	{
+	  it.toFront();
+	  while (it.hasNext()) 
+	    {
+	      IncidentNode *currentItem = it.next();
+	      QVectorIterator<QString> it2(_checkedCases);
+	      bool found = false;
+	      while (it2.hasNext()) 
+		{
+		  QString currentCase = it2.next();
+		  query->bindValue(":incident", currentItem->getId());
+		  query->bindValue(":casename", currentCase);
+		  query->exec();
+		  query->first();
+		  if (!query->isNull(0)) 
 		    {
-		      IncidentNode *currentIncident = it2.next();
-		      QVectorIterator<QString> it3(_checkedCases);
-		      while (it3.hasNext()) 
+		      found = true;
+		    }
+		}
+	      if (!found) 
+		{
+		  if (currentItem->getAbstractNode() == NULL) 
+		    {
+		      currentItem->hide();
+		    }
+		  else 
+		    {
+		      bool keep = false;
+		      QVector<IncidentNode *> contents = currentItem->getAbstractNode()->getIncidents();
+		      QVectorIterator<IncidentNode *> it2(contents);
+		      while (it2.hasNext()) 
 			{
-			  QString currentCase = it3.next();
-			  query->bindValue(":incident", currentIncident->getId());
-			  query->bindValue(":casename", currentCase);
-			  query->exec();
-			  query->first();
-			  if (!query->isNull(0)) 
+			  IncidentNode *currentIncident = it2.next();
+			  QVectorIterator<QString> it3(_checkedCases);
+			  while (it3.hasNext()) 
 			    {
-			      keep = true;
+			      QString currentCase = it3.next();
+			      query->bindValue(":incident", currentIncident->getId());
+			      query->bindValue(":casename", currentCase);
+			      query->exec();
+			      query->first();
+			      if (!query->isNull(0)) 
+				{
+				  keep = true;
+				}
 			    }
 			}
-		    }
-		  if (!keep) 
-		    {
-		      currentItem->getAbstractNode()->hide();
+		      if (!keep) 
+			{
+			  currentItem->getAbstractNode()->hide();
+			}
 		    }
 		}
 	    }
@@ -7778,7 +7921,7 @@ void EventGraphWidget::setVisibility()
   while (it2.hasNext()) 
     {
       AbstractNode *current = it2.next();
-      if (current->getAbstractNode() != NULL) 
+      if (current->isMassHidden() || current->getAbstractNode() != NULL)
 	{
 	  current->hide();
 	}

@@ -234,7 +234,8 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
-		      "hidden integer)");   // dislodged boolean (if relevant)
+		      "hidden integer, "
+		      "masshidden integer)"); 
 	  query->exec("CREATE TABLE saved_eg_plots_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -283,7 +284,8 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
-		      "hidden integer)");
+		      "hidden integer, "
+		      "masshidden integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_incidents_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1023,7 +1025,8 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
-		      "hidden integer)");
+		      "hidden integer, "
+		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1072,7 +1075,8 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
-		      "hidden integer)");
+		      "hidden integer, "
+		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incidents_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -2260,6 +2264,10 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN hidden integer;");
 	    }
+	  if (!columns.contains("masshidden"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN masshidden integer;");
+	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(saved_eg_plots_edges)");
 	  while (query->next())
@@ -2495,6 +2503,10 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes "
 			  "ADD COLUMN hidden integer;");
+	    }
+	  if (!columns.contains("masshidden"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes ADD COLUMN masshidden integer;");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(saved_eg_plots_incidents_to_abstract_nodes)");

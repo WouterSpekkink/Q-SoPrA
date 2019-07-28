@@ -149,7 +149,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   moveModeUpButton->setEnabled(false);
   moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
   moveModeDownButton->setEnabled(false);
-  restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  restoreModeColorsButton = new QPushButton(tr("Restore modes"), legendWidget);
   hideLinkageTypeButton = new QPushButton(tr("Hide"), legendWidget);
   hideLinkageTypeButton->setEnabled(false);
   showLinkageTypeButton = new QPushButton(tr("Show"), legendWidget);

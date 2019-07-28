@@ -997,7 +997,7 @@ void MainWindow::switchToEventGraphView()
       lw->setLinkageComment();
       EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
       egw->getLinkageDetails();
-      egw->checkCongruency();
+      egw->checkCongruence();
       showMenus(true);
       menuBar->setEnabled(true);
       egw->scene->resetItemSelection();
@@ -1025,7 +1025,7 @@ void MainWindow::switchToNetworkGraphView()
       egw->setComment();
       NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
       ngw->getTypes();
-      ngw->checkCongruency();
+      ngw->checkCongruence();
       ngw->setVisibility();
       ngw->scene->resetItemSelection();
       stacked->setCurrentWidget(networkGraphWidget);
@@ -1047,7 +1047,7 @@ void MainWindow::switchToOccurrenceGraphView()
       EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
       egw->setComment();
       OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
-      ogw->checkCongruency();
+      ogw->checkCongruence();
       ogw->scene->resetItemSelection();
       stacked->setCurrentWidget(occurrenceGraphWidget);
     }

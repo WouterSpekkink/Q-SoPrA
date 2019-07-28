@@ -49,6 +49,7 @@ IncidentNode::IncidentNode(int width,
   _labelPtr = NULL;
   _abstractNodePtr = NULL;
   _copy = false;
+  _massHidden = false;
   setToolTip(toolTip);
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -400,3 +401,15 @@ void IncidentNode::setCopy(bool state)
 {
   _copy = state;
 }
+
+void IncidentNode::setMassHidden(bool state)
+{
+  _massHidden = state;
+}
+
+bool IncidentNode::isMassHidden()
+{
+  return _massHidden;
+}
+
+

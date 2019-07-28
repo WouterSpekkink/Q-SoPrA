@@ -54,6 +54,7 @@ AbstractNode::AbstractNode(int width,
   _mode = "";
   _constraint = constraint;
   _copy = false;
+  _massHidden = false;
   
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -500,4 +501,14 @@ void AbstractNode::setTiming(const QString &timing)
 QString AbstractNode::getTiming()
 {
   return _timing;
+}
+
+void AbstractNode::setMassHidden(bool state)
+{
+  _massHidden = state;
+}
+
+bool AbstractNode::isMassHidden()
+{
+  return _massHidden;
 }

@@ -66,7 +66,8 @@ public:
   void setCopy(bool state);
   void setNewId(const int &id);
   void setTiming(const QString &timing);
-
+  void setMassHidden(bool state);
+  
   // Getters  
   int getCorrection();
   QPointF getOriginalPos();
@@ -84,8 +85,9 @@ public:
   QMap<QString, QString> getValues();
   QString getMode() const;
   QString getConstraint() const;
-  bool isCopy();
   QString getTiming();
+  bool isCopy();
+  bool isMassHidden();  
   
   // Functions for attribute management
   void insertAttribute(const QString &attribute);
@@ -122,7 +124,8 @@ private:
   QString _constraint;
   QString _timing;
   bool _copy;
-
+  bool _massHidden;
+  
   // Private data vectors
   QSet<QString> _attributes;
   QMap<QString, QString> _values;

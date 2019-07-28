@@ -34,6 +34,8 @@ RelationshipComboBoxDialog::RelationshipComboBoxDialog(QWidget *parent) : QDialo
   mainLayout->addLayout(optionsLayout);
   setLayout(mainLayout);
 
+  setWindowTitle("Automatically assign entities");
+  
   getRelationships();
 }
 

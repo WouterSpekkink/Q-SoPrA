@@ -108,7 +108,7 @@ public:
   
   // Functions that need to be exposed
   void resetTree();
-  void checkCongruency();
+  void checkCongruence();
   void updateCases();
 
 private slots:
@@ -129,6 +129,8 @@ private slots:
   void restoreModeColors();
   void moveModeUp();
   void moveModeDown();
+  void hideMode();
+  void showMode();
   void retrieveData();
   void showAttributes();
   void showComments();
@@ -360,7 +362,7 @@ private:
   QPointer<QLabel> attributesLabel;
   QPointer<QLabel> attributesFilterLabel;
   QPointer<QLabel> valueLabel;
-  QPointer<QLabel> incongruencyLabel;
+  QPointer<QLabel> incongruenceLabel;
   QPointer<QLabel> eventLegendLabel;
   QPointer<QLabel> linkageLegendLabel;
   QPointer<QLabel> casesLabel;
@@ -425,6 +427,8 @@ private:
   QPointer<QPushButton> exportTransitionMatrixButton;
   QPointer<QPushButton> moveModeUpButton;
   QPointer<QPushButton> moveModeDownButton;
+  QPointer<QPushButton> hideModeButton;
+  QPointer<QPushButton> showModeButton;
   QPointer<QPushButton> hideLinkageTypeButton;
   QPointer<QPushButton> showLinkageTypeButton;
   QPointer<QPushButton> addLineButton;

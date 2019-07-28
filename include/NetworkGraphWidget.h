@@ -96,7 +96,7 @@ public:
 
 private slots:
   // Private member functions
-  void checkCongruency();
+  void checkCongruence();
   void toggleDetails();
   void toggleGraphicsControls();
   void toggleLegend();
@@ -256,7 +256,7 @@ private:
   QPointer<QLabel> valueLabel;
   QPointer<QLabel> plotLabel;
   QPointer<QLabel> changeLabel;
-  QPointer<QLabel> incongruencyLabel;
+  QPointer<QLabel> incongruenceLabel;
   QPointer<QLabel> casesLabel;
   QPointer<QLabel> zoomLabel;
   QPointer<QLabel> shapesLabel;

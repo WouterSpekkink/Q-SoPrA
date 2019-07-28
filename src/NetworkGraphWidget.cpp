@@ -84,8 +84,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   valueLabel = new QLabel(tr("<b>Value:</b>"), infoWidget);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
   changeLabel = new QLabel(tr("*"), this);
-  incongruencyLabel = new QLabel(tr(""), this);
-  incongruencyLabel->setStyleSheet("QLabel {color : red;}");
+  incongruenceLabel = new QLabel(tr(""), this);
+  incongruenceLabel->setStyleSheet("QLabel {color : red;}");
   zoomLabel = new QLabel(tr("<b>Zoom slider:</b>"), this);
   shapesLabel = new QLabel(tr("<b>Shapes:</b>"), this);
   penStyleLabel = new QLabel(tr("<b>Pen style:</b>"), this);
@@ -191,7 +191,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   plotButton->setEnabled(false);
   removeTypeButton = new QPushButton(tr("Remove"), legendWidget);
   removeTypeButton->setEnabled(false);
-  restoreModeColorsButton = new QPushButton(tr("Restore colors"), legendWidget);
+  restoreModeColorsButton = new QPushButton(tr("Restore modes"), legendWidget);
   moveModeUpButton = new QPushButton(tr("Up"), this);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton = new QPushButton(tr("Down"), this);
@@ -455,7 +455,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
   plotOptionsLayout->addWidget(changeLabel);
-  plotOptionsLayout->addWidget(incongruencyLabel);
+  plotOptionsLayout->addWidget(incongruenceLabel);
 
   topLayout->addLayout(plotOptionsLayout);
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
@@ -541,11 +541,13 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   modeButtonsLayout->addWidget(moveModeUpButton);
   modeButtonsLayout->addWidget(moveModeDownButton);
   legendLayout->addLayout(modeButtonsLayout);
+  QPointer<QHBoxLayout> hideShowModeButtonsLayout = new QHBoxLayout;
+  hideShowModeButtonsLayout->addWidget(hideModeButton);
+  hideShowModeButtonsLayout->addWidget(showModeButton);
+  legendLayout->addLayout(hideShowModeButtonsLayout);
   legendLayout->addWidget(addModeButton);
   legendLayout->addWidget(addModesButton);
   legendLayout->addWidget(multimodeButton);
-  legendLayout->addWidget(hideModeButton);
-  legendLayout->addWidget(showModeButton);
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(edgeLegendLabel);
@@ -742,7 +744,7 @@ void NetworkGraphWidget::setAntialiasing(bool state)
 }
 
 
-void NetworkGraphWidget::checkCongruency() 
+void NetworkGraphWidget::checkCongruence() 
 {
   if (_networkNodeVector.size() > 0) 
     {
@@ -802,7 +804,7 @@ void NetworkGraphWidget::checkCongruency()
       std::sort(_networkNodeVector.begin(), _networkNodeVector.end(), nameLessThan);
       if (tempNames.size() != _networkNodeVector.size()) 
 	{
-	  incongruencyLabel->setText("Incongruency detected");
+	  incongruenceLabel->setText("Incongruence detected");
 	  delete query;
 	  return;
 	}
@@ -811,13 +813,13 @@ void NetworkGraphWidget::checkCongruency()
 	  NetworkNode *current = _networkNodeVector[i];
 	  if (current->getName() != tempNames[i]) 
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
 	  if (current->getDescription() != tempDescs[i]) 
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
@@ -846,7 +848,7 @@ void NetworkGraphWidget::checkCongruency()
 	}
       if (count != originalRelationships) 
 	{
-	  incongruencyLabel->setText("Incongruency detected");
+	  incongruenceLabel->setText("Incongruence detected");
 	  delete query;
 	  return;
 	}
@@ -869,7 +871,7 @@ void NetworkGraphWidget::checkCongruency()
 	{
 	  if (!currentVector.contains(cit.next()))
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
@@ -879,13 +881,13 @@ void NetworkGraphWidget::checkCongruency()
 	{
 	  if (!caseVector.contains(cit2.next()))
 	    {
-	      incongruencyLabel->setText("Incongruency detected");
+	      incongruenceLabel->setText("Incongruence detected");
 	      delete query;
 	      return;
 	    }
 	}
       delete query;
-      incongruencyLabel->setText("");
+      incongruenceLabel->setText("");
     }
 }
 
@@ -4036,8 +4038,8 @@ void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item)
     {
       moveModeDownButton->setEnabled(false);
     }
-  QVectorIterator<NetworkNode*> it(_networkNodeVector);
   bool hidden = false;
+  QVectorIterator<NetworkNode*> it(_networkNodeVector);
   while (it.hasNext()) 
     {
       NetworkNode *current = it.next();
@@ -4885,7 +4887,7 @@ void NetworkGraphWidget::plotNewGraph()
   setWeightControls();
   plotLabel->setText("Unsaved plot");
   updateEdges();
-  checkCongruency();
+  checkCongruence();
   caseListWidget->setEnabled(true);
   setVisibility();
   makeLayout();
@@ -7181,7 +7183,7 @@ void NetworkGraphWidget::seePlots()
       fixZValues();
       caseListWidget->setEnabled(true);
       // Now let's do the final processing
-      checkCongruency();
+      checkCongruence();
       setVisibility();
       setGraphControls(true);
       plotLabel->setText(plot);

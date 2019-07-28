@@ -94,8 +94,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   relationshipLegendLabel = new QLabel(tr("<b>Relationships:</b>"), this);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
   changeLabel = new QLabel(tr("*"), this);
-  incongruencyLabel = new QLabel(tr(""), this);
-  incongruencyLabel->setStyleSheet("QLabel {color : red;}");
+  incongruenceLabel = new QLabel(tr(""), this);
+  incongruenceLabel->setStyleSheet("QLabel {color : red;}");
   casesLabel = new QLabel(tr("<b>Case filtering:</b>"), graphicsWidget);
   upperRangeLabel = new QLabel(tr("<b>Upper bound:</b>"), graphicsWidget);
   lowerRangeLabel = new QLabel(tr("<b>Lower bound:</b>"), graphicsWidget);
@@ -421,7 +421,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   plotOptionsLayout->addWidget(seePlotsButton);
   plotOptionsLayout->addWidget(plotLabel);
   plotOptionsLayout->addWidget(changeLabel);
-  plotOptionsLayout->addWidget(incongruencyLabel);
+  plotOptionsLayout->addWidget(incongruenceLabel);
   plotOptionsLayout->addSpacerItem(new QSpacerItem(100,0));
   plotOptionsLayout->setAlignment(Qt::AlignLeft);
   topLayout->addLayout(plotOptionsLayout);
@@ -654,7 +654,7 @@ void OccurrenceGraphWidget::setAntialiasing(bool state)
     }
 }
 
-void OccurrenceGraphWidget::checkCongruency() 
+void OccurrenceGraphWidget::checkCongruence() 
 {
   qApp->setOverrideCursor(Qt::WaitCursor);
   if (_attributeOccurrenceVector.size() > 0) 
@@ -715,7 +715,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      QVector<int> attributeIncidents = attributeMap.value(attribute);
 	      if (!attributeIncidents.contains(id))
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "1";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -726,7 +726,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      QPair<int, int> currentPair = QPair<int, int>(id, order);
 	      if (!orderPairs.contains(currentPair))
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "2";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -785,7 +785,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      int currentExpected = it4.next();
 	      if (!observed.contains(currentExpected))
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "3";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -857,7 +857,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      query->first();
 	      if (query->isNull(0)) 
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "4";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -870,7 +870,7 @@ void OccurrenceGraphWidget::checkCongruency()
 	      query2->first();
 	      if (query2->isNull(0)) 
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "5";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -880,7 +880,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		}
 	      else if (query2->value(0).toInt() != order) 
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "6";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -946,7 +946,7 @@ void OccurrenceGraphWidget::checkCongruency()
 		}
 	      if (!found) 
 		{
-		  incongruencyLabel->setText("Incongruency detected");
+		  incongruenceLabel->setText("Incongruence detected");
 		  qDebug() << "7";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
@@ -980,7 +980,7 @@ void OccurrenceGraphWidget::checkCongruency()
     {
       if (!currentVector.contains(cit.next()))
 	{
-	  incongruencyLabel->setText("Incongruency detected");
+	  incongruenceLabel->setText("Incongruence detected");
 	  qDebug() << "8";
 	  delete query;
 	  return;
@@ -991,13 +991,13 @@ void OccurrenceGraphWidget::checkCongruency()
     {
       if (!caseVector.contains(cit2.next()))
 	{
-	  incongruencyLabel->setText("Incongruency detected");
+	  incongruenceLabel->setText("Incongruence detected");
 	  qDebug() << "9";
 	  delete query;
 	  return;
 	}
     }
-  incongruencyLabel->setText("");
+  incongruenceLabel->setText("");
   qApp->restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -1276,7 +1276,7 @@ void OccurrenceGraphWidget::addAttribute()
   scene->update();
   view->update();
   updateLinkages();
-  checkCongruency();
+  checkCongruence();
   if (!caseListWidget->isEnabled()) 
     {
       caseListWidget->setEnabled(true);
@@ -1437,7 +1437,7 @@ void OccurrenceGraphWidget::addAttributes()
       scene->update();
       view->update();
       updateLinkages();
-      checkCongruency();
+      checkCongruence();
       if (!caseListWidget->isEnabled()) 
 	{
 	  caseListWidget->setEnabled(true);
@@ -1572,7 +1572,7 @@ void OccurrenceGraphWidget::addRelationship()
   scene->update();
   view->update();
   updateLinkages();
-  checkCongruency();
+  checkCongruence();
   if (!caseListWidget->isEnabled()) 
     {
       caseListWidget->setEnabled(true);
@@ -1720,7 +1720,7 @@ void OccurrenceGraphWidget::addRelationships()
       scene->update();
       view->update();
       updateLinkages();
-      checkCongruency();
+      checkCongruence();
       if (!caseListWidget->isEnabled()) 
 	{
 	  caseListWidget->setEnabled(true);
@@ -1822,7 +1822,7 @@ void OccurrenceGraphWidget::removeAttributeMode()
     }
   wireLinkages();
   removeAttributeModeButton->setEnabled(false);
-  checkCongruency();
+  checkCongruence();
 }
 
 void OccurrenceGraphWidget::removeRelationshipMode() 
@@ -1872,7 +1872,7 @@ void OccurrenceGraphWidget::removeRelationshipMode()
     }
   wireLinkages();
   removeRelationshipModeButton->setEnabled(false);
-  checkCongruency();
+  checkCongruence();
 }
 
 void OccurrenceGraphWidget::disableAttributeModeButton() 
@@ -6824,7 +6824,7 @@ void OccurrenceGraphWidget::seePlots()
 	  toggleAttributeLabelsOnly();
 	}
       setVisibility();
-      checkCongruency();
+      checkCongruence();
       delete query;
     }
   else if (savedPlotsDialog->getExitStatus() == 2) 

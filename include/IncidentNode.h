@@ -63,6 +63,7 @@ public:
   void setAbstractNode(AbstractNode* eventPtr);
   void setMode(const QString mode);
   void setCopy(bool state);
+  void setMassHidden(bool state);
   
   // Getters
   QColor getColor();
@@ -76,6 +77,7 @@ public:
   AbstractNode* getAbstractNode();
   QString getMode() const;
   bool isCopy();
+  bool isMassHidden();
 
   // Type recognition
   enum {Type = UserType + 1};
@@ -98,6 +100,7 @@ private:
   int _order;
   QString _mode;
   bool _copy;
+  bool _massHidden;
 
   // Pointers to memory allocated by other classes
   // Do not delete.
