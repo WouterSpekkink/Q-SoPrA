@@ -123,7 +123,7 @@ private slots:
   void checkCases();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
-  void disableModeButtons();
+  void disableLegendButtons();
   void setLinkageButtons(QTableWidgetItem *item);
   void disableLinkageButtons();
   void restoreModeColors();

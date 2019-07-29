@@ -125,7 +125,7 @@ private slots:
   void multimodeTransformation();
   void removeMode();
   void setModeButtons(QTableWidgetItem *item);
-  void disableModeButtons();
+  void disableLegendButtons();
   void restoreModeColors();
   void hideMode();
   void showMode();

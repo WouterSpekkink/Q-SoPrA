@@ -150,15 +150,11 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   layoutComboBox->addItem(NOOVERLAP);
   
   lowerRangeDial = new QDial(graphicsWidget);
-  lowerRangeDial->setEnabled(false);
   lowerRangeDial->setSingleStep(1);
   upperRangeDial = new QDial(graphicsWidget);
   upperRangeDial->setSingleStep(1);
-  upperRangeDial->setEnabled(false);
   lowerRangeSpinBox = new QSpinBox(graphicsWidget);
-  lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
-  upperRangeSpinBox->setEnabled(false);
 
   zoomSlider = new QSlider(Qt::Horizontal, this);
   zoomSlider->installEventFilter(this);
@@ -277,6 +273,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   showModeButton = new QPushButton(tr("Show"), legendWidget);
   showModeButton->setCheckable(true);
   showModeButton->setChecked(true);
+  disableLegendButtons();
   
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -534,7 +531,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(eventListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(eventListWidget, SIGNAL(noneSelected()),
-	  this, SLOT(disableModeButtons()));
+	  this, SLOT(disableLegendButtons()));
   connect(eventListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(linkageListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
@@ -1217,6 +1214,23 @@ void EventGraphWidget::setGraphControls(bool state)
   setTimeRangeButton->setEnabled(state);
   exportTransitionMatrixButton->setEnabled(state);
   restoreModeColorsButton->setEnabled(state);
+  addModeButton->setEnabled(state);
+  addModesButton->setEnabled(state);
+  toggleLabelsButton->setEnabled(state);
+  eventColorButton->setEnabled(state);
+  labelColorButton->setEnabled(state);
+  backgroundColorButton->setEnabled(state);
+  increaseLabelSizeButton->setEnabled(state);
+  decreaseLabelSizeButton->setEnabled(state);
+  exportSvgButton->setEnabled(state);
+  exportNodesButton->setEnabled(state);
+  exportEdgesButton->setEnabled(state);
+  exportTableButton->setEnabled(state);
+  lowerRangeDial->setEnabled(state);
+  upperRangeDial->setEnabled(state);
+  lowerRangeSpinBox->setEnabled(state);
+  upperRangeSpinBox->setEnabled(state);
+
 }
 
 void EventGraphWidget::updateCases() 
@@ -3966,6 +3980,7 @@ void EventGraphWidget::cleanUp()
   _labelsVisible = true;
   _labelSize = 10;
   setGraphControls(false);
+  disableLegendButtons();
 }
 
 void EventGraphWidget::increaseDistance() 
@@ -4904,7 +4919,7 @@ void EventGraphWidget::saveCurrentPlot()
 		     "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
 		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden, :masshidden)");
       QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, _incidentNodeVector.size());
-      saveProgress->setWindowTitle("Saving event items");
+      saveProgress->setWindowTitle("Saving incident nodes");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
       saveProgress->setModal(true);
       int counter = 1;
@@ -6003,6 +6018,7 @@ void EventGraphWidget::seePlots()
 	  newAbstractNode->setAttributes(attributes);
 	  newAbstractNode->setValues(values);
 	  newAbstractNode->setOrder(order);
+	  newAbstractNode->setMode(mode);
 	  if (hidden == 1) 
 	    {
 	      newAbstractNode->hide();
@@ -7191,13 +7207,16 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item)
     }
 }
 
-void EventGraphWidget::disableModeButtons() 
+void EventGraphWidget::disableLegendButtons() 
 {
   removeModeButton->setEnabled(false);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton->setEnabled(false);
   hideModeButton->setEnabled(false);
   showModeButton->setEnabled(false);
+  hideLinkageTypeButton->setEnabled(false);
+  showLinkageTypeButton->setEnabled(false);
+  removeLinkageTypeButton->setEnabled(false);
 }
 
 void EventGraphWidget::hideMode() 
@@ -8068,10 +8087,6 @@ void EventGraphWidget::setHeights()
 
 void EventGraphWidget::setRangeControls() 
 {
-  lowerRangeDial->setEnabled(true);
-  upperRangeDial->setEnabled(true);
-  lowerRangeSpinBox->setEnabled(true);
-  upperRangeSpinBox->setEnabled(true);
   lowerRangeDial->setRange(1, _incidentNodeVector.size() - 1);
   upperRangeDial->setRange(2, _incidentNodeVector.size());
   lowerRangeSpinBox->setRange(1, _incidentNodeVector.size() - 1);

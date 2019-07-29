@@ -197,7 +197,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   moveModeDownButton = new QPushButton(tr("Down"), this);
   moveModeDownButton->setEnabled(false);
   setTimeRangeButton = new QPushButton(tr("Set time range"), graphicsWidget);
-
+  disableLegendButtons();
+  
   addLineButton = new QPushButton(QIcon("./images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
   addLineButton->setMinimumSize(40, 40);
@@ -272,17 +273,12 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   penWidthSpinBox->setMaximum(20);
   
   lowerRangeDial = new QDial(graphicsWidget);
-  lowerRangeDial->setEnabled(false);
   lowerRangeDial->setSingleStep(1);
   upperRangeDial = new QDial(graphicsWidget);
   upperRangeDial->setSingleStep(1);
-  upperRangeDial->setEnabled(false);
   lowerRangeSpinBox = new QSpinBox(graphicsWidget);
-  lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
-  upperRangeSpinBox->setEnabled(false);
   weightSpinBox = new QSpinBox(graphicsWidget);
-  weightSpinBox->setEnabled(false);
   
   zoomSlider = new QSlider(Qt::Horizontal, this);
   zoomSlider->installEventFilter(this);
@@ -367,7 +363,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(nodeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
 	  this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(nodeListWidget, SIGNAL(noneSelected()),
-	  this, SLOT(disableModeButtons()));
+	  this, SLOT(disableLegendButtons()));
   connect(nodeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
 	  this, SLOT(changeModeColor(QTableWidgetItem *)));
   connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
@@ -994,6 +990,25 @@ void NetworkGraphWidget::setGraphControls(bool state)
   layoutButton->setEnabled(state);
   hideAnnotationsButton->setEnabled(state);
   setTimeRangeButton->setEnabled(state);
+  restoreModeColorsButton->setEnabled(state);
+  addModeButton->setEnabled(state);
+  addModesButton->setEnabled(state);
+  multimodeButton->setEnabled(state);
+  toggleLabelsButton->setEnabled(state);
+  nodeColorButton->setEnabled(state);
+  labelColorButton->setEnabled(state);
+  backgroundColorButton->setEnabled(state);
+  increaseFontSizeButton->setEnabled(state);
+  decreaseFontSizeButton->setEnabled(state);
+  exportSvgButton->setEnabled(state);
+  exportNodesButton->setEnabled(state);
+  exportEdgesButton->setEnabled(state);
+  exportRelationalEventsButton->setEnabled(state);
+  weightCheckBox->setEnabled(state);
+  lowerRangeDial->setEnabled(state);
+  upperRangeDial->setEnabled(state);
+  lowerRangeSpinBox->setEnabled(state);
+  upperRangeSpinBox->setEnabled(state);
 }
 
 void NetworkGraphWidget::checkCases() 
@@ -4062,13 +4077,19 @@ void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item)
     }
 }
 
-void NetworkGraphWidget::disableModeButtons() 
+void NetworkGraphWidget::disableLegendButtons() 
 {
   removeModeButton->setEnabled(false);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton->setEnabled(false);
   hideModeButton->setEnabled(false);
   showModeButton->setEnabled(false);
+  setFilteredButton->setEnabled(false);
+  unsetFilteredButton->setEnabled(false);
+  hideTypeButton->setEnabled(false);
+  showTypeButton->setEnabled(false);
+  removeTypeButton->setEnabled(false);
+  mergeButton->setEnabled(false);
 }
 
 void NetworkGraphWidget::restoreModeColors() 
@@ -4393,6 +4414,7 @@ void NetworkGraphWidget::setFilterButtons(QTableWidgetItem *item)
       unsetFilteredButton->setEnabled(true);
       hideTypeButton->setEnabled(true);
       showTypeButton->setEnabled(true);
+      mergeButton->setEnabled(true);
       removeTypeButton->setEnabled(true);
     }
   else 
@@ -4401,6 +4423,7 @@ void NetworkGraphWidget::setFilterButtons(QTableWidgetItem *item)
       unsetFilteredButton->setEnabled(false);
       hideTypeButton->setEnabled(false);
       showTypeButton->setEnabled(false);
+      mergeButton->setEnabled(false);
       removeTypeButton->setEnabled(false);
       return;
     }
@@ -5112,10 +5135,6 @@ void NetworkGraphWidget::setRangeControls()
 	}
       delete query;
     }
-  lowerRangeDial->setEnabled(true);
-  upperRangeDial->setEnabled(true);
-  lowerRangeSpinBox->setEnabled(true);
-  upperRangeSpinBox->setEnabled(true);
   lowerRangeDial->setRange(_minOrder, _maxOrder - 1);
   upperRangeDial->setRange(_minOrder + 1, _maxOrder);
   lowerRangeSpinBox->setRange(_minOrder, _maxOrder - 1);
@@ -7824,6 +7843,7 @@ void NetworkGraphWidget::cleanUp()
   toggleSnapGuides();
   setGraphControls(false);
   weightCheckBox->setCheckState(Qt::Unchecked);
+  disableLegendButtons();
 }
 
 void NetworkGraphWidget::finalBusiness() 

@@ -118,15 +118,11 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   layoutLabel = new QLabel(tr("<b>Layout:</b>"), this);
   
   lowerRangeDial = new QDial(graphicsWidget);
-  lowerRangeDial->setEnabled(false);
   lowerRangeDial->setSingleStep(1);
   upperRangeDial = new QDial(graphicsWidget);
   upperRangeDial->setSingleStep(1);
-  upperRangeDial->setEnabled(false);
   lowerRangeSpinBox = new QSpinBox(graphicsWidget);
-  lowerRangeSpinBox->setEnabled(false);
   upperRangeSpinBox = new QSpinBox(graphicsWidget);
-  upperRangeSpinBox->setEnabled(false);
 
   zoomSlider = new QSlider(Qt::Horizontal, this);
   zoomSlider->installEventFilter(this);
@@ -1108,6 +1104,19 @@ void OccurrenceGraphWidget::setGraphControls(bool state)
   decreaseLabelSizeButton->setEnabled(state);
   hideAnnotationsButton->setEnabled(state);
   setTimeRangeButton->setEnabled(state);
+  plotLabelsButton->setEnabled(state);
+  incidentLabelsOnlyButton->setEnabled(state);
+  attributeLabelsOnlyButton->setEnabled(state);
+  backgroundColorButton->setEnabled(state);
+  increaseLabelSizeButton->setEnabled(state);
+  decreaseLabelSizeButton->setEnabled(state);
+  exportSvgButton->setEnabled(state);
+  viewConcordanceButton->setEnabled(state);
+  exportMatrixButton->setEnabled(state);
+  lowerRangeDial->setEnabled(state);
+  upperRangeDial->setEnabled(state);
+  lowerRangeSpinBox->setEnabled(state);
+  upperRangeSpinBox->setEnabled(state);
 }
 
 void OccurrenceGraphWidget::updateCases() 
