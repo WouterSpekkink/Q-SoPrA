@@ -1153,7 +1153,6 @@ void MainWindow::switchToIncidentsAttributesTableView()
     {
       // Still need to figure out what else needs to happen here.
       IncidentsAttributesTable *iat = qobject_cast<IncidentsAttributesTable*>(stacked->widget(12));
-      iat->attributesModel->select();
       iat->updateTable();
       stacked->setCurrentWidget(incidentsAttributesTableWidget);
     }
@@ -1166,7 +1165,6 @@ void MainWindow::switchToEntitiesAttributesTableView()
     {
       // Still need to figure out what else needs to happen here.
       EntitiesAttributesTable *eat = qobject_cast<EntitiesAttributesTable*>(stacked->widget(13));
-      eat->attributesModel->select();
       eat->updateTable();
       stacked->setCurrentWidget(entitiesAttributesTableWidget);
     }

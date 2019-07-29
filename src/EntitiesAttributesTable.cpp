@@ -25,25 +25,34 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(parent) 
 {
   // We first create our model, our table, the view and the filter of the view
-  attributesModel = new RelationalTable(this);
-  attributesModel->setTable("attributes_to_entities");
-  attributesModel->select();
+  attributesModel = new QueryModel(this);
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(1);
+  filter->setFilterKeyColumn(0);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
+  attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+			    "entities.name, entities.description, value "
+			    "FROM attributes_to_entities "
+			    "INNER JOIN entities ON "
+			    "entities.name = attributes_to_entities.entity "
+			    "INNER JOIN entity_attributes ON "
+			    "entity_attributes.name = attributes_to_entities.attribute "
+			    "ORDER BY attribute ASC");
+  
   // Then we set how the data are displayed.
-  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute description"));
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entity"));
+  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entity description"));
   attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Value"));
-  tableView->setColumnHidden(0, true);
-  tableView->setColumnHidden(4, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
-  tableView->setColumnWidth(1, 300);
+  tableView->setColumnWidth(0, 300);
+  tableView->setColumnWidth(1, 600);
   tableView->setColumnWidth(2, 300);
+  tableView->setColumnWidth(3, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);
@@ -57,9 +66,11 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Attributes");
-  filterComboBox->addItem("Entities");
-  filterComboBox->addItem("Values");
+  filterComboBox->addItem("Attribute");
+  filterComboBox->addItem("Attribute description");
+  filterComboBox->addItem("Entity");
+  filterComboBox->addItem("Entity description");
+  filterComboBox->addItem("Value");
 
   editValueButton = new QPushButton(tr("Edit value"), this);
 
@@ -84,9 +95,6 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   // We fetch and sort the data.
   updateTable();
 
-  // We first sort by attribute
-  attributesModel->sort(1, Qt::AscendingOrder);
-
   // And we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
@@ -106,6 +114,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
 
 void EntitiesAttributesTable::updateTable() 
 {
+  attributesModel->query().exec();
   while (attributesModel->canFetchMore()) 
     {
       attributesModel->fetchMore();
@@ -115,6 +124,7 @@ void EntitiesAttributesTable::updateTable()
 void EntitiesAttributesTable::resetHeader(const int &header) 
 {
   tableView->verticalHeader()->resizeSection(header, 30);
+  updateTable();
 }
 
 void EntitiesAttributesTable::sortHeader(const int &header) 
@@ -123,17 +133,179 @@ void EntitiesAttributesTable::sortHeader(const int &header)
     {
       if (_lastSortedAscending)
 	{
-	  attributesModel->sort(header, Qt::DescendingOrder);
+	  if (header == 0)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY attribute DESC");
+	    }
+	  else if (header == 1)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY entity_attributes.description DESC");
+	    }
+	  else if (header == 2)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY entities.name DESC");
+	    }
+	  else if (header == 3)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY entities.description DESC");
+	    }
+	  else if (header == 4)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY value DESC");
+	    }
 	}
       else
 	{
-	  attributesModel->sort(header, Qt::AscendingOrder);
+	  if (header == 0)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY attribute ASC");
+	    }
+	  else if (header == 1)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY entity_attributes.description ASC");
+	    }
+	  else if (header == 2)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY entities.name ASC");
+	    }
+	  else if (header == 3)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY entities.description ASC");
+	    }
+	  else if (header == 4)
+	    {
+	      attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+					"entities.name, entities.description, value "
+					"FROM attributes_to_entities "
+					"INNER JOIN entities ON "
+					"entities.name = attributes_to_entities.entity "
+					"INNER JOIN entity_attributes ON "
+					"entity_attributes.name = attributes_to_entities.attribute "
+					"ORDER BY value ASC");
+	    }
 	}
       _lastSortedAscending = !_lastSortedAscending;
     }
   else
     {
-      attributesModel->sort(header, Qt::AscendingOrder);
+      if (header == 0)
+	{
+	  attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+				    "entities.name, entities.description, value "
+				    "FROM attributes_to_entities "
+				    "INNER JOIN entities ON "
+				    "entities.name = attributes_to_entities.entity "
+				    "INNER JOIN entity_attributes ON "
+				    "entity_attributes.name = attributes_to_entities.attribute "
+				    "ORDER BY attribute ASC");
+	}
+      else if (header == 1)
+	{
+	  attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+				    "entities.name, entities.description, value "
+				    "FROM attributes_to_entities "
+				    "INNER JOIN entities ON "
+				    "entities.name = attributes_to_entities.entity "
+				    "INNER JOIN entity_attributes ON "
+				    "entity_attributes.name = attributes_to_entities.attribute "
+				    "ORDER BY entity_attributes.description ASC");
+	}
+      else if (header == 2)
+	{
+	  attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+				    "entities.name, entities.description, value "
+				    "FROM attributes_to_entities "
+				    "INNER JOIN entities ON "
+				    "entities.name = attributes_to_entities.entity "
+				    "INNER JOIN entity_attributes ON "
+				    "entity_attributes.name = attributes_to_entities.attribute "
+				    "ORDER BY entities.name ASC");
+	}
+      else if (header == 3)
+	{
+	  attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+				    "entities.name, entities.description, value "
+				    "FROM attributes_to_entities "
+				    "INNER JOIN entities ON "
+				    "entities.name = attributes_to_entities.entity "
+				    "INNER JOIN entity_attributes ON "
+				    "entity_attributes.name = attributes_to_entities.attribute "
+				    "ORDER BY entities.description ASC");
+	}
+      else if (header == 4)
+	{
+	  attributesModel->setQuery("SELECT attribute, entity_attributes.description, "
+				    "entities.name, entities.description, value "
+				    "FROM attributes_to_entities "
+				    "INNER JOIN entities ON "
+				    "entities.name = attributes_to_entities.entity "
+				    "INNER JOIN entity_attributes ON "
+				    "entity_attributes.name = attributes_to_entities.attribute "
+				    "ORDER BY value ASC");
+	}
       _lastSortedAscending = true;
     }
   _lastSortedHeader = header;
@@ -148,17 +320,25 @@ void EntitiesAttributesTable::changeFilter(const QString &text)
 
 void EntitiesAttributesTable::setFilterColumn() 
 {
-  if (filterComboBox->currentText() == "Attributes") 
+  if (filterComboBox->currentText() == "Attribute") 
+    {
+      filter->setFilterKeyColumn(0);    
+    }
+  else if (filterComboBox->currentText() == "Attribute description") 
     {
       filter->setFilterKeyColumn(1);    
     }
-  else  if (filterComboBox->currentText() == "Entities") 
+  else  if (filterComboBox->currentText() == "Entity") 
     {
       filter->setFilterKeyColumn(2);
     }
-  else  if (filterComboBox->currentText() == "Values") 
+  else  if (filterComboBox->currentText() == "Entity description") 
     {
       filter->setFilterKeyColumn(3);
+    }
+  else  if (filterComboBox->currentText() == "Value") 
+    {
+      filter->setFilterKeyColumn(4);
     }
 }
 
@@ -167,9 +347,9 @@ void EntitiesAttributesTable::editValue()
   if (tableView->currentIndex().isValid()) 
     {
       int row = tableView->currentIndex().row();
-      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
       QString entity = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
-      QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(row, 4).data(Qt::DisplayRole).toString();
       QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
       simpleTextDialog->submitText(value);
       simpleTextDialog->setLabel("<b>Change value:</b>");
@@ -205,16 +385,20 @@ void EntitiesAttributesTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first need to write the header row.
-      fileOut << "Attribute,Incident,Value\n";
+      fileOut << "Attribute,Attribute description,Entity,Entity description,Value\n";
       // And then we can write the rest of the table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++)
 	{
-	  QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+	  QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
+	  QString attributeDescription = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
 	  QString entity = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-	  QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-	  fileOut << doubleQuote(attribute).toStdString() << ","
-		  << doubleQuote(entity).toStdString() << ","
-		  << value.toStdString() << "\n";
+	  QString entityDescription = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+	  QString value = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
+	  fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(attributeDescription).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(entity).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(entityDescription).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(value).toStdString() << "\"" << "\n";
 	}
     }
 }
@@ -238,9 +422,9 @@ void EntitiesAttributesTable::exportMatrix(bool valued)
   QMultiMap<QString, QVector<QString>> valueMap;
   for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
     {
-      QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
       QString entity = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-      QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
       attributeSet.insert(attribute);
       entitySet.insert(entity);
       QVector<QString> temp;

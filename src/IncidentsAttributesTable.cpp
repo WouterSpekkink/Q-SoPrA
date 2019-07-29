@@ -28,26 +28,33 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   _lastSortedAscending = true;
   
   // We first create our model, our table, the view and the filter of the view
-  attributesModel = new RelationalTable(this);
-  attributesModel->setTable("attributes_to_incidents");
-  attributesModel->select();
+  attributesModel = new QueryModel(this);
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(1);
+  filter->setFilterKeyColumn(0);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-  // We set the incidents column to show the order variable.
-  attributesModel->setRelation(2, QSqlRelation("incidents", "id", "ch_order")); 
+  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+			    "ch_order, incidents.description, value "
+			    "FROM attributes_to_incidents "
+			    "INNER JOIN incidents ON "
+			    "incidents.id = attributes_to_incidents.incident "
+			    "INNER JOIN incident_attributes ON "
+			    "incident_attributes.name = attributes_to_incidents.attribute "
+			    "ORDER BY attribute ASC");
   
   // Then we set how the data are displayed.
-  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute description"));
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
-  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Value"));
-  tableView->setColumnHidden(0, true);
+  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Incident description"));
+  attributesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Value"));
   tableView->horizontalHeader()->setStretchLastSection(true);
-  tableView->setColumnWidth(1, 300);
+  tableView->setColumnWidth(0, 300);
+  tableView->setColumnWidth(1, 600);
+  tableView->setColumnWidth(3, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);
@@ -63,9 +70,11 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Attributes");
-  filterComboBox->addItem("Incidents");
-  filterComboBox->addItem("Values");
+  filterComboBox->addItem("Attribute");
+  filterComboBox->addItem("Attribute description");
+  filterComboBox->addItem("Incident");
+  filterComboBox->addItem("Incident description");
+  filterComboBox->addItem("Value");
 
   editValueButton = new QPushButton(tr("Edit value"), this);
   exportTableButton = new QPushButton(tr("Export table"), this);
@@ -89,9 +98,6 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   // We fetch and sort the data.
   updateTable();
 
-  // We first sort by attribute
-  attributesModel->sort(1, Qt::AscendingOrder);
-
   // And we create the layout.
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(tableView);
@@ -111,6 +117,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
 
 void IncidentsAttributesTable::updateTable() 
 {
+  attributesModel->query().exec();
   while (attributesModel->canFetchMore()) 
     {
       attributesModel->fetchMore();
@@ -120,25 +127,203 @@ void IncidentsAttributesTable::updateTable()
 void IncidentsAttributesTable::resetHeader(int header) 
 {
   tableView->verticalHeader()->resizeSection(header, 30);
+  updateTable();
 }
 
 void IncidentsAttributesTable::sortHeader(int header) 
 {
-   if (header == _lastSortedHeader)
+  if (header == _lastSortedHeader)
     {
       if (_lastSortedAscending)
 	{
-	  attributesModel->sort(header, Qt::DescendingOrder);
+	  if (header == 0)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY attribute DESC");
+	    }
+	  else if (header == 1)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY incidents_attributes.description DESC");
+	    }
+	  else if (header == 2)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY incidents.ch_order DESC");
+	    }
+	  else if (header == 3)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY incidents.description DESC");
+	    }
+	  else if (header == 4)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY value DESC");
+	    }
 	}
       else
 	{
-	  attributesModel->sort(header, Qt::AscendingOrder);
+	  if (header == 0)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY attribute ASC");
+	    }
+	  else if (header == 1)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY incidents_attributes.description ASC");
+	    }
+	  else if (header == 2)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY incidents.ch_order ASC");
+	    }
+	  else if (header == 3)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY incidents.description ASC");
+	    }
+	  else if (header == 4)
+	    {
+	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY value ASC");
+	    }
 	}
       _lastSortedAscending = !_lastSortedAscending;
     }
   else
     {
-      attributesModel->sort(header, Qt::AscendingOrder);
+      if (header == 0)
+	{
+	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+				    "incidents.ch_order, incidents.description, value "
+				    "FROM attributes_to_incidents "
+				    "INNER JOIN incidents ON "
+				    "incidents.id = attributes_to_incidents.incident "
+				    "INNER JOIN incident_attributes ON "
+				    "incident_attributes.name = "
+				    "attributes_to_incidents.attribute "
+				    "ORDER BY attribute DESC");
+	}
+      else if (header == 1)
+	{
+	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+				    "incidents.ch_order, incidents.description, value "
+				    "FROM attributes_to_incidents "
+				    "INNER JOIN incidents ON "
+				    "incidents.id = attributes_to_incidents.incident "
+				    "INNER JOIN incident_attributes ON "
+				    "incident_attributes.name = "
+				    "attributes_to_incidents.attribute "
+				    "ORDER BY incidents_attributes.description DESC");
+	}
+      else if (header == 2)
+	{
+	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+				    "incidents.ch_order, incidents.description, value "
+				    "FROM attributes_to_incidents "
+				    "INNER JOIN incidents ON "
+				    "incidents.id = attributes_to_incidents.incident "
+				    "INNER JOIN incident_attributes ON "
+				    "incident_attributes.name = "
+				    "attributes_to_incidents.attribute "
+				    "ORDER BY incidents.ch_order DESC");
+	}
+      else if (header == 3)
+	{
+	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+				    "incidents.ch_order, incidents.description, value "
+				    "FROM attributes_to_incidents "
+				    "INNER JOIN incidents ON "
+				    "incidents.id = attributes_to_incidents.incident "
+				    "INNER JOIN incident_attributes ON "
+				    "incident_attributes.name = "
+				    "attributes_to_incidents.attribute "
+				    "ORDER BY incidents.description DESC");
+	}
+      else if (header == 4)
+	{
+	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+				    "incidents.ch_order, incidents.description, value "
+				    "FROM attributes_to_incidents "
+				    "INNER JOIN incidents ON "
+				    "incidents.id = attributes_to_incidents.incident "
+				    "INNER JOIN incident_attributes ON "
+				    "incident_attributes.name = "
+				    "attributes_to_incidents.attribute "
+				    "ORDER BY value DESC");
+	}
       _lastSortedAscending = true;
     }
   _lastSortedHeader = header;
@@ -149,21 +334,30 @@ void IncidentsAttributesTable::changeFilter(const QString &text)
 {
   QRegExp regExp(text, Qt::CaseInsensitive);
   filter->setFilterRegExp(regExp);
+  updateTable();
 }
 
 void IncidentsAttributesTable::setFilterColumn() 
 {
-  if (filterComboBox->currentText() == "Attributes") 
+  if (filterComboBox->currentText() == "Attribute") 
+    {
+      filter->setFilterKeyColumn(0);    
+    }
+  else if (filterComboBox->currentText() == "Attribute description") 
     {
       filter->setFilterKeyColumn(1);    
     }
-  else if (filterComboBox->currentText() == "Incidents") 
+  else if (filterComboBox->currentText() == "Incident") 
     {
       filter->setFilterKeyColumn(2);
     }
-  else if (filterComboBox->currentText() == "Values") 
+  else if (filterComboBox->currentText() == "Incident description") 
     {
       filter->setFilterKeyColumn(3);
+    }
+  else if (filterComboBox->currentText() == "Values") 
+    {
+      filter->setFilterKeyColumn(4);
     }
 }
 
@@ -172,7 +366,7 @@ void IncidentsAttributesTable::editValue()
   if (tableView->currentIndex().isValid()) 
     {
       int row = tableView->currentIndex().row();
-      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
       int order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toInt();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
@@ -180,7 +374,7 @@ void IncidentsAttributesTable::editValue()
       query->exec();
       query->first();
       int incident = query->value(0).toInt();
-      QString value = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(row,4).data(Qt::DisplayRole).toString();
       QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
       simpleTextDialog->submitText(value);
       simpleTextDialog->setLabel("<b>Change value:</b>");
@@ -215,16 +409,20 @@ void IncidentsAttributesTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first need to write the header row.
-      fileOut << "Attribute,Incident,Value\n";
+      fileOut << "Attribute,Attribute Description,Incident,Incident Description,Value\n";
       // And then we can write the rest of the table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++)
 	{
-	  QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+	  QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
+	  QString attributeDescription = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
 	  int incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toInt();
-	  QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-	  fileOut << doubleQuote(attribute).toStdString() << ","
-		  << incident << ","
-		  << value.toStdString() << "\n";
+	  QString incidentDescription = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+	  QString value = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
+	  fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(attributeDescription).toStdString() << "\"" << ","
+		  << incident << "," 
+		  << "\"" << doubleQuote(incidentDescription).toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(value).toStdString() << "\"" << "\n";
 	}
     }
 }
@@ -248,9 +446,9 @@ void IncidentsAttributesTable::exportMatrix(bool valued)
   QMultiMap<int, QVector<QString>> valueMap;
   for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
     {
-      QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
       int incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toInt();
-      QString value = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
       attributeSet.insert(attribute);
       incidentSet.insert(incident);
       QVector<QString> temp;

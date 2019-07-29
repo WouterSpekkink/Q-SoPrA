@@ -29,7 +29,6 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
   
   // We first create our model, our table, the view and the filter of the view
   attributesModel = new QueryModel(this);
-
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
   filter->setFilterKeyColumn(2);

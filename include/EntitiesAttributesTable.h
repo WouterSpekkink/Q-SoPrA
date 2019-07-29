@@ -41,6 +41,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "SortFunctions.h"
 #include "ProgressBar.h"
 #include "SimpleTextDialog.h"
+#include "QueryModel.h"
 
 class EntitiesAttributesTable : public QWidget
 {
@@ -69,7 +70,7 @@ private slots:
   
 private:
   // Interface elements
-  QPointer<RelationalTable> attributesModel;
+  QPointer<QueryModel> attributesModel;
   QPointer<ZoomableTableView> tableView;
   QPointer<QSortFilterProxyModel> filter;
   QPointer<QLabel> filterComboLabel;
