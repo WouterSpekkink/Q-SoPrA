@@ -1287,29 +1287,20 @@ void LinkagesWidget::retrieveData()
 	  setLinkButton->setEnabled(true);
 	}
     }
-  query->prepare("SELECT comment, coder FROM linkage_comments "
-		 "WHERE tail = :tail AND head = :head AND type = :type");
+  query->prepare("SELECT comment FROM linkage_comments "
+		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", tailIndex);
   query->bindValue(":head", headIndex);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   query->first();
   if (!(query->isNull(0))) 
     {
       QString comment = query->value(0).toString();
-      QString coder = query->value(1).toString();
       linkageCommentField->blockSignals(true);
       linkageCommentField->setText(comment);
       linkageCommentField->blockSignals(false);
-      QString toolTip = "Last author: " + coder;
-      linkageCommentField->setToolTip(toolTip);
-    }
-  else 
-    {
-      linkageCommentField->blockSignals(true);
-      linkageCommentField->setText("");
-      linkageCommentField->blockSignals(false);
-      linkageCommentField->setToolTip("No comment available");
     }
   query->prepare("SELECT istail, source_text FROM linkages_sources "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
@@ -3366,10 +3357,8 @@ void LinkagesWidget::setLinkageComment()
       query->bindValue(":type", _selectedType);
       query->exec();
       query->first();
-      int tailIndex = 0;
-      int headIndex = 0;
-      tailIndex = query->value(0).toInt();
-      headIndex = query->value(1).toInt();
+      int tailIndex = query->value(0).toInt();
+      int headIndex = query->value(1).toInt();
       query->prepare("SELECT tail FROM linkage_comments "
 		     "WHERE tail = :tail AND head = :head AND type = :type");
       query->bindValue(":tail", tailIndex);
@@ -3403,14 +3392,17 @@ void LinkagesWidget::setLinkageComment()
 	}
       else 
 	{
-	  query->prepare("INSERT INTO linkage_comments (tail, head, comment, coder, type)"
-			 "VALUES (:tail, :head, :comment, :coder, :type)");
-	  query->bindValue(":tail", tailIndex);
-	  query->bindValue(":head", headIndex);
-	  query->bindValue(":comment", comment);
-	  query->bindValue(":coder", _selectedCoder);
-	  query->bindValue(":type", _selectedType);
-	  query->exec();
+	  if (comment != "")
+	    {
+	      query->prepare("INSERT INTO linkage_comments (tail, head, comment, coder, type)"
+			     "VALUES (:tail, :head, :comment, :coder, :type)");
+	      query->bindValue(":tail", tailIndex);
+	      query->bindValue(":head", headIndex);
+	      query->bindValue(":comment", comment);
+	      query->bindValue(":coder", _selectedCoder);
+	      query->bindValue(":type", _selectedType);
+	      query->exec();
+	    }
 	}
       _linkageCommentBool = false;
       delete query;
@@ -3420,12 +3412,6 @@ void LinkagesWidget::setLinkageComment()
 void LinkagesWidget::pause(int time) 
 {
   std::this_thread::sleep_for(std::chrono::milliseconds(time));
-  /*#ifdef __linux__ 
-    std::chrono::milliseconds timespan(time); 
-    std::this_thread::sleep_for(timespan);
-    #elif _WIN32
-    Sleep(time);
-    #endif*/
 }
 
 void LinkagesWidget::setLink() 

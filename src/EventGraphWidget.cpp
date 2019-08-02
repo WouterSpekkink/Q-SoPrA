@@ -7879,58 +7879,59 @@ void EventGraphWidget::setVisibility()
 		}
 	    }
 	}
-      if (_checkedCases.size() > 0) 
+    }
+  if (_checkedCases.size() > 0) 
+    {
+      it.toFront();
+      while (it.hasNext()) 
 	{
-	  it.toFront();
-	  while (it.hasNext()) 
+	  IncidentNode *currentItem = it.next();
+	  QVectorIterator<QString> it2(_checkedCases);
+	  bool found = false;
+	  while (it2.hasNext()) 
 	    {
-	      IncidentNode *currentItem = it.next();
-	      QVectorIterator<QString> it2(_checkedCases);
-	      bool found = false;
-	      while (it2.hasNext()) 
+	      QString currentCase = it2.next();
+	      query->bindValue(":incident", currentItem->getId());
+	      query->bindValue(":casename", currentCase);
+	      query->exec();
+	      query->first();
+	      if (!query->isNull(0)) 
 		{
-		  QString currentCase = it2.next();
-		  query->bindValue(":incident", currentItem->getId());
-		  query->bindValue(":casename", currentCase);
-		  query->exec();
-		  query->first();
-		  if (!query->isNull(0)) 
-		    {
-		      found = true;
-		    }
+		  found = true;
 		}
-	      if (!found) 
+	    }
+	  if (!found) 
+	    {
+	      if (currentItem->getAbstractNode() == NULL) 
 		{
-		  if (currentItem->getAbstractNode() == NULL) 
+		  currentItem->hide();
+		}
+	      else 
+		{
+		  bool keep = false;
+		  QVector<IncidentNode *> contents =
+		    currentItem->getAbstractNode()->getIncidents();
+		  QVectorIterator<IncidentNode *> it2(contents);
+		  while (it2.hasNext()) 
 		    {
-		      currentItem->hide();
-		    }
-		  else 
-		    {
-		      bool keep = false;
-		      QVector<IncidentNode *> contents = currentItem->getAbstractNode()->getIncidents();
-		      QVectorIterator<IncidentNode *> it2(contents);
-		      while (it2.hasNext()) 
+		      IncidentNode *currentIncident = it2.next();
+		      QVectorIterator<QString> it3(_checkedCases);
+		      while (it3.hasNext()) 
 			{
-			  IncidentNode *currentIncident = it2.next();
-			  QVectorIterator<QString> it3(_checkedCases);
-			  while (it3.hasNext()) 
+			  QString currentCase = it3.next();
+			  query->bindValue(":incident", currentIncident->getId());
+			  query->bindValue(":casename", currentCase);
+			  query->exec();
+			  query->first();
+			  if (!query->isNull(0)) 
 			    {
-			      QString currentCase = it3.next();
-			      query->bindValue(":incident", currentIncident->getId());
-			      query->bindValue(":casename", currentCase);
-			      query->exec();
-			      query->first();
-			      if (!query->isNull(0)) 
-				{
-				  keep = true;
-				}
+			      keep = true;
 			    }
 			}
-		      if (!keep) 
-			{
-			  currentItem->getAbstractNode()->hide();
-			}
+		    }
+		  if (!keep) 
+		    {
+		      currentItem->getAbstractNode()->hide();
 		    }
 		}
 	    }
@@ -10688,294 +10689,252 @@ void EventGraphWidget::removeNormalLinkage()
 
 void EventGraphWidget::ignoreLinkage() 
 {
-  if (scene->selectedItems().size() > 0) 
+  if (scene->selectedItems().size() == 1) 
     {
-      QListIterator<QGraphicsItem*> it(scene->selectedItems());
-      while (it.hasNext()) 
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
+      if (linkage) 
 	{
-	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
-	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(it.peekNext());
-	  IncidentNodeLabel *text = qgraphicsitem_cast<IncidentNodeLabel*>(it.peekNext());
-	  if (linkage && !(incidentNode) && !(text)) 
-	    {
-	      Linkage *currentEdge = qgraphicsitem_cast<Linkage*>(it.next());;
-	      currentEdge->setPenStyle(1);
-	    }
-	  else 
-	    {
-	      it.next();
-	    }
+	  linkage->setPenStyle(1);
 	}
     }
 }
 
 void EventGraphWidget::keepLinkage() 
 {
-  if (scene->selectedItems().size() > 0) 
+  if (scene->selectedItems().size() == 1) 
     {
-      QListIterator<QGraphicsItem*> it(scene->selectedItems());
-      while (it.hasNext()) 
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
+      if (linkage) 
 	{
-	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(it.peekNext());
-	  if (linkage) 
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+	  int tail = startIncidentNode->getId();
+	  linkage->setPenStyle(1);
+	  QString type = linkage->getType();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	  query->bindValue(":type", type);
+	  query->exec();
+	  query->first();
+	  QString direction = query->value(0).toString();
+	  QSet<int> markOne;
+	  QSet<int> markTwo;
+	  if (direction == PAST) 
 	    {
-	      Linkage *currentEdge = qgraphicsitem_cast<Linkage*>(it.next());
-	      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
-	      int tail = startIncidentNode->getId();
-	      currentEdge->setPenStyle(1);
-	      QString type = currentEdge->getType();
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	      findHeadsLowerBound(&markOne, tail, 1, type);
+	      findTailsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
+	    }
+	  else if (direction == FUTURE) 
+	    {
+	      findTailsLowerBound(&markOne, tail, 1, type);
+	      findHeadsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
+	    }
+	  QSetIterator<int> it2(markOne);
+	  bool found = false;
+	  QSqlDatabase::database().transaction();
+	  query->prepare("SELECT head FROM linkages "
+			 "WHERE coder = :coder AND type = :type "
+			 "AND tail = :tail");
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT tail, head FROM linkages "
+			  "WHERE coder = :coder AND type = :type "
+			  "AND tail = :tail AND head = :head");
+	  while (it2.hasNext()) 
+	    {
+	      int currentPathMate = it2.next();
+	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":type", type);
+	      query->bindValue(":tail", currentPathMate);
 	      query->exec();
-	      query->first();
-	      QString direction = query->value(0).toString();
-	      QSet<int> markOne;
-	      QSet<int> markTwo;
-	      if (direction == PAST) 
+	      while (query->next()) 
 		{
-		  findHeadsLowerBound(&markOne, tail, 1, type);
-		  findTailsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-		}
-	      else if (direction == FUTURE) 
-		{
-		  findTailsLowerBound(&markOne, tail, 1, type);
-		  findHeadsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-		}
-	      QSetIterator<int> it2(markOne);
-	      bool found = false;
-	      QSqlDatabase::database().transaction();
-	      query->prepare("SELECT head FROM linkages "
-			     "WHERE coder = :coder AND type = :type "
-			     "AND tail = :tail");
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("SELECT tail, head FROM linkages "
-			      "WHERE coder = :coder AND type = :type "
-			      "AND tail = :tail AND head = :head");
-	      while (it2.hasNext()) 
-		{
-		  int currentPathMate = it2.next();
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", type);
-		  query->bindValue(":tail", currentPathMate);
-		  query->exec();
-		  while (query->next()) 
+		  int mateHead = query->value(0).toInt();
+		  query2->bindValue(":coder", _selectedCoder);
+		  query2->bindValue(":type", type);
+		  query2->bindValue(":tail", tail);
+		  query2->bindValue(":head", mateHead);
+		  query2->exec();
+		  query2->first();
+		  if (!(query2->isNull(0))) 
 		    {
-		      int mateHead = query->value(0).toInt();
-		      query2->bindValue(":coder", _selectedCoder);
-		      query2->bindValue(":type", type);
-		      query2->bindValue(":tail", tail);
-		      query2->bindValue(":head", mateHead);
-		      query2->exec();
-		      query2->first();
-		      if (!(query2->isNull(0))) 
-			{
-			  found = true;
-			}
-		    }
-		  if (found) 
-		    {
-		      currentEdge->setPenStyle(2);
+		      found = true;
 		    }
 		}
-	      QSqlDatabase::database().commit();
-	      QSetIterator<int> it3(markTwo);
-	      found = false;
-	      QSqlDatabase::database().transaction();
-	      query->prepare("SELECT head FROM linkages "
-			     "WHERE coder = :coder AND type = :type "
-			     "AND tail = :tail");
-	      query2->prepare("SELECT tail, head FROM linkages "
-			      "WHERE coder = :coder AND type = :type "
-			      "AND tail = :tail AND head = :head");
-	      while (it3.hasNext()) 
+	      if (found) 
 		{
-		  int currentPathMate = it3.next();
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", type);
-		  query->bindValue(":tail", currentPathMate);
-		  query->exec();
-		  while (query->next()) 
-		    {
-		      int mateHead = query->value(0).toInt();
-		      query2->bindValue(":coder", _selectedCoder);
-		      query2->bindValue(":type", type);
-		      query2->bindValue(":tail", tail);
-		      query2->bindValue(":head", mateHead);
-		      query2->exec();
-		      query2->first();
-		      if (!(query2->isNull(0))) 
-			{
-			  found = true;
-			}
-		    }
-		  if (found) 
-		    {
-		      currentEdge->setPenStyle(2);
-		    }
+		  linkage->setPenStyle(2);
 		}
-	      QSqlDatabase::database().commit();
-	      delete query2;
-	      delete query;
 	    }
-	  else 
+	  QSqlDatabase::database().commit();
+	  QSetIterator<int> it3(markTwo);
+	  found = false;
+	  QSqlDatabase::database().transaction();
+	  query->prepare("SELECT head FROM linkages "
+			 "WHERE coder = :coder AND type = :type "
+			 "AND tail = :tail");
+	  query2->prepare("SELECT tail, head FROM linkages "
+			  "WHERE coder = :coder AND type = :type "
+			  "AND tail = :tail AND head = :head");
+	  while (it3.hasNext()) 
 	    {
-	      it.next();
+	      int currentPathMate = it3.next();
+	      query->bindValue(":coder", _selectedCoder);
+	      query->bindValue(":type", type);
+	      query->bindValue(":tail", currentPathMate);
+	      query->exec();
+	      while (query->next()) 
+		{
+		  int mateHead = query->value(0).toInt();
+		  query2->bindValue(":coder", _selectedCoder);
+		  query2->bindValue(":type", type);
+		  query2->bindValue(":tail", tail);
+		  query2->bindValue(":head", mateHead);
+		  query2->exec();
+		  query2->first();
+		  if (!(query2->isNull(0))) 
+		    {
+		      found = true;
+		    }
+		}
+	      if (found) 
+		{
+		  linkage->setPenStyle(2);
+		}
 	    }
+	  QSqlDatabase::database().commit();
+	  delete query2;
+	  delete query;
 	}
     }
 }
 
 void EventGraphWidget::acceptLinkage() 
 {
-  if (scene->selectedItems().size() > 0) 
+  if (scene->selectedItems().size() == 1) 
     {
-      QListIterator<QGraphicsItem*> it(scene->selectedItems());
-      while (it.hasNext()) 
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
+      if (linkage) 
 	{
-	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
-	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(it.peekNext());
-	  IncidentNodeLabel *text = qgraphicsitem_cast<IncidentNodeLabel*>(it.peekNext());
-	  if (linkage && !(incidentNode) && !(text)) 
+	  QString type = linkage->getType();
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
+	  int tail = startIncidentNode->getId();
+	  int head = endIncidentNode->getId();
+	  linkage->setPenStyle(0);
+	  _edgeVector.push_back(linkage);
+	  _compareVector.removeOne(linkage);
+	  QSqlQuery *query =  new QSqlQuery;
+	  query->prepare("INSERT INTO linkages (tail, head, coder, type) "
+			 "VALUES (:tail, :head, :coder, :type)");
+	  query->bindValue(":tail", tail);
+	  query->bindValue(":head", head);
+	  query->bindValue(":coder", _selectedCoder);
+	  query->bindValue(":type", type);
+	  query->exec();
+	  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	  query->bindValue(":type", type);
+	  query->exec();
+	  query->first();
+	  QString direction = query->value(0).toString();
+	  QSet<int> markOne;
+	  QSet<int> markTwo;
+	  if (direction == PAST) 
 	    {
-	      Linkage *currentEdge = qgraphicsitem_cast<Linkage*>(it.next());;
-	      QString type = currentEdge->getType();
-	      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(currentEdge->getStart());
-	      IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(currentEdge->getEnd());
-	      int tail = startIncidentNode->getId();
-	      int head = endIncidentNode->getId();
-	      currentEdge->setPenStyle(0);
-	      _edgeVector.push_back(currentEdge);
-	      _compareVector.removeOne(currentEdge);
-	      QSqlQuery *query =  new QSqlQuery;
-	      query->prepare("INSERT INTO linkages (tail, head, coder, type) "
-			     "VALUES (:tail, :head, :coder, :type)");
-	      query->bindValue(":tail", tail);
-	      query->bindValue(":head", head);
+	      findHeadsLowerBound(&markOne, tail, 1, type);
+	      findTailsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
+	    }
+	  else if (direction == FUTURE) 
+	    {
+	      findTailsLowerBound(&markOne, tail, 1, type);
+	      findHeadsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
+	    }
+	  QSetIterator<int> it2(markOne);
+	  bool found = false;
+	  QSqlDatabase::database().transaction();
+	  query->prepare("SELECT head FROM linkages "
+			 "WHERE coder = :coder AND type = :type "
+			 "AND tail = :tail");
+	  QSqlQuery *query2 = new QSqlQuery;
+	  query2->prepare("SELECT tail, head FROM linkages "
+			  "WHERE coder = :coder AND type = :type "
+			  "AND tail = :tail AND head = :head");
+	  while (it2.hasNext()) 
+	    {
+	      int currentPathMate = it2.next();
 	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":type", type);
+	      query->bindValue(":tail", currentPathMate);
 	      query->exec();
-	      query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
-	      query->bindValue(":type", type);
-	      query->exec();
-	      query->first();
-	      QString direction = query->value(0).toString();
-	      QSet<int> markOne;
-	      QSet<int> markTwo;
-	      if (direction == PAST) 
+	      while (query->next()) 
 		{
-		  findHeadsLowerBound(&markOne, tail, 1, type);
-		  findTailsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-		}
-	      else if (direction == FUTURE) 
-		{
-		  findTailsLowerBound(&markOne, tail, 1, type);
-		  findHeadsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-		}
-	      QSetIterator<int> it2(markOne);
-	      bool found = false;
-	      QSqlDatabase::database().transaction();
-	      query->prepare("SELECT head FROM linkages "
-			     "WHERE coder = :coder AND type = :type "
-			     "AND tail = :tail");
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("SELECT tail, head FROM linkages "
-			      "WHERE coder = :coder AND type = :type "
-			      "AND tail = :tail AND head = :head");
-	      while (it2.hasNext()) 
-		{
-		  int currentPathMate = it2.next();
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", type);
-		  query->bindValue(":tail", currentPathMate);
-		  query->exec();
-		  while (query->next()) 
+		  int mateHead = query->value(0).toInt();
+		  query2->bindValue(":coder", _selectedCoder);
+		  query2->bindValue(":type", type);
+		  query2->bindValue(":tail", tail);
+		  query2->bindValue(":head", mateHead);
+		  query2->exec();
+		  query2->first();
+		  if (!(query2->isNull(0))) 
 		    {
-		      int mateHead = query->value(0).toInt();
-		      query2->bindValue(":coder", _selectedCoder);
-		      query2->bindValue(":type", type);
-		      query2->bindValue(":tail", tail);
-		      query2->bindValue(":head", mateHead);
-		      query2->exec();
-		      query2->first();
-		      if (!(query2->isNull(0))) 
-			{
-			  found = true;
-			}
-		    }
-		  if (found) 
-		    {
-		      currentEdge->setPenStyle(2);
+		      found = true;
 		    }
 		}
-	      QSqlDatabase::database().commit();
-	      QSetIterator<int> it3(markTwo);
-	      found = false;
-	      QSqlDatabase::database().transaction();
-	      query->prepare("SELECT head FROM linkages "
-			     "WHERE coder = :coder AND type = :type "
-			     "AND tail = :tail");
-	      query2->prepare("SELECT tail, head FROM linkages "
-			      "WHERE coder = :coder AND type = :type "
-			      "AND tail = :tail AND head = :head");
-	      while (it3.hasNext()) 
+	      if (found) 
 		{
-		  int currentPathMate = it3.next();
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", type);
-		  query->bindValue(":tail", currentPathMate);
-		  query->exec();
-		  while (query->next()) 
-		    {
-		      int mateHead = query->value(0).toInt();
-		      query2->bindValue(":coder", _selectedCoder);
-		      query2->bindValue(":type", type);
-		      query2->bindValue(":tail", tail);
-		      query2->bindValue(":head", mateHead);
-		      query2->exec();
-		      query2->first();
-		      if (!(query2->isNull(0))) 
-			{
-			  found = true;
-			}
-		    }
-		  if (found) 
-		    {
-		      currentEdge->setPenStyle(2);
-		    }
+		  linkage->setPenStyle(2);
 		}
-	      delete query;
-	      delete query2;
-	      QSqlDatabase::database().commit();
 	    }
-	  else 
+	  QSqlDatabase::database().commit();
+	  QSetIterator<int> it3(markTwo);
+	  found = false;
+	  QSqlDatabase::database().transaction();
+	  query->prepare("SELECT head FROM linkages "
+			 "WHERE coder = :coder AND type = :type "
+			 "AND tail = :tail");
+	  query2->prepare("SELECT tail, head FROM linkages "
+			  "WHERE coder = :coder AND type = :type "
+			  "AND tail = :tail AND head = :head");
+	  while (it3.hasNext()) 
 	    {
-	      it.next();
+	      int currentPathMate = it3.next();
+	      query->bindValue(":coder", _selectedCoder);
+	      query->bindValue(":type", type);
+	      query->bindValue(":tail", currentPathMate);
+	      query->exec();
+	      while (query->next()) 
+		{
+		  int mateHead = query->value(0).toInt();
+		  query2->bindValue(":coder", _selectedCoder);
+		  query2->bindValue(":type", type);
+		  query2->bindValue(":tail", tail);
+		  query2->bindValue(":head", mateHead);
+		  query2->exec();
+		  query2->first();
+		  if (!(query2->isNull(0))) 
+		    {
+		      found = true;
+		    }
+		}
+	      if (found) 
+		{
+		  linkage->setPenStyle(2);
+		}
 	    }
+	  delete query;
+	  delete query2;
+	  QSqlDatabase::database().commit();
 	}
     }
 }
 
 void EventGraphWidget::rejectLinkage() 
 {
-  if (scene->selectedItems().size() > 0) 
+  if (scene->selectedItems().size() == 1) 
     {
-      QListIterator<QGraphicsItem*> it(scene->selectedItems());
-      while (it.hasNext()) 
+      Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
+      if (linkage) 
 	{
-	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
-	  Linkage *linkage = qgraphicsitem_cast<Linkage*>(it.peekNext());
-	  IncidentNodeLabel *text = qgraphicsitem_cast<IncidentNodeLabel*>(it.peekNext());
-	  if (linkage && !(incidentNode) && !(text)) 
-	    {
-	      Linkage *currentEdge = qgraphicsitem_cast<Linkage*>(it.next());;
-	      delete currentEdge;
-	      _compareVector.removeOne(currentEdge);
-	    }
-	  else 
-	    {
-	      it.next();
-	    }
+	  delete linkage;
+	  _compareVector.removeOne(linkage);
 	}
     }
 }

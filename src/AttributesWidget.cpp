@@ -735,6 +735,11 @@ void AttributesWidget::newAttribute()
 	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
 	      QStandardItem *father = attributesTree->
 		itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+	      QFont fatherFont = father->font();
+	      int fontSize = fatherFont.pointSize();
+	      QFont attributeFont = attribute->font();
+	      attributeFont.setPointSize(fontSize);
+	      attribute->setFont(attributeFont);
 	      father->appendRow(attribute);
 	      attribute->setToolTip(hint);
 	      attribute->setEditable(false);
@@ -768,6 +773,10 @@ void AttributesWidget::newAttribute()
 	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
 	      QStandardItem *father = attributesTree->
 		itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
+	      QFont fatherFont = father->font();
+	      int fontSize = fatherFont.pointSize();
+	      QFont attributeFont = attribute->font();
+	      attributeFont.setPointSize(fontSize);
 	      father->appendRow(attribute);
 	      attribute->setToolTip(hint);
 	      attribute->setEditable(false);
@@ -802,7 +811,12 @@ void AttributesWidget::newAttribute()
 	  query->bindValue(":description", description);
 	  query->bindValue(":father", currentParent);
 	  query->exec();
-	  QStandardItem *attribute = new QStandardItem(name);    
+	  QStandardItem *attribute = new QStandardItem(name);
+	  QFont currentFont = attributesTree->item(0)->font();
+	  int fontSize = currentFont.pointSize();
+	  QFont attributeFont = attribute->font();
+	  attributeFont.setPointSize(fontSize);
+	  attribute->setFont(attributeFont);
 	  attributesTree->appendRow(attribute);
 	  QString hint = breakString(description);
 	  attribute->setToolTip(hint);
@@ -2435,13 +2449,13 @@ void AttributesWidget::autoAssignAll()
 
 void AttributesWidget::autoAssignEntityAt(QModelIndex &index) 
 {
-  QApplication::setOverrideCursor(Qt::WaitCursor);
   QString selected = index.data().toString();
   QSqlQuery *query = new QSqlQuery;
   QPointer<RelationshipComboBoxDialog> comboDialog = new RelationshipComboBoxDialog(this);
   comboDialog->exec();
   if (comboDialog->getExitStatus() == 0) 
     {
+      QApplication::setOverrideCursor(Qt::WaitCursor);
       QString selectedRelationship = comboDialog->getSelection();
       bool tail = comboDialog->tailSelected();
       bool head = comboDialog->headSelected();
