@@ -75,7 +75,7 @@ DataWidget::DataWidget(QWidget *parent) : QWidget(parent)
   findField = new QLineEdit(this);
 
   // For timestamp validation
-  validateTimestampsLabel = new QLabel(tr("<b>Timestamp validation:<b>"), this);
+  validateTimestampsLabel = new QLabel(tr("<b>Timing validation:<b>"), this);
   
   // Then we create our other controls.
   appendRecordButton = new QPushButton("Append incident", this);
@@ -954,7 +954,7 @@ void DataWidget::validateTimestamps()
 		      QApplication::restoreOverrideCursor();
 		      qApp->processEvents();
 		      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-		      warningBox->setWindowTitle("Timestamp validation");
+		      warningBox->setWindowTitle("Timing validation");
 		      warningBox->addButton(QMessageBox::Ok);
 		      QPointer<QAbstractButton> markButton = warningBox->
 			addButton(tr("Mark"), QMessageBox::NoRole);
