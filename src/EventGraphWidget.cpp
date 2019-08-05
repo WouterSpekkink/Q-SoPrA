@@ -3533,7 +3533,7 @@ void EventGraphWidget::dateLayout()
   if (!firstDate.isValid())
     {
       QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->setWindowTitle("Checking timestamps");
+      warningBox->setWindowTitle("Checking dates");
       warningBox->addButton(QMessageBox::Ok);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<b>No valid starting date</b>");
@@ -3631,13 +3631,13 @@ void EventGraphWidget::dateLayout()
       QApplication::restoreOverrideCursor();
       qApp->processEvents();
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->setWindowTitle("Checking timestamps");
+      warningBox->setWindowTitle("Checking dates");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Dates found:</h2>");
       warningBox->setInformativeText(QString::number(validPerc) + "% of the currently visible "
-				     "nodes have a valid date set as timestamp. "
+				     "nodes have a valid date set in the 'timing' field. "
 				     "Do you wish to continue?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
@@ -3682,7 +3682,7 @@ void EventGraphWidget::dateLayout()
 			      QApplication::restoreOverrideCursor();
 			      qApp->processEvents();
 			      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-			      warningBox->setWindowTitle("Checking timestamps");
+			      warningBox->setWindowTitle("Checking dates");
 			      warningBox->addButton(QMessageBox::Ok);
 			      QPointer<QAbstractButton> markButton = warningBox->
 				addButton(tr("Mark"), QMessageBox::NoRole);
@@ -10589,8 +10589,8 @@ void EventGraphWidget::removeLinkage()
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
       if (linkage) 
 	{
-	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage);
-	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage);
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
 	  int tail = startIncidentNode->getId();
 	  int head = endIncidentNode->getId();
 	  QString type = linkage->getType();
