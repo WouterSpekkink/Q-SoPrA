@@ -169,6 +169,8 @@ private slots:
   void layoutGraph();
   void redoLayout();
   void dateLayout();
+  void memorizeLayout();
+  void correctLayout();
   void noOverlap();
   void getLabels();
   void addLabels();
@@ -514,6 +516,7 @@ private:
   QVector<GuideLine*> _guidesVector;
   QVector<QString> _presentTypes;
   QVector<QString> _checkedCases;
+  QPair<QGraphicsItem*, QPointF> _layoutMemory;
 
   // Private map
   QMap<QGraphicsItem*, QPointF> _contractedMap;

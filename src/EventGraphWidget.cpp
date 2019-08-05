@@ -3289,7 +3289,9 @@ void EventGraphWidget::makeLayout()
     }
   else if (layoutComboBox->currentText() == DATELAYOUT)
     {
+      memorizeLayout();
       dateLayout();
+      correctLayout();
     }
   else if (layoutComboBox->currentText() == NOOVERLAP)
     {
@@ -3395,7 +3397,6 @@ void EventGraphWidget::redoLayout()
   for (it5 = allEvents.begin(); it5 != allEvents.end(); it5++) 
     {
       QGraphicsItem *current = *it5;
-      
       QVector<QGraphicsItem*>::iterator it6;
       QVector<QGraphicsItem*> partners;
       for (it6 = it5 + 1; it6 != allEvents.end(); it6++) 
@@ -3810,6 +3811,68 @@ void EventGraphWidget::dateLayout()
   delete query2;
 }
 
+void EventGraphWidget::memorizeLayout() 
+{
+  std::sort(_incidentNodeVector.begin(), _incidentNodeVector.end(), eventLessThan);
+  QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+  while (it.hasNext())
+    {
+      IncidentNode *incident = it.next();
+      int order = incident->getOrder();
+      if (order > upperRangeDial->value())
+	{
+	  if (it.findPrevious(incident))
+	    {
+	      IncidentNode *previous = it.previous();
+	      if (previous->getAbstractNode() == NULL)
+		{
+		  QPair<QGraphicsItem*, QPointF> currentPair(previous, previous->scenePos());
+		  _layoutMemory = currentPair;
+		  break;
+		}
+	      else
+		{
+		  AbstractNode *abstract = previous->getAbstractNode();
+		  QPair<QGraphicsItem*, QPointF> currentPair(abstract, abstract->scenePos());
+		  _layoutMemory = currentPair;
+		  break;
+		}
+	    }
+	}
+    }
+}
+
+void EventGraphWidget::correctLayout() 
+{
+  std::sort(_incidentNodeVector.begin(), _incidentNodeVector.end(), eventLessThan);
+  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
+  while (it.hasNext()) 
+    {
+      IncidentNode *incident = it.next();
+      int order = incident->getOrder();
+      if (order > upperRangeDial->value())
+	{
+	  if(incident->getAbstractNode() == NULL) 
+	    {
+	      QGraphicsItem* preceding = _layoutMemory.first;
+	      QPointF oldPos = _layoutMemory.second;
+	      qreal distance = preceding->scenePos().x() - oldPos.x();
+	      incident->setPos(incident->scenePos().x() + distance, incident->scenePos().y());
+	      incident->getLabel()->setNewPos(incident->scenePos());
+	    }
+	  else
+	    {
+	      AbstractNode *abstract = incident->getAbstractNode();
+	      QGraphicsItem* preceding = _layoutMemory.first;
+	      QPointF oldPos = _layoutMemory.second;
+	      qreal distance = preceding->scenePos().x() - oldPos.x();
+	      abstract->setPos(abstract->scenePos().x() + distance, abstract->scenePos().y());
+	      abstract->getLabel()->setNewPos(abstract->scenePos());
+	    }
+	}
+    }
+}
+
 void EventGraphWidget::noOverlap()
 {
   QVector<QGraphicsItem*> allEvents;
@@ -3985,23 +4048,23 @@ void EventGraphWidget::cleanUp()
 
 void EventGraphWidget::increaseDistance() 
 {
+  memorizeLayout();
   QVector<QGraphicsItem*> temp;
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
   while (it.hasNext()) 
     {
       IncidentNode *incident = it.next();
-      if (incident->isVisible())
+      int order = incident->getOrder();
+      if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
 	{
-	  temp.push_back(incident);
-	}
-    }
-  while (it2.hasNext()) 
-    {
-      AbstractNode *abstract = it2.next();
-      if (abstract->isVisible())
-	{
-	  temp.push_back(abstract);
+	  if (incident->getAbstractNode() == NULL) 
+	    {
+	      temp.push_back(incident);
+	    }
+	  else
+	    {
+	      temp.push_back(incident->getAbstractNode());
+	    }
 	}
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
@@ -4042,28 +4105,30 @@ void EventGraphWidget::increaseDistance()
 	    }
 	}
     }
+  correctLayout();
+  updateLinkages();
 }
   
 void EventGraphWidget::decreaseDistance() 
 {
+  memorizeLayout();
   setChangeLabel();
   QVector<QGraphicsItem*> temp;
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
   while (it.hasNext()) 
     {
       IncidentNode *incident = it.next();
-      if (incident->isVisible())
+      int order = incident->getOrder();
+      if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
 	{
-	  temp.push_back(incident);
-	}
-    }
-  while (it2.hasNext()) 
-    {
-      AbstractNode *abstract = it2.next();
-      if (abstract->isVisible())
-	{
-	  temp.push_back(abstract);
+	  if (incident->getAbstractNode() == NULL) 
+	    {
+	      temp.push_back(incident);
+	    }
+	  else
+	    {
+	      temp.push_back(incident->getAbstractNode());
+	    }
 	}
     }
   std::sort(temp.begin(), temp.end(), eventLessThan);
@@ -4104,6 +4169,7 @@ void EventGraphWidget::decreaseDistance()
 	    }
 	}
     }
+  correctLayout();
   updateLinkages();
 }
 	
@@ -4128,22 +4194,45 @@ void EventGraphWidget::expandGraph()
     }
   virtualCenter /= total;
   it.toFront();
+  int counter = 0;
   while (it.hasNext()) 
     {
+      counter++;
       IncidentNode *current = it.next();
-      qreal currentY = current->scenePos().y();
-      qreal diffY  = (currentY - virtualCenter) * 1.1;
-      current->setPos(current->scenePos().x(), virtualCenter + diffY);
-      current->getLabel()->setNewPos(current->scenePos());
+      if (current->getAbstractNode() == NULL) 
+	{
+	  if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
+	    {
+	      qreal currentY = current->scenePos().y();
+	      qreal diffY  = (currentY - virtualCenter) * 1.1;
+	      current->setPos(current->scenePos().x(), virtualCenter + diffY);
+	      current->getLabel()->setNewPos(current->scenePos());
+	    }
+	}
     }
   it2.toFront();
   while (it2.hasNext()) 
     {
       AbstractNode *current = it2.next();
-      qreal currentY = current->scenePos().y();
-      qreal diffY  = (currentY - virtualCenter) * 1.1;
-      current->setPos(current->scenePos().x(), virtualCenter + diffY);
-      current->getLabel()->setNewPos(current->scenePos());
+      QVector<IncidentNode*> incidents = current->getIncidents();
+      QVectorIterator<IncidentNode*> it3(incidents);
+      bool valid = false;
+      while (it3.hasNext())
+	{
+	  IncidentNode *incident = it3.next();
+	  int order = incident->getOrder();
+	  if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
+	    {
+	      valid = true;
+	    }
+	}
+      if (valid)
+	{
+	  qreal currentY = current->scenePos().y();
+	  qreal diffY  = (currentY - virtualCenter) * 1.1;
+	  current->setPos(current->scenePos().x(), virtualCenter + diffY);
+	  current->getLabel()->setNewPos(current->scenePos());
+	}
     }
   updateLinkages();
 }
@@ -7844,11 +7933,10 @@ void EventGraphWidget::setVisibility()
   query->prepare("SELECT incident FROM incidents_to_cases "
 		 "WHERE incident = :incident AND casename = :casename");
   QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-  int counter = 0;
   while (it.hasNext()) 
     {
-      counter++;
       IncidentNode *currentItem = it.next();
+      int order = currentItem->getOrder();
       if (currentItem->isMassHidden())
 	{
 	  currentItem->hide();
@@ -7857,7 +7945,7 @@ void EventGraphWidget::setVisibility()
 	{
 	  if (currentItem->getAbstractNode() == NULL) 
 	    {
-	      if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
+	      if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) 
 		{
 		  currentItem->show();
 		}
@@ -7869,7 +7957,7 @@ void EventGraphWidget::setVisibility()
 	  else 
 	    {
 	      currentItem->hide();
-	      if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value()) 
+	      if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) 
 		{
 		  currentItem->getAbstractNode()->show();
 		}
