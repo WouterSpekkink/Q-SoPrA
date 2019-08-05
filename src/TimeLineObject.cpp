@@ -100,7 +100,10 @@ void TimeLineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
 	  qreal minorTickInterval = _majorTickInterval / _minorTickDivision;
 	  int count = 1;
 	  myPath.moveTo(QPointF(_startX + minorTickInterval, (_y - _minorTickSize / 2)));
-	  myPath.lineTo(QPointF(_startX + minorTickInterval, (_y + _minorTickSize / 2)));
+	  if (_startX + minorTickInterval <= _endX)
+	    {
+	      myPath.lineTo(QPointF(_startX + minorTickInterval, (_y + _minorTickSize / 2)));
+	    }
 	  while (myPath.currentPosition().x() + minorTickInterval <= _endX)
 	    {
 	      myPath.moveTo(QPointF(myPath.currentPosition().x() + minorTickInterval, _y));
@@ -125,7 +128,10 @@ void TimeLineObject::paint(QPainter *painter, const QStyleOptionGraphicsItem *, 
 	  qreal minorTickInterval = _majorTickInterval / _minorTickDivision;
 	  int count = 1;
 	  myPath.moveTo(QPointF(_startX + minorTickInterval, (_y - _minorTickSize / 2)));
-	  myPath.lineTo(QPointF(_startX + minorTickInterval, (_y + _minorTickSize / 2)));
+	  if (_startX + minorTickInterval <= _endX)
+	    {
+	      myPath.lineTo(QPointF(_startX + minorTickInterval, (_y + _minorTickSize / 2)));
+	    }
 	  while (myPath.currentPosition().x() + minorTickInterval <= _endX)
 	    {
 	      myPath.moveTo(QPointF(myPath.currentPosition().x() + minorTickInterval, _y));

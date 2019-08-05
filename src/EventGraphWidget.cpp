@@ -8943,6 +8943,7 @@ void EventGraphWidget::abstractEvents()
 	      setChangeLabel();
 	      addLinkageTypeButton->setEnabled(false);
 	      compareButton->setEnabled(false);
+	      restoreModeColors();
 	    }
 	  delete abstractionDialog;
 	}
