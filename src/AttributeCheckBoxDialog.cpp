@@ -242,14 +242,12 @@ void AttributeCheckBoxDialog::customContextMenu(const QPoint &point)
 	    {
 	      if (action->text() == SELECTALLCHILDRENACTION)
 		{
-		  attributesTreeView->expand(treeFilter->
-					     mapToSource(attributesTreeView->currentIndex()));
+		  attributesTreeView->expand(index);
 		  selectAllChildren(attributesTree, attributesTree->indexFromItem(item));
 		}
 	      else if (action->text() == DESELECTALLCHILDRENACTION)
 		{
-		  attributesTreeView->expand(treeFilter->
-					     mapToSource(attributesTreeView->currentIndex()));
+		  attributesTreeView->expand(index);
 		  deselectAllChildren(attributesTree, attributesTree->indexFromItem(item));
 		}
 	    }
