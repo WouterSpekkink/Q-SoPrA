@@ -231,12 +231,14 @@ private slots:
 		     QColor ancestorText,
 		     QGraphicsItem *origin,
 		     QSet<QGraphicsItem*> *pFinished,
-		     QString type);
+		     QString type,
+		     bool modes);
   void findDescendants(QColor descendantFill,
 		       QColor descendantText,
 		       QGraphicsItem *origin,
 		       QSet<QGraphicsItem*> *pFinished,
-		       QString type);
+		       QString type,
+		       bool modes);
   void setEventOriginalPosition();
   void settleEvent();
   void makeParallel();

@@ -6887,6 +6887,9 @@ void EventGraphWidget::addMode()
 	      QString toolTip = breakString(attribute + " - " + description);
 	      item->setToolTip(toolTip);
 	      eventListWidget->item(i, 1)->setBackground(color);
+	      QVariant textColorVar = QVariant(textColor.rgb()); 
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		->setData(Qt::UserRole, textColorVar);
 	      break;
 	    }
 	}
@@ -9491,11 +9494,16 @@ void EventGraphWidget::colorLineage()
 	  QColor ancestorsText = lineage->getAncestorTextColor();
 	  QColor descendantsText = lineage->getDescendantTextColor();
 	  QColor unrelatedText = lineage->getUnrelatedTextColor();
+	  bool modes = lineage->modesOn();
 	  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
 	  while (it.hasNext()) 
 	    {
 	      IncidentNode *current = it.next();
 	      current->setColor(unrelatedFill);
+	      if (modes)
+		{
+		  current->setMode(UNRELATEDMODE);
+		}
 	      current->getLabel()->setDefaultTextColor(unrelatedText);
 	    }
 	  QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
@@ -9503,6 +9511,10 @@ void EventGraphWidget::colorLineage()
 	    {
 	      AbstractNode *current = it2.next();
 	      current->setColor(unrelatedFill);
+	      if (modes)
+		{
+		  current->setMode(UNRELATEDMODE);
+		}
 	      current->getLabel()->setDefaultTextColor(unrelatedText);
 	    }
 	  IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
@@ -9510,11 +9522,19 @@ void EventGraphWidget::colorLineage()
 	  if (incidentNode) 
 	    {
 	      incidentNode->setColor(originFill);
+	      if (modes)
+		{
+		  incidentNode->setMode(ORIGINMODE);
+		}
 	      incidentNode->getLabel()->setDefaultTextColor(originText);
 	    }
 	  else if (abstractNode) 
 	    {
 	      abstractNode->setColor(originFill);
+	      if (modes)
+		{
+		  abstractNode->setMode(ORIGINMODE);
+		}
 	      abstractNode->getLabel()->setDefaultTextColor(originText);
 	    }
 	  if (_presentTypes.size() > 1) 
@@ -9526,10 +9546,12 @@ void EventGraphWidget::colorLineage()
 		  QString selection = relationshipChooser->getSelection();
 		  QSet<QGraphicsItem*> finished;
 		  finished.insert(current);
-		  findAncestors(ancestorsFill, ancestorsText, current, &finished, selection);
+		  findAncestors(ancestorsFill, ancestorsText, current,
+				&finished, selection, modes);
 		  finished.clear();
 		  finished.insert(current);
-		  findDescendants(descendantsFill, descendantsText, current, &finished, selection);
+		  findDescendants(descendantsFill, descendantsText, current,
+				  &finished, selection, modes);
 		}
 	    }
 	  else 
@@ -9537,10 +9559,146 @@ void EventGraphWidget::colorLineage()
 	      QString selection = _presentTypes[0];
 	      QSet<QGraphicsItem*> finished;
 	      finished.insert(current);
-	      findAncestors(ancestorsFill, ancestorsText, current, &finished, selection);
+	      findAncestors(ancestorsFill, ancestorsText, current,
+			    &finished, selection, modes);
 	      finished.clear();
 	      finished.insert(current);
-	      findDescendants(descendantsFill, descendantsText, current, &finished, selection);
+	      findDescendants(descendantsFill, descendantsText, current,
+			      &finished, selection, modes);
+	    }
+	  if (modes)
+	    {
+	      bool ancestorFound = false;
+	      bool originFound = false;
+	      bool descendantFound = false;
+	      bool unrelatedFound = false;
+	      for (int i = 0; i < eventListWidget->rowCount(); i++) 
+		{
+		  if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == ANCESTORMODE) 
+		    {
+		      ancestorFound = true;
+		      QTableWidgetItem *item = eventListWidget->item(i,0);
+		      QString toolTip = breakString(ANCESTORMODE + " - "
+						    + "Ancestors in lineage");
+		      item->setToolTip(toolTip);
+		      eventListWidget->item(i, 1)->setBackground(ancestorsFill);
+		      QVariant textColorVar = QVariant(ancestorsText.rgb()); 
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+			->setData(Qt::UserRole, textColorVar);
+		    }
+		  else if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == DESCENDANTMODE) 
+		    {
+		      descendantFound = true;
+		      QTableWidgetItem *item = eventListWidget->item(i,0);
+		      QString toolTip = breakString(DESCENDANTMODE + " - "
+						    + "Descendants in lineage");
+		      item->setToolTip(toolTip);
+		      eventListWidget->item(i, 1)->setBackground(descendantsFill);
+		      QVariant textColorVar = QVariant(descendantsText.rgb()); 
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+			->setData(Qt::UserRole, textColorVar);
+		    } 
+		  else if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == ORIGINMODE) 
+		    {
+		      originFound = true;
+		      QTableWidgetItem *item = eventListWidget->item(i,0);
+		      QString toolTip = breakString(ORIGINMODE + " - "
+						    + "Origin in lineage");
+		      item->setToolTip(toolTip);
+		      eventListWidget->item(i, 1)->setBackground(originFill);
+		      QVariant textColorVar = QVariant(originText.rgb()); 
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+			->setData(Qt::UserRole, textColorVar);
+		    }
+		  else if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == UNRELATEDMODE) 
+		    {
+		      unrelatedFound = true;
+		      QTableWidgetItem *item = eventListWidget->item(i,0);
+		      QString toolTip = breakString(UNRELATEDMODE + " - "
+						    + "Unrelated to lineage");
+		      item->setToolTip(toolTip);
+		      eventListWidget->item(i, 1)->setBackground(unrelatedFill);
+		      QVariant textColorVar = QVariant(unrelatedText.rgb()); 
+		      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+			->setData(Qt::UserRole, textColorVar);
+		    }
+		}
+	      if (!ancestorFound) 
+		{
+		  QTableWidgetItem *item = new QTableWidgetItem(ANCESTORMODE);
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(ANCESTORMODE + " - " + "Ancestors in lineage");
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, ANCESTORMODE);
+		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setBackground(ancestorsFill);
+		  QVariant textColorVar = QVariant(ancestorsText.rgb()); 
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setData(Qt::UserRole, textColorVar);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
+	      if (!descendantFound)
+		{
+		  QTableWidgetItem *item = new QTableWidgetItem(DESCENDANTMODE);
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(DESCENDANTMODE + " - " + "Descendants in lineage");
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, DESCENDANTMODE);
+		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setBackground(descendantsFill);
+		  QVariant textColorVar = QVariant(descendantsText.rgb()); 
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setData(Qt::UserRole, textColorVar);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
+	      if (!originFound)
+		{
+		  QTableWidgetItem *item = new QTableWidgetItem(ORIGINMODE);
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(ORIGINMODE + " - " + "Origin in lineage");
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, ORIGINMODE);
+		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setBackground(originFill);
+		  QVariant textColorVar = QVariant(originText.rgb()); 
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setData(Qt::UserRole, textColorVar);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
+	      if (!unrelatedFound)
+		{
+		  QTableWidgetItem *item = new QTableWidgetItem(UNRELATEDMODE);
+		  item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+		  QString toolTip = breakString(UNRELATEDMODE + " - " + "Unrelated to lineage");
+		  item->setToolTip(toolTip);
+		  item->setData(Qt::DisplayRole, UNRELATEDMODE);
+		  eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+		  eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setBackground(unrelatedFill);
+		  QVariant textColorVar = QVariant(unrelatedText.rgb()); 
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+		    ->setData(Qt::UserRole, textColorVar);
+		  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+		    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
+			     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+		}
 	    }
 	}
     }
@@ -9550,7 +9708,8 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
 				     QColor ancestorText,
 				     QGraphicsItem *origin,
 				     QSet<QGraphicsItem*> *pFinished,
-				     QString type) 
+				     QString type,
+				     bool modes) 
 {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
@@ -9571,17 +9730,25 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
 	      if (incidentNode) 
 		{
 		  incidentNode->setColor(ancestorFill);
+		  if (modes)
+		    {
+		      incidentNode->setMode(ANCESTORMODE);
+		    }
 		  incidentNode->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      else if (abstractNode) 
 		{
 		  abstractNode->setColor(ancestorFill);
+		  if (modes)
+		    {
+		      abstractNode->setMode(ANCESTORMODE);
+		    }
 		  abstractNode->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      if (!pFinished->contains(edge->getEnd())) 
 		{
 		  pFinished->insert(edge->getEnd());
-		  findAncestors(ancestorFill, ancestorText, edge->getEnd(), pFinished, type);
+		  findAncestors(ancestorFill, ancestorText, edge->getEnd(), pFinished, type, modes);
 		}
 	    }
 	}
@@ -9599,17 +9766,25 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
 	      if (incidentNode) 
 		{
 		  incidentNode->setColor(ancestorFill);
+		  if (modes)
+		    {
+		      incidentNode->setMode(ANCESTORMODE);
+		    }
 		  incidentNode->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      else if (abstractNode) 
 		{
 		  abstractNode->setColor(ancestorFill);
+		  if (modes)
+		    {
+		      abstractNode->setMode(ANCESTORMODE);
+		    }
 		  abstractNode->getLabel()->setDefaultTextColor(ancestorText);
 		}
 	      if (!pFinished->contains(edge->getStart())) 
 		{
 		  pFinished->insert(edge->getStart());
-		  findAncestors(ancestorFill, ancestorText, edge->getStart(), pFinished, type);
+		  findAncestors(ancestorFill, ancestorText, edge->getStart(), pFinished, type, modes);
 		}
 	    }
 	}
@@ -9622,7 +9797,8 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
 				       QColor descendantText,
 				       QGraphicsItem *origin,
 				       QSet<QGraphicsItem*> *pFinished,
-				       QString type) 
+				       QString type,
+				       bool modes) 
 {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
@@ -9643,17 +9819,26 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
 	      if (incidentNode) 
 		{
 		  incidentNode->setColor(descendantFill);
+		  if (modes)
+		    {
+		      incidentNode->setMode(DESCENDANTMODE);
+		    }
 		  incidentNode->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      else if (abstractNode) 
 		{
 		  abstractNode->setColor(descendantFill);
+		  if (modes)
+		    {
+		      abstractNode->setMode(DESCENDANTMODE);
+		    }
 		  abstractNode->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      if (!pFinished->contains(edge->getStart())) 
 		{
 		  pFinished->insert(edge->getStart());
-		  findDescendants(descendantFill, descendantText, edge->getStart(), pFinished, type);
+		  findDescendants(descendantFill, descendantText, edge->getStart(),
+				  pFinished, type, modes);
 		}
 	    }
 	}
@@ -9671,17 +9856,26 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
 	      if (incidentNode) 
 		{
 		  incidentNode->setColor(descendantFill);
+		  if (modes)
+		    {
+		      incidentNode->setMode(DESCENDANTMODE);
+		    }
 		  incidentNode->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      else if (abstractNode) 
 		{
 		  abstractNode->setColor(descendantFill);
+		  if (modes)
+		    {
+		      abstractNode->setMode(DESCENDANTMODE);
+		    }
 		  abstractNode->getLabel()->setDefaultTextColor(descendantText);
 		}
 	      if (!pFinished->contains(edge->getEnd())) 
 		{
 		  pFinished->insert(edge->getEnd());
-		  findDescendants(descendantFill, descendantText, edge->getEnd(), pFinished, type);
+		  findDescendants(descendantFill, descendantText, edge->getEnd(),
+				  pFinished, type, modes);
 		}
 	    }
 	}

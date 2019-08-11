@@ -134,5 +134,9 @@ QString DATELAYOUT = "Time based layout";
 QString NOOVERLAP = "No overlap";
 QString REDUCEOVERLAP = "Reduce overlap";
 QString MATCHEVENTGRAPH = "Match event graph";
-				  
+QString UNRELATEDMODE = "Unrelated";
+QString ORIGINMODE = "Origin";
+QString ANCESTORMODE = "Ancestor";
+QString DESCENDANTMODE = "Descendant";
+
 qreal Pi = 3.14;

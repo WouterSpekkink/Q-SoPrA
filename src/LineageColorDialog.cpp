@@ -95,6 +95,8 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent)
 
   cancelCloseButton = new QPushButton(tr("Cancel"), this);
   saveCloseButton = new QPushButton(tr("Save"), this);
+
+  modesCheckBox = new QCheckBox(tr("Save as modes"), this);
   
   connect(originFillButton, SIGNAL(clicked()), this, SLOT(setOriginFillColor()));
   connect(ancestorFillButton, SIGNAL(clicked()), this, SLOT(setAncestorFillColor()));
@@ -147,6 +149,7 @@ LineageColorDialog::LineageColorDialog(QWidget *parent) : QDialog(parent)
   rightLayout->addLayout(colorFourRightLayout);
   dualLayout->addLayout(rightLayout);
   mainLayout->addLayout(dualLayout);
+  mainLayout->addWidget(modesCheckBox);
   QPointer<QHBoxLayout> optionsLayout = new QHBoxLayout;
   optionsLayout->addWidget(cancelCloseButton);
   optionsLayout->addWidget(saveCloseButton);
@@ -328,6 +331,11 @@ QColor LineageColorDialog::getUnrelatedFillColor()
 QColor LineageColorDialog::getUnrelatedTextColor() 
 {
   return _unrelatedTextColor;
+}
+
+bool LineageColorDialog::modesOn()
+{
+  return modesCheckBox->isChecked();
 }
 
 int LineageColorDialog::getExitStatus() 

@@ -136,6 +136,10 @@ extern QString DATELAYOUT;
 extern QString NOOVERLAP;
 extern QString REDUCEOVERLAP;
 extern QString MATCHEVENTGRAPH;
+extern QString UNRELATEDMODE;
+extern QString ORIGINMODE;
+extern QString ANCESTORMODE;
+extern QString DESCENDANTMODE;
 
 extern qreal Pi;
 

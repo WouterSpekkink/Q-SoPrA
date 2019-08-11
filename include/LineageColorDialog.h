@@ -29,6 +29,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QListWidget>
+#include <QtWidgets/QCheckBox>
 #include <QPointer>
 #include <QColorDialog>
 #include <QtSql>
@@ -52,6 +53,7 @@ public:
   QColor getAncestorTextColor();
   QColor getDescendantTextColor();
   QColor getUnrelatedTextColor();
+  bool modesOn();
   int getExitStatus();
 			    
 private slots:
@@ -88,6 +90,7 @@ private:
   QPointer<QPushButton> unrelatedTextButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
+  QPointer<QCheckBox> modesCheckBox;
 
   // Private variables
   QColor _originFillColor;
