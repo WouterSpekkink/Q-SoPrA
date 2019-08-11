@@ -597,6 +597,20 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	      _tempRectPtr->setZValue(5);
 	      addItem(_tempRectPtr);
 	    }
+	   else if (_gettingTimeLinePoints)
+	    {
+	      _lastMousePos = event->scenePos();
+	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
+	      _timeLinePointsStarted = true;
+	      _tempTimeLinePtr = new TimeLineObject(_lineStart.x(), _lineEnd.x(), _lineEnd.y(),
+						    _currentMajorInterval, _currentMinorDivision,
+						    _currentMajorTickSize, _currentMinorTickSize);
+	      _tempTimeLinePtr->setPenWidth(_currentTimeLineWidth);
+	      _tempTimeLinePtr->setColor(_currentTimeLineColor);
+	      _tempTimeLinePtr->setZValue(5);
+	      addItem(_tempTimeLinePtr);
+	    }
 	  else
 	    {
 	      if (incidentNodeLabel) 
@@ -868,6 +882,7 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 	    {
 	      _lastMousePos = event->scenePos();
 	      _lineStart = _lastMousePos;
+	      _lineEnd = _lastMousePos;
 	      _timeLinePointsStarted = true;
 	      _tempTimeLinePtr = new TimeLineObject(_lineStart.x(), _lineEnd.x(), _lineEnd.y(),
 						    _currentMajorInterval, _currentMinorDivision,

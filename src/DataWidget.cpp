@@ -1004,14 +1004,14 @@ void DataWidget::validateTimestamps()
   qApp->processEvents();
   qreal validPerc = std::roundf(((qreal) valid / (qreal) total) * 10000) / 100;
   QPointer <QMessageBox> warningBox = new QMessageBox(this);
-  warningBox->setWindowTitle("Timestamp validation");
+  warningBox->setWindowTitle("Timing validation");
   warningBox->addButton(QMessageBox::Ok);
   QPointer<QAbstractButton> showButton = warningBox->
     addButton(tr("Show invalid"), QMessageBox::NoRole);
   warningBox->setIcon(QMessageBox::Warning);
   warningBox->setText("<h2>Dates found:</h2>");
   warningBox->setInformativeText(QString::number(validPerc) + "% of the incidents "
-				 "have a valid date set as time stamp.");
+				 "have a valid date set in the 'timing' field.");
   warningBox->exec();
   if (warningBox->clickedButton() == showButton)
     {
@@ -1056,7 +1056,7 @@ void DataWidget::validateTimestamps()
 		  fileName.append(".txt");
 		}
 	      std::ofstream fileOut(fileName.toStdString().c_str());
-	      fileOut << "The incidents with invalid timestamps are: " +
+	      fileOut << "The incidents with invalid dates are: " +
 		incidentsFull.toStdString() + ".";
 	      fileOut.close();
 	    }
