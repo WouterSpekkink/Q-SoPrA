@@ -140,6 +140,9 @@ extern QString UNRELATEDMODE;
 extern QString ORIGINMODE;
 extern QString ANCESTORMODE;
 extern QString DESCENDANTMODE;
+extern QString ADDTOCASEACTION;
+extern QString REMOVEFROMCASEACTION;
+extern QString CREATENEWCASEACTION;
 
 extern qreal Pi;
 

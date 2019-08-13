@@ -125,7 +125,6 @@ QString ONEFORWARD = "Move forward";
 QString ONEBACKWARD = "Move backward";
 QString BRINGFORWARD = "Send to front";
 QString BRINGBACKWARD = "Send to back";
-QString COMPLETEDATASET = "Complete dataset";
 QString SPRINGLAYOUT = "Force-directed";
 QString CIRCULARLAYOUT = "Circular";
 QString MINIMISELAYOUT = "Contract current layout";
@@ -138,5 +137,8 @@ QString UNRELATEDMODE = "Unrelated";
 QString ORIGINMODE = "Origin";
 QString ANCESTORMODE = "Ancestor";
 QString DESCENDANTMODE = "Descendant";
+QString ADDTOCASEACTION = "Add to existing case";
+QString REMOVEFROMCASEACTION = "Remove from case";
+QString CREATENEWCASEACTION = "Add to new case";
 
 qreal Pi = 3.14;

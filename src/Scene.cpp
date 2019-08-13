@@ -2095,12 +2095,14 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  QMenu *selectionMenu = new QMenu("Selection");
 	  QMenu *linkageMenu = new QMenu("Linkages");
 	  QMenu *descMenu = new QMenu("Description");
+	  QMenu *caseMenu = new QMenu("Cases");
 	  menu->addMenu(abstractionMenu);
 	  menu->addMenu(colorMenu);
 	  menu->addMenu(posMenu);
 	  menu->addMenu(selectionMenu);
 	  menu->addMenu(linkageMenu);
 	  menu->addMenu(descMenu);
+	  menu->addMenu(caseMenu);
 	  QAction *action1 = new QAction(ABSTRACTACTION, this);
 	  abstractionMenu->addAction(action1);
 	  QAction *action2 = new QAction(MAKEABSTRACTNODEACTION, this);
@@ -2133,6 +2135,12 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  selectionMenu->addAction(action15);
 	  QAction *action16 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
 	  descMenu->addAction(action16);
+	  QAction *action17 = new QAction(ADDTOCASEACTION, this);
+	  caseMenu->addAction(action17);
+	  QAction *action18 = new QAction(CREATENEWCASEACTION, this);
+	  caseMenu->addAction(action18);
+	  QAction *action19 = new QAction(REMOVEFROMCASEACTION, this);
+	  caseMenu->addAction(action19);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
@@ -2189,6 +2197,9 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action14;
 	  delete action15;
 	  delete action16;
+	  delete action17;
+	  delete action18;
+	  delete action19;
 	  delete menu;
 	  delete abstractionMenu;
 	  delete colorMenu;
@@ -2196,6 +2207,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete selectionMenu;
 	  delete linkageMenu;
 	  delete descMenu;
+	  delete caseMenu;
 	}
       else if (abstractNode && !abstractNode->isCopy()) 
 	{
@@ -2205,11 +2217,13 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  QMenu *posMenu = new QMenu("Positioning");
 	  QMenu *selectionMenu = new QMenu("Selection");
 	  QMenu *descMenu = new QMenu("Description");
+	  QMenu *caseMenu = new QMenu("Cases");
 	  menu->addMenu(abstractionMenu);
 	  menu->addMenu(colorMenu);
 	  menu->addMenu(posMenu);
 	  menu->addMenu(selectionMenu);
 	  menu->addMenu(descMenu);
+	  menu->addMenu(caseMenu);
 	  QAction *action1 = new QAction(ABSTRACTACTION, this);
 	  abstractionMenu->addAction(action1);
 	  QAction *action2 = new QAction(DISAGGREGATEACTION, this);
@@ -2240,6 +2254,12 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  selectionMenu->addAction(action14);
 	  QAction *action15 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
 	  descMenu->addAction(action15);
+	  QAction *action16 = new QAction(ADDTOCASEACTION, this);
+	  caseMenu->addAction(action16);
+	  QAction *action17 = new QAction(CREATENEWCASEACTION, this);
+	  caseMenu->addAction(action17);
+	  QAction *action18 = new QAction(REMOVEFROMCASEACTION, this);
+	  caseMenu->addAction(action18);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
@@ -2286,12 +2306,16 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action13;
 	  delete action14;
 	  delete action15;
+	  delete action16;
+	  delete action17;
+	  delete action18;
 	  delete menu;
 	  delete abstractionMenu;
 	  delete colorMenu;
 	  delete posMenu;
 	  delete selectionMenu;
 	  delete descMenu;
+	  delete caseMenu;
 	}
       else if (linkage && !linkage->isCopy()) 
 	{

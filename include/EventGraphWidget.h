@@ -253,6 +253,9 @@ private slots:
   void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void selectDescendants(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);
   void setEventWidth();
+  void addToCase();
+  void removeFromCase();
+  void createNewCase();
   void processLinkageContextMenu(const QString &action);
   void seeLinkageEvidence();
   void removeLinkage();

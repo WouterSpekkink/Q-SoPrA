@@ -115,47 +115,44 @@ void CasingWidget::createTable()
     {
       QString currentCase = query->value(0).toString();
       QString currentDescription = query->value(1).toString();
-      if (currentCase != COMPLETEDATASET) 
+      QTableWidgetItem *caseHeader = new QTableWidgetItem(currentCase, 0);
+      tableWidget->setHorizontalHeaderItem(colCount, caseHeader);
+      tableWidget->setItemDelegateForColumn(colCount, new CheckBoxDelegate(tableWidget));
+      caseHeader->setToolTip(breakString(currentDescription));
+      for (int i = 0; i != tableWidget->rowCount(); i++) 
 	{
-	  QTableWidgetItem *caseHeader = new QTableWidgetItem(currentCase, 0);
-	  tableWidget->setHorizontalHeaderItem(colCount, caseHeader);
-	  tableWidget->setItemDelegateForColumn(colCount, new CheckBoxDelegate(tableWidget));
-	  caseHeader->setToolTip(breakString(currentDescription));
-	  for (int i = 0; i != tableWidget->rowCount(); i++) 
+	  int order = i + 1;
+	  query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+	  query2->bindValue(":order", order);
+	  query2->exec();
+	  query2->first();
+	  int incident = query2->value(0).toInt();
+	  bool checked = false;
+	  query2->prepare("SELECT incident FROM incidents_to_cases "
+			  "WHERE incident = :incident AND casename = :case");
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":case", currentCase);
+	  query2->exec();
+	  query2->first();
+	  if (!query2->isNull(0)) 
 	    {
-	      int order = i + 1;
-	      query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	      query2->bindValue(":order", order);
-	      query2->exec();
-	      query2->first();
-	      int incident = query2->value(0).toInt();
-	      bool checked = false;
-	      query2->prepare("SELECT incident FROM incidents_to_cases "
-			      "WHERE incident = :incident AND casename = :case");
-	      query2->bindValue(":incident", incident);
-	      query2->bindValue(":case", currentCase);
-	      query2->exec();
-	      query2->first();
-	      if (!query2->isNull(0)) 
-		{
-		  checked = true;
-		}
-	      QTableWidgetItem *newCheck = new QTableWidgetItem(QString::number(incident), 1);
-	      newCheck->setFlags(newCheck->flags() ^ Qt::ItemIsEditable);
-	      tableWidget->blockSignals(true);
-	      if (checked) 
-		{
-		  newCheck->setCheckState(Qt::Checked);
-		}
-	      else 
-		{
-		  newCheck->setCheckState(Qt::Unchecked);
-		}
-	      tableWidget->setItem(i, colCount, newCheck);
-	      tableWidget->blockSignals(false);
+	      checked = true;
 	    }
-	  colCount++;
+	  QTableWidgetItem *newCheck = new QTableWidgetItem(QString::number(incident), 1);
+	  newCheck->setFlags(newCheck->flags() ^ Qt::ItemIsEditable);
+	  tableWidget->blockSignals(true);
+	  if (checked) 
+	    {
+	      newCheck->setCheckState(Qt::Checked);
+	    }
+	  else 
+	    {
+	      newCheck->setCheckState(Qt::Unchecked);
+	    }
+	  tableWidget->setItem(i, colCount, newCheck);
+	  tableWidget->blockSignals(false);
 	}
+      colCount++;
     }
   delete query;
   delete query2;
@@ -201,10 +198,7 @@ void CasingWidget::editCase()
   while (query->next()) 
     {
       QString current = query->value(0).toString();
-      if (current != COMPLETEDATASET) 
-	{
-	  cases.push_back(current);
-	}
+      cases.push_back(current);
     }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
   comboDialog->setWindowTitle("Select case to edit");
@@ -254,10 +248,7 @@ void CasingWidget::removeCase()
   while (query->next()) 
     {
       QString current = query->value(0).toString();
-      if (current != COMPLETEDATASET) 
-	{
-	  cases.push_back(current);
-	}
+      cases.push_back(current);
     }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
   comboDialog->setWindowTitle("Select case to remove");
@@ -298,10 +289,7 @@ void CasingWidget::selectAll()
   while (query->next()) 
     {
       QString current = query->value(0).toString();
-      if (current != COMPLETEDATASET) 
-	{
-	  cases.push_back(current);
-	}
+      cases.push_back(current);
     }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
   comboDialog->setWindowTitle("Select case to assign incidents to");
@@ -337,10 +325,7 @@ void CasingWidget::deselectAll()
   while (query->next()) 
     {
       QString current = query->value(0).toString();
-      if (current != COMPLETEDATASET) 
-	{
-	  cases.push_back(current);
-	}
+      cases.push_back(current);
     }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
   comboDialog->setWindowTitle("Select case to unassign incidents from");
@@ -366,10 +351,7 @@ void CasingWidget::attributeSelect()
   while (query->next()) 
     {
       QString current = query->value(0).toString();
-      if (current != COMPLETEDATASET) 
-	{
-	  cases.push_back(current);
-	}
+      cases.push_back(current);
     }
   QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
   comboDialog->setWindowTitle("Select case to assign incidents to");

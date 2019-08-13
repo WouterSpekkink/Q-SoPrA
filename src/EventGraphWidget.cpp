@@ -8846,6 +8846,18 @@ void EventGraphWidget::processIncidentNodeContextMenu(const QString &action)
     {
       setEventWidth();
     }
+  else if (action == ADDTOCASEACTION)
+    {
+      addToCase();
+    }
+  else if (action == CREATENEWCASEACTION)
+    {
+      createNewCase();
+    }
+  else if (action == REMOVEFROMCASEACTION)
+    {
+      removeFromCase();
+    }
 }
 
 void EventGraphWidget::abstractEvents() 
@@ -9463,8 +9475,7 @@ void EventGraphWidget::updateAbstractNodeOrder()
 	  current->getConstraint() == PATHSATT) 
 	{
 	  QString label = "P-" + QString::number(current->getOrder());
-	  newLabel->setPlainText(label);
-      
+	  newLabel->setPlainText(label);      
 	}
       else if (current->getConstraint() == SEMIPATHS ||
 	       current->getConstraint() == SEMIPATHSATT) 
@@ -9975,6 +9986,174 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
 void EventGraphWidget::setEventWidth() 
 {
   emit changeEventWidth(scene->selectedItems()[0]);
+}
+
+void EventGraphWidget::addToCase()
+{
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  QVector<QString> cases;
+  while (query->next())
+    {
+      cases.push_back(query->value(0).toString());
+    }
+  query->prepare("SELECT incident FROM incidents_to_cases "
+		 "WHERE casename = :casename AND "
+		 "incident = :incident");
+  query2->prepare("INSERT INTO incidents_to_cases "
+		  "(incident, casename) "
+		  "VALUES (:incident, :casename)");
+  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to assign to");
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) 
+    {
+      QString selection = comboDialog->getSelection();
+      QListIterator<QGraphicsItem*> it(scene->selectedItems());
+      while (it.hasNext())
+	{
+	  QGraphicsItem *current = it.next();
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+	  AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
+	  if (incident)
+	    {
+	      int id = incident->getId();
+	      query->bindValue(":casename", selection);
+	      query->bindValue(":incident", id);
+	      query->exec();
+	      query->first();
+	      if (query->isNull(0))
+		{
+		  query2->bindValue(":incident", id);
+		  query2->bindValue(":casename", selection);
+		  query2->exec();
+		}
+	    }
+	  else if (abstract)
+	    {
+	      QVector<IncidentNode*> incidents = abstract->getIncidents();
+	      QVectorIterator<IncidentNode*> it2(incidents);
+	      while (it2.hasNext())
+		{
+		  IncidentNode *incident = it2.next();
+		  int id = incident->getId();
+		  query->bindValue(":casename", selection);
+		  query->bindValue(":incident", id);
+		  query->exec();
+		  query->first();
+		  if (query->isNull(0))
+		    {
+		      query2->bindValue(":incident", id);
+		      query2->bindValue(":casename", selection);
+		      query2->exec();
+		    }
+		}
+	    }
+	}
+    }
+  delete query;
+  delete query2;
+}
+
+void EventGraphWidget::removeFromCase()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM cases");
+  QVector<QString> cases;
+  while (query->next())
+    {
+      cases.push_back(query->value(0).toString());
+    }
+  query->prepare("DELETE FROM incidents_to_cases "
+		 "WHERE casename = :casename AND "
+		 "incident = :incident");
+  QPointer<ComboBoxDialog> comboDialog = new ComboBoxDialog(this, cases);
+  comboDialog->setWindowTitle("Select case to assign to");
+  comboDialog->exec();
+  if (comboDialog->getExitStatus() == 0) 
+    {
+      QString selection = comboDialog->getSelection();
+      QListIterator<QGraphicsItem*> it(scene->selectedItems());
+      while (it.hasNext())
+	{
+	  QGraphicsItem *current = it.next();
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+	  AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
+	  if (incident)
+	    {
+	      int id = incident->getId();
+	      query->bindValue(":casename", selection);
+	      query->bindValue(":incident", id);
+	      query->exec();
+	    }
+	  else if (abstract)
+	    {
+	      QVector<IncidentNode*> incidents = abstract->getIncidents();
+	      QVectorIterator<IncidentNode*> it2(incidents);
+	      while (it2.hasNext())
+		{
+		  IncidentNode *incident = it2.next();
+		  int id = incident->getId();
+		  query->bindValue(":casename", selection);
+		  query->bindValue(":incident", id);
+		  query->exec();
+		}
+	    }
+	}
+    }
+  delete query;
+}
+
+void EventGraphWidget::createNewCase()
+{
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query->prepare("INSERT INTO cases (name, description) "
+		 "VALUES (:name, :description)");
+  query2->prepare("INSERT INTO incidents_to_cases "
+		  "(incident, casename) "
+		  "VALUES (:incident, :casename)");
+  QPointer<CaseDialog> caseDialog = new CaseDialog(this);
+  caseDialog->exec();
+  if (caseDialog->getExitStatus() == 0) 
+    {
+      QString casename = caseDialog->getName();
+      QString description = caseDialog->getDescription();
+      query->bindValue(":name", casename);
+      query->bindValue(":description", description);
+      query->exec();
+      QListIterator<QGraphicsItem*> it(scene->selectedItems());
+      while (it.hasNext())
+	{
+	  QGraphicsItem *current = it.next();
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+	  AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
+	  if (incident)
+	    {
+	      int id = incident->getId();
+	      query2->bindValue(":casename", casename);
+	      query2->bindValue(":incident", id);
+	      query2->exec();
+	    }
+	  else if (abstract)
+	    {
+	      QVector<IncidentNode*> incidents = abstract->getIncidents();
+	      QVectorIterator<IncidentNode*> it2(incidents);
+	      while (it2.hasNext())
+		{
+		  IncidentNode *incident = it2.next();
+		  int id = incident->getId();
+		  query2->bindValue(":casename", casename);
+		  query2->bindValue(":incident", id);
+		  query2->exec();
+		}
+	    }
+	}
+    }
+  delete query;
+  delete query2;
+  updateCases();
 }
 
 void EventGraphWidget::exportTransitionMatrix() 
