@@ -1,0 +1,29 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+  <file>Icon/Q-SoPrA.png</file>
+  <file>images/contract_horizontal.png</file>
+  <file>images/contract_network.png</file>
+  <file>images/contract_vertical.png</file>
+  <file>images/dash_dot_dot_line.png</file>
+  <file>images/dash_dot_line.png</file>
+  <file>images/dashed_line.png</file>
+  <file>images/dotted_line.png</file>
+  <file>images/double_arrow_object.png</file>
+  <file>images/ellipse_object.png</file>
+  <file>images/expand_horizontal.png</file>
+  <file>images/expand_network.png</file>
+  <file>images/expand_vertical.png</file>
+  <file>images/guide_horizontal.png</file>
+  <file>images/guide_vertical.png</file>
+  <file>images/line_object.png</file>
+  <file>images/Q-SoPrA.png</file>
+  <file>images/rect_object.png</file>
+  <file>images/single_arrow_object.png</file>
+  <file>images/solid_line.png</file>
+  <file>images/text_object.png</file>
+  <file>images/timeline.png</file>
+  <file>images/welcome_background.png</file>
+</qresource>
+</RCC>
+  
+  

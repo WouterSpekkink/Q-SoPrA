@@ -81,7 +81,7 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
   setLayout(mainLayout);
   setWindowTitle("Settings for node list");
 
-  QSize availableSize = qApp->desktop()->availableGeometry().size();
+  QSize availableSize = QApplication::primaryScreen()->availableGeometry().size();
   int width = availableSize.width();
   int height = availableSize.height();
   this->resize(width, height);

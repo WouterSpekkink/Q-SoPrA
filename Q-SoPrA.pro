@@ -9,6 +9,7 @@ CONFIG += c++11
 QT += widgets sql svg opengl
 VERSION = 0.9.0
 DEFINES += VERSION_STRING=\\\"$${VERSION}\\\"
+RESOURCES = resources.qrc
 
 
 # The following define makes your compiler warn you if you use any

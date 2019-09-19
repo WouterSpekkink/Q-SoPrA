@@ -302,7 +302,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   mainLayout->addLayout(rightLayout);
 
   // I want to set the size of some widgets based on the availabe screen width
-  QRect rect = QApplication::desktop()->screenGeometry();
+  QRect rect = QApplication::primaryScreen()->availableGeometry();
   int width = rect.width();
   if (width <= 1280) 
     {

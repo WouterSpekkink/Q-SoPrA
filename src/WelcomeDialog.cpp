@@ -30,7 +30,7 @@ WelcomeDialog::WelcomeDialog(QWidget *parent, EventSequenceDatabase *esdPtr) : Q
   titleLabel = new QLabel("<h1>Welcome to Q-SoPrA</h1>", this);
   titleLabel->setAlignment(Qt::AlignHCenter);
   imageLabel = new QLabel(this);
-  QPixmap image("./images/welcome_background");
+  QPixmap image(":/images/welcome_background");
   imageLabel->setPixmap(image);
   
   newDatabaseButton = new QPushButton("Create new database", this);

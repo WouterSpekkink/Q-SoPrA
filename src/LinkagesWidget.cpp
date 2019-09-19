@@ -235,7 +235,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 
   // I want to set the size of some widgets based on the availabe screen width
-  QRect rect = QApplication::desktop()->screenGeometry();
+  QRect rect = QApplication::primaryScreen()->availableGeometry();
   int width = rect.width();
   
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
