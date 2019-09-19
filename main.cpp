@@ -28,16 +28,16 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[]) {
   QApplication::setStyle("fusion");
   QApplication QSoPrA(argc, argv);
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Regular.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Bold.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-BoldItalic.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Italic.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Light.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-LightItalic.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Medium.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-MediumItalic.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Thin.ttf");
-  QFontDatabase::addApplicationFont(":/fonts/Robotomono-ThinItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-Regular.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-Bold.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-BoldItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-Italic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-Light.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-LightItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-Medium.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-MediumItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-Thin.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/RobotoMono-ThinItalic.ttf");
   QFont font = QFont("Roboto Mono");
   QApplication::setFont(font);
   QSoPrA.setWindowIcon(QIcon(":/images/Q-SoPrA.png"));
