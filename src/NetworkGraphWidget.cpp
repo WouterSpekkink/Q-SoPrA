@@ -160,7 +160,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   exportSvgButton = new QPushButton(tr("Export svg"), graphicsWidget);
   exportNodesButton = new QPushButton(tr("Export nodes"), graphicsWidget);
   exportEdgesButton = new QPushButton(tr("Export edges"), graphicsWidget);
-  exportRelationalEventsButton = new QPushButton(tr("Export relational events"), graphicsWidget);
+  exportRelationalEventsButton = new QPushButton(tr("Export relevents"), graphicsWidget);
   setFilteredButton = new QPushButton(tr("Filter on"), legendWidget);
   setFilteredButton->setCheckable(true);
   setFilteredButton->setChecked(true);
@@ -5492,7 +5492,7 @@ void NetworkGraphWidget::exportSvg()
       currentRect.setHeight(currentRect.height());
       gen.setSize(QSize(currentRect.width(), currentRect.height()));
       gen.setViewBox(QRect(0, 0, currentRect.width(), currentRect.height()));
-      int dpiX = QApplication::primaryScreen()->logicalDotsPerInch();
+      int dpiX = view->logicalDpiX();
       gen.setResolution(dpiX);
       QPainter painter;
       painter.begin(&gen);

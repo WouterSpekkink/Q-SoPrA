@@ -28,11 +28,19 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[]) {
   QApplication::setStyle("fusion");
   QApplication QSoPrA(argc, argv);
-  QFont font("Lato");
-  font.setStyleHint(QFont::Monospace);
-  font.setPointSize(12);
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Regular.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Bold.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-BoldItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Italic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Light.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-LightItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Medium.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-MediumItalic.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-Thin.ttf");
+  QFontDatabase::addApplicationFont(":/fonts/Robotomono-ThinItalic.ttf");
+  QFont font = QFont("Roboto Mono");
   QApplication::setFont(font);
-  QSoPrA.setWindowIcon(QIcon("./images/Q-SoPrA.png"));
+  QSoPrA.setWindowIcon(QIcon(":/images/Q-SoPrA.png"));
   QString version = QString("0.9");
   QSoPrA.setApplicationVersion(version);
 

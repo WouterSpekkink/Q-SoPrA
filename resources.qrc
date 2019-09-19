@@ -1,6 +1,6 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
-  <file>Icon/Q-SoPrA.png</file>
+  <file>icon/Q-SoPrA.png</file>
   <file>images/contract_horizontal.png</file>
   <file>images/contract_network.png</file>
   <file>images/contract_vertical.png</file>
@@ -28,6 +28,16 @@
   <file>images/vlinewhole.svg</file>
   <file>images/hline.svg</file>
   <file>images/vlinehalf.svg</file>
+  <file>fonts/RobotoMono-Bold.ttf</file>
+  <file>fonts/RobotoMono-BoldItalic.ttf</file>
+  <file>fonts/RobotoMono-Italic.ttf</file>
+  <file>fonts/RobotoMono-Light.ttf</file>
+  <file>fonts/RobotoMono-LightItalic.ttf</file>
+  <file>fonts/RobotoMono-Medium.ttf</file>
+  <file>fonts/RobotoMono-MediumItalic.ttf</file>
+  <file>fonts/RobotoMono-Regular.ttf</file>
+  <file>fonts/RobotoMono-Thin.ttf</file>
+  <file>fonts/RobotoMono-ThinItalic.ttf</file>
 </qresource>
 </RCC>
   

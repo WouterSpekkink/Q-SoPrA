@@ -3347,7 +3347,7 @@ void HierarchyGraphWidget::exportSvg()
       currentRect.setHeight(currentRect.height());
       gen.setSize(QSize(currentRect.width(), currentRect.height()));
       gen.setViewBox(QRect(0, 0, currentRect.width(), currentRect.height()));
-      int dpiX = QApplication::primaryScreen()->logicalDotsPerInch();
+      int dpiX = view->logicalDpiX();
       gen.setResolution(dpiX);
       QPainter painter;
       painter.begin(&gen);
