@@ -607,8 +607,8 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(exportNodesButton);
   graphicsControlsLayout->addWidget(exportEdgesButton);
   graphicsControlsLayout->addWidget(exportRelationalEventsButton);
-  graphicsWidget->setMaximumWidth(175);
-  graphicsWidget->setMinimumWidth(175);
+  graphicsWidget->setMaximumWidth(200);
+  graphicsWidget->setMinimumWidth(200);
   graphicsWidget->setLayout(graphicsControlsLayout);
   graphicsControlsLayout->setAlignment(Qt::AlignBottom);
   screenLayout->addWidget(graphicsWidget);

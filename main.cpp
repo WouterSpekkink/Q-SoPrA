@@ -28,6 +28,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 int main(int argc, char *argv[]) {
   QApplication::setStyle("fusion");
   QApplication QSoPrA(argc, argv);
+  QFont font("Lato");
+  font.setStyleHint(QFont::Monospace);
+  font.setPointSize(12);
+  QApplication::setFont(font);
   QSoPrA.setWindowIcon(QIcon("./images/Q-SoPrA.png"));
   QString version = QString("0.9");
   QSoPrA.setApplicationVersion(version);

@@ -765,8 +765,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(exportTableButton);
   graphicsControlsLayout->addWidget(exportNodesButton);
   graphicsControlsLayout->addWidget(exportEdgesButton);
-  graphicsWidget->setMaximumWidth(175);
-  graphicsWidget->setMinimumWidth(175);
+  graphicsWidget->setMaximumWidth(200);
+  graphicsWidget->setMinimumWidth(200);
   graphicsWidget->setLayout(graphicsControlsLayout);
   graphicsControlsLayout->setAlignment(Qt::AlignBottom);
   screenLayout->addWidget(graphicsWidget);

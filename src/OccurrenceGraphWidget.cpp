@@ -534,8 +534,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   graphicsControlsLayout->addWidget(exportSvgButton);
   graphicsControlsLayout->addWidget(viewConcordanceButton);
   graphicsControlsLayout->addWidget(exportMatrixButton);
-  graphicsWidget->setMaximumWidth(175);
-  graphicsWidget->setMinimumWidth(175);
+  graphicsWidget->setMaximumWidth(200);
+  graphicsWidget->setMinimumWidth(200);
   graphicsWidget->setLayout(graphicsControlsLayout);
   graphicsControlsLayout->setAlignment(Qt::AlignBottom);
   screenLayout->addWidget(graphicsWidget);
