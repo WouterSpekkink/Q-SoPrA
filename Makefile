@@ -906,9 +906,13 @@ qrc_resources.cpp: resources.qrc \
 		/usr/lib/qt5/bin/rcc \
 		images/guide_horizontal.png \
 		images/dash_dot_line.png \
+		images/hline.svg \
+		images/vlinehalf.svg \
 		images/contract_vertical.png \
 		images/dash_dot_dot_line.png \
+		images/plus.svg \
 		images/dashed_line.png \
+		images/minus.svg \
 		images/Q-SoPrA.png \
 		images/contract_network.png \
 		images/single_arrow_object.png \
@@ -926,6 +930,7 @@ qrc_resources.cpp: resources.qrc \
 		images/welcome_background.png \
 		images/expand_horizontal.png \
 		images/double_arrow_object.png \
+		images/vlinewhole.svg \
 		Icon/Q-SoPrA.png
 	/usr/lib/qt5/bin/rcc -name resources resources.qrc -o qrc_resources.cpp
 

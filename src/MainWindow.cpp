@@ -101,21 +101,21 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 				"background: #b2b1b1; "
 				"border: 1px solid #787676}");
   QString treeSheet = QString("QTreeView::branch:has-siblings:!adjoins-item { "
-			      "border-image: url(\"images/vlinewhole.svg\") 0; } "
+			      "border-image: url(\":/images/vlinewhole.svg\") 0; } "
 			      "QTreeView::branch:has-siblings:adjoins-item { "
-			      "border-image: url(\"images/vlinewhole.svg\") 0; "
-			      "image: url(\"images/hline.svg\"); } "
+			      "border-image: url(\":/images/vlinewhole.svg\") 0; "
+			      "image: url(\":/images/hline.svg\"); } "
 			      "QTreeView::branch:!has-children:!has-siblings:adjoins-item { "
-			      "border-image: url(\"images/vlinehalf.svg\") 0; "
-			      "image: url(\"images/hline.svg\"); }  "
+			      "border-image: url(\":/images/vlinehalf.svg\") 0; "
+			      "image: url(\":/images/hline.svg\"); }  "
 			      "QTreeView::branch:has-children:!has-siblings:closed, "
 			      "QTreeView::branch:closed:has-children:has-siblings { "
 			      "border-image: none; "
-			      "image: url(\"images/plus.svg\"); } " 
+			      "image: url(\":/images/plus.svg\"); } " 
 			      "QTreeView::branch:open:has-children:!has-siblings, "
 			      "QTreeView::branch:open:has-children:has-siblings { "
 			      "border-image: none; "
-			      "image: url(\"images/minus.svg\"); }");
+			      "image: url(\":/images/minus.svg\"); }");
 
   aw->setStyleSheet(treeSheet);
   rw->setStyleSheet(treeSheet);

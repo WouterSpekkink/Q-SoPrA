@@ -23,6 +23,11 @@
   <file>images/text_object.png</file>
   <file>images/timeline.png</file>
   <file>images/welcome_background.png</file>
+  <file>images/plus.svg</file>
+  <file>images/minus.svg</file>
+  <file>images/vlinewhole.svg</file>
+  <file>images/hline.svg</file>
+  <file>images/vlinehalf.svg</file>
 </qresource>
 </RCC>
   
