@@ -932,16 +932,18 @@ qrc_resources.cpp: resources.qrc \
 		images/double_arrow_object.png \
 		images/vlinewhole.svg \
 		icon/Q-SoPrA.png \
-		fonts/RobotoMono-Bold.ttf \
-		fonts/RobotoMono-Italic.ttf \
-		fonts/RobotoMono-Thin.ttf \
-		fonts/RobotoMono-BoldItalic.ttf \
-		fonts/RobotoMono-ThinItalic.ttf \
-		fonts/RobotoMono-LightItalic.ttf \
-		fonts/RobotoMono-Regular.ttf \
-		fonts/RobotoMono-Light.ttf \
-		fonts/RobotoMono-Medium.ttf \
-		fonts/RobotoMono-MediumItalic.ttf
+		fonts/Roboto-BoldItalic.ttf \
+		fonts/Roboto-RegularItalic.ttf \
+		fonts/Roboto-Regular.ttf \
+		fonts/Roboto-ThinItalic.ttf \
+		fonts/Roboto-BlackItalic.ttf \
+		fonts/Roboto-Light.ttf \
+		fonts/Roboto-Medium.ttf \
+		fonts/Roboto-Black.ttf \
+		fonts/Roboto-Bold.ttf \
+		fonts/Roboto-LightItalic.ttf \
+		fonts/Roboto-MediumItalic.ttf \
+		fonts/Roboto-Thin.ttf
 	/usr/lib/qt5/bin/rcc -name resources resources.qrc -o qrc_resources.cpp
 
 compiler_moc_predefs_make_all: moc_predefs.h
