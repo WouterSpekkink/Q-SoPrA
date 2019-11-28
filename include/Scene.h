@@ -76,6 +76,7 @@ signals:
   void IncidentNodeContextMenuAction(const QString&);
   void LinkageContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
+  void OccurrenceItemContextMenuAction(QGraphicsItem*, const QString&);
   void LineContextMenuAction(const QString&);
   void TextContextMenuAction(const QString&);
   void EllipseContextMenuAction(const QString&);

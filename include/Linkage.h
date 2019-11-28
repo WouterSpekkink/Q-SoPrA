@@ -69,6 +69,7 @@ public:
   void setMassHidden(bool state);
   void setColor(const QColor &color);
   void setPenStyle(int penStyle);
+  void setPenWidth(int penWidth);
   void setAntialiasing(bool state);
   
   // Getters
@@ -78,6 +79,7 @@ public:
   int getHeight();
   QString getType();
   int getPenStyle();
+  int getPenWidth();
   bool isMassHidden();
   QColor getColor();
   

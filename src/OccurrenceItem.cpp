@@ -38,12 +38,14 @@ OccurrenceItem::OccurrenceItem(int width, QString toolTip, QPointF originalPos,
   setToolTip(breakString(toolTip));
   _originalPos = originalPos;
   _selectionColor = QColor(Qt::black);
+  _highlightColor = QColor(Qt::black);
   _id = id;
   _order = order;
   _occurrenceLabelPtr = NULL;
   _attribute = attribute;
   _permHidden = false;
   _grouped = false;
+  _highlighted = false;
 
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
@@ -67,8 +69,14 @@ void OccurrenceItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *op
 {
   Q_UNUSED(option);
   Q_UNUSED(widget);
-  painter->setPen(Qt::NoPen);
-  painter->setPen(QPen(Qt::black, 1));
+  if (_highlighted)
+    {
+      painter->setPen(QPen(_highlightColor, 5)); 
+    }
+  else
+    {
+      painter->setPen(QPen(Qt::black, 1));
+    }
   painter->setBrush(QBrush(_color));
   painter->drawEllipse(-20, -20, _width, 40);
 }
@@ -282,4 +290,24 @@ bool OccurrenceItem::isGrouped()
   return _grouped;
 }
 
+void OccurrenceItem::setHighlight(QColor highlightColor)
+{
+  _highlighted = true;
+  _highlightColor = highlightColor;
+}
 
+void OccurrenceItem::unsetHighlight()
+{
+  _highlighted = false;
+  _highlightColor = QColor(Qt::black);
+}
+
+bool OccurrenceItem::isHighlighted()
+{
+  return _highlighted;
+}
+
+QColor OccurrenceItem::getHighlightColor()
+{
+  return _highlightColor;
+}

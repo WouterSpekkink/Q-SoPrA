@@ -25,7 +25,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent) 
 {
   // We set the windows size to the maximum possible.
-  QSize availableSize = qApp->desktop()->availableGeometry().size();
+  QSize availableSize = qApp->screens().first()->availableGeometry().size();
   int width = availableSize.width();
   int height = availableSize.height();
   this->resize(width, height);

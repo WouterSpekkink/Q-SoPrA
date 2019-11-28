@@ -3,6 +3,7 @@
 
 #include <QGraphicsItem>
 #include <QWheelEvent>
+#include <QColorDialog>
 #include "SupportingFunctions.h"
 
 /*
@@ -35,6 +36,8 @@ public:
   void setAttribute(const QString &attribute);
   void setPermHidden(bool state);
   void setGrouped(bool state);
+  void setHighlight(QColor highlightColor);
+  void unsetHighlight();
   void setLastPos(QPointF lastPos);
   void setId(int id);
   
@@ -46,9 +49,12 @@ public:
   int getWidth() const;
   OccurrenceLabel* getLabel();
   QColor getColor();
+  QColor getHighlightColor();
   QString getAttribute() const;
   bool isPermHidden();
   bool isGrouped();
+  bool isHighlighted();
+  
   QPointF getLastPos();
 
   // Type checking
@@ -65,6 +71,7 @@ private:
   // Private variables
   QColor _color;
   QColor _selectionColor;
+  QColor _highlightColor;
   QPointF _originalPos;
   QPointF _lastPos;
   int _id;
@@ -73,6 +80,7 @@ private:
   QString _attribute;
   bool _permHidden;
   bool _grouped;
+  bool _highlighted;
 
   // Pointer to label, created by other class
   // Do not delete.

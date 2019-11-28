@@ -661,7 +661,8 @@ void WelcomeDialog::newDatabase()
 		      "upperbound real, "
 		      "labelson integer, "
 		      "incidentlabelsonly integer, "
-		      "attributelabelsonly integer)");
+		      "attributelabelsonly integer, "
+		      "labelsize integer)");
 	  query->exec("CREATE TABLE saved_og_plots_occurrence_items "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -678,6 +679,11 @@ void WelcomeDialog::newDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer, "
+		      "highlighted integer, "
+		      "hred integer, "
+		      "hgreen integer, "
+		      "hblue integer, "
+		      "halpha integer, "
 		      "perm integer, "
 		      "relationship integer, "
 		      "grouped integer)"); 
@@ -1452,7 +1458,8 @@ void WelcomeDialog::openDatabase()
 		      "upperbound real, "
 		      "labelson integer, "
 		      "incidentlabelsonly integer, "
-		      "attributelabelsonly integer)");
+		      "attributelabelsonly integer, "
+		      "labelsize integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_items " 
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1469,6 +1476,11 @@ void WelcomeDialog::openDatabase()
 		      "blue integer, "
 		      "alpha integer, "
 		      "hidden integer, "
+		      "highlighted integer, "
+		      "hred integer, "
+		      "hgreen integer, "
+		      "hblue integer, "
+		      "halpha integer, "
 		      "perm integer, "
 		      "relationship integer, "
 		      "grouped integer)");
@@ -4419,6 +4431,11 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_settings "
 			  "ADD COLUMN attributelabelsonly integer;");
 	    }
+	  if (!columns.contains("labelsize"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_settings "
+			  "ADD COLUMN labelsize integer;");
+	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(saved_og_plots_occurrence_items)");
 	  while (query->next())
@@ -4499,6 +4516,31 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
 			  "ADD COLUMN hidden integer;");
+	    }
+	  if (!columns.contains("highlighted"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN highlighted integer;");
+	    }
+	  if (!columns.contains("hred"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN hred integer;");
+	    }
+	  if (!columns.contains("hgreen"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN hgreen integer;");
+	    }
+	  if (!columns.contains("hblue"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN hblue integer;");
+	    }
+	  if (!columns.contains("halpha"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN halpha integer;");
 	    }
 	  if (!columns.contains("perm"))
 	    {

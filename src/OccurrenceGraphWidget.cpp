@@ -355,7 +355,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(this, SIGNAL(sendTimeLineColor(QColor &)), scene, SLOT(setTimeLineColor(QColor &)));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(setChangeLabel()));
   connect(scene, SIGNAL(relevantChange()), this, SLOT(updateLinkages()));
-    connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
+  connect(scene, SIGNAL(moveItems(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveItems(QGraphicsItem *, QPointF)));
   connect(scene, SIGNAL(moveLine(QGraphicsItem *, QPointF)),
 	  this, SLOT(processMoveLine(QGraphicsItem *, QPointF)));
@@ -388,6 +388,8 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
 	  this, SLOT(addHorizontalGuideLine(const QPointF&)));
   connect(scene, SIGNAL(sendVerticalGuideLinePos(const QPointF&)),
 	  this, SLOT(addVerticalGuideLine(const QPointF&)));
+  connect(scene, SIGNAL(OccurrenceItemContextMenuAction(QGraphicsItem*, const QString &)),
+	  this, SLOT(processOccurrenceItemContextMenu(QGraphicsItem*, const QString &)));
   connect(caseListWidget, SIGNAL(itemChanged(QListWidgetItem *)), this, SLOT(checkCases()));
   connect(plotLabelsButton, SIGNAL(clicked()), this, SLOT(plotLabels()));
   connect(incidentLabelsOnlyButton, SIGNAL(clicked()), this, SLOT(toggleIncidentLabelsOnly()));
@@ -2146,6 +2148,11 @@ void OccurrenceGraphWidget::wireLinkages()
 	      newLinkage->setStartItem(tempSource);
 	      newLinkage->setEndItem(tempTarget);
 	      newLinkage->setCopy(true);
+	      if (tempSource->isHighlighted())
+		{
+		  newLinkage->setColor(tempSource->getHighlightColor());
+		  newLinkage->setPenWidth(5);
+		}
 	      _edgeVector.push_back(newLinkage);
 	      scene->addItem(newLinkage);
 	      QVectorIterator<OccurrenceItem*> it3(_attributeOccurrenceVector);
@@ -2161,6 +2168,11 @@ void OccurrenceGraphWidget::wireLinkages()
 		      newLinkageTwo->setStartItem(tempSource);
 		      newLinkageTwo->setEndItem(current);
 		      newLinkageTwo->setCopy(true);
+		      if (tempSource->isHighlighted())
+			{
+			  newLinkageTwo->setColor(tempSource->getHighlightColor());
+			  newLinkageTwo->setPenWidth(5);
+			}
 		      _edgeVector.push_back(newLinkageTwo);
 		      scene->addItem(newLinkageTwo);
 		    }
@@ -2208,6 +2220,11 @@ void OccurrenceGraphWidget::wireLinkages()
 	      newLinkage->setStartItem(tempSource);
 	      newLinkage->setEndItem(tempTarget);
 	      newLinkage->setCopy(true);
+	      if (tempSource->isHighlighted())
+		{
+		  newLinkage->setColor(tempSource->getHighlightColor());
+		  newLinkage->setPenWidth(5);
+		}
 	      _edgeVector.push_back(newLinkage);
 	      scene->addItem(newLinkage);
 	      QVectorIterator<OccurrenceItem*> it6(_relationshipOccurrenceVector);
@@ -2223,6 +2240,11 @@ void OccurrenceGraphWidget::wireLinkages()
 		      newLinkageTwo->setStartItem(tempSource);
 		      newLinkageTwo->setEndItem(current);
 		      newLinkageTwo->setCopy(true);
+		      if (tempSource->isHighlighted())
+			{
+			  newLinkageTwo->setColor(tempSource->getHighlightColor());
+			  newLinkageTwo->setPenWidth(5);
+			}
 		      _edgeVector.push_back(newLinkageTwo);
 		      scene->addItem(newLinkageTwo);
 		    }
@@ -4215,6 +4237,91 @@ void OccurrenceGraphWidget::deleteGuideLine()
     }  
 }
 
+void OccurrenceGraphWidget::processOccurrenceItemContextMenu(QGraphicsItem* item,
+							     const QString &action)
+{
+  OccurrenceItem *original = qgraphicsitem_cast<OccurrenceItem*>(item);
+  QString attribute = original->getAttribute();
+  if (action == SETHIGHLIGHTEDACTION)
+    {
+      QPointer<QColorDialog> colorDialog = new QColorDialog(this);
+      colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
+      QColor highlightColor = QColor(Qt::black);
+      colorDialog->setCurrentColor(highlightColor);
+      if (colorDialog->exec()) 
+	{
+	  highlightColor = colorDialog->selectedColor();
+	}
+      else 
+	{
+	  return;
+	}
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+      while (it.hasNext())
+	{
+	  OccurrenceItem *current = it.next();
+	  if (current->getAttribute() == attribute)
+	    {
+	      current->setHighlight(highlightColor);
+	    }
+	}
+      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+      while (it2.hasNext())
+	{
+	  OccurrenceItem *current = it2.next();
+	  if (current->getAttribute() == attribute)
+	    {
+	      current->setHighlight(highlightColor);
+	    }
+	}
+      QVectorIterator<Linkage*> it3(_edgeVector);
+      while (it3.hasNext())
+	{
+	  Linkage *edge = it3.next();
+	  QGraphicsItem *start = edge->getStart();
+	  OccurrenceItem *current = qgraphicsitem_cast<OccurrenceItem*>(start);
+	  if (current->getAttribute() == attribute)
+	    {
+	      edge->setPenWidth(5);
+	      edge->setColor(highlightColor);
+	    }
+	}
+    }
+  else if (action == UNSETHIGHLIGHTEDACTION)
+    {
+      QVectorIterator<OccurrenceItem*> it(_attributeOccurrenceVector);
+      while (it.hasNext())
+	{
+	  OccurrenceItem *current = it.next();
+	  if (current->getAttribute() == attribute)
+	    {
+	      current->unsetHighlight();
+	    }
+	}
+      QVectorIterator<OccurrenceItem*> it2(_relationshipOccurrenceVector);
+      while (it2.hasNext())
+	{
+	  OccurrenceItem *current = it2.next();
+	  if (current->getAttribute() == attribute)
+	    {
+	      current->unsetHighlight();
+	    }
+	}
+      QVectorIterator<Linkage*> it3(_edgeVector);
+      while (it3.hasNext())
+	{
+	  Linkage *edge = it3.next();
+	  QGraphicsItem *start = edge->getStart();
+	  OccurrenceItem *current = qgraphicsitem_cast<OccurrenceItem*>(start);
+	  if (current->getAttribute() == attribute)
+	    {
+	      edge->setPenWidth(1);
+	      edge->setColor(QColor(Qt::black));
+	    }
+	}
+    }
+}
+
 void OccurrenceGraphWidget::objectOneBackward() 
 {
   if (scene->selectedItems().size() == 1) 
@@ -5740,10 +5847,11 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_og_plots_occurrence_items "
 		     "(plot, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
-		     "oriypos, red, green, blue, alpha, hidden, perm, relationship, grouped) "
+		     "oriypos, red, green, blue, alpha, highlighted, hred, hgreen, hblue, "
+		     "halpha, hidden, perm, relationship, grouped) "
 		     "VALUES (:plot, :incident, :order, :attribute, :width, :curxpos, :curypos, "
-		     ":orixpos, :oriypos, :red, :green, :blue, :alpha, :hidden, :perm, "
-		     ":relationship, :grouped)");
+		     ":orixpos, :oriypos, :red, :green, :blue, :alpha, :highlighted, :hred, "
+		     ":hgreen, :hblue, :halpha, :hidden, :perm, :relationship, :grouped)");
       QVectorIterator<OccurrenceItem*> it(allOccurrences);
       while (it.hasNext()) 
 	{
@@ -5761,10 +5869,20 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
+	  int highlighted = 0;
+	  QColor highlightColor = currentItem->getHighlightColor();
+	  int hred = highlightColor.red();
+	  int hgreen = highlightColor.green();
+	  int hblue = highlightColor.blue();
+	  int halpha = highlightColor.alpha();
 	  int hidden = 1;
 	  int perm = 0;
 	  int relationship = 0;
 	  int grouped = 0;
+	  if (currentItem->isHighlighted())
+	    {
+	      highlighted = 1;
+	    }
 	  if (currentItem->isVisible()) 
 	    {
 	      hidden = 0;
@@ -5794,6 +5912,11 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":highlighted", highlighted);
+	  query->bindValue(":hred", hred);
+	  query->bindValue(":hgreen", hgreen);
+	  query->bindValue(":hblue", hblue);
+	  query->bindValue(":halpha", halpha);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":perm", perm);
 	  query->bindValue(":relationship", relationship);
@@ -6382,7 +6505,8 @@ void OccurrenceGraphWidget::seePlots()
 	}
       _labelSize = labelsize;
       query->prepare("SELECT incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
-		     "oriypos, red, green, blue, alpha, hidden, perm, relationship, grouped "
+		     "oriypos, red, green, blue, alpha, highlighted, hred, hgreen, "
+		     "hblue, halpha, hidden, perm, relationship, grouped "
 		     "FROM saved_og_plots_occurrence_items "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -6402,10 +6526,15 @@ void OccurrenceGraphWidget::seePlots()
 	  int green = query->value(9).toInt();
 	  int blue = query->value(10).toInt();
 	  int alpha = query->value(11).toInt();
-	  int hidden = query->value(12).toInt();
-	  int perm = query->value(13).toInt();
-	  int relationship = query->value(14).toInt();
-	  int grouped = query->value(15).toInt();
+	  int highlighted = query->value(12).toInt();
+	  int hred = query->value(13).toInt();
+	  int hgreen = query->value(14).toInt();
+	  int hblue = query->value(15).toInt();
+	  int halpha = query->value(16).toInt();
+	  int hidden = query->value(17).toInt();
+	  int perm = query->value(18).toInt();
+	  int relationship = query->value(19).toInt();
+	  int grouped = query->value(20).toInt();
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT description FROM incidents WHERE id = :id");
 	  query2->bindValue(":id", id);
@@ -6427,6 +6556,10 @@ void OccurrenceGraphWidget::seePlots()
 							   id, order, attribute);
 	  currentItem->setPos(currentPos);
 	  currentItem->setColor(QColor(red, green, blue, alpha));
+	  if (highlighted == 1)
+	    {
+	      currentItem->setHighlight(QColor(hred, hgreen, hblue, halpha));
+	    }
 	  currentItem->setZValue(3);
 	  if (relationship == 0) 
 	    {

@@ -2066,6 +2066,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	(itemAt(event->scenePos(), QTransform()));
       NetworkNode *node = qgraphicsitem_cast<NetworkNode*>
 	(itemAt(event->scenePos(), QTransform()));
+      OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>
+	(itemAt(event->scenePos(), QTransform()));
+      OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
+	(itemAt(event->scenePos(), QTransform()));
       LineObject *line = qgraphicsitem_cast<LineObject*>
 	(itemAt(event->scenePos(), QTransform()));
       TextObject *text = qgraphicsitem_cast<TextObject*>
@@ -2085,6 +2089,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       if (abstractNodeLabel) 
 	{
 	  abstractNode = abstractNodeLabel->getAbstractNode();
+	}
+      if (occurrenceLabel)
+	{
+	  occurrence = occurrenceLabel->getOccurrence();
 	}
       if (incident && !incident->isCopy()) 
 	{
@@ -2366,6 +2374,29 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action5;
 	  delete action6;
 	  delete action7;
+	  delete menu;
+	}
+      else if (occurrence)
+	{
+	  QMenu *menu = new QMenu;
+	  QAction *action1 = new QAction(SETHIGHLIGHTEDACTION, this);
+	  menu->addAction(action1);
+	  QAction *action2 = new QAction(UNSETHIGHLIGHTEDACTION, this);
+	  menu->addAction(action2);
+	  if (occurrence->isHighlighted())
+	    {
+	      action1->setEnabled(false);
+	    }
+	  else
+	    {
+	      action2->setEnabled(false);
+	    }
+	  if (QAction *action = menu->exec(event->screenPos())) 
+	    {
+	      emit OccurrenceItemContextMenuAction(occurrence, action->text());
+	    }
+	  delete action1;
+	  delete action2;
 	  delete menu;
 	}
       else if (node) 

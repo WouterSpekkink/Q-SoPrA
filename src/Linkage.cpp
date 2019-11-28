@@ -93,7 +93,7 @@ void Linkage::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget
       myPath.moveTo(_newLine.p1());
       myPath.quadTo(_controlPoint, _ghostLine.p2());
       _strokePath = myPath;
-      painter->setPen(QPen(_color, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+      painter->setPen(QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
       painter->setBrush(QBrush(_color, Qt::SolidPattern));
       painter->drawPolygon(_arrowHead);
       QPen myPen = QPen(_color, _penWidth, Qt::PenStyle(_penStyle), Qt::RoundCap, Qt::RoundJoin);
@@ -344,6 +344,16 @@ void Linkage::setPenStyle(int penStyle)
 int Linkage::getPenStyle()
 {
   return _penStyle;
+}
+
+void Linkage::setPenWidth(int penWidth)
+{
+  _penWidth = penWidth;
+}
+
+int Linkage::getPenWidth()
+{
+  return _penWidth;
 }
 
 void Linkage::setHeight(const int &height)

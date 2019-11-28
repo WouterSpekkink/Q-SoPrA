@@ -140,5 +140,7 @@ QString DESCENDANTMODE = "Descendant";
 QString ADDTOCASEACTION = "Add to existing case";
 QString REMOVEFROMCASEACTION = "Remove from case";
 QString CREATENEWCASEACTION = "Add to new case";
+QString SETHIGHLIGHTEDACTION = "Highlight occurrences";
+QString UNSETHIGHLIGHTEDACTION = "Remove highlight";
 
 qreal Pi = 3.14;

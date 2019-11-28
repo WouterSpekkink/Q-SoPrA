@@ -191,6 +191,7 @@ private slots:
   void hideAnnotations();
   void processGuideLineContextMenu(const QString &action);
   void deleteGuideLine();
+  void processOccurrenceItemContextMenu(QGraphicsItem *item, const QString &action);
   void objectOneForward();
   void objectOneBackward();
   void objectToFront();
