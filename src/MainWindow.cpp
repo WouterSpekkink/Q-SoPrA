@@ -171,6 +171,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
 
   stacked->showFullScreen();
   stacked->showMaximized();
+  setWindowState(Qt::WindowMaximized);  
 }
 
 MainWindow::~MainWindow()

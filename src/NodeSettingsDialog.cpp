@@ -80,11 +80,7 @@ NodeSettingsDialog::NodeSettingsDialog(QWidget *parent,
   
   setLayout(mainLayout);
   setWindowTitle("Settings for node list");
-
-  QSize availableSize = QApplication::primaryScreen()->availableGeometry().size();
-  int width = availableSize.width();
-  int height = availableSize.height();
-  this->resize(width, height);
+  setWindowState(Qt::WindowMaximized);  
 }
 
 void NodeSettingsDialog::cancelAndClose() 
