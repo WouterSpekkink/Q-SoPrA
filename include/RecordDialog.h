@@ -29,9 +29,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QLineEdit>
-#include "TextEdit.h"
 #include <QMessageBox>
 #include <QWheelEvent>
+#include <QShortcut>
+#include "TextEdit.h"
 #include "EventSequenceDatabase.h"
 #include "Constants.h"
 
@@ -81,6 +82,7 @@ private:
   QPointer<TextEdit> descriptionField;
   QPointer<TextEdit> rawField;
   QPointer<TextEdit> commentField;
+  QPointer<QShortcut> simplifyShortcut;
 
   // Private variables
   int _exitStatus;

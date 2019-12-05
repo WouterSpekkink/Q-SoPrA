@@ -32,6 +32,8 @@ void TextEdit::contextMenuEvent(QContextMenuEvent *event)
   QMenu *menu = createStandardContextMenu();
   QAction *simplifyAction = new QAction(tr("Simplify"), this);
   connect(simplifyAction, SIGNAL(triggered()), this, SLOT(simplifyText()));
+  simplifyAction->setShortcut(tr("CTRL+S"));
+
   menu->addAction(simplifyAction);
   if (this->textCursor().selectedText().length() == 0)
     {
