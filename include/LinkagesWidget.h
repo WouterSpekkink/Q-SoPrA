@@ -76,6 +76,8 @@ private slots:
   void retrieveCoders();
   void retrieveLinkages();
   void retrieveData();
+  void editLeftIncident();
+  void editRightIncident();
   void setTailDescriptionFilter(const QString &text);
   void setTailRawFilter(const QString &text);
   void setTailCommentFilter(const QString &text);

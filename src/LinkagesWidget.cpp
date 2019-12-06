@@ -172,6 +172,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   clearEvidenceButton->setEnabled(false);
   
   linkageCommentField->installEventFilter(this);
+  headTimeStampField->installEventFilter(this);
+  tailTimeStampField->installEventFilter(this);
+  headSourceField->installEventFilter(this);
+  tailSourceField->installEventFilter(this);
+  headDescriptionField->viewport()->installEventFilter(this);
+  tailDescriptionField->viewport()->installEventFilter(this);
   headCommentField->installEventFilter(this);
   tailCommentField->installEventFilter(this);
   tailRawField->viewport()->installEventFilter(this);
@@ -1322,6 +1328,96 @@ void LinkagesWidget::retrieveData()
     }
   highlightText();
   delete query;
+}
+
+void LinkagesWidget::editLeftIncident()
+{
+  QPointer<RecordDialog> dialog = new RecordDialog(this);
+  QString timeStamp = tailTimeStampField->text();
+  QString source  = tailSourceField->text();
+  QString description = tailDescriptionField->toPlainText();
+  QString raw = tailRawField->toPlainText();
+  QString comment = tailCommentField->toPlainText();
+  dialog->setTimeStamp(timeStamp);
+  dialog->setSource(source);
+  dialog->setDescription(description);
+  dialog->setRaw(raw);
+  dialog->setComment(comment);
+  dialog->initialize();
+  dialog->exec();
+  if (dialog->getExitStatus() == 0)
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT tail FROM coders_to_linkage_types "
+		     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      query->first();
+      int tailIndex = 0;
+      if (!(query->isNull(0))) 
+	{
+	  tailIndex = query->value(0).toInt();
+	}
+      query->prepare("UPDATE incidents "
+		     "SET timestamp = :timestamp, description = :description, "
+		     "raw = :raw, comment = :comment, source = :source "
+		     "WHERE ch_order = :incident");
+      query->bindValue(":timestamp", dialog->getTimeStamp());
+      query->bindValue(":description", dialog->getDescription());
+      query->bindValue(":raw", dialog->getRaw());
+      query->bindValue(":comment", dialog->getComment());
+      query->bindValue(":source", dialog->getSource());
+      query->bindValue(":incident", tailIndex);
+      query->exec();
+      delete query;
+      retrieveData();
+    }
+}
+
+void LinkagesWidget::editRightIncident()
+{
+  QPointer<RecordDialog> dialog = new RecordDialog(this);
+  QString timeStamp = headTimeStampField->text();
+  QString source  = headSourceField->text();
+  QString description = headDescriptionField->toPlainText();
+  QString raw = headRawField->toPlainText();
+  QString comment = headCommentField->toPlainText();
+  dialog->setTimeStamp(timeStamp);
+  dialog->setSource(source);
+  dialog->setDescription(description);
+  dialog->setRaw(raw);
+  dialog->setComment(comment);
+  dialog->initialize();
+  dialog->exec();
+  if (dialog->getExitStatus() == 0)
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT head FROM coders_to_linkage_types "
+		     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      query->first();
+      int headIndex = 0;
+      if (!(query->isNull(0))) 
+	{
+	  headIndex = query->value(0).toInt();
+	}
+      query->prepare("UPDATE incidents "
+		     "SET timestamp = :timestamp, description = :description, "
+		     "raw = :raw, comment = :comment, source = :source "
+		     "WHERE ch_order = :incident");
+      query->bindValue(":timestamp", dialog->getTimeStamp());
+      query->bindValue(":description", dialog->getDescription());
+      query->bindValue(":raw", dialog->getRaw());
+      query->bindValue(":comment", dialog->getComment());
+      query->bindValue(":source", dialog->getSource());
+      query->bindValue(":incident", headIndex);
+      query->exec();
+      delete query;
+      retrieveData();
+    }
 }
 
 void LinkagesWidget::checkManualButton() 
@@ -4369,6 +4465,17 @@ void LinkagesWidget::setButtons(bool status)
   headDescriptionFilterField->setEnabled(status);
   headRawFilterField->setEnabled(status);
   headCommentFilterField->setEnabled(status);
+  tailTimeStampField->setEnabled(status);
+  tailSourceField->setEnabled(status);
+  tailDescriptionField->setEnabled(status);  
+  tailRawField->setEnabled(status);
+  tailCommentField->setEnabled(status);
+  headTimeStampField->setEnabled(status);
+  headSourceField->setEnabled(status);
+  headDescriptionField->setEnabled(status);  
+  headRawField->setEnabled(status);
+  headCommentField->setEnabled(status);
+  linkageCommentField->setEnabled(status);
 }
 
 bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 
@@ -4391,6 +4498,46 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
 		}
 	    }
 	}
+    }
+  else if (((object == tailDescriptionField->viewport() &&
+	     tailDescriptionField->isEnabled()) ||
+	    (object == tailRawField->viewport() &&
+	     tailRawField->isEnabled()) ||
+	    (object == tailTimeStampField &&
+	     tailTimeStampField->isEnabled()) ||
+	    (object == tailSourceField &&
+	     tailSourceField->isEnabled())) &&
+	   event->type() == QEvent::ContextMenu)
+    {
+      QContextMenuEvent *context = (QContextMenuEvent*) event;
+      QMenu *menu = new QMenu;
+      QAction *editAction = new QAction(tr("Edit text"), this);
+      connect(editAction, SIGNAL(triggered()), this, SLOT(editLeftIncident()));
+      menu->addAction(editAction);
+      menu->exec(context->globalPos());
+      delete editAction;
+      delete menu;
+      return true;
+    }
+  else if (((object == headDescriptionField->viewport() &&
+	     headDescriptionField->isEnabled()) ||
+	    (object == headRawField->viewport() &&
+	     headRawField->isEnabled()) ||
+	    (object == headTimeStampField &&
+	     headTimeStampField->isEnabled()) ||
+	    (object == headSourceField &&
+	     headSourceField->isEnabled())) &&
+	   event->type() == QEvent::ContextMenu)
+    {
+      QContextMenuEvent *context = (QContextMenuEvent*) event;
+      QMenu *menu = new QMenu;
+      QAction *editAction = new QAction(tr("Edit text"), this);
+      connect(editAction, SIGNAL(triggered()), this, SLOT(editRightIncident()));
+      menu->addAction(editAction);
+      menu->exec(context->globalPos());
+      delete editAction;
+      delete menu;
+      return true;
     }
   else if (object == tailRawField->viewport() && event->type() == QEvent::MouseButtonRelease)
     {

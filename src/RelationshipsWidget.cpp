@@ -129,6 +129,9 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   resetTextsButton->setEnabled(false);
   
   relationshipsTreeView->installEventFilter(this);
+  timeStampField->installEventFilter(this);
+  sourceField->installEventFilter(this);
+  descriptionField->viewport()->installEventFilter(this);  
   rawField->viewport()->installEventFilter(this);
   commentField->installEventFilter(this);
 
@@ -363,6 +366,11 @@ void RelationshipsWidget::retrieveData()
   query->first();
   if (!(query->isNull(0))) 
     {
+      timeStampField->setEnabled(true);
+      sourceField->setEnabled(true);
+      descriptionField->setEnabled(true);
+      rawField->setEnabled(true);
+      commentField->setEnabled(true);
       int id = query->value(0).toInt();
       QString timeStamp = query->value(1).toString();
       QString source = query->value(2).toString();
@@ -410,6 +418,19 @@ void RelationshipsWidget::retrieveData()
       cursor.movePosition(QTextCursor::Start);
       rawField->setTextCursor(cursor);
       delete query;
+    }
+  else
+    {
+      timeStampField->clear();
+      timeStampField->setEnabled(false);
+      sourceField->clear();
+      sourceField->setEnabled(false);
+      descriptionField->clear();
+      descriptionField->setEnabled(false);
+      rawField->clear();
+      rawField->setEnabled(false);
+      commentField->clear();
+      commentField->setEnabled(false);
     }
 }
 
@@ -1635,6 +1656,48 @@ void RelationshipsWidget::nextDescription()
     }
 }
 
+void RelationshipsWidget::editIncident()
+{
+  QPointer<RecordDialog> dialog = new RecordDialog(this);
+  QString timeStamp = timeStampField->text();
+  QString source  = sourceField->text();
+  QString description = descriptionField->toPlainText();
+  QString raw = rawField->toPlainText();
+  QString comment = commentField->toPlainText();
+  dialog->setTimeStamp(timeStamp);
+  dialog->setSource(source);
+  dialog->setDescription(description);
+  dialog->setRaw(raw);
+  dialog->setComment(comment);
+  dialog->initialize();
+  dialog->exec();
+  if (dialog->getExitStatus() == 0)
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->exec("SELECT relationships_record FROM save_data");
+      query->first();
+      int order = 0;
+      if (!query->isNull(0))
+	{
+	  order = query->value(0).toInt();
+	}
+      query->prepare("UPDATE incidents "
+		     "SET timestamp = :timestamp, description = :description, "
+		     "raw = :raw, comment = :comment, source = :source "
+		     "WHERE ch_order = :order");
+      query->bindValue(":timestamp", dialog->getTimeStamp());
+      query->bindValue(":description", dialog->getDescription());
+      query->bindValue(":raw", dialog->getRaw());
+      query->bindValue(":comment", dialog->getComment());
+      query->bindValue(":source", dialog->getSource());
+      query->bindValue(":order", order);
+      query->exec();
+      delete query;
+      retrieveData();
+    }
+  delete dialog;
+}
+
 void RelationshipsWidget::setRawFilter(const QString &text) 
 {
   _rawFilter = text;
@@ -2056,6 +2119,22 @@ bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event)
   if (object == rawField->viewport() && event->type() == QEvent::MouseButtonRelease) 
     {
       selectText();
+    }
+  else if (((object == descriptionField->viewport() && descriptionField->isEnabled()) ||
+	    (object == rawField->viewport() && rawField->isEnabled()) ||
+	    (object == timeStampField && timeStampField->isEnabled()) ||
+	    (object == sourceField && sourceField->isEnabled())) &&
+	   event->type() == QEvent::ContextMenu)
+    {
+      QContextMenuEvent *context = (QContextMenuEvent*) event;
+      QMenu *menu = new QMenu;
+      QAction *editAction = new QAction(tr("Edit text"), this);
+      connect(editAction, SIGNAL(triggered()), this, SLOT(editIncident()));
+      menu->addAction(editAction);
+      menu->exec(context->globalPos());
+      delete editAction;
+      delete menu;
+      return true;
     }
   else if (event->type() == QEvent::Wheel) 
     {

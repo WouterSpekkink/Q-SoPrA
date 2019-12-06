@@ -36,6 +36,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QDropEvent>
 #include <QHeaderView>
 #include <QMessageBox>
+#include <QMenu>
+#include <QContextMenuEvent>
 #include "AttributeDialog.h"
 #include "DeselectableTreeView.h"
 #include "AttributeIndexDialog.h"
@@ -49,6 +51,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "MergeAttributesDialog.h"
 #include "RelationshipComboBoxDialog.h"
 #include "RelationshipsWidget.h"
+#include "RecordDialog.h"
 
 class EventGraphWidget;
 
@@ -83,6 +86,7 @@ private slots:
   void setDescriptionFilter(const QString &text);
   void previousDescription();
   void nextDescription();
+  void editIncident();
   void setRawFilter(const QString &text);
   void previousRaw();
   void nextRaw();
