@@ -1481,34 +1481,62 @@ void LinkagesWidget::checkAssistedButton()
   setLinkButton->setEnabled(true);
 }
 
+
+void LinkagesWidget::highlightSearch(QTextEdit *field, QString text)
+{
+  int barPos = field->verticalScrollBar()->value(); 
+  QTextCursor currentPos = field->textCursor();
+  field->selectAll();
+  QTextCharFormat originalFormat = field->textCursor().charFormat();
+  originalFormat.setBackground(Qt::transparent);
+  field->textCursor().mergeCharFormat(originalFormat);      
+  QTextCharFormat tempFormat;
+  tempFormat.setBackground(Qt::yellow);
+  QTextCursor cursor = field->textCursor();
+  cursor.movePosition(QTextCursor::Start);
+  field->setTextCursor(cursor);
+  while (field->find(text))
+    {
+      field->textCursor().mergeCharFormat(tempFormat);      
+    }
+  field->setTextCursor(currentPos);
+  field->verticalScrollBar()->setValue(barPos); 
+}
+
 void LinkagesWidget::setTailDescriptionFilter(const QString &text) 
 {
   _tailDescriptionFilter = text;
+  highlightSearch(tailDescriptionField, text);
 }
 
 void LinkagesWidget::setTailRawFilter(const QString &text) 
 {
   _tailRawFilter = text;
+  highlightSearch(tailRawField, text);
 }
 
 void LinkagesWidget::setTailCommentFilter(const QString &text) 
 {
   _tailCommentFilter = text;
+  highlightSearch(tailCommentField, text);
 }
 
 void LinkagesWidget::setHeadDescriptionFilter(const QString &text) 
 {
   _headDescriptionFilter = text;
+  highlightSearch(headDescriptionField, text);
 }
 
 void LinkagesWidget::setHeadRawFilter(const QString &text) 
 {
   _headRawFilter = text;
+  highlightSearch(headRawField, text);
 }
 
 void LinkagesWidget::setHeadCommentFilter(const QString &text) 
 {
   _headCommentFilter = text;
+  highlightSearch(headCommentField, text);
 }
 
 void LinkagesWidget::previousTailDescription() 
@@ -1569,6 +1597,7 @@ void LinkagesWidget::previousTailDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailDescriptionField, _tailDescriptionFilter);
 		}
 	    }
 	  else if (_selectedDirection ==  FUTURE) 
@@ -1583,6 +1612,7 @@ void LinkagesWidget::previousTailDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailDescriptionField, _tailDescriptionFilter);
 		}
 	    }
 	}
@@ -1648,6 +1678,7 @@ void LinkagesWidget::nextTailDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailDescriptionField, _tailDescriptionFilter);
 		}
 	    }
 	  else if (_selectedDirection == FUTURE) 
@@ -1662,6 +1693,7 @@ void LinkagesWidget::nextTailDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailDescriptionField, _tailDescriptionFilter);
 		}
 	    }
 	}
@@ -1727,6 +1759,7 @@ void LinkagesWidget::previousTailRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailRawField, _tailRawFilter);
 		}
 	    }
 	  else if (_selectedDirection ==  FUTURE) 
@@ -1741,6 +1774,7 @@ void LinkagesWidget::previousTailRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailRawField, _tailRawFilter);
 		}
 	    }
 	}
@@ -1822,6 +1856,7 @@ void LinkagesWidget::nextTailRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailRawField, _tailRawFilter);
 		}
 	    }
 	  else if (_selectedDirection == FUTURE) 
@@ -1836,6 +1871,7 @@ void LinkagesWidget::nextTailRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailRawField, _tailRawFilter);
 		}
 	    }
 	}
@@ -1901,6 +1937,7 @@ void LinkagesWidget::previousTailComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailCommentField, _tailCommentFilter);
 		}
 	    }
 	  else if (_selectedDirection ==  FUTURE) 
@@ -1915,6 +1952,7 @@ void LinkagesWidget::previousTailComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailCommentField, _tailCommentFilter);
 		}
 	    }
 	}
@@ -1980,6 +2018,7 @@ void LinkagesWidget::nextTailComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailCommentField, _tailCommentFilter);
 		}
 	    }
 	  else if (_selectedDirection == FUTURE) 
@@ -1994,6 +2033,7 @@ void LinkagesWidget::nextTailComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(tailCommentField, _tailCommentFilter);
 		}
 	    }
 	}
@@ -2059,6 +2099,7 @@ void LinkagesWidget::previousHeadDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headDescriptionField, _headDescriptionFilter);
 		}
 	    }
 	}
@@ -2085,6 +2126,7 @@ void LinkagesWidget::previousHeadDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headDescriptionField, _headDescriptionFilter);
 		}
 	    }
 	}
@@ -2150,6 +2192,7 @@ void LinkagesWidget::nextHeadDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headDescriptionField, _headDescriptionFilter);
 		}
 	    }
 	}
@@ -2176,6 +2219,7 @@ void LinkagesWidget::nextHeadDescription()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headDescriptionField, _headDescriptionFilter);
 		}
 	    }
 	}
@@ -2241,6 +2285,7 @@ void LinkagesWidget::previousHeadRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headRawField, _headRawFilter);
 		}
 	    }
 	}
@@ -2267,6 +2312,7 @@ void LinkagesWidget::previousHeadRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headRawField, _headRawFilter);
 		}
 	    }
 	}
@@ -2332,6 +2378,7 @@ void LinkagesWidget::nextHeadRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headRawField, _headRawFilter);
 		}
 	    }
 	}
@@ -2358,6 +2405,7 @@ void LinkagesWidget::nextHeadRaw()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headRawField, _headRawFilter);
 		}
 	    }
 	}
@@ -2423,6 +2471,7 @@ void LinkagesWidget::previousHeadComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headCommentField, _headCommentFilter);
 		}
 	    }
 	}
@@ -2449,6 +2498,7 @@ void LinkagesWidget::previousHeadComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headCommentField, _headCommentFilter);
 		}
 	    }
 	}
@@ -2514,6 +2564,7 @@ void LinkagesWidget::nextHeadComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headCommentField, _headCommentFilter);
 		}
 	    }
 	}
@@ -2540,6 +2591,7 @@ void LinkagesWidget::nextHeadComment()
 		  query->bindValue(":type", _selectedType);
 		  query->exec();
 		  retrieveData();
+		  highlightSearch(headCommentField, _headCommentFilter);
 		}
 	    }
 	}
@@ -4511,7 +4563,7 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
     {
       QContextMenuEvent *context = (QContextMenuEvent*) event;
       QMenu *menu = new QMenu;
-      QAction *editAction = new QAction(tr("Edit text"), this);
+      QAction *editAction = new QAction(tr("Edit incident"), this);
       connect(editAction, SIGNAL(triggered()), this, SLOT(editLeftIncident()));
       menu->addAction(editAction);
       menu->exec(context->globalPos());
@@ -4531,7 +4583,7 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
     {
       QContextMenuEvent *context = (QContextMenuEvent*) event;
       QMenu *menu = new QMenu;
-      QAction *editAction = new QAction(tr("Edit text"), this);
+      QAction *editAction = new QAction(tr("Edit incident"), this);
       connect(editAction, SIGNAL(triggered()), this, SLOT(editRightIncident()));
       menu->addAction(editAction);
       menu->exec(context->globalPos());

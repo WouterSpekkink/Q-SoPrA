@@ -78,6 +78,7 @@ private slots:
   void retrieveData();
   void editLeftIncident();
   void editRightIncident();
+  void highlightSearch(QTextEdit *field, QString text); 
   void setTailDescriptionFilter(const QString &text);
   void setTailRawFilter(const QString &text);
   void setTailCommentFilter(const QString &text);

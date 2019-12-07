@@ -1589,9 +1589,32 @@ void RelationshipsWidget::nextMarked()
   delete query;
 }
 
+
+void RelationshipsWidget::highlightSearch(QTextEdit *field, QString text)
+{
+  int barPos = field->verticalScrollBar()->value(); 
+  QTextCursor currentPos = field->textCursor();
+  field->selectAll();
+  QTextCharFormat originalFormat = field->textCursor().charFormat();
+  originalFormat.setBackground(Qt::transparent);
+  field->textCursor().mergeCharFormat(originalFormat);      
+  QTextCharFormat tempFormat;
+  tempFormat.setBackground(Qt::yellow);
+  QTextCursor cursor = field->textCursor();
+  cursor.movePosition(QTextCursor::Start);
+  field->setTextCursor(cursor);
+  while (field->find(text))
+    {
+      field->textCursor().mergeCharFormat(tempFormat);      
+    }
+  field->setTextCursor(currentPos);
+  field->verticalScrollBar()->setValue(barPos); 
+}
+
 void RelationshipsWidget::setDescriptionFilter(const QString &text) 
 {
   _descriptionFilter = text;
+  highlightSearch(descriptionField, text);
 }
 
 void RelationshipsWidget::previousDescription() 
@@ -1620,6 +1643,7 @@ void RelationshipsWidget::previousDescription()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(descriptionField, _descriptionFilter);
 	}
       delete query;
     }
@@ -1651,6 +1675,7 @@ void RelationshipsWidget::nextDescription()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(descriptionField, _descriptionFilter);
 	}
       delete query;
     }
@@ -1701,6 +1726,7 @@ void RelationshipsWidget::editIncident()
 void RelationshipsWidget::setRawFilter(const QString &text) 
 {
   _rawFilter = text;
+  highlightSearch(rawField, text);
 }
 
 void RelationshipsWidget::previousRaw() 
@@ -1729,6 +1755,7 @@ void RelationshipsWidget::previousRaw()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(rawField, _rawFilter);
 	}
       delete query;
     }
@@ -1760,6 +1787,7 @@ void RelationshipsWidget::nextRaw()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(rawField, _rawFilter);
 	}
       delete query;
     }
@@ -1768,6 +1796,7 @@ void RelationshipsWidget::nextRaw()
 void RelationshipsWidget::setCommentFilter(const QString &text) 
 {
   _commentFilter = text;
+  highlightSearch(commentField, text); 
 }
 
 void RelationshipsWidget::previousComment() 
@@ -1796,6 +1825,7 @@ void RelationshipsWidget::previousComment()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(commentField, _commentFilter); 
 	}
       delete query;
     }
@@ -1827,6 +1857,7 @@ void RelationshipsWidget::nextComment()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(commentField, _commentFilter); 
 	}
       delete query;
     }
@@ -2128,7 +2159,7 @@ bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event)
     {
       QContextMenuEvent *context = (QContextMenuEvent*) event;
       QMenu *menu = new QMenu;
-      QAction *editAction = new QAction(tr("Edit text"), this);
+      QAction *editAction = new QAction(tr("Edit incident"), this);
       connect(editAction, SIGNAL(triggered()), this, SLOT(editIncident()));
       menu->addAction(editAction);
       menu->exec(context->globalPos());

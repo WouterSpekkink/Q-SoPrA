@@ -1,4 +1,3 @@
-
 /*
 
 Qualitative Social Process Analysis (Q-SoPrA)
@@ -497,9 +496,31 @@ void AttributesWidget::nextMarked()
 }
 
 
+void AttributesWidget::highlightSearch(QTextEdit *field, QString text)
+{
+  int barPos = field->verticalScrollBar()->value(); 
+  QTextCursor currentPos = field->textCursor();
+  field->selectAll();
+  QTextCharFormat originalFormat = field->textCursor().charFormat();
+  originalFormat.setBackground(Qt::transparent);
+  field->textCursor().mergeCharFormat(originalFormat);      
+  QTextCharFormat tempFormat;
+  tempFormat.setBackground(Qt::yellow);
+  QTextCursor cursor = field->textCursor();
+  cursor.movePosition(QTextCursor::Start);
+  field->setTextCursor(cursor);
+  while (field->find(text))
+    {
+      field->textCursor().mergeCharFormat(tempFormat);      
+    }
+  field->setTextCursor(currentPos);
+  field->verticalScrollBar()->setValue(barPos); 
+}
+
 void AttributesWidget::setDescriptionFilter(const QString &text) 
 {
   _descriptionFilter = text;
+  highlightSearch(descriptionField, text);
 }
 
 void AttributesWidget::previousDescription() 
@@ -529,6 +550,7 @@ void AttributesWidget::previousDescription()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(descriptionField, _descriptionFilter);
 	}
       delete query;
     }
@@ -560,6 +582,7 @@ void AttributesWidget::nextDescription()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(descriptionField, _descriptionFilter);
 	}
       delete query;
     }
@@ -610,6 +633,7 @@ void AttributesWidget::editIncident()
 void AttributesWidget::setRawFilter(const QString &text) 
 {
   _rawFilter = text;
+  highlightSearch(rawField, text);
 }
 
 void AttributesWidget::previousRaw() 
@@ -639,6 +663,7 @@ void AttributesWidget::previousRaw()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(rawField, _rawFilter);
 	}
       delete query;
     }
@@ -671,6 +696,7 @@ void AttributesWidget::nextRaw()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(rawField, _rawFilter);
 	}
       delete query;
     }
@@ -679,6 +705,7 @@ void AttributesWidget::nextRaw()
 void AttributesWidget::setCommentFilter(const QString &text) 
 {
   _commentFilter = text;
+  highlightSearch(commentField, text);
 }
 
 void AttributesWidget::previousComment() 
@@ -708,6 +735,7 @@ void AttributesWidget::previousComment()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(commentField, _commentFilter);
 	}
       delete query;
     }
@@ -740,6 +768,7 @@ void AttributesWidget::nextComment()
 	  query->bindValue(":new", order);
 	  query->exec();
 	  retrieveData();
+	  highlightSearch(commentField, _commentFilter);
 	}
       delete query;
     }
@@ -1206,7 +1235,7 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
   
 void AttributesWidget::highlightText() 
 {
-  int barPos = rawField->verticalScrollBar()->value();
+  int barPos = rawField->verticalScrollBar()->value(); 
   QTextCursor currentPos = rawField->textCursor();
   if (attributesTreeView->currentIndex().isValid()) 
     {
@@ -1293,7 +1322,7 @@ void AttributesWidget::highlightText()
       rawField->setTextCursor(cursor);
       rawField->setTextCursor(currentPos);
     }
-  rawField->verticalScrollBar()->setValue(barPos);
+  rawField->verticalScrollBar()->setValue(barPos); 
 }
 
 void AttributesWidget::assignAttribute() 
@@ -3096,7 +3125,7 @@ bool AttributesWidget::eventFilter(QObject *object, QEvent *event)
     {
       QContextMenuEvent *context = (QContextMenuEvent*) event;
       QMenu *menu = new QMenu;
-      QAction *editAction = new QAction(tr("Edit text"), this);
+      QAction *editAction = new QAction(tr("Edit incident"), this);
       connect(editAction, SIGNAL(triggered()), this, SLOT(editIncident()));
       menu->addAction(editAction);
       menu->exec(context->globalPos());

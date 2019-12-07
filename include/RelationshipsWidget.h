@@ -84,6 +84,7 @@ private slots:
   void setDescriptionFilter(const QString &text);
   void previousDescription();
   void nextDescription();
+  void highlightSearch(QTextEdit *field, QString text); 
   void editIncident();
   void setRawFilter(const QString &text);
   void previousRaw();
