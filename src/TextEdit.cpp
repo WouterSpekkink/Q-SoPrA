@@ -47,8 +47,11 @@ void TextEdit::contextMenuEvent(QContextMenuEvent *event)
 void TextEdit::simplifyText()
 {
   QString replacement = this->textCursor().selectedText().simplified();
-  this->textCursor().deleteChar();
+  this->textCursor().deleteChar(); 
   this->textCursor().insertText(replacement);
 }
 
-
+void TextEdit::insertFromMimeData(const QMimeData *source)
+{
+  QTextEdit::insertPlainText(source->text());
+}

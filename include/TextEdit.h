@@ -27,6 +27,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QAction>
 #include <QMenu>
 #include <QContextMenuEvent>
+#include <QMimeData>
 
 class TextEdit : public QTextEdit
 {
@@ -40,6 +41,8 @@ private slots:
   
 private:
   void contextMenuEvent(QContextMenuEvent *event);
+  void insertFromMimeData(const QMimeData *source);
 };
 
 #endif
+
