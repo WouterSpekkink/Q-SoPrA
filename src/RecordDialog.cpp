@@ -19,12 +19,12 @@ RecordDialog::RecordDialog(QWidget *parent)
   
   timeStampField = new QLineEdit(this);
   descriptionField = new TextEdit(this);
-  descriptionField->installEventFilter(this);
+  descriptionField->viewport()->installEventFilter(this);
   rawField = new TextEdit(this);
   rawField->setAcceptRichText(false);
-  rawField->installEventFilter(this);
+  rawField->viewport()->installEventFilter(this);
   commentField = new TextEdit(this);
-  commentField->installEventFilter(this);
+  commentField->viewport()->installEventFilter(this);
   sourceField = new QLineEdit(this);
 
   saveRecordButton = new QPushButton("Save incident", this);
@@ -198,19 +198,42 @@ bool RecordDialog::eventFilter(QObject *object, QEvent *event)
   if (event->type() == QEvent::Wheel) 
     {
       QWheelEvent *wheelEvent = (QWheelEvent*) event;
-      TextEdit *textEdit = qobject_cast<TextEdit*>(object);
-      if (textEdit) 
+      if (object == descriptionField->viewport() || object == rawField->viewport() ||
+	  object == commentField->viewport())
 	{
 	  if(wheelEvent->modifiers() & Qt::ControlModifier) 
 	    {
 	      if (wheelEvent->angleDelta().y() > 0) 
 		{
-		  textEdit->zoomIn(1);
+		  if (object == descriptionField->viewport())
+		    {
+		      descriptionField->zoomIn(1);
+		    }
+		  else if (object == rawField->viewport())
+		    {
+		      rawField->zoomIn(1);
+		    }
+		  else if (object == commentField->viewport())
+		    {
+		      commentField->zoomIn(1);
+		    }
 		}
 	      else if (wheelEvent->angleDelta().y() < 0) 
 		{
-		  textEdit->zoomOut(1);
+		  if (object == descriptionField->viewport())
+		    {
+		      descriptionField->zoomOut(1);
+		    }
+		  else if (object == rawField->viewport())
+		    {
+		      rawField->zoomOut(1);
+		    }
+		  else if (object == commentField->viewport())
+		    {
+		      commentField->zoomOut(1);
+		    }
 		}
+	      return true;
 	    }
 	}
     }
