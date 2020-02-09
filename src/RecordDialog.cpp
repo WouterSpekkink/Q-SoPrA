@@ -74,7 +74,8 @@ RecordDialog::RecordDialog(QWidget *parent)
   setTabOrder(descriptionField, rawField);
   setTabOrder(rawField, commentField);
   
-  this->setMinimumWidth(1000);
+  setMinimumWidth(1000);
+  setWindowFlags(Qt::Window);
   setWindowTitle("Set incident data"); 
 }
 
