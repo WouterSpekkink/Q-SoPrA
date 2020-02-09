@@ -713,22 +713,44 @@ void RelationshipsWidget::editType()
       if (!currentItem->parent()) 
 	{
 	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("SELECT directedness, description FROM relationship_types WHERE name = :name");
+	  query->prepare("SELECT directedness, description "
+			 "FROM relationship_types "
+			 "WHERE name = :name");
 	  query->bindValue(":name", currentName);
 	  query->exec();
 	  query->first();
-	  QString directedness = query->value(0).toString();
+	  QString oldDirectedness = query->value(0).toString();
 	  QString description = query->value(1).toString();
 	  typeDialog = new RelationshipTypeDialog(this);
 	  typeDialog->submitName(currentName);
 	  typeDialog->submitDescription(description);
-	  typeDialog->submitDirectedness(directedness);
+	  typeDialog->submitDirectedness(oldDirectedness);
 	  typeDialog->exec();
 	  if (typeDialog->getExitStatus() == 0) 
 	    {
 	      QString newName = typeDialog->getName();
 	      description = typeDialog->getDescription();
-	      directedness = typeDialog->getDirectedness();
+	      QString directedness = typeDialog->getDirectedness();
+	      if (oldDirectedness == DIRECTED && directedness == UNDIRECTED)
+		{
+		  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+		  warningBox->setWindowTitle("Changing directedness"); 
+		  warningBox->addButton(QMessageBox::Yes);
+		  warningBox->addButton(QMessageBox::No);
+		  warningBox->setIcon(QMessageBox::Warning);
+		  warningBox->setText("<h2>Changing to undirected?</h2>");
+		  warningBox->setInformativeText("You are changing a directed relationship "
+						 "to an undirected one. This may create duplicate "
+						 "relationships that will be removed. Do you wish "
+						 "to continue?");
+		  if (warningBox->exec() == QMessageBox::No) 
+		    {
+		      delete query;
+		      delete typeDialog;
+		      return;
+		    }
+		}
+	      QVector<QPair<QString, QString>> finished;
 	      QStandardItem *currentType = relationshipsTree->
 		itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
 	      currentType->setData(newName);
@@ -737,25 +759,115 @@ void RelationshipsWidget::editType()
 	      currentType->setToolTip(hint);
 	      for (int i = 0; i != currentType->rowCount(); i++) 
 		{
+		  bool deleteCurrent = false;
 		  QStandardItem *currentChild = currentType->takeChild(i);
 		  QString baseName = currentChild->data(Qt::UserRole).toString();
 		  QStringList relationshipParts = QStringList();
 		  QString newChildName = QString();
-		  if (directedness == DIRECTED)
+		  QString newWriteName = QString();
+		  if (oldDirectedness == DIRECTED)
 		    {
 		      relationshipParts = baseName.split("--->");
-		      newChildName = relationshipParts[0] + "-[" + newName +
-			"]->" + relationshipParts[1];
+		      QPair<QString, QString> pairOne =
+			QPair<QString, QString>(relationshipParts[0], relationshipParts[1]);
+		      QPair<QString, QString> pairTwo =
+			QPair<QString, QString>(relationshipParts[1], relationshipParts[0]);
+		      if (finished.contains(pairOne) || finished.contains(pairTwo))
+			{
+			  deleteCurrent = true;
+			}
+		      else
+			{
+			  finished.push_back(pairOne);
+			}
+		      if (directedness == DIRECTED)
+			{
+			  newChildName = relationshipParts[0] + "-[" + newName +
+			    "]->" + relationshipParts[1];
+			  newWriteName = relationshipParts[0] + "--->" + relationshipParts[1];
+			}
+		      else if (directedness == UNDIRECTED)
+			{
+			  newChildName = relationshipParts[0] + "<-[" + newName +
+			    "]->" + relationshipParts[1];
+			  newWriteName = relationshipParts[0] + "<-->" + relationshipParts[1];
+			}
 		    }
-		  else if (directedness == UNDIRECTED)
+		  else if (oldDirectedness == UNDIRECTED)
 		    {
 		      relationshipParts = baseName.split("<-->");
-		      newChildName = relationshipParts[0] + "<-[" + newName +
-			"]->" + relationshipParts[1];
+		      if (directedness == DIRECTED)
+			{
+			  newChildName = relationshipParts[0] + "-[" + newName +
+			    "]->" + relationshipParts[1];
+			  newWriteName = relationshipParts[0] + "--->" + relationshipParts[1];
+			}
+		      else if (directedness == UNDIRECTED)
+			{
+			  newChildName = relationshipParts[0] + "<-[" + newName +
+			    "]->" + relationshipParts[1];
+			  newWriteName = relationshipParts[0] + "<-->" + relationshipParts[1];
+			}
 		    }
-		  currentChild->setData(newChildName, Qt::DisplayRole);
-		  currentChild->setToolTip(hint);
-		  currentType->setChild(i, currentChild);
+		  if (deleteCurrent)
+		    {
+		      query->prepare("DELETE FROM relationships_to_incidents "
+				     "WHERE relationship = :current "
+				     "AND type = :type");
+		      query->bindValue(":current", baseName);
+		      query->bindValue(":type", currentName);
+		      query->exec();
+		      query->prepare("DELETE FROM entity_relationships "
+				     "WHERE name = :current "
+				     "AND type = :type");
+		      query->bindValue(":current", baseName);
+		      query->bindValue(":type", currentName);
+		      query->exec();
+		      delete currentChild;
+		      currentType->removeRow(i);
+		      i--;
+		    }
+		  else
+		    {
+		      currentChild->setData(newChildName, Qt::DisplayRole);
+		      currentChild->setData(newWriteName, Qt::UserRole);
+		      currentChild->setToolTip(hint);
+		      currentType->setChild(i, currentChild);
+		    }
+		  query->prepare("UPDATE entity_relationships SET name = :newname, "
+				 "type = :newtype "
+				 "WHERE type = :oldtype AND name = :oldname");
+		  query->bindValue(":newname", newWriteName);
+		  query->bindValue(":newtype", newName);
+		  query->bindValue(":oldname", baseName);
+		  query->bindValue(":oldtype", currentName);
+		  query->exec();
+		  query->prepare("UPDATE relationships_to_incidents SET "
+				 "relationship = :newname, type = :newtype "
+				 "WHERE relationship = :oldname AND type = :oldtype");
+		  query->bindValue(":newname", newWriteName);
+		  query->bindValue(":newtype", newName);
+		  query->bindValue(":oldname", baseName);
+		  query->bindValue(":oldtype", currentName);
+		  query->exec();
+		  query->prepare("UPDATE relationships_to_incidents_sources "
+				 "SET relationship = :newname, type = :newtype "
+				 "WHERE relationship = :oldname AND type = :oldtype");
+		  query->bindValue(":newname", newWriteName);
+		  query->bindValue(":newtype", newName);
+		  query->bindValue(":oldname", baseName);
+		  query->bindValue(":oldtype", currentName);
+		  query->exec();
+		  query->exec("SELECT relationship, type FROM relationships_to_incidents");
+		  while (query->next()) 
+		    {
+		      QString assignedRelationship = query->value(0).toString();
+		      QString assignedType = query->value(1).toString();
+		      if (assignedRelationship == newWriteName && assignedType == newName) 
+			{
+			  boldSelected(relationshipsTree, assignedRelationship, assignedType);
+			}
+		    }
 		}
 	      query->prepare("UPDATE relationship_types SET name = :newname, "
 			     "directedness = :newdirectedness, description = :newdescription "
@@ -764,19 +876,6 @@ void RelationshipsWidget::editType()
 	      query->bindValue(":newdirectedness", directedness);
 	      query->bindValue(":newdescription", description);
 	      query->bindValue(":oldname", currentName);
-	      query->exec();
-	      query->prepare("UPDATE entity_relationships SET type = :newtype WHERE type = :oldtype");
-	      query->bindValue(":newtype", newName);
-	      query->bindValue(":oldtype", currentName);
-	      query->exec();
-	      query->prepare("UPDATE relationships_to_incidents SET type = :newtype WHERE type = :oldtype");
-	      query->bindValue(":newtype", newName);
-	      query->bindValue(":oldtype", currentName);
-	      query->exec();
-	      query->prepare("UPDATE relationships_to_incidents_sources "
-			     "SET type = :newtype WHERE type = :oldtype");
-	      query->bindValue(":newtype", newName);
-	      query->bindValue(":oldtype", currentName);
 	      query->exec();
 	      this->setCursor(Qt::WaitCursor);
 	      retrieveData();
