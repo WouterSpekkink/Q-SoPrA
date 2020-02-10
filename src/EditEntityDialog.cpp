@@ -25,7 +25,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 EditEntityDialog::EditEntityDialog(QWidget *parent) : QDialog(parent) 
 {
   // First we declare the entities of this dialog.
-  _entityEdited = 0;
+  _entityEdited = false;
   _fresh = true;
   _relationshipsWidgetPtr = qobject_cast<RelationshipsWidget*>(parent);
   
@@ -118,12 +118,13 @@ void EditEntityDialog::addEntity()
       query->bindValue(":father", father);
       query->exec();
       delete query;
+      entitiesTable->select();
+      updateTable();
+      filterEntity(entityFilterField->text());
+      entitiesFilter->sort(1, Qt::AscendingOrder);
+      _entityAdded = true;
     }
   delete entityDialog;
-  entitiesTable->select();
-  updateTable();
-  filterEntity(entityFilterField->text());
-  entitiesFilter->sort(1, Qt::AscendingOrder);
 }
 
 void EditEntityDialog::editEntity() 
@@ -147,12 +148,12 @@ void EditEntityDialog::editEntity()
 	  QString name = entityDialog->getName();
 	  QString description = entityDialog->getDescription();
 	  updateAfterEdit(name, description, selected);
+	  entitiesTable->select();
+	  updateTable();
+	  entitiesFilter->sort(1, Qt::AscendingOrder);
 	}
       delete query;
       delete entityDialog;
-      entitiesTable->select();
-      updateTable();
-      entitiesFilter->sort(1, Qt::AscendingOrder);
     }
 }
 
@@ -160,7 +161,7 @@ void EditEntityDialog::updateAfterEdit(const QString name,
 				       const QString description,
 				       const QString former) 
 {
-  _entityEdited = 1;
+  _entityEdited = true;
   QSqlQuery *query = new QSqlQuery;
   // Update the entity itself.
   query->prepare("UPDATE entities "
@@ -383,9 +384,14 @@ void EditEntityDialog::updateTable()
     }
 }
 
-int EditEntityDialog::getEntityEdited() 
+bool EditEntityDialog::entityEdited() 
 {
   return _entityEdited;
+}
+
+bool EditEntityDialog::entityAdded()
+{
+  return _entityAdded;
 }
 
 void EditEntityDialog::setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr)

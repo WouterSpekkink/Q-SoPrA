@@ -60,7 +60,8 @@ public:
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
   
   // Getters
-  int getEntityEdited();
+  bool entityEdited();
+  bool entityAdded();
   QString getName();
   QString getLeftEntity();
   QString getRightEntity();
@@ -89,7 +90,8 @@ private:
   QPointer<QLineEdit> entityFilterField;
 
   // Private variables
-  int _entityEdited;
+  bool _entityEdited;
+  bool _entityAdded;
   bool _fresh;
 
   // Pointers to other widgets

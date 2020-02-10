@@ -894,12 +894,19 @@ void RelationshipsWidget::entitiesOverview()
   entityDialog->setEventGraphWidget(_eventGraphWidgetPtr);
   entityDialog->setAttributesWidget(_attributesWidgetPtr);
   entityDialog->exec();
-  if (entityDialog->getEntityEdited() == 1) 
+  if (entityDialog->entityEdited()) 
     {
       delete relationshipsTree;
       setTree();
       relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+      _eventGraphWidgetPtr->resetTree();
+      _attributesWidgetPtr->resetTree();
       retrieveData();
+    }
+  if (entityDialog->entityAdded())
+    {
+      _eventGraphWidgetPtr->resetTree();
+      _attributesWidgetPtr->resetTree();
     }
   delete entityDialog;
 }
