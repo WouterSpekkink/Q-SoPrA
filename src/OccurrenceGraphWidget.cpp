@@ -2702,104 +2702,104 @@ void OccurrenceGraphWidget::dateLayout()
 	  while (it4.hasNext())
 	    {
 	      OccurrenceItem *occurrence = it4.next();
-	      if (occurrence != first)
+	      if (days.contains(occurrence))
 		{
-		  if (days.contains(occurrence))
+		  qint64 daysTo = days.value(occurrence);
+		  qreal x = 5 * daysTo + first->scenePos().x();
+		  QDate currentDate = dates.value(occurrence);
+		  bool precisionDifference = false;
+		  if (x >= lastValid)
 		    {
-		      qint64 daysTo = days.value(occurrence);
-		      qreal x = 5 * daysTo;
-		      QDate currentDate = dates.value(occurrence);
-		      bool precisionDifference = false;
-		      if (x >= lastValid)
+		      occurrence->setPos(x, occurrence->scenePos().y());
+		      occurrence->getLabel()->setNewPos(occurrence->scenePos());
+		      lastValid = x;
+		      lastPrecision = precision.value(occurrence);
+		      lastDate = dates.value(occurrence);
+		    }
+		  else if (precision.value(occurrence) <= lastPrecision)
+		    {
+		      if (precision.value(occurrence) == 2 &&
+			  currentDate.month() == lastDate.month())
 			{
-			  occurrence->setPos(x, occurrence->scenePos().y());
-			  occurrence->getLabel()->setNewPos(occurrence->scenePos());
-			  lastValid = x;
-			  lastPrecision = precision.value(occurrence);
-			  lastDate = dates.value(occurrence);
+			  precisionDifference = true;
 			}
-		      else if (precision.value(occurrence) <= lastPrecision)
+		      else if (precision.value(occurrence) == 1 &&
+			       currentDate.year() == lastDate.year())
 			{
-			  if (precision.value(occurrence) == 2 &&
-			      currentDate.month() == lastDate.month())
+			  precisionDifference = true;
+			}
+		      if (!precisionDifference)
+			{
+			  if (warn)
 			    {
-			      precisionDifference = true;
-			    }
-			  else if (precision.value(occurrence) == 1 &&
-				   currentDate.year() == lastDate.year())
-			    {
-			      precisionDifference = true;
-			    }
-			  if (!precisionDifference)
-			    {
-			      if (warn)
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+			      warningBox->setWindowTitle("Checking dtates");
+			      warningBox->addButton(QMessageBox::Ok);
+			      QPointer<QAbstractButton> markButton = warningBox->
+				addButton(tr("Mark"), QMessageBox::NoRole);
+			      QPointer<QAbstractButton> skipButton = warningBox->
+				addButton(tr("Skip remaining warnings"), QMessageBox::NoRole);
+			      warningBox->setIcon(QMessageBox::Warning);
+			      warningBox->setText("<b>Possible problem detected</b>");
+			      warningBox->setInformativeText("Incident " +
+							     QString::number(occurrence->getOrder()) +
+							     " is incorrectly positioned in the "
+							     "chronological order and may cause "
+							     "problems for the layout.");
+			      warningBox->exec();
+			      if (warningBox->clickedButton() == markButton)
 				{
-				  QApplication::restoreOverrideCursor();
-				  qApp->processEvents();
-				  QPointer <QMessageBox> warningBox = new QMessageBox(this);
-				  warningBox->setWindowTitle("Checking dtates");
-				  warningBox->addButton(QMessageBox::Ok);
-				  QPointer<QAbstractButton> markButton = warningBox->
-				    addButton(tr("Mark"), QMessageBox::NoRole);
-				  QPointer<QAbstractButton> skipButton = warningBox->
-				    addButton(tr("Skip remaining warnings"), QMessageBox::NoRole);
-				  warningBox->setIcon(QMessageBox::Warning);
-				  warningBox->setText("<b>Possible problem detected</b>");
-				  warningBox->setInformativeText("Incident " +
-								 QString::number(occurrence->getOrder()) +
-								 " is incorrectly positioned in the "
-								 "chronological order and may cause "
-								 "problems for the layout.");
-				  warningBox->exec();
-				  if (warningBox->clickedButton() == markButton)
-				    {
-				      query2->bindValue(":id", occurrence->getId());
-				      query2->exec();
-				    }
-				  else if (warningBox->clickedButton() == skipButton)
-				    {
-				      warn = false;
-				    }
-				  delete warningBox;
-				  QApplication::setOverrideCursor(Qt::WaitCursor);
+				  query2->bindValue(":id", occurrence->getId());
+				  query2->exec();
 				}
-			    }
-			  else
-			    {
-			      QVectorIterator<OccurrenceItem*> it5 = it4;
-			      bool resolved = false;
-			      bool foundValid = false;
-			      while (!foundValid)
+			      else if (warningBox->clickedButton() == skipButton)
 				{
-				  while (it5.hasNext())
+				  warn = false;
+				}
+			      delete warningBox;
+			      QApplication::setOverrideCursor(Qt::WaitCursor);
+			    }
+			}
+		      else
+			{
+			  QVectorIterator<OccurrenceItem*> it5 = it4;
+			  bool resolved = false;
+			  bool foundValid = false;
+			  while (!foundValid)
+			    {
+			      while (it5.hasNext())
+				{
+				  OccurrenceItem *next = it5.next();
+				  if (days.contains(next))
 				    {
-				      OccurrenceItem *next = it5.next();
-				      if (days.contains(next))
+				      qint64 daysToNext = days.value(next);
+				      qreal xNext = 5 * daysToNext;
+				      if (xNext >= lastValid)
 					{
-					  qint64 daysToNext = days.value(next);
-					  qreal xNext = 5 * daysToNext;
-					  if (xNext >= lastValid)
-					    {
-					      qreal tempX = (lastValid + xNext) / 2 +
-						first->scenePos().x();
-					      occurrence->setPos(tempX, occurrence->scenePos().y());
-					      occurrence->getLabel()->setNewPos(occurrence->scenePos());
-					      foundValid = true;
-					      resolved = true;
-					      break;
-					    }
+					  qreal tempX = (lastValid + xNext) / 2 +
+					    first->scenePos().x();
+					  occurrence->setPos(tempX, occurrence->scenePos().y());
+					  occurrence->getLabel()->setNewPos(occurrence->scenePos());
+					  foundValid = true;
+					  resolved = true;
+					  break;
 					}
 				    }
-				  foundValid = true;
 				}
-			      if (!resolved)
-				{
-				  occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
-				  occurrence->getLabel()->setNewPos(occurrence->scenePos());
-				}
+			      foundValid = true;
+			    }
+			  if (!resolved)
+			    {
+			      occurrence->setPos(lastValid + _distance, occurrence->scenePos().y());
+			      occurrence->getLabel()->setNewPos(occurrence->scenePos());
 			    }
 			}
 		    }
+		}
+	      else
+		{
 		  QVectorIterator<OccurrenceItem*> it5 = it4;
 		  bool foundValid = false;
 		  bool resolved = false;
