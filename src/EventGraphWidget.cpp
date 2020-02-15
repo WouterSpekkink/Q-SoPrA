@@ -3447,7 +3447,7 @@ void EventGraphWidget::redoLayout()
   updateLinkages();
 }
 
-void EventGraphWidget::dateLayout()
+void EventGraphWidget::dateLayout() 
 {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
@@ -3553,8 +3553,8 @@ void EventGraphWidget::dateLayout()
       QMap<IncidentNode*, qint64> days;
       QMap<IncidentNode*, int> precision;
       QMap<IncidentNode*, QDate> dates;
-      qreal lastValid = 0.0;
       int lastPrecision = 0;
+      qreal lastValid = 0.0;
       QDate lastDate;
       QVectorIterator<IncidentNode*> it4(visible);
       while (it4.hasNext())
@@ -3713,6 +3713,7 @@ void EventGraphWidget::dateLayout()
 		      else
 			{
 			  QVectorIterator<IncidentNode*> it5 = it4;
+			  it5.next();
 			  bool resolved = false;
 			  bool foundValid = false;
 			  while (!foundValid)
@@ -3723,10 +3724,10 @@ void EventGraphWidget::dateLayout()
 				  if (days.contains(next))
 				    {
 				      qint64 daysToNext = days.value(next);
-				      qreal xNext = 5 * daysToNext;
+				      qreal xNext = 5 * daysToNext + first->scenePos().x();
 				      if (xNext >= lastValid)
 					{
-					  qreal tempX = (lastValid + xNext) / 2 +
+					  qreal tempX = (lastValid + xNext) / 2;
 					    first->scenePos().x();
 					  incident->setPos(tempX, incident->scenePos().y());
 					  incident->getLabel()->setNewPos(incident->scenePos());
@@ -3759,10 +3760,10 @@ void EventGraphWidget::dateLayout()
 			  if (days.contains(next))
 			    {
 			      qint64 daysToNext = days.value(next);
-			      qreal xNext = 5 * daysToNext;
+			      qreal xNext = 5 * daysToNext + first->scenePos().x();
 			      if (xNext >= lastValid)
 				{
-				  qreal tempX = (lastValid + xNext) / 2 + first->scenePos().x();
+				  qreal tempX = (lastValid + xNext) / 2;
 				  incident->setPos(tempX, incident->scenePos().y());
 				  incident->getLabel()->setNewPos(incident->scenePos());
 				  foundValid = true;
@@ -4602,7 +4603,9 @@ void EventGraphWidget::plotGraph()
   savePlotButton->setEnabled(true);
   updateCases();
   caseListWidget->setEnabled(true);
+  addLinkageTypeButton->setEnabled(false);
   setRangeControls();
+  resetRange();
   plotLabel->setText("Unsaved plot");
   checkCongruence();
   updateLinkages();
@@ -4670,6 +4673,7 @@ void EventGraphWidget::addLinkageType()
   setHeights();
   checkCongruence();
   redoLayout();
+  setVisibility();
   addLinkageTypeButton->setEnabled(false);
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
@@ -8185,6 +8189,12 @@ void EventGraphWidget::setRangeControls()
   upperRangeSpinBox->setRange(2, _incidentNodeVector.size());
   upperRangeDial->setValue(_incidentNodeVector.size());
   upperRangeSpinBox->setValue(_incidentNodeVector.size());
+}
+
+void EventGraphWidget::resetRange()
+{
+  lowerRangeDial->setValue(1);
+  lowerRangeSpinBox->setValue(1);
 }
 
 void EventGraphWidget::setTimeRange()

@@ -2775,11 +2775,10 @@ void OccurrenceGraphWidget::dateLayout()
 				  if (days.contains(next))
 				    {
 				      qint64 daysToNext = days.value(next);
-				      qreal xNext = 5 * daysToNext;
+				      qreal xNext = 5 * daysToNext + first->scenePos().x();
 				      if (xNext >= lastValid)
 					{
-					  qreal tempX = (lastValid + xNext) / 2 +
-					    first->scenePos().x();
+					  qreal tempX = (lastValid + xNext) / 2;
 					  occurrence->setPos(tempX, occurrence->scenePos().y());
 					  occurrence->getLabel()->setNewPos(occurrence->scenePos());
 					  foundValid = true;
@@ -2811,10 +2810,10 @@ void OccurrenceGraphWidget::dateLayout()
 			  if (days.contains(next))
 			    {
 			      qint64 daysToNext = days.value(next);
-			      qreal xNext = 5 * daysToNext;
+			      qreal xNext = 5 * daysToNext + first->scenePos().x();
 			      if (xNext >= lastValid)
 				{
-				  qreal tempX = (lastValid + xNext) / 2 + first->scenePos().x();
+				  qreal tempX = (lastValid + xNext) / 2;
 				  occurrence->setPos(tempX, occurrence->scenePos().y());
 				  occurrence->getLabel()->setNewPos(occurrence->scenePos());
 				  foundValid = true;

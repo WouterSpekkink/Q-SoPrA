@@ -204,6 +204,7 @@ private slots:
   void setVisibility();
   void setHeights();
   void setRangeControls();
+  void resetRange();
   void exportSvg();
   void exportTable();
   void exportNodes();
