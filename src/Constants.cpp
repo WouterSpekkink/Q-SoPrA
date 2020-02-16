@@ -99,6 +99,7 @@ QString DELETETIMELINE = "Delete timeline";
 QString TOGGLEFIRSTTICK = "Toggle first tick";
 QString FORCELASTTICK = "Toggle force last tick";
 QString ADDLINKAGEACTION = "Add linkage between incidents";
+QString ADDLINKAGEEVIDENCEACTION = "Add linkage and mark evidence";;
 QString SELECTFOLLOWERSACTION = "Select subsequent incidents/events";
 QString SELECTPREDECESSORSACTION = "Select foregoing incidents/events";;
 QString SELECTALLCHILDRENACTION = "Select all children";

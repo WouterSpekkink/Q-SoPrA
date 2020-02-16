@@ -4135,7 +4135,6 @@ void LinkagesWidget::markEvidence()
 
 void LinkagesWidget::clearEvidence()
 {
-  QVectorIterator<QString> it(_markedTailEvidence);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
 		 "WHERE coder = :coder AND type = :type");

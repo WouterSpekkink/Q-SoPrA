@@ -8840,6 +8840,10 @@ void EventGraphWidget::processIncidentNodeContextMenu(const QString &action)
     {
       addLinkage();
     }
+  else if (action == ADDLINKAGEEVIDENCEACTION)
+    {
+      addLinkageEvidence();
+    }
   else if (action == SELECTFOLLOWERSACTION) 
     {
       selectFollowers();
@@ -10860,6 +10864,188 @@ void EventGraphWidget::addLinkage()
 		  newLinkage->setToolTip(toolTip);
 		  _edgeVector.push_back(newLinkage);
 		  scene->addItem(newLinkage);
+		}
+	    }
+	}
+      delete query;
+    }
+  setHeights();
+  updateLinkages();
+}
+
+void EventGraphWidget::addLinkageEvidence() 
+{
+  IncidentNode *incidentNodeOne = qgraphicsitem_cast<IncidentNode *>(scene->selectedItems()[0]);
+  IncidentNode *incidentNodeTwo = qgraphicsitem_cast<IncidentNode *>(scene->selectedItems()[1]);
+  if (incidentNodeOne && incidentNodeTwo) 
+    {
+      QString type = _presentTypes[0];
+      if (_presentTypes.size() > 1) 
+	{
+	  QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, _presentTypes);
+	  relationshipChooser->exec();
+	  if (relationshipChooser->getExitStatus() == 0) 
+	    {
+	      type = relationshipChooser->getSelection();
+	    }
+	  else 
+	    {
+	      delete relationshipChooser;
+	      return;
+	    }
+	  delete relationshipChooser;
+	}
+      QColor edgeColor = QColor(Qt::gray);
+      for (int i = 0; i < linkageListWidget->rowCount(); i++) 
+	{
+	  if (linkageListWidget->item(i, 0)->data(Qt::DisplayRole) == type) 
+	    {
+	      edgeColor = linkageListWidget->item(i, 1)->background().color();
+	    }
+	}    
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+      query->bindValue(":type", type);
+      query->exec();
+      query->first();
+      QString direction = query->value(0).toString();
+      int idOne = incidentNodeOne->getId();
+      int idTwo = incidentNodeTwo->getId();
+      bool found = false;
+      query->prepare("SELECT tail, head FROM linkages "
+		     "WHERE type = :type AND coder = :coder AND tail = :tail AND head = :head");
+      query->bindValue(":type", type);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":tail", idOne);
+      query->bindValue(":head", idTwo);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) 
+	{
+	  found = true;
+	}
+      query->prepare("SELECT tail, head FROM linkages "
+		     "WHERE type = :type AND coder = :coder AND tail = :tail AND head = :head");
+      query->bindValue(":type", type);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":tail", idTwo);
+      query->bindValue(":head", idOne);
+      query->exec();
+      query->first();
+      if (!query->isNull(0)) 
+	{
+	  found = true;
+	}
+      if (!found) 
+	{
+	  query->prepare("INSERT INTO linkages (tail, head, type, coder) "
+			 "VALUES (:tail, :head, :type, :coder)");
+	  if (incidentNodeOne->getOrder() < incidentNodeTwo->getOrder()) 
+	    {
+	      if (direction == PAST) 
+		{
+		  QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idTwo,
+										     idOne,
+										     type,
+										     _selectedCoder,
+										     this);
+		  evidenceDialog->exec();
+		  if (evidenceDialog->getExitStatus() == 0)
+		    {
+		      query->bindValue(":tail", idTwo);
+		      query->bindValue(":head", idOne);
+		      query->bindValue(":type", type);
+		      query->bindValue(":coder", _selectedCoder);
+		      query->exec();      
+		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
+		      newLinkage->setZValue(2);
+		      newLinkage->setStartItem(incidentNodeTwo);
+		      newLinkage->setEndItem(incidentNodeOne);
+		      QString toolTip = "no comment";
+		      newLinkage->setColor(edgeColor);
+		      _edgeVector.push_back(newLinkage);
+		      scene->addItem(newLinkage);
+		    }
+		}
+	      else if (direction == FUTURE) 
+		{
+		  QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idOne,
+										     idTwo,
+										     type,
+										     _selectedCoder,
+										     this);
+		  evidenceDialog->exec();
+		  if (evidenceDialog->getExitStatus() == 0)
+		    {
+		      query->bindValue(":tail", idOne);
+		      query->bindValue(":head", idTwo);
+		      query->bindValue(":type", type);
+		      query->bindValue(":coder", _selectedCoder);
+		      query->exec();      
+		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
+		      newLinkage->setZValue(2);
+		      newLinkage->setStartItem(incidentNodeOne);
+		      newLinkage->setEndItem(incidentNodeTwo);
+		      QString toolTip = "no comment";
+		      newLinkage->setToolTip(toolTip);
+		      newLinkage->setColor(edgeColor);
+		      _edgeVector.push_back(newLinkage);
+		      scene->addItem(newLinkage);
+		    }
+		}
+	    }
+	  else 
+	    {
+	      if (direction == PAST) 
+		{
+		  QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idOne,
+										     idTwo,
+										     type,
+										     _selectedCoder,
+										     this);
+		  evidenceDialog->exec();
+		  if (evidenceDialog->getExitStatus() == 0)
+		    {
+		      query->bindValue(":tail", idOne);
+		      query->bindValue(":head", idTwo);
+		      query->bindValue(":type", type);
+		      query->bindValue(":coder", _selectedCoder);
+		      query->exec();      
+		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
+		      newLinkage->setZValue(2);
+		      newLinkage->setStartItem(incidentNodeOne);
+		      newLinkage->setEndItem(incidentNodeTwo);
+		      QString toolTip = "no comment";
+		      newLinkage->setColor(edgeColor);
+		      _edgeVector.push_back(newLinkage);
+		      scene->addItem(newLinkage);
+		    }
+		}
+	      else if (direction == FUTURE) 
+		{
+		  QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idTwo,
+										     idOne,
+										     type,
+										     _selectedCoder,
+										     this);
+		  evidenceDialog->exec();
+		  if (evidenceDialog->getExitStatus() == 0)
+		    {
+		      query->bindValue(":tail", idTwo);
+		      query->bindValue(":head", idOne);
+		      query->bindValue(":type", type);
+		      query->bindValue(":coder", _selectedCoder);
+		      query->exec();      
+		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
+		      newLinkage->setZValue(2);
+		      newLinkage->setStartItem(incidentNodeTwo);
+		      newLinkage->setEndItem(incidentNodeOne);
+		      QString toolTip = "no comment";
+		      newLinkage->setColor(edgeColor);
+		      newLinkage->setToolTip(toolTip);
+		      _edgeVector.push_back(newLinkage);
+		      scene->addItem(newLinkage);
+		    }
 		}
 	    }
 	}

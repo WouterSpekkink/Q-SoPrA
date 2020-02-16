@@ -76,6 +76,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "AttributeCheckBoxDialog.h"
 #include "GuideLine.h"
 #include "EvidenceDialog.h"
+#include "AddEvidenceDialog.h"
 #include "TimeRangeDialog.h"
 
 // Need a forward declaration here
@@ -249,6 +250,7 @@ private slots:
   void closeGap();
   void changeEventDescription();
   void addLinkage();
+  void addLinkageEvidence();
   void selectFollowers();
   void selectPredecessors();
   void selectAncestors(QGraphicsItem *origin, QSet<QGraphicsItem*> *pFinished, QString type);

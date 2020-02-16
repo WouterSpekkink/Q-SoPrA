@@ -2137,18 +2137,20 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  posMenu->addAction(action12);
 	  QAction *action13 = new QAction(ADDLINKAGEACTION, this);
 	  linkageMenu->addAction(action13);
-	  QAction *action14 = new QAction(SELECTFOLLOWERSACTION, this);
-	  selectionMenu->addAction(action14);
-	  QAction *action15 = new QAction(SELECTPREDECESSORSACTION, this);
+	  QAction *action14 = new QAction(ADDLINKAGEEVIDENCEACTION, this);
+	  linkageMenu->addAction(action14);
+	  QAction *action15 = new QAction(SELECTFOLLOWERSACTION, this);
 	  selectionMenu->addAction(action15);
-	  QAction *action16 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
-	  descMenu->addAction(action16);
-	  QAction *action17 = new QAction(ADDTOCASEACTION, this);
-	  caseMenu->addAction(action17);
-	  QAction *action18 = new QAction(CREATENEWCASEACTION, this);
+	  QAction *action16 = new QAction(SELECTPREDECESSORSACTION, this);
+	  selectionMenu->addAction(action16);
+	  QAction *action17 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+	  descMenu->addAction(action17);
+	  QAction *action18 = new QAction(ADDTOCASEACTION, this);
 	  caseMenu->addAction(action18);
-	  QAction *action19 = new QAction(REMOVEFROMCASEACTION, this);
+	  QAction *action19 = new QAction(CREATENEWCASEACTION, this);
 	  caseMenu->addAction(action19);
+	  QAction *action20 = new QAction(REMOVEFROMCASEACTION, this);
+	  caseMenu->addAction(action20);
 	  if (selectedItems().size() > 1) 
 	    {
 	      action2->setEnabled(false);
@@ -2158,9 +2160,9 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	      action9->setEnabled(false);
 	      action11->setEnabled(false);
 	      action12->setEnabled(false);
-	      action14->setEnabled(false);
 	      action15->setEnabled(false);
 	      action16->setEnabled(false);
+	      action17->setEnabled(false);
 	    }
 	  if (selectedItems().size() == 1) 
 	    {
@@ -2168,6 +2170,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	      action10->setEnabled(false);
 	    }
 	  action13->setEnabled(false);
+	  action14->setEnabled(false);
 	  if (selectedItems().size() == 2) 
 	    {
 	      IncidentNode *incidentNodeOne = qgraphicsitem_cast<IncidentNode*>(selectedItems()[0]);
@@ -2175,6 +2178,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	      if (incidentNodeOne && incidentNodeTwo) 
 		{
 		  action13->setEnabled(true);
+		  action14->setEnabled(true);
 		}
 	    }
 	  if (QAction *action = menu->exec(event->screenPos())) 
@@ -2208,6 +2212,7 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  delete action17;
 	  delete action18;
 	  delete action19;
+	  delete action20;
 	  delete menu;
 	  delete abstractionMenu;
 	  delete colorMenu;
