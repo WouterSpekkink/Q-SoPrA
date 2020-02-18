@@ -1232,7 +1232,18 @@ void OccurrenceGraphWidget::addAttribute()
 									 currentIncident, order, attribute);
 		      newOccurrence->setPos(newOccurrence->getOriginalPos());
 		      newOccurrence->setColor(color);
-		      newOccurrence->setZValue(3);
+		      if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+			{
+			  newOccurrence->setZValue(3);
+			}
+		      else if (_attributeOccurrenceVector.empty())
+			{
+			  newOccurrence->setZValue(_relationshipOccurrenceVector[0]->zValue());
+			}
+		      else
+			{
+			  newOccurrence->setZValue(_attributeOccurrenceVector[0]->zValue());
+			}
 		      _attributeOccurrenceVector.push_back(newOccurrence);
 		      scene->addItem(newOccurrence);
 		      OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -1242,7 +1253,7 @@ void OccurrenceGraphWidget::addAttribute()
 		      label->setNewPos(newOccurrence->scenePos());
 		      _attributeLabelVector.push_back(label);
 		      newOccurrence->setLabel(label);
-		      label->setZValue(4);
+		      label->setZValue(newOccurrence->zValue() + 1);
 		      scene->addItem(label);
 		    }
 		}
@@ -1281,18 +1292,18 @@ void OccurrenceGraphWidget::addAttribute()
 	  groupOccurrences();
 	  wireLinkages();
 	}
+      setRangeControls();
+      scene->update();
+      view->update();
+      updateLinkages();
+      checkCongruence();
+      if (!caseListWidget->isEnabled()) 
+	{
+	  caseListWidget->setEnabled(true);
+	}
+      setGraphControls(true);      
     }
   delete attributeColorDialog;
-  setRangeControls();
-  scene->update();
-  view->update();
-  updateLinkages();
-  checkCongruence();
-  if (!caseListWidget->isEnabled()) 
-    {
-      caseListWidget->setEnabled(true);
-    }
-  setGraphControls(true);
 }
 
 void OccurrenceGraphWidget::addAttributes() 
@@ -1389,7 +1400,18 @@ void OccurrenceGraphWidget::addAttributes()
 									 currentAttribute);
 		      newOccurrence->setPos(newOccurrence->getOriginalPos());
 		      newOccurrence->setColor(currentColor);
-		      newOccurrence->setZValue(3);
+		      if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+			{
+			  newOccurrence->setZValue(3);
+			}
+		      else if (_attributeOccurrenceVector.empty())
+			{
+			  newOccurrence->setZValue(_relationshipOccurrenceVector[0]->zValue());
+			}
+		      else
+			{
+			  newOccurrence->setZValue(_attributeOccurrenceVector[0]->zValue());
+			}
 		      _attributeOccurrenceVector.push_back(newOccurrence);
 		      scene->addItem(newOccurrence);
 		      OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -1399,7 +1421,7 @@ void OccurrenceGraphWidget::addAttributes()
 		      label->setNewPos(newOccurrence->scenePos());
 		      _attributeLabelVector.push_back(label);
 		      newOccurrence->setLabel(label);
-		      label->setZValue(4);
+		      label->setZValue(newOccurrence->zValue() + 1);
 		      scene->addItem(label);
 		    }
 		}
@@ -1457,10 +1479,7 @@ void OccurrenceGraphWidget::addAttributes()
       QApplication::restoreOverrideCursor();
       qApp->processEvents();
     }
-  else
-    {
-      delete attributeDialog;
-    }
+  delete attributeDialog;
 }
 	 
 void OccurrenceGraphWidget::addRelationship() 
@@ -1526,7 +1545,18 @@ void OccurrenceGraphWidget::addRelationship()
 								 currentIncident, order, combi);
 	      newOccurrence->setPos(newOccurrence->getOriginalPos());
 	      newOccurrence->setColor(color);
-	      newOccurrence->setZValue(3);
+	      if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+		{
+		  newOccurrence->setZValue(3);
+		}
+	      else if (_attributeOccurrenceVector.empty())
+		{
+		  newOccurrence->setZValue(_relationshipOccurrenceVector[0]->zValue());
+		}
+	      else
+		{
+		  newOccurrence->setZValue(_attributeOccurrenceVector[0]->zValue());
+		}
 	      _relationshipOccurrenceVector.push_back(newOccurrence);
 	      scene->addItem(newOccurrence);
 	      OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -1536,7 +1566,7 @@ void OccurrenceGraphWidget::addRelationship()
 	      label->setNewPos(newOccurrence->scenePos());
 	      _relationshipLabelVector.push_back(label);
 	      newOccurrence->setLabel(label);
-	      label->setZValue(4);
+	      label->setZValue(newOccurrence->zValue() + 1);
 	      scene->addItem(label);
 	    }
 	  bool found = false;
@@ -1577,18 +1607,18 @@ void OccurrenceGraphWidget::addRelationship()
       delete query;
       delete query2;
       delete query3;
+      setRangeControls();
+      scene->update();
+      view->update();
+      updateLinkages();
+      checkCongruence();
+      if (!caseListWidget->isEnabled()) 
+	{
+	  caseListWidget->setEnabled(true);
+	}
+      setGraphControls(true);
     }
   delete relationshipColorDialog;
-  setRangeControls();
-  scene->update();
-  view->update();
-  updateLinkages();
-  checkCongruence();
-  if (!caseListWidget->isEnabled()) 
-    {
-      caseListWidget->setEnabled(true);
-    }
-  setGraphControls(true);
 }
 
 void OccurrenceGraphWidget::addRelationships() 
@@ -1674,7 +1704,18 @@ void OccurrenceGraphWidget::addRelationships()
 								     order, combi);
 		  newOccurrence->setPos(newOccurrence->getOriginalPos());
 		  newOccurrence->setColor(currentColor);
-		  newOccurrence->setZValue(3);
+		  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+		    {
+		      newOccurrence->setZValue(3);
+		    }
+		  else if (_attributeOccurrenceVector.empty())
+		    {
+		      newOccurrence->setZValue(_relationshipOccurrenceVector[0]->zValue());
+		    }
+		  else
+		    {
+		      newOccurrence->setZValue(_attributeOccurrenceVector[0]->zValue());
+		    }
 		  _relationshipOccurrenceVector.push_back(newOccurrence);
 		  scene->addItem(newOccurrence);
 		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -1684,7 +1725,7 @@ void OccurrenceGraphWidget::addRelationships()
 		  label->setNewPos(newOccurrence->scenePos());
 		  _relationshipLabelVector.push_back(label);
 		  newOccurrence->setLabel(label);
-		  label->setZValue(4);
+		  label->setZValue(newOccurrence->zValue() + 1);
 		  scene->addItem(label);
 		}
 	      bool found = false;
@@ -1738,10 +1779,7 @@ void OccurrenceGraphWidget::addRelationships()
 	}
       setGraphControls(true);
     }
-  else
-    {
-      delete relationshipDialog;
-    }
+  delete relationshipDialog;
 }
 
 
@@ -2144,7 +2182,14 @@ void OccurrenceGraphWidget::wireLinkages()
 	  if (tempTarget != NULL) 
 	    {
 	      Linkage *newLinkage = new Linkage(tempSource->getAttribute(), "");
-	      newLinkage->setZValue(2);
+	      if (_attributeOccurrenceVector.empty())
+		{
+		  newLinkage->setZValue(_relationshipOccurrenceVector[0]->zValue() - 1);
+		}
+	      else
+		{
+		  newLinkage->setZValue(_attributeOccurrenceVector[0]->zValue() - 1);
+		}
 	      newLinkage->setStartItem(tempSource);
 	      newLinkage->setEndItem(tempTarget);
 	      newLinkage->setCopy(true);
@@ -2164,7 +2209,14 @@ void OccurrenceGraphWidget::wireLinkages()
 		      current != tempTarget)
 		    {
 		      Linkage *newLinkageTwo = new Linkage(tempSource->getAttribute(), "");
-		      newLinkageTwo->setZValue(2);
+		      if (_attributeOccurrenceVector.empty())
+			{
+			  newLinkage->setZValue(_relationshipOccurrenceVector[0]->zValue() - 1);
+			}
+		      else
+			{
+			  newLinkage->setZValue(_attributeOccurrenceVector[0]->zValue() - 1);
+			}		     
 		      newLinkageTwo->setStartItem(tempSource);
 		      newLinkageTwo->setEndItem(current);
 		      newLinkageTwo->setCopy(true);
@@ -2216,7 +2268,14 @@ void OccurrenceGraphWidget::wireLinkages()
 	  if (tempTarget != NULL) 
 	    {
 	      Linkage *newLinkage = new Linkage(tempSource->getAttribute(), "");
-	      newLinkage->setZValue(2);
+	      if (_attributeOccurrenceVector.empty())
+		{
+		  newLinkage->setZValue(_relationshipOccurrenceVector[0]->zValue() - 1);
+		}
+	      else
+		{
+		  newLinkage->setZValue(_attributeOccurrenceVector[0]->zValue() - 1);
+		}
 	      newLinkage->setStartItem(tempSource);
 	      newLinkage->setEndItem(tempTarget);
 	      newLinkage->setCopy(true);
@@ -2236,7 +2295,14 @@ void OccurrenceGraphWidget::wireLinkages()
 		      current != tempTarget)
 		    {
 		      Linkage *newLinkageTwo = new Linkage(tempSource->getAttribute(), "");
-		      newLinkageTwo->setZValue(2);
+		      if (_attributeOccurrenceVector.empty())
+			{
+			  newLinkage->setZValue(_relationshipOccurrenceVector[0]->zValue() - 1);
+			}
+		      else
+			{
+			  newLinkage->setZValue(_attributeOccurrenceVector[0]->zValue() - 1);
+			}
 		      newLinkageTwo->setStartItem(tempSource);
 		      newLinkageTwo->setEndItem(current);
 		      newLinkageTwo->setCopy(true);
@@ -3011,7 +3077,18 @@ void OccurrenceGraphWidget::matchEventGraph()
 								     currentAttribute);
 		  newOccurrence->setPos(newOccurrence->getOriginalPos());
 		  newOccurrence->setColor(color);
-		  newOccurrence->setZValue(3);
+		  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+		    {
+		      newOccurrence->setZValue(3);
+		    }
+		  else if (_attributeOccurrenceVector.empty())
+		    {
+		      newOccurrence->setZValue(_relationshipOccurrenceVector[0]->zValue());
+		    }
+		  else
+		    {
+		      newOccurrence->setZValue(_attributeOccurrenceVector[0]->zValue());
+		    }
 		  _attributeOccurrenceVector.push_back(newOccurrence);
 		  scene->addItem(newOccurrence);
 		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
@@ -3037,7 +3114,7 @@ void OccurrenceGraphWidget::matchEventGraph()
 		  label->setNewPos(newOccurrence->scenePos());
 		  _attributeLabelVector.push_back(label);
 		  newOccurrence->setLabel(label);
-		  label->setZValue(4);
+		  label->setZValue(newOccurrence->zValue() + 1);
 		  scene->addItem(label);
 		}
 	    }
@@ -3207,7 +3284,18 @@ void OccurrenceGraphWidget::addLineObject(const QPointF &start, const QPointF &e
   newLineObject->setPenStyle(_currentPenStyle);
   newLineObject->setPenWidth(_currentPenWidth);
   newLineObject->setColor(_currentLineColor);
-  newLineObject->setZValue(5);
+  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+    {
+      newLineObject->setZValue(5);
+    }
+  else if (_attributeOccurrenceVector.empty())
+    {
+      newLineObject->setZValue(_relationshipOccurrenceVector[0]->zValue() + 2);
+    }
+  else
+    {
+      newLineObject->setZValue(_attributeOccurrenceVector[0]->zValue() + 2);
+    }
   newLineObject->setSelected(true);
 }
 
@@ -3220,7 +3308,18 @@ void OccurrenceGraphWidget::addSingleArrowObject(const QPointF &start, const QPo
   newLineObject->setColor(_currentLineColor);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+    {
+      newLineObject->setZValue(5);
+    }
+  else if (_attributeOccurrenceVector.empty())
+    {
+      newLineObject->setZValue(_relationshipOccurrenceVector[0]->zValue() + 2);
+    }
+  else
+    {
+      newLineObject->setZValue(_attributeOccurrenceVector[0]->zValue() + 2);
+    }
   newLineObject->setSelected(true);
 }
 
@@ -3234,7 +3333,18 @@ void OccurrenceGraphWidget::addDoubleArrowObject(const QPointF &start, const QPo
   newLineObject->setColor(_currentLineColor);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+    {
+      newLineObject->setZValue(5);
+    }
+  else if (_attributeOccurrenceVector.empty())
+    {
+      newLineObject->setZValue(_relationshipOccurrenceVector[0]->zValue() + 2);
+    }
+  else
+    {
+      newLineObject->setZValue(_attributeOccurrenceVector[0]->zValue() + 2);
+    }
   newLineObject->setSelected(true);
 }
 
@@ -3250,7 +3360,18 @@ void OccurrenceGraphWidget::addEllipseObject(const QRectF &area)
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
-  newEllipse->setZValue(5);
+  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+    {
+      newEllipse->setZValue(5);
+    }
+  else if (_attributeOccurrenceVector.empty())
+    {
+      newEllipse->setZValue(_relationshipOccurrenceVector[0]->zValue() + 2);
+    }
+  else
+    {
+      newEllipse->setZValue(_attributeOccurrenceVector[0]->zValue() + 2);
+    }
   newEllipse->setSelected(true);
 }
 
@@ -3266,7 +3387,18 @@ void OccurrenceGraphWidget::addRectObject(const QRectF &area)
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
-  newRect->setZValue(5);
+  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+    {
+      newRect->setZValue(5);
+    }
+  else if (_attributeOccurrenceVector.empty())
+    {
+      newRect->setZValue(_relationshipOccurrenceVector[0]->zValue() + 2);
+    }
+  else
+    {
+      newRect->setZValue(_attributeOccurrenceVector[0]->zValue() + 2);
+    }
   newRect->setSelected(true);
 }
 
@@ -3287,7 +3419,18 @@ void OccurrenceGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       scene->addItem(newText);
       newText->setPos(newText->mapFromScene(area.topLeft()));
       newText->setDefaultTextColor(_currentLineColor);
-      newText->setZValue(6);
+      if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+	{
+	  newText->setZValue(6);
+	}
+      else if (_attributeOccurrenceVector.empty())
+	{
+	  newText->setZValue(_relationshipOccurrenceVector[0]->zValue() + 3);
+	}
+      else
+	{
+	  newText->setZValue(_attributeOccurrenceVector[0]->zValue() + 3);
+	}
       newText->adjustSize();
       newText->setSelected(true);
     }
@@ -3305,7 +3448,18 @@ void OccurrenceGraphWidget::addTimeLineObject(const qreal &startX, const qreal &
   newTimeLine->setPenWidth(_currentTimeLineWidth);
   newTimeLine->setColor(_currentTimeLineColor);
   scene->addItem(newTimeLine);
-  newTimeLine->setZValue(5);
+  if (_attributeOccurrenceVector.empty() && _relationshipOccurrenceVector.empty())
+    {
+      newTimeLine->setZValue(5);
+    }
+  else if (_attributeOccurrenceVector.empty())
+    {
+      newTimeLine->setZValue(_relationshipOccurrenceVector[0]->zValue() + 2);
+    }
+  else
+    {
+      newTimeLine->setZValue(_attributeOccurrenceVector[0]->zValue() + 2);
+    }
   newTimeLine->setSelected(true);
 }
 
@@ -3796,7 +3950,7 @@ void OccurrenceGraphWidget::duplicateLine()
 	  newLineObject->setColor(line->getColor());
 	  _lineVector.push_back(newLineObject);
 	  scene->addItem(newLineObject);
-	  newLineObject->setZValue(5);
+	  newLineObject->setZValue(line->zValue());
 	}
     }
 }
@@ -3892,7 +4046,7 @@ void OccurrenceGraphWidget::duplicateText()
 	      scene->addItem(newText);
 	      QPointF pos = text->scenePos();
 	      newText->setPos(pos);
-	      newText->setZValue(6);
+	      newText->setZValue(text->zValue());
 	      newText->setDefaultTextColor(text->defaultTextColor());
 	      newText->setRotationValue(text->getRotationValue());
 	      newText->setFont(text->font());
@@ -3965,7 +4119,7 @@ void OccurrenceGraphWidget::duplicateEllipse()
 	  newEllipse->setPenWidth(ellipse->getPenWidth());
 	  newEllipse->setPenStyle(ellipse->getPenStyle());
 	  _ellipseVector.push_back(newEllipse);
-	  newEllipse->setZValue(5);
+	  newEllipse->setZValue(ellipse->zValue());
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
@@ -4034,7 +4188,7 @@ void OccurrenceGraphWidget::duplicateRect()
 	  newRect->setPenWidth(rect->getPenWidth());
 	  newRect->setPenStyle(rect->getPenStyle());
 	  _rectVector.push_back(newRect);
-	  newRect->setZValue(5);
+	  newRect->setZValue(rect->zValue());
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
 	  newRect->moveCenter(newRect->mapFromScene(pos));
@@ -4671,7 +4825,7 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4693,7 +4847,7 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4719,7 +4873,7 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4741,7 +4895,7 @@ void OccurrenceGraphWidget::toggleIncidentLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4776,7 +4930,7 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4797,7 +4951,7 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4823,7 +4977,7 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _attributeLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -4845,7 +4999,7 @@ void OccurrenceGraphWidget::toggleAttributeLabelsOnly()
 	  newLabel->setNewPos(currentOccurrence->scenePos());
 	  _relationshipLabelVector.push_back(newLabel);
 	  currentOccurrence->setLabel(newLabel);
-	  newLabel->setZValue(4);
+	  newLabel->setZValue(oldLabel->zValue());
 	  scene->addItem(newLabel);
 	  if (!newLabel->getOccurrence()->isVisible())
 	    {
@@ -5847,10 +6001,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       query->prepare("INSERT INTO saved_og_plots_occurrence_items "
 		     "(plot, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
 		     "oriypos, red, green, blue, alpha, highlighted, hred, hgreen, hblue, "
-		     "halpha, hidden, perm, relationship, grouped) "
+		     "halpha, zvalue, hidden, perm, relationship, grouped) "
 		     "VALUES (:plot, :incident, :order, :attribute, :width, :curxpos, :curypos, "
 		     ":orixpos, :oriypos, :red, :green, :blue, :alpha, :highlighted, :hred, "
-		     ":hgreen, :hblue, :halpha, :hidden, :perm, :relationship, :grouped)");
+		     ":hgreen, :hblue, :halpha, :zvalue, :hidden, :perm, :relationship, :grouped)");
       QVectorIterator<OccurrenceItem*> it(allOccurrences);
       while (it.hasNext()) 
 	{
@@ -5874,6 +6028,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int hgreen = highlightColor.green();
 	  int hblue = highlightColor.blue();
 	  int halpha = highlightColor.alpha();
+	  int zvalue = currentItem->zValue();
 	  int hidden = 1;
 	  int perm = 0;
 	  int relationship = 0;
@@ -5916,6 +6071,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->bindValue(":hgreen", hgreen);
 	  query->bindValue(":hblue", hblue);
 	  query->bindValue(":halpha", halpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":perm", perm);
 	  query->bindValue(":relationship", relationship);
@@ -5946,9 +6102,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_occurrence_labels "
 		     "(plot, incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden, relationship) "
+		     "red, green, blue, alpha, zvalue, hidden, relationship) "
 		     "VALUES (:plot, :incident, :attribute, :label, :curxpos, :curypos, "
-		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden, :relationship)");
+		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :zvalue, :hidden, "
+		     ":relationship)");
       QVectorIterator<OccurrenceLabel*> it2(allLabels);
       while (it2.hasNext()) 
 	{
@@ -5964,6 +6121,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int green = currentLabel->defaultTextColor().green();
 	  int blue = currentLabel->defaultTextColor().blue();
 	  int alpha = currentLabel->defaultTextColor().alpha();
+	  int zvalue = currentLabel->zValue();
 	  int hidden = 1;
 	  int relationship = 0;
 	  if (currentLabel->isVisible()) 
@@ -5986,6 +6144,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":relationship", relationship);
 	  query->exec();
@@ -6505,7 +6664,7 @@ void OccurrenceGraphWidget::seePlots()
       _labelSize = labelsize;
       query->prepare("SELECT incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
 		     "oriypos, red, green, blue, alpha, highlighted, hred, hgreen, "
-		     "hblue, halpha, hidden, perm, relationship, grouped "
+		     "hblue, halpha, zvalue, hidden, perm, relationship, grouped "
 		     "FROM saved_og_plots_occurrence_items "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -6530,10 +6689,11 @@ void OccurrenceGraphWidget::seePlots()
 	  int hgreen = query->value(14).toInt();
 	  int hblue = query->value(15).toInt();
 	  int halpha = query->value(16).toInt();
-	  int hidden = query->value(17).toInt();
-	  int perm = query->value(18).toInt();
-	  int relationship = query->value(19).toInt();
-	  int grouped = query->value(20).toInt();
+	  int zvalue = query->value(17).toInt();
+	  int hidden = query->value(18).toInt();
+	  int perm = query->value(19).toInt();
+	  int relationship = query->value(20).toInt();
+	  int grouped = query->value(21).toInt();
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT description FROM incidents WHERE id = :id");
 	  query2->bindValue(":id", id);
@@ -6559,7 +6719,7 @@ void OccurrenceGraphWidget::seePlots()
 	    {
 	      currentItem->setHighlight(QColor(hred, hgreen, hblue, halpha));
 	    }
-	  currentItem->setZValue(3);
+	  currentItem->setZValue(zvalue);
 	  if (relationship == 0) 
 	    {
 	      _attributeOccurrenceVector.push_back(currentItem);
@@ -6596,7 +6756,7 @@ void OccurrenceGraphWidget::seePlots()
 	    }	  
 	}
       query->prepare("SELECT incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden, relationship "
+		     "red, green, blue, alpha, zvalue, hidden, relationship "
 		     "FROM saved_og_plots_occurrence_labels "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6614,8 +6774,9 @@ void OccurrenceGraphWidget::seePlots()
 	  int green = query->value(8).toInt();
 	  int blue = query->value(9).toInt();
 	  int alpha = query->value(10).toInt();
-	  int hidden = query->value(11).toInt();
-	  int relationship = query->value(12).toInt();
+	  int zvalue = query->value(11).toInt();
+	  int hidden = query->value(12).toInt();
+	  int relationship = query->value(13).toInt();
 	  QVectorIterator<OccurrenceItem*> it(allOccurrences);
 	  while (it.hasNext()) 
 	    {
@@ -6627,7 +6788,7 @@ void OccurrenceGraphWidget::seePlots()
 		  currentLabel->setPos(QPointF(currentX, currentY));
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
-		  currentLabel->setZValue(4);
+		  currentLabel->setZValue(zvalue);
 		  currentItem->setLabel(currentLabel);
 		  if (relationship == 0) 
 		    {

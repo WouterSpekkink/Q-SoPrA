@@ -1722,7 +1722,7 @@ void NetworkGraphWidget::getDirectedEdges()
 		      incidents.insert(query4->value(0).toInt());
 		    }
 		  currentEdge->setIncidents(incidents);
-		  currentEdge->setZValue(2);
+		  currentEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 		  currentEdge->setComment(comment);
 		  currentEdge->hide();
 		  _directedVector.push_back(currentEdge);
@@ -1804,7 +1804,7 @@ void NetworkGraphWidget::getUndirectedEdges()
 		    }
 		  currentEdge->setIncidents(incidents);
 
-		  currentEdge->setZValue(2);
+		  currentEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 		  currentEdge->setComment(comment);
 		  currentEdge->hide();
 		  _undirectedVector.push_back(currentEdge);
@@ -2457,7 +2457,7 @@ void NetworkGraphWidget::addLineObject(const QPointF &start, const QPointF &end)
   newLineObject->setPenWidth(_currentPenWidth);
   newLineObject->setColor(_currentLineColor);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  newLineObject->setZValue(_networkNodeVector[0]->zValue() + 2);
   newLineObject->setSelected(true);
 }
 
@@ -2470,7 +2470,7 @@ void NetworkGraphWidget::addSingleArrowObject(const QPointF &start, const QPoint
   newLineObject->setColor(_currentLineColor);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  newLineObject->setZValue(_networkNodeVector[0]->zValue() + 2);
   newLineObject->setSelected(true);
 }
 
@@ -2484,7 +2484,7 @@ void NetworkGraphWidget::addDoubleArrowObject(const QPointF &start, const QPoint
   newLineObject->setColor(_currentLineColor);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  newLineObject->setZValue(_networkNodeVector[0]->zValue() + 2);
   newLineObject->setSelected(true);
 }
 
@@ -2500,7 +2500,7 @@ void NetworkGraphWidget::addEllipseObject(const QRectF &area)
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
-  newEllipse->setZValue(5);
+  newEllipse->setZValue(_networkNodeVector[0]->zValue() + 2);
   newEllipse->setSelected(true);
 }
 
@@ -2516,7 +2516,7 @@ void NetworkGraphWidget::addRectObject(const QRectF &area)
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
-  newRect->setZValue(5);
+  newRect->setZValue(_networkNodeVector[0]->zValue() + 2);
   newRect->setSelected(true);
 }
 
@@ -2537,7 +2537,7 @@ void NetworkGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       scene->addItem(newText);
       newText->setPos(newText->mapFromScene(area.topLeft()));
       newText->setDefaultTextColor(_currentLineColor);
-      newText->setZValue(6);
+      newText->setZValue(_networkNodeVector[0]->zValue() + 3);
       newText->adjustSize();
       newText->setSelected(true);
     }
@@ -2752,7 +2752,7 @@ void NetworkGraphWidget::duplicateLine()
 	  newLineObject->setColor(line->getColor());
 	  _lineVector.push_back(newLineObject);
 	  scene->addItem(newLineObject);
-	  newLineObject->setZValue(5);
+	  newLineObject->setZValue(line->zValue());
 	}
     }
 }
@@ -2848,7 +2848,7 @@ void NetworkGraphWidget::duplicateText()
 	      scene->addItem(newText);
 	      QPointF pos = text->scenePos();
 	      newText->setPos(pos);
-	      newText->setZValue(6);
+	      newText->setZValue(text->zValue());
 	      newText->setDefaultTextColor(text->defaultTextColor());
 	      newText->setRotationValue(text->getRotationValue());
 	      newText->setFont(text->font());
@@ -2921,7 +2921,7 @@ void NetworkGraphWidget::duplicateEllipse()
 	  newEllipse->setPenWidth(ellipse->getPenWidth());
 	  newEllipse->setPenStyle(ellipse->getPenStyle());
 	  _ellipseVector.push_back(newEllipse);
-	  newEllipse->setZValue(5);
+	  newEllipse->setZValue(ellipse->zValue());
 	  scene->addItem(newEllipse);
 	  QPointF pos = ellipse->mapToScene(ellipse->getCenter());
 	  newEllipse->moveCenter(newEllipse->mapFromScene(pos));
@@ -2990,7 +2990,7 @@ void NetworkGraphWidget::duplicateRect()
 	  newRect->setPenWidth(rect->getPenWidth());
 	  newRect->setPenStyle(rect->getPenStyle());
 	  _rectVector.push_back(newRect);
-	  newRect->setZValue(5);
+	  newRect->setZValue(rect->zValue());
 	  scene->addItem(newRect);
 	  QPointF pos = rect->mapToScene(rect->getCenter());
 	  newRect->moveCenter(newRect->mapFromScene(pos));
@@ -3636,7 +3636,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _directedVector.push_back(newEdge);
 				    }
 				}
@@ -3673,7 +3673,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _undirectedVector.push_back(newEdge);
 				    }
 				  else 
@@ -3724,7 +3724,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _directedVector.push_back(newEdge);
 				    }
 				  else 
@@ -3765,7 +3765,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _undirectedVector.push_back(newEdge);
 				    }
 				  else 
@@ -3824,7 +3824,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _directedVector.push_back(newEdge);
 				    }
 				  else 
@@ -3865,7 +3865,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _undirectedVector.push_back(newEdge);
 				    }
 				  else 
@@ -3916,7 +3916,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _directedVector.push_back(newEdge);
 				    }
 				  else 
@@ -3957,7 +3957,7 @@ void NetworkGraphWidget::multimodeTransformation()
 				    }
 				  if (!found) 
 				    {
-				      newEdge->setZValue(2);
+				      newEdge->setZValue(_networkNodeVector[0]->zValue() - 1);
 				      _undirectedVector.push_back(newEdge);
 				    }
 				  else 
@@ -4283,7 +4283,7 @@ void NetworkGraphWidget::mergeRelationships()
 		  DirectedEdge *newDirected = new DirectedEdge(directed->getStart(),
 							       directed->getEnd(),
 							       name, MERGED, 0);
-		  newDirected->setZValue(2);
+		  newDirected->setZValue(_networkNodeVector[0]->zValue() - 1);
 		  newDirected->setColor(color);
 		  newDirected->setIncidents(directed->getIncidents());
 		  _directedVector.push_back(newDirected);
@@ -4332,7 +4332,7 @@ void NetworkGraphWidget::mergeRelationships()
 								     undirected->getEnd(),
 								     name, MERGED, 0);
 		  newUndirected->setColor(color);
-		  newUndirected->setZValue(2);
+		  newUndirected->setZValue(_networkNodeVector[0]->zValue() - 1);
 		  newUndirected->setIncidents(undirected->getIncidents());
 		  _undirectedVector.push_back(newUndirected);
 		  _undirectedVector.removeOne(undirected);
@@ -5883,9 +5883,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_ng_plots_network_nodes "
 		     "(plot, entity, description, mode, curxpos, curypos, "
-		     "red, green, blue, alpha, hidden, persistent, masshidden) "
+		     "red, green, blue, alpha, zvalue, hidden, persistent, masshidden) "
 		     "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
-		     ":red, :green, :blue, :alpha, :hidden, :persistent, :masshidden)");
+		     ":red, :green, :blue, :alpha, :zvalue, :hidden, :persistent, :masshidden)");
       QVectorIterator<NetworkNode*> it(_networkNodeVector);
       while (it.hasNext()) 
 	{
@@ -5899,6 +5899,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int green = current->getColor().green();
 	  int blue = current->getColor().blue();
 	  int alpha = current->getColor().alpha();
+	  int zvalue = current->zValue();
 	  int hidden = 1;
 	  int persistent = 0;
 	  int masshidden = 0;
@@ -5924,6 +5925,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":persistent", persistent);
 	  query->bindValue(":masshidden", masshidden);	 
@@ -5942,9 +5944,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_node_labels "
 		     "(plot, entity, curxpos, curypos, xoffset, yoffset, fontsize, "
-		     "red, green, blue, alpha, hidden) "
+		     "red, green, blue, alpha, zvalue, hidden) "
 		     "VALUES (:plot, :entity, :curxpos, :curypos, :xoffset, :yoffset, :fontsize, "
-		     ":red, :green, :blue, :alpha, :hidden)");
+		     ":red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<NetworkNodeLabel*> it2(_networkNodeLabelVector);
       while (it2.hasNext()) 
 	{
@@ -5959,6 +5961,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int green = current->defaultTextColor().green();
 	  int blue =  current->defaultTextColor().blue();
 	  int alpha = current->defaultTextColor().alpha();
+	  int zvalue = current->zValue();
 	  int hidden = 1;
 	  if (current->isVisible()) 
 	    {
@@ -5975,6 +5978,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue",zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
@@ -6080,9 +6084,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_directed "
 		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
-		     "red, green, blue, alpha, hidden) "
+		     "red, green, blue, alpha, zvalue, hidden) "
 		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
-		     ":masshidden, :red, :green, :blue, :alpha, :hidden)");
+		     ":masshidden, :red, :green, :blue, :alpha, :zvalue, :hidden)");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("INSERT INTO saved_ng_plots_incidents_to_edges"
 		      "(plot, incident, relationship, type) "
@@ -6122,6 +6126,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int green = current->getColor().green();
 	  int blue = current->getColor().blue();
 	  int alpha = current->getColor().alpha();
+	  int zvalue = current->zValue();
 	  int hidden = 1;
 	  if (current->isVisible()) 
 	    {
@@ -6140,6 +6145,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
@@ -6156,9 +6162,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_undirected "
 		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
-		     "red, green, blue, alpha, hidden) "
+		     "red, green, blue, alpha, zvalue, hidden) "
 		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
-		     ":masshidden, :red, :green, :blue, :alpha, :hidden)");
+		     ":masshidden, :red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<UndirectedEdge*> it4(_undirectedVector);
       while (it4.hasNext()) 
 	{
@@ -6194,6 +6200,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int green = current->getColor().green();
 	  int blue = current->getColor().blue();
 	  int alpha = current->getColor().alpha();
+	  int zvalue = current->zValue();
 	  int hidden = 1;
 	  if (current->isVisible()) 
 	    {
@@ -6211,6 +6218,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
@@ -6588,7 +6596,7 @@ void NetworkGraphWidget::seePlots()
       int blue = query->value(2).toInt();
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       query->prepare("SELECT entity, description, mode, curxpos, curypos, "
-		     "red, green, blue, alpha, hidden, persistent, masshidden "
+		     "red, green, blue, alpha, zvalue, hidden, persistent, masshidden "
 		     "FROM saved_ng_plots_network_nodes "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6604,16 +6612,17 @@ void NetworkGraphWidget::seePlots()
 	  int green = query->value(6).toInt();
 	  int blue = query->value(7).toInt();
 	  int alpha = query->value(8).toInt();
-	  int hidden = query->value(9).toInt();
-	  int persistent = query->value(10).toInt();
-	  int masshidden = query->value(11).toInt();
+	  int zvalue = query->value(9).toInt();
+	  int hidden = query->value(10).toInt();
+	  int persistent = query->value(11).toInt();
+	  int masshidden = query->value(12).toInt();
 	  QPointF currentPos = QPointF(currentX, currentY);
 	  NetworkNode *node = new NetworkNode(entity, description);
 	  node->setColor(QColor(red, green, blue, alpha));
 	  node->setMode(mode);
 	  scene->addItem(node);
 	  node->setPos(currentPos);
-	  node->setZValue(3);
+	  node->setZValue(zvalue);
 	  if (hidden == 1) 
 	    {
 	      node->hide();
@@ -6641,7 +6650,7 @@ void NetworkGraphWidget::seePlots()
 	    }
 	}
       query->prepare("SELECT entity, curxpos, curypos, xoffset, yoffset, fontsize, "
-		     "red, green, blue, alpha, hidden "
+		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_ng_plots_node_labels WHERE plot = :plot");
       query->bindValue(":plot", plot);
       query->exec();
@@ -6657,7 +6666,8 @@ void NetworkGraphWidget::seePlots()
 	  int green = query->value(7).toInt();
 	  int blue = query->value(8).toInt();
 	  int alpha = query->value(9).toInt();
-	  int hidden = query->value(10).toInt();
+	  int zvalue = query->value(10).toInt();
+	  int hidden = query->value(11).toInt();
 	  QVectorIterator<NetworkNode*> it(_networkNodeVector);
 	  while (it.hasNext()) 
 	    {
@@ -6672,7 +6682,7 @@ void NetworkGraphWidget::seePlots()
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
 		  scene->addItem(currentLabel);
-		  currentLabel->setZValue(4);
+		  currentLabel->setZValue(zvalue);
 		  if (hidden == 1) 
 		    {
 		      currentLabel->hide();
@@ -6760,7 +6770,7 @@ void NetworkGraphWidget::seePlots()
 	    }
 	}
       query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
-		     "red, green, blue, alpha, hidden "
+		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_ng_plots_directed "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -6779,7 +6789,8 @@ void NetworkGraphWidget::seePlots()
 	  int green = query->value(9).toInt();
 	  int blue = query->value(10).toInt();
 	  int alpha = query->value(11).toInt();
-	  int hidden = query->value(12).toInt();
+	  int zvalue = query->value(12).toInt();
+	  int hidden = query->value(13).toInt();
 	  QVectorIterator<NetworkNode*> it(_networkNodeVector);
 	  NetworkNode *tempSource = NULL;
 	  NetworkNode *tempTarget = NULL;
@@ -6798,7 +6809,7 @@ void NetworkGraphWidget::seePlots()
 		{
 		  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget,
 							       type, name, 0);
-		  currentEdge->setZValue(2);
+		  currentEdge->setZValue(zvalue);
 		  currentEdge->setComment(comment);
 		  currentEdge->setHeight(height);
 		  if (filtered == 1) 
@@ -6823,7 +6834,7 @@ void NetworkGraphWidget::seePlots()
       plotLabel->setText(plot);
       changeLabel->setText("");
       query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
-		     "red, green, blue, alpha, hidden "
+		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_ng_plots_undirected "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6842,7 +6853,8 @@ void NetworkGraphWidget::seePlots()
 	  int green = query->value(9).toInt();
 	  int blue = query->value(10).toInt();
 	  int alpha = query->value(11).toInt();
-	  int hidden = query->value(12).toInt();
+	  int zvalue = query->value(12).toInt();
+	  int hidden = query->value(13).toInt();
 	  QVectorIterator<NetworkNode*> it(_networkNodeVector);
 	  NetworkNode *tempSource = NULL;
 	  NetworkNode *tempTarget = NULL;
@@ -6861,7 +6873,7 @@ void NetworkGraphWidget::seePlots()
 		{
 		  UndirectedEdge *currentEdge = new UndirectedEdge(tempSource, tempTarget,
 								   type, name, 0);
-		  currentEdge->setZValue(2);
+		  currentEdge->setZValue(zvalue);
 		  currentEdge->setComment(comment);
 		  currentEdge->setHeight(height);
 		  if (filtered == 0) 

@@ -473,6 +473,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "persistent integer, "
 		      "masshidden integer)");
@@ -489,6 +490,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_nodelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -529,6 +531,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_undirected "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -545,6 +548,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_incidents_to_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -689,6 +693,7 @@ void WelcomeDialog::newDatabase()
 		      "hgreen integer, "
 		      "hblue integer, "
 		      "halpha integer, "
+		      "zvalue integer, "
 		      "perm integer, "
 		      "relationship integer, "
 		      "grouped integer)"); 
@@ -706,6 +711,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "relationship integer)");
 	  query->exec("CREATE TABLE saved_og_plots_legend "
@@ -1275,6 +1281,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "persistent integer, "
 		      "masshidden integer)");
@@ -1291,6 +1298,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_nodelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1331,6 +1339,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_undirected "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1347,6 +1356,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_incidents_to_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1491,6 +1501,7 @@ void WelcomeDialog::openDatabase()
 		      "hgreen integer, "
 		      "hblue integer, "
 		      "halpha integer, "
+		      "zvalue integer, "
 		      "perm integer, "
 		      "relationship integer, "
 		      "grouped integer)");
@@ -1508,6 +1519,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "relationship integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_legend "
@@ -3485,6 +3497,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_network_nodes "
 			  "ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_network_nodes "
+			  "ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_ng_plots_network_nodes "
+			  "SET zvalue = 3");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_network_nodes "
@@ -3565,6 +3584,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_node_labels "
 			  "ADD COLUMN alpha integer;");
+	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_node_labels "
+			  "ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_ng_plots_node_labels "
+			  "SET zvalue = 4");
 	    }
 	  if (!columns.contains("hidden"))
 	    {
@@ -3769,6 +3795,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_directed "
 			  "ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_directed "
+			  "ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_ng_plots_directed "
+			  "SET zvalue = 2");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_directed "
@@ -3849,6 +3882,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_undirected "
 			  "ADD COLUMN alpha integer;");
+	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_undirected "
+			  "ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_ng_plots_undirected "
+			  "SET zvalue = 2");
 	    }
 	  if (!columns.contains("hidden"))
 	    {
@@ -4581,6 +4621,11 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
 			  "ADD COLUMN halpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN zvalue integer;");
+	    }
 	  if (!columns.contains("perm"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
@@ -4666,6 +4711,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_labels "
 			  "ADD COLUMN alpha integer;");
+	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_labels "
+			  "ADD COLUMN zvalue integer;");
 	    }
 	  if (!columns.contains("hidden"))
 	    {
