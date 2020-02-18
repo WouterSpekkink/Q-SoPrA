@@ -234,6 +234,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "masshidden integer)"); 
 	  query->exec("CREATE TABLE saved_eg_plots_edges "
@@ -248,6 +249,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_incident_node_labels "
@@ -263,6 +265,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -284,6 +287,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_incidents_to_abstract_nodes "
@@ -320,6 +324,7 @@ void WelcomeDialog::newDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_legend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1031,6 +1036,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_edges "
@@ -1045,6 +1051,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incident_node_labels "
@@ -1060,6 +1067,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1081,6 +1089,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer, "
 		      "masshidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incidents_to_abstract_nodes "
@@ -1117,6 +1126,7 @@ void WelcomeDialog::openDatabase()
 		      "green integer, "
 		      "blue integer, "
 		      "alpha integer, "
+		      "zvalue integer, "
 		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_legend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1633,7 +1643,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(incidents)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1671,7 +1681,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(incident_attributes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1694,7 +1704,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(attributes_to_incidents)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1717,7 +1727,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(attributes_to_incidents_sources)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1740,7 +1750,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(entity_attributes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1763,7 +1773,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(attributes_to_entities)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1790,7 +1800,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(entity_relationships)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1821,7 +1831,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(relationship_types)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1844,7 +1854,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(relationships_to_incidents)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1867,7 +1877,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(relationships_to_incidents_sources)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1898,7 +1908,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(entities)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1921,7 +1931,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(journal)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1944,7 +1954,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(linkage_types)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1971,7 +1981,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(linkages)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -1998,7 +2008,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(linkages_sources)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2033,7 +2043,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(coders)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2048,7 +2058,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(coders_to_linkage_types)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2075,7 +2085,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(linkage_comments)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2106,7 +2116,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(save_data)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("attributes_record"))
 	    {
@@ -2120,7 +2130,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(linkages_sources_reference)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  bool referencesmissing = false;
 	  if (!columns.contains("code"))
@@ -2147,7 +2157,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2178,7 +2188,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_settings)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2209,7 +2219,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_incident_nodes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2272,6 +2282,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_eg_plots_incident_nodes SET zvalue = 3");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN hidden integer;");
@@ -2284,7 +2299,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_edges)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2331,6 +2346,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_edges ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_edges ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_eg_plots_edges SET zvalue = 2");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_edges ADD COLUMN hidden integer;");
@@ -2343,7 +2363,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_incident_node_labels)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2405,6 +2425,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_incident_node_labels "
 			  "ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_incident_node_labels "
+			  "ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_eg_plots_incident_node_labels "
+			  "SET zvalue = 4");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incident_node_labels "
@@ -2414,7 +2441,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_abstract_nodes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2511,6 +2538,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes "
 			  "ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes "
+			  "ADD COLUMN zvalue integer;");
+	      query->exec("UPDATE saved_eg_plots_abstract_nodes "
+			  "SET zvalue = 3");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes "
@@ -2524,7 +2558,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_incidents_to_abstract_nodes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2550,7 +2584,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_embedded_incidents)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2576,7 +2610,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_abstract_nodes_to_abstract_nodes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2602,7 +2636,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_attributes_to_abstract_nodes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2633,7 +2667,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_abstract_node_labels)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2695,6 +2729,11 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_node_labels "
 			  "ADD COLUMN alpha integer;");
 	    }
+	  if (!columns.contains("zvalue"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_abstract_node_labels "
+			  "ADD COLUMN zvalue integer;");
+	    }
 	  if (!columns.contains("hidden"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_node_labels "
@@ -2704,7 +2743,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_legend)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2770,7 +2809,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_lines)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2851,7 +2890,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_timelines)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -2942,7 +2981,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_texts)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3013,7 +3052,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_ellipses)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3139,7 +3178,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_rects)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3265,7 +3304,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_contraction)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3301,7 +3340,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_cases)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3327,7 +3366,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_guides)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3358,7 +3397,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3389,7 +3428,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_network_nodes)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3465,7 +3504,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_node_labels)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3536,7 +3575,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_nodelegend)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3607,7 +3646,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_edgelegend)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3658,7 +3697,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_directed)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3739,7 +3778,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_undirected)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3820,7 +3859,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_incidents_to_edges)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3851,7 +3890,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_lines)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -3932,7 +3971,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_texts)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4003,7 +4042,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_ellipses)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4129,7 +4168,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_rects)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4255,7 +4294,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_eg_plots_settings)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4301,7 +4340,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_cases)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4327,7 +4366,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_ng_plots_guides)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4358,7 +4397,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4394,7 +4433,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_settings)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4440,7 +4479,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_occurrence_items)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4561,7 +4600,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_occurrence_labels)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4642,7 +4681,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_legend)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4693,7 +4732,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_lines)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4774,7 +4813,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_timelines)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4865,7 +4904,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_texts)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -4936,7 +4975,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_ellipses)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -5062,7 +5101,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_rects)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -5188,7 +5227,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_cases)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -5214,7 +5253,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(saved_og_plots_guides)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -5245,7 +5284,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(cases)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {
@@ -5266,7 +5305,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("PRAGMA table_info(incidents_to_cases)");
 	  while (query->next())
 	    {
-	      columns.push_back(query->value(0).toString());
+	      columns.push_back(query->value(1).toString());
 	    }
 	  if (!columns.contains("id"))
 	    {

@@ -3235,7 +3235,7 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
 	      if (tempSource->getOrder() < tempTarget->getOrder()) 
 		{
 		  Linkage *currentEdge = new Linkage(type, coder);
-		  currentEdge->setZValue(2);
+		  currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		  currentEdge->setStartItem(tempSource);
 		  currentEdge->setEndItem(tempTarget);
 		  currentEdge->setToolTip(toolTip);
@@ -3246,7 +3246,7 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
 	      else if (tempSource->getOrder() > tempTarget->getOrder()) 
 		{
 		  Linkage *currentEdge = new Linkage(type, coder);
-		  currentEdge->setZValue(2);
+		  currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		  currentEdge->setStartItem(tempSource);
 		  currentEdge->setEndItem(tempTarget);
 		  currentEdge->setToolTip(toolTip);
@@ -3982,7 +3982,7 @@ void EventGraphWidget::getLabels()
       currentItem->setLabel(text);
       text->setPlainText(order);
       text->setNewPos(currentItem->scenePos());    
-      text->setZValue(4);
+      text->setZValue(_incidentNodeVector[0]->zValue() + 1);
       text->setDefaultTextColor(Qt::black);
       _incidentNodeLabelVector.push_back(text);
       delete query;
@@ -4784,7 +4784,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type)
 	      if (sameFound == false) 
 		{
 		  Linkage *compareEdge = new Linkage(type, coder);
-		  compareEdge->setZValue(2);
+		  compareEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		  compareEdge->setStartItem(tempSource);
 		  compareEdge->setEndItem(tempTarget);
 		  compareEdge->setPenStyle(4);
@@ -5008,9 +5008,10 @@ void EventGraphWidget::saveCurrentPlot()
       query->exec();      
       query->prepare("INSERT INTO saved_eg_plots_incident_nodes "
 		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
-		     "dislodged, mode, red, green, blue, alpha, hidden, masshidden) "
+		     "dislodged, mode, red, green, blue, alpha, zvalue, hidden, masshidden) "
 		     "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
-		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :hidden, :masshidden)");
+		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :zvalue, :hidden, "
+		     ":masshidden)");
       QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, _incidentNodeVector.size());
       saveProgress->setWindowTitle("Saving incident nodes");
       saveProgress->setAttribute(Qt::WA_DeleteOnClose);
@@ -5035,6 +5036,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
+	  int zvalue = currentItem->zValue();
 	  int hidden = 1;
 	  int masshidden = 0;
 	  if (currentItem->isDislodged()) 
@@ -5063,6 +5065,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":masshidden", masshidden);
 	  query->exec();
@@ -5080,9 +5083,9 @@ void EventGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_incident_node_labels "
 		     "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden) "
+		     "red, green, blue, alpha, zvalue, hidden) "
 		     "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
-		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :hidden)");
+		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<IncidentNodeLabel*> it2(_incidentNodeLabelVector);
       while (it2.hasNext()) 
 	{
@@ -5097,6 +5100,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int green = currentLabel->defaultTextColor().green();
 	  int blue = currentLabel->defaultTextColor().blue();
 	  int alpha = currentLabel->defaultTextColor().alpha();
+	  int zvalue = currentLabel->zValue();
 	  int hidden = 1;
 	  if (currentLabel->isVisible()) 
 	    {
@@ -5113,6 +5117,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
@@ -5129,9 +5134,9 @@ void EventGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_edges "
 		     "(plot, tail, head, tailabstractnode, headabstractnode, linkage, "
-		     "red, green, blue, alpha, hidden, masshidden) "
+		     "red, green, blue, alpha, zvalue, hidden, masshidden) "
 		     "VALUES (:plot, :tail, :head, :tabstractnode, :habstractnode, :linkage, "
-		     ":red, :green, :blue, :alpha, :hidden, :masshidden)");
+		     ":red, :green, :blue, :alpha, :zvalue, :hidden, :masshidden)");
       QVectorIterator<Linkage*> it3(_edgeVector);
       while (it3.hasNext()) 
 	{
@@ -5150,6 +5155,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int head = 0;
 	  int mTail = 0;
 	  int mHead = 0;
+	  int zvalue = currentEdge->zValue();
 	  int hidden = 1;
 	  int massHidden = 0;
 	  if (incidentNodeTail) 
@@ -5188,6 +5194,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->bindValue(":masshidden", massHidden);
 	  query->exec();
@@ -5214,10 +5221,10 @@ void EventGraphWidget::saveCurrentPlot()
       query3->prepare("INSERT INTO saved_eg_plots_abstract_nodes "
 		      "(plot, eventid, ch_order, abstraction, timing, description, comment, width, "
 		      "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
-		      "red, green, blue, alpha, hidden, masshidden) "
+		      "red, green, blue, alpha, zvalue, hidden, masshidden) "
 		      "VALUES (:plot, :eventid, :ch_order, :abstraction, :timing, :description, "
 		      ":comment, :width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
-		      ":red, :green, :blue, :alpha, :hidden, :masshidden)");;
+		      ":red, :green, :blue, :alpha, :zvalue, :hidden, :masshidden)");;
       QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
       while (it4.hasNext()) 
 	{
@@ -5260,6 +5267,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int green = color.green();
 	  int blue = color.blue();
 	  int alpha = color.alpha();
+	  int zvalue = currentAbstractNode->zValue();
 	  int hidden = 1;
 	  int masshidden = 0;
 	  if (currentAbstractNode->isDislodged()) 
@@ -5292,6 +5300,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query3->bindValue(":green", green);
 	  query3->bindValue(":blue", blue);
 	  query3->bindValue(":alpha", alpha);
+	  query3->bindValue(":zvalue", zvalue);
 	  query3->bindValue(":hidden", hidden);
 	  query3->bindValue(":masshidden", masshidden);
 	  query3->exec();
@@ -5364,9 +5373,9 @@ void EventGraphWidget::saveCurrentPlot()
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_abstract_node_labels "
 		     "(plot, eventid, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden) "
+		     "red, green, blue, alpha, zvalue, hidden) "
 		     "VALUES (:plot, :eventid, :label, :curxpos, :curypos, :xoffset, :yoffset, "
-		     ":red, :green, :blue, :alpha, :hidden)");
+		     ":red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<AbstractNodeLabel*> it7(_abstractNodeLabelVector);
       while (it7.hasNext()) 
 	{
@@ -5381,6 +5390,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int green = currentLabel->defaultTextColor().green();
 	  int blue = currentLabel->defaultTextColor().blue();
 	  int alpha = currentLabel->defaultTextColor().alpha();
+	  int zvalue = currentLabel->zValue();
 	  int hidden = 1;
 	  if (currentLabel->isVisible()) 
 	    {
@@ -5397,6 +5407,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":alpha", alpha);
+	  query->bindValue(":zvalue", zvalue);
 	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
@@ -5916,7 +5927,7 @@ void EventGraphWidget::seePlots()
 	}
       _labelSize = labelsize;
       query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
-		     "dislodged, mode, red, green, blue, alpha, hidden, masshidden "
+		     "dislodged, mode, red, green, blue, alpha, zvalue, hidden, masshidden "
 		     "FROM saved_eg_plots_incident_nodes "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -5936,8 +5947,9 @@ void EventGraphWidget::seePlots()
 	  int green = query->value(10).toInt();
 	  int blue = query->value(11).toInt();
 	  int alpha = query->value(12).toInt();
-	  int hidden = query->value(13).toInt();
-	  int masshidden = query->value(14).toInt();
+	  int zvalue = query->value(13).toInt();
+	  int hidden = query->value(14).toInt();
+	  int masshidden = query->value(15).toInt();
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT description FROM incidents WHERE id = :id");
 	  query2->bindValue(":id", id);
@@ -5958,7 +5970,7 @@ void EventGraphWidget::seePlots()
 	  IncidentNode *currentItem = new IncidentNode(width, toolTip, originalPos, id, order);
 	  currentItem->setPos(currentPos);
 	  currentItem->setColor(QColor(red, green, blue, alpha));
-	  currentItem->setZValue(3);
+	  currentItem->setZValue(zvalue);
 	  currentItem->setMode(mode);
 	  _incidentNodeVector.push_back(currentItem);
 	  scene->addItem(currentItem);
@@ -5980,7 +5992,7 @@ void EventGraphWidget::seePlots()
 	    }
 	}
       query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden "
+		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_eg_plots_incident_node_labels "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -5997,7 +6009,8 @@ void EventGraphWidget::seePlots()
 	  int green = query->value(7).toInt();
 	  int blue = query->value(8).toInt();
 	  int alpha = query->value(9).toInt();
-	  int hidden = query->value(10).toInt();
+	  int zvalue = query->value(10).toInt();
+	  int hidden = query->value(11).toInt();
 	  QVectorIterator<IncidentNode *> it(_incidentNodeVector);
 	  while (it.hasNext()) 
 	    {
@@ -6010,7 +6023,7 @@ void EventGraphWidget::seePlots()
 		  currentLabel->setPos(QPointF(currentX, currentY));
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
-		  currentLabel->setZValue(4);
+		  currentLabel->setZValue(zvalue);
 		  currentLabel->setFontSize(_labelSize);
 		  currentItem->setLabel(currentLabel);
 		  _incidentNodeLabelVector.push_back(currentLabel);
@@ -6029,7 +6042,7 @@ void EventGraphWidget::seePlots()
 	}
       query->prepare("SELECT eventid, ch_order, abstraction, timing, description, comment, width, "
 		     "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
-		     "hidden, masshidden "
+		     "zvalue, hidden, masshidden "
 		     "FROM saved_eg_plots_abstract_nodes "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -6053,8 +6066,9 @@ void EventGraphWidget::seePlots()
 	  int green = query->value(14).toInt();
 	  int blue = query->value(15).toInt();
 	  int alpha = query->value(16).toInt();
-	  int hidden = query->value(17).toInt();
-	  int masshidden = query->value(18).toInt();
+	  int zvalue = query->value(17).toInt();
+	  int hidden = query->value(18).toInt();
+	  int masshidden = query->value(19).toInt();
 	  QPointF currentPos = QPointF(currentX, currentY);
 	  QPointF originalPos = QPointF(originalX, originalY);
 	  QColor color = QColor(red, green, blue, alpha);
@@ -6106,7 +6120,7 @@ void EventGraphWidget::seePlots()
 	  newAbstractNode->setTiming(timing);
 	  newAbstractNode->setOriginalPos(originalPos);
 	  newAbstractNode->setPos(currentPos);
-	  newAbstractNode->setZValue(3);
+	  newAbstractNode->setZValue(zvalue);
 	  newAbstractNode->setColor(color);
 	  newAbstractNode->setAttributes(attributes);
 	  newAbstractNode->setValues(values);
@@ -6184,7 +6198,7 @@ void EventGraphWidget::seePlots()
 	    }
 	}
       query->prepare("SELECT eventid, label, curxpos, curypos, xoffset, yoffset, "
-		     "red, green, blue, alpha, hidden "
+		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_eg_plots_abstract_node_labels "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6201,7 +6215,8 @@ void EventGraphWidget::seePlots()
 	  int green = query->value(7).toInt();
 	  int blue = query->value(8).toInt();
 	  int alpha = query->value(9).toInt();
-	  int hidden = query->value(10).toInt();
+	  int zvalue = query->value(10).toInt();
+	  int hidden = query->value(11).toInt();
 	  QVectorIterator<AbstractNode*> it(_abstractNodeVector);
 	  while (it.hasNext()) 
 	    {
@@ -6214,7 +6229,7 @@ void EventGraphWidget::seePlots()
 		  currentLabel->setPos(QPointF(currentX, currentY));
 		  currentLabel->setOffset(QPointF(xOffset, yOffset));
 		  currentLabel->setDefaultTextColor(QColor(red, green, blue, alpha));
-		  currentLabel->setZValue(4);
+		  currentLabel->setZValue(zvalue);
 		  currentLabel->setFontSize(_labelSize);
 		  currentAbstractNode->setLabel(currentLabel);
 		  _abstractNodeLabelVector.push_back(currentLabel);
@@ -6234,7 +6249,7 @@ void EventGraphWidget::seePlots()
       std::sort(_abstractNodeVector.begin(), _abstractNodeVector.end(), eventLessThan);
       QSet<QString> types;
       query->prepare("SELECT tail, head, tailabstractnode, headabstractnode, "
-		     "linkage, red, green, blue, alpha, hidden, masshidden "
+		     "linkage, red, green, blue, alpha, zvalue, hidden, masshidden "
 		     "FROM saved_eg_plots_edges "
 		     "WHERE plot = :plot ");
       query->bindValue(":plot", plot);
@@ -6250,8 +6265,9 @@ void EventGraphWidget::seePlots()
 	  int green = query->value(6).toInt();
 	  int blue = query->value(7).toInt();
 	  int alpha = query->value(8).toInt();
-	  int hidden = query->value(9).toInt();
-	  int massHidden = query->value(10).toInt();
+	  int zvalue = query->value(9).toInt();
+	  int hidden = query->value(10).toInt();
+	  int massHidden = query->value(11).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  bool tailAbstractNode = false;
 	  bool headAbstractNode = false;
@@ -6398,7 +6414,7 @@ void EventGraphWidget::seePlots()
 	  if (tempSource != NULL && tempTarget != NULL) 
 	    {
 	      Linkage *currentEdge = new Linkage(linkage, _selectedCoder);
-	      currentEdge->setZValue(2);
+	      currentEdge->setZValue(zvalue);
 	      currentEdge->setStartItem(tempSource);
 	      currentEdge->setEndItem(tempTarget);
 	      currentEdge->setToolTip(toolTip);
@@ -7153,6 +7169,7 @@ void EventGraphWidget::removeMode()
 	  current->setColor(Qt::white);
 	  current->getLabel()->setDefaultTextColor(Qt::black);
 	  current->setMode("");
+	  current->setMassHidden(false);
 	}
     }
   QVectorIterator<AbstractNode*> it2 (_abstractNodeVector);
@@ -7164,6 +7181,7 @@ void EventGraphWidget::removeMode()
 	  current->setColor(Qt::white);
 	  current->getLabel()->setDefaultTextColor(Qt::black);
 	  current->setMode("");
+	  current->setMassHidden(false);
 	}
     }
   for (int i = 0; i != eventListWidget->rowCount();) 
@@ -8943,7 +8961,7 @@ void EventGraphWidget::abstractEvents()
 						       abstractionDialog->getConstraint(),
 						       tempIncidents);
 	      current->setPos(originalPos);
-	      current->setZValue(3);
+	      current->setZValue(_incidentNodeVector[0]->zValue());
 	      QVectorIterator<QGraphicsItem*> it3(_currentData);
 	      while (it3.hasNext()) 
 		{
@@ -9045,7 +9063,7 @@ void EventGraphWidget::abstractEvents()
 	      qreal xOffset = (current->getWidth() / 2) - 20;
 	      abstractNodeLabel->setOffset(QPointF(xOffset,0));
 	      abstractNodeLabel->setNewPos(current->scenePos());
-	      abstractNodeLabel->setZValue(4);
+	      abstractNodeLabel->setZValue(_incidentNodeVector[0]->zValue() + 1);
 	      abstractNodeLabel->setDefaultTextColor(Qt::black);
 	      abstractNodeLabel->setFontSize(_labelSize);
 	      _abstractNodeLabelVector.push_back(abstractNodeLabel);
@@ -9179,7 +9197,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
 			  if (!found) 
 			    {
 			      Linkage *newEdge = new Linkage(currentType, _selectedCoder);
-			      newEdge->setZValue(2);
+			      newEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
 			      newEdge->setStartItem(tempSource);
 			      newEdge->setEndItem(tempTarget);
 			      newEdge->setColor(edgeColor);
@@ -9258,7 +9276,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
 			  if (!found) 
 			    {
 			      Linkage *newEdge = new Linkage(currentType, _selectedCoder);
-			      newEdge->setZValue(2);
+			      newEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
 			      newEdge->setStartItem(tempSource);
 			      newEdge->setEndItem(tempTarget);
 			      newEdge->setColor(edgeColor);
@@ -9508,7 +9526,7 @@ void EventGraphWidget::updateAbstractNodeOrder()
       qreal xOffset = (current->getWidth() / 2) - 20;
       newLabel->setOffset(QPointF(xOffset,0));
       newLabel->setNewPos(current->scenePos());
-      newLabel->setZValue(4);
+      newLabel->setZValue(_incidentNodeVector[0]->zValue() + 1);
       newLabel->setDefaultTextColor(labelColor);
       newLabel->setFontSize(_labelSize);
       scene->addItem(newLabel);
@@ -10804,7 +10822,7 @@ void EventGraphWidget::addLinkage()
 		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();      
 		  Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		  newLinkage->setZValue(2);
+		  newLinkage->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		  newLinkage->setStartItem(incidentNodeTwo);
 		  newLinkage->setEndItem(incidentNodeOne);
 		  QString toolTip = "no comment";
@@ -10820,7 +10838,7 @@ void EventGraphWidget::addLinkage()
 		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();      
 		  Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		  newLinkage->setZValue(2);
+		  newLinkage->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		  newLinkage->setStartItem(incidentNodeOne);
 		  newLinkage->setEndItem(incidentNodeTwo);
 		  QString toolTip = "no comment";
@@ -10840,7 +10858,7 @@ void EventGraphWidget::addLinkage()
 		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();      
 		  Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		  newLinkage->setZValue(2);
+		  newLinkage->setZValue(_incidentNodeVector[0]->zValue()-1);
 		  newLinkage->setStartItem(incidentNodeOne);
 		  newLinkage->setEndItem(incidentNodeTwo);
 		  QString toolTip = "no comment";
@@ -10856,7 +10874,7 @@ void EventGraphWidget::addLinkage()
 		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();      
 		  Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		  newLinkage->setZValue(2);
+		  newLinkage->setZValue(_incidentNodeVector[0]->zValue()-1);
 		  newLinkage->setStartItem(incidentNodeTwo);
 		  newLinkage->setEndItem(incidentNodeOne);
 		  QString toolTip = "no comment";
@@ -10958,7 +10976,7 @@ void EventGraphWidget::addLinkageEvidence()
 		      query->bindValue(":coder", _selectedCoder);
 		      query->exec();      
 		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		      newLinkage->setZValue(2);
+		      newLinkage->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		      newLinkage->setStartItem(incidentNodeTwo);
 		      newLinkage->setEndItem(incidentNodeOne);
 		      QString toolTip = "no comment";
@@ -10983,7 +11001,7 @@ void EventGraphWidget::addLinkageEvidence()
 		      query->bindValue(":coder", _selectedCoder);
 		      query->exec();      
 		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		      newLinkage->setZValue(2);
+		      newLinkage->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		      newLinkage->setStartItem(incidentNodeOne);
 		      newLinkage->setEndItem(incidentNodeTwo);
 		      QString toolTip = "no comment";
@@ -11012,7 +11030,7 @@ void EventGraphWidget::addLinkageEvidence()
 		      query->bindValue(":coder", _selectedCoder);
 		      query->exec();      
 		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		      newLinkage->setZValue(2);
+		      newLinkage->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		      newLinkage->setStartItem(incidentNodeOne);
 		      newLinkage->setEndItem(incidentNodeTwo);
 		      QString toolTip = "no comment";
@@ -11037,7 +11055,7 @@ void EventGraphWidget::addLinkageEvidence()
 		      query->bindValue(":coder", _selectedCoder);
 		      query->exec();      
 		      Linkage *newLinkage = new Linkage(type, _selectedCoder);
-		      newLinkage->setZValue(2);
+		      newLinkage->setZValue(_incidentNodeVector[0]->zValue() - 1);
 		      newLinkage->setStartItem(incidentNodeTwo);
 		      newLinkage->setEndItem(incidentNodeOne);
 		      QString toolTip = "no comment";
@@ -11605,7 +11623,7 @@ void EventGraphWidget::addLineObject(const QPointF &start, const QPointF &end)
   newLineObject->setPenWidth(_currentPenWidth);
   newLineObject->setColor(_currentLineColor);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  newLineObject->setZValue(_incidentNodeVector[0]->zValue() + 2);
   newLineObject->setSelected(true);
 }
 
@@ -11618,7 +11636,7 @@ void EventGraphWidget::addSingleArrowObject(const QPointF &start, const QPointF 
   newLineObject->setColor(_currentLineColor);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  newLineObject->setZValue(_incidentNodeVector[0]->zValue() + 2);
   newLineObject->setSelected(true);
 }
 
@@ -11632,7 +11650,7 @@ void EventGraphWidget::addDoubleArrowObject(const QPointF &start, const QPointF 
   newLineObject->setColor(_currentLineColor);
   _lineVector.push_back(newLineObject);
   scene->addItem(newLineObject);
-  newLineObject->setZValue(5);
+  newLineObject->setZValue(_incidentNodeVector[0]->zValue() + 2);
   newLineObject->setSelected(true);
 }
 
@@ -11648,7 +11666,7 @@ void EventGraphWidget::addEllipseObject(const QRectF &area)
   newEllipse->moveCenter(newEllipse->mapToScene(area.center()));
   newEllipse->setBottomRight(newEllipse->mapToScene(area.bottomRight()));
   newEllipse->setTopLeft(newEllipse->mapToScene(area.topLeft()));
-  newEllipse->setZValue(5);
+  newEllipse->setZValue(_incidentNodeVector[0]->zValue() + 2);
   newEllipse->setSelected(true);
 }
 
@@ -11664,7 +11682,7 @@ void EventGraphWidget::addRectObject(const QRectF &area)
   newRect->moveCenter(newRect->mapToScene(area.center()));
   newRect->setBottomRight(newRect->mapToScene(area.bottomRight()));
   newRect->setTopLeft(newRect->mapToScene(area.topLeft()));
-  newRect->setZValue(5);
+  newRect->setZValue(_incidentNodeVector[0]->zValue() + 2);
   newRect->setSelected(true);
 }
 
@@ -11685,7 +11703,7 @@ void EventGraphWidget::addTextObject(const QRectF &area, const qreal &size)
       scene->addItem(newText);
       newText->setPos(newText->mapFromScene(area.topLeft()));
       newText->setDefaultTextColor(_currentLineColor);
-      newText->setZValue(6);
+      newText->setZValue(_incidentNodeVector[0]->zValue() + 3);
       newText->adjustSize();
       newText->setSelected(true);
     }
@@ -11703,7 +11721,7 @@ void EventGraphWidget::addTimeLineObject(const qreal &startX, const qreal &endX,
   newTimeLine->setPenWidth(_currentTimeLineWidth);
   newTimeLine->setColor(_currentTimeLineColor);
   scene->addItem(newTimeLine);
-  newTimeLine->setZValue(5);
+  newTimeLine->setZValue(_incidentNodeVector[0]->zValue() + 2);
   newTimeLine->setSelected(true);
 }
 
@@ -12393,7 +12411,7 @@ void EventGraphWidget::copyDescriptionToText()
 	  QPointF pos = incidentNode->scenePos();
 	  pos.setY(pos.y() - 80);
 	  newText->setPos(pos);
-	  newText->setZValue(6);
+	  newText->setZValue(_incidentNodeVector[0]->zValue() + 3);
 	  newText->adjustSize();
 	  setChangeLabel();
 	}
@@ -12406,7 +12424,7 @@ void EventGraphWidget::copyDescriptionToText()
 	  QPointF pos = abstractNode->scenePos();
 	  pos.setY(pos.y() - 80);
 	  newText->setPos(pos);
-	  newText->setZValue(6);
+	  newText->setZValue(_incidentNodeVector[0]->zValue() + 3);
 	  newText->adjustSize();
 	  setChangeLabel();
 	}
@@ -13034,9 +13052,9 @@ void EventGraphWidget::fixZValues()
 	  maxZ = current->zValue();
 	}
     }
-  if (maxZ > 3)
+  if (maxZ > _incidentNodeVector[0]->zValue())
     {
-      for (int i = 4; i != maxZ; i++) 
+      for (int i = _incidentNodeVector[0]->zValue(); i != maxZ; i++) 
 	{
 	  bool currentZFound = false;
 	  QListIterator<QGraphicsItem*> it2(scene->items());
