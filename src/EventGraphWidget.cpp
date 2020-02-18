@@ -7247,6 +7247,7 @@ void EventGraphWidget::removeMode()
 	}
       delete query;
     }
+  setVisibility();
 }
 
 void EventGraphWidget::setModeButtons(QTableWidgetItem *item) 
@@ -7461,6 +7462,11 @@ void EventGraphWidget::restoreModeColors()
     {
       QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
       QColor color = eventListWidget->item(i, 1)->background().color();
+      bool hidden = false;
+      if (eventListWidget->item(i, 0)->background().color() == Qt::gray)
+	{
+	  hidden = true;
+	}
       QVariant textColorVar = eventListWidget->item(i, 1)->data(Qt::UserRole);
       QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVector<QString> attributeVector;
@@ -7496,6 +7502,14 @@ void EventGraphWidget::restoreModeColors()
 		      currentIncidentNode->setColor(color);
 		      currentIncidentNode->getLabel()->setDefaultTextColor(textColor);
 		      currentIncidentNode->setMode(currentMode);
+		      if (hidden)
+			{
+			  currentIncidentNode->setMassHidden(true);
+			}
+		      else
+			{
+			  currentIncidentNode->setMassHidden(false);
+			}
 		    }
 		}
 	    }
@@ -7509,6 +7523,14 @@ void EventGraphWidget::restoreModeColors()
 		  currentAbstractNode->setColor(color);
 		  currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
 		  currentAbstractNode->setMode(currentMode);
+		  if (hidden)
+		    {
+		      currentAbstractNode->setMassHidden(true);
+		    }
+		  else
+		    {
+		      currentAbstractNode->setMassHidden(false);
+		    }
 		}
 	    }
 	}
@@ -7542,6 +7564,7 @@ void EventGraphWidget::restoreModeColors()
 	}
     }
   setChangeLabel();
+  setVisibility();
 }
 
 void EventGraphWidget::moveModeUp() 

@@ -4006,6 +4006,7 @@ void NetworkGraphWidget::removeMode()
 	{
 	  current->setColor(Qt::black);
 	  current->setMode("");
+	  current->setMassHidden(false);
 	}
     }
   for (int i = 0; i != nodeListWidget->rowCount();) 
@@ -4019,6 +4020,7 @@ void NetworkGraphWidget::removeMode()
 	  i++;
 	}
     }
+  setVisibility();
 }
 
 void NetworkGraphWidget::setModeButtons(QTableWidgetItem *item) 
@@ -4106,6 +4108,11 @@ void NetworkGraphWidget::restoreModeColors()
     {
       QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
       QColor color = nodeListWidget->item(i, 1)->background().color();
+      bool hidden = false;
+      if (nodeListWidget->item(i, 0)->background().color() == Qt::gray)
+	{
+	  hidden = true;
+	}
       QVariant textColorVar = nodeListWidget->item(i, 1)->data(Qt::UserRole);
       QColor textColor = QColor::fromRgb(textColorVar.toUInt());
       QVector<QString> attributeVector;
@@ -4132,6 +4139,14 @@ void NetworkGraphWidget::restoreModeColors()
 		      currentEntity->setColor(color);
 		      currentEntity->getLabel()->setDefaultTextColor(textColor);
 		      currentEntity->setMode(currentMode);
+		      if (hidden)
+			{
+			  currentEntity->setMassHidden(true);
+			}
+		      else
+			{
+			  currentEntity->setMassHidden(false);
+			}
 		    }
 		}
 	    }
@@ -4156,6 +4171,7 @@ void NetworkGraphWidget::restoreModeColors()
 	}
     }
   setChangeLabel();
+  setVisibility();
 }
 
 void NetworkGraphWidget::moveModeUp() 
