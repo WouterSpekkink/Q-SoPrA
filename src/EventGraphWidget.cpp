@@ -5421,9 +5421,9 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_legend (plot, name, tip, "
-		     "red, green, blue, alpha, textred, textgreen, textblue, textalpha) "
+		     "red, green, blue, alpha, textred, textgreen, textblue, textalpha, hidden) "
 		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, "
-		     ":textred, :textgreen, :textblue, :textalpha)");
+		     ":textred, :textgreen, :textblue, :textalpha, :hidden)");
       for (int i = 0; i != eventListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = eventListWidget->item(i, 0);
@@ -5440,6 +5440,11 @@ void EventGraphWidget::saveCurrentPlot()
 	  int textgreen = textColor.green();
 	  int textblue = textColor.blue();
 	  int textalpha = textColor.alpha();
+	  int hidden = 0;
+	  if (eventListWidget->item(i,0)->background() == QColor(Qt::gray))
+	    {
+	      hidden = 1;
+	    }
 	  query->bindValue(":plot", name);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
@@ -5451,6 +5456,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->bindValue(":textgreen", textgreen);
 	  query->bindValue(":textblue", textblue);
 	  query->bindValue(":textalpha", textalpha);
+	  query->bindValue(":hidden", hidden);
 	  query->exec();
 	  counter++;
 	  saveProgress->setProgress(counter);
@@ -6300,6 +6306,11 @@ void EventGraphWidget::seePlots()
 	      linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
 		setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
 			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	      if (massHidden)
+		{
+		  linkageListWidget->item(linkageListWidget->rowCount() - 1, 0)->
+		    setBackground(Qt::gray);
+		}
 	    }      
 	  types.insert(linkage);
 	  QString toolTip = "";
@@ -6434,7 +6445,7 @@ void EventGraphWidget::seePlots()
 	    }
 	}
       query->prepare("SELECT name, tip, red, green, blue, alpha, "
-		     "textred, textgreen, textblue, textalpha "
+		     "textred, textgreen, textblue, textalpha, hidden "
 		     "FROM saved_eg_plots_legend "
 		     "WHERE plot = :plot");
       query->bindValue(":plot", plot);
@@ -6451,6 +6462,7 @@ void EventGraphWidget::seePlots()
 	  int textgreen = query->value(7).toInt();
 	  int textblue = query->value(8).toInt();
 	  int textalpha = query->value(9).toInt();
+	  int hidden = query->value(10).toInt();
 	  QColor color = QColor(red, green, blue, alpha);
 	  QColor textColor = QColor(textred, textgreen, textblue, textalpha);
 	  QTableWidgetItem *item = new QTableWidgetItem(name);
@@ -6467,6 +6479,10 @@ void EventGraphWidget::seePlots()
 	  eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
 	    setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
 		     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+	  if (hidden)
+	    {
+	      eventListWidget->item(eventListWidget->rowCount() - 1, 0)->setBackground(Qt::gray);
+	    }
 	}
       query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha "
@@ -6968,6 +6984,7 @@ void EventGraphWidget::addMode()
 		      currentIncidentNode->setColor(color);
 		      currentIncidentNode->setMode(attribute);
 		      currentIncidentNode->getLabel()->setDefaultTextColor(textColor);
+		      currentIncidentNode->setMassHidden(false);
 		    }
 		}
 	    }
@@ -6981,6 +6998,7 @@ void EventGraphWidget::addMode()
 		  currentAbstractNode->setColor(color);
 		  currentAbstractNode->setMode(attribute);
 		  currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
+		  currentAbstractNode->setMassHidden(false);
 		}
 	    }
 	}
@@ -7021,6 +7039,7 @@ void EventGraphWidget::addMode()
       delete query;
     }
   delete attributeColorDialog;
+  setVisibility();
 }
 
 void EventGraphWidget::addModes() 
@@ -7099,6 +7118,7 @@ void EventGraphWidget::addModes()
 			  currentIncidentNode->setColor(currentColor);
 			  currentIncidentNode->setMode(currentAttribute);
 			  currentIncidentNode->getLabel()->setDefaultTextColor(Qt::black);
+			  currentIncidentNode->setMassHidden(false);
 			}
 		    }
 		}
@@ -7112,6 +7132,7 @@ void EventGraphWidget::addModes()
 		      currentAbstractNode->setColor(currentColor);
 		      currentAbstractNode->setMode(currentAttribute);
 		      currentAbstractNode->getLabel()->setDefaultTextColor(Qt::black);
+		      currentAbstractNode->setMassHidden(false);
 		    }
 		}
 	    }
@@ -7152,6 +7173,7 @@ void EventGraphWidget::addModes()
       delete query3;
     }
   delete attributeDialog;
+  setVisibility();
 }
 
 void EventGraphWidget::removeMode() 
@@ -7198,6 +7220,11 @@ void EventGraphWidget::removeMode()
     {
       QString currentMode = eventListWidget->item(i,0)->data(Qt::DisplayRole).toString();
       QColor color = eventListWidget->item(i, 1)->background().color();
+      bool hidden = false;
+      if (eventListWidget->item(i, 0)->background().color() == Qt::gray)
+	{
+	  hidden = true;
+	}
       QVector<QString> attributeVector;
       attributeVector.push_back(currentMode);
       QSqlQuery *query = new QSqlQuery;
@@ -7230,6 +7257,14 @@ void EventGraphWidget::removeMode()
 		    {
 		      currentIncidentNode->setColor(color);
 		      currentIncidentNode->setMode(currentMode);
+		      if (hidden)
+			{
+			  currentIncidentNode->setMassHidden(true);
+			}
+		      else
+			{
+			  currentIncidentNode->setMassHidden(false);
+			}
 		    }
 		}
 	    }
@@ -7242,6 +7277,14 @@ void EventGraphWidget::removeMode()
 		{
 		  currentAbstractNode->setColor(color);
 		  currentAbstractNode->setMode(currentMode);
+		  if (hidden)
+		    {
+		      currentAbstractNode->setMassHidden(true);
+		    }
+		  else
+		    {
+		      currentAbstractNode->setMassHidden(false);
+		    }
 		}
 	    }
 	}
@@ -7311,11 +7354,13 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item)
   if (hidden)
     {
       hideModeButton->setChecked(true);
+      item->setBackground(Qt::gray);
       showModeButton->setChecked(false);
     }
   else
     {
       hideModeButton->setChecked(false);
+      item->setBackground(Qt::transparent);
       showModeButton->setChecked(true);
     }
 }

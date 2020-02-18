@@ -3368,6 +3368,7 @@ void NetworkGraphWidget::addMode()
 		      currentNode->setColor(color);
 		      currentNode->setMode(attribute);
 		      currentNode->getLabel()->setDefaultTextColor(textColor);
+		      currentNode->setMassHidden(false);
 		    }
 		}
 	    }
@@ -3406,6 +3407,7 @@ void NetworkGraphWidget::addMode()
       delete query2;
     }
   delete attributeColorDialog;
+  setVisibility();
 }
 
 void NetworkGraphWidget::addModes() 
@@ -3471,6 +3473,7 @@ void NetworkGraphWidget::addModes()
 			  currentNode->setColor(currentColor);
 			  currentNode->setMode(attribute);
 			  currentNode->getLabel()->setDefaultTextColor(Qt::black);
+			  currentNode->setMassHidden(false);
 			}
 		    }
 		}
@@ -3511,6 +3514,7 @@ void NetworkGraphWidget::addModes()
       delete query2;
     }
   delete attributeDialog;
+  setVisibility();
 }
 
 void NetworkGraphWidget::findChildren(QString father, QVector<QString> *children) 
@@ -4018,6 +4022,72 @@ void NetworkGraphWidget::removeMode()
       if (i != nodeListWidget->rowCount()) 
 	{
 	  i++;
+	}
+    }
+  for (int i = 0; i != nodeListWidget->rowCount(); i++) 
+    {
+      QString currentMode = nodeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
+      QColor color = nodeListWidget->item(i, 1)->background().color();
+      bool hidden = false;
+      if (nodeListWidget->item(i, 0)->background().color() == Qt::gray)
+	{
+	  hidden = true;
+	}
+      QVariant textColorVar = nodeListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
+      QVector<QString> attributeVector;
+      attributeVector.push_back(currentMode);
+      findChildren(currentMode, &attributeVector);
+      QVectorIterator<QString> it3(attributeVector);
+      while (it3.hasNext()) 
+	{
+	  QString currentAttribute = it3.next();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT entity FROM attributes_to_entities "
+			 "WHERE attribute = :currentAttribute");
+	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->exec();
+	  while (query->next()) 
+	    {
+	      QString entity = query->value(0).toString();
+	      QVectorIterator<NetworkNode*> it4(_networkNodeVector);
+	      while (it4.hasNext()) 
+		{
+		  NetworkNode* currentEntity = it4.next();
+		  if (currentEntity->getName() == entity) 
+		    {
+		      currentEntity->setColor(color);
+		      currentEntity->getLabel()->setDefaultTextColor(textColor);
+		      currentEntity->setMode(currentMode);
+		      if (hidden)
+			{
+			  currentEntity->setMassHidden(true);
+			}
+		      else
+			{
+			  currentEntity->setMassHidden(false);
+			}
+		    }
+		}
+	    }
+	  delete query;
+	}
+    }
+  for (int i = 0; i < nodeListWidget->rowCount(); i++) 
+    {
+      QString mode = nodeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+      QColor color = nodeListWidget->item(i, 1)->background().color();
+      QVariant textColorVar = nodeListWidget->item(i, 1)->data(Qt::UserRole);
+      QColor textColor = QColor::fromRgb(textColorVar.toUInt());
+      QVectorIterator<NetworkNode*> it(_networkNodeVector);
+      while (it.hasNext()) 
+	{
+	  NetworkNode *node = it.next();
+	  if (node->getMode() == mode) 
+	    {
+	      node->setColor(color);
+	      node->getLabel()->setDefaultTextColor(textColor);
+	    }
 	}
     }
   setVisibility();

@@ -338,7 +338,8 @@ void WelcomeDialog::newDatabase()
 		      "textred integer, "
 		      "textgreen integer, "
 		      "textblue integer, "
-		      "textalpha integer)");
+		      "textalpha integer, "
+		      "hidden integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1146,7 +1147,8 @@ void WelcomeDialog::openDatabase()
 		      "textred integer, "
 		      "textgreen integer, "
 		      "textblue integer, "
-		      "textalpha integer)");
+		      "textalpha integer, "
+		      "hidden integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -2816,6 +2818,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_legend "
 			  "ADD COLUMN textalpha integer;");
+	    }
+	  if (!columns.contains("hidden"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_legend "
+			  "ADD COLUMN hidden integer;");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(saved_eg_plots_lines)");
