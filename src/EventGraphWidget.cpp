@@ -3553,9 +3553,6 @@ void EventGraphWidget::dateLayout()
       QMap<IncidentNode*, qint64> days;
       QMap<IncidentNode*, int> precision;
       QMap<IncidentNode*, QDate> dates;
-      int lastPrecision = 0;
-      qreal lastValid = 0.0;
-      QDate lastDate;
       QVectorIterator<IncidentNode*> it4(visible);
       while (it4.hasNext())
 	{
@@ -3627,6 +3624,9 @@ void EventGraphWidget::dateLayout()
 		}
 	    }
 	}
+      qreal lastValid = first->scenePos().x();
+      int lastPrecision = precision.value(first);
+      QDate lastDate = dates.value(first);
       qreal validPerc = (qreal) validTotal / (qreal) total * 100;
       validPerc = std::roundf(validPerc * 100) / 100;
       QApplication::restoreOverrideCursor();
@@ -3646,7 +3646,7 @@ void EventGraphWidget::dateLayout()
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  delete warningBox;
 	  it4.toFront();
-	  it4.next(); // skip the first one.
+	  it4.next(); // skip the first one
 	  while (it4.hasNext())
 	    {
 	      IncidentNode *incident = it4.next();
@@ -3713,7 +3713,6 @@ void EventGraphWidget::dateLayout()
 		      else
 			{
 			  QVectorIterator<IncidentNode*> it5 = it4;
-			  it5.next();
 			  bool resolved = false;
 			  bool foundValid = false;
 			  while (!foundValid)
@@ -3728,7 +3727,6 @@ void EventGraphWidget::dateLayout()
 				      if (xNext >= lastValid)
 					{
 					  qreal tempX = (lastValid + xNext) / 2;
-					    first->scenePos().x();
 					  incident->setPos(tempX, incident->scenePos().y());
 					  incident->getLabel()->setNewPos(incident->scenePos());
 					  foundValid = true;

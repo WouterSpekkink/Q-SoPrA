@@ -2504,7 +2504,7 @@ void OccurrenceGraphWidget::softGrouping()
     }
 }
 
-void OccurrenceGraphWidget::dateLayout()
+void OccurrenceGraphWidget::dateLayout() 
 {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
@@ -2605,9 +2605,6 @@ void OccurrenceGraphWidget::dateLayout()
       QMap<OccurrenceItem*, qint64> days;
       QMap<OccurrenceItem*, int> precision;
       QMap<OccurrenceItem*, QDate> dates;
-      qreal lastValid = 0.0;
-      int lastPrecision = 0;
-      QDate lastDate;
       QVectorIterator<OccurrenceItem*> it4(visible);
       while (it4.hasNext())
 	{
@@ -2679,6 +2676,9 @@ void OccurrenceGraphWidget::dateLayout()
 		}
 	    }
 	}
+      qreal lastValid = first->scenePos().x();
+      int lastPrecision = precision.value(first);
+      QDate lastDate = dates.value(first);
       qreal validPerc = (qreal) validTotal / (qreal) total * 100;
       validPerc = std::roundf(validPerc * 100) / 100;
       QApplication::restoreOverrideCursor();
