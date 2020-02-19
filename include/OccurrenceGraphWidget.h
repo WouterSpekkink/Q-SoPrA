@@ -117,7 +117,7 @@ private slots:
   void reset();
   void makeLayout();
   void matchEventGraph();
-  void dateLayout();
+  void dateLayout(int scale);
   void reduceOverlap();
   void softGrouping();
   void restore();

@@ -169,7 +169,7 @@ private slots:
   void makeLayout();
   void layoutGraph();
   void redoLayout();
-  void dateLayout();
+  void dateLayout(int scale);
   void memorizeLayout();
   void correctLayout();
   void noOverlap();

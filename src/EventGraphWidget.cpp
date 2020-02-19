@@ -146,7 +146,10 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   layoutComboBox = new QComboBox(this);
   layoutComboBox->addItem(REDOLAYOUT);
   layoutComboBox->addItem(MINIMISELAYOUT);
-  layoutComboBox->addItem(DATELAYOUT);
+  layoutComboBox->addItem(DATELAYOUTDAYS);
+  layoutComboBox->addItem(DATELAYOUTMONTHS);
+  layoutComboBox->addItem(DATELAYOUTYEARS);
+  layoutComboBox->addItem(DATELAYOUTDECADES);
   layoutComboBox->addItem(NOOVERLAP);
   
   lowerRangeDial = new QDial(graphicsWidget);
@@ -3287,10 +3290,28 @@ void EventGraphWidget::makeLayout()
     {
       minimiseCurrentGraph();
     }
-  else if (layoutComboBox->currentText() == DATELAYOUT)
+  else if (layoutComboBox->currentText() == DATELAYOUTDAYS)
     {
       memorizeLayout();
-      dateLayout();
+      dateLayout(35);
+      correctLayout();
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUTMONTHS)
+    {
+      memorizeLayout();
+      dateLayout(20);
+      correctLayout();
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUTYEARS)
+    {
+      memorizeLayout();
+      dateLayout(5);
+      correctLayout();
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUTDECADES)
+    {
+      memorizeLayout();
+      dateLayout(1);
       correctLayout();
     }
   else if (layoutComboBox->currentText() == NOOVERLAP)
@@ -3447,7 +3468,7 @@ void EventGraphWidget::redoLayout()
   updateLinkages();
 }
 
-void EventGraphWidget::dateLayout() 
+void EventGraphWidget::dateLayout(int scale) 
 {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
@@ -3653,7 +3674,7 @@ void EventGraphWidget::dateLayout()
 	      if (days.contains(incident))
 		{
 		  qint64 daysTo = days.value(incident);
-		  qreal x = 5 * daysTo + first->scenePos().x();
+		  qreal x = scale * daysTo + first->scenePos().x();
 		  QDate currentDate = dates.value(incident);
 		  bool precisionDifference = false;
 		  if (x >= lastValid)
@@ -3723,7 +3744,7 @@ void EventGraphWidget::dateLayout()
 				  if (days.contains(next))
 				    {
 				      qint64 daysToNext = days.value(next);
-				      qreal xNext = 5 * daysToNext + first->scenePos().x();
+				      qreal xNext = scale * daysToNext + first->scenePos().x();
 				      if (xNext >= lastValid)
 					{
 					  qreal tempX = (lastValid + xNext) / 2;
@@ -3758,7 +3779,7 @@ void EventGraphWidget::dateLayout()
 			  if (days.contains(next))
 			    {
 			      qint64 daysToNext = days.value(next);
-			      qreal xNext = 5 * daysToNext + first->scenePos().x();
+			      qreal xNext = scale * daysToNext + first->scenePos().x();
 			      if (xNext >= lastValid)
 				{
 				  qreal tempX = (lastValid + xNext) / 2;

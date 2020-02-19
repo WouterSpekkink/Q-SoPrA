@@ -288,7 +288,10 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   layoutComboBox = new QComboBox(this);
   layoutComboBox->addItem(REDOLAYOUT);
   layoutComboBox->addItem(MATCHEVENTGRAPH);
-  layoutComboBox->addItem(DATELAYOUT);
+  layoutComboBox->addItem(DATELAYOUTDAYS);
+  layoutComboBox->addItem(DATELAYOUTMONTHS);
+  layoutComboBox->addItem(DATELAYOUTYEARS);
+  layoutComboBox->addItem(DATELAYOUTDECADES);
   layoutComboBox->addItem(REDUCEOVERLAP);
   
   view->viewport()->installEventFilter(this);
@@ -2333,12 +2336,22 @@ void OccurrenceGraphWidget::makeLayout()
       restore();
       matchEventGraph();
     }
-  else if (layoutComboBox->currentText() == DATELAYOUT)
+  else if (layoutComboBox->currentText() == DATELAYOUTDAYS)
     {
-      restore();
-      dateLayout();
+      dateLayout(35);
     }
-  else if (layoutComboBox->currentText() == REDUCEOVERLAP)
+  else if (layoutComboBox->currentText() == DATELAYOUTMONTHS)
+    {
+      dateLayout(20);
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUTYEARS)
+    {
+      dateLayout(5);
+    }
+  else if (layoutComboBox->currentText() == DATELAYOUTDECADES)
+    {
+      dateLayout(1);
+    }  else if (layoutComboBox->currentText() == REDUCEOVERLAP)
     {
       reduceOverlap();
     }
@@ -2570,7 +2583,7 @@ void OccurrenceGraphWidget::softGrouping()
     }
 }
 
-void OccurrenceGraphWidget::dateLayout() 
+void OccurrenceGraphWidget::dateLayout(int scale) 
 {
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
@@ -2771,7 +2784,7 @@ void OccurrenceGraphWidget::dateLayout()
 	      if (days.contains(occurrence))
 		{
 		  qint64 daysTo = days.value(occurrence);
-		  qreal x = 5 * daysTo + first->scenePos().x();
+		  qreal x = scale * daysTo + first->scenePos().x();
 		  QDate currentDate = dates.value(occurrence);
 		  bool precisionDifference = false;
 		  if (x >= lastValid)
@@ -2841,7 +2854,7 @@ void OccurrenceGraphWidget::dateLayout()
 				  if (days.contains(next))
 				    {
 				      qint64 daysToNext = days.value(next);
-				      qreal xNext = 5 * daysToNext + first->scenePos().x();
+				      qreal xNext = scale * daysToNext + first->scenePos().x();
 				      if (xNext >= lastValid)
 					{
 					  qreal tempX = (lastValid + xNext) / 2;
@@ -2876,7 +2889,7 @@ void OccurrenceGraphWidget::dateLayout()
 			  if (days.contains(next))
 			    {
 			      qint64 daysToNext = days.value(next);
-			      qreal xNext = 5 * daysToNext + first->scenePos().x();
+			      qreal xNext = scale * daysToNext + first->scenePos().x();
 			      if (xNext >= lastValid)
 				{
 				  qreal tempX = (lastValid + xNext) / 2;
