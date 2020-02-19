@@ -7375,13 +7375,11 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item)
   if (hidden)
     {
       hideModeButton->setChecked(true);
-      item->setBackground(Qt::gray);
       showModeButton->setChecked(false);
     }
   else
     {
       hideModeButton->setChecked(false);
-      item->setBackground(Qt::transparent);
       showModeButton->setChecked(true);
     }
 }
