@@ -37,6 +37,7 @@ http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 #define LINKAGE_H
 
 #include <QGraphicsLineItem>
+#include <QSqlQuery>
 #include "IncidentNode.h"
 #include "AbstractNode.h"
 #include "OccurrenceItem.h"
@@ -110,6 +111,7 @@ private:
   bool _copy;
   bool _massHidden;
   bool _antialiasing;
+  bool _backward;
   int _penWidth;
   int _penStyle;
   int _height;

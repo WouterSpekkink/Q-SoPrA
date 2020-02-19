@@ -53,6 +53,21 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
   _penStyle = 1;
   _massHidden = false;
   _antialiasing = true;
+  _backward = false;
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT direction FROM linkage_types "
+		 "WHERE name = :type");
+  query->bindValue(":type", type);
+  query->exec();
+  query->first();
+  if (!query->isNull(0))
+    {
+      if (query->value(0).toString() == PAST)
+	{
+	  _backward = true;
+	}
+    }
+  delete query;
 }
 
 QRectF Linkage::boundingRect() const
@@ -139,23 +154,97 @@ void Linkage::calculate() {
       qreal startX = startIncidentNode->pos().x() + (startIncidentNode->getWidth() / 2) - 20;
       // endX is middle of end node
       qreal endX = endIncidentNode->pos().x() + (endIncidentNode->getWidth() / 2) - 20;
-      // endStart is the left-most edge of the end node
-      qreal endStart = endIncidentNode->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endIncidentNode->getWidth())
+      // startLeft is the left-most edge of the start node
+      qreal startLeft = startIncidentNode->pos().x() - 20;
+      // endLeft is the left-most edge of the end node
+      qreal endLeft = endIncidentNode->pos().x() - 20;
+      // startRight is the right-most edge of the start node
+      qreal startRight = startIncidentNode->pos().x() - 20 + startIncidentNode->getWidth();
+      // endRight is the right-most edge of the end node
+      qreal endRight = endIncidentNode->pos().x() - 20 + endIncidentNode->getWidth();
+      if (!_backward)
 	{
-	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
-			   (QPointF(startX, endIncidentNode->pos().y())));
+	  if (startX > endLeft && startX <= endRight - 10)
+	    {
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(startX + 10, endIncidentNode->pos().y())));
+	    }
+	  else if (startX > endRight - 10 && startLeft <= endRight - 20)
+	    {
+	      _newLine = QLineF(QPointF(endRight - 20, startIncidentNode->pos().y()),
+				(QPointF(endRight - 10, endIncidentNode->pos().y())));
+	    }
+	  else if (startLeft >= endLeft)
+	    {
+	      qreal length = startX - endLeft;
+	      if (startX - length > startLeft + 5)
+		{
+		  _newLine = QLineF(QPointF(startX - length, startIncidentNode->pos().y()),
+				    (QPointF(endX + (endIncidentNode->getWidth() / 2)
+					     - 20, endIncidentNode->pos().y())));
+		}
+	      else
+		{
+		  if (startX + 10 <= endRight - 10)
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startIncidentNode->pos().y()),
+					(QPointF(startX + 10, endIncidentNode->pos().y())));
+		    }
+		  else
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startIncidentNode->pos().y()),
+					(QPointF(endX + (endIncidentNode->getWidth() / 2)
+						 - 20, endIncidentNode->pos().y())));
+		    }
+		}
+	    }
+	   else if (startX <= endLeft)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(endX - (endIncidentNode->getWidth() / 2)
+					 + 20, endIncidentNode->pos().y())));
+	    }
 	}
-      else if (startX <= endStart)
+      else
 	{
-	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
-			   (QPointF(endX - (endIncidentNode->getWidth() / 2) + 20, endIncidentNode->pos().y())));
-	}
-      else if (startX >= endStart)
-	{
-	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
-			   (QPointF(endX + (endIncidentNode->getWidth() / 2) - 20,
-				    endIncidentNode->pos().y())));
+	  if (startX < endRight && startX - 20 >= endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(startX - 10, endIncidentNode->pos().y())));
+	    }
+	  else if (startX - 20 < endLeft && startRight - 5 >= endLeft)
+	    {
+	      qreal length = endLeft + 20 - startX;
+	      if (startX + length < startRight - 5)
+		{
+		  _newLine = QLineF(QPointF(startX + length, startIncidentNode->pos().y()),
+				    (QPointF(endLeft + 10, endIncidentNode->pos().y())));
+		}
+	      else
+		{
+		  _newLine = QLineF(QPointF(startRight - 5, startIncidentNode->pos().y()),
+				    (QPointF(endX - (endIncidentNode->getWidth() / 2)
+					     + 20, endIncidentNode->pos().y())));
+		}
+	    }
+	  else if (startRight - 5 < endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startRight - 5, startIncidentNode->pos().y()),
+				(QPointF(endX - (endIncidentNode->getWidth() / 2)
+					 + 20, endIncidentNode->pos().y())));
+	    }
+	  else if (startX >= endRight)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(endX + (endIncidentNode->getWidth() / 2)
+					 - 20, endIncidentNode->pos().y())));
+	    }
+	  else
+	    {
+	      _color = Qt::gray;
+	    }
 	}
     }
   else if (startIncidentNode && endAbstractNode)
@@ -164,48 +253,97 @@ void Linkage::calculate() {
       qreal startX = startIncidentNode->pos().x() + (startIncidentNode->getWidth() / 2) - 20;
       // endX is middle of end node;
       qreal endX = endAbstractNode->pos().x() + (endAbstractNode->getWidth() / 2) - 20;
-      // endStart is the left-most edge of the end node.
-      qreal endStart = endAbstractNode->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endAbstractNode->getWidth())
+      // startLeft is the left-most edge of the start node
+      qreal startLeft = startIncidentNode->pos().x() - 20;
+      // endLeft is the left-most edge of the end node.
+      qreal endLeft = endAbstractNode->pos().x() - 20;
+      // startRight is the right-most edge of the start node
+      qreal startRight = startIncidentNode->pos().x() - 20 + startIncidentNode->getWidth();
+      // endRight is the right-most edge of the end node
+      qreal endRight = endAbstractNode->pos().x() - 20 + endAbstractNode->getWidth();
+      if (!_backward)
 	{
-	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
-			   (QPointF(startX, endAbstractNode->pos().y())));
+	  if (startX > endLeft && startX <= endRight - 10)
+	    {
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(startX + 10, endAbstractNode->pos().y())));
+	    }
+	  else if (startX > endRight - 10 && startLeft <= endRight - 20)
+	    {
+	      _newLine = QLineF(QPointF(endRight - 20, startIncidentNode->pos().y()),
+				(QPointF(endRight - 10, endAbstractNode->pos().y())));
+	    }
+	  else if (startLeft >= endLeft)
+	    {
+	      qreal length = startX - endLeft;
+	      if (startX - length > startLeft + 5)
+		{
+		  _newLine = QLineF(QPointF(startX - length, startIncidentNode->pos().y()),
+				    (QPointF(endX + (endAbstractNode->getWidth() / 2)
+					     - 20, endAbstractNode->pos().y())));
+		}
+	      else
+		{
+		  if (startX + 10 <= endRight - 10)
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startIncidentNode->pos().y()),
+					(QPointF(startX + 10, endAbstractNode->pos().y())));
+		    }
+		  else
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startIncidentNode->pos().y()),
+					(QPointF(endX + (endAbstractNode->getWidth() / 2)
+						 - 20, endAbstractNode->pos().y())));
+		    }
+		}
+	    }
+	   else if (startX <= endLeft)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(endX - (endAbstractNode->getWidth() / 2)
+					 + 20, endAbstractNode->pos().y())));
+	    }
 	}
-      else if (startX <= endStart)
+      else
 	{
-	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
-			   (QPointF(endX - (endAbstractNode->getWidth() / 2) + 20, endAbstractNode->pos().y())));
-	}
-      else if (startX >= endStart)
-	{
-	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
-			   (QPointF(endX + (endAbstractNode->getWidth() / 2) - 20,
-				    endAbstractNode->pos().y())));
-	}
-    }
-  else if (startAbstractNode && endAbstractNode)
-    {
-      // startX is middle of start node
-      qreal startX = startAbstractNode->pos().x() + (startAbstractNode->getWidth() / 2) - 20;
-      // endX is middle of end node;
-      qreal endX = endAbstractNode->pos().x() + (endAbstractNode->getWidth() / 2) - 20;
-      // endStart is the left-most edge of the end node.
-      qreal endStart = endAbstractNode->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endAbstractNode->getWidth())
-	{
-	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
-			   (QPointF(startX, endAbstractNode->pos().y())));
-	}
-      else if (startX <= endStart)
-	{
-	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
-			   (QPointF(endX - (endAbstractNode->getWidth() / 2) + 20, endAbstractNode->pos().y())));
-	}
-      else if (startX >= endStart)
-	{
-	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
-			   (QPointF(endX + (endAbstractNode->getWidth() / 2) - 20,
-				    endAbstractNode->pos().y())));
+	  if (startX < endRight && startX - 20 >= endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(startX - 10, endAbstractNode->pos().y())));
+	    }
+	  else if (startX - 20 < endLeft && startRight - 5 >= endLeft)
+	    {
+	      qreal length = endLeft + 20 - startX;
+	      if (startX + length < startRight - 5)
+		{
+		  _newLine = QLineF(QPointF(startX + length, startIncidentNode->pos().y()),
+				    (QPointF(endLeft + 10, endAbstractNode->pos().y())));
+		}
+	      else
+		{
+		  _newLine = QLineF(QPointF(startRight - 5, startIncidentNode->pos().y()),
+				    (QPointF(endX - (endAbstractNode->getWidth() / 2)
+					     + 20, endAbstractNode->pos().y())));
+		}
+	    }
+	  else if (startRight - 5 < endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startRight - 5, startIncidentNode->pos().y()),
+				(QPointF(endX - (endAbstractNode->getWidth() / 2)
+					 + 20, endAbstractNode->pos().y())));
+	    }
+	  else if (startX >= endRight)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+				(QPointF(endX + (endAbstractNode->getWidth() / 2)
+					 - 20, endAbstractNode->pos().y())));
+	    }
+	  else
+	    {
+	      _color = Qt::gray;
+	    }
 	}
     }
   else if (startAbstractNode && endIncidentNode)
@@ -214,23 +352,196 @@ void Linkage::calculate() {
       qreal startX = startAbstractNode->pos().x() + (startAbstractNode->getWidth() / 2) - 20;
       // endX is middle of end node;
       qreal endX = endIncidentNode->pos().x() + (endIncidentNode->getWidth() / 2) - 20;
-      // endStart is the left-most edge of the end node.
-      qreal endStart = endIncidentNode->pos().x() - 20;
-      if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + endIncidentNode->getWidth())
+      // startLeft is the left-most edge of the start node
+      qreal startLeft = startAbstractNode->pos().x() - 20;
+      // endLeft is the left-most edge of the end node.
+      qreal endLeft = endIncidentNode->pos().x() - 20;
+      // startRight is the right-most edge of the start node
+      qreal startRight = startAbstractNode->pos().x() - 20 + startAbstractNode->getWidth();
+      // endRight is the right-most edge of the end node
+      qreal endRight = endIncidentNode->pos().x() - 20 + endIncidentNode->getWidth();
+      if (!_backward)
 	{
-	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
-			   (QPointF(startX, endIncidentNode->pos().y())));
+	  if (startX > endLeft && startX <= endRight - 10)
+	    {
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(startX + 10, endIncidentNode->pos().y())));
+	    }
+	  else if (startX > endRight - 10 && startLeft <= endRight - 20)
+	    {
+	      _newLine = QLineF(QPointF(endRight - 20, startAbstractNode->pos().y()),
+				(QPointF(endRight - 10, endIncidentNode->pos().y())));
+	    }
+	  else if (startLeft >= endLeft)
+	    {
+	      qreal length = startX - endLeft;
+	      if (startX - length > startLeft + 5)
+		{
+		  _newLine = QLineF(QPointF(startX - length, startAbstractNode->pos().y()),
+				    (QPointF(endX + (endIncidentNode->getWidth() / 2)
+					     - 20, endIncidentNode->pos().y())));
+		}
+	      else
+		{
+		  if (startX + 10 <= endRight - 10)
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startAbstractNode->pos().y()),
+					(QPointF(startX + 10, endIncidentNode->pos().y())));
+		    }
+		  else
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startAbstractNode->pos().y()),
+					(QPointF(endX + (endIncidentNode->getWidth() / 2)
+						 - 20, endIncidentNode->pos().y())));
+		    }
+		}
+	    }
+	   else if (startX <= endLeft)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(endX - (endIncidentNode->getWidth() / 2)
+					 + 20, endIncidentNode->pos().y())));
+	    }
 	}
-      else if (startX <= endStart)
+      else
 	{
-	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
-			   (QPointF(endX - (endIncidentNode->getWidth() / 2) + 20, endIncidentNode->pos().y())));
+	  if (startX < endRight && startX - 20 >= endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(startX - 10, endIncidentNode->pos().y())));
+	    }
+	  else if (startX - 20 < endLeft && startRight - 5 >= endLeft)
+	    {
+	      qreal length = endLeft + 20 - startX;
+	      if (startX + length < startRight - 5)
+		{
+		  _newLine = QLineF(QPointF(startX + length, startAbstractNode->pos().y()),
+				    (QPointF(endLeft + 10, endIncidentNode->pos().y())));
+		}
+	      else
+		{
+		  _newLine = QLineF(QPointF(startRight - 5, startAbstractNode->pos().y()),
+				    (QPointF(endX - (endIncidentNode->getWidth() / 2)
+					     + 20, endIncidentNode->pos().y())));
+		}
+	    }
+	  else if (startRight - 5 < endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startRight - 5, startAbstractNode->pos().y()),
+				(QPointF(endX - (endIncidentNode->getWidth() / 2)
+					 + 20, endIncidentNode->pos().y())));
+	    }
+	  else if (startX >= endRight)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(endX + (endIncidentNode->getWidth() / 2)
+					 - 20, endIncidentNode->pos().y())));
+	    }
+	  else
+	    {
+	      _color = Qt::gray;
+	    }
 	}
-      else if (startX >= endStart)
+    }
+  else if (startAbstractNode && endAbstractNode)
+    {
+     // startX is middle of start node
+      qreal startX = startAbstractNode->pos().x() + (startAbstractNode->getWidth() / 2) - 20;
+      // endX is middle of end node;
+      qreal endX = endAbstractNode->pos().x() + (endAbstractNode->getWidth() / 2) - 20;
+      // startLeft is the left-most edge of the start node
+      qreal startLeft = startAbstractNode->pos().x() - 20;
+      // endLeft is the left-most edge of the end node.
+      qreal endLeft = endAbstractNode->pos().x() - 20;
+      // startRight is the right-most edge of the start node
+      qreal startRight = startAbstractNode->pos().x() - 20 + startAbstractNode->getWidth();
+      // endRight is the right-most edge of the end node
+      qreal endRight = endAbstractNode->pos().x() - 20 + endAbstractNode->getWidth();
+      if (!_backward)
 	{
-	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
-			   (QPointF(endX + (endIncidentNode->getWidth() / 2) - 20,
-				    endIncidentNode->pos().y())));
+	  if (startX > endLeft && startX <= endRight - 10)
+	    {
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(startX + 10, endAbstractNode->pos().y())));
+	    }
+	  else if (startX > endRight - 10 && startLeft <= endRight - 20)
+	    {
+	      _newLine = QLineF(QPointF(endRight - 20, startAbstractNode->pos().y()),
+				(QPointF(endRight - 10, endAbstractNode->pos().y())));
+	    }
+	  else if (startLeft >= endLeft)
+	    {
+	      qreal length = startX - endLeft;
+	      if (startX - length > startLeft + 5)
+		{
+		  _newLine = QLineF(QPointF(startX - length, startAbstractNode->pos().y()),
+				    (QPointF(endX + (endAbstractNode->getWidth() / 2)
+					     - 20, endAbstractNode->pos().y())));
+		}
+	      else
+		{
+		  if (startX + 10 <= endRight - 10)
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startAbstractNode->pos().y()),
+					(QPointF(startX + 10, endAbstractNode->pos().y())));
+		    }
+		  else
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startAbstractNode->pos().y()),
+					(QPointF(endX + (endAbstractNode->getWidth() / 2)
+						 - 20, endAbstractNode->pos().y())));
+		    }
+		}
+	    }
+	   else if (startX <= endLeft)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(endX - (endAbstractNode->getWidth() / 2)
+					 + 20, endAbstractNode->pos().y())));
+	    }
+	}
+      else
+	{
+	  if (startX < endRight && startX - 20 >= endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(startX - 10, endAbstractNode->pos().y())));
+	    }
+	  else if (startX - 20 < endLeft && startRight - 5 >= endLeft)
+	    {
+	      qreal length = endLeft + 20 - startX;
+	      if (startX + length < startRight - 5)
+		{
+		  _newLine = QLineF(QPointF(startX + length, startAbstractNode->pos().y()),
+				    (QPointF(endLeft + 10, endAbstractNode->pos().y())));
+		}
+	      else
+		{
+		  _newLine = QLineF(QPointF(startRight - 5, startAbstractNode->pos().y()),
+				    (QPointF(endX - (endAbstractNode->getWidth() / 2)
+					     + 20, endAbstractNode->pos().y())));
+		}
+	    }
+	  else if (startRight - 5 < endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startRight - 5, startAbstractNode->pos().y()),
+				(QPointF(endX - (endAbstractNode->getWidth() / 2)
+					 + 20, endAbstractNode->pos().y())));
+	    }
+	  else if (startX >= endRight)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+				(QPointF(endX + (endAbstractNode->getWidth() / 2)
+					 - 20, endAbstractNode->pos().y())));
+	    }
+	  else
+	    {
+	      _color = Qt::gray;
+	    }
 	}
     }
   else if (occurrenceStart && occurrenceEnd)
@@ -239,20 +550,20 @@ void Linkage::calculate() {
       qreal startX = occurrenceStart->pos().x() + (occurrenceStart->getWidth() / 2) - 20;
       // endX is middle of end node
       qreal endX = occurrenceEnd->pos().x() + (occurrenceEnd->getWidth() / 2) - 20;
-      // endStart is the left-most edge of the end node
-      qreal endStart = occurrenceEnd->pos().x() - 20;
+      // endLeft is the left-most edge of the end node
+      qreal endLeft = occurrenceEnd->pos().x() - 20;
       if (startX >= _end->pos().x() - 20 && startX <= _end->pos().x() - 20 + occurrenceEnd->getWidth())
 	{
 	  _newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
 			   (QPointF(startX, occurrenceEnd->pos().y())));
 	}
-      else if (startX <= endStart)
+      else if (startX <= endLeft)
 	{
 	  _newLine = QLineF(QPointF(startX, occurrenceStart->pos().y()),
 			   (QPointF(endX - (occurrenceEnd->getWidth() / 2) + 20,
 				    occurrenceEnd->pos().y())));
 	}
-      else if (startX >= endStart)
+      else if (startX >= endLeft)
 	{
 	  _newLine = QLineF(QPointF(startX, occurrenceStart->pos().y() - 20),
 			   (QPointF(endX + (occurrenceEnd->getWidth() / 2) - 20,
