@@ -36,6 +36,7 @@ QString DIRECTEDTAIL = "--";
 QString DIRECTEDHEAD = "->";
 QString PAST = "Present to past";
 QString FUTURE = "Past to present";
+QString NODIRECTION = "No direction";
 QString MANUAL = "Manual coding";
 QString ASSISTED = "Assisted coding";
 QString ABSTRACTACTION = "Create abstract event";

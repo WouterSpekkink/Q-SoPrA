@@ -103,6 +103,7 @@ private:
   QPainterPath _strokePath;
   QString _typeInd;
   QString _coder;
+  QString _direction;
   QLineF _newLine;
   QLineF _ghostLine;
   QPointF _arrowP1;
@@ -111,7 +112,6 @@ private:
   bool _copy;
   bool _massHidden;
   bool _antialiasing;
-  bool _backward;
   int _penWidth;
   int _penStyle;
   int _height;

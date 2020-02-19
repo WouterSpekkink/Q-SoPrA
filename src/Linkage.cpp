@@ -53,7 +53,7 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
   _penStyle = 1;
   _massHidden = false;
   _antialiasing = true;
-  _backward = false;
+  _direction = NODIRECTION;
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT direction FROM linkage_types "
 		 "WHERE name = :type");
@@ -62,10 +62,7 @@ Linkage::Linkage(QString type, QString coder, QGraphicsItem *parent) : QGraphics
   query->first();
   if (!query->isNull(0))
     {
-      if (query->value(0).toString() == PAST)
-	{
-	  _backward = true;
-	}
+      _direction = query->value(0).toString();
     }
   delete query;
 }
@@ -162,7 +159,7 @@ void Linkage::calculate() {
       qreal startRight = startIncidentNode->pos().x() - 20 + startIncidentNode->getWidth();
       // endRight is the right-most edge of the end node
       qreal endRight = endIncidentNode->pos().x() - 20 + endIncidentNode->getWidth();
-      if (!_backward)
+      if (_direction == FUTURE)
 	{
 	  if (startX > endLeft && startX <= endRight - 10)
 	    {
@@ -206,7 +203,7 @@ void Linkage::calculate() {
 					 + 20, endIncidentNode->pos().y())));
 	    }
 	}
-      else
+      else if (_direction == PAST)
 	{
 	  if (startX < endRight && startX - 20 >= endLeft)
 	    {
@@ -241,10 +238,12 @@ void Linkage::calculate() {
 				(QPointF(endX + (endIncidentNode->getWidth() / 2)
 					 - 20, endIncidentNode->pos().y())));
 	    }
-	  else
-	    {
-	      _color = Qt::gray;
-	    }
+	}
+      else
+	{
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			    (QPointF(endX + (endIncidentNode->getWidth() / 2)
+				     - 20, endIncidentNode->pos().y())));
 	}
     }
   else if (startIncidentNode && endAbstractNode)
@@ -261,7 +260,7 @@ void Linkage::calculate() {
       qreal startRight = startIncidentNode->pos().x() - 20 + startIncidentNode->getWidth();
       // endRight is the right-most edge of the end node
       qreal endRight = endAbstractNode->pos().x() - 20 + endAbstractNode->getWidth();
-      if (!_backward)
+      if (_direction == FUTURE)
 	{
 	  if (startX > endLeft && startX <= endRight - 10)
 	    {
@@ -305,7 +304,7 @@ void Linkage::calculate() {
 					 + 20, endAbstractNode->pos().y())));
 	    }
 	}
-      else
+      else if (_direction == PAST)
 	{
 	  if (startX < endRight && startX - 20 >= endLeft)
 	    {
@@ -340,10 +339,12 @@ void Linkage::calculate() {
 				(QPointF(endX + (endAbstractNode->getWidth() / 2)
 					 - 20, endAbstractNode->pos().y())));
 	    }
-	  else
-	    {
-	      _color = Qt::gray;
-	    }
+	}
+      else
+	{
+	  _newLine = QLineF(QPointF(startX, startIncidentNode->pos().y()),
+			    (QPointF(endX + (endAbstractNode->getWidth() / 2)
+				     - 20, endAbstractNode->pos().y())));
 	}
     }
   else if (startAbstractNode && endIncidentNode)
@@ -360,7 +361,7 @@ void Linkage::calculate() {
       qreal startRight = startAbstractNode->pos().x() - 20 + startAbstractNode->getWidth();
       // endRight is the right-most edge of the end node
       qreal endRight = endIncidentNode->pos().x() - 20 + endIncidentNode->getWidth();
-      if (!_backward)
+      if (_direction == FUTURE)
 	{
 	  if (startX > endLeft && startX <= endRight - 10)
 	    {
@@ -404,7 +405,7 @@ void Linkage::calculate() {
 					 + 20, endIncidentNode->pos().y())));
 	    }
 	}
-      else
+      else if (_direction == PAST)
 	{
 	  if (startX < endRight && startX - 20 >= endLeft)
 	    {
@@ -439,10 +440,12 @@ void Linkage::calculate() {
 				(QPointF(endX + (endIncidentNode->getWidth() / 2)
 					 - 20, endIncidentNode->pos().y())));
 	    }
-	  else
-	    {
-	      _color = Qt::gray;
-	    }
+	}
+      else
+	{
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			    (QPointF(endX + (endIncidentNode->getWidth() / 2)
+				     - 20, endIncidentNode->pos().y())));
 	}
     }
   else if (startAbstractNode && endAbstractNode)
@@ -459,7 +462,7 @@ void Linkage::calculate() {
       qreal startRight = startAbstractNode->pos().x() - 20 + startAbstractNode->getWidth();
       // endRight is the right-most edge of the end node
       qreal endRight = endAbstractNode->pos().x() - 20 + endAbstractNode->getWidth();
-      if (!_backward)
+      if (_direction == FUTURE)
 	{
 	  if (startX > endLeft && startX <= endRight - 10)
 	    {
@@ -503,7 +506,7 @@ void Linkage::calculate() {
 					 + 20, endAbstractNode->pos().y())));
 	    }
 	}
-      else
+      else if (_direction == PAST)
 	{
 	  if (startX < endRight && startX - 20 >= endLeft)
 	    {
@@ -538,10 +541,13 @@ void Linkage::calculate() {
 				(QPointF(endX + (endAbstractNode->getWidth() / 2)
 					 - 20, endAbstractNode->pos().y())));
 	    }
-	  else
-	    {
-	      _color = Qt::gray;
-	    }
+	}
+      else
+	{
+	  // The default situation
+	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
+			    (QPointF(endX + (endAbstractNode->getWidth() / 2)
+				     - 20, endAbstractNode->pos().y())));
 	}
     }
   else if (occurrenceStart && occurrenceEnd)

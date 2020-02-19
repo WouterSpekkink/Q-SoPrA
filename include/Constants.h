@@ -37,6 +37,7 @@ extern QString DIRECTEDHEAD;
 extern QString DIRECTED;
 extern QString PAST;
 extern QString FUTURE;
+extern QString NODIRECTION;
 extern QString MANUAL;
 extern QString ASSISTED;
 extern QString ABSTRACTACTION;
