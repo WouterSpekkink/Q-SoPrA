@@ -45,7 +45,7 @@ public:
   int getFontSize();
   
   // Type checking
-  enum {Type = UserType + 3};
+  enum {Type = UserType + 17};
   int type() const {return Type;}
   
 private:
