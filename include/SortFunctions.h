@@ -27,7 +27,9 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "OccurrenceItem.h"
 #include "AbstractNode.h"
 #include "NetworkNode.h"
+#include "LinkageNode.h"
 
+bool linkageNodeSort(const LinkageNode *nodeOne, const LinkageNode *nodeTwo);
 bool componentsSort(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo);
 bool eventLessThan(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo);
 bool eventLessThanWidth(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo);

@@ -35,6 +35,8 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/NetworkNodeLabel.h"
 #include "../include/IncidentNodeLabel.h"
 #include "../include/OccurrenceItem.h"
+#include "../include/LinkageNode.h"
+#include "../include/LinkageNodeLabel.h"
 #include "../include/LineObject.h"
 #include "../include/TextObject.h"
 #include "../include/EllipseObject.h"
@@ -74,6 +76,7 @@ signals:
   void relevantChange();
   void resetItemSelection();
   void IncidentNodeContextMenuAction(const QString&);
+  void LinkageNodeContextMenuAction(LinkageNode *node, const QString&);
   void LinkageContextMenuAction(const QString&);
   void NetworkNodeContextMenuAction(const QString&);
   void OccurrenceItemContextMenuAction(QGraphicsItem*, const QString&);
@@ -92,7 +95,7 @@ signals:
   void sendTextArea(const QRectF&, const qreal&);
   void sendHorizontalGuideLinePos(const QPointF&);
   void sendVerticalGuideLinePos(const QPointF&);
-						
+					       
 private slots:
   // Private member functions
   void modEventWidth(QGraphicsItem* item);

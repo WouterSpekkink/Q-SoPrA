@@ -3177,14 +3177,10 @@ void EventGraphWidget::plotIncidents()
 void EventGraphWidget::getEdges(QString coder, QString type, QColor color) 
 {
   QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
   query->prepare("SELECT tail, head FROM linkages "
 		 "WHERE coder = :coder AND type = :type");
-  QSqlQuery *query2 =  new QSqlQuery;
-  query2->prepare("SELECT ch_order from incidents WHERE id = :id");
-  QSqlQuery *query3 =  new QSqlQuery;
-  query3->prepare("SELECT ch_order from incidents WHERE id = :id");
-  QSqlQuery *query4 =  new QSqlQuery;
-  query4->prepare("SELECT comment, coder FROM linkage_comments "
+  query2->prepare("SELECT comment, coder FROM linkage_comments "
 		  "WHERE tail = :tail AND head = :head AND type = :type");
   query->bindValue(":coder", coder);
   query->bindValue(":type", type);
@@ -3193,26 +3189,18 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
     {
       int tail = query->value(0).toInt();
       int head = query->value(1).toInt();
-      query2->bindValue(":id", tail);
+      query2->bindValue(":tail", tail);
+      query2->bindValue(":head", head);
+      query2->bindValue(":type", type);
       query2->exec();
       query2->first();
-      int tailOrder = query2->value(0).toInt();
-      query3->bindValue(":id", head);
-      query3->exec();
-      query3->first();
-      int headOrder = query3->value(0).toInt();
-      query4->bindValue(":tail", tailOrder);
-      query4->bindValue(":head", headOrder);
-      query4->bindValue(":type", type);
-      query4->exec();
-      query4->first();
       QString comment = "";
       QString commentCoder = "";
       QString toolTip = "";
-      if (!(query4->isNull(0))) 
+      if (!(query2->isNull(0))) 
 	{
-	  comment = query4->value(0).toString();
-	  commentCoder = query4->value(1).toString();
+	  comment = query2->value(0).toString();
+	  commentCoder = query2->value(1).toString();
 	  toolTip = breakString(commentCoder + " - " + comment);
 	}
       else 
@@ -3262,8 +3250,6 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
     }
   delete query;
   delete query2;
-  delete query3;
-  delete query4;
 }
 
 void EventGraphWidget::plotEdges(QString type) 

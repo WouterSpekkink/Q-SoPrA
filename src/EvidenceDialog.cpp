@@ -109,23 +109,6 @@ void EvidenceDialog::getData()
   query->bindValue(":tail", _tail);
   query->exec();
   query->first();
-  int tailOrder = -1;
-  if (!query->isNull(0))
-    {
-      tailTextField->setPlainText(query->value(0).toString());
-      tailOrder = query->value(1).toInt();
-    }
-  query->prepare("SELECT raw, ch_order FROM incidents "
-		 "WHERE id = :head");
-  query->bindValue(":head", _head);
-  query->exec();
-  query->first();
-  int headOrder = -1;
-  if (!query->isNull(0))
-    {
-      headTextField->setPlainText(query->value(0).toString());
-      headOrder = query->value(1).toInt();
-    }
   query->prepare("SELECT istail, source_text FROM linkages_sources "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", _tail);
@@ -185,8 +168,8 @@ void EvidenceDialog::getData()
   currentHeadPos.movePosition(QTextCursor::Start);
   query->prepare("SELECT comment FROM linkage_comments "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
-  query->bindValue(":tail", tailOrder);
-  query->bindValue(":head", headOrder);
+  query->bindValue(":tail", _tail);
+  query->bindValue(":head", _head);
   query->bindValue(":type", _type);
   query->bindValue(":coder", _coder);
   query->exec();
@@ -206,23 +189,11 @@ void EvidenceDialog::saveAndClose()
   if (currentComment != "")
     {
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE id = :tail");
-      query->bindValue(":tail", _tail);
-      query->exec();
-      query->first();
-      int tailOrder = query->value(0).toInt();
-      query->prepare("SELECT ch_order FROM incidents "
-		     "WHERE id = :head");
-      query->bindValue(":head", _head);
-      query->exec();
-      query->first();
-      int headOrder = query->value(0).toInt();
       query->prepare("SELECT comment FROM linkage_comments "
 		     "WHERE type = :type AND tail = :tail AND head = :head");
       query->bindValue(":type", _type);
-      query->bindValue(":tail", tailOrder);
-      query->bindValue(":head", headOrder);
+      query->bindValue(":tail", _tail);
+      query->bindValue(":head", _head);
       query->exec();
       query->first();
       if (!query->isNull(0)) 
@@ -239,8 +210,8 @@ void EvidenceDialog::saveAndClose()
       query->bindValue(":comment", currentComment);
       query->bindValue(":coder", _coder);
       query->bindValue(":type", _type);
-      query->bindValue(":tail", tailOrder);
-      query->bindValue(":head", headOrder);
+      query->bindValue(":tail", _tail);
+      query->bindValue(":head", _head);
       query->exec();      
       delete query;
       _comment = _coder + " - " + currentComment;

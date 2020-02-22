@@ -12,9 +12,9 @@ MAKEFILE      = Makefile
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_DEPRECATED_WARNINGS -DQT_NO_DEBUG -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
-CFLAGS        = -pipe -O2 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
-CXXFLAGS      = -pipe -O2 -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
+DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_DEPRECATED_WARNINGS -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
+CFLAGS        = -pipe -g -Wall -W -D_REENTRANT -fPIC $(DEFINES)
+CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -W -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I. -isystem /usr/include/x86_64-linux-gnu/qt5 -isystem /usr/include/x86_64-linux-gnu/qt5/QtSvg -isystem /usr/include/x86_64-linux-gnu/qt5/QtOpenGL -isystem /usr/include/x86_64-linux-gnu/qt5/QtWidgets -isystem /usr/include/x86_64-linux-gnu/qt5/QtGui -isystem /usr/include/x86_64-linux-gnu/qt5/QtSql -isystem /usr/include/x86_64-linux-gnu/qt5/QtCore -I. -isystem /usr/include/libdrm -I/usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++
 QMAKE         = /usr/lib/qt5/bin/qmake
 DEL_FILE      = rm -f
@@ -37,7 +37,7 @@ COMPRESS      = gzip -9f
 DISTNAME      = Q-SoPrA0.9.0
 DISTDIR = /home/wouter/Programming/WorkRelated/Q-SoPrA/.tmp/Q-SoPrA0.9.0
 LINK          = g++
-LFLAGS        = -Wl,-O1
+LFLAGS        = 
 LIBS          = $(SUBLIBS) -lQt5Svg -lQt5OpenGL -lQt5Widgets -lQt5Gui -lQt5Sql -lQt5Core -lGL -lpthread 
 AR            = ar cqs
 RANLIB        = 
@@ -103,6 +103,8 @@ SOURCES       = main.cpp \
 		src/LineObject.cpp \
 		src/Linkage.cpp \
 		src/LinkagesIndexDialog.cpp \
+		src/LinkageNode.cpp \
+		src/LinkageNodeLabel.cpp \
 		src/LinkagesWidget.cpp \
 		src/LinkageTypeDialog.cpp \
 		src/MainWindow.cpp \
@@ -280,6 +282,8 @@ OBJECTS       = main.o \
 		LineObject.o \
 		Linkage.o \
 		LinkagesIndexDialog.o \
+		LinkageNode.o \
+		LinkageNodeLabel.o \
 		LinkagesWidget.o \
 		LinkageTypeDialog.o \
 		MainWindow.o \
@@ -536,6 +540,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		include/LineObject.h \
 		include/Linkage.h \
 		include/LinkagesIndexDialog.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/MainWindow.h \
@@ -634,6 +640,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		src/LineObject.cpp \
 		src/Linkage.cpp \
 		src/LinkagesIndexDialog.cpp \
+		src/LinkageNode.cpp \
+		src/LinkageNodeLabel.cpp \
 		src/LinkagesWidget.cpp \
 		src/LinkageTypeDialog.cpp \
 		src/MainWindow.cpp \
@@ -880,8 +888,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/AbstractionDialog.h include/AbstractNode.h include/AbstractNodeLabel.h include/AddEvidenceDialog.h include/AttributeCheckBoxDialog.h include/AttributeColorDialog.h include/AttributeCoverageTable.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/ConcordanceDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventTextDialog.h include/EvidenceDialog.h include/ExportTransitionMatrixDialog.h include/GuideLine.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentNode.h include/IncidentNodeLabel.h include/IncidentsAttributesTable.h include/InheritanceDialog.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/Linkage.h include/LinkagesIndexDialog.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/ModeColorDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RawLinkagesTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipCheckBoxDialog.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipCoverageTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextEdit.h include/TextObject.h include/TimeLineObject.h include/TimeRangeDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/AbstractionDialog.cpp src/AbstractNode.cpp src/AbstractNodeLabel.cpp src/AddEvidenceDialog.cpp src/AttributeCheckBoxDialog.cpp src/AttributeColorDialog.cpp src/AttributeCoverageTable.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/ConcordanceDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventTextDialog.cpp src/EvidenceDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GuideLine.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentNode.cpp src/IncidentNodeLabel.cpp src/IncidentsAttributesTable.cpp src/InheritanceDialog.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/Linkage.cpp src/LinkagesIndexDialog.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/ModeColorDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RawLinkagesTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipCheckBoxDialog.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipCoverageTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextEdit.cpp src/TextObject.cpp src/TimeLineObject.cpp src/TimeRangeDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/AbstractionDialog.h include/AbstractNode.h include/AbstractNodeLabel.h include/AddEvidenceDialog.h include/AttributeCheckBoxDialog.h include/AttributeColorDialog.h include/AttributeCoverageTable.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/ConcordanceDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventTextDialog.h include/EvidenceDialog.h include/ExportTransitionMatrixDialog.h include/GuideLine.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentNode.h include/IncidentNodeLabel.h include/IncidentsAttributesTable.h include/InheritanceDialog.h include/JournalTableModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/Linkage.h include/LinkagesIndexDialog.h include/LinkageNode.h include/LinkageNodeLabel.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/ModeColorDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RawLinkagesTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipCheckBoxDialog.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipCoverageTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextEdit.h include/TextObject.h include/TimeLineObject.h include/TimeRangeDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/AbstractionDialog.cpp src/AbstractNode.cpp src/AbstractNodeLabel.cpp src/AddEvidenceDialog.cpp src/AttributeCheckBoxDialog.cpp src/AttributeColorDialog.cpp src/AttributeCoverageTable.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/ConcordanceDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventTextDialog.cpp src/EvidenceDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GuideLine.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentNode.cpp src/IncidentNodeLabel.cpp src/IncidentsAttributesTable.cpp src/InheritanceDialog.cpp src/JournalTableModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/Linkage.cpp src/LinkagesIndexDialog.cpp src/LinkageNode.cpp src/LinkageNodeLabel.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/ModeColorDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RawLinkagesTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipCheckBoxDialog.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipCoverageTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextEdit.cpp src/TextObject.cpp src/TimeLineObject.cpp src/TimeRangeDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -956,7 +964,7 @@ compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
 	-$(DEL_FILE) moc_predefs.h
 moc_predefs.h: /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
-	g++ -pipe -O2 -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
+	g++ -pipe -g -std=gnu++11 -Wall -W -dM -E -o moc_predefs.h /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/data/dummy.cpp
 
 compiler_moc_header_make_all: moc_AbstractionDialog.cpp moc_AddEvidenceDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_ConcordanceDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalTableModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_TimeRangeDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
@@ -976,6 +984,8 @@ moc_AbstractionDialog.cpp: include/SortFunctions.h \
 		include/Scene.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1031,10 +1041,10 @@ moc_AbstractionDialog.cpp: include/SortFunctions.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1103,6 +1113,8 @@ moc_AttributeCoverageTable.cpp: include/QueryModel.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1153,6 +1165,8 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1205,10 +1219,10 @@ moc_AttributesWidget.cpp: include/AttributeDialog.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1274,6 +1288,8 @@ moc_CasingWidget.cpp: include/Constants.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1326,10 +1342,10 @@ moc_CasingWidget.cpp: include/Constants.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1381,6 +1397,8 @@ moc_ConcordanceDialog.cpp: include/GraphicsView.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1412,6 +1430,8 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1463,10 +1483,10 @@ moc_DataWidget.cpp: include/EventSequenceDatabase.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1540,6 +1560,8 @@ moc_EditEntityDialog.cpp: include/EntitiesFilter.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1579,10 +1601,10 @@ moc_EditEntityDialog.cpp: include/EntitiesFilter.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1658,6 +1680,8 @@ moc_EntitiesFilter.cpp: include/RelationshipsDialog.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1697,10 +1721,10 @@ moc_EntitiesFilter.cpp: include/RelationshipsDialog.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1758,6 +1782,8 @@ moc_EntityDialog.cpp: include/DeselectableTreeViewEntities.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -1792,6 +1818,7 @@ moc_EntityDialog.cpp: include/DeselectableTreeViewEntities.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/NetworkGraphWidget.h \
@@ -1803,7 +1830,6 @@ moc_EntityDialog.cpp: include/DeselectableTreeViewEntities.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -1852,6 +1878,8 @@ moc_EventGraphWidget.cpp: include/IncidentNodeLabel.h \
 		include/NetworkNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2015,6 +2043,8 @@ moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
 		include/NetworkNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2071,10 +2101,10 @@ moc_HierarchyGraphWidget.cpp: include/EventGraphWidget.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -2171,6 +2201,8 @@ moc_LinkagesWidget.cpp: include/Constants.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2225,10 +2257,10 @@ moc_LinkagesWidget.cpp: include/Constants.h \
 		include/ComboBoxDialog.h \
 		include/EditEntityDialog.h \
 		include/LinkagesWidget.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -2284,6 +2316,8 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2329,6 +2363,7 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/CheckBoxDelegate.h \
@@ -2337,7 +2372,6 @@ moc_MainWindow.cpp: include/EventSequenceDatabase.h \
 		include/RelationshipCheckBoxDialog.h \
 		include/ConcordanceDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -2439,6 +2473,8 @@ moc_NetworkGraphWidget.cpp: include/DeselectableTreeViewEntities.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2501,6 +2537,8 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceLabel.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2557,10 +2595,10 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceLabel.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -2617,6 +2655,8 @@ moc_RawAttributesTable.cpp: include/QueryModel.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2671,10 +2711,10 @@ moc_RawAttributesTable.cpp: include/QueryModel.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/RawRelationshipsTable.h \
 		include/RelationalTable.h \
@@ -2731,6 +2771,8 @@ moc_RawRelationshipsTable.cpp: include/RelationalTable.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2764,6 +2806,7 @@ moc_RawRelationshipsTable.cpp: include/RelationalTable.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/NetworkGraphWidget.h \
@@ -2775,7 +2818,6 @@ moc_RawRelationshipsTable.cpp: include/RelationalTable.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -2867,6 +2909,8 @@ moc_RelationshipCoverageTable.cpp: include/QueryModel.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2908,6 +2952,8 @@ moc_RelationshipsDialog.cpp: include/EntitiesFilter.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -2947,10 +2993,10 @@ moc_RelationshipsDialog.cpp: include/EntitiesFilter.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -3010,6 +3056,8 @@ moc_RelationshipsWidget.cpp: include/AttributeDialog.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3049,10 +3097,10 @@ moc_RelationshipsWidget.cpp: include/AttributeDialog.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -3110,6 +3158,8 @@ moc_Scene.cpp: include/IncidentNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3201,6 +3251,8 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3295,6 +3347,8 @@ AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
 		include/Scene.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3350,10 +3404,10 @@ AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -3389,6 +3443,8 @@ AbstractNode.o: src/AbstractNode.cpp include/AbstractNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3438,6 +3494,8 @@ AttributeCoverageTable.o: src/AttributeCoverageTable.cpp include/AttributeCovera
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3480,6 +3538,8 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3576,6 +3636,8 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3687,6 +3749,8 @@ CasingWidget.o: src/CasingWidget.cpp include/CasingWidget.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3739,10 +3803,10 @@ CasingWidget.o: src/CasingWidget.cpp include/CasingWidget.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -3787,6 +3851,8 @@ ConcordanceDialog.o: src/ConcordanceDialog.cpp include/ConcordanceDialog.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3819,6 +3885,8 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3864,6 +3932,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/CheckBoxDelegate.h \
@@ -3872,7 +3941,6 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/RelationshipCheckBoxDialog.h \
 		include/ConcordanceDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -3944,6 +4012,8 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -3983,10 +4053,10 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -4025,6 +4095,8 @@ EllipseObject.o: src/EllipseObject.cpp include/EllipseObject.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/AbstractNodeLabel.h \
@@ -4076,6 +4148,8 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4115,10 +4189,10 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -4173,6 +4247,8 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4207,6 +4283,7 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/NetworkGraphWidget.h \
@@ -4218,7 +4295,6 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -4263,6 +4339,8 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/NetworkNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4319,10 +4397,10 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -4400,6 +4478,8 @@ GuideLine.o: src/GuideLine.cpp include/GuideLine.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4421,6 +4501,8 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4478,10 +4560,10 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -4522,6 +4604,8 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/NetworkNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4578,6 +4662,7 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/RawAttributesTable.h \
@@ -4603,8 +4688,7 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/InheritanceDialog.h \
 		include/EventTextDialog.h \
 		include/EvidenceDialog.h \
-		include/AddEvidenceDialog.h \
-		include/BandlessGraphicsView.h
+		include/AddEvidenceDialog.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o HierarchyGraphWidget.o src/HierarchyGraphWidget.cpp
 
 IncidentNode.o: src/IncidentNode.cpp include/IncidentNode.h \
@@ -4617,6 +4701,8 @@ IncidentNode.o: src/IncidentNode.cpp include/IncidentNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4676,6 +4762,8 @@ LineObject.o: src/LineObject.cpp include/LineObject.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
 		include/AbstractNodeLabel.h \
@@ -4695,6 +4783,8 @@ Linkage.o: src/Linkage.cpp include/Linkage.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4708,6 +4798,32 @@ Linkage.o: src/Linkage.cpp include/Linkage.h \
 LinkagesIndexDialog.o: src/LinkagesIndexDialog.cpp include/LinkagesIndexDialog.h \
 		include/Constants.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinkagesIndexDialog.o src/LinkagesIndexDialog.cpp
+
+LinkageNode.o: src/LinkageNode.cpp include/LinkageNode.h \
+		include/Scene.h \
+		include/IncidentNode.h \
+		include/Linkage.h \
+		include/AbstractNode.h \
+		include/SupportingFunctions.h \
+		include/OccurrenceItem.h \
+		include/NetworkNode.h \
+		include/Constants.h \
+		include/NetworkNodeLabel.h \
+		include/IncidentNodeLabel.h \
+		include/LinkageNodeLabel.h \
+		include/LineObject.h \
+		include/TextObject.h \
+		include/EllipseObject.h \
+		include/AbstractNodeLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
+		include/TimeLineObject.h \
+		include/GuideLine.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinkageNode.o src/LinkageNode.cpp
+
+LinkageNodeLabel.o: src/LinkageNodeLabel.cpp include/LinkageNodeLabel.h \
+		include/LinkageNode.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o LinkageNodeLabel.o src/LinkageNodeLabel.cpp
 
 LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/Constants.h \
@@ -4725,6 +4841,8 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4833,6 +4951,8 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -4973,6 +5093,8 @@ NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5011,6 +5133,8 @@ NetworkNode.o: src/NetworkNode.cpp include/NetworkNode.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5031,6 +5155,8 @@ NetworkNodeLabel.o: src/NetworkNodeLabel.cpp include/NetworkNodeLabel.h \
 		include/OccurrenceItem.h \
 		include/Constants.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5071,6 +5197,8 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5123,10 +5251,10 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -5166,6 +5294,8 @@ OccurrenceItem.o: src/OccurrenceItem.cpp include/OccurrenceItem.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5205,6 +5335,8 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5259,10 +5391,10 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawRelationshipsTable.h \
 		include/RelationalTable.h \
 		include/RawLinkagesTable.h \
@@ -5316,6 +5448,8 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5349,6 +5483,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/NetworkGraphWidget.h \
@@ -5360,7 +5495,6 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawLinkagesTable.h \
@@ -5409,6 +5543,8 @@ RectObject.o: src/RectObject.cpp include/RectObject.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5457,6 +5593,8 @@ RelationshipCoverageTable.o: src/RelationshipCoverageTable.cpp include/Relations
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5495,6 +5633,8 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/AbstractNode.h \
 		include/OccurrenceItem.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5534,10 +5674,10 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -5592,6 +5732,8 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/Scene.h \
 		include/NetworkNode.h \
 		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5626,6 +5768,7 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
 		include/LinkagesIndexDialog.h \
+		include/BandlessGraphicsView.h \
 		include/JournalWidget.h \
 		include/JournalTableModel.h \
 		include/NetworkGraphWidget.h \
@@ -5637,7 +5780,6 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/AttributeSelectionDialog.h \
 		include/ComboBoxDialog.h \
 		include/HierarchyGraphWidget.h \
-		include/BandlessGraphicsView.h \
 		include/RawAttributesTable.h \
 		include/QueryModel.h \
 		include/RawRelationshipsTable.h \
@@ -5686,6 +5828,8 @@ Scene.o: src/Scene.cpp include/Scene.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \
@@ -5734,6 +5878,8 @@ TextObject.o: src/TextObject.cpp include/TextObject.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/EllipseObject.h \
 		include/AbstractNodeLabel.h \
@@ -5754,6 +5900,8 @@ TimeLineObject.o: src/TimeLineObject.cpp include/TimeLineObject.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
 		include/IncidentNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
 		include/EllipseObject.h \

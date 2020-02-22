@@ -70,6 +70,8 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
 	  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(itemAt(event->pos()));
 	  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(itemAt(event->pos()));
 	  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>(itemAt(event->pos()));
+	  LinkageNode *linkageNode = qgraphicsitem_cast<LinkageNode*>(itemAt(event->pos()));
+	  LinkageNodeLabel *linkageNodeLabel = qgraphicsitem_cast<LinkageNodeLabel*>(itemAt(event->pos()));
 	  LineObject *line = qgraphicsitem_cast<LineObject*>(itemAt(event->pos()));
 	  TextObject *text = qgraphicsitem_cast<TextObject*>(itemAt(event->pos()));
 	  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(itemAt(event->pos()));
@@ -86,8 +88,12 @@ void BandlessGraphicsView::mousePressEvent(QMouseEvent *event)
 	    {
 	      occurrence = occurrenceLabel->getOccurrence();
 	    }
-	  if (!incident && !abstractNode && !linkage && !networkNode && !occurrence && !occurrenceLabel &&
-	      !line && !text && !ellipse && !rect) 
+	  if (linkageNodeLabel)
+	    {
+	      linkageNode = linkageNodeLabel->getNode();
+	    }
+	  if (!incident && !abstractNode && !linkage && !networkNode && !occurrence &&
+	      !linkageNode && !occurrenceLabel && !line && !text && !ellipse && !rect) 
 	    {
 	      _pan = true;
 	      QApplication::setOverrideCursor(Qt::ClosedHandCursor);

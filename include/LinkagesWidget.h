@@ -44,6 +44,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "LinkagesIndexDialog.h"
 #include "EventGraphWidget.h"
 #include "SupportingFunctions.h"
+#include "Scene.h"
+#include "BandlessGraphicsView.h"
+#include "LinkageNode.h"
+#include "LinkageNodeLabel.h"
+#include "Linkage.h"
 
 class EventGraphWidget;
 
@@ -75,7 +80,16 @@ private slots:
   void checkAssistedButton();
   void retrieveCoders();
   void retrieveLinkages();
+  void changeTailNode(LinkageNode *node);
+  void changeHeadNode(LinkageNode *node);
   void retrieveData();
+  void plotIncidents();
+  void plotLinkages();
+  void updateLinkages();
+  void removeLinkages();
+  void layoutGraph();
+  void cleanUp();
+  void processLinkageNodeContextMenuAction(LinkageNode *node, const QString &action);
   void editLeftIncident();
   void editRightIncident();
   void highlightSearch(QTextEdit *field, QString text); 
@@ -128,6 +142,8 @@ private slots:
   
 private:
   // Interface elements
+  QPointer<Scene> scene;
+  QPointer<BandlessGraphicsView> view;
   QPointer<QSqlTableModel> typesModel;
   QPointer<QSqlTableModel> linkagesModel;
   QPointer<QSqlTableModel> incidentsModel;
@@ -220,6 +236,9 @@ private:
   QPointer<QPushButton> clearEvidenceButton;
 
   // Private data vectors
+  QVector<LinkageNode*> _linkageNodeVector;
+  QVector<LinkageNodeLabel*> _linkageNodeLabelVector;
+  QVector<Linkage*> _linkagesVector;
   QVector<QString> _markedTailEvidence;
   QVector<QString> _markedHeadEvidence;
   
@@ -236,6 +255,11 @@ private:
   QString _headCommentFilter;
   bool _commentBool;
   bool _linkageCommentBool;
+
+  // Private pointers, don't delete
+  LinkageNode* _selectedTail;
+  LinkageNode* _selectedHead;
+  
 };
 
 #endif

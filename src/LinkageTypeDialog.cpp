@@ -27,16 +27,11 @@ LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent)
   _name = "";
   _subName = "";
   _description = "";
-  _question = "";
   _direction = PAST;
   _exitStatus = 1;
 
   nameLabel = new QLabel(tr("<b>Name:</b>"), this);
   descriptionLabel = new QLabel(tr("<b>Description:</b>"), this);
-  questionLabel = new QLabel(tr("<b>Question:</b>"), this);
-  questionLabel->setToolTip(breakString("Formulate a question that needs to be answered "
-					"with 'yes' for a linkage between a given pair of "
-					"incidents to exist"));
   directionLabel = new QLabel(tr("<b>Linkage direction:</b>"), this);
   pastButton = new QPushButton(PAST, this);
   pastButton->setCheckable(true);
@@ -50,7 +45,6 @@ LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent)
   nameField = new QLineEdit(this);
 
   descriptionField = new QTextEdit(this);
-  questionField = new QTextEdit(this);
 
   connect(nameField, SIGNAL(textChanged(const QString &)), this, SLOT(setName(const QString &)));
   connect(pastButton, SIGNAL(clicked()), this, SLOT(checkPastButton()));
@@ -63,14 +57,8 @@ LinkageTypeDialog::LinkageTypeDialog(QWidget *parent) : QDialog(parent)
   nameLayout->addWidget(nameLabel);
   nameLayout->addWidget(nameField);
   mainLayout->addLayout(nameLayout);
-  QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(descriptionLabel);
-  descriptionLayout->addWidget(descriptionField);
-  mainLayout->addLayout(descriptionLayout);
-  QPointer<QHBoxLayout> questionLayout = new QHBoxLayout;
-  descriptionLayout->addWidget(questionLabel);
-  descriptionLayout->addWidget(questionField);
-  mainLayout->addLayout(questionLayout);
+  mainLayout->addWidget(descriptionLabel);
+  mainLayout->addWidget(descriptionField);
   QPointer<QHBoxLayout> directionLayout = new QHBoxLayout;
   directionLayout->addWidget(directionLabel);
   directionLayout->addWidget(pastButton);
@@ -124,12 +112,6 @@ void LinkageTypeDialog::submitDescription(const QString &description)
   descriptionField->setText(_description);
 }
 
-void LinkageTypeDialog::submitQuestion(const QString &question) 
-{
-  _question = question;
-  questionField->setText(_question);
-}
-
 void LinkageTypeDialog::submitDirection(const QString &direction) 
 {
   _direction = direction;
@@ -155,12 +137,6 @@ QString LinkageTypeDialog::getDescription()
   return _description;
 }
 
-
-QString LinkageTypeDialog::getQuestion() 
-{
-  return _question;
-}
-
 QString LinkageTypeDialog::getDirection() 
 {
   return _direction;
@@ -180,7 +156,6 @@ void LinkageTypeDialog::cancelAndClose()
 void LinkageTypeDialog::saveAndClose() 
 {
   _description = descriptionField->toPlainText().trimmed();
-  _question = questionField->toPlainText().trimmed();
   _name = _name.trimmed();
   if (_description == "") 
     {
@@ -191,19 +166,6 @@ void LinkageTypeDialog::saveAndClose()
       warningBox->setText("Description required.");
       warningBox->setInformativeText("A linkage type requires a "
 				     "description.");
-      warningBox->exec();
-      delete warningBox;
-      return;
-    }
-  if (_question == "") 
-    {
-      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->setWindowTitle("Saving linkage type");
-      warningBox->addButton(QMessageBox::Ok);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("Question required.");
-      warningBox->setInformativeText("A linkage type requires "
-				     "a question.");
       warningBox->exec();
       delete warningBox;
       return;
