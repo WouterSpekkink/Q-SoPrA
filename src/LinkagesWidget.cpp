@@ -178,6 +178,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   markEvidenceButton->setEnabled(false);
   clearEvidenceButton = new QPushButton(tr("Clear evidence"), this);
   clearEvidenceButton->setEnabled(false);
+  layoutButton = new QPushButton(tr("Layout graph"), this);
   
   linkageCommentField->installEventFilter(this);
   headTimeStampField->installEventFilter(this);
@@ -245,10 +246,10 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   connect(unsetLinkButton, SIGNAL(clicked()), this, SLOT(unsetLink()));
   connect(markEvidenceButton, SIGNAL(clicked()), this, SLOT(markEvidence()));
   connect(clearEvidenceButton, SIGNAL(clicked()), this, SLOT(clearEvidence()));
+  connect(layoutButton, SIGNAL(clicked()), this, SLOT(layoutGraph()));
   connect(linkageCommentField, SIGNAL(textChanged()), this, SLOT(setLinkageCommentBool()));
   connect(scene, SIGNAL(LinkageNodeContextMenuAction(LinkageNode*, const QString &)),
 	  this, SLOT(processLinkageNodeContextMenuAction(LinkageNode*, const QString &)));
-  //  connect(scene, SIGNAL(resetItemSelection()), this, SLOT(processItemSelection()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 
   // I want to set the size of some widgets based on the availabe screen width
@@ -406,10 +407,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> evidenceLayout = new QHBoxLayout;
   evidenceLayout->addWidget(markEvidenceButton);
   markEvidenceButton->setMaximumWidth(markEvidenceButton->sizeHint().width());
-  evidenceLayout->addWidget(switchLinkageTypeButton);
-  switchLinkageTypeButton->setMaximumWidth(switchLinkageTypeButton->sizeHint().width());
   evidenceLayout->addWidget(clearEvidenceButton);
   clearEvidenceButton->setMaximumWidth(clearEvidenceButton->sizeHint().width());
+  evidenceLayout->addWidget(switchLinkageTypeButton);
+  switchLinkageTypeButton->setMaximumWidth(switchLinkageTypeButton->sizeHint().width());
+  evidenceLayout->addWidget(layoutButton);
+  layoutButton->setMaximumWidth(layoutButton->sizeHint().width());
   middleLayout->addLayout(evidenceLayout);
   fieldsLayout->addLayout(middleLayout);
   QPointer<QFrame> sepLineRight = new QFrame();
@@ -1568,7 +1571,6 @@ void LinkagesWidget::plotLinkages()
 	}
     }
   delete query;
-  layoutGraph();
 }
 
 void LinkagesWidget::updateLinkages() 
@@ -1590,7 +1592,17 @@ void LinkagesWidget::removeLinkages()
 
 void LinkagesWidget::layoutGraph() 
 {
+  QApplication::setOverrideCursor(Qt::WaitCursor);
   QVector<LinkageNode*>::iterator it;
+  for (it = _linkageNodeVector.begin(); it != _linkageNodeVector.end(); it++)
+    {
+      LinkageNode *current = *it;
+      int order = current->getOrder();
+      qreal vertical = qrand() % 100 - 50;
+      QPointF position = QPointF((order * 70), vertical);
+      current->setPos(position);
+      current->getLabel()->setNewPos(current->scenePos());
+    }
   for (it = _linkageNodeVector.begin(); it != _linkageNodeVector.end(); it++) 
     {
       LinkageNode *current = *it;
@@ -1630,6 +1642,8 @@ void LinkagesWidget::layoutGraph()
 	  partnerCount--;
 	}
     }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
 }
 
 void LinkagesWidget::cleanUp()
@@ -4903,6 +4917,8 @@ void LinkagesWidget::setButtons(bool status)
   headRawField->setEnabled(status);
   headCommentField->setEnabled(status);
   linkageCommentField->setEnabled(status);
+  view->setEnabled(status);
+  layoutButton->setEnabled(status);
 }
 
 bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 
@@ -4924,14 +4940,6 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
 		  textEdit->zoomOut(1);
 		}
 	    }
-	}
-    }
-  else if (object == view->viewport() && event->type() == QEvent::MouseButtonPress)
-    {
-      QMouseEvent *mouseEvent = (QMouseEvent*) event;
-      if (mouseEvent->button() == Qt::LeftButton)
-	{
-	  //return true;
 	}
     }
   else if (((object == tailDescriptionField->viewport() &&

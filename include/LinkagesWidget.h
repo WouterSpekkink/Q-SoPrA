@@ -234,6 +234,7 @@ private:
   QPointer<QPushButton> switchLinkageTypeButton;
   QPointer<QPushButton> markEvidenceButton;
   QPointer<QPushButton> clearEvidenceButton;
+  QPointer<QPushButton> layoutButton;
 
   // Private data vectors
   QVector<LinkageNode*> _linkageNodeVector;

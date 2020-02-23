@@ -419,6 +419,13 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/g++-unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/qconfig.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_Baloo.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KConfigCore.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KConfigGui.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KCoreAddons.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KDBusAddons.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KI18n.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KService.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KWindowSystem.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_accessibility_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_bootstrap_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_concurrent.pri \
@@ -450,6 +457,8 @@ DIST          = /usr/lib/x86_64-linux-gnu/qt5/mkspecs/features/spec_pre.prf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_platformcompositor_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_script.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_scripttools.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_service_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri \
@@ -709,6 +718,13 @@ Makefile: Q-SoPrA.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/g++-unix.conf \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/qconfig.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_Baloo.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KConfigCore.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KConfigGui.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KCoreAddons.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KDBusAddons.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KI18n.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KService.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KWindowSystem.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_accessibility_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_bootstrap_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_concurrent.pri \
@@ -740,6 +756,8 @@ Makefile: Q-SoPrA.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_platformcompositor_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport_private.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_script.pri \
+		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_scripttools.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_service_support_private.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri \
 		/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri \
@@ -796,6 +814,13 @@ Makefile: Q-SoPrA.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/common/g++-unix.conf:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/qconfig.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_Baloo.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KConfigCore.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KConfigGui.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KCoreAddons.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KDBusAddons.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KI18n.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KService.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_KWindowSystem.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_accessibility_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_bootstrap_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_concurrent.pri:
@@ -827,6 +852,8 @@ Makefile: Q-SoPrA.pro /usr/lib/x86_64-linux-gnu/qt5/mkspecs/linux-g++/qmake.conf
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_platformcompositor_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_printsupport_private.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_script.pri:
+/usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_scripttools.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_service_support_private.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql.pri:
 /usr/lib/x86_64-linux-gnu/qt5/mkspecs/modules/qt_lib_sql_private.pri:
@@ -976,6 +1003,7 @@ moc_AbstractionDialog.cpp: include/SortFunctions.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/EventGraphWidget.h \
 		include/IncidentNodeLabel.h \
 		include/GraphicsView.h \
@@ -984,7 +1012,6 @@ moc_AbstractionDialog.cpp: include/SortFunctions.h \
 		include/Scene.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
-		include/LinkageNode.h \
 		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
@@ -1644,6 +1671,7 @@ moc_EntitiesAttributesTable.cpp: include/RelationalTable.h \
 		include/OccurrenceItem.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/SimpleTextDialog.h \
 		include/QueryModel.h \
@@ -1977,6 +2005,7 @@ moc_EventNodeSettingsDialog.cpp: include/ZoomableTableView.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/AttributeSelectionDialog.h \
 		include/Constants.h \
@@ -2141,6 +2170,7 @@ moc_IncidentsAttributesTable.cpp: include/ZoomableTableView.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/SimpleTextDialog.h \
 		include/QueryModel.h \
@@ -2453,6 +2483,7 @@ moc_MultimodeDialog.cpp: include/Constants.h \
 		include/IncidentNode.h \
 		include/OccurrenceItem.h \
 		include/AbstractNode.h \
+		include/LinkageNode.h \
 		include/MultimodeDialog.h \
 		moc_predefs.h \
 		/usr/lib/qt5/bin/moc
@@ -2513,6 +2544,7 @@ moc_NodeSettingsDialog.cpp: include/ZoomableTableView.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/AttributeSelectionDialog.h \
 		include/Constants.h \
@@ -3339,6 +3371,7 @@ AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/EventGraphWidget.h \
 		include/IncidentNodeLabel.h \
 		include/GraphicsView.h \
@@ -3347,7 +3380,6 @@ AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
 		include/Scene.h \
 		include/Constants.h \
 		include/NetworkNodeLabel.h \
-		include/LinkageNode.h \
 		include/LinkageNodeLabel.h \
 		include/LineObject.h \
 		include/TextObject.h \
@@ -4115,6 +4147,7 @@ EntitiesAttributesTable.o: src/EntitiesAttributesTable.cpp include/EntitiesAttri
 		include/OccurrenceItem.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/SimpleTextDialog.h \
 		include/QueryModel.h
@@ -4435,6 +4468,7 @@ EventNodeSettingsDialog.o: src/EventNodeSettingsDialog.cpp include/EventNodeSett
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/AttributeSelectionDialog.h \
 		include/Constants.h \
@@ -4725,6 +4759,7 @@ IncidentsAttributesTable.o: src/IncidentsAttributesTable.cpp include/IncidentsAt
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/SimpleTextDialog.h \
 		include/QueryModel.h
@@ -5074,7 +5109,8 @@ MultimodeDialog.o: src/MultimodeDialog.cpp include/MultimodeDialog.h \
 		include/SortFunctions.h \
 		include/IncidentNode.h \
 		include/OccurrenceItem.h \
-		include/AbstractNode.h
+		include/AbstractNode.h \
+		include/LinkageNode.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MultimodeDialog.o src/MultimodeDialog.cpp
 
 NetworkGraphWidget.o: src/NetworkGraphWidget.cpp include/NetworkGraphWidget.h \
@@ -5175,6 +5211,7 @@ NodeSettingsDialog.o: src/NodeSettingsDialog.cpp include/NodeSettingsDialog.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
 		include/NetworkNode.h \
+		include/LinkageNode.h \
 		include/ProgressBar.h \
 		include/AttributeSelectionDialog.h \
 		include/Constants.h \
@@ -5858,7 +5895,8 @@ SortFunctions.o: src/SortFunctions.cpp include/SortFunctions.h \
 		include/OccurrenceItem.h \
 		include/SupportingFunctions.h \
 		include/AbstractNode.h \
-		include/NetworkNode.h
+		include/NetworkNode.h \
+		include/LinkageNode.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SortFunctions.o src/SortFunctions.cpp
 
 SupportingFunctions.o: src/SupportingFunctions.cpp include/SupportingFunctions.h
