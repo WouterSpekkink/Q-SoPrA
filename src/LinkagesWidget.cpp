@@ -1442,6 +1442,9 @@ void LinkagesWidget::retrieveData()
 	  setLinkButton->setEnabled(true);
 	}
     }
+  linkageCommentField->blockSignals(true);
+  linkageCommentField->setText("");
+  linkageCommentField->blockSignals(false);	
   query->prepare("SELECT comment FROM linkage_comments "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", tailId);
