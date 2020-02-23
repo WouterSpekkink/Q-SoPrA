@@ -2,7 +2,6 @@
 
 Qualitative Social Process Analysis (Q-SoPrA)
 Copyright (C) 2019 University of Manchester  
-
 This file is part of Q-SoPrA.
 
 Q-SoPrA is free software: you can redistribute it and/or modify
@@ -37,6 +36,19 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   _commentBool = false;
   _linkageCommentBool = false;
   
+  scene = new Scene(this);
+  view = new BandlessGraphicsView(scene);
+  view->viewport()->installEventFilter(this);
+  QRectF currentRect = this->scene->itemsBoundingRect();
+  currentRect.setX(currentRect.x() - 50);
+  currentRect.setY(currentRect.y() - 50);
+  currentRect.setWidth(currentRect.width() + 100);
+  currentRect.setHeight(currentRect.height() + 100);
+  scene->setSceneRect(currentRect);
+  scene->setBackgroundBrush(QColor(230,230,250)); // Sets the background colour.
+  view->setRenderHint(QPainter::Antialiasing);
+  view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+
   typesModel = new QSqlTableModel(this);
   typesModel->setTable("linkage_types");
   typesModel->select();
@@ -78,10 +90,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   coderFeedbackLabel = new QLabel(tr(""));
   linkageTypeLabel = new QLabel(tr("<b>Linkage type:</b>"), this);
   linkageTypeFeedbackLabel = new QLabel(tr(""), this);
-  linkageQuestionLabel = new QLabel(tr("<b>Linkage question:</b>"), this);
-  linkageQuestionFeedbackLabel = new QLabel(tr(""), this);
-  linkageQuestionFeedbackLabel->setWordWrap(true);
-  linkageQuestionFeedbackLabel->setMaximumWidth(200);
   linkageFeedbackLabel = new QLabel(tr(""), this);
   linkageCommentLabel = new QLabel(tr("<b>Linkage comments:</b>"), this);
 
@@ -170,6 +178,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   markEvidenceButton->setEnabled(false);
   clearEvidenceButton = new QPushButton(tr("Clear evidence"), this);
   clearEvidenceButton->setEnabled(false);
+  layoutButton = new QPushButton(tr("Layout graph"), this);
   
   linkageCommentField->installEventFilter(this);
   headTimeStampField->installEventFilter(this);
@@ -237,7 +246,10 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   connect(unsetLinkButton, SIGNAL(clicked()), this, SLOT(unsetLink()));
   connect(markEvidenceButton, SIGNAL(clicked()), this, SLOT(markEvidence()));
   connect(clearEvidenceButton, SIGNAL(clicked()), this, SLOT(clearEvidence()));
+  connect(layoutButton, SIGNAL(clicked()), this, SLOT(layoutGraph()));
   connect(linkageCommentField, SIGNAL(textChanged()), this, SLOT(setLinkageCommentBool()));
+  connect(scene, SIGNAL(LinkageNodeContextMenuAction(LinkageNode*, const QString &)),
+	  this, SLOT(processLinkageNodeContextMenuAction(LinkageNode*, const QString &)));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
 
   // I want to set the size of some widgets based on the availabe screen width
@@ -365,43 +377,43 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
       tailCommentFilterField->setMaximumWidth(200);
     }
   QPointer<QVBoxLayout> middleLayout = new QVBoxLayout;
-  middleLayout->setAlignment(Qt::AlignVCenter);
-  middleLayout->addWidget(coderLabel);
+  QPointer<QVBoxLayout> linkageFeedbackLayout = new QVBoxLayout;
+  linkageFeedbackLayout->addWidget(coderLabel);
   coderLabel->setAlignment(Qt::AlignHCenter);
-  middleLayout->addWidget(coderFeedbackLabel);
+  linkageFeedbackLayout->addWidget(coderFeedbackLabel);
   coderFeedbackLabel->setAlignment(Qt::AlignHCenter);
-  middleLayout->addWidget(linkageTypeLabel);
+  linkageFeedbackLayout->addWidget(linkageTypeLabel);
   linkageTypeLabel->setAlignment(Qt::AlignHCenter);
-  middleLayout->addWidget(linkageTypeFeedbackLabel);
+  linkageFeedbackLayout->addWidget(linkageTypeFeedbackLabel);
   linkageTypeFeedbackLabel->setAlignment(Qt::AlignHCenter);
   linkageTypeFeedbackLabel->setStyleSheet("color: red");
-  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
-  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
-  middleLayout->addWidget(linkageQuestionLabel);
-  linkageQuestionLabel->setAlignment(Qt::AlignHCenter);
-  middleLayout->addWidget(linkageQuestionFeedbackLabel);
-  linkageQuestionFeedbackLabel->setMinimumWidth(180);
-  middleLayout->setAlignment(linkageQuestionFeedbackLabel, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addSpacerItem(new QSpacerItem(200, 40));
-  middleLayout->addWidget(switchLinkageTypeButton);
-  middleLayout->setAlignment(switchLinkageTypeButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addSpacerItem(new QSpacerItem(240, 40));
-  middleLayout->addWidget(linkageFeedbackLabel);
+  middleLayout->addLayout(linkageFeedbackLayout);
+  middleLayout->setAlignment(linkageFeedbackLayout, Qt::AlignTop);
+  QPointer<QVBoxLayout> viewLayout = new QVBoxLayout;
+  viewLayout->addWidget(view);
+  view->setMaximumWidth(500);
+  middleLayout->addLayout(viewLayout);
+  QPointer<QHBoxLayout> linkageCodeLayout = new QHBoxLayout;
+  linkageCodeLayout->addWidget(setLinkButton);
+  setLinkButton->setMaximumWidth(setLinkButton->sizeHint().width());
+  linkageCodeLayout->addWidget(linkageFeedbackLabel);
   linkageFeedbackLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   linkageFeedbackLabel->setStyleSheet("color: blue");
   linkageFeedbackLabel->setMinimumHeight(40);
-  middleLayout->addWidget(setLinkButton);
-  setLinkButton->setMaximumWidth(setLinkButton->sizeHint().width());
-  middleLayout->setAlignment(setLinkButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addWidget(unsetLinkButton);
+  linkageFeedbackLabel->setMinimumWidth(100);
+  linkageCodeLayout->addWidget(unsetLinkButton);
   unsetLinkButton->setMaximumWidth(unsetLinkButton->sizeHint().width());
-  middleLayout->setAlignment(unsetLinkButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addWidget(markEvidenceButton);
+  middleLayout->addLayout(linkageCodeLayout);
+  QPointer<QHBoxLayout> evidenceLayout = new QHBoxLayout;
+  evidenceLayout->addWidget(markEvidenceButton);
   markEvidenceButton->setMaximumWidth(markEvidenceButton->sizeHint().width());
-  middleLayout->setAlignment(markEvidenceButton, Qt::AlignHCenter | Qt::AlignVCenter);
-  middleLayout->addWidget(clearEvidenceButton);
+  evidenceLayout->addWidget(clearEvidenceButton);
   clearEvidenceButton->setMaximumWidth(clearEvidenceButton->sizeHint().width());
-  middleLayout->setAlignment(clearEvidenceButton, Qt::AlignHCenter | Qt::AlignVCenter);
+  evidenceLayout->addWidget(switchLinkageTypeButton);
+  switchLinkageTypeButton->setMaximumWidth(switchLinkageTypeButton->sizeHint().width());
+  evidenceLayout->addWidget(layoutButton);
+  layoutButton->setMaximumWidth(layoutButton->sizeHint().width());
+  middleLayout->addLayout(evidenceLayout);
   fieldsLayout->addLayout(middleLayout);
   QPointer<QFrame> sepLineRight = new QFrame();
   sepLineRight->setFrameShape(QFrame::VLine);
@@ -612,14 +624,12 @@ void LinkagesWidget::addLinkageType()
     {
       QString name = linkageTypeDialog->getName();
       QString description = linkageTypeDialog->getDescription();
-      QString question = linkageTypeDialog->getQuestion();
       QString direction = linkageTypeDialog->getDirection();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("INSERT INTO linkage_types (name, description, question, direction) "
-		     "VALUES (:name, :description, :question, :direction)");
+      query->prepare("INSERT INTO linkage_types (name, description, direction) "
+		     "VALUES (:name, :description, :direction)");
       query->bindValue(":name", name);
       query->bindValue(":description", description);
-      query->bindValue(":question", question);
       query->bindValue(":direction", direction);
       query->exec();
       delete query;
@@ -657,19 +667,17 @@ void LinkagesWidget::editLinkageType()
 		      "WHERE type = :type "
 		      "AND tail = :oldTail AND head = :oldHead");
       QString oldName = typeComboBox->currentText();
-      query->prepare("SELECT description, question, "
+      query->prepare("SELECT description, "
 		     "direction FROM linkage_types "
 		     "WHERE name = :name");
       query->bindValue(":name", oldName);
       query->exec();
       query->first();
       QString description = query->value(0).toString();
-      QString question = query->value(1).toString();
       QString direction = query->value(2).toString();
       LinkageTypeDialog *linkageTypeDialog = new LinkageTypeDialog(this);
       linkageTypeDialog->submitName(oldName);
       linkageTypeDialog->submitDescription(description);
-      linkageTypeDialog->submitQuestion(question);
       linkageTypeDialog->submitDirection(direction);
       linkageTypeDialog->exec();
       if (linkageTypeDialog->getExitStatus() == 0) 
@@ -677,7 +685,6 @@ void LinkagesWidget::editLinkageType()
 	  bool changedDirection = false;
 	  QString name = linkageTypeDialog->getName();
 	  description = linkageTypeDialog->getDescription();
-	  question = linkageTypeDialog->getQuestion();
 	  if (direction != linkageTypeDialog->getDirection())
 	    {
 	      changedDirection = true;
@@ -686,11 +693,9 @@ void LinkagesWidget::editLinkageType()
 	  query->prepare("UPDATE linkage_types "
 			 "SET name = :name, "
 			 "description = :description, "
-			 "question = :question, "
 			 "direction = :direction WHERE name = :oldName");
 	  query->bindValue(":name", name);
 	  query->bindValue(":description", description);
-	  query->bindValue(":question", question);
 	  query->bindValue(":direction", direction);
 	  query->bindValue(":oldName", oldName);
 	  query->exec();
@@ -814,9 +819,6 @@ void LinkagesWidget::editLinkageType()
 	  linkageTypeFeedbackLabel->setText(label);
 	  QString toolTip = breakString(description);
 	  linkageTypeFeedbackLabel->setToolTip(toolTip);
-	  linkageQuestionFeedbackLabel->setText(question);
-	  linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
-							 sizeHint().height());      
 	}
       else 
 	{
@@ -845,6 +847,7 @@ void LinkagesWidget::removeLinkageType()
 				     "remove this linkage type?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
+	  cleanUp();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("DELETE FROM linkage_types WHERE name = :name");
 	  query->bindValue(":name", typeComboBox->currentText());
@@ -861,10 +864,8 @@ void LinkagesWidget::removeLinkageType()
 	  query->prepare("DELETE FROM linkage_comments WHERE type = :name");
 	  query->bindValue(":name", typeComboBox->currentText());
 	  query->exec();
-
 	  delete query;
 	  typeComboBox->removeItem(typeComboBox->currentIndex());
-
 	  tailIndexLabel->setText("<b>Tail ( / ) - Incident:</b>");
 	  headIndexLabel->setText("<b>Head ( / ) - Incident:</b>");
 	  tailTimeStampField->setText("");
@@ -959,7 +960,7 @@ void LinkagesWidget::setTypeButton()
 void LinkagesWidget::setLinkageType() 
 {
   setComments();
-  setLinkageComment();
+  setLinkageComment();    
   if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) 
     {
       _selectedType = typeComboBox->currentText();
@@ -998,19 +999,18 @@ void LinkagesWidget::setLinkageType()
 	}
       QString coderText = "<i>" + _selectedCoder + "</i>";
       coderFeedbackLabel->setText(coderText);
-      query->prepare("SELECT description, question FROM linkage_types WHERE name = :name");
+      query->prepare("SELECT description FROM linkage_types WHERE name = :name");
       query->bindValue(":name", _selectedType);
       query->exec();
       query->first();
       QString description = query->value(0).toString();
-      QString question = query->value(1).toString();
       QString label = "<FONT SIZE = 3>--[" + typeComboBox->currentText() + "]--></FONT>";
       linkageTypeFeedbackLabel->setText(label);
       QString toolTip = breakString(description);
       linkageTypeFeedbackLabel->setToolTip(toolTip);
-      linkageQuestionFeedbackLabel->setText(question);
-      linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
-						     sizeHint().height());
+      cleanUp();
+      plotIncidents();
+      plotLinkages();
       retrieveData();
       delete query;
       setButtons(true);
@@ -1136,25 +1136,127 @@ void LinkagesWidget::switchLinkageType()
 	  delete query2;
 	}
       _selectedType =  newType;
-      query->prepare("SELECT description, question "
+      query->prepare("SELECT description "
 		     "FROM linkage_types WHERE name = :name");
       query->bindValue(":name", _selectedType);
       query->exec();
       query->first();
       QString description = query->value(0).toString();
-      QString question = query->value(1).toString();
       QString label = "<FONT SIZE = 3>--[" + _selectedType + "]--></FONT>";
       linkageTypeFeedbackLabel->setText(label);
       QString toolTip = breakString(description);
       linkageTypeFeedbackLabel->setToolTip(toolTip);
-      linkageQuestionFeedbackLabel->setText(question);
-      linkageQuestionFeedbackLabel->setMinimumHeight(linkageQuestionFeedbackLabel->
-						     sizeHint().height());
       setButtons(true);
+      removeLinkages();
+      plotLinkages();
       retrieveData();
     }
   delete dialog;
   delete query;
+}
+
+void LinkagesWidget::changeTailNode(LinkageNode *node) 
+{
+  if (node != _selectedTail)
+    {
+      _selectedTail->setUnselected();
+      _selectedTail = node;
+      _selectedTail->setTail();
+      if (_selectedDirection == PAST && _selectedTail->getOrder() <= _selectedHead->getOrder())
+	{
+	  QVectorIterator<LinkageNode*> it(_linkageNodeVector);
+	  while (it.hasNext())
+	    {
+	      LinkageNode *current = it.next();
+	      if (current->getOrder() == _selectedTail->getOrder() - 1)
+		{
+		  _selectedHead->setUnselected();
+		  _selectedHead = current;
+		  _selectedHead->setHead();
+		  break;
+		}
+	    }
+	}
+      else if (_selectedDirection == FUTURE && _selectedTail->getOrder() >= _selectedHead->getOrder())
+	{
+	  QVectorIterator<LinkageNode*> it(_linkageNodeVector);
+	  while (it.hasNext())
+	    {
+	      LinkageNode *current = it.next();
+	      if (current->getOrder() == _selectedTail->getOrder() + 1)
+		{
+		  _selectedHead->setUnselected();
+		  _selectedHead = current;
+		  _selectedHead->setHead();
+		  break;
+		}
+	    }
+	}
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE coders_to_linkage_types "
+		     "SET tail = :tail, head = :head "
+		     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":tail", _selectedTail->getOrder());
+      query->bindValue(":head", _selectedHead->getOrder());
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      delete query;
+      scene->update();
+      retrieveData();
+    }
+}
+
+void LinkagesWidget::changeHeadNode(LinkageNode *node) 
+{
+  if (node != _selectedHead)
+    {
+      _selectedHead->setUnselected();
+      _selectedHead = node;
+      _selectedHead->setHead();
+      if (_selectedDirection == PAST && _selectedHead->getOrder() >= _selectedTail->getOrder())
+	{
+	  QVectorIterator<LinkageNode*> it(_linkageNodeVector);
+	  while (it.hasNext())
+	    {
+	      LinkageNode *current = it.next();
+	      if (current->getOrder() == _selectedHead->getOrder() + 1)
+		{
+		  _selectedTail->setUnselected();
+		  _selectedTail = current;
+		  _selectedTail->setTail();
+		  break;
+		}
+	    }
+	}
+      else if (_selectedDirection == FUTURE && _selectedHead->getOrder() <= _selectedTail->getOrder())
+	{
+	  QVectorIterator<LinkageNode*> it(_linkageNodeVector);
+	  while (it.hasNext())
+	    {
+	      LinkageNode *current = it.next();
+	      if (current->getOrder() == _selectedHead->getOrder() - 1)
+		{
+		  _selectedTail->setUnselected();
+		  _selectedTail = current;
+		  _selectedTail->setTail();
+		  break;
+		}
+	    }
+	}
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE coders_to_linkage_types "
+		     "SET tail = :tail, head = :head "
+		     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":tail", _selectedTail->getOrder());
+      query->bindValue(":head", _selectedHead->getOrder());
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      delete query;
+      scene->update();
+      retrieveData();
+    }
 }
 
 void LinkagesWidget::retrieveData() 
@@ -1180,12 +1282,49 @@ void LinkagesWidget::retrieveData()
     {
       delete query;
       return;
-    }
+    }  
   query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
   query->bindValue(":name", _selectedType);
   query->exec();
   query->first();
+  scene->clearSelection();
   _selectedDirection = query->value(0).toString();
+  QVectorIterator<LinkageNode*> it(_linkageNodeVector);
+  while (it.hasNext())
+    {
+      LinkageNode *node = it.next();
+      node->setDirection(_selectedDirection);
+      node->setMiddle();
+      node->setUnselected();
+      if (node->getOrder() == tailIndex)
+	{
+	  _selectedTail = node;
+	  _selectedTail->setTail();
+	  _selectedTail->setSelected(true);
+	}
+      else if (node->getOrder() == headIndex)
+	{
+	  _selectedHead = node;
+	  _selectedHead->setHead();
+	  _selectedHead->setSelected(true);
+	}
+    }
+  std::sort(_linkageNodeVector.begin(), _linkageNodeVector.end(), linkageNodeSort);
+  _linkageNodeVector.first()->setFirst();
+  _linkageNodeVector.last()->setLast();
+  QRectF itemsRect;
+  QList<QGraphicsItem *> selectedItems = scene->selectedItems();
+  QListIterator<QGraphicsItem *> it2(scene->selectedItems());
+  while (it2.hasNext())
+    {
+      QGraphicsItem *current = it2.next();
+      itemsRect = itemsRect.united(current->sceneBoundingRect());
+    }
+  itemsRect.setX(itemsRect.x() - 200);
+  itemsRect.setY(itemsRect.y() - 200);
+  itemsRect.setWidth(itemsRect.width() + 400);
+  itemsRect.setHeight(itemsRect.height() + 400);
+  view->fitInView(itemsRect, Qt::KeepAspectRatio);
   incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
@@ -1212,6 +1351,16 @@ void LinkagesWidget::retrieveData()
     }
   tailIndexLabel->setText(tailIndexText);
   headIndexLabel->setText(headIndexText);
+  if (_selectedDirection == PAST)
+    {
+      tailIndexLabel->setStyleSheet("QLabel{color:rgb(151, 74, 189);}");
+      headIndexLabel->setStyleSheet("QLabel{color:rgb(74, 189, 81);}");
+    }
+  else if (_selectedDirection == FUTURE)
+    {
+      tailIndexLabel->setStyleSheet("QLabel{color:rgb(74, 189, 81);}");
+      headIndexLabel->setStyleSheet("QLabel{color:rgb(151, 74, 189);}");
+    }
   query->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
 		 "FROM incidents WHERE ch_order = :tail");
   query->bindValue(":tail", tailIndex);
@@ -1295,8 +1444,8 @@ void LinkagesWidget::retrieveData()
     }
   query->prepare("SELECT comment FROM linkage_comments "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
-  query->bindValue(":tail", tailIndex);
-  query->bindValue(":head", headIndex);
+  query->bindValue(":tail", tailId);
+  query->bindValue(":head", headId);
   query->bindValue(":type", _selectedType);
   query->bindValue(":coder", _selectedCoder);
   query->exec();
@@ -1326,8 +1475,199 @@ void LinkagesWidget::retrieveData()
 	  _markedHeadEvidence.push_back(query->value(1).toString());
 	}
     }
+  updateLinkages();
   highlightText();
   delete query;
+}
+
+void LinkagesWidget::plotIncidents() 
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT ch_order, description FROM incidents ORDER BY ch_order");
+  QSqlQuery *query2 = new QSqlQuery;
+  query2->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+  while (query->next())
+    {
+      int order = query->value(0).toInt();
+      QString text = query->value(0).toString();
+      query2->bindValue(":order", order);
+      query2->exec();
+      query2->first();
+      int id = query2->value(0).toInt();
+      QString toolTip = breakString(query->value(1).toString());
+      qreal vertical = qrand() % 100 - 50;
+      QPointF position = QPointF((order * 70), vertical);
+      LinkageNode *currentNode = new LinkageNode(position, toolTip, id, order);
+      currentNode->setPos(currentNode->getOriginalPos());
+      currentNode->setZValue(2);
+      currentNode->setDirection(_selectedDirection);
+      _linkageNodeVector.push_back(currentNode);
+      LinkageNodeLabel *nodeLabel = new LinkageNodeLabel(currentNode);
+      currentNode->setLabel(nodeLabel);
+      nodeLabel->setPlainText(text);
+      nodeLabel->setNewPos(currentNode->scenePos());    
+      nodeLabel->setZValue(3);
+      nodeLabel->setDefaultTextColor(Qt::black);
+      _linkageNodeLabelVector.push_back(nodeLabel);
+      scene->addItem(currentNode);
+      scene->addItem(nodeLabel);
+    }
+  delete query;
+  delete query2;
+  std::sort(_linkageNodeVector.begin(), _linkageNodeVector.end(), linkageNodeSort);
+}
+
+void LinkagesWidget::plotLinkages() 
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT tail, head FROM linkages "
+		 "WHERE coder = :coder AND type = :type");
+  query->bindValue(":coder", _selectedCoder);
+  query->bindValue(":type", _selectedType);
+  query->exec();
+  while (query->next()) 
+    {
+      int tail = query->value(0).toInt();
+      int head = query->value(1).toInt();
+      QVectorIterator<LinkageNode *> it(_linkageNodeVector);
+      LinkageNode *tempSource = NULL;
+      LinkageNode *tempTarget = NULL;
+      while (it.hasNext()) 
+	{
+	  LinkageNode *currentItem = it.next();
+	  if (currentItem->getId() == tail) 
+	    {
+	      tempSource = currentItem;
+	    }
+	  else if (currentItem->getId() == head) 
+	    {
+	      tempTarget = currentItem;
+	    }
+	  if (tempSource != NULL && tempTarget != NULL) 
+	    {
+	      if (tempSource->getOrder() < tempTarget->getOrder()) 
+		{
+		  Linkage *currentLinkage = new Linkage(_selectedType, _selectedCoder);
+		  currentLinkage->setZValue(1);
+		  currentLinkage->setStartItem(tempSource);
+		  currentLinkage->setEndItem(tempTarget);
+		  currentLinkage->setColor(Qt::black);
+		  _linkagesVector.push_back(currentLinkage);
+		  scene->addItem(currentLinkage);
+		  break;
+		}
+	      else if (tempSource->getOrder() > tempTarget->getOrder()) 
+		{
+		  Linkage *currentLinkage = new Linkage(_selectedType, _selectedCoder);
+		  currentLinkage->setZValue(1);
+		  currentLinkage->setStartItem(tempSource);
+		  currentLinkage->setEndItem(tempTarget);
+		  currentLinkage->setColor(Qt::black);
+		  _linkagesVector.push_back(currentLinkage);
+		  scene->addItem(currentLinkage);
+		  break;
+		}
+	    } 
+	}
+    }
+  delete query;
+}
+
+void LinkagesWidget::updateLinkages() 
+{
+  QVectorIterator<Linkage*> it(_linkagesVector);
+  while (it.hasNext()) 
+    {
+      Linkage *current = it.next();
+      current->updatePosition();
+    }
+}
+
+void LinkagesWidget::removeLinkages()
+{
+  scene->clearSelection();
+  qDeleteAll(_linkagesVector);
+  _linkagesVector.clear();
+}
+
+void LinkagesWidget::layoutGraph() 
+{
+  QApplication::setOverrideCursor(Qt::WaitCursor);
+  QVector<LinkageNode*>::iterator it;
+  for (it = _linkageNodeVector.begin(); it != _linkageNodeVector.end(); it++)
+    {
+      LinkageNode *current = *it;
+      int order = current->getOrder();
+      qreal vertical = qrand() % 100 - 50;
+      QPointF position = QPointF((order * 70), vertical);
+      current->setPos(position);
+      current->getLabel()->setNewPos(current->scenePos());
+    }
+  for (it = _linkageNodeVector.begin(); it != _linkageNodeVector.end(); it++) 
+    {
+      LinkageNode *current = *it;
+      QVector<LinkageNode*>::iterator it2;
+      QVector<LinkageNode*> partners;
+      for (it2 = it + 1; it2 != _linkageNodeVector.end(); it2++) 
+	{
+	  LinkageNode *second = *it2;
+	  QVectorIterator<Linkage*> it3(_linkagesVector);
+	  while (it3.hasNext()) 
+	    {
+	      Linkage *edge = it3.next();
+	      // Basically we just ask whether the current events are linked.
+	      if ((edge->getStart() == current &&
+		   edge->getEnd() == second) ||
+		  (edge->getEnd() == current &&
+		   edge->getStart() == second)) 
+		{
+		  partners.push_back(second);
+		}
+	    }
+	}
+      qreal originHeight = current->scenePos().y();
+      std::sort(partners.begin(), partners.end(), eventLessThan);
+      int partnerCount = partners.size();
+      QVectorIterator<LinkageNode*> it4(partners);
+      while (it4.hasNext()) 
+	{
+	  LinkageNode *currentPartner = it4.next();
+	  qreal partnerHeight = originHeight;
+	  if (partners.size() > 1) 
+	    {
+	      partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
+	    }
+	  currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
+	  currentPartner->getLabel()->setNewPos(currentPartner->scenePos());
+	  partnerCount--;
+	}
+    }
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+}
+
+void LinkagesWidget::cleanUp()
+{
+  scene->clearSelection();
+  qDeleteAll(_linkageNodeLabelVector);
+  _linkageNodeLabelVector.clear();
+  qDeleteAll(_linkageNodeVector);
+  _linkageNodeVector.clear();
+  qDeleteAll(_linkagesVector);
+  _linkagesVector.clear();
+  scene->clear();
+}
+
+void LinkagesWidget::processLinkageNodeContextMenuAction(LinkageNode *node, const QString &action)
+{
+  if (action == SELECTTAILACTION)
+    {
+      changeTailNode(node);
+    }
+  else if (action == SELECTHEADACTION)
+    {
+      changeHeadNode(node);
+    }
 }
 
 void LinkagesWidget::editLeftIncident()
@@ -3507,10 +3847,20 @@ void LinkagesWidget::setLinkageComment()
       query->first();
       int tailIndex = query->value(0).toInt();
       int headIndex = query->value(1).toInt();
+      query->prepare("SELECT id FROM incidents "
+		     "WHERE ch_order = :order");
+      query->bindValue(":order", tailIndex);
+      query->exec();
+      query->first();
+      int tailId = query->value(0).toInt();
+      query->bindValue(":order", headIndex);
+      query->exec();
+      query->first();
+      int headId = query->value(0).toInt();
       query->prepare("SELECT tail FROM linkage_comments "
 		     "WHERE tail = :tail AND head = :head AND type = :type");
-      query->bindValue(":tail", tailIndex);
-      query->bindValue(":head", headIndex);
+      query->bindValue(":tail", tailId);
+      query->bindValue(":head", headId);
       query->bindValue(":type", _selectedType);
       query->exec();
       query->first();
@@ -3523,8 +3873,8 @@ void LinkagesWidget::setLinkageComment()
 			     "WHERE tail = :tail AND head = :head AND type = :type");
 	      query->bindValue(":comment", comment);
 	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
+	      query->bindValue(":tail", tailId);
+	      query->bindValue(":head", headId);
 	      query->bindValue(":type", _selectedType);
 	      query->exec();
 	    }
@@ -3532,8 +3882,8 @@ void LinkagesWidget::setLinkageComment()
 	    {
 	      query->prepare("DELETE FROM linkage_comments "
 			     "WHERE tail = :tail and head = :head AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
+	      query->bindValue(":tail", tailId);
+	      query->bindValue(":head", headId);
 	      query->bindValue(":type", _selectedType);
 	      query->exec();
 	    }
@@ -3544,8 +3894,8 @@ void LinkagesWidget::setLinkageComment()
 	    {
 	      query->prepare("INSERT INTO linkage_comments (tail, head, comment, coder, type)"
 			     "VALUES (:tail, :head, :comment, :coder, :type)");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
+	      query->bindValue(":tail", tailId);
+	      query->bindValue(":head", headId);
 	      query->bindValue(":comment", comment);
 	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":type", _selectedType);
@@ -3619,6 +3969,32 @@ void LinkagesWidget::setLink()
       query->exec();
       storeEvidence(tailId, headId);
       highlightText();
+      LinkageNode *tempSource = NULL;
+      LinkageNode *tempTarget = NULL;
+      QVectorIterator <LinkageNode*> it(_linkageNodeVector);
+      while (it.hasNext())
+	{
+	  LinkageNode *current = it.next();
+	  if (current->getId() == tailId) 
+	    {
+	      tempSource = current;
+	    }
+	  else if (current->getId() == headId) 
+	    {
+	      tempTarget = current;
+	    }
+	  if (tempSource != NULL && tempTarget != NULL)
+	    {
+	      Linkage *newLinkage = new Linkage(_selectedType, _selectedCoder);
+	      newLinkage->setZValue(1);
+	      newLinkage->setStartItem(tempSource);
+	      newLinkage->setEndItem(tempTarget);
+	      newLinkage->setColor(Qt::black);
+	      _linkagesVector.push_back(newLinkage);
+	      scene->addItem(newLinkage);
+	      break;
+	    }
+	}
     }
   if (linkageFeedbackLabel->text() != "LINKED") 
     {
@@ -3812,6 +4188,7 @@ void LinkagesWidget::setLink()
     }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
+  updateLinkages();
   delete query;
 }
 
@@ -3894,6 +4271,18 @@ void LinkagesWidget::unsetLink()
       query->bindValue(":head", headId);
       query->bindValue(":type", _selectedType);
       query->bindValue(":coder", _selectedCoder);
+      QVectorIterator<Linkage*> it(_linkagesVector);
+      while (it.hasNext())
+	{
+	  Linkage* current = it.next();
+	  LinkageNode* tail = qgraphicsitem_cast<LinkageNode*>(current->getStart());
+	  LinkageNode* head = qgraphicsitem_cast<LinkageNode*>(current->getEnd());
+	  if (tail->getId() == tailId && head->getId() == headId)
+	    {
+	      delete current;
+	      _linkagesVector.removeOne(current);
+	    }
+	}
     }
   linkageFeedbackLabel->setText("");
   linkageFeedbackLabel->adjustSize();
@@ -4078,6 +4467,7 @@ void LinkagesWidget::unsetLink()
     }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
+  updateLinkages();
   delete query;
 }
 
@@ -4527,6 +4917,8 @@ void LinkagesWidget::setButtons(bool status)
   headRawField->setEnabled(status);
   headCommentField->setEnabled(status);
   linkageCommentField->setEnabled(status);
+  view->setEnabled(status);
+  layoutButton->setEnabled(status);
 }
 
 bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 
@@ -4603,6 +4995,7 @@ bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
 
 void LinkagesWidget::finalBusiness() 
 {
+  cleanUp();
   setComments();
   setLinkageComment();
 }

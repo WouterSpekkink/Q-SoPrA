@@ -509,6 +509,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
     (itemAt(event->scenePos(), QTransform()));
   OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
     (itemAt(event->scenePos(), QTransform()));
+  //  LinkageNode *linkageNode = qgraphicsitem_cast<LinkageNode*>
+  //  (itemAt(event->scenePos(), QTransform()));
+  //  LinkageNodeLabel *linkageNodeLabel = qgraphicsitem_cast<LinkageNodeLabel*>
+  //  (itemAt(event->scenePos(), QTransform()));
   LineObject *line = qgraphicsitem_cast<LineObject*>
     (itemAt(event->scenePos(), QTransform()));
   TextObject *text = qgraphicsitem_cast<TextObject*>
@@ -625,6 +629,10 @@ void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event)
 		{
 		  occurrence = occurrenceLabel->getOccurrence();
 		}
+	      //	      if (linkageNodeLabel)
+	      //		{
+	      //		  linkageNode = linkageNodeLabel->getNode();
+	      //	}
 	      if (linkage) 
 		{
 		  clearSelection();
@@ -2070,6 +2078,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	(itemAt(event->scenePos(), QTransform()));
       OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
 	(itemAt(event->scenePos(), QTransform()));
+      LinkageNode *linkageNode = qgraphicsitem_cast<LinkageNode*>
+	(itemAt(event->scenePos(), QTransform()));
+      LinkageNodeLabel *linkageNodeLabel = qgraphicsitem_cast<LinkageNodeLabel*>
+	(itemAt(event->scenePos(), QTransform()));
       LineObject *line = qgraphicsitem_cast<LineObject*>
 	(itemAt(event->scenePos(), QTransform()));
       TextObject *text = qgraphicsitem_cast<TextObject*>
@@ -2093,6 +2105,10 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
       if (occurrenceLabel)
 	{
 	  occurrence = occurrenceLabel->getOccurrence();
+	}
+      if (linkageNodeLabel)
+	{
+	  linkageNode = linkageNodeLabel->getNode();
 	}
       if (incident && !incident->isCopy()) 
 	{
@@ -2399,6 +2415,35 @@ void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
 	  if (QAction *action = menu->exec(event->screenPos())) 
 	    {
 	      emit OccurrenceItemContextMenuAction(occurrence, action->text());
+	    }
+	  delete action1;
+	  delete action2;
+	  delete menu;
+	}
+      else if (linkageNode)
+	{
+	  QMenu *menu = new QMenu;
+	  QAction *action1 = new QAction(SELECTTAILACTION, this);
+	  menu->addAction(action1);
+	  QAction *action2 = new QAction(SELECTHEADACTION, this);
+	  menu->addAction(action2);
+	  if (linkageNode->getDirection() == PAST)
+	    {
+	      if (linkageNode->isFirst())
+		{
+		  action1->setEnabled(false);
+		}
+	    }
+	  else if (linkageNode->getDirection() == FUTURE)
+	    {
+	      if (linkageNode->isLast())
+		{
+		  action2->setEnabled(false);
+		}
+	    }
+	  if (QAction *action = menu->exec(event->screenPos())) 
+	    {
+	      emit LinkageNodeContextMenuAction(linkageNode, action->text());
 	    }
 	  delete action1;
 	  delete action2;

@@ -148,5 +148,7 @@ QString REMOVEFROMCASEACTION = "Remove from case";
 QString CREATENEWCASEACTION = "Add to new case";
 QString SETHIGHLIGHTEDACTION = "Highlight occurrences";
 QString UNSETHIGHLIGHTEDACTION = "Remove highlight";
+QString SELECTTAILACTION = "Set as tail incident";
+QString SELECTHEADACTION = "Set as head incident";
 
 qreal Pi = 3.14;

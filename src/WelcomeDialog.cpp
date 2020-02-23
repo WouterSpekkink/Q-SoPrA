@@ -156,7 +156,6 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
 		      "description text, "
-		      "question text, "
 		      "direction text)");
 	  query->exec("CREATE TABLE linkages "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -954,7 +953,6 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
 		      "description text, "
-		      "question text, "
 		      "direction text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS linkages "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -1982,10 +1980,6 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("description"))
 	    {
 	      query->exec("ALTER TABLE linkage_types ADD COLUMN description text;");
-	    }
-	  if (!columns.contains("question"))
-	    {
-	      query->exec("ALTER TABLE linkage_types ADD COLUMN question text;");
 	    }
 	  if (!columns.contains("direction"))
 	    {

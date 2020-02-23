@@ -935,6 +935,7 @@ void MainWindow::switchToLinkageView()
       LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
       lw->incidentsModel->sort(1, Qt::AscendingOrder);
       lw->incidentsModel->select();
+      lw->setLinkageType();
       lw->retrieveData();
       EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
       egw->setComment();

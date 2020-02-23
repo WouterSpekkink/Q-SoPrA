@@ -49,13 +49,11 @@ public:
   // Setters
   void submitName(const QString &name);
   void submitDescription (const QString &description);
-  void submitQuestion(const QString &question);
   void submitDirection (const QString &direction);
 
   // Getters
   QString getName();
   QString getDescription();
-  QString getQuestion();
   QString getDirection();
   int getExitStatus();
 
@@ -71,7 +69,6 @@ private:
   // Interface elements
   QPointer<QLabel> nameLabel;
   QPointer<QLabel> descriptionLabel;
-  QPointer<QLabel> questionLabel;
   QPointer<QLabel> directionLabel;
   QPointer<QPushButton> pastButton;
   QPointer<QPushButton> futureButton;
@@ -79,13 +76,11 @@ private:
   QPointer<QPushButton> saveCloseButton;
   QPointer<QLineEdit> nameField;
   QPointer<QTextEdit> descriptionField;
-  QPointer<QTextEdit> questionField;
 
   // Private variables
   QString _name;
   QString _subName;
   QString _description;
-  QString _question;
   QString _direction;
   int _exitStatus;
 };

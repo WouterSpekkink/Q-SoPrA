@@ -145,6 +145,8 @@ void Linkage::calculate() {
   AbstractNode *endAbstractNode = qgraphicsitem_cast<AbstractNode*>(_end);
   OccurrenceItem *occurrenceStart = qgraphicsitem_cast<OccurrenceItem*>(_start);
   OccurrenceItem *occurrenceEnd = qgraphicsitem_cast<OccurrenceItem*>(_end);
+  LinkageNode *startLinkageNode = qgraphicsitem_cast<LinkageNode*>(_start);
+  LinkageNode *endLinkageNode = qgraphicsitem_cast<LinkageNode*>(_end);
   if (startIncidentNode && endIncidentNode)
     {
       // startX is middle of start node
@@ -178,6 +180,7 @@ void Linkage::calculate() {
 		{
 		  _newLine = QLineF(QPointF(startX - length, startIncidentNode->pos().y()),
 				    (QPointF(endX + (endIncidentNode->getWidth() / 2)
+
 					     - 20, endIncidentNode->pos().y())));
 		}
 	      else
@@ -548,6 +551,100 @@ void Linkage::calculate() {
 	  _newLine = QLineF(QPointF(startX, startAbstractNode->pos().y()),
 			    (QPointF(endX + (endAbstractNode->getWidth() / 2)
 				     - 20, endAbstractNode->pos().y())));
+	}
+    }
+  if (startLinkageNode && endLinkageNode)
+    {
+      // startX is middle of start node
+      qreal startX = startLinkageNode->pos().x();
+      // endX is middle of end node
+      qreal endX = endLinkageNode->pos().x();
+      // startLeft is the left-most edge of the start node
+      qreal startLeft = startLinkageNode->pos().x() - 20;
+      // endLeft is the left-most edge of the end node
+      qreal endLeft = endLinkageNode->pos().x() - 20;
+      // startRight is the right-most edge of the start node
+      qreal startRight = startLinkageNode->pos().x();
+      // endRight is the right-most edge of the end node
+      qreal endRight = endLinkageNode->pos().x() - 20;
+      if (_direction == FUTURE)
+	{
+	  if (startX > endLeft && startX <= endRight - 10)
+	    {
+	      _newLine = QLineF(QPointF(startX, startLinkageNode->pos().y()),
+				(QPointF(startX + 10, endLinkageNode->pos().y())));
+	    }
+	  else if (startX > endRight - 10 && startLeft <= endRight - 20)
+	    {
+	      _newLine = QLineF(QPointF(endRight - 20, startLinkageNode->pos().y()),
+				(QPointF(endRight - 10, endLinkageNode->pos().y())));
+	    }
+	  else if (startLeft >= endLeft)
+	    {
+	      qreal length = startX - endLeft;
+	      if (startX - length > startLeft + 5)
+		{
+		  _newLine = QLineF(QPointF(startX - length, startLinkageNode->pos().y()),
+				    (QPointF(endX, endLinkageNode->pos().y())));
+		}
+	      else
+		{
+		  if (startX + 10 <= endRight - 10)
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startLinkageNode->pos().y()),
+					(QPointF(startX + 10, endLinkageNode->pos().y())));
+		    }
+		  else
+		    {
+		      _newLine = QLineF(QPointF(startLeft + 5, startLinkageNode->pos().y()),
+					(QPointF(endX, endLinkageNode->pos().y())));
+		    }
+		}
+	    }
+	   else if (startX <= endLeft)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startLinkageNode->pos().y()),
+				(QPointF(endX, endLinkageNode->pos().y())));
+	    }
+	}
+      else if (_direction == PAST)
+	{
+	  if (startX < endRight && startX - 20 >= endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startX, startLinkageNode->pos().y()),
+				(QPointF(startX - 10, endLinkageNode->pos().y())));
+	    }
+	  else if (startX - 20 < endLeft && startRight - 5 >= endLeft)
+	    {
+	      qreal length = endLeft + 20 - startX;
+	      if (startX + length < startRight - 5)
+		{
+		  _newLine = QLineF(QPointF(startX + length, startLinkageNode->pos().y()),
+				    (QPointF(endLeft + 10, endLinkageNode->pos().y())));
+		}
+	      else
+		{
+		  _newLine = QLineF(QPointF(startRight - 5, startLinkageNode->pos().y()),
+				    (QPointF(endX, endLinkageNode->pos().y())));
+		}
+	    }
+	  else if (startRight - 5 < endLeft)
+	    {
+	      _newLine = QLineF(QPointF(startRight - 5, startLinkageNode->pos().y()),
+				(QPointF(endX, endLinkageNode->pos().y())));
+	    }
+	  else if (startX >= endRight)
+	    {
+	      // The default situation
+	      _newLine = QLineF(QPointF(startX, startLinkageNode->pos().y()),
+				(QPointF(endX, endLinkageNode->pos().y())));
+	    }
+	}
+      else
+	{
+	  _newLine = QLineF(QPointF(startX, startLinkageNode->pos().y()),
+			    (QPointF(endX, endLinkageNode->pos().y())));
 	}
     }
   else if (occurrenceStart && occurrenceEnd)

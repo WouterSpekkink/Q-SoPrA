@@ -5,7 +5,7 @@
 TEMPLATE = app
 TARGET = Q-SoPrA
 INCLUDEPATH += .
-CONFIG += c++11
+CONFIG += c++11 debug
 QT += widgets sql svg opengl
 VERSION = 0.9.0
 DEFINES += VERSION_STRING=\\\"$${VERSION}\\\"
@@ -77,6 +77,8 @@ HEADERS += include/AbstractionDialog.h \
            include/LineObject.h \
            include/Linkage.h \
            include/LinkagesIndexDialog.h \
+           include/LinkageNode.h \
+           include/LinkageNodeLabel.h \
            include/LinkagesWidget.h \
            include/LinkageTypeDialog.h \
            include/MainWindow.h \
@@ -176,6 +178,8 @@ SOURCES += main.cpp \
            src/LineObject.cpp \
            src/Linkage.cpp \
            src/LinkagesIndexDialog.cpp \
+           src/LinkageNode.cpp \
+           src/LinkageNodeLabel.cpp \
            src/LinkagesWidget.cpp \
            src/LinkageTypeDialog.cpp \
            src/MainWindow.cpp \

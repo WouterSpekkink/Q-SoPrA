@@ -22,6 +22,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../include/SortFunctions.h"
 
+bool linkageNodeSort(const LinkageNode *nodeOne, const LinkageNode *nodeTwo)
+{
+  return (nodeOne->getOrder() < nodeTwo->getOrder());
+}
+
 bool componentsSort(const QGraphicsItem *itemOne, const QGraphicsItem *itemTwo) 
 {
   const IncidentNode *eventOne = qgraphicsitem_cast<const IncidentNode*>(itemOne);
