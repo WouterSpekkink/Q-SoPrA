@@ -104,11 +104,18 @@ void EvidenceDialog::getData()
   headCursor.movePosition(QTextCursor::Start);
   headTextField->setTextCursor(headCursor);
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT raw, ch_order FROM incidents "
+  query->prepare("SELECT raw FROM incidents "
 		 "WHERE id = :tail");
   query->bindValue(":tail", _tail);
   query->exec();
   query->first();
+  tailTextField->setPlainText(query->value(0).toString());
+  query->prepare("SELECT raw FROM incidents "
+		 "WHERE id = :head");
+  query->bindValue(":head", _head);
+  query->exec();
+  query->first();
+  headTextField->setPlainText(query->value(0).toString());
   query->prepare("SELECT istail, source_text FROM linkages_sources "
 		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", _tail);

@@ -135,63 +135,13 @@ void AddEvidenceDialog::getData()
   query->bindValue(":tail", _tail);
   query->exec();
   query->first();
-  query->prepare("SELECT istail, source_text FROM linkages_sources "
-		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
-  query->bindValue(":tail", _tail);
+  tailTextField->setPlainText(query->value(0).toString());
+  query->prepare("SELECT raw FROM incidents "
+		 "WHERE id = :head");
   query->bindValue(":head", _head);
-  query->bindValue(":type", _type);
-  query->bindValue(":coder", _coder);
   query->exec();
-  while (query->next())
-    {
-      bool isTail = false;
-      if (query->value(0).toInt() == true)
-	{
-	  isTail = true;
-	}
-      if (!query->isNull(1) && isTail)
-	{
-	  QString tailText = query->value(1).toString();
-	  QVector<QString> tailBlocks = splitLines(tailText);
-	  QVectorIterator<QString> it(tailBlocks);
-	  while (it.hasNext()) 
-	    {
-	      QString currentLine = it.next();
-	      while (tailTextField->find(currentLine, QTextDocument::FindWholeWords)) 
-		{
-		  format.setFontWeight(QFont::Bold);
-		  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-		  format.setUnderlineColor(Qt::blue);
-		  tailTextField->textCursor().mergeCharFormat(format);
-		}
-	    }
-	  tailCursor = tailTextField->textCursor();
-	  tailCursor.movePosition(QTextCursor::Start);
-	  tailTextField->setTextCursor(tailCursor);
-	  clearEvidenceButton->setEnabled(true);
-	}
-      else if (!query->isNull(1) && !isTail)
-	{
-	  QString headText = query->value(1).toString();
-	  QVector<QString> headBlocks = splitLines(headText);
-	  QVectorIterator<QString> it(headBlocks);
-	  while (it.hasNext()) 
-	    {
-	      QString currentLine = it.next();
-	      while (headTextField->find(currentLine, QTextDocument::FindWholeWords)) 
-		{
-		  format.setFontWeight(QFont::Bold);
-		  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-		  format.setUnderlineColor(Qt::blue);
-		  headTextField->textCursor().mergeCharFormat(format);
-		}
-	    }
-	  headCursor = headTextField->textCursor();
-	  headCursor.movePosition(QTextCursor::Start);
-	  headTextField->setTextCursor(headCursor);
-	  clearEvidenceButton->setEnabled(true);
-	}
-    }
+  query->first();
+  headTextField->setPlainText(query->value(0).toString());
   currentTailPos.movePosition(QTextCursor::Start);
   currentHeadPos.movePosition(QTextCursor::Start);
   query->prepare("SELECT comment FROM linkage_comments "
