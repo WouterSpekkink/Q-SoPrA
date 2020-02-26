@@ -398,6 +398,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   setLinkButton->setMaximumWidth(setLinkButton->sizeHint().width());
   linkageCodeLayout->addWidget(linkageFeedbackLabel);
   linkageFeedbackLabel->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
+  linkageCodeLayout->setAlignment(linkageFeedbackLabel, Qt::AlignHCenter | Qt::AlignVCenter);
   linkageFeedbackLabel->setStyleSheet("color: blue");
   linkageFeedbackLabel->setMinimumHeight(40);
   linkageFeedbackLabel->setMinimumWidth(100);
@@ -642,6 +643,8 @@ void LinkagesWidget::addLinkageType()
 
 void LinkagesWidget::editLinkageType() 
 {
+  setComments();
+  setLinkageComment();    
   if (typeComboBox->currentText() != DEFAULT) 
     {
       QSqlQuery *query = new QSqlQuery;
@@ -1675,6 +1678,8 @@ void LinkagesWidget::processLinkageNodeContextMenuAction(LinkageNode *node, cons
 
 void LinkagesWidget::editLeftIncident()
 {
+  setComments();
+  setLinkageComment();    
   QPointer<RecordDialog> dialog = new RecordDialog(this);
   QString timeStamp = tailTimeStampField->text();
   QString source  = tailSourceField->text();
@@ -1720,6 +1725,8 @@ void LinkagesWidget::editLeftIncident()
 
 void LinkagesWidget::editRightIncident()
 {
+  setComments();
+  setLinkageComment();    
   QPointer<RecordDialog> dialog = new RecordDialog(this);
   QString timeStamp = headTimeStampField->text();
   QString source  = headSourceField->text();
