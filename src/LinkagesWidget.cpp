@@ -960,7 +960,7 @@ void LinkagesWidget::setTypeButton()
     }
 }
 
-void LinkagesWidget::setLinkageType() 
+void LinkagesWidget::setLinkageType(bool checkManual) 
 {
   setComments();
   setLinkageComment();    
@@ -1012,12 +1012,16 @@ void LinkagesWidget::setLinkageType()
       QString toolTip = breakString(description);
       linkageTypeFeedbackLabel->setToolTip(toolTip);
       cleanUp();
+      setButtons(true);
       plotIncidents();
       plotLinkages();
+      scene->setSceneRect(scene->itemsBoundingRect());
       retrieveData();
       delete query;
-      setButtons(true);
-      checkManualButton();
+      if (checkManual)
+	{
+	  checkManualButton();
+	}
     }
 }
 
@@ -1315,19 +1319,6 @@ void LinkagesWidget::retrieveData()
   std::sort(_linkageNodeVector.begin(), _linkageNodeVector.end(), linkageNodeSort);
   _linkageNodeVector.first()->setFirst();
   _linkageNodeVector.last()->setLast();
-  QRectF itemsRect;
-  QList<QGraphicsItem *> selectedItems = scene->selectedItems();
-  QListIterator<QGraphicsItem *> it2(scene->selectedItems());
-  while (it2.hasNext())
-    {
-      QGraphicsItem *current = it2.next();
-      itemsRect = itemsRect.united(current->sceneBoundingRect());
-    }
-  itemsRect.setX(itemsRect.x() - 200);
-  itemsRect.setY(itemsRect.y() - 200);
-  itemsRect.setWidth(itemsRect.width() + 400);
-  itemsRect.setHeight(itemsRect.height() + 400);
-  view->fitInView(itemsRect, Qt::KeepAspectRatio);
   incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
@@ -1481,6 +1472,19 @@ void LinkagesWidget::retrieveData()
 	  _markedHeadEvidence.push_back(query->value(1).toString());
 	}
     }
+  QRectF itemsRect;
+  QList<QGraphicsItem *> selectedItems = scene->selectedItems();
+  QListIterator<QGraphicsItem *> it2(scene->selectedItems());
+  while (it2.hasNext())
+    {
+      QGraphicsItem *current = it2.next();
+      itemsRect = itemsRect.united(current->sceneBoundingRect());
+    }
+  itemsRect.setX(itemsRect.x() - 200);
+  itemsRect.setY(itemsRect.y() - 200);
+  itemsRect.setWidth(itemsRect.width() + 400);
+  itemsRect.setHeight(itemsRect.height() + 400);
+  view->fitInView(itemsRect, Qt::KeepAspectRatio);
   updateLinkages();
   highlightText();
   delete query;

@@ -74,7 +74,7 @@ private slots:
   void removeLinkageType();
   void setTypeButton();
   void setButtons(bool status);
-  void setLinkageType();
+  void setLinkageType(bool checkManual = true);
   void switchLinkageType();
   void checkManualButton();
   void checkAssistedButton();
