@@ -65,6 +65,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   selectCoderLabel = new QLabel(tr("<b>Select coder:</b>"), this);
   selectTypeLabel =  new QLabel(tr("<b>Select linkage type:</b>"), this);
   tailIndexLabel = new QLabel(tr("<b>Tail ( / ) - Incident:</b>"), this);
+  tailIndexLabel->setStyleSheet("QLabel{color:rgb(151, 74, 189);}");
   tailMarkedLabel = new QLabel("");
   tailMarkedLabel->setStyleSheet("QLabel {color: red}");
   tailTimeStampLabel = new QLabel(tr("<b>Timing:</b>"), this);
@@ -76,6 +77,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   tailRawFilterLabel = new QLabel(tr("<i>Search raw texts:</i>"), this);
   tailCommentFilterLabel = new QLabel(tr("<i>Search comments:</i>"), this);
   headIndexLabel = new QLabel(tr("<b>Head ( / ) - Incident:</b>"), this);
+  headIndexLabel->setStyleSheet("QLabel{color:rgb(74, 189, 81);}");
   headMarkedLabel = new QLabel("");
   headMarkedLabel->setStyleSheet("QLabel {color: red}");
   headTimeStampLabel = new QLabel(tr("<b>Timing:</b>"), this);
@@ -1345,16 +1347,6 @@ void LinkagesWidget::retrieveData()
     }
   tailIndexLabel->setText(tailIndexText);
   headIndexLabel->setText(headIndexText);
-  if (_selectedDirection == PAST)
-    {
-      tailIndexLabel->setStyleSheet("QLabel{color:rgb(151, 74, 189);}");
-      headIndexLabel->setStyleSheet("QLabel{color:rgb(74, 189, 81);}");
-    }
-  else if (_selectedDirection == FUTURE)
-    {
-      tailIndexLabel->setStyleSheet("QLabel{color:rgb(74, 189, 81);}");
-      headIndexLabel->setStyleSheet("QLabel{color:rgb(151, 74, 189);}");
-    }
   query->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
 		 "FROM incidents WHERE ch_order = :tail");
   query->bindValue(":tail", tailIndex);

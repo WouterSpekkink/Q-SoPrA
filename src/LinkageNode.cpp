@@ -49,7 +49,14 @@ LinkageNode::LinkageNode(QPointF originalPosition,
 
 QRectF LinkageNode::boundingRect() const 
 {
-  return QRectF(-26, -26, _width + 12, 52);
+  if (_tail || _head)
+    {
+      return QRectF(-26, -56, _width + 12, 102);
+    }
+  else
+    {
+      return QRectF(-26, -26, _width + 12, 52);
+    }
 }
 
 QPainterPath LinkageNode::shape() const 
@@ -68,28 +75,34 @@ void LinkageNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
   _color = QColor(255, 255, 255);
   if (_tail) 
     {
-      if (_direction == PAST)
-	{
-	  _color = QColor(151, 74, 189, 255);
-	}
-      else if (_direction == FUTURE)
-	{
-	  _color = QColor(74, 189, 81, 255);
-	}
+      _color = QColor(151, 74, 189, 255);
     }
   else if (_head)
     {
-      if (_direction == PAST)
-	{
-	  _color = QColor(74, 189, 81, 255);
-	}
-      else if (_direction == FUTURE)
-	{
-	  _color = QColor(151, 74, 189, 255);
-	}
+      _color = QColor(74, 189, 81, 255);
     }
   painter->setBrush(QBrush(_color));  
   painter->drawEllipse(-20, -20, _width, 40);
+  if (_tail)
+    {
+      QFont font = painter->font();
+      font.setPointSize(14);
+      painter->setFont(font);
+      QRectF textRect = QRectF(-20, -50, 100, 100);
+      QRectF boundingRect;
+      QString text = "Tail";
+      painter->drawText(textRect, 0, text, &boundingRect);
+    }
+  else if (_head)
+    {
+      QFont font = painter->font();
+      font.setPointSize(14);
+      painter->setFont(font);
+      QRectF textRect = QRectF(-20, -50, 100, 100);
+      QString text = "Head";
+      QRectF boundingRect;
+      painter->drawText(textRect, 0, text, &boundingRect);
+    }
   update();
 }
 
