@@ -71,7 +71,15 @@ void DeselectableTreeView::dropEvent(QDropEvent *event)
   else if (dropIndicatorPosition() == QAbstractItemView::AboveItem ||
 	   dropIndicatorPosition() == QAbstractItemView::BelowItem) 
     {
-      targetName = model()->data(targetIndex.parent()).toString();
+      if ((model()->data(targetIndex).toString() == ENTITIES) & entity)
+	{
+	  event->ignore();
+	  return;
+	}
+      else
+	{
+	  targetName = model()->data(targetIndex.parent()).toString();
+	}
     }
   else if (dropIndicatorPosition() == QAbstractItemView::OnViewport) 
     {
