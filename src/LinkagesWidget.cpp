@@ -3887,7 +3887,8 @@ void LinkagesWidget::setLinkageComment()
 	  else 
 	    {
 	      query->prepare("DELETE FROM linkage_comments "
-			     "WHERE tail = :tail and head = :head AND type = :type");
+			     "WHERE tail = :tail AND head = :head AND "
+			     "type = :type");
 	      query->bindValue(":tail", tailId);
 	      query->bindValue(":head", headId);
 	      query->bindValue(":type", _selectedType);
@@ -3898,7 +3899,8 @@ void LinkagesWidget::setLinkageComment()
 	{
 	  if (comment != "")
 	    {
-	      query->prepare("INSERT INTO linkage_comments (tail, head, comment, coder, type)"
+	      query->prepare("INSERT INTO linkage_comments "
+			     "(tail, head, comment, coder, type)"
 			     "VALUES (:tail, :head, :comment, :coder, :type)");
 	      query->bindValue(":tail", tailId);
 	      query->bindValue(":head", headId);
@@ -3957,7 +3959,8 @@ void LinkagesWidget::setLink()
   int headId = 0;
   headId = query->value(0).toInt();
   query->prepare("SELECT tail, head FROM linkages "
-		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+		 "WHERE tail = :tail AND head = :head "
+		 "AND type = :type AND coder = :coder");
   query->bindValue(":tail", tailId);
   query->bindValue(":head", headId);
   query->bindValue(":type", _selectedType);
@@ -4010,28 +4013,179 @@ void LinkagesWidget::setLink()
     }
   qApp->processEvents();
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  if (_codingType == ASSISTED && _selectedDirection == PAST) 
+  if (_codingType == ASSISTED)
     {
-      QSet<int> ignore;
-      if (headIndex != 1) 
+      QMap<int, QSet<int>> headsMap;
+      QMap<int, QSet<int>> tailsMap;
+      query->prepare("SELECT tail, head FROM linkages "
+		     "WHERE type = :type AND coder = :coder");
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
+      while (query->next())
 	{
-	  findPastPaths(&ignore, tailIndex);
-	  for (int i = headIndex - 1; i != 0; i--) 
+	  int tail = query->value(0).toInt();
+	  int head = query->value(1).toInt();
+	  QSet<int> currentHeads = headsMap.value(tail);
+	  QSet<int> currentTails = tailsMap.value(head);
+	  currentHeads.insert(head);
+	  currentTails.insert(tail);
+	  headsMap.insert(tail, currentHeads);
+	  tailsMap.insert(head, currentTails);
+	}
+      if(_selectedDirection == PAST) 
+	{
+	  QSet<int> paths;
+	  if (headIndex != 1)
 	    {
-	      bool found = false;
-	      if (ignore.contains(i)) 
+	      findPastPaths(&paths,
+			    &headsMap,
+			    tailIndex);
+	      QSet<int> orderSet;
+	      QSetIterator<int> pIt(paths);
+	      while (pIt.hasNext())
 		{
-		  found = true;
+		  query->prepare("SELECT ch_order FROM incidents "
+				 "WHERE id = :id");
+		  query->bindValue(":id", pIt.next());
+		  query->exec();
+		  query->first();
+		  orderSet.insert(query->value(0).toInt());
 		}
-	      if (!found) 
+	      for (int i = headIndex - 1; i != 0; i--) 
 		{
-		  if (headIndex != 1) 
+		  bool found = false;
+		  if (orderSet.contains(i)) 
 		    {
-		      headIndex = i;
+		      found = true;
+		    }
+		  if (!found) 
+		    {
+		      if (headIndex != 1) 
+			{
+			  headIndex = i;
+			  query->prepare("UPDATE coders_to_linkage_types "
+					 "SET head = :head "
+					 "WHERE coder = :coder AND type = :type");
+			  query->bindValue(":head", headIndex);
+			  query->bindValue(":coder", _selectedCoder);
+			  query->bindValue(":type", _selectedType);
+			  query->exec();
+			  pause(500);
+			  retrieveData();
+			  delete query;
+			  QApplication::restoreOverrideCursor();
+			  qApp->processEvents();
+			  return;
+			}
+		      else 
+			{
+			  if (tailIndex != incidentsModel->rowCount()) 
+			    {
+			      tailIndex++;
+			      headIndex = tailIndex - 1;
+			      query->prepare("UPDATE coders_to_linkage_types "
+					     "SET tail = :tail, head = :head "
+					     "WHERE coder = :coder "
+					     "AND type = :type");
+			      query->bindValue(":tail", tailIndex);
+			      query->bindValue(":head", headIndex);
+			      query->bindValue(":coder", _selectedCoder);
+			      query->bindValue(":type", _selectedType);
+			      query->exec();
+			      pause(500);
+			      retrieveData();
+			      delete query;
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      return; 
+			    }
+			}
+		    }
+		  else 
+		    {
+		      if (i == 1) 
+			{
+			  if (tailIndex != incidentsModel->rowCount()) 
+			    {
+			      tailIndex++;
+			      headIndex = tailIndex - 1;
+			      query->prepare("UPDATE coders_to_linkage_types "
+					     "SET tail = :tail, head = :head "
+					     "WHERE coder = :coder "
+					     "AND type = :type");
+			      query->bindValue(":tail", tailIndex);
+			      query->bindValue(":head", headIndex);
+			      query->bindValue(":coder", _selectedCoder);
+			      query->bindValue(":type", _selectedType);
+			      query->exec();
+			      pause(500);
+			      retrieveData();
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      delete query;
+			      return; 
+			    }
+			}
+		    }
+		}
+	    }
+	  else 
+	    {
+	      if (tailIndex != incidentsModel->rowCount()) 
+		{
+		  tailIndex++;
+		  headIndex = tailIndex - 1;
+		  query->prepare("UPDATE coders_to_linkage_types "
+				 "SET tail = :tail, head = :head "
+				 "WHERE coder = :coder AND type = :type");
+		  query->bindValue(":tail", tailIndex);
+		  query->bindValue(":head", headIndex);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->bindValue(":type", _selectedType);
+		  query->exec();
+		  pause(500);
+		  retrieveData();
+		  QApplication::restoreOverrideCursor();
+		  qApp->processEvents();
+		  delete query;
+		  return; 
+		}
+	    }
+	}
+      else if (_selectedDirection == FUTURE) 
+	{
+	  QSet<int> paths;
+	  if (tailIndex != 1) 
+	    {
+	      findFuturePaths(&paths,
+			      &tailsMap,
+			      headIndex);
+	      QSet<int> orderSet;
+	      QSetIterator<int> pIt(paths);
+	      while (pIt.hasNext())
+		{
+		  query->prepare("SELECT ch_order FROM incidents "
+				 "WHERE id = :id");
+		  query->bindValue(":id", pIt.next());
+		  query->exec();
+		  query->first();
+		  orderSet.insert(query->value(0).toInt());
+		}
+	      for (int i = tailIndex - 1; i != 0; i--) 
+		{
+		  bool found = false;
+		  if (orderSet.contains(i)) 
+		    {
+		      found = true;
+		    }
+		  if (!found) 
+		    {
+		      tailIndex = i;
 		      query->prepare("UPDATE coders_to_linkage_types "
-				     "SET head = :head "
+				     "SET tail = :tail "
 				     "WHERE coder = :coder AND type = :type");
-		      query->bindValue(":head", headIndex);
+		      query->bindValue(":tail", tailIndex);
 		      query->bindValue(":coder", _selectedCoder);
 		      query->bindValue(":type", _selectedType);
 		      query->exec();
@@ -4044,60 +4198,36 @@ void LinkagesWidget::setLink()
 		    }
 		  else 
 		    {
-		      if (tailIndex != incidentsModel->rowCount()) 
+		      if (i == 1) 
 			{
-			  tailIndex++;
-			  headIndex = tailIndex - 1;
-			  query->prepare("UPDATE coders_to_linkage_types "
-					 "SET tail = :tail, head = :head "
-					 "WHERE coder = :coder AND type = :type");
-			  query->bindValue(":tail", tailIndex);
-			  query->bindValue(":head", headIndex);
-			  query->bindValue(":coder", _selectedCoder);
-			  query->bindValue(":type", _selectedType);
-			  query->exec();
-			  pause(500);
-			  retrieveData();
-			  delete query;
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  return; 
-			}
-		    }
-		}
-	      else 
-		{
-		  if (i == 1) 
-		    {
-		      if (tailIndex != incidentsModel->rowCount()) 
-			{
-			  tailIndex++;
-			  headIndex = tailIndex - 1;
-			  query->prepare("UPDATE coders_to_linkage_types "
-					 "SET tail = :tail, head = :head "
-					 "WHERE coder = :coder AND type = :type");
-			  query->bindValue(":tail", tailIndex);
-			  query->bindValue(":head", headIndex);
-			  query->bindValue(":coder", _selectedCoder);
-			  query->bindValue(":type", _selectedType);
-			  query->exec();
-			  pause(500);
-			  retrieveData();
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  delete query;
-			  return; 
+			  if (headIndex != incidentsModel->rowCount()) 
+			    {
+			      headIndex++;
+			      tailIndex = headIndex - 1;
+			      query->prepare("UPDATE coders_to_linkage_types "
+					     "SET tail = :tail, head = :head "
+					     "WHERE coder = :coder "
+					     "AND type = :type");
+			      query->bindValue(":tail", tailIndex);
+			      query->bindValue(":head", headIndex);
+			      query->bindValue(":coder", _selectedCoder);
+			      query->bindValue(":type", _selectedType);
+			      query->exec();
+			      pause(500);
+			      retrieveData();
+			      delete query;
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      return;
+			    }
 			}
 		    }
 		}
 	    }
-	}
-      else 
-	{
-	  if (tailIndex != incidentsModel->rowCount()) 
+	  else 
 	    {
-	      tailIndex++;
-	      headIndex = tailIndex - 1;
+	      headIndex++;
+	      tailIndex = headIndex - 1;
 	      query->prepare("UPDATE coders_to_linkage_types "
 			     "SET tail = :tail, head = :head "
 			     "WHERE coder = :coder AND type = :type");
@@ -4108,94 +4238,17 @@ void LinkagesWidget::setLink()
 	      query->exec();
 	      pause(500);
 	      retrieveData();
+	      delete query;
 	      QApplication::restoreOverrideCursor();
 	      qApp->processEvents();
-	      delete query;
-	      return; 
+	      return;
 	    }
-	}
-    }
-  else if (_codingType == ASSISTED && _selectedDirection == FUTURE) 
-    {
-      QSet<int> ignore;
-      if (tailIndex != 1) 
-	{
-	  findFuturePaths(&ignore, tailIndex);
-	  for (int i = tailIndex - 1; i != 0; i--) 
-	    {
-	      bool found = false;
-	      if (ignore.contains(i)) 
-		{
-		  found = true;
-		}
-	      if (!found) 
-		{
-		  tailIndex = i;
-		  query->prepare("UPDATE coders_to_linkage_types "
-				 "SET tail = :tail "
-				 "WHERE coder = :coder AND type = :type");
-		  query->bindValue(":tail", tailIndex);
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", _selectedType);
-		  query->exec();
-		  pause(500);
-		  retrieveData();
-		  delete query;
-		  QApplication::restoreOverrideCursor();
-		  qApp->processEvents();
-		  return;
-		}
-	      else 
-		{
-		  if (i == 1) 
-		    {
-		      if (headIndex != incidentsModel->rowCount()) 
-			{
-			  headIndex++;
-			  tailIndex = headIndex - 1;
-			  query->prepare("UPDATE coders_to_linkage_types "
-					 "SET tail = :tail, head = :head "
-					 "WHERE coder = :coder AND type = :type");
-			  query->bindValue(":tail", tailIndex);
-			  query->bindValue(":head", headIndex);
-			  query->bindValue(":coder", _selectedCoder);
-			  query->bindValue(":type", _selectedType);
-			  query->exec();
-			  pause(500);
-			  retrieveData();
-			  delete query;
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  return;
-			}
-		    }
-		}
-	    }
-	}
-      else 
-	{
-	  headIndex++;
-	  tailIndex = headIndex - 1;
-	  query->prepare("UPDATE coders_to_linkage_types "
-			 "SET tail = :tail, head = :head "
-			 "WHERE coder = :coder AND type = :type");
-	  query->bindValue(":tail", tailIndex);
-	  query->bindValue(":head", headIndex);
-	  query->bindValue(":coder", _selectedCoder);
-	  query->bindValue(":type", _selectedType);
-	  query->exec();
-	  pause(500);
-	  retrieveData();
-	  delete query;
-	  QApplication::restoreOverrideCursor();
-	  qApp->processEvents();
-	  return;
 	}
     }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
   updateLinkages();
-  delete query;
+  delete query;    
 }
 
 void LinkagesWidget::unsetLink() 
@@ -4208,9 +4261,12 @@ void LinkagesWidget::unsetLink()
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("You have marked evidence, but are removing a linkage. "
-				     "Evidence is not stored for unset linkages. Any evidence "
-				     "associated with this linkage will be lost when the linkage "
+      warningBox->setInformativeText("You have marked evidence, but are "
+				     "removing a linkage. "
+				     "Evidence is not stored for "
+				     "unset linkages. Any evidence "
+				     "associated with this linkage will be "
+				     "lost when the linkage "
 				     "is removed.");
       if (warningBox->exec() == QMessageBox::No) 
 	{
@@ -4255,7 +4311,8 @@ void LinkagesWidget::unsetLink()
   int headId = 0;
   headId = query->value(0).toInt();
   query->prepare("SELECT tail, head FROM linkages "
-		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+		 "WHERE tail = :tail AND head = :head AND type = :type "
+		 "AND coder = :coder");
   query->bindValue(":tail", tailId);
   query->bindValue(":head", headId);
   query->bindValue(":type", _selectedType);
@@ -4265,14 +4322,16 @@ void LinkagesWidget::unsetLink()
   if (!(query->isNull(0))) 
     {
       query->prepare("DELETE FROM linkages "
-		     "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+		     "WHERE tail = :tail AND head = :head AND "
+		     "type = :type AND coder = :coder");
       query->bindValue(":tail", tailId);
       query->bindValue(":head", headId);
       query->bindValue(":type", _selectedType);
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->prepare("DELETE FROM linkages_sources "
-		     "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+		     "WHERE tail = :tail AND head = :head AND "
+		     "type = :type AND coder = :coder");
       query->bindValue(":tail", tailId);
       query->bindValue(":head", headId);
       query->bindValue(":type", _selectedType);
@@ -4296,94 +4355,218 @@ void LinkagesWidget::unsetLink()
   highlightText();
   qApp->processEvents();
   QApplication::setOverrideCursor(Qt::WaitCursor);
-  if (_codingType == ASSISTED && _selectedDirection == PAST) 
+  if (_codingType == ASSISTED)
     {
-      QSet<int> ignore;
-      if (headIndex != 1) 
+      QMap<int, QSet<int>> headsMap;
+      QMap<int, QSet<int>> tailsMap;
+      query->prepare("SELECT tail, head FROM linkages "
+		     "WHERE type = :type AND coder = :coder");
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
+      while (query->next())
 	{
-	  findPastPaths(&ignore, tailIndex);
-	  for (int i = headIndex - 1; i != 0; i--) 
+	  int tail = query->value(0).toInt();
+	  int head = query->value(1).toInt();
+	  QSet<int> currentHeads = headsMap.value(tail);
+	  QSet<int> currentTails = tailsMap.value(head);
+	  currentHeads.insert(head);
+	  currentTails.insert(tail);
+	  headsMap.insert(tail, currentHeads);
+	  tailsMap.insert(head, currentTails);
+	}
+      if (_selectedDirection == PAST) 
+	{
+	  QSet<int> paths;
+	  if (headIndex != 1) 
 	    {
-	      bool found = false;
-	      if (ignore.contains(i)) 
+	      findPastPaths(&paths,
+			    &headsMap,
+			    tailIndex);
+	      QSet<int> orderSet;
+	      QSetIterator<int> pIt(paths);
+	      while (pIt.hasNext())
 		{
-		  found = true;
+		  query->prepare("SELECT ch_order FROM incidents "
+				 "WHERE id = :id");
+		  query->bindValue(":id", pIt.next());
+		  query->exec();
+		  query->first();
+		  orderSet.insert(query->value(0).toInt());
 		}
-	      if (!found) 
+	      for (int i = headIndex - 1; i != 0; i--) 
 		{
-		  if (headIndex != 1) 
+		  bool found = false;
+		  if (orderSet.contains(i)) 
 		    {
-		      headIndex = i;
-		      query->prepare("UPDATE coders_to_linkage_types "
-				     "SET head = :head "
-				     "WHERE coder = :coder AND type = :type");
-		      query->bindValue(":head", headIndex);
-		      query->bindValue(":coder", _selectedCoder);
-		      query->bindValue(":type", _selectedType);
-		      query->exec();
-		      retrieveData();
-		      delete query;
-		      QApplication::restoreOverrideCursor();
-		      qApp->processEvents();
-		      return;
+		      found = true;
+		    }
+		  if (!found) 
+		    {
+		      if (headIndex != 1) 
+			{
+			  headIndex = i;
+			  query->prepare("UPDATE coders_to_linkage_types "
+					 "SET head = :head "
+					 "WHERE coder = :coder AND type = :type");
+			  query->bindValue(":head", headIndex);
+			  query->bindValue(":coder", _selectedCoder);
+			  query->bindValue(":type", _selectedType);
+			  query->exec();
+			  retrieveData();
+			  delete query;
+			  QApplication::restoreOverrideCursor();
+			  qApp->processEvents();
+			  return;
+			}
+		      else 
+			{
+			  if (tailIndex != incidentsModel->rowCount()) 
+			    {
+			      tailIndex++;
+			      headIndex = tailIndex - 1;
+			      query->prepare("UPDATE coders_to_linkage_types "
+					     "SET tail = :tail, head = :head "
+					     "WHERE coder = :coder AND "
+					     "type = :type");
+			      query->bindValue(":tail", tailIndex);
+			      query->bindValue(":head", headIndex);
+			      query->bindValue(":coder", _selectedCoder);
+			      query->bindValue(":type", _selectedType);
+			      query->exec();
+			      retrieveData();
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      delete query;
+			      return; 
+			    }
+			}
 		    }
 		  else 
 		    {
-		      if (tailIndex != incidentsModel->rowCount()) 
+		      if (i == 1) 
 			{
-			  tailIndex++;
-			  headIndex = tailIndex - 1;
-			  query->prepare("UPDATE coders_to_linkage_types "
-					 "SET tail = :tail, head = :head "
-					 "WHERE coder = :coder AND type = :type");
-			  query->bindValue(":tail", tailIndex);
-			  query->bindValue(":head", headIndex);
-			  query->bindValue(":coder", _selectedCoder);
-			  query->bindValue(":type", _selectedType);
-			  query->exec();
-			  retrieveData();
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  delete query;
-			  return; 
-			}
-		    }
-		}
-	      else 
-		{
-		  if (i == 1) 
-		    {
-		      if (tailIndex != incidentsModel->rowCount()) 
-			{
-			  tailIndex++;
-			  headIndex = tailIndex - 1;
-			  query->prepare("UPDATE coders_to_linkage_types "
-					 "SET tail = :tail, head = :head "
-					 "WHERE coder = :coder AND type = :type");
-			  query->bindValue(":tail", tailIndex);
-			  query->bindValue(":head", headIndex);
-			  query->bindValue(":coder", _selectedCoder);
-			  query->bindValue(":type", _selectedType);
-			  query->exec();
-			  retrieveData();
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  delete query;
-			  return; 
+			  if (tailIndex != incidentsModel->rowCount()) 
+			    {
+			      tailIndex++;
+			      headIndex = tailIndex - 1;
+			      query->prepare("UPDATE coders_to_linkage_types "
+					     "SET tail = :tail, head = :head "
+					     "WHERE coder = :coder AND "
+					     "type = :type");
+			      query->bindValue(":tail", tailIndex);
+			      query->bindValue(":head", headIndex);
+			      query->bindValue(":coder", _selectedCoder);
+			      query->bindValue(":type", _selectedType);
+			      query->exec();
+			      retrieveData();
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      delete query;
+			      return; 
+			    }
 			}
 		    }
 		}
 	    }
-	}
-      else 
-	{
-	  if (tailIndex != incidentsModel->rowCount()) 
+	  else 
 	    {
-	      tailIndex++;
-	      headIndex = tailIndex - 1;
+	      if (tailIndex != incidentsModel->rowCount()) 
+		{
+		  tailIndex++;
+		  headIndex = tailIndex - 1;
+		  query->prepare("UPDATE coders_to_linkage_types "
+				 "SET tail = :tail, head = :head "
+				 "WHERE coder = :coder AND type  = :type");
+		  query->bindValue(":tail", tailIndex);
+		  query->bindValue(":head", headIndex);
+		  query->bindValue(":coder", _selectedCoder);
+		  query->bindValue(":type", _selectedType);
+		  query->exec();
+		  retrieveData();
+		  QApplication::restoreOverrideCursor();
+		  qApp->processEvents();
+		  delete query;
+		  return; 
+		}
+	    }
+	}
+      else if (_selectedDirection == FUTURE) 
+	{
+	  QSet<int> paths;
+	  if (tailIndex != 1) 
+	    {
+	      findFuturePaths(&paths,
+			      &tailsMap,
+			      headIndex);
+	      QSet<int> orderSet;
+	      QSetIterator<int> pIt(paths);
+	      while (pIt.hasNext())
+		{
+		  query->prepare("SELECT ch_order FROM incidents "
+				 "WHERE id = :id");
+		  query->bindValue(":id", pIt.next());
+		  query->exec();
+		  query->first();
+		  orderSet.insert(query->value(0).toInt());
+		}
+	      for (int i = tailIndex - 1; i != 0; i--) 
+		{
+		  bool found = false;
+		  if (orderSet.contains(i)) 
+		    {
+		      found = true;
+		    }
+		  if (!found) 
+		    {
+		      tailIndex = i;
+		      query->prepare("UPDATE coders_to_linkage_types "
+				     "SET tail = :tail "
+				     "WHERE coder = :coder AND type = :type");
+		      query->bindValue(":tail", tailIndex);
+		      query->bindValue(":coder", _selectedCoder);
+		      query->bindValue(":type", _selectedType);
+		      query->exec();
+		      retrieveData();
+		      QApplication::restoreOverrideCursor();
+		      qApp->processEvents();
+		      delete query;
+		      return;
+		    }
+		  else 
+		    {
+		      if (i == 1) 
+			{
+			  if (headIndex != incidentsModel->rowCount()) 
+			    {
+			      headIndex++;
+			      tailIndex = headIndex - 1;
+			      query->prepare("UPDATE coders_to_linkage_types "
+					     "SET tail = :tail, head = :head "
+					     "WHERE coder = :coder AND "
+					     "type = :type");
+			      query->bindValue(":tail", tailIndex);
+			      query->bindValue(":head", headIndex);
+			      query->bindValue(":coder", _selectedCoder);
+			      query->bindValue(":type", _selectedType);
+			      query->exec();
+			      retrieveData();
+			      QApplication::restoreOverrideCursor();
+			      qApp->processEvents();
+			      delete query;
+			      return;
+			    }
+			}
+		    }
+		}
+	    }
+	  else 
+	    {
+	      headIndex++;
+	      tailIndex = headIndex - 1;
 	      query->prepare("UPDATE coders_to_linkage_types "
 			     "SET tail = :tail, head = :head "
-			     "WHERE coder = :coder AND type  = :type");
+			     "WHERE coder = :coder AND type = :type");
 	      query->bindValue(":tail", tailIndex);
 	      query->bindValue(":head", headIndex);
 	      query->bindValue(":coder", _selectedCoder);
@@ -4393,82 +4576,8 @@ void LinkagesWidget::unsetLink()
 	      QApplication::restoreOverrideCursor();
 	      qApp->processEvents();
 	      delete query;
-	      return; 
+	      return;
 	    }
-	}
-    }
-  else if (_codingType == ASSISTED && _selectedDirection == FUTURE) 
-    {
-      QSet<int> ignore;
-      if (tailIndex != 1) 
-	{
-	  findFuturePaths(&ignore, headIndex);
-	  for (int i = tailIndex - 1; i != 0; i--) 
-	    {
-	      bool found = false;
-	      if (ignore.contains(i)) 
-		{
-		  found = true;
-		}
-	      if (!found) 
-		{
-		  tailIndex = i;
-		  query->prepare("UPDATE coders_to_linkage_types "
-				 "SET tail = :tail "
-				 "WHERE coder = :coder AND type = :type");
-		  query->bindValue(":tail", tailIndex);
-		  query->bindValue(":coder", _selectedCoder);
-		  query->bindValue(":type", _selectedType);
-		  query->exec();
-		  retrieveData();
-		  QApplication::restoreOverrideCursor();
-		  qApp->processEvents();
-		  delete query;
-		  return;
-		}
-	      else 
-		{
-		  if (i == 1) 
-		    {
-		      if (headIndex != incidentsModel->rowCount()) 
-			{
-			  headIndex++;
-			  tailIndex = headIndex - 1;
-			  query->prepare("UPDATE coders_to_linkage_types "
-					 "SET tail = :tail, head = :head "
-					 "WHERE coder = :coder AND type = :type");
-			  query->bindValue(":tail", tailIndex);
-			  query->bindValue(":head", headIndex);
-			  query->bindValue(":coder", _selectedCoder);
-			  query->bindValue(":type", _selectedType);
-			  query->exec();
-			  retrieveData();
-			  QApplication::restoreOverrideCursor();
-			  qApp->processEvents();
-			  delete query;
-			  return;
-			}
-		    }
-		}
-	    }
-	}
-      else 
-	{
-	  headIndex++;
-	  tailIndex = headIndex - 1;
-	  query->prepare("UPDATE coders_to_linkage_types "
-			 "SET tail = :tail, head = :head "
-			 "WHERE coder = :coder AND type = :type");
-	  query->bindValue(":tail", tailIndex);
-	  query->bindValue(":head", headIndex);
-	  query->bindValue(":coder", _selectedCoder);
-	  query->bindValue(":type", _selectedType);
-	  query->exec();
-	  retrieveData();
-	  QApplication::restoreOverrideCursor();
-	  qApp->processEvents();
-	  delete query;
-	  return;
 	}
     }
   QApplication::restoreOverrideCursor();
@@ -4786,96 +4895,6 @@ void LinkagesWidget::selectHeadText()
       headRawField->textCursor().selectedText() != "")
     {
       markEvidenceButton->setEnabled(true);
-    }
-}
-
-void LinkagesWidget::findPastPaths(QSet<int> *pIgnore, int currentIncident) 
-{
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT id FROM incidents WHERE ch_order = :current");
-  query->bindValue(":current", currentIncident);
-  query->exec();
-  query->first();
-  int currentTail = 0;
-  currentTail = query->value(0).toInt();
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  query->bindValue(":tail", currentTail);
-  query->bindValue(":type", _selectedType);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  QSet<int> results;
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :current");
-  while (query->next()) 
-    {
-      int currentHead = 0;
-      currentHead = query->value(0).toInt();
-      query2->bindValue(":current", currentHead);
-      query2->exec();
-      query2->first();
-      int newIndex = query2->value(0).toInt();
-      if (!pIgnore->contains(newIndex)) 
-	{
-	  results.insert(newIndex);
-	}
-    }
-  delete query2;
-  delete query;
-  QSqlDatabase::database().commit();
-  QList<int> tempList = results.toList();
-  std::sort(tempList.begin(), tempList.end());
-  QList<int>::iterator it;
-  for (it = tempList.begin(); it != tempList.end(); it++) 
-    {
-      pIgnore->insert(*it);
-      findPastPaths(pIgnore, *it);
-    }
-}
-
-void LinkagesWidget::findFuturePaths(QSet<int> *pIgnore, int currentIncident) 
-{
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT id FROM incidents WHERE ch_order = :current");
-  query->bindValue(":current", currentIncident);
-  query->exec();
-  query->first();
-  int currentHead = 0;
-  currentHead = query->value(0).toInt();
-  query->prepare("SELECT tail FROM linkages "
-		 "WHERE head = :head AND type = :type AND coder = :coder");
-  query->bindValue(":head", currentHead);
-  query->bindValue(":type", _selectedType);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  QSet<int> results;
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :current");
-  while (query->next()) 
-    {
-      int currentTail = 0;
-      currentTail = query->value(0).toInt();
-      query2->bindValue(":current", currentTail);
-      query2->exec();
-      query2->first();
-      int newIndex = query2->value(0).toInt();
-      if (!pIgnore->contains(newIndex)) 
-	{
-	  results.insert(newIndex);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  QList<int> tempList = results.toList();
-  std::sort(tempList.begin(), tempList.end());
-  QList<int>::iterator it;
-  for (it = tempList.begin(); it != tempList.end(); it++) 
-    {
-      pIgnore->insert(*it);
-      findFuturePaths(pIgnore, *it);
     }
 }
 

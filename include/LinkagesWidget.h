@@ -89,7 +89,8 @@ private slots:
   void removeLinkages();
   void layoutGraph();
   void cleanUp();
-  void processLinkageNodeContextMenuAction(LinkageNode *node, const QString &action);
+  void processLinkageNodeContextMenuAction(LinkageNode *node,
+					   const QString &action);
   void editLeftIncident();
   void editRightIncident();
   void highlightSearch(QTextEdit *field, QString text); 
@@ -135,8 +136,6 @@ private slots:
   void highlightText();
   void selectTailText();
   void selectHeadText();
-  void findPastPaths(QSet<int> *pIgnore, int currentIncident);
-  void findFuturePaths(QSet<int> *pIgnore, int currentIncident);
   bool eventFilter(QObject *object, QEvent *event);
   void finalBusiness();
   

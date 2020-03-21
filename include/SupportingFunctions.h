@@ -25,11 +25,19 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <QString>
 #include <QVector>
+#include <QMap>
+#include <QSet>
 
 QString breakString(QString original);
 QString doubleQuote(QString original);
 QString removeChar(QString original, QChar chara);
 QVector<QString> splitLines(QString original);
 QString fixBreakLines(QString original);
+void findPastPaths(QSet<int> *paths,
+		   QMap<int, QSet<int>> *headsMap,
+		   int currentIncident);
+void findFuturePaths(QSet<int> *paths,
+		     QMap<int, QSet<int>> *tailsMap,
+		     int currentIncident);
 
 #endif 

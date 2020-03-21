@@ -170,3 +170,33 @@ QString fixBreakLines(QString original)
     }
   return newString;
 }
+
+
+void findPastPaths(QSet<int> *paths,
+		   QMap<int, QSet<int>> *headsMap,
+		   int currentIncident) 
+{
+  QSet<int> heads = headsMap->value(currentIncident);
+  QSetIterator<int> hIt(heads);
+  while (hIt.hasNext())
+    {
+      int currentHead = hIt.next();
+      paths->insert(currentHead);
+      findPastPaths(paths, headsMap, currentHead);
+    }
+}
+
+void findFuturePaths(QSet<int> *paths,
+		     QMap<int, QSet<int>> *tailsMap,
+		     int currentIncident) 
+{
+  QSet<int> tails = tailsMap->value(currentIncident);
+  QSetIterator<int> tIt(tails);
+  while (tIt.hasNext())
+    {
+      int currentTail = tIt.next();
+      paths->insert(currentTail);
+      findFuturePaths(paths, tailsMap, currentTail);
+    }
+}
+ 
