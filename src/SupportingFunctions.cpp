@@ -172,9 +172,9 @@ QString fixBreakLines(QString original)
 }
 
 
-void findPastPaths(QSet<int> *paths,
-		   QMap<int, QSet<int>> *headsMap,
-		   int currentIncident) 
+void findHeads(QSet<int> *paths,
+	       QMap<int, QSet<int>> *headsMap,
+	       int currentIncident) 
 {
   QSet<int> heads = headsMap->value(currentIncident);
   QSetIterator<int> hIt(heads);
@@ -182,13 +182,13 @@ void findPastPaths(QSet<int> *paths,
     {
       int currentHead = hIt.next();
       paths->insert(currentHead);
-      findPastPaths(paths, headsMap, currentHead);
+      findHeads(paths, headsMap, currentHead);
     }
 }
 
-void findFuturePaths(QSet<int> *paths,
-		     QMap<int, QSet<int>> *tailsMap,
-		     int currentIncident) 
+void findTails(QSet<int> *paths,
+	       QMap<int, QSet<int>> *tailsMap,
+	       int currentIncident) 
 {
   QSet<int> tails = tailsMap->value(currentIncident);
   QSetIterator<int> tIt(tails);
@@ -196,7 +196,36 @@ void findFuturePaths(QSet<int> *paths,
     {
       int currentTail = tIt.next();
       paths->insert(currentTail);
-      findFuturePaths(paths, tailsMap, currentTail);
+      findTails(paths, tailsMap, currentTail);
     }
 }
- 
+
+void findBoth(QSet<int> *paths,
+	      QMap<int, QSet<int>> *tailsMap,
+	      QMap<int, QSet<int>> *headsMap,
+	      int currentIncident,
+	      QSet<int> *incidentIds)
+{
+  QSet<int> tails = tailsMap->value(currentIncident);
+  QSetIterator<int> tIt(tails);
+  QSet<int> heads = headsMap->value(currentIncident);
+  QSetIterator<int> hIt(heads);
+  while (tIt.hasNext())
+    {
+      int currentTail = tIt.next();
+      if (!paths->contains(currentTail) && incidentIds->contains(currentTail))
+	{
+	  paths->insert(currentTail);;
+	  findBoth(paths, tailsMap, headsMap, currentTail, incidentIds);
+	}
+    }
+  while (hIt.hasNext())
+    {
+      int currentHead = hIt.next();
+      if (!paths->contains(currentHead) && incidentIds->contains(currentHead))
+	{
+	  paths->insert(currentHead);
+	  findBoth(paths, tailsMap, headsMap, currentHead, incidentIds);
+	}
+    }
+}

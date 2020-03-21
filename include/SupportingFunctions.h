@@ -33,11 +33,16 @@ QString doubleQuote(QString original);
 QString removeChar(QString original, QChar chara);
 QVector<QString> splitLines(QString original);
 QString fixBreakLines(QString original);
-void findPastPaths(QSet<int> *paths,
-		   QMap<int, QSet<int>> *headsMap,
-		   int currentIncident);
-void findFuturePaths(QSet<int> *paths,
-		     QMap<int, QSet<int>> *tailsMap,
-		     int currentIncident);
+void findHeads(QSet<int> *paths,
+	       QMap<int, QSet<int>> *headsMap,
+	       int currentIncident);
+void findTails(QSet<int> *paths,
+	       QMap<int, QSet<int>> *tailsMap,
+	       int currentIncident);
+void findBoth(QSet<int> *paths,
+	      QMap<int, QSet<int>> *tailsMap,
+	      QMap<int, QSet<int>> *headsMap,
+	      int currentIncident,
+	      QSet<int> *incidentIds);
 
 #endif 

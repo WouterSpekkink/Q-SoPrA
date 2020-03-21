@@ -75,8 +75,10 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
     }
   connect(setAttributeButton, SIGNAL(clicked()), this, SLOT(selectAttribute()));
   connect(clearAttributeButton, SIGNAL(clicked()), this, SLOT(clearAttribute()));
-  connect(inheritAttributesButton, SIGNAL(clicked()), this, SLOT(inheritAttributes()));
-  connect(inheritSharedAttributesButton, SIGNAL(clicked()), this, SLOT(inheritSharedAttributes()));
+  connect(inheritAttributesButton, SIGNAL(clicked()),
+	  this, SLOT(inheritAttributes()));
+  connect(inheritSharedAttributesButton, SIGNAL(clicked()),
+	  this, SLOT(inheritSharedAttributes()));
   connect(cancelCloseButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
   connect(saveCloseButton, SIGNAL(clicked()), this, SLOT(saveAndClose()));
 
@@ -358,8 +360,10 @@ void AbstractionDialog::prepareEvents()
 		    {
 		      QString currentAttribute = it2.next();
 		      QSqlQuery *query = new QSqlQuery;
-		      query->prepare("SELECT incident FROM attributes_to_incidents "
-				     "WHERE attribute = :attribute AND incident = :id");
+		      query->prepare("SELECT incident "
+				     "FROM attributes_to_incidents "
+				     "WHERE attribute = :attribute AND "
+				     "incident = :id");
 		      query->bindValue(":attribute", currentAttribute);
 		      query->bindValue(":id", id);
 		      query->exec();
@@ -448,27 +452,61 @@ void AbstractionDialog::prepareEvents()
 	  IncidentNode *first = allIncidents.first();
 	  IncidentNode *last = allIncidents.last();
 	  QSet<int> markOne;
+	  QSet<int> markOneOrder;
 	  QSet<int> markTwo;
+	  QSet<int> markTwoOrder;
 	  QVectorIterator<QString> lit(_presentTypes);
 	  while (lit.hasNext()) 
 	    {
 	      QString currentLinkage = lit.next();
 	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT direction FROM linkage_types WHERE name = :name");
+	      query->prepare("SELECT direction FROM linkage_types "
+			     "WHERE name = :name");
 	      query->bindValue(":name", currentLinkage);
 	      query->exec();
 	      query->first();
 	      QString direction = query->value(0).toString();
-	      delete query;
-	      if (direction == PAST) 
+	      query->prepare("SELECT tail, head FROM linkages "
+			     "WHERE type = :type AND coder = :coder");
+	      query->bindValue(":type", currentLinkage);
+	      query->bindValue(":coder", _selectedCoder);
+	      query->exec();
+	      QMap<int, QSet<int>> tailsMap;
+	      QMap<int, QSet<int>> headsMap;
+	      while (query->next())
 		{
-		  findTailsUpperBound(&markOne, first->getId(), last->getOrder(), currentLinkage);
-		  findHeadsLowerBound(&markTwo, last->getId(), first->getOrder(), currentLinkage);
+		  int tail = query->value(0).toInt();
+		  int head = query->value(1).toInt();
+		  QSet<int> currentHeads = headsMap.value(tail);
+		  QSet<int> currentTails = tailsMap.value(head);
+		  currentHeads.insert(head);
+		  currentTails.insert(tail);
+		  headsMap.insert(tail, currentHeads);
+		  tailsMap.insert(head, currentTails);
+		}
+	      delete query;
+      	      if (direction == PAST) 
+		{
+		  findTails(&markOne,
+			    &tailsMap,
+			    first->getId());
+		  QSetIterator<int> mIt(markOne);
+		  while (mIt.hasNext())
+		    {
+		      markOneOrder.insert(mIt.next());
+		    }
+		  findHeads(&markTwo,
+			    &headsMap,
+			    last->getId());
 		}
 	      else if (direction == FUTURE) 
 		{
-		  findTailsLowerBound(&markOne, first->getId(), first->getOrder(), currentLinkage);
-		  findHeadsUpperBound(&markTwo, last->getId(), last->getOrder(), currentLinkage);
+		  findTails(&markOne,
+			    &tailsMap,
+			    first->getId());
+		  findHeads(&markTwo,
+			    &headsMap,
+			    last->getId());
 		}
 	      QVectorIterator<QGraphicsItem*> it4(allEvents);
 	      while (it4.hasNext()) 
@@ -566,33 +604,51 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 	  if (linkagePresence[lit] == true) 
 	    {
 	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
+	      query->prepare("SELECT direction FROM linkage_types "
+			     "WHERE name = :type");
 	      query->bindValue(":type", currentType);
 	      query->exec();
 	      query->first();
 	      QString direction = query->value(0).toString();
+	      QMap<int, QSet<int>> tailsMap;
+	      QMap<int, QSet<int>> headsMap;
+	      query->prepare("SELECT tail, head FROM linkages "
+			     "WHERE type = :type AND coder = :coder");
+	      query->bindValue(":type", currentType);
+	      query->bindValue(":coder", _selectedCoder);
+	      query->exec();
+	      while (query->next())
+		{
+		  int tail = query->value(0).toInt();
+		  int head = query->value(1).toInt();
+		  QSet<int> currentHeads = headsMap.value(tail);
+		  QSet<int> currentTails = tailsMap.value(head);
+		  currentHeads.insert(head);
+		  currentTails.insert(tail);
+		  headsMap.insert(tail, currentHeads);
+		  tailsMap.insert(head, currentTails);
+		}
+	      QSet<int> incidentIds;
 	      QVectorIterator<IncidentNode*> dit(incidents);
+	      while (dit.hasNext()) 
+		{
+		  incidentIds.insert(dit.next()->getId());
+		}
+	      dit.toFront();
 	      while (dit.hasNext()) 
 		{
 		  QSet<int> markPaths;
 		  QSet<int> markSemiPaths;
 		  IncidentNode *departure = dit.next();
 		  // First we check the internal consistency;
-		  if (direction == PAST) 
-		    {
-		      findHeadsLowerBound(&markPaths, departure->getId(), incidents.first()->getOrder(),
-					  currentType);
-		    }
-		  else if (direction == FUTURE) 
-		    {
-		      findHeadsUpperBound(&markPaths, departure->getId(), incidents.last()->getOrder(),
-					  currentType);
-		    }
-		  QSet<int> items;
-		  items.insert(departure->getId());
-		  int lowerLimit = incidents.first()->getOrder();
-		  int upperLimit = incidents.last()->getOrder();
-		  findUndirectedPaths(&markSemiPaths, &items, lowerLimit, upperLimit, currentType);
+		  findHeads(&markPaths,
+			    &headsMap,
+			    departure->getId());
+		  findBoth(&markSemiPaths,
+			   &tailsMap,
+			   &headsMap,
+			   departure->getId(),
+			   &incidentIds);
 		  QVectorIterator<IncidentNode*> cit(incidents);
 		  while (cit.hasNext()) 
 		    {
@@ -611,14 +667,16 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 			    }
 			  if (direction == PAST) 
 			    {
-			      if (!pathsFound && current->getOrder() < departure->getOrder()) 
+			      if (!pathsFound && current->getOrder() <
+				  departure->getOrder()) 
 				{
 				  _pathsAllowed = false;
 				}
 			    }
 			  else if (direction == FUTURE) 
 			    {
-			      if (!pathsFound && current->getOrder() > departure->getOrder()) 
+			      if (!pathsFound && current->getOrder() >
+				  departure->getOrder()) 
 				{
 				  _pathsAllowed = false;
 				}
@@ -631,7 +689,8 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 		    }
 		  // Then we check the external consistency.
 		  query->prepare("SELECT tail FROM linkages "
-				 "WHERE head = :head AND type = :type AND coder = :coder");
+				 "WHERE head = :head AND type = :type AND "
+				 "coder = :coder");
 		  query->bindValue(":head", departure->getId());
 		  query->bindValue(":type", currentType);
 		  query->bindValue(":coder", _selectedCoder);
@@ -642,16 +701,9 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 		      int currentTail = query->value(0).toInt();
 		      if (!(incidentId.contains(currentTail))) 
 			{
-			  if (direction == PAST) 
-			    {
-			      findHeadsLowerBound(&markPathsTwo, currentTail,
-						  incidents.first()->getOrder(), currentType);
-			    }
-			  else if (direction ==  FUTURE) 
-			    {
-			      findHeadsUpperBound(&markPathsTwo, currentTail,
-						  incidents.last()->getOrder(), currentType);
-			    }
+			  findHeads(&markPathsTwo,
+				    &headsMap,
+				    currentTail);
 			  QVectorIterator<IncidentNode*> kit(incidents);
 			  while (kit.hasNext()) 
 			    {
@@ -669,7 +721,8 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 			}
 		    }
 		  query->prepare("SELECT head FROM linkages "
-				 "WHERE tail = :tail AND type = :type AND coder = :coder");
+				 "WHERE tail = :tail AND type = :type AND "
+				 "coder = :coder");
 		  query->bindValue(":tail", departure->getId());
 		  query->bindValue(":type", currentType);
 		  query->bindValue(":coder", _selectedCoder);
@@ -692,17 +745,9 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 				  query2->bindValue(":currentHead", currentHead);
 				  query2->exec();
 				  query2->first();
-				  int headOrder = query2->value(0).toInt();
-				  if (direction == PAST) 
-				    {
-				      findHeadsLowerBound(&markPathsThree, current->getId(),
-							  headOrder, currentType);
-				    }
-				  else if (direction == FUTURE) 
-				    {
-				      findHeadsUpperBound(&markPathsThree, current->getId(),
-							  headOrder, currentType);
-				    }
+				  findHeads(&markPathsThree,
+					    &headsMap,
+					    current->getId());
 				  bool pathsFoundThree = false;
 				  if (markPathsThree.contains(currentHead)) 
 				    {
@@ -774,232 +819,7 @@ void AbstractionDialog::findChildren(QString father,
     }
   delete query;
 }
-
-
-void AbstractionDialog::findHeadsLowerBound(QSet<int> *pMark, int currentIncident,
-					    int lowerLimit, QString type) 
-{
-  int currentTail = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
-  query->bindValue(":tail", currentTail);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentHead = query->value(0).toInt();
-      query2->bindValue(":head", currentHead);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order >= lowerLimit && !pMark->contains(currentHead)) 
-	{
-	  results.push_back(currentHead);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findHeadsLowerBound(pMark, *it, lowerLimit, type);
-    }
-}
-
-void AbstractionDialog::findHeadsUpperBound(QSet<int> *pMark, int currentIncident,
-					    int upperLimit, QString type) 
-{
-  int currentTail = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
-  query->bindValue(":tail", currentTail);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentHead = query->value(0).toInt();
-      query2->bindValue(":head", currentHead);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order <= upperLimit && !pMark->contains(currentHead)) 
-	{
-	  results.push_back(currentHead);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findHeadsUpperBound(pMark, *it, upperLimit, type);
-    }
-}
-
-void AbstractionDialog::findUndirectedPaths(QSet<int> *pMark, QSet<int> *submittedItems,
-					    int lowerLimit, int upperLimit, QString type) 
-{
-  QSet<int> temp = *submittedItems;
-  QSetIterator<int> it(temp);
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
-  QSqlQuery *query3 = new QSqlQuery;
-  query3->prepare("SELECT tail FROM linkages "
-		  "WHERE head = :head AND type = :type AND coder = :coder");
-  QSqlQuery *query4 = new QSqlQuery;
-  query4->prepare("SELECT ch_order FROM incidents WHERE id = :tail");
-  while (it.hasNext()) 
-    {
-      int current = it.next();
-      pMark->insert(current);  
-      query->bindValue(":tail", current);
-      query->bindValue(":type", type);
-      query->bindValue(":coder", _selectedCoder);
-      query->exec();
-      while (query->next()) 
-	{
-	  int currentHead = query->value(0).toInt();
-	  query2->bindValue(":head", currentHead);
-	  query2->exec();
-	  query2->first();
-	  int order = query2->value(0).toInt();
-	  if (order >= lowerLimit && order <= upperLimit) 
-	    {
-	      submittedItems->insert(currentHead);
-	    }
-	}
-      query3->bindValue(":head", current);
-      query3->bindValue(":type", type);
-      query3->bindValue(":coder", _selectedCoder);
-      query3->exec();
-      while (query3->next()) 
-	{
-	  int currentTail = query3->value(0).toInt();
-	  query4->bindValue(":tail", currentTail);
-	  query4->exec();
-	  query4->first();
-	  int order = query4->value(0).toInt();
-	  if (order >= lowerLimit && order <= upperLimit && !pMark->contains(currentTail)) 
-	    {
-	      submittedItems->insert(currentTail);
-	    }
-	}
-    }
-  delete query;
-  delete query2;
-  delete query3;
-  delete query4;
-  QSqlDatabase::database().commit();
-  if (submittedItems->size() > temp.size()) 
-    {
-      findUndirectedPaths(pMark, submittedItems, lowerLimit, upperLimit, type);
-    }
-  else 
-    {
-      return;
-    }
-}
-
-void AbstractionDialog::findTailsUpperBound(QSet<int> *pMark, int currentIncident,
-					    int upperLimit, QString type) 
-{
-  int currentHead = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM linkages "
-		 "WHERE head = :head AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
-  query->bindValue(":head", currentHead);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentTail = query->value(0).toInt();
-      query2->bindValue(":tail", currentTail);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order <=  upperLimit && !pMark->contains(currentTail)) 
-	{
-	  results.push_back(currentTail);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findTailsUpperBound(pMark, *it, upperLimit, type);
-    }
-}
-
-void AbstractionDialog::findTailsLowerBound(QSet<int> *pMark, int currentIncident,
-					    int lowerLimit, QString type) 
-{
-  int currentHead = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM linkages "
-		 "WHERE head = :head AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
-  query->bindValue(":head", currentHead);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentTail = query->value(0).toInt();
-      query2->bindValue(":tail", currentTail);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order >=  lowerLimit && !pMark->contains(currentTail)) 
-	{
-	  results.push_back(currentTail);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findTailsLowerBound(pMark, *it, lowerLimit, type);
-    }
-}
-
+ 
 QVector<bool> AbstractionDialog::checkLinkagePresence(QVector<int> incidentIds) 
 {
   // We create a vector that indicates for each type of linkage whether it is present

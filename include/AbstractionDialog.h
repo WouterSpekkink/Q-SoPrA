@@ -30,9 +30,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QVBoxLayout>
-#include "../include/SortFunctions.h"
-#include "../include/EventGraphWidget.h"
-#include "../include/InheritanceDialog.h"
+#include "SortFunctions.h"
+#include "EventGraphWidget.h"
+#include "InheritanceDialog.h"
+#include "SupportingFunctions.h"
 
 class AbstractionDialog : public QDialog
 {
@@ -69,12 +70,6 @@ private slots:
   void checkConstraints(QVector<IncidentNode*> submittedIncidents);
   void evaluateConstraints();
   void findChildren(QString father, QVector<QString> *children, bool entity);
-  void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
-  void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
-  void findUndirectedPaths(QSet<int> *mark, QSet<int> *submittedItems,
-			   int lowerLimit, int upperLimit, QString type);
-  void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
-  void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   QVector<bool> checkLinkagePresence(QVector<int> incidentIds);
   void cancelAndClose();
   void saveAndClose();

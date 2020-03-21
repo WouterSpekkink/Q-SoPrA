@@ -4038,9 +4038,9 @@ void LinkagesWidget::setLink()
 	  QSet<int> paths;
 	  if (headIndex != 1)
 	    {
-	      findPastPaths(&paths,
-			    &headsMap,
-			    tailIndex);
+	      findHeads(&paths,
+			&headsMap,
+			tailIndex);
 	      QSet<int> orderSet;
 	      QSetIterator<int> pIt(paths);
 	      while (pIt.hasNext())
@@ -4158,9 +4158,9 @@ void LinkagesWidget::setLink()
 	  QSet<int> paths;
 	  if (tailIndex != 1) 
 	    {
-	      findFuturePaths(&paths,
-			      &tailsMap,
-			      headIndex);
+	      findTails(&paths,
+			&tailsMap,
+			headIndex);
 	      QSet<int> orderSet;
 	      QSetIterator<int> pIt(paths);
 	      while (pIt.hasNext())
@@ -4380,9 +4380,9 @@ void LinkagesWidget::unsetLink()
 	  QSet<int> paths;
 	  if (headIndex != 1) 
 	    {
-	      findPastPaths(&paths,
-			    &headsMap,
-			    tailIndex);
+	      findHeads(&paths,
+			&headsMap,
+			tailIndex);
 	      QSet<int> orderSet;
 	      QSetIterator<int> pIt(paths);
 	      while (pIt.hasNext())
@@ -4496,9 +4496,9 @@ void LinkagesWidget::unsetLink()
 	  QSet<int> paths;
 	  if (tailIndex != 1) 
 	    {
-	      findFuturePaths(&paths,
-			      &tailsMap,
-			      headIndex);
+	      findTails(&paths,
+			&tailsMap,
+			headIndex);
 	      QSet<int> orderSet;
 	      QSetIterator<int> pIt(paths);
 	      while (pIt.hasNext())
