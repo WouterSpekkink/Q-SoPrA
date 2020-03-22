@@ -11446,6 +11446,7 @@ void EventGraphWidget::ignoreLinkage()
     }
 }
 
+
 void EventGraphWidget::keepLinkage() 
 {
   if (scene->selectedItems().size() == 1) 
@@ -11453,103 +11454,61 @@ void EventGraphWidget::keepLinkage()
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
       if (linkage) 
 	{
-	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
-	  int tail = startIncidentNode->getId();
-	  linkage->setPenStyle(1);
+	  QMap<int, QSet<int>> tailsMap;
+	  QMap<int, QSet<int>> headsMap;
 	  QString type = linkage->getType();
 	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT tail, head FROM linkages "
+			 "WHERE type = :type AND coder = :coder");
+	  query->bindValue(":type", type);
+	  query->bindValue(":coder", _selectedCoder);
+	  query->exec();
+	  while (query->next())
+	    {
+	      int tail = query->value(0).toInt();
+	      int head = query->value(1).toInt();
+	      QSet<int> currentTails = tailsMap.value(head);
+	      QSet<int> currentHeads = headsMap.value(tail);
+	      currentTails.insert(tail);
+	      currentHeads.insert(head);
+	      headsMap.insert(tail, currentHeads);
+	      tailsMap.insert(head, currentTails);
+	    }
+	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
+	  int tail = startIncidentNode->getId();
+	  int head = endIncidentNode->getId();
+	  linkage->setPenStyle(1);
 	  query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
 	  query->bindValue(":type", type);
 	  query->exec();
 	  query->first();
 	  QString direction = query->value(0).toString();
+	  delete query;
 	  QSet<int> markOne;
 	  QSet<int> markTwo;
-	  if (direction == PAST) 
-	    {
-	      findHeadsLowerBound(&markOne, tail, 1, type);
-	      findTailsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-	    }
-	  else if (direction == FUTURE) 
-	    {
-	      findTailsLowerBound(&markOne, tail, 1, type);
-	      findHeadsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-	    }
+	  findHeads(&markOne, &headsMap, tail);
+	  findTails(&markTwo, &tailsMap, tail);
 	  QSetIterator<int> it2(markOne);
-	  bool found = false;
-	  QSqlDatabase::database().transaction();
-	  query->prepare("SELECT head FROM linkages "
-			 "WHERE coder = :coder AND type = :type "
-			 "AND tail = :tail");
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT tail, head FROM linkages "
-			  "WHERE coder = :coder AND type = :type "
-			  "AND tail = :tail AND head = :head");
 	  while (it2.hasNext()) 
 	    {
 	      int currentPathMate = it2.next();
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", type);
-	      query->bindValue(":tail", currentPathMate);
-	      query->exec();
-	      while (query->next()) 
-		{
-		  int mateHead = query->value(0).toInt();
-		  query2->bindValue(":coder", _selectedCoder);
-		  query2->bindValue(":type", type);
-		  query2->bindValue(":tail", tail);
-		  query2->bindValue(":head", mateHead);
-		  query2->exec();
-		  query2->first();
-		  if (!(query2->isNull(0))) 
-		    {
-		      found = true;
-		    }
-		}
-	      if (found) 
+	      QSet<int> currentHeads = headsMap.value(currentPathMate);
+	      if (currentHeads.contains(head))
 		{
 		  linkage->setPenStyle(2);
 		}
 	    }
-	  QSqlDatabase::database().commit();
 	  QSetIterator<int> it3(markTwo);
-	  found = false;
-	  QSqlDatabase::database().transaction();
-	  query->prepare("SELECT head FROM linkages "
-			 "WHERE coder = :coder AND type = :type "
-			 "AND tail = :tail");
-	  query2->prepare("SELECT tail, head FROM linkages "
-			  "WHERE coder = :coder AND type = :type "
-			  "AND tail = :tail AND head = :head");
 	  while (it3.hasNext()) 
 	    {
 	      int currentPathMate = it3.next();
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", type);
-	      query->bindValue(":tail", currentPathMate);
-	      query->exec();
-	      while (query->next()) 
-		{
-		  int mateHead = query->value(0).toInt();
-		  query2->bindValue(":coder", _selectedCoder);
-		  query2->bindValue(":type", type);
-		  query2->bindValue(":tail", tail);
-		  query2->bindValue(":head", mateHead);
-		  query2->exec();
-		  query2->first();
-		  if (!(query2->isNull(0))) 
-		    {
-		      found = true;
-		    }
-		}
-	      if (found) 
+	      QSet<int> currentHeads = headsMap.value(currentPathMate);
+	      if (currentHeads.contains(head))
 		{
 		  linkage->setPenStyle(2);
 		}
 	    }
-	  QSqlDatabase::database().commit();
-	  delete query2;
-	  delete query;
 	}
     }
 }
@@ -11561,15 +11520,33 @@ void EventGraphWidget::acceptLinkage()
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(scene->selectedItems().first());
       if (linkage) 
 	{
+	  QMap<int, QSet<int>> tailsMap;
+	  QMap<int, QSet<int>> headsMap;
 	  QString type = linkage->getType();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("SELECT tail, head FROM linkages "
+			 "WHERE type = :type AND coder = :coder");
+	  query->bindValue(":type", type);
+	  query->bindValue(":coder", _selectedCoder);
+	  query->exec();
+	  while (query->next())
+	    {
+	      int tail = query->value(0).toInt();
+	      int head = query->value(1).toInt();
+	      QSet<int> currentTails = tailsMap.value(head);
+	      QSet<int> currentHeads = headsMap.value(tail);
+	      currentTails.insert(tail);
+	      currentHeads.insert(head);
+	      headsMap.insert(tail, currentHeads);
+	      tailsMap.insert(head, currentTails);
+	    }
 	  IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
 	  IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
 	  int tail = startIncidentNode->getId();
 	  int head = endIncidentNode->getId();
-	  linkage->setPenStyle(0);
+	  linkage->setPenStyle(1);
 	  _edgeVector.push_back(linkage);
 	  _compareVector.removeOne(linkage);
-	  QSqlQuery *query =  new QSqlQuery;
 	  query->prepare("INSERT INTO linkages (tail, head, coder, type) "
 			 "VALUES (:tail, :head, :coder, :type)");
 	  query->bindValue(":tail", tail);
@@ -11582,93 +11559,31 @@ void EventGraphWidget::acceptLinkage()
 	  query->exec();
 	  query->first();
 	  QString direction = query->value(0).toString();
+	  delete query;
 	  QSet<int> markOne;
 	  QSet<int> markTwo;
-	  if (direction == PAST) 
-	    {
-	      findHeadsLowerBound(&markOne, tail, 1, type);
-	      findTailsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-	    }
-	  else if (direction == FUTURE) 
-	    {
-	      findTailsLowerBound(&markOne, tail, 1, type);
-	      findHeadsUpperBound(&markTwo, tail, _incidentNodeVector.size(), type);
-	    }
+	  findHeads(&markOne, &headsMap, tail);
+	  findTails(&markTwo, &tailsMap, tail);
 	  QSetIterator<int> it2(markOne);
-	  bool found = false;
-	  QSqlDatabase::database().transaction();
-	  query->prepare("SELECT head FROM linkages "
-			 "WHERE coder = :coder AND type = :type "
-			 "AND tail = :tail");
-	  QSqlQuery *query2 = new QSqlQuery;
-	  query2->prepare("SELECT tail, head FROM linkages "
-			  "WHERE coder = :coder AND type = :type "
-			  "AND tail = :tail AND head = :head");
 	  while (it2.hasNext()) 
 	    {
 	      int currentPathMate = it2.next();
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", type);
-	      query->bindValue(":tail", currentPathMate);
-	      query->exec();
-	      while (query->next()) 
-		{
-		  int mateHead = query->value(0).toInt();
-		  query2->bindValue(":coder", _selectedCoder);
-		  query2->bindValue(":type", type);
-		  query2->bindValue(":tail", tail);
-		  query2->bindValue(":head", mateHead);
-		  query2->exec();
-		  query2->first();
-		  if (!(query2->isNull(0))) 
-		    {
-		      found = true;
-		    }
-		}
-	      if (found) 
+	      QSet<int> currentHeads = headsMap.value(currentPathMate);
+	      if (currentHeads.contains(head))
 		{
 		  linkage->setPenStyle(2);
 		}
 	    }
-	  QSqlDatabase::database().commit();
 	  QSetIterator<int> it3(markTwo);
-	  found = false;
-	  QSqlDatabase::database().transaction();
-	  query->prepare("SELECT head FROM linkages "
-			 "WHERE coder = :coder AND type = :type "
-			 "AND tail = :tail");
-	  query2->prepare("SELECT tail, head FROM linkages "
-			  "WHERE coder = :coder AND type = :type "
-			  "AND tail = :tail AND head = :head");
 	  while (it3.hasNext()) 
 	    {
 	      int currentPathMate = it3.next();
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", type);
-	      query->bindValue(":tail", currentPathMate);
-	      query->exec();
-	      while (query->next()) 
-		{
-		  int mateHead = query->value(0).toInt();
-		  query2->bindValue(":coder", _selectedCoder);
-		  query2->bindValue(":type", type);
-		  query2->bindValue(":tail", tail);
-		  query2->bindValue(":head", mateHead);
-		  query2->exec();
-		  query2->first();
-		  if (!(query2->isNull(0))) 
-		    {
-		      found = true;
-		    }
-		}
-	      if (found) 
+	      QSet<int> currentHeads = headsMap.value(currentPathMate);
+	      if (currentHeads.contains(head))
 		{
 		  linkage->setPenStyle(2);
 		}
 	    }
-	  delete query;
-	  delete query2;
-	  QSqlDatabase::database().commit();
 	}
     }
 }
@@ -13159,162 +13074,6 @@ void EventGraphWidget::fixZValues()
       guide->setZValue(maxZ + 1);
     }
   setChangeLabel();  
-}
-
-void EventGraphWidget::findHeadsLowerBound(QSet<int> *pMark, int currentIncident,
-					   int lowerLimit, QString type) 
-{
-  int currentTail = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
-  query->bindValue(":tail", currentTail);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentHead = query->value(0).toInt();
-      query2->bindValue(":head", currentHead);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order >= lowerLimit && !pMark->contains(currentHead)) 
-	{
-	  results.push_back(currentHead);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findHeadsLowerBound(pMark, *it, lowerLimit, type);
-    }
-}
-
-void EventGraphWidget::findHeadsUpperBound(QSet<int> *pMark, int currentIncident,
-					   int upperLimit, QString type) 
-{
-  int currentTail = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT head FROM linkages "
-		 "WHERE tail = :tail AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :head");
-  query->bindValue(":tail", currentTail);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentHead = query->value(0).toInt();
-      query2->bindValue(":head", currentHead);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order <= upperLimit && !pMark->contains(currentHead)) 
-	{
-	  results.push_back(currentHead);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findHeadsUpperBound(pMark, *it, upperLimit, type);
-    }
-}
-
-void EventGraphWidget::findTailsUpperBound(QSet<int> *pMark, int currentIncident,
-					   int upperLimit, QString type) 
-{
-  int currentHead = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM linkages "
-		 "WHERE head = :head AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
-  query->bindValue(":head", currentHead);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentTail = query->value(0).toInt();
-      query2->bindValue(":tail", currentTail);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order <=  upperLimit && !pMark->contains(currentHead)) 
-	{
-	  results.push_back(currentTail);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findTailsUpperBound(pMark, *it, upperLimit, type);
-    }
-}
-
-void EventGraphWidget::findTailsLowerBound(QSet<int> *pMark, int currentIncident,
-					   int lowerLimit, QString type) 
-{
-  int currentHead = currentIncident;
-  QSqlDatabase::database().transaction();
-  QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT tail FROM linkages "
-		 "WHERE head = :head AND type = :type AND coder = :coder");
-  QSqlQuery *query2 = new QSqlQuery;
-  query2->prepare("SELECT ch_order FROM incidents WHERE id = :tail");  
-  query->bindValue(":head", currentHead);
-  query->bindValue(":type", type);
-  query->bindValue(":coder", _selectedCoder);
-  query->exec();
-  std::vector<int> results;
-  while (query->next()) 
-    {
-      int currentTail = query->value(0).toInt();
-      query2->bindValue(":tail", currentTail);
-      query2->exec();
-      query2->first();
-      int order = query2->value(0).toInt();
-      if (order >=  lowerLimit && !pMark->contains(currentHead)) 
-	{
-	  results.push_back(currentTail);
-	}
-    }
-  delete query;
-  delete query2;
-  QSqlDatabase::database().commit();
-  std::sort(results.begin(), results.end());
-  std::vector<int>::iterator it;
-  for (it = results.begin(); it != results.end(); it++) 
-    {
-      pMark->insert(*it);
-      findTailsLowerBound(pMark, *it, lowerLimit, type);
-    }
 }
 
 QVector<AbstractNode*> EventGraphWidget::getAbstractNodes() 

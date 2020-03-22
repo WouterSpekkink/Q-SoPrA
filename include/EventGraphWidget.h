@@ -323,10 +323,6 @@ private slots:
   void processZoomSliderChange(int value);
   void resetZoomSlider();
   void setGraphControls(bool status);
-  void findHeadsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
-  void findHeadsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
-  void findTailsUpperBound(QSet<int> *mark, int currentIncident, int upperLimit, QString type);
-  void findTailsLowerBound(QSet<int> *mark, int currentIncident, int lowerLimit, QString type);
   bool eventFilter(QObject *object, QEvent *event);
   void finalBusiness();
   
