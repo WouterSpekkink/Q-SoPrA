@@ -3153,7 +3153,7 @@ void EventGraphWidget::getIncidents()
       query2->first();
       int id = query2->value(0).toInt();
       QString toolTip = breakString(query->value(1).toString());
-      qreal vertical = qrand() % 3000 - 1500;
+      qreal vertical = qrand() % 500 - 250;
       QPointF position = QPointF((order * 70), vertical);
       IncidentNode *currentItem = new IncidentNode(40, toolTip, position, id, order);
       currentItem->setPos(currentItem->getOriginalPos());
