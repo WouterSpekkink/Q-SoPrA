@@ -23,14 +23,14 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/AbstractionDialog.h"
 
 AbstractionDialog::AbstractionDialog(QWidget *parent,
-				     QVector<IncidentNode*> eventVector,
+				     QVector<IncidentNode*> incidentNodeVector,
 				     QVector<AbstractNode*> abstractNodeVector,
 				     QVector<QGraphicsItem*> currentData,
 				     QVector<QString> presentTypes,
 				     QString selectedCoder) : QDialog(parent)
 {
   _exitStatus = 1;
-  _eventVector = eventVector;
+  _incidentNodeVector = incidentNodeVector;
   _abstractNodeVector = abstractNodeVector;
   _currentData = currentData;
   _presentTypes = presentTypes;
@@ -55,6 +55,8 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   pathsBasedRadioButton->setEnabled(false);
   semiPathsBasedRadioButton = new QRadioButton("Semipaths-based constraints", this);
   semiPathsBasedRadioButton->setEnabled(false);
+  compositeEventRadioButton = new QRadioButton("Create composite event", this);
+  compositeEventRadioButton->setEnabled(false);
   noConstraintsRadioButton = new QRadioButton("No constraints", this);
   noConstraintsRadioButton->setChecked(true);
   
@@ -89,6 +91,7 @@ AbstractionDialog::AbstractionDialog(QWidget *parent,
   constraintsLayout->addWidget(constraintsLabel);
   constraintsLayout->addWidget(pathsBasedRadioButton);
   constraintsLayout->addWidget(semiPathsBasedRadioButton);
+  constraintsLayout->addWidget(compositeEventRadioButton);
   constraintsLayout->addWidget(noConstraintsRadioButton);
   leftLayout->addLayout(constraintsLayout);
 
@@ -143,7 +146,7 @@ AbstractionDialog::~AbstractionDialog()
 {
   // We want to clear these vectors, but we don't want to
   // delete the pointers they contain.
-  _eventVector.clear();
+  _incidentNodeVector.clear();
   _abstractNodeVector.clear();
   _collectedIncidents.clear();
   _currentData.clear();
@@ -339,14 +342,19 @@ void AbstractionDialog::prepareEvents()
       QVector<IncidentNode*> allIncidents;
       _semiPathsAllowed = true;      
       _pathsAllowed = true;
+      _compositeAllowed = true;
       QVectorIterator<QGraphicsItem*> it(_currentData);
       while (it.hasNext()) 
 	{
-	  IncidentNode *event = qgraphicsitem_cast<IncidentNode*>(it.peekNext());
+	  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(it.peekNext());
 	  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it.peekNext());
-	  if (event) 
+	  if (incident) 
 	    {
 	      IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode*>(it.next());
+	      if (currentIncidentNode->getAbstractNode() != NULL)
+		{
+		  _compositeAllowed = false;
+		}
 	      allIncidents.push_back(currentIncidentNode);
 	      int id = currentIncidentNode->getId();
 	      if (_selectedAttribute != DEFAULT2) 
@@ -387,6 +395,7 @@ void AbstractionDialog::prepareEvents()
 	    }
 	  if (abstractNode) 
 	    {
+	      _compositeAllowed = false;
 	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(it.next());
 	      if (_selectedAttribute != DEFAULT2)
 		{
@@ -438,7 +447,7 @@ void AbstractionDialog::prepareEvents()
 	  std::sort(allIncidents.begin(), allIncidents.end(), eventLessThan);
 	  QApplication::setOverrideCursor(Qt::WaitCursor);
 	  QVector<QGraphicsItem*> allEvents;
-	  QVectorIterator<IncidentNode*> evIt(_eventVector);
+	  QVectorIterator<IncidentNode*> evIt(_incidentNodeVector);
 	  while (evIt.hasNext()) 
 	    {
 	      allEvents.push_back(evIt.next());
@@ -481,6 +490,34 @@ void AbstractionDialog::prepareEvents()
 		  QSet<int> currentTails = tailsMap.value(head);
 		  currentHeads.insert(head);
 		  currentTails.insert(tail);
+		  QVectorIterator<IncidentNode*> aIt(_incidentNodeVector);
+		  while (aIt.hasNext())
+		    {
+		      IncidentNode *incident = aIt.next();
+		      if (incident->getAbstractNode() != NULL)
+			{
+			  if (incident->getAbstractNode()->getConstraint() == COMPOSITEEVENT)
+			    {
+			      QVector<IncidentNode*> incidents = incident->getAbstractNode()->
+				getIncidents();
+			      QVectorIterator<IncidentNode*> inIt(incidents);
+			      if (incident->getId() == head)
+				{
+				  while (inIt.hasNext())
+				    {
+				      currentHeads.insert(inIt.next()->getId());
+				    }
+				}
+			      else if (incident->getId() == tail)
+				{
+				  while (inIt.hasNext())
+				    {
+				      currentTails.insert(inIt.next()->getId());
+				    }
+				}
+			    }
+			}
+		    }
 		  headsMap.insert(tail, currentHeads);
 		  tailsMap.insert(head, currentTails);
 		}
@@ -617,6 +654,38 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 	      query->bindValue(":type", currentType);
 	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
+	      QVectorIterator<IncidentNode*> aIt(_incidentNodeVector);
+	      while (aIt.hasNext())
+		{
+		  IncidentNode *current = aIt.next();
+		  if (current->getAbstractNode() != NULL)
+		    {
+		      if (current->getAbstractNode()->getConstraint() == COMPOSITEEVENT)
+			{
+			  QVector<IncidentNode*> incidentsCollection = current->
+			    getAbstractNode()->getIncidents();
+			  QVector<IncidentNode*>::iterator intOne;
+			  QVector<IncidentNode*>::iterator intTwo;
+			  for (intOne = incidentsCollection.begin(); intOne != incidentsCollection.end(); intOne++)
+			    {
+			      IncidentNode *first = *intOne;
+			      if (first != incidentsCollection.last())
+				{
+				  QSet<int> headsOne = headsMap.value(first->getId());
+				  QSet<int> tailsOne = tailsMap.value(first->getId());
+				  for (intTwo = intOne + 1; intTwo != incidentsCollection.end(); intTwo++)
+				    {
+				      IncidentNode *second = *intTwo;
+				      headsOne.insert(second->getId());
+				      tailsOne.insert(second->getId());
+				    }
+				  headsMap.insert(first->getId(), headsOne);
+				  tailsMap.insert(first->getId(), tailsOne);
+				}
+			    }
+			}
+		    }
+		}
 	      while (query->next())
 		{
 		  int tail = query->value(0).toInt();
@@ -625,6 +694,34 @@ void AbstractionDialog::checkConstraints(QVector<IncidentNode*> incidents)
 		  QSet<int> currentTails = tailsMap.value(head);
 		  currentHeads.insert(head);
 		  currentTails.insert(tail);
+		  aIt.toFront();
+		  while (aIt.hasNext())
+		    {
+		      IncidentNode *incident = aIt.next();
+		      if (incident->getAbstractNode() != NULL)
+			{
+			  if (incident->getAbstractNode()->getConstraint() == COMPOSITEEVENT)
+			    {
+			      QVector<IncidentNode*> incidentsContained = incident->
+				getAbstractNode()->getIncidents();
+			      QVectorIterator<IncidentNode*> inIt(incidentsContained);
+			      if (incident->getId() == head)
+				{
+				  while (inIt.hasNext())
+				    {
+				      currentHeads.insert(inIt.next()->getId());
+				    }
+				}
+			      else if (incident->getId() == tail)
+				{
+				  while (inIt.hasNext())
+				    {
+				      currentTails.insert(inIt.next()->getId());
+				    }
+				}
+			    }
+			}
+		    }
 		  headsMap.insert(tail, currentHeads);
 		  tailsMap.insert(head, currentTails);
 		}
@@ -792,6 +889,14 @@ void AbstractionDialog::evaluateConstraints()
   else
     {
       semiPathsBasedRadioButton->setEnabled(false);
+    }
+  if (_compositeAllowed)
+    {
+      compositeEventRadioButton->setEnabled(true);
+    }
+  else
+    {
+      compositeEventRadioButton->setEnabled(false);
     }
   noConstraintsRadioButton->setChecked(true);
 }
@@ -963,6 +1068,10 @@ void AbstractionDialog::saveAndClose()
       else if (semiPathsBasedRadioButton->isChecked())
 	{
 	  _chosenConstraint = SEMIPATHS;
+	}
+      else if (compositeEventRadioButton->isChecked())
+	{
+	  _chosenConstraint = COMPOSITEEVENT;
 	}
       else if (noConstraintsRadioButton->isChecked())
 	{

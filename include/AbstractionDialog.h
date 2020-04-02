@@ -85,6 +85,7 @@ private:
   QPointer<QLabel> timingLabel;
   QPointer<QRadioButton> pathsBasedRadioButton;
   QPointer<QRadioButton> semiPathsBasedRadioButton;
+  QPointer<QRadioButton> compositeEventRadioButton;
   QPointer<QRadioButton> noConstraintsRadioButton;
   QPointer<QTextEdit> eventDescriptionField;
   QPointer<QLineEdit> timingField;
@@ -96,7 +97,7 @@ private:
   QPointer<QPushButton> saveCloseButton;
 
   // Private data vectors (these take their addresses from submitted vectors)
-  QVector<IncidentNode*> _eventVector;
+  QVector<IncidentNode*> _incidentNodeVector;
   QVector<AbstractNode*> _abstractNodeVector;
   QVector<IncidentNode*> _collectedIncidents;
   QVector<QGraphicsItem*> _currentData;
@@ -113,6 +114,7 @@ private:
   int _exitStatus;
   bool _semiPathsAllowed;
   bool _pathsAllowed;
+  bool _compositeAllowed;
   bool _inheritance;
   
 };

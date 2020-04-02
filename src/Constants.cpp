@@ -46,9 +46,8 @@ QString MAKEABSTRACTNODEACTION = "Abstract single event";
 QString PATHS = "Paths";
 QString PATHSATT = "Paths (attribute)";
 QString SEMIPATHS = "Semi-paths";
-QString SEMIPATHSATT = "Semi-paths (attribute)";
 QString NOCONSTRAINT = "No constraint";
-QString NOCONSTRAINTATT = "No constraint (attribute)";
+QString COMPOSITEEVENT = "Composite event";
 QString DISAGGREGATEACTION = "Disaggregate event";
 QString SETWIDTHACTION = "Set width";
 QString RECOLOREVENTSACTION = "Recolor selected events";
@@ -150,5 +149,6 @@ QString SETHIGHLIGHTEDACTION = "Highlight occurrences";
 QString UNSETHIGHLIGHTEDACTION = "Remove highlight";
 QString SELECTTAILACTION = "Set as tail incident";
 QString SELECTHEADACTION = "Set as head incident";
+QString OUTCOME = "OUTCOME";
 
 qreal Pi = 3.14;

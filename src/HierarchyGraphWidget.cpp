@@ -914,20 +914,22 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
     {
       delete item;
     }
-  if (newOrigin->getConstraint() == PATHS ||
-      newOrigin->getConstraint() == PATHSATT) 
+  if (newOrigin->getConstraint() == PATHS)
     {
       QString label = "P-" + QString::number(newOrigin->getOrder());
       abstractNodeLabel->setPlainText(label);
     }
-  else if (newOrigin->getConstraint() == SEMIPATHS ||
-	   newOrigin->getConstraint() == SEMIPATHSATT) 
+  else if (newOrigin->getConstraint() == SEMIPATHS)
     {
       QString label = "S-" + QString::number(newOrigin->getOrder());
       abstractNodeLabel->setPlainText(label);
     }
-  else if (newOrigin->getConstraint() == NOCONSTRAINT ||
-	   newOrigin->getConstraint() == NOCONSTRAINTATT) 
+  else if (newOrigin->getConstraint() == COMPOSITEEVENT)
+    {
+      QString label = "C-" + QString::number(newOrigin->getOrder());
+      abstractNodeLabel->setPlainText(label);
+    }
+  else if (newOrigin->getConstraint() == NOCONSTRAINT)
     {
       QString label = "N-" + QString::number(newOrigin->getOrder());
       abstractNodeLabel->setPlainText(label);
@@ -968,20 +970,22 @@ void HierarchyGraphWidget::buildComponents(AbstractNode *origin, int layer)
 	  AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
 	  _abstractNodeLabelVector.push_back(newAbstractNodeLabel);
 	  newAbstractNode->setLabel(newAbstractNodeLabel);
-	  if (newAbstractNode->getConstraint() == PATHS ||
-	      newAbstractNode->getConstraint() == PATHSATT) 
+	  if (newAbstractNode->getConstraint() == PATHS)
 	    {
 	      QString label = "P-" + QString::number(newAbstractNode->getOrder());
 	      newAbstractNodeLabel->setPlainText(label);
 	    }
-	  else if (newAbstractNode->getConstraint() == SEMIPATHS ||
-		   newAbstractNode->getConstraint() == SEMIPATHSATT) 
+	  else if (newAbstractNode->getConstraint() == SEMIPATHS)
 	    {
 	      QString label = "S-" + QString::number(newAbstractNode->getOrder());
 	      newAbstractNodeLabel->setPlainText(label);
 	    }
-	  else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
-		   newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
+	  else if (newAbstractNode->getConstraint() == COMPOSITEEVENT)
+	    {
+	      QString label = "C-" + QString::number(newAbstractNode->getOrder());
+	      newAbstractNodeLabel->setPlainText(label);
+	    }
+	  else if (newAbstractNode->getConstraint() == NOCONSTRAINT)
 	    {
 	      QString label = "N-" + QString::number(newAbstractNode->getOrder());
 	      newAbstractNodeLabel->setPlainText(label);
@@ -1191,20 +1195,22 @@ void HierarchyGraphWidget::addLayer(QVector<AbstractNode*> presentLayer,
 	      AbstractNodeLabel *newAbstractNodeLabel = new AbstractNodeLabel(newAbstractNode);
 	      _abstractNodeLabelVector.push_back(newAbstractNodeLabel);
 	      newAbstractNode->setLabel(newAbstractNodeLabel);
-	      if (newAbstractNode->getConstraint() == PATHS ||
-		  newAbstractNode->getConstraint() == PATHSATT) 
+	      if (newAbstractNode->getConstraint() == PATHS)
 		{
 		  QString label = "P-" + QString::number(newAbstractNode->getOrder());
 		  newAbstractNodeLabel->setPlainText(label);
 		}
-	      else if (newAbstractNode->getConstraint() == SEMIPATHS ||
-		       newAbstractNode->getConstraint() == SEMIPATHSATT) 
+	      else if (newAbstractNode->getConstraint() == SEMIPATHS)
 		{
 		  QString label = "S-" + QString::number(newAbstractNode->getOrder());
 		  newAbstractNodeLabel->setPlainText(label);
 		}
-	      else if (newAbstractNode->getConstraint() == NOCONSTRAINT ||
-		       newAbstractNode->getConstraint() == NOCONSTRAINTATT) 
+	      else if (newAbstractNode->getConstraint() == COMPOSITEEVENT)
+		{
+		  QString label = "C-" + QString::number(newAbstractNode->getOrder());
+		  newAbstractNodeLabel->setPlainText(label);
+		}
+	      else if (newAbstractNode->getConstraint() == NOCONSTRAINT)
 		{
 		  QString label = "N-" + QString::number(newAbstractNode->getOrder());
 		  newAbstractNodeLabel->setPlainText(label);

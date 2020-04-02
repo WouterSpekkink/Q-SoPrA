@@ -1,5 +1,4 @@
 /*
-
 Qualitative Social Process Analysis (Q-SoPrA)
 Copyright (C) 2019 University of Manchester  
 
@@ -8535,18 +8534,19 @@ void EventGraphWidget::exportTable()
 	      QString mode = abstractNode->getMode();
 	      QString type = "";
 	      QString id = abstractNode->getLabel()->toPlainText();
-	      if (abstractNode->getConstraint() == PATHS ||
-		  abstractNode->getConstraint() == PATHSATT) 
+	      if (abstractNode->getConstraint() == PATHS)
 		{
 		  type = "Paths based";
 		}
-	      else if (abstractNode->getConstraint() == SEMIPATHS ||
-		       abstractNode->getConstraint() == SEMIPATHSATT) 
+	      else if (abstractNode->getConstraint() == SEMIPATHS)
 		{
 		  type = "Semi-paths based";
 		}
-	      else if (abstractNode->getConstraint() == NOCONSTRAINT ||
-		       abstractNode->getConstraint() == NOCONSTRAINTATT) 
+	      else if (abstractNode->getConstraint() == COMPOSITEEVENT)
+		{
+		  type = "Composite event";
+		}
+	      else if (abstractNode->getConstraint() == NOCONSTRAINT)
 		{
 		  type = "No constraint";
 		}
@@ -8689,20 +8689,22 @@ void EventGraphWidget::exportNodes()
 	  QString yCoord = QString::number(abstractNode->scenePos().y());
 	  QString identifier = "";
 	  QString type = "";
-	  if (abstractNode->getConstraint() == PATHS ||
-	      abstractNode->getConstraint() == PATHSATT) 
+	  if (abstractNode->getConstraint() == PATHS)
 	    {
 	      identifier = "p";
 	      type = "Paths based";
 	    }
-	  else if (abstractNode->getConstraint() == SEMIPATHS ||
-		   abstractNode->getConstraint() == PATHSATT) 
+	  else if (abstractNode->getConstraint() == SEMIPATHS)
 	    {
 	      identifier = "s";
 	      type = "Semi-paths based";
 	    }
-	  else if (abstractNode->getConstraint() == NOCONSTRAINT ||
-		   abstractNode->getConstraint() == NOCONSTRAINTATT) 
+	  else if (abstractNode->getConstraint() == COMPOSITEEVENT)
+	    {
+	      identifier = "c";
+	      type = "Composite event";
+	    }
+	  else if (abstractNode->getConstraint() == NOCONSTRAINT)
 	    {
 	      identifier = "n";
 	      type = "No constraint";
@@ -8794,51 +8796,54 @@ void EventGraphWidget::exportEdges()
 	      else if (incidentNodeStart && abstractNodeEnd) 
 		{
 		  source = "i" + QString::number(incidentNodeStart->getOrder());
-		  if (abstractNodeEnd->getConstraint() == PATHS ||
-		      abstractNodeEnd->getConstraint() == PATHSATT) 
+		  if (abstractNodeEnd->getConstraint() == PATHS)
 		    {
 		      target = "p" + QString::number(abstractNodeEnd->getOrder());
 		    }
-		  else if (abstractNodeEnd->getConstraint() == SEMIPATHS ||
-			   abstractNodeEnd->getConstraint() == SEMIPATHSATT) 
+		  else if (abstractNodeEnd->getConstraint() == SEMIPATHS)
 		    {
 		      target = "s" + QString::number(abstractNodeEnd->getOrder());
 		    }
-		  else if (abstractNodeEnd->getConstraint() == NOCONSTRAINT ||
-			   abstractNodeEnd->getConstraint() == NOCONSTRAINTATT) 
+		  else if (abstractNodeEnd->getConstraint() == COMPOSITEEVENT)
+		    {
+		      target = "c" + QString::number(abstractNodeEnd->getOrder());
+		    }
+		  else if (abstractNodeEnd->getConstraint() == NOCONSTRAINT)
 		    {
 		      target = "n" + QString::number(abstractNodeEnd->getOrder());
 		    }
 		}
 	      else if (abstractNodeStart && abstractNodeEnd) 
 		{
-		  if (abstractNodeStart->getConstraint() == PATHS ||
-		      abstractNodeStart->getConstraint() == PATHSATT) 
+		  if (abstractNodeStart->getConstraint() == PATHS)
 		    {
 		      source = "p" + QString::number(abstractNodeStart->getOrder());
 		    }
-		  else if (abstractNodeStart->getConstraint() == SEMIPATHS ||
-			   abstractNodeStart->getConstraint() == SEMIPATHSATT) 
+		  else if (abstractNodeStart->getConstraint() == SEMIPATHS)
 		    {
 		      source = "s" + QString::number(abstractNodeStart->getOrder());
 		    }
-		  else if (abstractNodeStart->getConstraint() == NOCONSTRAINT ||
-			   abstractNodeStart->getConstraint() == NOCONSTRAINTATT) 
+		  else if (abstractNodeStart->getConstraint() == COMPOSITEEVENT)
+		    {
+		      source = "c" + QString::number(abstractNodeStart->getOrder());
+		    }
+		  else if (abstractNodeStart->getConstraint() == NOCONSTRAINT)
 		    {
 		      source = "n" + QString::number(abstractNodeStart->getOrder());
 		    }
-		  if (abstractNodeEnd->getConstraint() == PATHS ||
-		      abstractNodeEnd->getConstraint() == PATHSATT) 
+		  if (abstractNodeEnd->getConstraint() == PATHS)
 		    {
 		      target = "p" + QString::number(abstractNodeEnd->getOrder());
 		    }
-		  else if (abstractNodeEnd->getConstraint() == SEMIPATHS ||
-			   abstractNodeEnd->getConstraint() == SEMIPATHSATT) 
+		  else if (abstractNodeEnd->getConstraint() == SEMIPATHS)
 		    {
 		      target = "s" + QString::number(abstractNodeEnd->getOrder());
 		    }
-		  else if (abstractNodeEnd->getConstraint() == NOCONSTRAINT ||
-			   abstractNodeEnd->getConstraint() == NOCONSTRAINTATT) 
+		  else if (abstractNodeEnd->getConstraint() == COMPOSITEEVENT)
+		    {
+		      target = "c" + QString::number(abstractNodeEnd->getOrder());
+		    }
+		  else if (abstractNodeEnd->getConstraint() == NOCONSTRAINT)
 		    {
 		      target = "n" + QString::number(abstractNodeEnd->getOrder());
 		    }
@@ -8849,13 +8854,15 @@ void EventGraphWidget::exportEdges()
 		    {
 		      source = "p" + QString::number(abstractNodeStart->getOrder());
 		    }
-		  else if (abstractNodeStart->getConstraint() == SEMIPATHS ||
-			   abstractNodeStart->getConstraint() == SEMIPATHSATT) 
+		  else if (abstractNodeStart->getConstraint() == SEMIPATHS)
 		    {
 		      source = "s" + QString::number(abstractNodeStart->getOrder());
 		    }
-		  else if (abstractNodeStart->getConstraint() == NOCONSTRAINT ||
-			   abstractNodeStart->getConstraint() == NOCONSTRAINTATT) 
+		  else if (abstractNodeStart->getConstraint() == COMPOSITEEVENT)
+		    {
+		      source = "c" + QString::number(abstractNodeStart->getOrder());
+		    }
+		  else if (abstractNodeStart->getConstraint() == NOCONSTRAINT)
 		    {
 		      source = "n" + QString::number(abstractNodeStart->getOrder());
 		    }
@@ -9439,7 +9446,8 @@ void EventGraphWidget::disaggregateEvent()
     {
       QGraphicsItem *current = it6.next();
       if (!components.contains(current) &&
-	  current->scenePos().x() > _selectedAbstractNode->scenePos().x() + _selectedAbstractNode->getWidth()) 
+	  current->scenePos().x() > _selectedAbstractNode->scenePos().x() +
+	  _selectedAbstractNode->getWidth()) 
 	{
 	  nextUp = current;
 	  break;
@@ -9452,11 +9460,13 @@ void EventGraphWidget::disaggregateEvent()
       qreal dist = 0;
       if (incidentNode) 
 	{
-	  dist = nextUp->scenePos().x() - incidentNode->scenePos().x() - incidentNode->getWidth() + 40;
+	  dist = nextUp->scenePos().x() - incidentNode->scenePos().x() -
+	    incidentNode->getWidth() + 40;
 	}
       else if (abstractNode) 
 	{
-	  dist = nextUp->scenePos().x() - abstractNode->scenePos().x() - abstractNode->getWidth() + 40;
+	  dist = nextUp->scenePos().x() - abstractNode->scenePos().x() -
+	    abstractNode->getWidth() + 40;
 	}
       QPointF currentPos = nextUp->scenePos();
       if (dist < 70) 
@@ -9473,7 +9483,8 @@ void EventGraphWidget::disaggregateEvent()
 		    {
 		      if (!components.contains(incidentNode)) 
 			{
-			  incidentNode->setPos(incidentNode->scenePos().x() + 70 - dist, incidentNode->scenePos().y());
+			  incidentNode->setPos(incidentNode->scenePos().x() + 70 - dist,
+					       incidentNode->scenePos().y());
 			  incidentNode->setOriginalPos(incidentNode->scenePos());
 			  incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
 			}
@@ -9574,20 +9585,22 @@ void EventGraphWidget::updateAbstractNodeOrder()
       _abstractNodeLabelVector.removeOne(label);
       AbstractNodeLabel *newLabel = new AbstractNodeLabel(current);
       order++;
-      if (current->getConstraint() == PATHS ||
-	  current->getConstraint() == PATHSATT) 
+      if (current->getConstraint() == PATHS)
 	{
 	  QString label = "P-" + QString::number(current->getOrder());
 	  newLabel->setPlainText(label);      
 	}
-      else if (current->getConstraint() == SEMIPATHS ||
-	       current->getConstraint() == SEMIPATHSATT) 
+      else if (current->getConstraint() == SEMIPATHS)
 	{
 	  QString label = "S-" + QString::number(current->getOrder());
 	  newLabel->setPlainText(label);
 	}
-      else if (current->getConstraint() == NOCONSTRAINT ||
-	       current->getConstraint() == NOCONSTRAINTATT) 
+      else if (current->getConstraint() == COMPOSITEEVENT)
+	{
+	  QString label = "C-" + QString::number(current->getOrder());
+	  newLabel->setPlainText(label);
+	}
+      else if (current->getConstraint() == NOCONSTRAINT)
 	{
 	  QString label = "N-" + QString::number(current->getOrder());
 	  newLabel->setPlainText(label);

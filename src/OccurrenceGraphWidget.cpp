@@ -2952,18 +2952,19 @@ void OccurrenceGraphWidget::matchEventGraph()
 			  abstractNode = abstractNode->getAbstractNode();
 			}
 		      QString type = "";
-		      if (abstractNode->getConstraint() == PATHS ||
-			  abstractNode->getConstraint() == PATHSATT) 
+		      if (abstractNode->getConstraint() == PATHS)
 			{
 			  type = "P";
 			}
-		      else if (abstractNode->getConstraint() == SEMIPATHS ||
-			       abstractNode->getConstraint() == SEMIPATHSATT) 
+		      else if (abstractNode->getConstraint() == SEMIPATHS)
 			{
 			  type = "S";
 			}
-		      else if (abstractNode->getConstraint() == NOCONSTRAINT ||
-			       abstractNode->getConstraint() == NOCONSTRAINTATT) 
+		      else if (abstractNode->getConstraint() == COMPOSITEEVENT)
+			{
+			  type = "C";
+			}
+		      else if (abstractNode->getConstraint() == NOCONSTRAINT)
 			{
 			  type = "N";
 			}
@@ -3007,18 +3008,19 @@ void OccurrenceGraphWidget::matchEventGraph()
 			  abstractNode = abstractNode->getAbstractNode();
 			}
 		      QString type = "";
-		      if (abstractNode->getConstraint() == PATHS ||
-			  abstractNode->getConstraint() == PATHSATT) 
+		      if (abstractNode->getConstraint() == PATHS)
 			{
 			  type = "P";
 			}
-		      else if (abstractNode->getConstraint() == SEMIPATHS ||
-			       abstractNode->getConstraint() == SEMIPATHSATT) 
+		      else if (abstractNode->getConstraint() == SEMIPATHS)
 			{
 			  type = "S";
 			}
-		      else if (abstractNode->getConstraint() == NOCONSTRAINT ||
-			       abstractNode->getConstraint() == NOCONSTRAINTATT) 
+		      else if (abstractNode->getConstraint() == COMPOSITEEVENT)
+			{
+			  type = "C";
+			}
+		      else if (abstractNode->getConstraint() == NOCONSTRAINT)
 			{
 			  type = "N";
 			}
@@ -3106,18 +3108,19 @@ void OccurrenceGraphWidget::matchEventGraph()
 		  scene->addItem(newOccurrence);
 		  OccurrenceLabel *label = new OccurrenceLabel(newOccurrence);
 		  QString type = "";
-		  if (abstractNode->getConstraint() == PATHS ||
-		      abstractNode->getConstraint() == PATHSATT) 
+		  if (abstractNode->getConstraint() == PATHS)
 		    {
 		      type = "P";
 		    }
-		  else if (abstractNode->getConstraint() == SEMIPATHS ||
-			   abstractNode->getConstraint() == SEMIPATHSATT) 
+		  else if (abstractNode->getConstraint() == SEMIPATHS)
 		    {
 		      type = "S"; 
 		    }
-		  else if (abstractNode->getConstraint() == NOCONSTRAINT ||
-			   abstractNode->getConstraint() == NOCONSTRAINTATT) 
+		  else if (abstractNode->getConstraint() == COMPOSITEEVENT)
+		    {
+		      type = "C";
+		    }
+		  else if (abstractNode->getConstraint() == NOCONSTRAINT)
 		    {
 		      type = "N";
 		    }

@@ -21,7 +21,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "../include/SupportingFunctions.h"
-
 /*
   This function supports the creation of tool tips. It wraps longer fragments
   of text by introducing newline symbols after a certain length.
@@ -171,7 +170,32 @@ QString fixBreakLines(QString original)
   return newString;
 }
 
-
+/*
+  This function is based on something that I found on Stack Overflow
+  https://stackoverflow.com/questions/23614625/function-to-find-all-combinations-with-repetitions
+  I mostly rewrote it to make use of pointers.
+*/
+void backtrack(int depth,
+	       int expected,
+	       QVector<QString> vector,
+	       QVector<QString> *combination,
+	       QSet<QVector<QString>> *set)
+{
+  if (depth < expected)
+    {
+      for(int i = 0; i < vector.size(); i++)
+	{
+	  combination->push_back(vector[i]);
+	  backtrack(depth + 1, expected, vector, combination, set);
+	  combination->pop_back();
+	}
+    }
+  else
+    {
+      set->insert(*combination);
+    }
+}
+	  
 void findHeads(QSet<int> *paths,
 	       QMap<int, QSet<int>> *headsMap,
 	       int currentIncident) 
@@ -181,8 +205,11 @@ void findHeads(QSet<int> *paths,
   while (hIt.hasNext())
     {
       int currentHead = hIt.next();
-      paths->insert(currentHead);
-      findHeads(paths, headsMap, currentHead);
+      if (!paths->contains(currentHead))
+	{
+	  paths->insert(currentHead);
+	  findHeads(paths, headsMap, currentHead);
+	}
     }
 }
 
@@ -195,8 +222,11 @@ void findTails(QSet<int> *paths,
   while (tIt.hasNext())
     {
       int currentTail = tIt.next();
-      paths->insert(currentTail);
-      findTails(paths, tailsMap, currentTail);
+      if (!paths->contains(currentTail))
+	{
+	  paths->insert(currentTail);
+	  findTails(paths, tailsMap, currentTail);
+	}
     }
 }
 
