@@ -4339,42 +4339,42 @@ void WelcomeDialog::openDatabase()
 	    }
 	  if (!columns.contains("id"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN id integer PRIMARY KEY AUTOINCREMENT;");
 	    }
 	  if (!columns.contains("plot"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN plot text;");
 	    }
 	  if (!columns.contains("lowerbound"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN lowerbound integer;");
 	    }
 	  if (!columns.contains("upperbound"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN upperbound integer;");
 	    }
 	  if (!columns.contains("boundson"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN boundson integer;");
 	    }
 	  if (!columns.contains("weight"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN weight integer;");
 	    }
 	  if (!columns.contains("weightson"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN weightson integer;");
 	    }
 	  if (!columns.contains("labelson"))
 	    {
-	      query->exec("ALTER TABLE saved_eg_plots_settings "
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN labelson integer;");
 	    }
 	  columns.clear();
