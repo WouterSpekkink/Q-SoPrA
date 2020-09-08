@@ -70,6 +70,7 @@ public:
   void resetTree();
   
   // Setters
+  void setCurrentCoder(QString coder);
   void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 
@@ -190,6 +191,7 @@ private:
   QPointer<QPushButton> resetTextsButton;
 
   // Private variables
+  QString _selectedCoder;
   QString _descriptionFilter;
   QString _rawFilter;
   QString _commentFilter;

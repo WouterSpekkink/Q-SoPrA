@@ -64,11 +64,11 @@ public:
   LinkagesWidget(QWidget *parent=0);
   ~LinkagesWidget() {};
 
+  // Setters
+  void setCurrentCoder(QString coder);
+		      
 private slots:
   // Private member functions
-  void addCoder();
-  void editCoder();
-  void removeCoder();
   void addLinkageType();
   void editLinkageType();
   void removeLinkageType();
@@ -78,7 +78,6 @@ private slots:
   void switchLinkageType();
   void checkManualButton();
   void checkAssistedButton();
-  void retrieveCoders();
   void retrieveLinkages();
   void changeTailNode(LinkageNode *node);
   void changeHeadNode(LinkageNode *node);
@@ -147,7 +146,6 @@ private:
   QPointer<QSqlTableModel> linkagesModel;
   QPointer<QSqlTableModel> incidentsModel;
   QPointer<QLabel> settingsLabel;
-  QPointer<QLabel> selectCoderLabel;
   QPointer<QLabel> selectTypeLabel;
   QPointer<QLabel> tailIndexLabel;
   QPointer<QLabel> tailMarkedLabel;
@@ -169,8 +167,6 @@ private:
   QPointer<QLabel> headDescriptionFilterLabel;
   QPointer<QLabel> headRawFilterLabel;
   QPointer<QLabel> headCommentFilterLabel;
-  QPointer<QLabel> coderLabel;
-  QPointer<QLabel> coderFeedbackLabel;
   QPointer<QLabel> linkageTypeLabel;
   QPointer<QLabel> linkageTypeFeedbackLabel;
   QPointer<QLabel> linkageQuestionLabel;
@@ -194,11 +190,7 @@ private:
   QPointer<QTextEdit> headRawField;
   QPointer<QTextEdit> headCommentField;
   QPointer<QTextEdit> linkageCommentField;
-  QPointer<QComboBox> coderComboBox;
   QPointer<QComboBox> typeComboBox;
-  QPointer<QPushButton> createCoderButton;
-  QPointer<QPushButton> editCoderButton;
-  QPointer<QPushButton> removeCoderButton;
   QPointer<QPushButton> createTypeButton;
   QPointer<QPushButton> editTypeButton;
   QPointer<QPushButton> removeTypeButton;

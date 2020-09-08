@@ -102,12 +102,14 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "value text)");
+		      "value text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE attributes_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE entity_attributes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
@@ -135,13 +137,15 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
-		      "incident integer)");
+		      "incident integer, "
+		      "coder text)");
 	  query->exec("CREATE TABLE relationships_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE entities "
 		      "(id integer, "
 		      "name text, "
@@ -151,6 +155,7 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "time text, "
 		      "entry text, "
+		      "coder text, "
 		      "mark integer)");
 	  query->exec("CREATE TABLE linkage_types "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -189,11 +194,13 @@ void WelcomeDialog::newDatabase()
 		      "type text)");
 	  query->exec("CREATE TABLE save_data "
 		      "(attributes_record integer, "
-		      "relationships_record integer)");
+		      "relationships_record integer, "
+		      "coder text)");
 	  query->exec("INSERT INTO save_data "
 		      "(attributes_record, "
-		      "relationships_record) "
-		      "VALUES (1, 1)");
+		      "relationships_record, "
+		      "coder) "
+		      "VALUES (1, 1, 'Default')");
 	  query->exec("CREATE TABLE linkages_sources_reference "
 		      "(code integer, "
 		      "label text)");
@@ -458,6 +465,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -659,6 +667,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "distance real, "
 		      "red integer, "
 		      "green integer, "
@@ -899,12 +908,14 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "value text)");
+		      "value text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS entity_attributes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
@@ -932,13 +943,15 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
-		      "incident integer)");
+		      "incident integer, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS entities "
 		      "(id integer, "
 		      "name text, "
@@ -948,6 +961,7 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "time text, "
 		      "entry text "
+		      "coder text "
 		      "mark integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS linkage_types "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -986,15 +1000,17 @@ void WelcomeDialog::openDatabase()
 		      "type text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS save_data "
 		      "(attributes_record integer, "
-		      "relationships_record integer)");
+		      "relationships_record integer, "
+		      "coder text)");
 	  query->exec("SELECT * FROM save_data");
 	  query->first();
 	  if (query->isNull(0)) 
 	    {
 	      query->exec("INSERT INTO save_data "
 			  "(attributes_record, "
-			  "relationships_record) "
-			  "VALUES (1, 1)");
+			  "relationships_record, "
+			  "coder) "
+			  "VALUES (1, 1, 'Default')");
 	    }
 	  query->exec("CREATE TABLE IF NOT EXISTS linkages_sources_reference "
 		      "(code integer, "
@@ -1266,6 +1282,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
@@ -1467,6 +1484,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "distance, "
 		      "red integer, "
 		      "green integer, "
@@ -1735,6 +1753,10 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE attributes_to_incidents ADD COLUMN value text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE attributes_to_incidents ADD COLUMN coder text;");
+	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(attributes_to_incidents_sources)");
 	  while (query->next())
@@ -1757,6 +1779,10 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("source_text"))
 	    {
 	      query->exec("ALTER TABLE attributes_to_incidents_sources ADD COLUMN source_text text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE attributes_to_incidents_sources ADD COLUMN coder text;");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(entity_attributes)");
@@ -1885,6 +1911,10 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE relationships_to_incidents ADD COLUMN incident integer;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE relationships_to_incidents ADD COLUMN coder text;");
+	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(relationships_to_incidents_sources)");
 	  while (query->next())
@@ -1915,6 +1945,10 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE relationships_to_incidents_sources "
 			  "ADD COLUMN source_text text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE relationships_to_incidents_sources ADD COLUMN coder text;");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(entities)");
@@ -1957,6 +1991,10 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("entry"))
 	    {
 	      query->exec("ALTER TABLE journal ADD COLUMN entry text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE journal ADD COLUMN coder text;");
 	    }
 	  if (!columns.contains("mark"))
 	    {
@@ -2129,10 +2167,17 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("attributes_record"))
 	    {
 	      query->exec("ALTER TABLE save_data ADD COLUMN attributes_record integer;");
+	      query->exec("UPDATE save_data SET attributes_record = 1");
 	    }
 	  if (!columns.contains("relationships_record"))
 	    {
 	      query->exec("ALTER TABLE save_data ADD COLUMN relationships_record integer;");
+	      query->exec("UPDATE save_data SET relationships_record = 1");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE save_data ADD COLUMN coder text;");
+	      query->exec("UPDATE save_data SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(linkages_sources_reference)");
@@ -3422,6 +3467,11 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots "
+			  "ADD COLUMN coder text;");
+	    }
 	  if (!columns.contains("red"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots "
@@ -4449,6 +4499,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots "
+			  "ADD COLUMN coder text;");
 	    }
 	  if (!columns.contains("distance"))
 	    {

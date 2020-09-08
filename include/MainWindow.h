@@ -29,6 +29,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QStackedWidget>
 #include <QMenuBar>
 #include <QFileDialog>
+#include <QLabel>
 #include <fstream>
 #include <sstream>
 #include <string>
@@ -109,6 +110,10 @@ private slots:
   void splitCsvLine(std::vector<std::string> *tokens, std::string line);
   void setOpenGL();
   void setAntialiasing();
+  void createCoder();
+  void editCoder();
+  void deleteCoder();
+  void switchCoder();
 
 protected:
   // Overrride event
@@ -136,6 +141,7 @@ private:
   QPointer<QWidget> missingRelationshipsTableWidget;
   QPointer<QWidget> attributeCoverageTableWidget;
   QPointer<QWidget> relationshipCoverageTableWidget;
+  QPointer<QLabel> selectedCoderLabel;
 
   // Menus and actions
   QPointer<QMenuBar> menuBar;
@@ -146,6 +152,7 @@ private:
   QPointer<QMenu> transferEntitiesMenu;
   QPointer<QMenu> transferRelationshipsMenu;
   QPointer<QMenu> transferDataMenu;
+  QPointer<QMenu> coderMenu;
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
@@ -187,6 +194,10 @@ private:
   QPointer<QAction> exportAssignedRelationshipsAct;
   QPointer<QAction> setOpenGLAct;
   QPointer<QAction> setAntialiasingAct;
+  QPointer<QAction> createCoderAct;
+  QPointer<QAction> editCoderAct;
+  QPointer<QAction> deleteCoderAct;
+  QPointer<QAction> switchCoderAct;
 };
 
 #endif

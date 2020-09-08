@@ -95,6 +95,7 @@ public:
   ~EventGraphWidget();
 
   // Setters
+  void setCurrentCoder(QString coder);
   void setAttributesWidget(AttributesWidget* attributesWidgetPtr);
   void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
   void setOpenGL(bool state);
@@ -462,7 +463,6 @@ private:
   QPointer<QTextEdit> descriptionField;
   QPointer<QTextEdit> rawField;
   QPointer<QTextEdit> commentField;
-  QPointer<QComboBox> coderComboBox;
   QPointer<QComboBox> typeComboBox;
   QPointer<QComboBox> compareComboBox;
   QPointer<QComboBox> penStyleComboBox;

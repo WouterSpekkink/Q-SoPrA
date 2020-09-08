@@ -24,6 +24,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _descriptionFilter = "";
   _rawFilter = "";
   _commentFilter = "";
@@ -1213,19 +1218,22 @@ void AttributesWidget::sourceAttributeText(const QString &attribute, const int &
       QString sourceText = rawField->textCursor().selectedText().trimmed();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
-		     "WHERE attribute = :att AND inc = :incident AND source_text = :text");
+		     "WHERE attribute = :att AND inc = :incident AND coder = :cod "
+		     "AND source_text = :text");
       query->bindValue(":att", attribute);
       query->bindValue(":inc", incident);
+      query->bindValue(":cod", _selectedCoder);
       query->bindValue(":text", sourceText);
       query->exec();
       query->first();
       if (query->isNull(0)) 
 	{
 	  query->prepare("INSERT INTO attributes_to_incidents_sources "
-			 "(attribute, incident, source_text) "
-			 "VALUES (:att, :inc, :text)");
+			 "(attribute, incident, coder, source_text) "
+			 "VALUES (:att, :inc, :cod, :text)");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":inc", incident);
+	  query->bindValue(":cod", _selectedCoder);
 	  query->bindValue(":text", sourceText);
 	  query->exec();
 	}
@@ -1267,8 +1275,9 @@ void AttributesWidget::highlightText()
 	  cursor.movePosition(QTextCursor::Start);
 	  rawField->setTextCursor(cursor);
 	  query->prepare("SELECT source_text "
-			  "FROM attributes_to_incidents_sources "
-			  "WHERE attribute = :attribute AND incident = :id");
+			 "FROM attributes_to_incidents_sources "
+			 "WHERE attribute = :attribute AND incident = :id "
+			 "AND coder = _selectedCoder");
 	  query->bindValue(":attribute", currentName);
 	  query->bindValue(":id", id);
 	  query->exec();
@@ -1346,9 +1355,10 @@ void AttributesWidget::assignAttribute()
 	  QString attribute = attributesTreeView->currentIndex().data().toString();
 	  query->prepare("SELECT attribute, incident "
 			 "FROM attributes_to_incidents "
-			 "WHERE attribute = :att AND incident = :inc");
+			 "WHERE attribute = :att AND incident = :inc AND coder = :cod");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":inc", id);
+	  query->bindValue(":cod", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  QTextCursor cursPos = rawField->textCursor();
@@ -1356,9 +1366,10 @@ void AttributesWidget::assignAttribute()
 	    {
 	      query->prepare("INSERT INTO attributes_to_incidents "
 			     "(attribute, incident) "
-			     "VALUES (:attribute, :incident)");
+			     "VALUES (:attribute, :incident, :coder)");
 	      query->bindValue(":attribute", attribute);
 	      query->bindValue(":incident", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      sourceAttributeText(attribute, id);
 	      boldSelected(attributesTree, attribute);
@@ -1403,32 +1414,36 @@ void AttributesWidget::unassignAttribute()
 	  QString attribute = attributesTreeView->currentIndex().data().toString();
       
 	  assignedModel->select();
-	  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			  "WHERE attribute = :att AND incident = :inc  ");
+	  query->prepare("SELECT attribute, incident, coder FROM attributes_to_incidents "
+			  "WHERE attribute = :att AND incident = :inc  AND coder = :cod");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":inc", id);
+	  query->bindValue(":cod", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (!query->isNull(0)) 
 	    {
 	      query->prepare("DELETE FROM attributes_to_incidents "
-			      "WHERE attribute = :att AND incident = :inc");
+			      "WHERE attribute = :att AND incident = :inc AND coder = :cod");
 	      query->bindValue(":att", attribute);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":cod", _selectedCoder);
 	      query->exec();
 	      query->prepare("DELETE FROM attributes_to_incidents_sources "
-			      "WHERE attribute = :att AND incident = :inc");
+			      "WHERE attribute = :att AND incident = :inc AND coder = :cod");
 	      query->bindValue(":att", attribute);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":cod", _selectedCoder);
 	      query->exec();
 	      assignedModel->select();
 	      resetFont(attributesTree);
-	      query->exec("SELECT attribute, incident FROM attributes_to_incidents");
+	      query->exec("SELECT attribute, incident, coder FROM attributes_to_incidents");
 	      while (query->next()) 
 		{
 		  QString attribute = query->value(0).toString();
 		  int incident = query->value(1).toInt();
-		  if (incident == id) 
+		  QString coder = query->value(2).toString();
+		  if (incident == id && coder == _selectedCoder) 
 		    {
 		      boldSelected(attributesTree, attribute);
 		    }
@@ -1473,9 +1488,11 @@ void AttributesWidget::removeText()
 	{
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
 	  query->prepare("DELETE FROM attributes_to_incidents_sources "
-			 "WHERE attribute = :att AND incident = :inc AND source_text = :text");
+			 "WHERE attribute = :att AND incident = :inc AND coder = :cod "
+			 "AND source_text = :text");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":inc", id);
+	  query->bindValue(":cod", _selectedCoder);
 	  query->bindValue(":text", sourceText);
 	  query->exec();
 	}
@@ -1514,9 +1531,10 @@ void AttributesWidget::resetTexts()
 	      id = query->value(0).toInt();
 	      QString attribute = attributesTreeView->currentIndex().data().toString();
 	      query->prepare("DELETE FROM attributes_to_incidents_sources "
-			     "WHERE attribute = :att AND incident = :inc");
+			     "WHERE attribute = :att AND incident = :inc AND coder = :cod");
 	      query->bindValue(":att", attribute);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":cod", _selectedCoder);
 	      query->exec();
 	    }
 	  highlightText();
@@ -1656,10 +1674,11 @@ void AttributesWidget::setValue()
 	  QString attribute = attributesTreeView->currentIndex().data().toString();
 	  query->prepare("UPDATE attributes_to_incidents "
 			  "SET value = :val WHERE attribute = :attribute "
-			  "AND incident = :id");
+			  "AND incident = :id AND coder = :coder");
 	  query->bindValue(":val", valueField->text());
 	  query->bindValue(":attribute", attribute);
 	  query->bindValue(":id", id);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	}
       delete query;
@@ -1690,9 +1709,10 @@ void AttributesWidget::getValue()
 	  id = query->value(0).toInt();
 	}
       query->prepare("SELECT attribute, value FROM attributes_to_incidents "
-		      "WHERE incident = :id AND attribute = :att");
+		      "WHERE incident = :id AND attribute = :att AND coder = :coder");
       query->bindValue(":id", id);
       query->bindValue(":att", attribute);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       if (!(query->isNull(0))) 
@@ -1780,12 +1800,13 @@ void AttributesWidget::retrieveData()
 	  markLabel->setText("MARKED");
 	}
       resetFont(attributesTree);
-      query->exec("SELECT attribute, incident FROM attributes_to_incidents");
+      query->exec("SELECT attribute, incident, coder FROM attributes_to_incidents");
       while (query->next()) 
 	{
 	  QString attribute = query->value(0).toString();
 	  int incident = query->value(1).toInt();
-	  if (incident == id) 
+	  QString coder = query->value(2).toString();
+	  if (incident == id && coder == _selectedCoder) 
 	    {
 	      boldSelected(attributesTree, attribute);
 	    }
@@ -1863,12 +1884,13 @@ void AttributesWidget::previousCoded()
 	{
 	  QString currentAttribute = it.next();
 	  query->prepare("SELECT ch_order FROM "
-			 "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+			 "(SELECT incident, ch_order, attribute, coder FROM attributes_to_incidents "
 			 "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-			 "WHERE ch_order < :order AND attribute = :attribute)"
+			 "WHERE ch_order < :order AND attribute = :attribute AND coder = :coder)"
 			 "ORDER BY ch_order desc");
 	  query->bindValue(":order", currentOrder);
 	  query->bindValue(":attribute", currentAttribute);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (order == -1 && !(query->isNull(0))) 
@@ -1929,12 +1951,13 @@ void AttributesWidget::nextCoded()
 	{
 	  QString currentAttribute = it.next();
 	  query->prepare("SELECT ch_order FROM "
-			 "(SELECT incident, ch_order, attribute FROM attributes_to_incidents "
+			 "(SELECT incident, ch_order, attribute, coder FROM attributes_to_incidents "
 			 "LEFT JOIN incidents ON attributes_to_incidents.incident = incidents.id "
-			 "WHERE ch_order > :order AND attribute = :attribute)"
+			 "WHERE ch_order > :order AND attribute = :attribute AND coder = :coder)"
 			 "ORDER BY ch_order asc");
 	  query->bindValue(":order", currentOrder);
 	  query->bindValue(":attribute", currentAttribute);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (order == -1 && !(query->isNull(0))) 
@@ -2001,11 +2024,12 @@ void AttributesWidget::setButtons()
 	{
 	  int id = query->value(0).toInt();
 	  assignedModel->select();
-	  query->prepare("SELECT attribute, incident FROM "
+	  query->prepare("SELECT attribute, incident, coder FROM "
 			 "attributes_to_incidents "
-			 "WHERE attribute = :att AND incident = :inc  ");
+			 "WHERE attribute = :att AND incident = :inc AND coder = :cod");
 	  query->bindValue(":att", currentAttribute);
 	  query->bindValue(":inc", id);
+	  query->bindValue(":cod", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (!query->isNull(0)) 
@@ -2018,9 +2042,10 @@ void AttributesWidget::setButtons()
 	    }
 	  query->prepare("SELECT attribute, incident FROM "
 			 "attributes_to_incidents_sources "
-			 "WHERE attribute = :att AND incident = :inc");
+			 "WHERE attribute = :att AND incident = :inc AND coder = :cod");
 	  query->bindValue(":att", currentAttribute);
 	  query->bindValue(":inc", id);
+	  query->bindValue(":cod", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (!query->isNull(0)) 
@@ -2186,12 +2211,13 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       QSqlQuery *query2 = new QSqlQuery;
       query->exec("SELECT name FROM entities");
       query2->prepare("SELECT attribute FROM attributes_to_incidents "
-		      "WHERE attribute = :entity");
+		      "WHERE attribute = :entity AND coder = :coder");
       bool found = false;
       while (query->next()) 
 	{
 	  QString currentEntity = query->value(0).toString();
 	  query2->bindValue(":entity", currentEntity);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->exec();
 	  query2->first();
 	  if (!query2->isNull(0)) 
@@ -2250,8 +2276,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  menu.addAction(action6);
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
-			 "WHERE attribute = :selected");
+			 "WHERE attribute = :selected AND coder = :coder");
 	  query->bindValue(":selected", selected);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (query->isNull(0)) 
@@ -2272,9 +2299,10 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	      id = query2->value(0).toInt();
 	    }
 	  query2->prepare("SELECT attribute FROM attributes_to_incidents "
-			  "WHERE attribute = :entity AND incident = :id");
+			  "WHERE attribute = :entity AND incident = :id AND coder = :coder");
 	  query2->bindValue(":entity", selected);
 	  query2->bindValue(":id", id);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->exec();
 	  query2->first();
 	  if (query2->isNull(0)) 
@@ -2328,8 +2356,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	  menu.addAction(action6);
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
-			 "WHERE attribute = :selected");
+			 "WHERE attribute = :selected AND coder = :coder");
 	  query->bindValue(":selected", selected);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  if (query->isNull(0)) 
@@ -2350,9 +2379,10 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
 	      id = query2->value(0).toInt();
 	    }
 	  query2->prepare("SELECT attribute FROM attributes_to_incidents "
-			  "WHERE attribute = :attribute AND incident = :id");
+			  "WHERE attribute = :attribute AND incident = :id AND coder = :coder");
 	  query2->bindValue(":attribute", selected);
 	  query2->bindValue(":id", id);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->exec();
 	  query2->first();
 	  if (query2->isNull(0)) 
@@ -2446,18 +2476,21 @@ void AttributesWidget::autoAssignAll()
 	    {
 	      QString current = it2.next();
 	      query->prepare("SELECT incident FROM relationships_to_incidents "
-			     "WHERE type = :type AND relationship = :name");
+			     "WHERE type = :type AND relationship = :name AND coder = :coder");
 	      query->bindValue(":type", selectedRelationship);
 	      query->bindValue(":name", current);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
 		  int incident = query->value(0).toInt();
 		  QSqlQuery *query2 = new QSqlQuery;
 		  query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-				  "WHERE attribute = :attribute AND incident = :incident");
+				  "WHERE attribute = :attribute AND incident = :incident "
+				  "AND coder = :coder");
 		  query2->bindValue(":attribute", selected);
 		  query2->bindValue(":incident", incident);
+		  query2->bindValue(":coder", _selectedCoder);
 		  query2->exec();
 		  query2->first();
 		  bool found = false;
@@ -2467,18 +2500,21 @@ void AttributesWidget::autoAssignAll()
 		    }
 		  if (!found) 
 		    {
-		      query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
-				      "VALUES (:attribute, :incident)");
+		      query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident, "
+				      "coder) "
+				      "VALUES (:attribute, :incident, :coder)");
 		      query2->bindValue(":attribute", selected);
 		      query2->bindValue(":incident", incident);
+		      query2->bindValue(":coder", _selectedCoder);
 		      query2->exec();
 		    }
 		  delete query2;
 		}
 	      query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
-			     "WHERE type = :type AND relationship = :name");
+			     "WHERE type = :type AND relationship = :name AND coder = :coder");
 	      query->bindValue(":type", selectedRelationship);
 	      query->bindValue(":name", current);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -2487,9 +2523,11 @@ void AttributesWidget::autoAssignAll()
 		  QSqlQuery *query2 = new QSqlQuery;
 		  query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources "
 				  "WHERE attribute = :attribute AND incident = :incident "
+				  "AND coder = :coder "
 				  "AND source_text = :sourceText");
 		  query2->bindValue(":attribute", selected);
 		  query2->bindValue(":incident", incident);
+		  query2->bindValue(":coder", _selectedCoder);
 		  query2->bindValue(":sourceText", sourceText);
 		  query2->exec();
 		  query2->first();
@@ -2501,10 +2539,11 @@ void AttributesWidget::autoAssignAll()
 		  if (!found) 
 		    {
 		      query2->prepare("INSERT INTO attributes_to_incidents_sources "
-				      "(attribute, incident, source_text) "
-				      "VALUES (:attribute, :incident, :source_text)");
+				      "(attribute, incident, coder, source_text) "
+				      "VALUES (:attribute, :incident, :coder, :source_text)");
 		      query2->bindValue(":attribute", selected);
 		      query2->bindValue(":incident", incident);
+		      query2->bindValue(":coder", _selectedCoder);
 		      query2->bindValue(":source_text", sourceText);
 		      query2->exec();
 		    }
@@ -2524,8 +2563,9 @@ void AttributesWidget::autoAssignAll()
   int currentIncident = query->value(0).toInt();
   resetFont(attributesTree);
   query->prepare("SELECT attribute FROM attributes_to_incidents "
-		 "WHERE incident = :incident");
+		 "WHERE incident = :incident AND coder = :coder");
   query->bindValue(":incident", currentIncident);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   while (query->next()) 
     {
@@ -2583,18 +2623,21 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
 	{
 	  QString current = it.next();
 	  query->prepare("SELECT incident FROM relationships_to_incidents "
-			 "WHERE type = :type AND relationship = :name");
+			 "WHERE type = :type AND relationship = :name AND coder = :coder");
 	  query->bindValue(":type", selectedRelationship);
 	  query->bindValue(":name", current);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
 	      int incident = query->value(0).toInt();
 	      QSqlQuery *query2 = new QSqlQuery;
 	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			      "WHERE attribute = :attribute AND incident = :incident");
+			      "WHERE attribute = :attribute AND incident = :incident "
+			      "AND coder = :coder");
 	      query2->bindValue(":attribute", selected);
 	      query2->bindValue(":incident", incident);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      query2->first();
 	      bool found = false;
@@ -2604,18 +2647,20 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
 		}
 	      if (!found) 
 		{
-		  query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
-				  "VALUES (:attribute, :incident)");
+		  query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident, coder)"
+				  "VALUES (:attribute, :incident, :coder)");
 		  query2->bindValue(":attribute", selected);
 		  query2->bindValue(":incident", incident);
+		  query2->bindValue(":coder", _selectedCoder);
 		  query2->exec();
 		}
 	      delete query2;
 	    }
 	  query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
-			 "WHERE type = :type AND relationship = :name");
+			 "WHERE type = :type AND relationship = :name AND coder = :coder");
 	  query->bindValue(":type", selectedRelationship);
 	  query->bindValue(":name", current);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -2624,9 +2669,10 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
 	      QSqlQuery *query2 = new QSqlQuery;
 	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources"
 			      "WHERE attribute = :attribute AND incident = :incident "
-			      "AND source_text = :sourceText");
+			      "AND coder = :coder AND source_text = :sourceText");
 	      query2->bindValue(":attribute", selected);
 	      query2->bindValue(":incident", incident);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->bindValue(":sourceText", sourceText);
 	      query2->exec();
 	      query2->first();
@@ -2638,10 +2684,11 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
 	      if (!found) 
 		{
 		  query2->prepare("INSERT INTO attributes_to_incidents_sources "
-				  "(attribute, incident, source_text) "
-				  "VALUES (:attribute, :incident, :source_text)");
+				  "(attribute, incident, coder, source_text) "
+				  "VALUES (:attribute, :incident, :coder, :source_text)");
 		  query2->bindValue(":attribute", selected);
 		  query2->bindValue(":incident", incident);
+		  query2->bindValue(":coder", _selectedCoder);
 		  query2->bindValue(":source_text", sourceText);
 		  query2->exec();
 		}
@@ -2660,8 +2707,9 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
   int currentIncident = query->value(0).toInt();
   resetFont(attributesTree);
   query->prepare("SELECT attribute FROM attributes_to_incidents "
-		 "WHERE incident = :incident");
+		 "WHERE incident = :incident AND coder = :coder");
   query->bindValue(":incident", currentIncident);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   while (query->next()) 
     {
@@ -2692,15 +2740,17 @@ void AttributesWidget::unassignAllEntities()
       QSqlQuery *query3 = new QSqlQuery;
       query->exec("SELECT name FROM entities");
       query2->prepare("DELETE FROM attributes_to_incidents "
-		      "WHERE attribute = :entity");
+		      "WHERE attribute = :entity AND coder = :coder");
       query3->prepare("DELETE FROM attributes_to_incidents_sources "
-		      "WHERE attribute = :entity");
+		      "WHERE attribute = :entity AND coder = :coder");
       while (query->next()) 
 	{
 	  QString currentEntity = query->value(0).toString();
 	  query2->bindValue(":entity", currentEntity);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->exec();
 	  query3->bindValue(":entity", currentEntity);
+	  query3->bindValue(":coder", _selectedCoder);
 	  query3->exec();
 	}
       query->exec();
@@ -2715,8 +2765,9 @@ void AttributesWidget::unassignAllEntities()
       int currentIncident = query->value(0).toInt();
       resetFont(attributesTree);
       query->prepare("SELECT attribute FROM attributes_to_incidents "
-		     "WHERE incident = :incident");
+		     "WHERE incident = :incident AND coder = :coder");
       query->bindValue(":incident", currentIncident);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -2744,12 +2795,14 @@ void AttributesWidget::unassignAllAttribute(QModelIndex &index)
     {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("DELETE FROM attributes_to_incidents "
-		     "WHERE attribute = :attribute");
+		     "WHERE attribute = :attribute AND coder = :coder");
       query->bindValue(":attribute", selected);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->prepare("DELETE FROM attributes_to_incidents_sources "
-		     "WHERE attribute = :attribute");
+		     "WHERE attribute = :attribute AND coder = :coder");
       query->bindValue(":attribute", selected);
+      query->bindValue(":coder", _selectedCoder);
       query->exec("SELECT attributes_record FROM save_data");
       query->first();
       int currentOrder = query->value(0).toInt();
@@ -2760,8 +2813,9 @@ void AttributesWidget::unassignAllAttribute(QModelIndex &index)
       int currentIncident = query->value(0).toInt();
       resetFont(attributesTree);
       query->prepare("SELECT attribute FROM attributes_to_incidents "
-		     "WHERE incident = :incident");
+		     "WHERE incident = :incident AND coder = :coder");
       query->bindValue(":incident", currentIncident);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -2949,10 +3003,14 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
 			  query->exec();
 			  query->first();
 			  int incident = query->value(0).toInt();
-			  query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-					 "WHERE attribute = :attribute AND incident = :incident");
+			  query->prepare("SELECT attribute, incident, coder "
+					 "FROM attributes_to_incidents "
+					 "WHERE attribute = :attribute "
+					 "AND incident = :incident "
+					 "AND coder = :coder");
 			  query->bindValue(":attribute", parentName);
 			  query->bindValue(":incident", incident);
+			  query->bindValue(":coder", _selectedCoder);
 			  query->exec();
 			  query->first();
 			  if (query->isNull(0)) 
@@ -3058,12 +3116,13 @@ void AttributesWidget::fixTree()
     {
       id = query2->value(0).toInt();
     }
-  query2->exec("SELECT attribute, incident FROM attributes_to_incidents");
+  query2->exec("SELECT attribute, incident, coder FROM attributes_to_incidents");
   while (query2->next()) 
     {
       QString attribute = query2->value(0).toString();
       int incident = query2->value(1).toInt();
-      if (incident == id) 
+      QString coder = query2->value(2).toString();
+      if (incident == id && coder == _selectedCoder) 
 	{
 	  boldSelected(attributesTree, attribute);
 	}
@@ -3091,6 +3150,11 @@ void AttributesWidget::resetTree()
 {
   delete attributesTree;
   setTree();
+}
+
+void AttributesWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool AttributesWidget::eventFilter(QObject *object, QEvent *event) 

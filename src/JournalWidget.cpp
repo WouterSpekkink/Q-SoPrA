@@ -31,7 +31,8 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   journalModel->setTable("journal");
   journalModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Log date"));
   journalModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entry"));
-  journalModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Needs attention"));
+  journalModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Coder"));
+  journalModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Needs attention"));
   journalModel->select();
 
   tableView = new ZoomableTableView(this);
@@ -39,14 +40,15 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   tableView->setColumnHidden(0, true);
   tableView->setColumnWidth(1, (parent->width() / 2) / 4);
   tableView->setColumnWidth(2, (parent->width() / 2) / 2);
-  tableView->setColumnWidth(3, (parent->width() / 2) / 7);
+  tableView->setColumnWidth(3, (parent->width() / 2) / 4);
+  tableView->setColumnWidth(4, (parent->width() / 2) / 7);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
-  tableView->setItemDelegateForColumn(3, new CheckBoxDelegate(tableView));
+  tableView->setItemDelegateForColumn(4, new CheckBoxDelegate(tableView));
   
   logField = new QTextEdit(this);
   logField->setEnabled(false);
@@ -153,10 +155,11 @@ void JournalWidget::addEntry()
   QDateTime time = QDateTime::currentDateTime();
   QString timeText = time.toString(Qt::TextDate);
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("INSERT INTO journal (time, mark) "
-		 "VALUES (:time, :mark)");
+  query->prepare("INSERT INTO journal (time, mark, coder) "
+		 "VALUES (:time, :mark, :coder)");
   query->bindValue(":time", timeText);
   query->bindValue(":mark", 0);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
   journalModel->select();
   delete query;
@@ -178,7 +181,8 @@ void JournalWidget::removeEntry()
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("Removing a journal entry cannot be undone. Are you sure you want to remove this entry?");
+      warningBox->setInformativeText("Removing a journal entry cannot be undone. "
+				     "Are you sure you want to remove this entry?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
 	  int currentRow = tableView->currentIndex().row();
@@ -239,12 +243,14 @@ void JournalWidget::exportJournal()
 	      << "Entry" << "\n";
       // And then we fetch the journal entries.
       QSqlQuery *query = new QSqlQuery;
-      query->exec("SELECT time, entry FROM journal");
+      query->exec("SELECT time, coder, entry FROM journal");
       while (query->next()) 
 	{
 	  QString time = query->value(0).toString();
-	  QString entry = query->value(1).toString();
+	  QString coder = query->value(1).toString();
+	  QString entry = query->value(2).toString();
 	  fileOut << "\"" << time.toStdString() << "\"" << ","
+		  << "\"" << coder.toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(entry).toStdString() << "\"" << "\n";
 	}
       delete query;
@@ -263,7 +269,8 @@ bool JournalWidget::checkChanges()
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Unsaved changes</h2>");
-      warningBox->setInformativeText("You have unsaved changes to journal entries, are you want to continue?");
+      warningBox->setInformativeText("You have unsaved changes to journal entries, "
+				     "are you want to continue?");
       if (warningBox->exec() == QMessageBox::Yes)
 	{
 	  return true;
@@ -277,4 +284,9 @@ bool JournalWidget::checkChanges()
     {
       return true;
     }
+}
+
+void JournalWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }

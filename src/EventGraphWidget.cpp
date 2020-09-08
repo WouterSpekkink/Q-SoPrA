@@ -27,7 +27,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) 
 {
-  _selectedCoder = "";
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _selectedCompare = "";
   _selectedAbstractNode = NULL;
   _selectedIncident = 0;
@@ -94,7 +98,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   linkageListWidget->setStyleSheet("QTableView {gridline-color: black}");
   linkageListWidget->setSelectionMode(QAbstractItemView::SingleSelection);
   
-  coderLabel = new QLabel(tr("Choose coder:"), this);
   typeLabel = new QLabel(tr("Choose linkage:"), this);
   plotLabel = new QLabel(tr("Unsaved plot"), this);
   changeLabel = new QLabel(tr("*"), this);
@@ -133,9 +136,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   labelSizeLabel = new QLabel(tr("<b>Label size:</b>"), graphicsWidget);
   layoutLabel = new QLabel(tr("<b>Layout:</b>"), this);
   
-  coderComboBox = new QComboBox(this);
-  coderComboBox->addItem(DEFAULT);
-
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
 
@@ -408,7 +408,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
   connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)),
 	  this, SLOT(setCompareButton()));  
@@ -558,8 +557,6 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotOptionsLayout = new QHBoxLayout;
-  plotOptionsLayout->addWidget(coderLabel);
-  plotOptionsLayout->addWidget(coderComboBox);
   plotOptionsLayout->addWidget(typeLabel);
   plotOptionsLayout->addWidget(typeComboBox);
   plotOptionsLayout->addWidget(plotButton);
@@ -1309,10 +1306,11 @@ void EventGraphWidget::setValue()
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("UPDATE attributes_to_incidents "
 			 "SET value = :val "
-			 "WHERE attribute = :attribute AND incident = :incident");
+			 "WHERE attribute = :attribute AND incident = :incident AND coder = :coder");
 	  query->bindValue(":val", valueField->text());
 	  query->bindValue(":attribute", attribute);
 	  query->bindValue(":incident", _selectedIncident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  valueButton->setEnabled(false);
 	  delete query;
@@ -1426,8 +1424,9 @@ void EventGraphWidget::retrieveData()
 		  resetFont(attributesTree);
 		  QSqlQuery *query2 = new QSqlQuery;
 		  query2->prepare("SELECT attribute FROM attributes_to_incidents "
-				  "WHERE incident = :id");
+				  "WHERE incident = :id AND coder = :coder");
 		  query2->bindValue(":id", id);
+		  query2->bindValue(":coder", _selectedCoder);
 		  query2->exec();
 		  while (query2->next()) 
 		    {
@@ -1565,8 +1564,9 @@ void EventGraphWidget::previousDataItem()
 	    }
 	  resetFont(attributesTree);
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
-			 "WHERE incident = :id");
+			 "WHERE incident = :id AND coder = :coder");
 	  query->bindValue(":id", id);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -1671,8 +1671,9 @@ void EventGraphWidget::previousDataItem()
 	    }
 	  resetFont(attributesTree);
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
-			 "WHERE incident = :id");
+			 "WHERE incident = :id AND coder = :coder");
 	  query->bindValue(":id", id);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -1780,8 +1781,9 @@ void EventGraphWidget::nextDataItem()
 	    }
 	  resetFont(attributesTree);
 	  query->prepare("SELECT attribute FROM attributes_to_incidents "
-			 "WHERE incident = :id");
+			 "WHERE incident = :id AND coder = :coder");
 	  query->bindValue(":id", id);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -1887,8 +1889,9 @@ void EventGraphWidget::nextDataItem()
 	      resetFont(attributesTree);
 	      QSqlQuery *query = new QSqlQuery;
 	      query->prepare("SELECT attribute FROM attributes_to_incidents "
-			     "WHERE incident = :id");
+			     "WHERE incident = :id AND coder = :coder");
 	      query->bindValue(":id", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -2117,10 +2120,14 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
 			  if (type == INCIDENT) 
 			    {
 			      QSqlQuery *query = new QSqlQuery;
-			      query->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-					     "WHERE attribute = :attribute AND incident = :incident");
+			      query->prepare("SELECT attribute, incident "
+					     "FROM attributes_to_incidents "
+					     "WHERE attribute = :attribute "
+					     "AND incident = :incident "
+					     "AND coder = :coder");
 			      query->bindValue(":attribute", parentName);
 			      query->bindValue(":incident", incidentNode);
+			      query->bindValue(":coder", _selectedCoder);
 			      query->exec();
 			      query->first();
 			      if (query->isNull(0)) 
@@ -2187,19 +2194,21 @@ void EventGraphWidget::assignAttribute()
 	  bool empty = false;
 	  query->prepare("SELECT attribute FROM "
 			 "attributes_to_incidents WHERE "
-			 "attribute = :att AND incident = :incident");
+			 "attribute = :att AND incident = :incident AND coder = :coder");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":incident", _selectedIncident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
 	  QTextCursor cursPos = rawField->textCursor();
 	  if (empty) 
 	    {
-	      query->prepare("INSERT INTO attributes_to_incidents (attribute, incident) "
-			     "VALUES (:attribute, :incident)");
+	      query->prepare("INSERT INTO attributes_to_incidents (attribute, incident, coder) "
+			     "VALUES (:attribute, :incident, :coder)");
 	      query->bindValue(":attribute", attribute);
 	      query->bindValue(":incident", _selectedIncident);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      sourceAttributeText(attribute, _selectedIncident);
 	      boldSelected(attributesTree, attribute, _selectedIncident, INCIDENT);
@@ -2245,28 +2254,32 @@ void EventGraphWidget::unassignAttribute()
 	  bool empty = false;
 	  query->prepare("SELECT attribute, incident "
 			 "FROM attributes_to_incidents "
-			 "WHERE attribute = :att AND incident = :incident");
+			 "WHERE attribute = :att AND incident = :incident AND coder = :coder");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":incident", _selectedIncident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
 	  if (!empty) 
 	    {
 	      query->prepare("DELETE FROM attributes_to_incidents "
-			     "WHERE attribute = :att AND incident = :incident");
+			     "WHERE attribute = :att AND incident = :incident AND coder = :coder");
 	      query->bindValue(":att", attribute);
 	      query->bindValue(":incident", _selectedIncident);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query2->prepare("DELETE FROM attributes_to_incidents_sources "
-			      "WHERE attribute = :att AND incident = :incident");
+			      "WHERE attribute = :att AND incident = :incident AND coder = :coder");
 	      query2->bindValue(":att", attribute);
 	      query2->bindValue(":inc", _selectedIncident);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      resetFont(attributesTree);
 	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
-			      "WHERE incident = :incident");
+			      "WHERE incident = :incident AND coder = :coder");
 	      query2->bindValue(":incident", _selectedIncident);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      while (query2->next()) 
 		{
@@ -2362,18 +2375,22 @@ void EventGraphWidget::sourceAttributeText(const QString &attribute, const int &
       QString sourceText = rawField->textCursor().selectedText().trimmed();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT attribute FROM attributes_to_incidents_sources "
-		     "WHERE attribute = :att AND inc = :incident AND source_text = :text");
-      query->bindValue("att", attribute);
-      query->bindValue("inc", incident);
-      query->bindValue("text", sourceText);
+		     "WHERE attribute = :att AND inc = :incident AND coder = :coder "
+		     "AND source_text = :text");
+      query->bindValue(":att", attribute);
+      query->bindValue(":inc", incident);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":text", sourceText);
       query->exec();
       query->first();
       if (query->isNull(0)) 
 	{
-	  query->prepare("INSERT INTO attributes_to_incidents_sources (attribute, incident, source_text)"
-			 "VALUES (:att, :inc, :text)");
+	  query->prepare("INSERT INTO attributes_to_incidents_sources "
+			 "(attribute, incident, coder, source_text)"
+			 "VALUES (:att, :inc, :coder, :text)");
 	  query->bindValue(":att", attribute);
 	  query->bindValue(":inc", incident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":text", sourceText);
 	  query->exec();
 	}
@@ -2393,9 +2410,11 @@ void EventGraphWidget::removeText()
 	      QString sourceText = rawField->textCursor().selectedText().trimmed();
 	      QSqlQuery *query = new QSqlQuery;
 	      query->prepare("DELETE FROM attributes_to_incidents_sources "
-			     "WHERE attribute = :att AND incident = :inc AND source_text = :text");
+			     "WHERE attribute = :att AND incident = :inc AND coder = :coder "
+			     "AND source_text = :text");
 	      query->bindValue(":att", attribute);
 	      query->bindValue(":inc", _selectedIncident);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":text", sourceText);
 	      query->exec();
 	      delete query;
@@ -2427,9 +2446,10 @@ void EventGraphWidget::resetTexts()
 		{
 		  QString attribute = attributesTreeView->currentIndex().data().toString();
 		  query->prepare("DELETE FROM attributes_to_incidents_sources "
-				 "WHERE attribute = :att AND incident = :inc");
+				 "WHERE attribute = :att AND incident = :inc AND coder = :coder");
 		  query->bindValue(":att", attribute);
 		  query->bindValue(":inc", _selectedIncident);
+		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();
 		}
 	      highlightText();
@@ -2455,11 +2475,12 @@ void EventGraphWidget::setButtons()
 	{
 	  QSqlQuery *query = new QSqlQuery;
 	  bool empty = false;
-	  query->prepare("SELECT attribute, incident, value FROM "
+	  query->prepare("SELECT attribute, incident, coder, value FROM "
 			 "attributes_to_incidents "
-			 "WHERE attribute = :att AND incident = :inc  ");
+			 "WHERE attribute = :att AND incident = :inc AND coder = :coder ");
 	  query->bindValue(":att", currentAttribute);
 	  query->bindValue(":inc", _selectedIncident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
@@ -2480,9 +2501,10 @@ void EventGraphWidget::setButtons()
 	    }
 	  query->prepare("SELECT attribute, incident FROM "
 			 "attributes_to_incidents_sources "
-			 "WHERE attribute = :att AND incident = :inc");
+			 "WHERE attribute = :att AND incident = :inc AND coder = :coder");
 	  query->bindValue(":att", currentAttribute);
 	  query->bindValue(":inc", _selectedIncident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  query->first();
 	  empty = query->isNull(0);
@@ -2681,9 +2703,10 @@ void EventGraphWidget::highlightText()
 	      QSqlQuery *query = new QSqlQuery;
 	      query->prepare("SELECT source_text "
 			     "FROM attributes_to_incidents_sources "
-			     "WHERE attribute = :attribute AND incident = :id");
+			     "WHERE attribute = :attribute AND incident = :id AND coder = :coder");
 	      query->bindValue(":attribute", currentName);
 	      query->bindValue(":id", _selectedIncident);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -2746,8 +2769,9 @@ void EventGraphWidget::fixTree()
     {
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT attribute FROM attributes_to_incidents "
-		     "WHERE incident = :id");
+		     "WHERE incident = :id AND coder = :coder");
       query->bindValue(":id", _selectedIncident);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -4038,7 +4062,7 @@ void EventGraphWidget::cleanUp()
   caseListWidget->clear();
   _presentTypes.clear();
   _checkedCases.clear();
-  _selectedCoder = "";
+  _selectedCoder = "Default";
   _selectedCompare = "";
   _selectedIncident = 0;
   _selectedAbstractNode = NULL;
@@ -4473,7 +4497,7 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
 
 void EventGraphWidget::setPlotButtons() 
 {
-  if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) 
+  if (typeComboBox->currentText() != DEFAULT) 
     {
       plotButton->setEnabled(true);
     }
@@ -4481,8 +4505,7 @@ void EventGraphWidget::setPlotButtons()
     {
       plotButton->setEnabled(false);
     }
-  if (coderComboBox->currentText() == _selectedCoder &&
-      !_presentTypes.contains(typeComboBox->currentText())) 
+  if (!_presentTypes.contains(typeComboBox->currentText())) 
     {
       if (_abstractNodeVector.size() > 0) 
 	{
@@ -4497,9 +4520,7 @@ void EventGraphWidget::setPlotButtons()
     {
       addLinkageTypeButton->setEnabled(false);
     }
-  if (coderComboBox->currentText() != DEFAULT &&
-      coderComboBox->currentText() == _selectedCoder &&
-      _presentTypes.contains(typeComboBox->currentText())) 
+  if (_presentTypes.contains(typeComboBox->currentText())) 
     {
       compareComboBox->clear();
       compareComboBox->addItem(DEFAULT);
@@ -4508,7 +4529,7 @@ void EventGraphWidget::setPlotButtons()
       while (query->next()) 
 	{
 	  QString currentCoder = query->value(0).toString();
-	  if (currentCoder != coderComboBox->currentText()) 
+	  if (currentCoder != _selectedCoder)
 	    {
 	      compareComboBox->addItem(currentCoder);
 	    }
@@ -4519,19 +4540,9 @@ void EventGraphWidget::setPlotButtons()
 
 void EventGraphWidget::getLinkageDetails() 
 {
-  coderComboBox->clear();
-  coderComboBox->addItem(DEFAULT);
   typeComboBox->clear();
   typeComboBox->addItem(DEFAULT);
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM coders");
-  while (query->next()) 
-    {
-      QString currentCoder = query->value(0).toString();
-      coderComboBox->blockSignals(true);
-      coderComboBox->addItem(currentCoder);
-      coderComboBox->blockSignals(false);
-    }
   query->exec("SELECT name FROM linkage_types ORDER BY name ASC");
   while (query->next()) 
     {
@@ -4544,7 +4555,6 @@ void EventGraphWidget::getLinkageDetails()
 void EventGraphWidget::plotGraph() 
 {
   cleanUp();
-  _selectedCoder = coderComboBox->currentText();
   QString currentType = typeComboBox->currentText();
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
@@ -4580,8 +4590,7 @@ void EventGraphWidget::plotGraph()
   linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
     setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
 	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-  if (coderComboBox->currentText() != DEFAULT &&
-      _presentTypes.contains(typeComboBox->currentText())) 
+  if (_presentTypes.contains(typeComboBox->currentText())) 
     {
       compareComboBox->clear();
       compareComboBox->addItem(DEFAULT);
@@ -4589,7 +4598,7 @@ void EventGraphWidget::plotGraph()
       while (query->next()) 
 	{
 	  QString currentCoder = query->value(0).toString();
-	  if (currentCoder != coderComboBox->currentText()) 
+	  if (currentCoder != _selectedCoder) 
 	    {
 	      compareComboBox->addItem(currentCoder);
 	    }
@@ -4656,8 +4665,7 @@ void EventGraphWidget::addLinkageType()
   linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
     setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
 	     Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-  if (coderComboBox->currentText() != DEFAULT &&
-      _presentTypes.contains(typeComboBox->currentText())) 
+  if (_presentTypes.contains(typeComboBox->currentText())) 
     {
       compareComboBox->clear();
       compareComboBox->addItem(DEFAULT);
@@ -4665,7 +4673,7 @@ void EventGraphWidget::addLinkageType()
       while (query->next()) 
 	{
 	  QString currentCoder = query->value(0).toString();
-	  if (currentCoder != coderComboBox->currentText()) 
+	  if (currentCoder != _selectedCoder)
 	    {
 	      compareComboBox->addItem(currentCoder);
 	    }
@@ -5915,8 +5923,6 @@ void EventGraphWidget::seePlots()
       int blue = query->value(3).toInt();
       _selectedCoder = coder;
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
-      int index = coderComboBox->findText(coder);
-      coderComboBox->setCurrentIndex(index);
       query->prepare("SELECT lowerbound, upperbound, labelson, labelsize "
 		     "FROM saved_eg_plots_settings "
 		     "WHERE plot = :plot");
@@ -6975,8 +6981,9 @@ void EventGraphWidget::addMode()
 	  QString currentAttribute = it.next();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT incident FROM attributes_to_incidents "
-			 "WHERE attribute = :currentAttribute");
+			 "WHERE attribute = :currentAttribute AND coder = :coder");
 	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -7063,7 +7070,7 @@ void EventGraphWidget::addModes()
       query2->prepare("SELECT description FROM entities "
 		      "WHERE name = :name");
       query3->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute  = :currentAttribute");
+		      "WHERE attribute  = :currentAttribute AND coder = :coder");
       // Then we get the selected attributes
       QVector<QPair<QString, bool> > chosenAttributes = attributeDialog->getAttributes();
       // Let's create a color palette;
@@ -7111,6 +7118,7 @@ void EventGraphWidget::addModes()
 	    {
 	      QString currentChild = it2.next();
 	      query3->bindValue(":currentAttribute", currentChild);
+	      query3->bindValue(":coder", _selectedCoder);
 	      query3->exec();
 	      while (query3->next())
 		{
@@ -7249,8 +7257,9 @@ void EventGraphWidget::removeMode()
 	{
 	  QString currentAttribute = it3.next();
 	  query->prepare("SELECT incident FROM attributes_to_incidents "
-			 "WHERE attribute = :currentAttribute");
+			 "WHERE attribute = :currentAttribute AND coder = :coder");
 	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -7536,8 +7545,9 @@ void EventGraphWidget::restoreModeColors()
 	{
 	  QString currentAttribute = it3.next();
 	  query->prepare("SELECT incident FROM attributes_to_incidents "
-			 "WHERE attribute = :currentAttribute");
+			 "WHERE attribute = :currentAttribute AND coder = :coder");
 	  query->bindValue(":currentAttribute", currentAttribute);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -9062,9 +9072,11 @@ void EventGraphWidget::abstractEvents()
 			      int id = item->getId();
 			      QSqlQuery *query = new QSqlQuery;
 			      query->prepare("SELECT incident FROM attributes_to_incidents "
-					     "WHERE attribute = :attribute AND incident = :id");
+					     "WHERE attribute = :attribute AND incident = :id "
+					     "AND coder = :coder");
 			      query->bindValue(":attribute", currentAttribute);
 			      query->bindValue(":id", id);
+			      query->bindValue(":coder", _selectedCoder);
 			      query->exec();
 			      query->first();
 			      if (!query->isNull(0)) 
@@ -10407,11 +10419,12 @@ void EventGraphWidget::exportTransitionMatrix()
 	      QVectorIterator<QString> rit(rowVector);
 	      QVectorIterator<QString> cit(colVector);
 	      query->prepare("SELECT incident FROM attributes_to_incidents "
-			     "WHERE attribute = :attribute");
+			     "WHERE attribute = :attribute AND coder = :coder");
 	      while (rit.hasNext())
 		{
 		  QString currentAttribute = rit.next();
 		  query->bindValue(":attribute", currentAttribute);
+		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();
 		  while (query->next())
 		    {
@@ -10422,6 +10435,7 @@ void EventGraphWidget::exportTransitionMatrix()
 		{
 		  QString currentAttribute = cit.next();
 		  query->bindValue(":attribute", currentAttribute);
+		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();
 		  while (query->next())
 		    {
@@ -13130,6 +13144,11 @@ void EventGraphWidget::finalBusiness()
 int EventGraphWidget::getLabelSize()
 {
   return _labelSize;
+}
+
+void EventGraphWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool EventGraphWidget::eventFilter(QObject *object, QEvent *event) 

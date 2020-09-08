@@ -24,6 +24,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _selectedType = "";
   _selectedEntityName = "";
   _labelsShown = false;
@@ -1677,7 +1682,7 @@ void NetworkGraphWidget::getDirectedEdges()
 		  "WHERE type = :type");
   QSqlQuery *query3 = new QSqlQuery;
   query3->prepare("SELECT incident FROM relationships_to_incidents "
-		  "WHERE type = :type AND relationship = :relationship");
+		  "WHERE type = :type AND relationship = :relationship AND coder = :coder");
   QSqlQuery *query4 = new QSqlQuery;
   query4->prepare("SELECT ch_order FROM incidents "
 		  "WHERE id = :id");
@@ -1711,6 +1716,7 @@ void NetworkGraphWidget::getDirectedEdges()
 		  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, type, name, 0);
 		  query3->bindValue(":type", type);
 		  query3->bindValue(":relationship", name);
+		  query3->bindValue(":coder", _selectedCoder);
 		  query3->exec();
 		  QSet<int> incidents;
 		  while (query3->next())
@@ -1750,7 +1756,7 @@ void NetworkGraphWidget::getUndirectedEdges()
 		  "WHERE type = :type");
   QSqlQuery *query3 = new QSqlQuery;
   query3->prepare("SELECT incident FROM relationships_to_incidents "
-		  "WHERE type = :type AND relationship = :relationship");
+		  "WHERE type = :type AND relationship = :relationship AND coder = :coder");
   QSqlQuery *query4 = new QSqlQuery;
   query4->prepare("SELECT ch_order FROM incidents "
 		  "WHERE id = :id");
@@ -1792,6 +1798,7 @@ void NetworkGraphWidget::getUndirectedEdges()
 		    }
 		  query3->bindValue(":type", type);
 		  query3->bindValue(":relationship", name);
+		  query3->bindValue(":coder", _selectedCoder);
 		  query3->exec();
 		  QSet<int> incidents;
 		  while (query3->next())
@@ -5188,8 +5195,9 @@ void NetworkGraphWidget::setRangeControls()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT DISTINCT relationship, incident "
 		     "FROM relationships_to_incidents "
-		     "WHERE type = :type");
+		     "WHERE type = :type AND coder = :coder");
       query->bindValue(":type", currentType);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -5240,8 +5248,9 @@ void NetworkGraphWidget::updateRangeControls()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT DISTINCT relationship, incident "
 		     "FROM relationships_to_incidents "
-		     "WHERE type = :type");
+		     "WHERE type = :type AND coder = :coder");
       query->bindValue(":type", currentType);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7010,8 +7019,10 @@ void NetworkGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->exec("SELECT DISTINCT incident "
-		  "FROM relationships_to_incidents");
+      query->prepare("SELECT DISTINCT incident "
+		     "FROM relationships_to_incidents "
+		     "WHERE coder = :coder");
+      query->bindValue("coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7459,7 +7470,7 @@ void NetworkGraphWidget::setVisibility()
   QSqlDatabase::database().transaction(); 
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT incident FROM relationships_to_incidents "
-		 "WHERE relationship = :relationship AND type = :type");
+		 "WHERE relationship = :relationship AND type = :type AND coder = :coder");
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
   QSqlQuery *query3 = new QSqlQuery;
@@ -7501,6 +7512,7 @@ void NetworkGraphWidget::setVisibility()
 	    {
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
+	      query->bindValue("coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -7624,7 +7636,7 @@ void NetworkGraphWidget::setVisibility()
   QSqlDatabase::database().commit();
   QSqlDatabase::database().transaction();
   query->prepare("SELECT incident FROM relationships_to_incidents "
-		 "WHERE relationship = :relationship AND type = :type");
+		 "WHERE relationship = :relationship AND type = :type AND coder = :coder");
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
   QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
   while (it3.hasNext()) 
@@ -7648,6 +7660,7 @@ void NetworkGraphWidget::setVisibility()
 	    {
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
+	      query->bindValue("coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -7947,6 +7960,11 @@ void NetworkGraphWidget::cleanUp()
 void NetworkGraphWidget::finalBusiness() 
 {
   cleanUp();
+}
+
+void NetworkGraphWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) 

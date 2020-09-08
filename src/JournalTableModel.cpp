@@ -28,7 +28,7 @@ JournalTableModel::JournalTableModel(QWidget *parent) : QSqlTableModel(parent)
 
 QVariant JournalTableModel::data(const QModelIndex &index, int role) const 
 {
-  if (index.column() == 3) 
+  if (index.column() == 4) 
     { // This is always the column with the boolean variable
       if (role == Qt::CheckStateRole) 
 	{ // Only do the below when we are setting the checkbox.
@@ -88,10 +88,10 @@ bool JournalTableModel::setData(const QModelIndex & index,
 {
   /* 
      Let's check whether the selected column is the column with our boolean variable
-     (always column 3), and whether we are trying to set data under the 
+     (always column 4), and whether we are trying to set data under the 
      Qt::CheckStateRole.
   */
-  if (index.column() == 3 && role == Qt::CheckStateRole) 
+  if (index.column() == 4 && role == Qt::CheckStateRole) 
     {
       // Writing the data when the check box is set to checked.
       QModelIndex tempIndex = this->createIndex(index.row(), 1);
@@ -127,8 +127,8 @@ bool JournalTableModel::setData(const QModelIndex & index,
 */
 Qt::ItemFlags JournalTableModel::flags(const QModelIndex & index) const 
 {
-  // Column 3 always records the mark variable (our boolean).
-  if (index.column() == 3) 
+  // Column 4 always records the mark variable (our boolean).
+  if (index.column() == 4) 
     {
       // Make sure that this item is checkable.
       return QSqlTableModel::flags(index) | Qt::ItemIsUserCheckable;

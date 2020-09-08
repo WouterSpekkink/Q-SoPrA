@@ -63,6 +63,7 @@ public:
   ~RelationshipsWidget() {};
 
   // Setters
+  void setCurrentCoder(QString coder);
   void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
   void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
   void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr);
@@ -186,6 +187,7 @@ private:
   QPointer<QPushButton> resetTextsButton;
 
   // Private variables
+  QString _selectedCoder;
   QString _descriptionFilter;
   QString _rawFilter;
   QString _commentFilter;

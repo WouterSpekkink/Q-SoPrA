@@ -388,6 +388,26 @@ void MainWindow::createActions()
   setAntialiasingAct->setCheckable(true);
   setAntialiasingAct->setChecked(true);
   connect(setAntialiasingAct, SIGNAL(triggered()), this, SLOT(setAntialiasing()));
+
+  createCoderAct = new QAction(tr("&Create new coder"), this);
+  createCoderAct->setStatusTip("Create new coder");
+  connect(createCoderAct, SIGNAL(triggered()),
+	  this, SLOT(createCoder()));
+
+  editCoderAct = new QAction(tr("&Edit existing coder"), this);
+  editCoderAct->setStatusTip("Edit existing coder");
+  connect(editCoderAct, SIGNAL(triggered()),
+	  this, SLOT(editCoder()));
+
+  deleteCoderAct = new QAction(tr("&Delete existing coder"), this);
+  deleteCoderAct->setStatusTip("Delete existing coder");
+  connect(deleteCoderAct, SIGNAL(triggered()),
+	  this, SLOT(deleteCoder()));
+
+  switchCoderAct = new QAction(tr("&Switch coder"), this);
+  switchCoderAct->setStatusTip("Switch coder");
+  connect(switchCoderAct, SIGNAL(triggered()),
+	  this, SLOT(switchCoder()));
 }
 
 void MainWindow::createMenus() 
@@ -432,6 +452,12 @@ void MainWindow::createMenus()
   optionsMenu->addMenu(graphicsMenu);
   optionsMenu->addAction(exitAct);
 
+  coderMenu = menuBar->addMenu("Coders");
+  coderMenu->addAction(createCoderAct);
+  coderMenu->addAction(editCoderAct);
+  coderMenu->addAction(deleteCoderAct);
+  coderMenu->addAction(switchCoderAct);
+  
   toolMenu = menuBar->addMenu("Tools");
   toolMenu->addAction(dataViewAct);
   toolMenu->addAction(attributeViewAct);
@@ -467,6 +493,15 @@ void MainWindow::createMenus()
   tableMenu->addMenu(attributeTablesMenu);
   tableMenu->addMenu(coverageMenu);
   tableMenu->addMenu(missingTablesMenu);
+
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  QString coder = "Current coder: " + query->value(0).toString();
+  selectedCoderLabel = new QLabel(coder, this);
+  selectedCoderLabel->setStyleSheet("QLabel{padding-right:50px;}");
+  menuBar->setCornerWidget(selectedCoderLabel);
+  delete query;
   
   setMenuBar(menuBar);
 }
@@ -2135,4 +2170,187 @@ void MainWindow::setAntialiasing()
   ngw->setAntialiasing(antialiasing);
   ogw->setAntialiasing(antialiasing);
   hgw->setAntialiasing(antialiasing);
+}
+
+void MainWindow::createCoder()
+{
+  SimpleTextDialog *coderDialog = new SimpleTextDialog(this);
+  coderDialog->setLabel("Coder:");
+  coderDialog->setWindowTitle("Add new coder");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0) 
+    {
+      QString name = coderDialog->getText();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO coders (name) "
+		     "VALUES (:name)");
+      query->bindValue(":name", name);
+      query->exec();
+      delete query;
+    }
+  delete coderDialog;
+}
+
+void MainWindow::editCoder()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name from coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      QString coder = query->value(0).toString();
+      if (coder != "Default")
+	{
+	  coders.push_back(coder);
+	}
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to edit");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      SimpleTextDialog *newCoderDialog = new SimpleTextDialog(this);
+      newCoderDialog->setLabel("Coder:");
+      newCoderDialog->setWindowTitle("Edit coder:");
+      QString oldName = coderDialog->getSelection();
+      newCoderDialog->submitText(oldName);
+      newCoderDialog->exec();
+      if (newCoderDialog->getExitStatus() == 0) 
+	{
+	  QString name = newCoderDialog->getText();
+	  query->prepare("UPDATE coders "
+			 "SET name = :name "
+			 "WHERE name = :oldName");
+	  query->bindValue(":name", name);
+	  query->bindValue(":oldName", oldName);
+	  query->exec();
+	}
+      delete newCoderDialog;
+    }
+  delete coderDialog;
+  delete query;
+}
+
+void MainWindow::deleteCoder()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("SELECT name from coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      QString coder = query->value(0).toString();
+      if (coder != "Default")
+	{
+	  coders.push_back(coder);
+	}
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to edit");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      QString coder = coderDialog->getSelection();
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing coder"); 
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("This will remove the coder and all details"
+				     "associated with him/her, including assigned codes "
+				     "and visualizations created based on them. "
+				     "This action cannot be undone. "
+				     "Are you sure you want to remove this coder?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("DELETE FROM coders WHERE name = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM attributes_to_incidents WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM attributes_to_incidents_sources WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents_sources WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM journal WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM save_data WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM coders_to_linkage_types WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM linkage_comments WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  delete query;
+	}
+      delete warningBox;
+    }
+}
+
+void MainWindow::switchCoder()
+{
+  // TO DO: WARN TO SAVE SETTINGS
+  
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      coders.push_back(query->value(0).toString());
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to switch to");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      QString coder = coderDialog->getSelection();
+      selectedCoderLabel->setText("Current coder: " + coder);
+      menuBar->adjustSize();
+      query->prepare("UPDATE save_data SET coder = :new");
+      query->bindValue(":new", coder);
+      query->exec();
+      AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
+      aw->setCurrentCoder(coder);
+      aw->retrieveData();
+      LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+      lw->setCurrentCoder(coder);
+      EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
+      egw->setCurrentCoder(coder);
+      NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
+      ngw->setCurrentCoder(coder);
+      RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
+      rw->setCurrentCoder(coder);
+      rw->retrieveData();
+      OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
+      ogw->setCurrentCoder(coder);
+      JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+      jw->setCurrentCoder(coder);
+    }
+  delete coderDialog;
+  delete query;
 }

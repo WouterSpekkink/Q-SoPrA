@@ -54,6 +54,9 @@ public:
   JournalWidget(QWidget *parent = 0);
   ~JournalWidget() {};
 
+  // Setters
+  void setCurrentCoder(QString coder);
+		     
 private slots:
   // Private member functions
   void resetButtons();
@@ -78,6 +81,9 @@ private:
   QPointer<QPushButton> saveChangesButton;
   QPointer<QPushButton> removeEntryButton;
   QPointer<QPushButton> exportJournalButton;
+
+  // Private variables
+  QString _selectedCoder;
 };
 
 #endif

@@ -30,6 +30,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _distance = 70.0;
   _labelsVisible = true;
   _incidentLabelsOnly = false;
@@ -668,7 +673,7 @@ void OccurrenceGraphWidget::checkCongruence()
 		     "WHERE name = :name");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute = :attribute");
+		      "WHERE attribute = :attribute AND coder = :coder");
       for (int i = 0; i != attributeListWidget->rowCount(); i++) 
 	{
 	  QString attribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -689,6 +694,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    {
 	      QString currentAttribute = it.next();
 	      query2->bindValue(":attribute", currentAttribute);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      while (query2->next())
 		{
@@ -741,7 +747,7 @@ void OccurrenceGraphWidget::checkCongruence()
 		     "WHERE name = :name");
       QSqlQuery *query3 = new QSqlQuery;
       query3->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute = :attribute");
+		      "WHERE attribute = :attribute AND coder = :coder");
       for (int i = 0; i != attributeListWidget->rowCount(); i++) 
 	{
 	  QString attribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -762,6 +768,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    {
 	      QString currentAttribute = it2.next();
 	      query3->bindValue(":attribute", currentAttribute);
+	      query3->bindValue(":coder", _selectedCoder);
 	      query3->exec();
 	      while (query3->next()) 
 		{
@@ -807,7 +814,8 @@ void OccurrenceGraphWidget::checkCongruence()
       QSqlDatabase::database().transaction();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT relationship, type, incident FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type AND incident = :incident");
+		     "WHERE relationship = :relationship AND type = :type AND incident = :incident "
+		     "AND coder = :coder");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT ch_order FROM incidents "
 		      "WHERE id = :incident");
@@ -854,6 +862,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
 	      query->bindValue(":incident", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query->first();
 	      if (query->isNull(0)) 
@@ -892,7 +901,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    }
 	}
       query->prepare("SELECT incident FROM relationships_to_incident "
-		     "WHERE relationship = :relationship AND type = :type");
+		     "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       for (int i = 0; i != relationshipListWidget->rowCount(); i++) 
 	{
 	  QString combi = relationshipListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -929,6 +938,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    }
 	  query->bindValue(":relationship", relationship);
 	  query->bindValue(":type", type);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -1210,7 +1220,7 @@ void OccurrenceGraphWidget::addAttribute()
 	  QVector<int> orders;
 	  QSqlDatabase::database().transaction();
 	  query->prepare("SELECT incident FROM attributes_to_incidents "
-			 "WHERE attribute = :currentAttribute");
+			 "WHERE attribute = :currentAttribute AND coder = :coder");
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
 	  QVectorIterator<QString> it(attributeVector);
@@ -1218,6 +1228,7 @@ void OccurrenceGraphWidget::addAttribute()
 	    {
 	      QString currentAttribute = it.next();
 	      query->bindValue(":currentAttribute", currentAttribute);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -1327,7 +1338,7 @@ void OccurrenceGraphWidget::addAttributes()
       query2->prepare("SELECT description FROM entities "
 		      "WHERE name = :name");
       query3->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute  = :currentAttribute");
+		      "WHERE attribute  = :currentAttribute AND coder = :coder");
       query4->prepare("SELECT ch_order, description FROM incidents "
 		      "WHERE id = :id");
       // Then we get the selected attributes; 
@@ -1382,6 +1393,7 @@ void OccurrenceGraphWidget::addAttributes()
 	    {
 	      QString currentChild = it2.next();
 	      query3->bindValue(":currentAttribute", currentChild);
+	      query3->bindValue(":coder", _selectedCoder);
 	      query3->exec();
 	      while (query3->next())
 		{
@@ -1499,7 +1511,7 @@ void OccurrenceGraphWidget::addRelationship()
       query->prepare("SELECT description, directedness FROM relationship_types "
 		     "WHERE name = :type");
       query2->prepare("SELECT incident FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type");
+		     "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       query3->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
       reset();
       QColor color = relationshipColorDialog->getColor();
@@ -1534,6 +1546,7 @@ void OccurrenceGraphWidget::addRelationship()
 	  QSqlDatabase::database().transaction();
 	  query2->bindValue(":relationship", relationship);
 	  query2->bindValue(":type", type);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->exec();
 	  while (query2->next()) 
 	    {
@@ -1638,7 +1651,7 @@ void OccurrenceGraphWidget::addRelationships()
       query->prepare("SELECT description, directedness FROM relationship_types "
 		     "WHERE name = :type");
       query2->prepare("SELECT incident FROM relationships_to_incidents "
-		      "WHERE relationship = :relationship AND type = :type");
+		      "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       query3->prepare("SELECT ch_order, description FROM incidents "
 		      "WHERE id = :id");
       // Let us then retrieve our data.
@@ -1690,6 +1703,7 @@ void OccurrenceGraphWidget::addRelationships()
 	      clearPlotButton->setEnabled(true);
 	      query2->bindValue(":relationship", relationship);
 	      query2->bindValue(":type", type);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      while (query2->next())
 		{
@@ -7345,6 +7359,11 @@ void OccurrenceGraphWidget::cleanUp()
 void OccurrenceGraphWidget::finalBusiness() 
 {
   cleanUp();
+}
+
+void OccurrenceGraphWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool OccurrenceGraphWidget::eventFilter(QObject *object, QEvent *event) 

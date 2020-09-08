@@ -82,6 +82,7 @@ public:
   ~OccurrenceGraphWidget();
 
   // Setters
+  void setCurrentCoder(QString coder);
   void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
   void setOpenGL(bool state);
   void setAntialiasing(bool state);
@@ -306,6 +307,7 @@ private:
   QPointer<QComboBox> layoutComboBox;
 
   // Private variables
+  QString _selectedCoder;
   qreal _distance;
   bool _labelsVisible;
   bool _incidentLabelsOnly;
