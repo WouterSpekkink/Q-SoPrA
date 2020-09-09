@@ -39,8 +39,8 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   tableView->setModel(journalModel);
   tableView->setColumnHidden(0, true);
   tableView->setColumnWidth(1, (parent->width() / 2) / 4);
-  tableView->setColumnWidth(2, (parent->width() / 2) / 2);
-  tableView->setColumnWidth(3, (parent->width() / 2) / 4);
+  tableView->setColumnWidth(2, (parent->width() / 2) / 3);
+  tableView->setColumnWidth(3, (parent->width() / 2) / 6);
   tableView->setColumnWidth(4, (parent->width() / 2) / 7);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );

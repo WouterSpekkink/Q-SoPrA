@@ -25,6 +25,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 MissingRelationshipsTable::MissingRelationshipsTable(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   model = new EventQueryModel(this);
   tableView = new ZoomableTableView(this);
   tableView->setModel(model);
@@ -58,12 +63,15 @@ void MissingRelationshipsTable::updateTable()
 {
   model->clear();
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT * "
-	      "FROM incidents "
-	      "WHERE NOT EXISTS "
-	      "(SELECT incident FROM relationships_to_incidents "
-	      "WHERE relationships_to_incidents.incident = incidents.id) "
-	      "ORDER BY ch_order");
+  query->prepare("SELECT * "
+		 "FROM incidents "
+		 "WHERE NOT EXISTS "
+		 "(SELECT incident FROM relationships_to_incidents "
+		 "WHERE relationships_to_incidents.incident = incidents.id "
+		 "AND relationships_to_incidents.coder = :coder) "
+		 "ORDER BY ch_order");
+  query->bindValue(":coder", _selectedCoder);
+  query->exec();
   model->setQuery(*query);
   delete query;
   while (model->canFetchMore()) 
@@ -90,4 +98,7 @@ void MissingRelationshipsTable::resetHeader(int header)
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 
-
+void MissingRelationshipsTable::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
+}

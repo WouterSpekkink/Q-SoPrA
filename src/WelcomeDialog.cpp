@@ -195,12 +195,14 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE save_data "
 		      "(attributes_record integer, "
 		      "relationships_record integer, "
-		      "coder text)");
+		      "coder text, "
+		      "defaul_coder text)");
 	  query->exec("INSERT INTO save_data "
 		      "(attributes_record, "
 		      "relationships_record, "
-		      "coder) "
-		      "VALUES (1, 1, 'Default')");
+		      "coder, "
+		      "default_coder) "
+		      "VALUES (1, 1, 'Default', 'Default')");
 	  query->exec("CREATE TABLE linkages_sources_reference "
 		      "(code integer, "
 		      "label text)");
@@ -1045,7 +1047,8 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS save_data "
 		      "(attributes_record integer, "
 		      "relationships_record integer, "
-		      "coder text)");
+		      "coder text, "
+		      "default_coder text)");
 	  query->exec("SELECT * FROM save_data");
 	  query->first();
 	  if (query->isNull(0)) 
@@ -1053,8 +1056,9 @@ void WelcomeDialog::openDatabase()
 	      query->exec("INSERT INTO save_data "
 			  "(attributes_record, "
 			  "relationships_record, "
-			  "coder) "
-			  "VALUES (1, 1, 'Default')");
+			  "coder, "
+			  "default_coder) "
+			  "VALUES (1, 1, 'Default', 'Default')");
 	    }
 	  query->exec("CREATE TABLE IF NOT EXISTS linkages_sources_reference "
 		      "(code integer, "
@@ -2274,6 +2278,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE save_data ADD COLUMN coder text;");
 	      query->exec("UPDATE save_data SET coder = 'Default'");
+	    }
+	  if (!columns.contains("default_coder"))
+	    {
+	      query->exec("ALTER TABLE save_data ADD COLUMN default_coder text;");
+	      query->exec("UPDATE save_data SET default_coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(linkages_sources_reference)");

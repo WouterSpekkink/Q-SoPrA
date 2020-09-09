@@ -28,10 +28,12 @@ JournalTableModel::JournalTableModel(QWidget *parent) : QSqlTableModel(parent)
 
 QVariant JournalTableModel::data(const QModelIndex &index, int role) const 
 {
-  if (index.column() == 4) 
-    { // This is always the column with the boolean variable
-      if (role == Qt::CheckStateRole) 
-	{ // Only do the below when we are setting the checkbox.
+  if (role == Qt::CheckStateRole)
+    {
+      int col = index.column();
+      if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention")
+	{
+	  // Only do the below when we are setting the checkbox.
 	  // We want to fetch the state of the boolean from the sql table.
 	  QSqlQuery *query = new QSqlQuery;
 	  QModelIndex tempIndex = this->createIndex(index.row(), 1);
@@ -86,12 +88,13 @@ QVariant JournalTableModel::data(const QModelIndex &index, int role) const
 bool JournalTableModel::setData(const QModelIndex & index,
 				const QVariant & value, int role) 
 {
+  int col = index.column();
   /* 
      Let's check whether the selected column is the column with our boolean variable
-     (always column 4), and whether we are trying to set data under the 
-     Qt::CheckStateRole.
+     and whether we are trying to set data under the Qt::CheckStateRole.
   */
-  if (index.column() == 4 && role == Qt::CheckStateRole) 
+  if (role == Qt::CheckStateRole &&
+      this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention") 
     {
       // Writing the data when the check box is set to checked.
       QModelIndex tempIndex = this->createIndex(index.row(), 1);
@@ -128,7 +131,8 @@ bool JournalTableModel::setData(const QModelIndex & index,
 Qt::ItemFlags JournalTableModel::flags(const QModelIndex & index) const 
 {
   // Column 4 always records the mark variable (our boolean).
-  if (index.column() == 4) 
+  int col = index.column();
+  if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention") 
     {
       // Make sure that this item is checkable.
       return QSqlTableModel::flags(index) | Qt::ItemIsUserCheckable;

@@ -4062,7 +4062,6 @@ void EventGraphWidget::cleanUp()
   caseListWidget->clear();
   _presentTypes.clear();
   _checkedCases.clear();
-  _selectedCoder = "Default";
   _selectedCompare = "";
   _selectedIncident = 0;
   _selectedAbstractNode = NULL;
@@ -4073,6 +4072,7 @@ void EventGraphWidget::cleanUp()
   _labelSize = 10;
   setGraphControls(false);
   disableLegendButtons();
+  plotLabel->setText("");
 }
 
 void EventGraphWidget::increaseDistance() 
@@ -4695,7 +4695,8 @@ void EventGraphWidget::setCompareButton()
 {
   if (_presentTypes.size() > 0) 
     {
-      if (compareComboBox->currentText() != DEFAULT && _selectedCoder != "") 
+      if (compareComboBox->currentText() != DEFAULT &&
+	  compareComboBox->currentText() != _selectedCoder) 
 	{
 	  if (_abstractNodeVector.size() > 0) 
 	    {
@@ -6325,6 +6326,7 @@ void EventGraphWidget::seePlots()
 		     "FROM saved_eg_plots_edges "
 		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{

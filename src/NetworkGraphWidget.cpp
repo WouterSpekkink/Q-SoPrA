@@ -8025,6 +8025,7 @@ void NetworkGraphWidget::cleanUp()
   setGraphControls(false);
   weightCheckBox->setCheckState(Qt::Unchecked);
   disableLegendButtons();
+  plotLabel->setText("");
 }
 
 void NetworkGraphWidget::finalBusiness() 

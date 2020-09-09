@@ -112,8 +112,11 @@ private slots:
   void setAntialiasing();
   void createCoder();
   void editCoder();
+  void renameDefaultCoder();
   void deleteCoder();
   void switchCoder();
+  void processCoder(QString coder);
+  void processDefault(QString oldName, QString newName);
 
 protected:
   // Overrride event
@@ -156,6 +159,8 @@ private:
   QPointer<QMenu> toolMenu;
   QPointer<QMenu> graphMenu;
   QPointer<QMenu> tableMenu;
+  QPointer<QMenu> sharedMenu;
+  QPointer<QMenu> coderSpecificMenu;
   QPointer<QMenu> codingTextsMenu;
   QPointer<QMenu> coverageMenu;
   QPointer<QMenu> attributeTablesMenu;
@@ -198,6 +203,7 @@ private:
   QPointer<QAction> editCoderAct;
   QPointer<QAction> deleteCoderAct;
   QPointer<QAction> switchCoderAct;
+  QPointer<QAction> renameDefaultCoderAct;
 };
 
 #endif

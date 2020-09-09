@@ -52,6 +52,9 @@ RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent)
   tableView->setColumnHidden(0, true);
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setSectionsMovable(true);
+  tableView->horizontalHeader()->swapSections(1, 4);
+  tableView->horizontalHeader()->swapSections(2, 4);
+  tableView->horizontalHeader()->swapSections(3, 4);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);

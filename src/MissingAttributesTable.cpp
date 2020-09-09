@@ -25,6 +25,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 MissingAttributesTable::MissingAttributesTable(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   model = new EventQueryModel(this);
   tableView = new ZoomableTableView(this);
   tableView->setModel(model);
@@ -57,12 +62,15 @@ void MissingAttributesTable::updateTable()
 {
   model->clear();
   QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT * "
-	      "FROM incidents "
-	      "WHERE NOT EXISTS "
-	      "(SELECT incident FROM attributes_to_incidents "
-	      "WHERE attributes_to_incidents.incident = incidents.id) "
-	      "ORDER BY ch_order");
+  query->prepare("SELECT * "
+		 "FROM incidents "
+		 "WHERE NOT EXISTS "
+		 "(SELECT incident FROM attributes_to_incidents "
+		 "WHERE attributes_to_incidents.incident = incidents.id "
+		 "AND attributes_to_incidents.coder = :coder) "
+		 "ORDER BY ch_order");
+  query->bindValue(":coder", _selectedCoder);
+  query->exec();
   model->setQuery(*query);
   delete query;
   while (model->canFetchMore()) 
@@ -89,4 +97,7 @@ void MissingAttributesTable::resetHeader(int header)
   tableView->verticalHeader()->resizeSection(header, 30);
 }
 
-
+void MissingAttributesTable::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
+}

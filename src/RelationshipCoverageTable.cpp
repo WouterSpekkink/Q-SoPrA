@@ -24,6 +24,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 RelationshipCoverageTable::RelationshipCoverageTable(QWidget *parent) : QWidget(parent)
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _lastSortedHeader = 0;
   _lastSortedAscending = true;
   
@@ -97,7 +102,7 @@ void RelationshipCoverageTable::buildModel()
   query2->prepare("SELECT description, directedness FROM relationship_types "
 		  "WHERE name = :name");
   query3->prepare("SELECT COUNT(*) FROM relationships_to_incidents "
-		  "WHERE relationship = :relationship AND type = :type");
+		  "WHERE relationship = :relationship AND type = :type AND coder = :coder");
   query->exec("SELECT COUNT(*) FROM incidents");
   query->first();
   int totalIncidents = query->value(0).toInt();
@@ -128,6 +133,7 @@ void RelationshipCoverageTable::buildModel()
       QSet<int> incidents;
       query3->bindValue(":relationship", name);
       query3->bindValue(":type", type);
+      query3->bindValue(":coder", _selectedCoder);
       query3->exec();
       query3->first();
       int coverageAbs = query3->value(0).toInt();
@@ -306,8 +312,9 @@ void RelationshipCoverageTable::viewConcordancePlot()
       QString shortName = tableView->model()->index(i, 0).data(Qt::UserRole).toString();
       QString type = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
       query->prepare("SELECT incident FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type");
+		     "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       query->bindValue(":relationship", shortName);
+      query->bindValue(":coder", _selectedCoder);
       query->bindValue(":type", type);
       query->exec();
       while (query->next())
@@ -353,4 +360,9 @@ void RelationshipCoverageTable::viewConcordancePlot()
   // Now we create the svg object
   delete query;
   delete query2;
+}
+
+void RelationshipCoverageTable::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }

@@ -24,6 +24,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 AttributeCoverageTable::AttributeCoverageTable(QWidget *parent) : QWidget(parent)
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _lastSortedHeader = 0;
   _lastSortedAscending = true;
   
@@ -98,7 +103,7 @@ void AttributeCoverageTable::buildModel()
   query2->prepare("SELECT father FROM incident_attributes "
 		  "WHERE name = :name");
   query3->prepare("SELECT incident FROM attributes_to_incidents "
-		  "WHERE attribute = :attribute");
+		  "WHERE attribute = :attribute AND coder = :coder");
   query->exec("SELECT COUNT(*) FROM incidents");
   query->first();
   int totalIncidents = query->value(0).toInt();
@@ -135,6 +140,7 @@ void AttributeCoverageTable::buildModel()
 	{
 	  QString currentAttribute = it.next();
 	  query3->bindValue(":attribute", currentAttribute);
+	  query3->bindValue(":coder", _selectedCoder);
 	  query3->exec();
 	  while (query3->next())
 	    {
@@ -191,6 +197,7 @@ void AttributeCoverageTable::buildModel()
 	{
 	  QString currentAttribute = it.next();
 	  query3->bindValue(":attribute", currentAttribute);
+	  query3->bindValue(":coder", _selectedCoder);
 	  query3->exec();
 	  while (query3->next())
 	    {
@@ -433,8 +440,9 @@ void AttributeCoverageTable::viewConcordancePlot()
 	{
 	  QString currentAttribute = it.next();
 	  query->prepare("SELECT incident FROM attributes_to_incidents "
-			 "WHERE attribute = :attribute");
+			 "WHERE attribute = :attribute AND coder = :coder");
 	  query->bindValue(":attribute", currentAttribute);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next())
 	    {
@@ -480,4 +488,9 @@ void AttributeCoverageTable::viewConcordancePlot()
   dialog->exec();
   delete query;
   delete query2;
+}
+
+void AttributeCoverageTable::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }

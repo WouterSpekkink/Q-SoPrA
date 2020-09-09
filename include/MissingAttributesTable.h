@@ -54,6 +54,9 @@ public:
   MissingAttributesTable(QWidget *parent = 0);
   ~MissingAttributesTable() {};
 
+  // Setters
+  void setCurrentCoder(QString coder);
+			      
 private slots:
   // Private member functions
   void updateTable();
@@ -64,6 +67,8 @@ private:
   QPointer<EventQueryModel> model;
   QPointer<ZoomableTableView> tableView;
 
+  // Private variables
+  QString _selectedCoder;
 };
 
 #endif
