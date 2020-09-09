@@ -46,8 +46,8 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
   attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
   attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute description"));
   attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entity"));
-  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entity description"));
-  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Value"));
+  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Entity description"));
+  attributesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Value"));
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->setColumnWidth(0, 300);
   tableView->setColumnWidth(1, 600);
