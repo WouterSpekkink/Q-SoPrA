@@ -4332,7 +4332,7 @@ void WelcomeDialog::openDatabase()
 			  "ADD COLUMN fillalpha integer;");
 	    }
 	  columns.clear();
-	  query->exec("PRAGMA table_info(saved_eg_plots_settings)");
+	  query->exec("PRAGMA table_info(saved_ng_plots_settings)");
 	  while (query->next())
 	    {
 	      columns.push_back(query->value(1).toString());
