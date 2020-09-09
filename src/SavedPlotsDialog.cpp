@@ -22,11 +22,12 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "../include/SavedPlotsDialog.h"
 
-SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString type) : QDialog(parent) 
+SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString type, QString coder) : QDialog(parent) 
 {
   _selectedPlot = DEFAULT;
   _exitStatus = 1;
   _type = type;
+  _selectedCoder = coder;
 
   titleLabel = new QLabel(tr("<b>Select plot:</b>"), this);
 
@@ -36,15 +37,21 @@ SavedPlotsDialog::SavedPlotsDialog(QWidget *parent, QString type) : QDialog(pare
   QSqlQuery *query = new QSqlQuery;
   if (_type == EVENTGRAPH) 
     {
-      query->exec("SELECT plot FROM saved_eg_plots");
+      query->prepare("SELECT plot FROM saved_eg_plots WHERE coder = :coder");
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
     }
   else if (_type == NETWORKGRAPH) 
     {
-      query->exec("SELECT plot FROM saved_ng_plots");
+      query->prepare("SELECT plot FROM saved_ng_plots WHERE coder = :coder");
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
     }
   else if (_type == OCCURRENCEGRAPH) 
     {
-      query->exec("SELECT plot FROM saved_og_plots");
+      query->prepare("SELECT plot FROM saved_og_plots WHERE coder = :coder");
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
     }
   while (query->next()) 
     {

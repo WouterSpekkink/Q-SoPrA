@@ -40,7 +40,7 @@ class SavedPlotsDialog : public QDialog
 
 public:
   // Constructor and destructor
-  SavedPlotsDialog(QWidget *parent = 0, QString type = QString());
+  SavedPlotsDialog(QWidget *parent = 0, QString type = QString(), QString coder = QString());
   ~SavedPlotsDialog() {};
 
   // Getters
@@ -64,6 +64,7 @@ private:
   // Private variables
   QString _selectedPlot;
   QString _type;
+  QString _selectedCoder;
   int _exitStatus;
 };
 

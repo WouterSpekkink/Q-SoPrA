@@ -4846,8 +4846,10 @@ void EventGraphWidget::saveCurrentPlot()
     {
       QString name = saveDialog->getText();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT plot FROM saved_eg_plots WHERE plot = :name");
+      query->prepare("SELECT plot FROM saved_eg_plots "
+		     "WHERE plot = :name AND coder = :coder");
       query->bindValue(":name", name);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       bool empty = false;
@@ -4893,98 +4895,117 @@ void EventGraphWidget::saveCurrentPlot()
 	  query->exec();
 	  // saved_eg_plots_settings
 	  query->prepare("DELETE FROM saved_eg_plots_settings "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_incident_nodes
 	  query->prepare("DELETE FROM saved_eg_plots_incident_nodes "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_edges
 	  query->prepare("DELETE FROM saved_eg_plots_edges "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_incident_node_labels
 	  query->prepare("DELETE FROM saved_eg_plots_incident_node_labels "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_abstract_nodes
 	  query->prepare("DELETE FROM saved_eg_plots_abstract_nodes "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_incidents_to_abstract_nodes
 	  query->prepare("DELETE FROM saved_eg_plots_incidents_to_abstract_nodes "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_attributes_to_abstract_nodes
 	  query->prepare("DELETE FROM saved_eg_plots_attributes_to_abstract_nodes "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_abstract_node_labels
 	  query->prepare("DELETE FROM saved_eg_plots_abstract_node_labels "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_legend
 	  query->prepare("DELETE FROM saved_eg_plots_legend "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_embedded_incidents
 	  query->prepare("DELETE FROM saved_eg_plots_embedded_incidents "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_abstract_nodes_to_abstract_nodes 
 	  query->prepare("DELETE FROM saved_eg_plots_abstract_nodes_to_abstract_nodes "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_lines
 	  query->prepare("DELETE FROM saved_eg_plots_lines "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_timelines
 	  query->prepare("DELETE FROM saved_eg_plots_timelines "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_texts
 	  query->prepare("DELETE FROM saved_eg_plots_texts "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_ellipses
 	  query->prepare("DELETE FROM saved_eg_plots_ellipses "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_rects
 	  query->prepare("DELETE FROM saved_eg_plots_rects "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_contraction
 	  query->prepare("DELETE FROM saved_eg_plots_contraction "
-			"WHERE plot = :plot");
+			"WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_cases
 	  query->prepare("DELETE FROM saved_eg_plots_cases "
-			"WHERE plot = :plot");
+			"WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_eg_plots_guides
 	  query->prepare("DELETE FROM saved_eg_plots_guides "
-			"WHERE plot = :plot");
+			"WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	}
       else 
@@ -5005,9 +5026,10 @@ void EventGraphWidget::saveCurrentPlot()
 	}
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_eg_plots_settings "
-		     "(plot, lowerbound, upperbound, labelson, labelsize) "
-		     "VALUES (:plot, :lowerbound, :upperbound, :labelson, :labelsize)");
+		     "(plot, coder, lowerbound, upperbound, labelson, labelsize) "
+		     "VALUES (:plot, :coder, :lowerbound, :upperbound, :labelson, :labelsize)");
       query->bindValue(":plot", name);
+      query->bindValue(":coder", _selectedCoder);
       query->bindValue(":lowerbound", lowerRangeDial->value());
       query->bindValue(":upperbound", upperRangeDial->value());
       int labelson = 0;
@@ -5019,9 +5041,9 @@ void EventGraphWidget::saveCurrentPlot()
       query->bindValue(":labelsize", _labelSize);
       query->exec();      
       query->prepare("INSERT INTO saved_eg_plots_incident_nodes "
-		     "(plot, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
+		     "(plot, coder, incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		     "dislodged, mode, red, green, blue, alpha, zvalue, hidden, masshidden) "
-		     "VALUES (:plot, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
+		     "VALUES (:plot, :coder, :incident, :order, :width, :curxpos, :curypos, :orixpos, "
 		     ":oriypos, :dislodged, :mode, :red, :green, :blue, :alpha, :zvalue, :hidden, "
 		     ":masshidden)");
       QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, _incidentNodeVector.size());
@@ -5064,6 +5086,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      masshidden = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":incident", incident);
 	  query->bindValue(":order", order);
 	  query->bindValue(":width", width);
@@ -5094,9 +5117,9 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_incident_node_labels "
-		     "(plot, incident, label, curxpos, curypos, xoffset, yoffset, "
+		     "(plot, coder, incident, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, zvalue, hidden) "
-		     "VALUES (:plot, :incident, :label, :curxpos, :curypos, "
+		     "VALUES (:plot, :coder, :incident, :label, :curxpos, :curypos, "
 		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<IncidentNodeLabel*> it2(_incidentNodeLabelVector);
       while (it2.hasNext()) 
@@ -5119,6 +5142,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      hidden = 0;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":incident", id);
 	  query->bindValue(":label", text);
 	  query->bindValue(":curxpos", currentX);
@@ -5145,9 +5169,9 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_edges "
-		     "(plot, tail, head, tailabstractnode, headabstractnode, linkage, "
+		     "(plot, coder, tail, head, tailabstractnode, headabstractnode, linkage, "
 		     "red, green, blue, alpha, zvalue, hidden, masshidden) "
-		     "VALUES (:plot, :tail, :head, :tabstractnode, :habstractnode, :linkage, "
+		     "VALUES (:plot, :coder, :tail, :head, :tabstractnode, :habstractnode, :linkage, "
 		     ":red, :green, :blue, :alpha, :zvalue, :hidden, :masshidden)");
       QVectorIterator<Linkage*> it3(_edgeVector);
       while (it3.hasNext()) 
@@ -5197,6 +5221,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      massHidden = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
 	  query->bindValue(":tabstractnode", mTail);
@@ -5223,18 +5248,20 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_incidents_to_abstract_nodes "
-		     "(plot, incident, abstractnode) "
-		     "VALUES (:plot, :incident, :abstractnode)");
+		     "(plot, coder, incident, abstractnode) "
+		     "VALUES (:plot, :coder, :incident, :abstractnode)");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("INSERT INTO saved_eg_plots_attributes_to_abstract_nodes "
-		      "(plot, attribute, abstractnode, value) "
-		      "VALUES(:plot, :attribute, :abstractnode, :value)");
+		      "(plot, coder, attribute, abstractnode, value) "
+		      "VALUES(:plot, :coder, :attribute, :abstractnode, :value)");
       QSqlQuery *query3 = new QSqlQuery;
       query3->prepare("INSERT INTO saved_eg_plots_abstract_nodes "
-		      "(plot, eventid, ch_order, abstraction, timing, description, comment, width, "
+		      "(plot, coder, eventid, ch_order, abstraction, timing, description, "
+		      "comment, width, "
 		      "mode, curxpos, curypos, orixpos, oriypos, dislodged, "
 		      "red, green, blue, alpha, zvalue, hidden, masshidden) "
-		      "VALUES (:plot, :eventid, :ch_order, :abstraction, :timing, :description, "
+		      "VALUES (:plot, :coder, :eventid, :ch_order, :abstraction, :timing, "
+		      ":description, "
 		      ":comment, :width, :mode, :curxpos, :curypos, :orixpos, :oriypos, :dislodged, "
 		      ":red, :green, :blue, :alpha, :zvalue, :hidden, :masshidden)");;
       QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
@@ -5247,6 +5274,7 @@ void EventGraphWidget::saveCurrentPlot()
 	    {
 	      IncidentNode *currentIncident = tit.next();
 	      query->bindValue(":plot", name);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":incident", currentIncident->getId());
 	      query->bindValue(":abstractnode", currentAbstractNode->getId());
 	      query->exec();
@@ -5259,6 +5287,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      QString attribute = *tit2;
 	      QString value = values.value(attribute);
 	      query2->bindValue(":plot", name);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->bindValue(":attribute", attribute);
 	      query2->bindValue(":abstractnode", currentAbstractNode->getId());
 	      query2->bindValue(":value", value);
@@ -5295,6 +5324,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      masshidden = 1;
 	    }
 	  query3->bindValue(":plot", name);
+	  query3->bindValue(":coder", _selectedCoder);
 	  query3->bindValue(":eventid", currentAbstractNode->getId());
 	  query3->bindValue(":ch_order", currentAbstractNode->getOrder());
 	  query3->bindValue(":abstraction", currentAbstractNode->getConstraint());
@@ -5331,8 +5361,8 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_embedded_incidents "
-		     "(plot, incident, abstractnode) "
-		     "VALUES (:plot, :incident, :abstractnode)");
+		     "(plot, coder, incident, abstractnode) "
+		     "VALUES (:plot, :coder, :incident, :abstractnode)");
       QVectorIterator<IncidentNode *> it5(_incidentNodeVector);
       while (it5.hasNext()) 
 	{
@@ -5340,6 +5370,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  if (currentIncidentNode->getAbstractNode() != NULL) 
 	    {
 	      query->bindValue(":plot", name);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":incident", currentIncidentNode->getId());
 	      query->bindValue(":abstractnode", currentIncidentNode->getAbstractNode()->getId());
 	      query->exec();
@@ -5357,8 +5388,8 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_abstract_nodes_to_abstract_nodes "
-		     "(plot, son, father) "
-		     "VALUES (:plot, :son, :father)");
+		     "(plot, coder, son, father) "
+		     "VALUES (:plot, :coder, :son, :father)");
       QVectorIterator<AbstractNode*> it6(_abstractNodeVector);
       while (it6.hasNext()) 
 	{
@@ -5367,6 +5398,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  if (currentAbstractNode->getAbstractNode() != NULL) 
 	    {
 	      query->bindValue(":plot", name);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->bindValue(":son", currentAbstractNode->getId());
 	      query->bindValue(":father", currentFather->getId());
 	      query->exec();
@@ -5384,9 +5416,10 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_abstract_node_labels "
-		     "(plot, eventid, label, curxpos, curypos, xoffset, yoffset, "
+		     "(plot, coder, eventid, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, zvalue, hidden) "
-		     "VALUES (:plot, :eventid, :label, :curxpos, :curypos, :xoffset, :yoffset, "
+		     "VALUES (:plot, :coder, :eventid, :label, :curxpos, :curypos, "
+		     ":xoffset, :yoffset, "
 		     ":red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<AbstractNodeLabel*> it7(_abstractNodeLabelVector);
       while (it7.hasNext()) 
@@ -5409,6 +5442,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      hidden = 0;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":eventid", id);
 	  query->bindValue(":label", text);
 	  query->bindValue(":curxpos", currentX);
@@ -5434,9 +5468,9 @@ void EventGraphWidget::saveCurrentPlot()
       saveProgress->setModal(true);
       counter = 1;
       saveProgress->show();
-      query->prepare("INSERT INTO saved_eg_plots_legend (plot, name, tip, "
+      query->prepare("INSERT INTO saved_eg_plots_legend (plot, coder, name, tip, "
 		     "red, green, blue, alpha, textred, textgreen, textblue, textalpha, hidden) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, "
+		     "VALUES (:plot, :coder, :name, :tip, :red, :green, :blue, :alpha, "
 		     ":textred, :textgreen, :textblue, :textalpha, :hidden)");
       for (int i = 0; i != eventListWidget->rowCount(); i++) 
 	{
@@ -5460,6 +5494,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      hidden = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
 	  query->bindValue(":red", red);
@@ -5485,9 +5520,9 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_lines "
-		     "(plot, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
+		     "(plot, coder, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha) "
-		     "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
+		     "VALUES (:plot, :coder, :startx, :starty, :endx, :endy, :arone, :artwo, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<LineObject*> it8(_lineVector);
       while (it8.hasNext()) 
@@ -5516,6 +5551,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":startx", startx);
 	  query->bindValue(":starty", starty);
 	  query->bindValue(":endx", endx);
@@ -5543,9 +5579,10 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_timelines "
-		     "(plot, startx, endx, y, penwidth, majorinterval, minordivision, "
+		     "(plot, coder, startx, endx, y, penwidth, majorinterval, minordivision, "
 		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha) "
-		     "VALUES (:plot, :startx, :endx, :y, :penwidth, :majorinterval, :minordivision, "
+		     "VALUES (:plot, :coder, :startx, :endx, :y, :penwidth, :majorinterval, "
+		     ":minordivision, "
 		     ":majorsize, :minorsize, :firsttick, :lasttick, :zvalue, "
 		     ":red, :green, :blue, :alpha)");
       QVectorIterator<TimeLineObject*> it9(_timeLineVector);
@@ -5577,6 +5614,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":startx", startx);
 	  query->bindValue(":endx", endx);
 	  query->bindValue(":y", y);
@@ -5606,9 +5644,9 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_texts "
-		     "(plot, desc, xpos, ypos, width, size, rotation, zvalue, "
+		     "(plot, coder, desc, xpos, ypos, width, size, rotation, zvalue, "
 		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
+		     "VALUES (:plot, :coder, :desc, :xpos, :ypos, :width, :size, :rotation, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<TextObject*> it10(_textVector);
       while (it10.hasNext()) 
@@ -5627,6 +5665,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":desc", desc);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
@@ -5652,11 +5691,12 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_ellipses "
-		     "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		     "(plot, coder, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		     "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha) "
-		     "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :topleftx, :toplefty, :toprightx, "
+		     ":toprighty, "
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
@@ -5689,6 +5729,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int fillblue = fillColor.blue();
 	  int fillalpha = fillColor.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":topleftx", topleftx);
@@ -5725,11 +5766,12 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_rects "
-		     "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		     "(plot, coder, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		     "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha) "
-		     "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :topleftx, :toplefty, :toprightx, "
+		     ":toprighty, "
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
@@ -5762,6 +5804,7 @@ void EventGraphWidget::saveCurrentPlot()
 	  int fillblue = fillColor.blue();
 	  int fillalpha = fillColor.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":topleftx", topleftx);
@@ -5798,8 +5841,8 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_contraction "
-		     "(plot, nodeid, abstract, xpos, ypos) "
-		     "VALUES (:plot, :nodeid, :abstract, :xpos, :ypos)");
+		     "(plot, coder, nodeid, abstract, xpos, ypos) "
+		     "VALUES (:plot, :coder, :nodeid, :abstract, :xpos, :ypos)");
       QMapIterator<QGraphicsItem*, QPointF> it13(_contractedMap);
       while (it13.hasNext())
 	{
@@ -5820,6 +5863,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      abstract = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":nodeid", id);
 	  query->bindValue(":abstract", abstract);
 	  query->bindValue(":xpos", position.x());
@@ -5838,8 +5882,8 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_cases "
-		     "(plot, casename, checked) "
-		     "VALUES (:plot, :casename, :checked)");
+		     "(plot, coder, casename, checked) "
+		     "VALUES (:plot, :coder, :casename, :checked)");
       for (int i = 0; i != caseListWidget->count(); i++) 
 	{
 	  QListWidgetItem *item = caseListWidget->item(i);
@@ -5850,6 +5894,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      checked = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":casename", casename);
 	  query->bindValue(":checked", checked);
 	  query->exec();
@@ -5866,8 +5911,8 @@ void EventGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_eg_plots_guides "
-		     "(plot, xpos, ypos, horizontal) "
-		     "VALUES (:plot, :xpos, :ypos, :horizontal)");
+		     "(plot, coder, xpos, ypos, horizontal) "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :horizontal)");
       QVectorIterator<GuideLine*> it14(_guidesVector);
       while (it14.hasNext())
 	{
@@ -5880,6 +5925,7 @@ void EventGraphWidget::saveCurrentPlot()
 	      horizontal = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":horizontal", horizontal);
@@ -5900,7 +5946,7 @@ void EventGraphWidget::saveCurrentPlot()
 
 void EventGraphWidget::seePlots() 
 {
-  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, EVENTGRAPH);
+  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, EVENTGRAPH, _selectedCoder);
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) 
     {
@@ -5913,8 +5959,9 @@ void EventGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT coder, red, green, blue "
 		     "FROM saved_eg_plots "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       QString coder = query->value(0).toString();
@@ -5925,8 +5972,9 @@ void EventGraphWidget::seePlots()
       scene->setBackgroundBrush(QBrush(QColor(red, green, blue)));
       query->prepare("SELECT lowerbound, upperbound, labelson, labelsize "
 		     "FROM saved_eg_plots_settings "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       int lowerbound = query->value(0).toInt();
@@ -5945,8 +5993,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT incident, ch_order, width, curxpos, curypos, orixpos, oriypos, "
 		     "dislodged, mode, red, green, blue, alpha, zvalue, hidden, masshidden "
 		     "FROM saved_eg_plots_incident_nodes "
-		     "WHERE plot = :plot ");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6010,8 +6059,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_eg_plots_incident_node_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6060,8 +6110,9 @@ void EventGraphWidget::seePlots()
 		     "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
 		     "zvalue, hidden, masshidden "
 		     "FROM saved_eg_plots_abstract_nodes "
-		     "WHERE plot = :plot ");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6090,8 +6141,9 @@ void EventGraphWidget::seePlots()
 	  QColor color = QColor(red, green, blue, alpha);
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT incident FROM saved_eg_plots_incidents_to_abstract_nodes "
-			  "WHERE plot = :plot AND abstractnode = :id");
+			  "WHERE plot = :plot AND coder = :coder AND abstractnode = :id");
 	  query2->bindValue(":plot", plot);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->bindValue(":id", id);
 	  query2->exec();
 	  QVector<IncidentNode *> incidents;
@@ -6111,8 +6163,9 @@ void EventGraphWidget::seePlots()
 	    }
 	  std::sort(incidents.begin(), incidents.end(), eventLessThan);
 	  query2->prepare("SELECT attribute, value FROM saved_eg_plots_attributes_to_abstract_nodes "
-			  "WHERE plot = :plot AND abstractnode = :id");
+			  "WHERE plot = :plot AND coder = :coder AND abstractnode = :id");
 	  query2->bindValue(":plot", plot);
+	  query->bindValue(":coder", _selectedCoder);
 	  query2->bindValue(":id", id);
 	  query2->exec();
 	  QSet<QString> attributes;
@@ -6159,8 +6212,9 @@ void EventGraphWidget::seePlots()
 	}
       query->prepare("SELECT incident, abstractnode "
 		     "FROM saved_eg_plots_embedded_incidents "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6187,8 +6241,9 @@ void EventGraphWidget::seePlots()
 	}
       query->prepare("SELECT son, father "
 		     "FROM saved_eg_plots_abstract_nodes_to_abstract_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6216,8 +6271,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT eventid, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_eg_plots_abstract_node_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6267,7 +6323,7 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT tail, head, tailabstractnode, headabstractnode, "
 		     "linkage, red, green, blue, alpha, zvalue, hidden, masshidden "
 		     "FROM saved_eg_plots_edges "
-		     "WHERE plot = :plot ");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
       query->exec();
       while (query->next()) 
@@ -6459,8 +6515,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT name, tip, red, green, blue, alpha, "
 		     "textred, textgreen, textblue, textalpha, hidden "
 		     "FROM saved_eg_plots_legend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6499,8 +6556,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha "
 		     "FROM saved_eg_plots_lines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6537,8 +6595,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT startx, endx, y, penwidth, majorinterval, minordivision, "
 		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha "
 		     "FROM saved_eg_plots_timelines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6578,8 +6637,9 @@ void EventGraphWidget::seePlots()
       query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zValue, "
 		     "red, green, blue, alpha "
 		     "FROM saved_eg_plots_texts "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6612,8 +6672,9 @@ void EventGraphWidget::seePlots()
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha "
 		     "FROM saved_eg_plots_ellipses "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6661,8 +6722,9 @@ void EventGraphWidget::seePlots()
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha "
 		     "FROM saved_eg_plots_rects "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6707,8 +6769,9 @@ void EventGraphWidget::seePlots()
 	}
       query->prepare("SELECT nodeid, abstract, xpos, ypos "
 		     "FROM saved_eg_plots_contraction "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6746,8 +6809,9 @@ void EventGraphWidget::seePlots()
       _contracted = false;
       query->prepare("SELECT casename, checked "
 		     "FROM saved_eg_plots_cases "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6766,8 +6830,9 @@ void EventGraphWidget::seePlots()
 	}      
       query->prepare("SELECT xpos, ypos, horizontal "
 		     "FROM saved_eg_plots_guides "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
 	{
@@ -6811,103 +6876,123 @@ void EventGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       // saved_eg_plots
       query->prepare("DELETE FROM saved_eg_plots "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_settings
       query->prepare("DELETE FROM saved_eg_plots_settings "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_incident_nodes
       query->prepare("DELETE FROM saved_eg_plots_incident_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_edges
       query->prepare("DELETE FROM saved_eg_plots_edges "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_incident_node_labels
       query->prepare("DELETE FROM saved_eg_plots_incident_node_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_abstract_nodes
       query->prepare("DELETE FROM saved_eg_plots_abstract_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_incidents_to_abstract_nodes
       query->prepare("DELETE FROM saved_eg_plots_incidents_to_abstract_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_attributes_to_abstract_nodes
       query->prepare("DELETE FROM saved_eg_plots_attributes_to_abstract_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_abstract_node_labels
       query->prepare("DELETE FROM saved_eg_plots_abstract_node_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_legend
       query->prepare("DELETE FROM saved_eg_plots_legend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_embedded_incidents
       query->prepare("DELETE FROM saved_eg_plots_embedded_incidents "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_abstract_nodes_to_abstract_nodes 
       query->prepare("DELETE FROM saved_eg_plots_abstract_nodes_to_abstract_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_lines
       query->prepare("DELETE FROM saved_eg_plots_lines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_timelines
       query->prepare("DELETE FROM saved_eg_plots_timelines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_texts
       query->prepare("DELETE FROM saved_eg_plots_texts "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_eipses
       query->prepare("DELETE FROM saved_eg_plots_ellipses "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_rects
       query->prepare("DELETE FROM saved_eg_plots_rects "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_contraction
       query->prepare("DELETE FROM saved_eg_plots_contraction "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_cases
       query->prepare("DELETE FROM saved_eg_plots_cases "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_eg_plots_guides
       query->prepare("DELETE FROM saved_eg_plots_guides "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       delete query;
       seePlots();

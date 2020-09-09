@@ -1843,6 +1843,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE attributes_to_incidents ADD COLUMN coder text;");
+	      query->exec("UPDATE attributes_to_incidents SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(attributes_to_incidents_sources)");
@@ -1870,6 +1871,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE attributes_to_incidents_sources ADD COLUMN coder text;");
+	      query->exec("UPDATE attributes_to_incidents_sources SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(entity_attributes)");
@@ -2001,6 +2003,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE relationships_to_incidents ADD COLUMN coder text;");
+	      query->exec("UPDATE relationships_to_incidents SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(relationships_to_incidents_sources)");
@@ -2036,6 +2039,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE relationships_to_incidents_sources ADD COLUMN coder text;");
+	      query->exec("UPDATE relationships_to_incidents_sources SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(entities)");
@@ -2082,6 +2086,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE journal ADD COLUMN coder text;");
+	      query->exec("UPDATE journal SET coder = 'Default'");
 	    }
 	  if (!columns.contains("mark"))
 	    {
@@ -2136,6 +2141,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkages ADD COLUMN coder text;");
+	      query->exec("UPDATE linkages SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(linkages_sources)");
@@ -2163,6 +2169,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkages_sources ADD COLUMN coder text;");
+	      query->exec("UPDATE linkages_sources SET coder = 'Default'");
 	    }
 	  if (!columns.contains("istail"))
 	    {
@@ -2201,6 +2208,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE coders_to_linkage_types ADD COLUMN coder text;");
+	      query->exec("UPDATE coders_to_linkage_types SET coder = 'Default'");
 	    }
 	  if (!columns.contains("type"))
 	    {
@@ -2240,6 +2248,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkage_comments ADD COLUMN coder text;");
+	      query->exec("UPDATE linkage_comments SET coder = 'Default'");
 	    }
 	  if (!columns.contains("type"))
 	    {
