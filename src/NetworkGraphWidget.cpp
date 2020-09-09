@@ -7380,6 +7380,7 @@ void NetworkGraphWidget::seePlots()
       // saved_ng_plots_cases
       query->prepare("DELETE FROM saved_ng_plots_cases "
 		     "WHERE plot = :plot");
+      query->bindValue(":plot", plot);	
       query->exec();
       // saved_ng_plots_guides
       query->prepare("DELETE FROM saved_ng_plots_guides "
