@@ -14,9 +14,13 @@
 * [x] Add feedback label(s) somewhere.
 * [x] Make sure default options on startup make sense in all widgets.
 * [ ] Add appropriate warnings upon switching.
+* [ ] Auto-add coder on existing database
+* [ ] Add coders to all plot save tables.
 
 ## Thoughts
 What happens if I load a visualization created with the codes of another coder?
+
+On the auto-adding of a coder: It would then make sense to create a new Default user in the database and assign everything that was created to that profile.
 
 ## Temp
 
