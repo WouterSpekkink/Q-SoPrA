@@ -37,7 +37,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QFileDialog>
 #include <fstream>
-#include "JournalTableModel.h"
+#include "JournalQueryModel.h"
 #include "ZoomableTableView.h"
 #include "SupportingFunctions.h"
 #include "CheckBoxDelegate.h"
@@ -59,6 +59,7 @@ public:
 		     
 private slots:
   // Private member functions
+  void updateTable();
   void resetButtons();
   void addEntry();
   void saveChanges();
@@ -69,10 +70,12 @@ private slots:
   bool checkChanges();
   void resetHeader(int header);
   bool eventFilter(QObject *object, QEvent *event);
+  void armIndex();
+  void setIndex();
   
 private:
   // Interface elements
-  QPointer<JournalTableModel> journalModel;
+  QPointer<JournalQueryModel> journalModel;
   QPointer<ZoomableTableView> tableView;
   QPointer<QLabel> journalLabel;
   QPointer<QLabel> logLabel;
@@ -84,6 +87,9 @@ private:
 
   // Private variables
   QString _selectedCoder;
+  int _lastSortedHeader;
+  bool _lastSortedAscending;
+  QModelIndex _tempIndex;
 };
 
 #endif

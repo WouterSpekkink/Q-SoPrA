@@ -20,25 +20,29 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#ifndef JOURNALTABLEMODEL_H
-#define JOURNALTABLEMODEL_H
+#ifndef JOURNALQUERYMODEL_H
+#define JOURNALQUERYMODEL_H
 
 #include <QtSql>
 #include "SupportingFunctions.h"
 
-class JournalTableModel : public QSqlTableModel
+class JournalQueryModel : public QSqlQueryModel
 {
   Q_OBJECT
 
 public:
   // Constructor and destructor
-  JournalTableModel(QWidget *parent=0);
-  ~JournalTableModel() {};  
+  JournalQueryModel(QWidget *parent=0);
+  ~JournalQueryModel() {};  
 
   // Override public functions
   Qt::ItemFlags flags(const QModelIndex & index) const override;
   QVariant data(const QModelIndex &index, int role) const override;
   bool setData(const QModelIndex & index, const QVariant & value, int role = Qt::EditRole) override;
+
+signals:
+  void armSelection();
+  void setSelection();
   
 };
 

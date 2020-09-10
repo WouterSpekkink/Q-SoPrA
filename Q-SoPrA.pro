@@ -70,7 +70,7 @@ HEADERS += include/AbstractionDialog.h \
            include/IncidentNodeLabel.h \
            include/IncidentsAttributesTable.h \
            include/InheritanceDialog.h \
-           include/JournalTableModel.h \
+           include/JournalQueryModel.h \
            include/JournalWidget.h \
            include/LargeTextDialog.h \
            include/LineageColorDialog.h \
@@ -171,7 +171,7 @@ SOURCES += main.cpp \
            src/IncidentNodeLabel.cpp \
            src/IncidentsAttributesTable.cpp \
            src/InheritanceDialog.cpp \
-           src/JournalTableModel.cpp \
+           src/JournalQueryModel.cpp \
            src/JournalWidget.cpp \
            src/LargeTextDialog.cpp \
            src/LineageColorDialog.cpp \
