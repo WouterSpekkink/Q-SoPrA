@@ -1065,8 +1065,7 @@ void WelcomeDialog::openDatabase()
 		      "label text)");
 	  query->exec("SELECT * FROM linkages_sources_reference");
 	  query->first();
-	  if (query->isNull(0))
-	    
+	  if (query->isNull(0))	    
 	    {
 	      query->exec("INSERT INTO linkages_sources_reference "
 			  "(code, label) "
@@ -1075,8 +1074,6 @@ void WelcomeDialog::openDatabase()
 			  "(code, label) "
 			  "VALUES (1, 'Tail')");
 	    }
-	  query->exec("SELECT default_coder FROM save_data");
-	  query->first();	  
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -1760,7 +1757,6 @@ void WelcomeDialog::openDatabase()
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
-
 	  // And now we check if the correct columns exist and create them otherwise
 	  QVector<QString> columns;
 	  query->exec("PRAGMA table_info(incidents)");
@@ -5835,6 +5831,8 @@ void WelcomeDialog::openDatabase()
 			  "ADD COLUMN casename text;");
 	    }
 	  columns.clear();
+	  query->exec("SELECT default_coder FROM save_data");
+	  query->first();	  
 	  QString currentDefault = query->value(0).toString();
 	  query->prepare("SELECT name FROM coders "
 			 "WHERE name = :name");
