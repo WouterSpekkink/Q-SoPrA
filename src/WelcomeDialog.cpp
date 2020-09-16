@@ -1075,6 +1075,8 @@ void WelcomeDialog::openDatabase()
 			  "(code, label) "
 			  "VALUES (1, 'Tail')");
 	    }
+	  query->exec("SELECT default_coder FROM save_data");
+	  query->first();	  
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
@@ -5833,6 +5835,19 @@ void WelcomeDialog::openDatabase()
 			  "ADD COLUMN casename text;");
 	    }
 	  columns.clear();
+	  QString currentDefault = query->value(0).toString();
+	  query->prepare("SELECT name FROM coders "
+			 "WHERE name = :name");
+	  query->bindValue(":name", currentDefault);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0))
+	    {
+	      query->prepare("INSERT INTO coders (name) "
+			     "VALUES (:name)");
+	      query->bindValue(":name", currentDefault);
+	      query->exec();
+	    }
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
 	  _exitStatus = 0;

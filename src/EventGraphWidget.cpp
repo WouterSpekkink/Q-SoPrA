@@ -4073,6 +4073,8 @@ void EventGraphWidget::cleanUp()
   setGraphControls(false);
   disableLegendButtons();
   plotLabel->setText("");
+  incongruenceLabel->setText("");
+  changeLabel->setText("");
 }
 
 void EventGraphWidget::increaseDistance() 

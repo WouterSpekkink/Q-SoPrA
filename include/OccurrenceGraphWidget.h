@@ -201,6 +201,7 @@ private slots:
   void saveCurrentPlot();
   void seePlots();
   void clearPlot();
+  void clearWithoutWarning();
   void cleanUp();
   void finalBusiness();
   bool eventFilter(QObject *object, QEvent *event);

@@ -8026,6 +8026,8 @@ void NetworkGraphWidget::cleanUp()
   weightCheckBox->setCheckState(Qt::Unchecked);
   disableLegendButtons();
   plotLabel->setText("");
+  incongruenceLabel->setText("");
+  changeLabel->setText("");
 }
 
 void NetworkGraphWidget::finalBusiness() 

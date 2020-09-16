@@ -723,7 +723,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!attributeIncidents.contains(id))
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "1";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -734,7 +733,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!orderPairs.contains(currentPair))
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "2";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -794,7 +792,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!observed.contains(currentExpected))
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "3";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -868,7 +865,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (query->isNull(0)) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "4";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -881,7 +877,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (query2->isNull(0)) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "5";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -891,7 +886,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      else if (query2->value(0).toInt() != order) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "6";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -958,7 +952,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!found) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "7";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -992,7 +985,6 @@ void OccurrenceGraphWidget::checkCongruence()
       if (!currentVector.contains(cit.next()))
 	{
 	  incongruenceLabel->setText("Incongruence detected");
-	  qDebug() << "8";
 	  delete query;
 	  return;
 	}
@@ -1003,7 +995,6 @@ void OccurrenceGraphWidget::checkCongruence()
       if (!caseVector.contains(cit2.next()))
 	{
 	  incongruenceLabel->setText("Incongruence detected");
-	  qDebug() << "9";
 	  delete query;
 	  return;
 	}
@@ -7307,12 +7298,23 @@ void OccurrenceGraphWidget::clearPlot()
       cleanUp();
       changeLabel->setText("");
       plotLabel->setText("Unsaved plot");
+      incongruenceLabel->setText("");
     }
   else 
     {
       delete warningBox;
       return;
     }
+  updateCases();
+  hideAnnotationsButton->setChecked(false);
+}
+
+void OccurrenceGraphWidget::clearWithoutWarning()
+{
+  cleanUp();
+  changeLabel->setText("");
+  plotLabel->setText("Unsaved plot");
+  incongruenceLabel->setText("");
   updateCases();
   hideAnnotationsButton->setChecked(false);
 }

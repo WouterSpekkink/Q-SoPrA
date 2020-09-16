@@ -2967,7 +2967,7 @@ void MainWindow::processCoder(QString coder)
   rw->setCurrentCoder(coder);
   rw->retrieveData();
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
-  ogw->clearPlot();
+  ogw->clearWithoutWarning();
   ogw->setCurrentCoder(coder);
   JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
   jw->setCurrentCoder(coder);
