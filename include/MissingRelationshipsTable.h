@@ -54,6 +54,9 @@ public:
   MissingRelationshipsTable(QWidget *parent = 0);
   ~MissingRelationshipsTable() {};
 
+  //Setters
+  void setCurrentCoder(QString coder);
+				     
 private slots:
   // Private member functions
   void updateTable();
@@ -63,6 +66,9 @@ private:
   // Interface elements
   QPointer<EventQueryModel> model;
   QPointer<ZoomableTableView> tableView;
+
+  // Private variables
+  QString _selectedCoder;
 };
 
 #endif

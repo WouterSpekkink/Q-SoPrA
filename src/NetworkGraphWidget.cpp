@@ -24,6 +24,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _selectedType = "";
   _selectedEntityName = "";
   _labelsShown = false;
@@ -1667,17 +1672,15 @@ void NetworkGraphWidget::plotEntities()
 void NetworkGraphWidget::getDirectedEdges() 
 {
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name, description FROM relationship_types "
-		 "WHERE directedness = :directed");
-  query->bindValue(":directed", "Directed");
-  query->exec();
+  query->exec("SELECT name, description FROM relationship_types "
+		 "WHERE directedness = 'Directed'");
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT name, source, target, comment "
 		  "FROM entity_relationships "
 		  "WHERE type = :type");
   QSqlQuery *query3 = new QSqlQuery;
   query3->prepare("SELECT incident FROM relationships_to_incidents "
-		  "WHERE type = :type AND relationship = :relationship");
+		  "WHERE type = :type AND relationship = :relationship AND coder = :coder");
   QSqlQuery *query4 = new QSqlQuery;
   query4->prepare("SELECT ch_order FROM incidents "
 		  "WHERE id = :id");
@@ -1711,6 +1714,7 @@ void NetworkGraphWidget::getDirectedEdges()
 		  DirectedEdge *currentEdge = new DirectedEdge(tempSource, tempTarget, type, name, 0);
 		  query3->bindValue(":type", type);
 		  query3->bindValue(":relationship", name);
+		  query3->bindValue(":coder", _selectedCoder);
 		  query3->exec();
 		  QSet<int> incidents;
 		  while (query3->next())
@@ -1750,7 +1754,7 @@ void NetworkGraphWidget::getUndirectedEdges()
 		  "WHERE type = :type");
   QSqlQuery *query3 = new QSqlQuery;
   query3->prepare("SELECT incident FROM relationships_to_incidents "
-		  "WHERE type = :type AND relationship = :relationship");
+		  "WHERE type = :type AND relationship = :relationship AND coder = :coder");
   QSqlQuery *query4 = new QSqlQuery;
   query4->prepare("SELECT ch_order FROM incidents "
 		  "WHERE id = :id");
@@ -1792,6 +1796,7 @@ void NetworkGraphWidget::getUndirectedEdges()
 		    }
 		  query3->bindValue(":type", type);
 		  query3->bindValue(":relationship", name);
+		  query3->bindValue(":coder", _selectedCoder);
 		  query3->exec();
 		  QSet<int> incidents;
 		  while (query3->next())
@@ -4953,7 +4958,7 @@ void NetworkGraphWidget::plotNewGraph()
   getEntities();
   plotEntities(); // Should allow for range to be set here.
   getDirectedEdges();
-  getUndirectedEdges();  
+  getUndirectedEdges();
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   QColor color = QColor(Qt::black);
@@ -5094,6 +5099,7 @@ void NetworkGraphWidget::removeRelationshipType()
     {
       caseListWidget->setEnabled(false);
       setGraphControls(false);
+      cleanUp();
     }
   else
     {
@@ -5188,8 +5194,9 @@ void NetworkGraphWidget::setRangeControls()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT DISTINCT relationship, incident "
 		     "FROM relationships_to_incidents "
-		     "WHERE type = :type");
+		     "WHERE type = :type AND coder = :coder");
       query->bindValue(":type", currentType);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -5240,8 +5247,9 @@ void NetworkGraphWidget::updateRangeControls()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT DISTINCT relationship, incident "
 		     "FROM relationships_to_incidents "
-		     "WHERE type = :type");
+		     "WHERE type = :type AND coder = :coder");
       query->bindValue(":type", currentType);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -5831,8 +5839,9 @@ void NetworkGraphWidget::saveCurrentPlot()
     {
       QString name = saveDialog->getText();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT plot FROM saved_ng_plots WHERE plot = :name");
+      query->prepare("SELECT plot FROM saved_ng_plots WHERE plot = :name AND coder = :coder");
       query->bindValue(":name", name);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       bool empty = false;
@@ -5868,81 +5877,95 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  query->prepare("UPDATE saved_ng_plots "
 			 "SET red = :red, green = :green, blue = :blue "
-			 "WHERE plot = :name");
+			 "WHERE plot = :name AND coder = :coder");
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":name", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_network_nodes
 	  query->prepare("DELETE FROM saved_ng_plots_network_nodes "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_directed
 	  query->prepare("DELETE FROM saved_ng_plots_directed "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_undirected
 	  query->prepare("DELETE FROM saved_ng_plots_undirected "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_incidents_to_edges
 	  query->prepare("DELETE FROM saved_ng_plots_incidents_to_edges "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_node_labels
 	  query->prepare("DELETE FROM saved_ng_plots_node_labels "
-			 "WHERE plot = :plot");
-	  query->bindValue(":plot", name);
+			 "WHERE plot = :plot AND coder = :coder");
+	  query->bindValue(":plot", name);query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_nodelegend
 	  query->prepare("DELETE FROM saved_ng_plots_nodelegend "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_edgelegend
 	  query->prepare("DELETE FROM saved_ng_plots_edgelegend "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_lines
 	  query->prepare("DELETE FROM saved_ng_plots_lines "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_texts
 	  query->prepare("DELETE FROM saved_ng_plots_texts "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_ellipses
 	  query->prepare("DELETE FROM saved_ng_plots_ellipses "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_rects
 	  query->prepare("DELETE FROM saved_ng_plots_rects "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_settings
 	  query->prepare("DELETE FROM saved_ng_plots_settings "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_ng_plots_cases
 	  query->prepare("DELETE FROM saved_ng_plots_cases "
-			"WHERE plot = :plot");
+			"WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_n_plots_guides
 	  query->prepare("DELETE FROM saved_ng_plots_guides "
-			"WHERE plot = :plot");
+			"WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	}
       else 
@@ -5952,9 +5975,10 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("INSERT INTO saved_ng_plots (plot, red, green, blue) "
-			 "VALUES (:name, :red, :green, :blue)");
+	  query->prepare("INSERT INTO saved_ng_plots (plot, coder, red, green, blue) "
+			 "VALUES (:name, :coder, :red, :green, :blue)");
 	  query->bindValue(":name", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
@@ -5968,9 +5992,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->show();
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_ng_plots_network_nodes "
-		     "(plot, entity, description, mode, curxpos, curypos, "
+		     "(plot, coder, entity, description, mode, curxpos, curypos, "
 		     "red, green, blue, alpha, zvalue, hidden, persistent, masshidden) "
-		     "VALUES (:plot, :entity, :description, :mode, :curxpos, :curypos, "
+		     "VALUES (:plot, :coder, :entity, :description, :mode, :curxpos, :curypos, "
 		     ":red, :green, :blue, :alpha, :zvalue, :hidden, :persistent, :masshidden)");
       QVectorIterator<NetworkNode*> it(_networkNodeVector);
       while (it.hasNext()) 
@@ -6002,6 +6026,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      masshidden = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":entity", entity);
 	  query->bindValue(":description", description);
 	  query->bindValue(":mode", mode);
@@ -6029,9 +6054,10 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_node_labels "
-		     "(plot, entity, curxpos, curypos, xoffset, yoffset, fontsize, "
+		     "(plot, coder, entity, curxpos, curypos, xoffset, yoffset, fontsize, "
 		     "red, green, blue, alpha, zvalue, hidden) "
-		     "VALUES (:plot, :entity, :curxpos, :curypos, :xoffset, :yoffset, :fontsize, "
+		     "VALUES (:plot, :coder, :entity, :curxpos, :curypos, :xoffset, :yoffset, "
+		     ":fontsize, "
 		     ":red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<NetworkNodeLabel*> it2(_networkNodeLabelVector);
       while (it2.hasNext()) 
@@ -6054,6 +6080,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      hidden = 0;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":entity", entity);
 	  query->bindValue(":curxpos", x);
 	  query->bindValue(":curypos", y);
@@ -6079,9 +6106,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->setModal(true);
       counter = 1;
       saveProgress->show();
-      query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, name, tip, "
+      query->prepare("INSERT INTO saved_ng_plots_nodelegend (plot, coder, name, tip, "
 		     "red, green, blue, alpha, textred, textgreen, textblue, textalpha, hidden) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, "
+		     "VALUES (:plot, :coder, :name, :tip, :red, :green, :blue, :alpha, "
 		     ":textred, :textgreen, :textblue, :textalpha, :hidden)");
       for (int i = 0; i != nodeListWidget->rowCount(); i++) 
 	{
@@ -6105,6 +6132,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      hidden = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
 	  query->bindValue(":red", red);
@@ -6129,9 +6157,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->setModal(true);
       counter = 1;
       saveProgress->show();
-      query->prepare("INSERT INTO saved_ng_plots_edgelegend (plot, name, tip, "
+      query->prepare("INSERT INTO saved_ng_plots_edgelegend (plot, coder, name, tip, "
 		     "red, green, blue, alpha, hidden) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
+		     "VALUES (:plot, :coder, :name, :tip, :red, :green, :blue, :alpha, :hidden)");
       for (int i = 0; i != edgeListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = edgeListWidget->item(i, 0);
@@ -6148,6 +6176,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      hidden = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
 	  query->bindValue(":red", red);
@@ -6169,14 +6198,15 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_directed "
-		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
+		     "(plot, coder, tail, head, name, comment, type, height, filtered, masshidden, "
 		     "red, green, blue, alpha, zvalue, hidden) "
-		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
+		     "VALUES (:plot, :coder, :tail, :head, :name, :comment, :type, :height, "
+		     ":filtered, "
 		     ":masshidden, :red, :green, :blue, :alpha, :zvalue, :hidden)");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("INSERT INTO saved_ng_plots_incidents_to_edges"
-		      "(plot, incident, relationship, type) "
-		      "VALUES (:plot, :incident, :relationship, :type)");
+		      "(plot, coder, incident, relationship, type) "
+		      "VALUES (:plot, :coder, :incident, :relationship, :type)");
       QVectorIterator<DirectedEdge*> it3(_directedVector);
       while (it3.hasNext()) 
 	{
@@ -6192,6 +6222,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	    {
 	      int incident = incIt.next();
 	      query2->bindValue(":plot", name);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->bindValue(":incident", incident);
 	      query2->bindValue(":type", type);
 	      query2->bindValue(":relationship", relationship);
@@ -6219,6 +6250,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      hidden = 0;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
 	  query->bindValue(":name", relationship);
@@ -6247,9 +6279,10 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_undirected "
-		     "(plot, tail, head, name, comment, type, height, filtered, masshidden, "
+		     "(plot, coder, tail, head, name, comment, type, height, filtered, masshidden, "
 		     "red, green, blue, alpha, zvalue, hidden) "
-		     "VALUES (:plot, :tail, :head, :name, :comment, :type, :height, :filtered, "
+		     "VALUES (:plot, :coder, :tail, :head, :name, :comment, :type, :height, "
+		     ":filtered, "
 		     ":masshidden, :red, :green, :blue, :alpha, :zvalue, :hidden)");
       QVectorIterator<UndirectedEdge*> it4(_undirectedVector);
       while (it4.hasNext()) 
@@ -6266,6 +6299,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	    {
 	      int incident = incIt.next();
 	      query2->bindValue(":plot", name);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->bindValue(":incident", incident);
 	      query2->bindValue(":type", type);
 	      query2->bindValue(":relationship", relationship);
@@ -6293,6 +6327,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      hidden = 0;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":tail", tail);
 	  query->bindValue(":head", head);
 	  query->bindValue(":name", relationship);
@@ -6323,9 +6358,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_lines "
-		     "(plot, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
+		     "(plot, coder, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha) "
-		     "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
+		     "VALUES (:plot, :coder, :startx, :starty, :endx, :endy, :arone, :artwo, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<LineObject*> it8(_lineVector);
       while (it8.hasNext()) 
@@ -6354,6 +6389,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":startx", startx);
 	  query->bindValue(":starty", starty);
 	  query->bindValue(":endx", endx);
@@ -6381,9 +6417,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_texts "
-		     "(plot, desc, xpos, ypos, width, size, rotation, zvalue, "
+		     "(plot, coder, desc, xpos, ypos, width, size, rotation, zvalue, "
 		     "red, green, blue, alpha) "
-		     "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
+		     "VALUES (:plot, :coder, :desc, :xpos, :ypos, :width, :size, :rotation, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<TextObject*> it9(_textVector);
       while (it9.hasNext()) 
@@ -6402,6 +6438,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":desc", desc);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
@@ -6427,11 +6464,12 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_ellipses "
-		     "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		     "(plot, coder, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		     "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha) "
-		     "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :topleftx, :toplefty, :toprightx, "
+		     ":toprighty, "
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
@@ -6464,6 +6502,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int fillblue = fillColor.blue();
 	  int fillalpha = fillColor.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":topleftx", topleftx);
@@ -6500,11 +6539,12 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_rects "
-		     "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		     "(plot, coder, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		     "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha) "
-		     "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :topleftx, :toplefty, :toprightx, "
+		     ":toprighty, "
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
@@ -6537,6 +6577,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  int fillblue = fillColor.blue();
 	  int fillalpha = fillColor.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":topleftx", topleftx);
@@ -6567,9 +6608,9 @@ void NetworkGraphWidget::saveCurrentPlot()
       saveProgress->close();
       delete saveProgress;
       query->prepare("INSERT INTO saved_ng_plots_settings "
-		     "(plot, lowerbound, upperbound, boundson, "
+		     "(plot, coder, lowerbound, upperbound, boundson, "
 		     "weight, weighton, labelson) "
-		     "VALUES (:plot, :lowerbound, :upperbound, :boundson, "
+		     "VALUES (:plot, :coder, :lowerbound, :upperbound, :boundson, "
 		     ":weight, :weighton, :labelson)");
       int boundson = 0;
       if (lowerRangeDial->isEnabled())
@@ -6587,6 +6628,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	  labelson = 1;
 	}
       query->bindValue(":plot", name);
+      query->bindValue(":coder", _selectedCoder);
       query->bindValue(":lowerbound", lowerRangeDial->value());
       query->bindValue(":upperbound", upperRangeDial->value());
       query->bindValue(":boundson", boundson);
@@ -6601,8 +6643,8 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_cases "
-		     "(plot, casename, checked) "
-		     "VALUES (:plot, :casename, :checked)");
+		     "(plot, coder, casename, checked) "
+		     "VALUES (:plot, :coder, :casename, :checked)");
       for (int i = 0; i != caseListWidget->count(); i++) 
 	{
 	  QListWidgetItem *item = caseListWidget->item(i);
@@ -6613,6 +6655,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      checked = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":casename", casename);
 	  query->bindValue(":checked", checked);
 	  query->exec();
@@ -6629,8 +6672,8 @@ void NetworkGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_ng_plots_guides "
-		     "(plot, xpos, ypos, horizontal) "
-		     "VALUES (:plot, :xpos, :ypos, :horizontal)");
+		     "(plot, coder, xpos, ypos, horizontal) "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :horizontal)");
       QVectorIterator<GuideLine*> it14(_guidesVector);
       while (it14.hasNext())
 	{
@@ -6643,6 +6686,7 @@ void NetworkGraphWidget::saveCurrentPlot()
 	      horizontal = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":horizontal", horizontal);
@@ -6661,7 +6705,9 @@ void NetworkGraphWidget::saveCurrentPlot()
 		      
 void NetworkGraphWidget::seePlots() 
 {
-  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, NETWORKGRAPH);
+  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this,
+								     NETWORKGRAPH,
+								     _selectedCoder);
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) 
     {
@@ -6673,8 +6719,9 @@ void NetworkGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT red, green, blue "
 		     "FROM saved_ng_plots "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       int red = query->value(0).toInt();
@@ -6684,8 +6731,9 @@ void NetworkGraphWidget::seePlots()
       query->prepare("SELECT entity, description, mode, curxpos, curypos, "
 		     "red, green, blue, alpha, zvalue, hidden, persistent, masshidden "
 		     "FROM saved_ng_plots_network_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6737,8 +6785,10 @@ void NetworkGraphWidget::seePlots()
 	}
       query->prepare("SELECT entity, curxpos, curypos, xoffset, yoffset, fontsize, "
 		     "red, green, blue, alpha, zvalue, hidden "
-		     "FROM saved_ng_plots_node_labels WHERE plot = :plot");
+		     "FROM saved_ng_plots_node_labels "
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6786,8 +6836,9 @@ void NetworkGraphWidget::seePlots()
       query->prepare("SELECT name, tip, red, green, blue, alpha, "
 		     "textred, textgreen, textblue, textalpha, hidden "
 		     "FROM saved_ng_plots_nodelegend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6825,8 +6876,9 @@ void NetworkGraphWidget::seePlots()
 	}
       query->prepare("SELECT name, tip, red, green, blue, alpha, hidden "
 		     "FROM saved_ng_plots_edgelegend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6858,8 +6910,9 @@ void NetworkGraphWidget::seePlots()
       query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
 		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_ng_plots_directed "
-		     "WHERE plot = :plot ");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6922,8 +6975,9 @@ void NetworkGraphWidget::seePlots()
       query->prepare("SELECT tail, head, name, comment, type, height, filtered, masshidden, "
 		     "red, green, blue, alpha, zvalue, hidden "
 		     "FROM saved_ng_plots_undirected "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6983,8 +7037,9 @@ void NetworkGraphWidget::seePlots()
 	}
       query->prepare("SELECT incident, relationship, type "
 		     "FROM saved_ng_plots_incidents_to_edges "
-		     "WHERE plot = :plot ");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
 	{
@@ -7010,8 +7065,10 @@ void NetworkGraphWidget::seePlots()
 		}
 	    }
 	}
-      query->exec("SELECT DISTINCT incident "
-		  "FROM relationships_to_incidents");
+      query->prepare("SELECT DISTINCT incident "
+		     "FROM relationships_to_incidents "
+		     "WHERE coder = :coder");
+      query->bindValue("coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7044,8 +7101,9 @@ void NetworkGraphWidget::seePlots()
       query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha "
 		     "FROM saved_ng_plots_lines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7082,8 +7140,9 @@ void NetworkGraphWidget::seePlots()
       query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zvalue, "
 		     "red, green, blue, alpha "
 		     "FROM saved_ng_plots_texts "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7116,8 +7175,9 @@ void NetworkGraphWidget::seePlots()
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha "
 		     "FROM saved_ng_plots_ellipses "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7165,8 +7225,9 @@ void NetworkGraphWidget::seePlots()
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha "
 		     "FROM saved_ng_plots_rects "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7212,8 +7273,9 @@ void NetworkGraphWidget::seePlots()
       setWeightControls();
       query->prepare("SELECT lowerbound, upperbound, boundson, weight, weighton, labelson "
 		     "FROM saved_ng_plots_settings "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       int lowerbound = query->value(0).toInt();
@@ -7259,8 +7321,9 @@ void NetworkGraphWidget::seePlots()
 	}
       query->prepare("SELECT casename, checked "
 		     "FROM saved_ng_plots_cases "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7279,8 +7342,9 @@ void NetworkGraphWidget::seePlots()
 	}
             query->prepare("SELECT xpos, ypos, horizontal "
 		     "FROM saved_ng_plots_guides "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
 	{
@@ -7315,77 +7379,92 @@ void NetworkGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       // saved_ng_plots
       query->prepare("DELETE FROM saved_ng_plots "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_network_nodes
       query->prepare("DELETE FROM saved_ng_plots_network_nodes "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_node_labels
       query->prepare("DELETE FROM saved_ng_plots_node_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       // saved_ng_plots_nodelegend
       query->prepare("DELETE FROM saved_ng_plots_nodelegend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_edgelegend
       query->prepare("DELETE FROM saved_ng_plots_edgelegend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_directed
       query->prepare("DELETE FROM saved_ng_plots_directed "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_undirected
       query->prepare("DELETE FROM saved_ng_plots_undirected "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_incidents_to_edges
       query->prepare("DELETE FROM saved_ng_plots_incidents_to_edges "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_lines
       query->prepare("DELETE FROM saved_ng_plots_lines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_texts
       query->prepare("DELETE FROM saved_ng_plots_texts "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_ellipses
       query->prepare("DELETE FROM saved_ng_plots_ellipses "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_rects
       query->prepare("DELETE FROM saved_ng_plots_rects "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_settings
       query->prepare("DELETE FROM saved_ng_plots_settings "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_cases
       query->prepare("DELETE FROM saved_ng_plots_cases "
-		     "WHERE plot = :plot");
-      query->bindValue(":plot", plot);	
+		                 "WHERE plot = :plot AND coder = :coder");
+      query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_ng_plots_guides
       query->prepare("DELETE FROM saved_ng_plots_guides "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       delete query;
       seePlots();
@@ -7460,7 +7539,7 @@ void NetworkGraphWidget::setVisibility()
   QSqlDatabase::database().transaction(); 
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT incident FROM relationships_to_incidents "
-		 "WHERE relationship = :relationship AND type = :type");
+		 "WHERE relationship = :relationship AND type = :type AND coder = :coder");
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
   QSqlQuery *query3 = new QSqlQuery;
@@ -7502,6 +7581,7 @@ void NetworkGraphWidget::setVisibility()
 	    {
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -7625,7 +7705,7 @@ void NetworkGraphWidget::setVisibility()
   QSqlDatabase::database().commit();
   QSqlDatabase::database().transaction();
   query->prepare("SELECT incident FROM relationships_to_incidents "
-		 "WHERE relationship = :relationship AND type = :type");
+		 "WHERE relationship = :relationship AND type = :type AND coder = :coder");
   query2->prepare("SELECT ch_order FROM incidents WHERE id = :incident");
   QVectorIterator<UndirectedEdge*> it3(_undirectedVector);
   while (it3.hasNext()) 
@@ -7649,6 +7729,7 @@ void NetworkGraphWidget::setVisibility()
 	    {
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
+	      query->bindValue("coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -7943,11 +8024,19 @@ void NetworkGraphWidget::cleanUp()
   setGraphControls(false);
   weightCheckBox->setCheckState(Qt::Unchecked);
   disableLegendButtons();
+  plotLabel->setText("");
+  incongruenceLabel->setText("");
+  changeLabel->setText("");
 }
 
 void NetworkGraphWidget::finalBusiness() 
 {
   cleanUp();
+}
+
+void NetworkGraphWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool NetworkGraphWidget::eventFilter(QObject *object, QEvent *event) 

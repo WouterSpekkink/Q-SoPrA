@@ -53,6 +53,9 @@ public:
   AttributeCoverageTable(QWidget *parent=0);
   ~AttributeCoverageTable() {};
 
+  // Setters
+  void setCurrentCoder(QString coder);
+			      
 private slots:
   void buildModel();
   void updateTable();
@@ -77,6 +80,7 @@ private:
   QPointer<QComboBox> filterComboBox;
   
   // Private variables
+  QString _selectedCoder;
   int _lastSortedHeader;
   bool _lastSortedAscending;
   

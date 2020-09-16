@@ -388,6 +388,31 @@ void MainWindow::createActions()
   setAntialiasingAct->setCheckable(true);
   setAntialiasingAct->setChecked(true);
   connect(setAntialiasingAct, SIGNAL(triggered()), this, SLOT(setAntialiasing()));
+
+  createCoderAct = new QAction(tr("&Create new coder"), this);
+  createCoderAct->setStatusTip("Create new coder");
+  connect(createCoderAct, SIGNAL(triggered()),
+	  this, SLOT(createCoder()));
+
+  editCoderAct = new QAction(tr("&Rename existing coder"), this);
+  editCoderAct->setStatusTip("Rename existing coder");
+  connect(editCoderAct, SIGNAL(triggered()),
+	  this, SLOT(editCoder()));
+
+  deleteCoderAct = new QAction(tr("&Delete existing coder"), this);
+  deleteCoderAct->setStatusTip("Delete existing coder");
+  connect(deleteCoderAct, SIGNAL(triggered()),
+	  this, SLOT(deleteCoder()));
+
+  renameDefaultCoderAct = new QAction(tr("&Rename default coder"), this);
+  renameDefaultCoderAct->setStatusTip("Rename default coder");
+  connect(renameDefaultCoderAct, SIGNAL(triggered()),
+	  this, SLOT(renameDefaultCoder()));
+  
+  switchCoderAct = new QAction(tr("&Switch coder"), this);
+  switchCoderAct->setStatusTip("Switch coder");
+  connect(switchCoderAct, SIGNAL(triggered()),
+	  this, SLOT(switchCoder()));
 }
 
 void MainWindow::createMenus() 
@@ -432,6 +457,13 @@ void MainWindow::createMenus()
   optionsMenu->addMenu(graphicsMenu);
   optionsMenu->addAction(exitAct);
 
+  coderMenu = menuBar->addMenu("Coders");
+  coderMenu->addAction(createCoderAct);
+  coderMenu->addAction(editCoderAct);
+  coderMenu->addAction(deleteCoderAct);
+  coderMenu->addAction(renameDefaultCoderAct);
+  coderMenu->addAction(switchCoderAct);
+  
   toolMenu = menuBar->addMenu("Tools");
   toolMenu->addAction(dataViewAct);
   toolMenu->addAction(attributeViewAct);
@@ -462,11 +494,25 @@ void MainWindow::createMenus()
   missingTablesMenu->addAction(missingAttributesTableViewAct);
   missingTablesMenu->addAction(missingRelationshipsTableViewAct);
 
+  sharedMenu = new QMenu("Shared tables");
+  sharedMenu->addMenu(codingTextsMenu);
+  sharedMenu->addMenu(attributeTablesMenu);
+  coderSpecificMenu = new QMenu("Coder specific tables");
+  coderSpecificMenu->addMenu(coverageMenu);
+  coderSpecificMenu->addMenu(missingTablesMenu);
+  
   tableMenu = menuBar->addMenu("Tables");
-  tableMenu->addMenu(codingTextsMenu);
-  tableMenu->addMenu(attributeTablesMenu);
-  tableMenu->addMenu(coverageMenu);
-  tableMenu->addMenu(missingTablesMenu);
+  tableMenu->addMenu(sharedMenu);
+  tableMenu->addMenu(coderSpecificMenu);
+
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  QString coder = "Current coder: " + query->value(0).toString();
+  selectedCoderLabel = new QLabel(coder, this);
+  selectedCoderLabel->setStyleSheet("QLabel{padding-right:50px;}");
+  menuBar->setCornerWidget(selectedCoderLabel);
+  delete query;
   
   setMenuBar(menuBar);
 }
@@ -2095,9 +2141,6 @@ void MainWindow::exportAssignedEntityAttributes()
 void MainWindow::showMenus(bool status) 
 {
   optionsMenu->menuAction()->setVisible(status);
-  graphicsMenu->menuAction()->setVisible(status);
-  transferDataMenu->menuAction()->setVisible(status);
-  transferCodesMenu->menuAction()->setVisible(status);
   toolMenu->menuAction()->setVisible(status);
   graphMenu->menuAction()->setVisible(status);
   tableMenu->menuAction()->setVisible(status);
@@ -2135,4 +2178,813 @@ void MainWindow::setAntialiasing()
   ngw->setAntialiasing(antialiasing);
   ogw->setAntialiasing(antialiasing);
   hgw->setAntialiasing(antialiasing);
+}
+
+void MainWindow::createCoder()
+{
+  SimpleTextDialog *coderDialog = new SimpleTextDialog(this);
+  coderDialog->setLabel("Coder:");
+  coderDialog->setWindowTitle("Add new coder");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0) 
+    {
+      QString name = coderDialog->getText();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("INSERT INTO coders (name) "
+		     "VALUES (:name)");
+      query->bindValue(":name", name);
+      query->exec();
+      delete query;
+    }
+  delete coderDialog;
+}
+
+void MainWindow::editCoder()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name from coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      QString coder = query->value(0).toString();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->exec("SELECT default_coder FROM save_data");
+      query2->first();
+      if (coder != query2->value(0).toString())
+	{
+	  coders.push_back(coder);
+	}
+      delete query2;
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to edit");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      SimpleTextDialog *newCoderDialog = new SimpleTextDialog(this);
+      newCoderDialog->setLabel("Coder:");
+      newCoderDialog->setWindowTitle("Edit coder:");
+      QString oldName = coderDialog->getSelection();
+      query->exec("SELECT coder FROM save_data");
+      query->first();
+      if (query->value(0).toString() == oldName)
+	{
+	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Editing currently active coder");
+	  QPointer<QAbstractButton> continueButton = warningBox->addButton(tr("Continue"),
+									   QMessageBox::YesRole);
+	  warningBox->addButton(QMessageBox::Cancel);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("<h2>Save changes in visualizations!</h2>");
+	  warningBox->setInformativeText("Before editing the currently active coder, please "
+					 "make sure you saved any changes to visualizations you "
+					 "are currently working on. Unsaved changes will be lost "
+					 "upon editing the currently active coder.");
+	  warningBox->exec();
+	  if (warningBox->clickedButton() == continueButton) 
+	    {
+	      newCoderDialog->submitText(oldName);
+	      newCoderDialog->exec();
+	      if (newCoderDialog->getExitStatus() == 0) 
+		{
+		  QString name = newCoderDialog->getText();
+		  query->prepare("UPDATE coders "
+				 "SET name = :name "
+				 "WHERE name = :oldName");
+		  query->bindValue(":name", name);
+		  query->bindValue(":oldName", oldName);
+		  query->exec();
+		  query->exec("SELECT coder FROM save_data");
+		  query->first();
+		  if (query->value(0).toString() == oldName)
+		    {
+		      processCoder(name);
+		    }
+		}
+	    }
+	}
+      delete newCoderDialog;
+    }
+  delete coderDialog;
+  delete query;
+}
+
+void MainWindow::renameDefaultCoder()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name from coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      coders.push_back(query->value(0).toString());
+    }
+  query->exec("SELECT default_coder FROM save_data");
+  query->first();
+  QString currentDefault = query->value(0).toString();
+  SimpleTextDialog *newCoderDialog = new SimpleTextDialog(this);
+  newCoderDialog->setLabel("Coder:");
+  newCoderDialog->setWindowTitle("Rename default coder:");
+  newCoderDialog->submitText(currentDefault);
+  newCoderDialog->exec();
+  if (newCoderDialog->getExitStatus() == 0)
+    {
+      QString newName = newCoderDialog->getText();
+      if (coders.contains(newName))
+	{
+	  QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	  warningBox->setWindowTitle("Cannot rename");
+	  warningBox->addButton(QMessageBox::Ok);
+	  warningBox->setIcon(QMessageBox::Warning);
+	  warningBox->setText("<h2>Name already in use</h2>");
+	  warningBox->setInformativeText("You cannot use a name that is already in use for an "
+					 "existing coder.");
+	  warningBox->exec();
+	  delete warningBox;
+	  return;
+	}
+      else
+	{
+	  query->exec("SELECT coder FROM save_data");
+	  query->first();
+	  if (currentDefault == query->value(0).toString())
+	    {
+	      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->setWindowTitle("Editing currently active coder");
+	      QPointer<QAbstractButton> continueButton = warningBox->addButton(tr("Continue"),
+									       QMessageBox::YesRole);
+	      warningBox->addButton(QMessageBox::Cancel);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<h2>Save changes in visualizations!</h2>");
+	      warningBox->setInformativeText("Before editing the currently active coder, please "
+					     "make sure you saved any changes to visualizations you "
+					     "are currently working on. Unsaved changes will be lost "
+					     "upon editing the currently active coder.");
+	      warningBox->exec();
+	      if (warningBox->clickedButton() == continueButton) 
+		{
+		  processDefault(currentDefault, newName);
+		  processCoder(newName);
+		}
+	    }
+	  else
+	    {
+	      processDefault(currentDefault, newName);
+	    }
+	}
+      delete newCoderDialog;
+    }
+  delete query;
+}
+
+void MainWindow::processDefault(QString oldName, QString newName)
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->prepare("UPDATE coders "
+		 "SET name = :newName "
+		 "WHERE name = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE save_data SET default_coder = :newName");
+  query->bindValue(":newName", newName);
+  query->exec();
+  query->prepare("UPDATE attributes_to_incidents "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE attributes_to_incidents_sources "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newNname", newName);
+  query->bindValue(":oldNname", oldName);
+  query->exec();
+  query->prepare("UPDATE relationships_to_incidents "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newNname", newName);
+  query->bindValue(":oldNname", oldName);
+  query->exec();
+  query->prepare("UPDATE relationships_to_incidents_sources "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_settings "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_incident_nodes "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_edges "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_incident_node_labels "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_abstract_nodes "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_incidents_to_abstract_nodes "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_attributes_to_abstract_nodes "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_abstract_node_labels "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_legend "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_embedded_incidents "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_abstract_nodes_to_abstract_nodes "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_lines "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_timelines "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_texts "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_ellipses "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_rects "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_contraction "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_cases "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_eg_plots_guides "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_network_nodes "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_node_labels "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_nodelegend "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_edgelegend "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_directed "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_undirected "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_incidents_to_edges "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_lines "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_texts "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_ellipses "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_rects "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_settings "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_cases "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_ng_plots_guides "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_settings "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_occurrence_items "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_occurrence_labels "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_legend "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_lines "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_timelines "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_texts "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_ellipses "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_rects "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_cases "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE saved_og_plots_guides "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE linkages "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE linkages_sources "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE coders_to_linkage_types "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->prepare("UPDATE linkage_comments "
+		 "SET coder = :newName WHERE coder = :oldName");
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
+  query->exec();
+  query->exec("SELECT coder FROM save_data");
+  query->first();  
+}
+
+void MainWindow::deleteCoder()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name from coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      QString coder = query->value(0).toString();
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->exec("SELECT default_coder FROM save_data");
+      query2->first();
+      if (coder != query2->value(0).toString())
+	{
+	  coders.push_back(coder);
+	}
+      delete query2;
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to edit");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      QString coder = coderDialog->getSelection();
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Removing coder"); 
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Are you sure?</h2>");
+      warningBox->setInformativeText("This will remove the coder and all details "
+				     "associated with him/her, including assigned codes "
+				     "and visualizations created based on them. Journal "
+				     "entries will be saved.\n\n "
+				     "This action cannot be undone. "
+				     "Are you sure you want to remove this coder?");
+      if (warningBox->exec() == QMessageBox::Yes) 
+	{
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("DELETE FROM coders "
+			 "WHERE name = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM attributes_to_incidents "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM attributes_to_incidents_sources "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM relationships_to_incidents_sources "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_settings "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_incident_nodes "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_edges "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_incident_node_labels "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_abstract_nodes "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_incidents_to_abstract_nodes "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_attributes_to_abstract_nodes "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_abstract_node_labels "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_legend "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_embedded_incidents "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_abstract_nodes_to_abstract_nodes "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_lines "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_timelines "
+		     "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_texts "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_ellipses "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_rects "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_contraction "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_cases "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_eg_plots_guides "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_network_nodes "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_node_labels "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+  	  query->prepare("DELETE FROM saved_ng_plots_nodelegend "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_edgelegend "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_directed "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_undirected "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_incidents_to_edges "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_lines "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_texts "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_ellipses "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_rects "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_settings "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_cases "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_ng_plots_guides "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_settings "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_occurrence_items "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_occurrence_labels "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_legend "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_lines "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_timelines "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_texts "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_ellipses "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_rects "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_cases "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM saved_og_plots_guides "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM linkages_sources "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM coders_to_linkage_types "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->prepare("DELETE FROM linkage_comments "
+			 "WHERE coder = :name");
+	  query->bindValue(":name", coder);
+	  query->exec();
+	  query->exec("SELECT coder FROM save_data");
+	  query->first();
+	  if (query->value(0).toString() == coder)
+	    {
+	      QSqlQuery *query2 = new QSqlQuery;
+	      query2->exec("SELECT default_coder FROM save_data");
+	      query2->first();
+	      processCoder(query2->value(0).toString());
+	      delete query2;
+	    }
+	  delete query;
+	}
+      delete warningBox;
+    }
+}
+
+void MainWindow::switchCoder()
+{
+  // TO DO: WARN TO SAVE SETTINGS
+  
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM coders");
+  QVector<QString> coders;
+  while (query->next())
+    {
+      coders.push_back(query->value(0).toString());
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to switch to");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Switching coder");
+      QPointer<QAbstractButton> continueButton = warningBox->addButton(tr("Continue"),
+								       QMessageBox::YesRole);
+      warningBox->addButton(QMessageBox::Cancel);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Save changes in visualizations!</h2>");
+      warningBox->setInformativeText("Before switching coders, make sure that any changes in "
+				     "visualisations that you would like to keep have been saved. "
+				     "Any unsaved changes are lost upon switching coders.");
+      warningBox->exec();
+      if (warningBox->clickedButton() == continueButton) 
+	{
+	  QString coder = coderDialog->getSelection();
+	  processCoder(coder);
+	}
+      delete warningBox;
+    }
+  delete coderDialog;
+  delete query;
+}
+
+void MainWindow::processCoder(QString coder)
+{
+  selectedCoderLabel->setText("Current coder: " + coder);
+  menuBar->adjustSize();
+  QSqlQuery *query = new QSqlQuery;;
+  query->prepare("UPDATE save_data SET coder = :new");
+  query->bindValue(":new", coder);
+  query->exec();
+  delete query;
+  AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
+  aw->setCurrentCoder(coder);
+  aw->retrieveData();
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
+  lw->setCurrentCoder(coder);
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
+  egw->cleanUp();
+  egw->setCurrentCoder(coder);
+  NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
+  ngw->cleanUp();
+  ngw->setCurrentCoder(coder);
+  RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
+  rw->setCurrentCoder(coder);
+  rw->retrieveData();
+  OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
+  ogw->clearWithoutWarning();
+  ogw->setCurrentCoder(coder);
+  JournalWidget *jw = qobject_cast<JournalWidget*>(stacked->widget(4));
+  jw->setCurrentCoder(coder);
+  AttributeCoverageTable *act = qobject_cast<AttributeCoverageTable*>
+    (attributeCoverageTableWidget);
+  act->setCurrentCoder(coder);
+  act->updateTable();
+  RelationshipCoverageTable *rct = qobject_cast<RelationshipCoverageTable*>
+    (relationshipCoverageTableWidget);
+  rct->setCurrentCoder(coder);
+  rct->updateTable();
+  MissingAttributesTable* mat = qobject_cast<MissingAttributesTable*>
+    (missingAttributesTableWidget);
+  mat->setCurrentCoder(coder);
+  mat->updateTable();
+  MissingRelationshipsTable* mrt = qobject_cast<MissingRelationshipsTable*>
+    (missingRelationshipsTableWidget);
+  mrt->setCurrentCoder(coder);
+  mrt->updateTable();
 }

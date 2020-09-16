@@ -41,6 +41,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "ProgressBar.h"
 #include "SimpleTextDialog.h"
 #include "QueryModel.h"
+#include "ComboBoxDialog.h"
 
 class IncidentsAttributesTable : public QWidget
 {

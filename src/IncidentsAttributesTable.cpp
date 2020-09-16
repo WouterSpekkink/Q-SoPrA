@@ -36,7 +36,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
 
-  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 			    "ch_order, incidents.description, value "
 			    "FROM attributes_to_incidents "
 			    "INNER JOIN incidents ON "
@@ -46,15 +46,17 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
 			    "ORDER BY attribute ASC");
   
   // Then we set how the data are displayed.
-  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
-  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute description"));
-  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
-  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Incident description"));
-  attributesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Value"));
+  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Coder"));
+  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Attribute description"));
+  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Incident"));
+  attributesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Incident description"));
+  attributesModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Value"));
   tableView->horizontalHeader()->setStretchLastSection(true);
-  tableView->setColumnWidth(0, 300);
-  tableView->setColumnWidth(1, 600);
-  tableView->setColumnWidth(3, 600);
+  tableView->setColumnWidth(0, 100);
+  tableView->setColumnWidth(1, 300);
+  tableView->setColumnWidth(2, 600);
+  tableView->setColumnWidth(4, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);
@@ -70,6 +72,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
+  filterComboBox->addItem("Coder");
   filterComboBox->addItem("Attribute");
   filterComboBox->addItem("Attribute description");
   filterComboBox->addItem("Incident");
@@ -138,7 +141,19 @@ void IncidentsAttributesTable::sortHeader(int header)
 	{
 	  if (header == 0)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY coder DESC");
+	    }
+	  else if (header == 1)
+	    {
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -148,9 +163,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY attribute DESC");
 	    }
-	  else if (header == 1)
+	  else if (header == 2)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -160,9 +175,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY incidents_attributes.description DESC");
 	    }
-	  else if (header == 2)
+	  else if (header == 3)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -172,9 +187,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY incidents.ch_order DESC");
 	    }
-	  else if (header == 3)
+	  else if (header == 4)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -184,9 +199,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY incidents.description DESC");
 	    }
-	  else if (header == 4)
+	  else if (header == 5)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -201,7 +216,19 @@ void IncidentsAttributesTable::sortHeader(int header)
 	{
 	  if (header == 0)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
+					"incidents.ch_order, incidents.description, value "
+					"FROM attributes_to_incidents "
+					"INNER JOIN incidents ON "
+					"incidents.id = attributes_to_incidents.incident "
+					"INNER JOIN incident_attributes ON "
+					"incident_attributes.name = "
+					"attributes_to_incidents.attribute "
+					"ORDER BY coder ASC");
+	    }
+	  else if (header == 1)
+	    {
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -211,9 +238,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY attribute ASC");
 	    }
-	  else if (header == 1)
+	  else if (header == 2)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -223,9 +250,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY incidents_attributes.description ASC");
 	    }
-	  else if (header == 2)
+	  else if (header == 3)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -235,9 +262,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY incidents.ch_order ASC");
 	    }
-	  else if (header == 3)
+	  else if (header == 4)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -247,9 +274,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 					"attributes_to_incidents.attribute "
 					"ORDER BY incidents.description ASC");
 	    }
-	  else if (header == 4)
+	  else if (header == 5)
 	    {
-	      attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 					"incidents.ch_order, incidents.description, value "
 					"FROM attributes_to_incidents "
 					"INNER JOIN incidents ON "
@@ -266,7 +293,19 @@ void IncidentsAttributesTable::sortHeader(int header)
     {
       if (header == 0)
 	{
-	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
+				    "incidents.ch_order, incidents.description, value "
+				    "FROM attributes_to_incidents "
+				    "INNER JOIN incidents ON "
+				    "incidents.id = attributes_to_incidents.incident "
+				    "INNER JOIN incident_attributes ON "
+				    "incident_attributes.name = "
+				    "attributes_to_incidents.attribute "
+				    "ORDER BY coder DESC");
+	}
+      else if (header == 1)
+	{
+	  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 				    "incidents.ch_order, incidents.description, value "
 				    "FROM attributes_to_incidents "
 				    "INNER JOIN incidents ON "
@@ -276,9 +315,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents.attribute "
 				    "ORDER BY attribute DESC");
 	}
-      else if (header == 1)
+      else if (header == 2)
 	{
-	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 				    "incidents.ch_order, incidents.description, value "
 				    "FROM attributes_to_incidents "
 				    "INNER JOIN incidents ON "
@@ -288,9 +327,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents.attribute "
 				    "ORDER BY incidents_attributes.description DESC");
 	}
-      else if (header == 2)
+      else if (header == 3)
 	{
-	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 				    "incidents.ch_order, incidents.description, value "
 				    "FROM attributes_to_incidents "
 				    "INNER JOIN incidents ON "
@@ -300,9 +339,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents.attribute "
 				    "ORDER BY incidents.ch_order DESC");
 	}
-      else if (header == 3)
+      else if (header == 4)
 	{
-	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 				    "incidents.ch_order, incidents.description, value "
 				    "FROM attributes_to_incidents "
 				    "INNER JOIN incidents ON "
@@ -312,9 +351,9 @@ void IncidentsAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents.attribute "
 				    "ORDER BY incidents.description DESC");
 	}
-      else if (header == 4)
+      else if (header == 5)
 	{
-	  attributesModel->setQuery("SELECT attribute, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT coder, attribute, incident_attributes.description, "
 				    "incidents.ch_order, incidents.description, value "
 				    "FROM attributes_to_incidents "
 				    "INNER JOIN incidents ON "
@@ -339,25 +378,29 @@ void IncidentsAttributesTable::changeFilter(const QString &text)
 
 void IncidentsAttributesTable::setFilterColumn() 
 {
-  if (filterComboBox->currentText() == "Attribute") 
+  if (filterComboBox->currentText() == "Coder") 
     {
       filter->setFilterKeyColumn(0);    
     }
-  else if (filterComboBox->currentText() == "Attribute description") 
+  else if (filterComboBox->currentText() == "Attribute") 
     {
       filter->setFilterKeyColumn(1);    
     }
-  else if (filterComboBox->currentText() == "Incident") 
+  else if (filterComboBox->currentText() == "Attribute description") 
     {
-      filter->setFilterKeyColumn(2);
+      filter->setFilterKeyColumn(2);    
     }
-  else if (filterComboBox->currentText() == "Incident description") 
+  else if (filterComboBox->currentText() == "Incident") 
     {
       filter->setFilterKeyColumn(3);
     }
-  else if (filterComboBox->currentText() == "Values") 
+  else if (filterComboBox->currentText() == "Incident description") 
     {
       filter->setFilterKeyColumn(4);
+    }
+  else if (filterComboBox->currentText() == "Values") 
+    {
+      filter->setFilterKeyColumn(5);
     }
 }
 
@@ -366,15 +409,16 @@ void IncidentsAttributesTable::editValue()
   if (tableView->currentIndex().isValid()) 
     {
       int row = tableView->currentIndex().row();
-      QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
-      int order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toInt();
+      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+      int order = tableView->model()->index(row, 3).data(Qt::DisplayRole).toInt();
+      QString coder = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
       query->bindValue(":order", order);
       query->exec();
       query->first();
       int incident = query->value(0).toInt();
-      QString value = tableView->model()->index(row,4).data(Qt::DisplayRole).toString();
+      QString value = tableView->model()->index(row,5).data(Qt::DisplayRole).toString();
       QPointer<SimpleTextDialog> simpleTextDialog = new SimpleTextDialog(this);
       simpleTextDialog->submitText(value);
       simpleTextDialog->setLabel("<b>Change value:</b>");
@@ -384,11 +428,13 @@ void IncidentsAttributesTable::editValue()
 	{
 	  QString newValue = simpleTextDialog->getText();
 	  query->prepare("UPDATE attributes_to_incidents SET value = :newValue "
-			 "WHERE value = :oldValue AND attribute = :attribute AND incident = :incident");
+			 "WHERE value = :oldValue AND attribute = :attribute "
+			 "AND incident = :incident AND coder = :coder");
 	  query->bindValue(":newValue", newValue);
 	  query->bindValue(":oldValue", value);
 	  query->bindValue(":attribute", attribute);
 	  query->bindValue(":incident", incident);
+	  query->bindValue(":coder", coder);
 	  query->exec();
 	  updateTable();
 	}
@@ -409,16 +455,18 @@ void IncidentsAttributesTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first need to write the header row.
-      fileOut << "Attribute,Attribute Description,Incident,Incident Description,Value\n";
+      fileOut << "Coder,Attribute,Attribute Description,Incident,Incident Description,Value\n";
       // And then we can write the rest of the table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++)
 	{
-	  QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
-	  QString attributeDescription = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
-	  int incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toInt();
-	  QString incidentDescription = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-	  QString value = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-	  fileOut << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
+	  QString coder = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
+	  QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+	  QString attributeDescription = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+	  int incident = tableView->model()->index(i, 3).data(Qt::DisplayRole).toInt();
+	  QString incidentDescription = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
+	  QString value = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
+	  fileOut << "\"" << coder.toStdString() << "\"" << ","
+		  << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(attributeDescription).toStdString() << "\"" << ","
 		  << incident << "," 
 		  << "\"" << doubleQuote(incidentDescription).toStdString() << "\"" << ","
@@ -439,100 +487,121 @@ void IncidentsAttributesTable::exportValuedMatrix()
 
 void IncidentsAttributesTable::exportMatrix(bool valued) 
 {
-  updateTable();
-  // We first need a list with unique names of attributes and a list with unique incidents.
-  QSet<QString> attributeSet;
-  QSet<int> incidentSet;
-  QMultiMap<int, QVector<QString>> valueMap;
-  for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
+  // First let's select a coder
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name FROM coders");
+  QVector<QString> coders;
+  while (query->next())
     {
-      QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
-      int incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toInt();
-      QString value = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-      attributeSet.insert(attribute);
-      incidentSet.insert(incident);
-      QVector<QString> temp;
-      temp.push_back(attribute);
-      temp.push_back(value);
-      valueMap.insert(incident, temp);
+      coders.push_back(query->value(0).toString());
     }
-  QList<QString> attributeList = attributeSet.toList();
-  QList<int> incidentList = incidentSet.toList();
-  // Let's sort the attribute list alphabetically.
-  std::sort(attributeList.begin(), attributeList.end(), stringSort);
-  // And let's sort the incident list numerically.
-  std::sort(incidentList.begin(), incidentList.end(), intLessThan);
-  // We let the user set the file name and location.
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
-  if (!fileName.trimmed().isEmpty()) 
+  delete query;
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to export data for");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
     {
-      if(!fileName.endsWith(".csv")) 
+      QString coder = coderDialog->getSelection();
+      updateTable();
+      // We first need a list with unique names of attributes and a list with unique incidents.
+      QSet<QString> attributeSet;
+      QSet<int> incidentSet;
+      QMultiMap<int, QVector<QString>> valueMap;
+      for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
 	{
-	  fileName.append(".csv");
-	}
-      // And we create a file outstream.  
-      std::ofstream fileOut(fileName.toStdString().c_str());
-      // We first need to write the header row.
-      QListIterator<QString> it(attributeList);
-      while (it.hasNext()) 
-	{
-	  QString currentAttribute = it.next();
-	  fileOut << "," << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
-	}
-      fileOut << "\n"; // we need a newline symbol at the end of the header.
-      // Then we iterate through our lists and fetch values from the value map.
-      QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, attributeList.size());
-      saveProgress->setWindowTitle("Compiling matrix");
-      saveProgress->setAttribute(Qt::WA_DeleteOnClose);
-      saveProgress->setModal(true);
-      int counter = 1;
-      saveProgress->show();
-      QListIterator<int> it2(incidentList);
-      while (it2.hasNext()) 
-	{
-	  int currentIncident = it2.next();
-	  QListIterator<QString> it3(attributeList);
-	  fileOut << currentIncident;
-	  while (it3.hasNext()) 
+	  if (tableView->model()->index(i, 0).data(Qt::DisplayRole).toString() == coder)
 	    {
-	      QString currentAttribute = it3.next();
-	      QList<QVector<QString>> values = valueMap.values(currentIncident);
-	      bool found = false;
-	      for (int i = 0; i != values.size(); i++) 
+	      QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+	      int incident = tableView->model()->index(i, 3).data(Qt::DisplayRole).toInt();
+	      QString value = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
+	      attributeSet.insert(attribute);
+	      incidentSet.insert(incident);
+	      QVector<QString> temp;
+	      temp.push_back(attribute);
+	      temp.push_back(value);
+	      valueMap.insert(incident, temp);
+	    }
+	}
+      QList<QString> attributeList = attributeSet.toList();
+      QList<int> incidentList = incidentSet.toList();
+      // Let's sort the attribute list alphabetically.
+      std::sort(attributeList.begin(), attributeList.end(), stringSort);
+      // And let's sort the incident list numerically.
+      std::sort(incidentList.begin(), incidentList.end(), intLessThan);
+      // We let the user set the file name and location.
+      QString fileName = QFileDialog::getSaveFileName(this,
+						      tr("Save table"),"", tr("csv files (*.csv)"));
+      if (!fileName.trimmed().isEmpty()) 
+	{
+	  if(!fileName.endsWith(".csv")) 
+	    {
+	      fileName.append(".csv");
+	    }
+	  // And we create a file outstream.  
+	  std::ofstream fileOut(fileName.toStdString().c_str());
+	  // We first need to write the header row.
+	  QListIterator<QString> it(attributeList);
+	  while (it.hasNext()) 
+	    {
+	      QString currentAttribute = it.next();
+	      fileOut << "," << "\"" << doubleQuote(currentAttribute).toStdString() << "\"";
+	    }
+	  fileOut << "\n"; // we need a newline symbol at the end of the header.
+	  // Then we iterate through our lists and fetch values from the value map.
+	  QPointer<ProgressBar> saveProgress = new ProgressBar(0, 1, attributeList.size());
+	  saveProgress->setWindowTitle("Compiling matrix");
+	  saveProgress->setAttribute(Qt::WA_DeleteOnClose);
+	  saveProgress->setModal(true);
+	  int counter = 1;
+	  saveProgress->show();
+	  QListIterator<int> it2(incidentList);
+	  while (it2.hasNext()) 
+	    {
+	      int currentIncident = it2.next();
+	      QListIterator<QString> it3(attributeList);
+	      fileOut << currentIncident;
+	      while (it3.hasNext()) 
 		{
-		  QVector<QString> currentPair = values[i];
-		  if (currentPair[0] == currentAttribute) 
+		  QString currentAttribute = it3.next();
+		  QList<QVector<QString>> values = valueMap.values(currentIncident);
+		  bool found = false;
+		  for (int i = 0; i != values.size(); i++) 
 		    {
-		      found = true;
-		      if (valued) 
+		      QVector<QString> currentPair = values[i];
+		      if (currentPair[0] == currentAttribute) 
 			{
-			  if (currentPair[1] == "") 
+			  found = true;
+			  if (valued) 
 			    {
-			      fileOut << "," << "1";
+			      if (currentPair[1] == "") 
+				{
+				  fileOut << "," << "1";
+				}
+			      else 
+				{
+				  fileOut << "," << "\"" <<
+				    doubleQuote(currentPair[1]).toStdString() << "\"";
+				}
 			    }
 			  else 
 			    {
-			      fileOut << "," << "\"" << doubleQuote(currentPair[1]).toStdString() << "\"";
+			      fileOut << "," << "1";
 			    }
 			}
-		      else 
-			{
-			  fileOut << "," << "1";
-			}
+		    }
+		  if (!found) 
+		    {
+		      fileOut << "," << "0";
 		    }
 		}
-	      if (!found) 
-		{
-		  fileOut << "," << "0";
-		}
+	      fileOut << "\n"; // We need a newline symbol at the end of each row.
+	      counter++;
+	      saveProgress->setProgress(counter);
+	      qApp->processEvents();
 	    }
-	  fileOut << "\n"; // We need a newline symbol at the end of each row.
-	  counter++;
-	  saveProgress->setProgress(counter);
-	  qApp->processEvents();
+	  // And that should be it!
+	  fileOut.close();
+	  delete saveProgress;
 	}
-      // And that should be it!
-      fileOut.close();
-      delete saveProgress;
     }
 }

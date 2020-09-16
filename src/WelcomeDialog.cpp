@@ -102,12 +102,14 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "value text)");
+		      "value text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE attributes_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE entity_attributes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
@@ -135,13 +137,15 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
-		      "incident integer)");
+		      "incident integer, "
+		      "coder text)");
 	  query->exec("CREATE TABLE relationships_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE entities "
 		      "(id integer, "
 		      "name text, "
@@ -151,6 +155,7 @@ void WelcomeDialog::newDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "time text, "
 		      "entry text, "
+		      "coder text, "
 		      "mark integer)");
 	  query->exec("CREATE TABLE linkage_types "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -189,11 +194,15 @@ void WelcomeDialog::newDatabase()
 		      "type text)");
 	  query->exec("CREATE TABLE save_data "
 		      "(attributes_record integer, "
-		      "relationships_record integer)");
+		      "relationships_record integer, "
+		      "coder text, "
+		      "defaul_coder text)");
 	  query->exec("INSERT INTO save_data "
 		      "(attributes_record, "
-		      "relationships_record) "
-		      "VALUES (1, 1)");
+		      "relationships_record, "
+		      "coder, "
+		      "default_coder) "
+		      "VALUES (1, 1, 'Default', 'Default')");
 	  query->exec("CREATE TABLE linkages_sources_reference "
 		      "(code integer, "
 		      "label text)");
@@ -213,6 +222,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_settings "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "lowerbound integer, "
 		      "upperbound integer, "
 		      "labelson integer, "
@@ -220,6 +230,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_incident_nodes " 
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "ch_order integer, "
 		      "width integer, "
@@ -239,6 +250,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "tail integer, "
 		      "head integer , "
 		      "tailabstractnode integer, "
@@ -254,6 +266,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_incident_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "label text, "
 		      "curxpos integer, "
@@ -269,6 +282,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "eventid integer, "
 		      "ch_order integer, "
 		      "abstraction text, "
@@ -292,27 +306,32 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_incidents_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "abstractnode integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_embedded_incidents "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "abstractnode integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_abstract_nodes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "son integer, "
 		      "father integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_attributes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "attribute text, "
 		      "abstractnode integer, "
 		      "value text)");
 	  query->exec("CREATE TABLE saved_eg_plots_abstract_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "eventid integer, "
 		      "label text, "
 		      "curxpos integer, "
@@ -328,6 +347,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_legend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -342,6 +362,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "starty real, "
 		      "endx real, "
@@ -358,6 +379,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_timelines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "endx real, "
 		      "y real, "
@@ -376,6 +398,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_texts "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "desc text, "
 		      "xpos real, "
 		      "ypos real, "
@@ -390,6 +413,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_ellipses "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -415,6 +439,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_rects "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -440,6 +465,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_contraction "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "nodeid integer, "
 		      "abstract integer, "
 		      "xpos real, "
@@ -447,23 +473,27 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_eg_plots_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "casename text, "
 		      "checked integer)");
 	  query->exec("CREATE TABLE saved_eg_plots_guides "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
 	  query->exec("CREATE TABLE saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_network_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "entity text, "
 		      "description text, "
 		      "mode text, "
@@ -480,6 +510,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "entity text, "
 		      "curxpos real, "
 		      "curypos real, "
@@ -495,6 +526,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_nodelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -509,6 +541,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_edgelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -519,6 +552,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_directed "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "tail text, "
 		      "head text, "
 		      "name text, "
@@ -536,6 +570,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_undirected "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "tail text, "
 		      "head text, "
 		      "name text, "
@@ -553,12 +588,14 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_incidents_to_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "relationship text, "
 		      "type text)");
 	  query->exec("CREATE TABLE saved_ng_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "starty real, "
 		      "endx real, "
@@ -575,6 +612,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_texts "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "desc text, "
 		      "xpos real, "
 		      "ypos real, "
@@ -589,6 +627,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_ellipses "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -614,6 +653,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_rects "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -639,6 +679,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_settings "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "lowerbound integer, "
 		      "upperbound integer, "
 		      "boundson integer, "
@@ -648,17 +689,20 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_ng_plots_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "casename text, "
 		      "checked integer)");
 	  query->exec("CREATE TABLE saved_ng_plots_guides "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
 	  query->exec("CREATE TABLE saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "distance real, "
 		      "red integer, "
 		      "green integer, "
@@ -666,6 +710,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_settings "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "lowerbound real, "
 		      "upperbound real, "
 		      "labelson integer, "
@@ -675,6 +720,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_occurrence_items "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "ch_order integer, "
 		      "attribute text, "
@@ -700,6 +746,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_occurrence_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "attribute string, "
 		      "label text, "
@@ -717,6 +764,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_legend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -727,6 +775,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "starty real, "
 		      "endx real, "
@@ -743,6 +792,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_timelines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "endx real, "
 		      "y real, "
@@ -761,6 +811,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_texts "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "desc text, "
 		      "xpos real, "
 		      "ypos real, "
@@ -775,6 +826,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_ellipses "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -800,6 +852,7 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_rects "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -825,11 +878,13 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE saved_og_plots_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "casename text, "
 		      "checked integer)");
 	  query->exec("CREATE TABLE saved_og_plots_guides "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
@@ -899,12 +954,14 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "value text)");
+		      "value text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS attributes_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "attribute text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS entity_attributes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
@@ -932,13 +989,15 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
-		      "incident integer)");
+		      "incident integer, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS relationships_to_incidents_sources "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
 		      "type text, "
 		      "incident integer, "
-		      "source_text text)");
+		      "source_text text, "
+		      "coder text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS entities "
 		      "(id integer, "
 		      "name text, "
@@ -948,6 +1007,7 @@ void WelcomeDialog::openDatabase()
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "time text, "
 		      "entry text "
+		      "coder text "
 		      "mark integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS linkage_types "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
@@ -986,23 +1046,26 @@ void WelcomeDialog::openDatabase()
 		      "type text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS save_data "
 		      "(attributes_record integer, "
-		      "relationships_record integer)");
+		      "relationships_record integer, "
+		      "coder text, "
+		      "default_coder text)");
 	  query->exec("SELECT * FROM save_data");
 	  query->first();
 	  if (query->isNull(0)) 
 	    {
 	      query->exec("INSERT INTO save_data "
 			  "(attributes_record, "
-			  "relationships_record) "
-			  "VALUES (1, 1)");
+			  "relationships_record, "
+			  "coder, "
+			  "default_coder) "
+			  "VALUES (1, 1, 'Default', 'Default')");
 	    }
 	  query->exec("CREATE TABLE IF NOT EXISTS linkages_sources_reference "
 		      "(code integer, "
 		      "label text)");
 	  query->exec("SELECT * FROM linkages_sources_reference");
 	  query->first();
-	  if (query->isNull(0))
-	    
+	  if (query->isNull(0))	    
 	    {
 	      query->exec("INSERT INTO linkages_sources_reference "
 			  "(code, label) "
@@ -1021,6 +1084,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_settings "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "lowerbound integer, "
 		      "upperbound integer, "
 		      "labelson integer, "
@@ -1028,6 +1092,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incident_nodes " 
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer , "
 		      "ch_order integer, "
 		      "width integer, "
@@ -1047,6 +1112,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "tail integer, "
 		      "head integer, "
 		      "tailabstractnode integer, "
@@ -1062,6 +1128,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incident_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "label text, "
 		      "curxpos real, "
@@ -1077,6 +1144,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "eventid integer, "
 		      "ch_order integer, "
 		      "abstraction text, "
@@ -1100,27 +1168,32 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_incidents_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "abstractnode integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_embedded_incidents "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "abstractnode integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_nodes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "son integer, "
 		      "father integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_attributes_to_abstract_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "attribute text, "
 		      "abstractnode integer, "
 		      "value text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_abstract_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "eventid integer, "
 		      "label text, "
 		      "curxpos integer, "
@@ -1136,6 +1209,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_legend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -1150,6 +1224,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "starty real, "
 		      "endx real, "
@@ -1166,6 +1241,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_timelines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "endx real, "
 		      "y real, "
@@ -1184,6 +1260,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_texts "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "desc text, "
 		      "xpos real, "
 		      "ypos real, "
@@ -1198,6 +1275,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_ellipses "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -1223,6 +1301,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_rects "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -1248,6 +1327,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_contraction "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "nodeid integer, "
 		      "abstract integer, "
 		      "xpos real, "
@@ -1255,23 +1335,27 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "casename text, "
 		      "checked integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_eg_plots_guides "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "red integer, "
 		      "green integer, "
 		      "blue integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_network_nodes "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "entity text, "
 		      "description text, "
 		      "mode text, "
@@ -1288,6 +1372,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_node_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "entity text, "
 		      "curxpos real, "
 		      "curypos real, "
@@ -1303,6 +1388,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_nodelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -1317,6 +1403,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_edgelegend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -1327,6 +1414,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_directed "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "tail text, "
 		      "head text, "
 		      "name text, "
@@ -1344,6 +1432,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_undirected "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "tail text, "
 		      "head text, "
 		      "name text, "
@@ -1361,12 +1450,14 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_incidents_to_edges "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "relationship text, "
 		      "type text)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "starty real, "
 		      "endx real, "
@@ -1383,6 +1474,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_texts "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "desc text, "
 		      "xpos real, "
 		      "ypos real, "
@@ -1397,6 +1489,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_ellipses "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -1422,6 +1515,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_rects "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -1447,6 +1541,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_settings "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "lowerbound integer, "
 		      "upperbound integer, "
 		      "boundson integer, "
@@ -1456,17 +1551,20 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "casename text, "
 		      "checked integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_ng_plots_guides "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "distance, "
 		      "red integer, "
 		      "green integer, "
@@ -1474,6 +1572,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_settings "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "lowerbound real, "
 		      "upperbound real, "
 		      "labelson integer, "
@@ -1483,6 +1582,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_items " 
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "ch_order integer, "
 		      "attribute text, "
@@ -1508,6 +1608,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_occurrence_labels "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "incident integer, "
 		      "attribute text, "
 		      "label text, "
@@ -1525,6 +1626,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_legend "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "name text, "
 		      "tip text, "
 		      "red integer, "
@@ -1535,6 +1637,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_lines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "starty real, "
 		      "endx real, "
@@ -1551,6 +1654,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_timelines "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "startx real, "
 		      "endx real, "
 		      "y real, "
@@ -1569,6 +1673,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_texts "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "desc text, "
 		      "xpos real, "
 		      "ypos real, "
@@ -1583,6 +1688,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_ellipses "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -1608,6 +1714,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_rects "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "xpos real, "
 		      "ypos real, "
 		      "topleftx real, "
@@ -1633,6 +1740,7 @@ void WelcomeDialog::openDatabase()
 	  query->exec("CREATE TABLE IF NOT EXISTS saved_og_plots_cases "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "plot text, "
+		      "coder text, "
 		      "casename text, "
 		      "checked integer)");
 	  query->exec("CREATE TABLE IF NOT EXISTS cases "
@@ -1649,7 +1757,6 @@ void WelcomeDialog::openDatabase()
 		      "xpos real, "
 		      "ypos real, "
 		      "horizontal integer)");
-
 	  // And now we check if the correct columns exist and create them otherwise
 	  QVector<QString> columns;
 	  query->exec("PRAGMA table_info(incidents)");
@@ -1735,6 +1842,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE attributes_to_incidents ADD COLUMN value text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE attributes_to_incidents ADD COLUMN coder text;");
+	      query->exec("UPDATE attributes_to_incidents SET coder = 'Default'");
+	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(attributes_to_incidents_sources)");
 	  while (query->next())
@@ -1757,6 +1869,11 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("source_text"))
 	    {
 	      query->exec("ALTER TABLE attributes_to_incidents_sources ADD COLUMN source_text text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE attributes_to_incidents_sources ADD COLUMN coder text;");
+	      query->exec("UPDATE attributes_to_incidents_sources SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(entity_attributes)");
@@ -1885,6 +2002,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE relationships_to_incidents ADD COLUMN incident integer;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE relationships_to_incidents ADD COLUMN coder text;");
+	      query->exec("UPDATE relationships_to_incidents SET coder = 'Default'");
+	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(relationships_to_incidents_sources)");
 	  while (query->next())
@@ -1915,6 +2037,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE relationships_to_incidents_sources "
 			  "ADD COLUMN source_text text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE relationships_to_incidents_sources ADD COLUMN coder text;");
+	      query->exec("UPDATE relationships_to_incidents_sources SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(entities)");
@@ -1957,6 +2084,11 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("entry"))
 	    {
 	      query->exec("ALTER TABLE journal ADD COLUMN entry text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE journal ADD COLUMN coder text;");
+	      query->exec("UPDATE journal SET coder = 'Default'");
 	    }
 	  if (!columns.contains("mark"))
 	    {
@@ -2011,6 +2143,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkages ADD COLUMN coder text;");
+	      query->exec("UPDATE linkages SET coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(linkages_sources)");
@@ -2038,6 +2171,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkages_sources ADD COLUMN coder text;");
+	      query->exec("UPDATE linkages_sources SET coder = 'Default'");
 	    }
 	  if (!columns.contains("istail"))
 	    {
@@ -2076,6 +2210,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE coders_to_linkage_types ADD COLUMN coder text;");
+	      query->exec("UPDATE coders_to_linkage_types SET coder = 'Default'");
 	    }
 	  if (!columns.contains("type"))
 	    {
@@ -2115,6 +2250,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE linkage_comments ADD COLUMN coder text;");
+	      query->exec("UPDATE linkage_comments SET coder = 'Default'");
 	    }
 	  if (!columns.contains("type"))
 	    {
@@ -2129,10 +2265,22 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("attributes_record"))
 	    {
 	      query->exec("ALTER TABLE save_data ADD COLUMN attributes_record integer;");
+	      query->exec("UPDATE save_data SET attributes_record = 1");
 	    }
 	  if (!columns.contains("relationships_record"))
 	    {
 	      query->exec("ALTER TABLE save_data ADD COLUMN relationships_record integer;");
+	      query->exec("UPDATE save_data SET relationships_record = 1");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE save_data ADD COLUMN coder text;");
+	      query->exec("UPDATE save_data SET coder = 'Default'");
+	    }
+	  if (!columns.contains("default_coder"))
+	    {
+	      query->exec("ALTER TABLE save_data ADD COLUMN default_coder text;");
+	      query->exec("UPDATE save_data SET default_coder = 'Default'");
 	    }
 	  columns.clear();
 	  query->exec("PRAGMA table_info(linkages_sources_reference)");
@@ -2179,6 +2327,7 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("coder"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots SET coder = 'Default'");
 	    }
 	  if (!columns.contains("red"))
 	    {
@@ -2207,6 +2356,12 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_settings ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_settings ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_settings SET coder = 'Default'");
+	    }
+	  if (!columns.contains("red"))
 	  if (!columns.contains("lowerbound"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_settings ADD COLUMN lowerbound integer;");
@@ -2237,6 +2392,11 @@ void WelcomeDialog::openDatabase()
 	  if (!columns.contains("plot"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_incident_nodes ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_incident_nodes SET coder = 'Default'");
 	    }
 	  if (!columns.contains("incident"))
 	    {
@@ -2318,6 +2478,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_edges ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_edges ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_edges SET coder = 'Default'");
+	    }
 	  if (!columns.contains("tail"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_edges ADD COLUMN tail integer;");
@@ -2382,6 +2547,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incident_node_labels "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_incident_node_labels ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_incident_node_labels SET coder = 'Default'");
 	    }
 	  if (!columns.contains("incident"))
 	    {
@@ -2460,6 +2630,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_abstract_nodes SET coder = 'Default'");
 	    }
 	  if (!columns.contains("eventid"))
 	    {
@@ -2578,6 +2753,12 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_incidents_to_abstract_nodes "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_incidents_to_abstract_nodes "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_incidents_to_abstract_nodes SET coder = 'Default'");
+	    }
 	  if (!columns.contains("incident"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_incidents_to_abstract_nodes "
@@ -2603,6 +2784,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_embedded_incidents "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_embedded_incidents ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_embedded_incidents SET coder = 'Default'");
 	    }
 	  if (!columns.contains("incident"))
 	    {
@@ -2630,6 +2816,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes_to_abstract_nodes "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes_to_abstract_nodes "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_abstract_nodes_to_abstract_nodes "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("son"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_nodes_to_abstract_nodes "
@@ -2655,6 +2848,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_attributes_to_abstract_nodes "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_attributes_to_abstract_nodes "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_attributes_to_abstract_nodes "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("attribute"))
 	    {
@@ -2686,6 +2886,11 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_abstract_node_labels "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_abstract_node_labels ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_abstract_node_labels SET coder = 'Default'");
 	    }
 	  if (!columns.contains("eventid"))
 	    {
@@ -2763,6 +2968,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_legend "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_legend "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_legend "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("name"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_legend "
@@ -2833,6 +3045,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_lines "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_lines "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_lines "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("startx"))
 	    {
@@ -2914,6 +3133,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_timelines "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_timelines "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_timelines "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("startx"))
 	    {
@@ -3006,6 +3232,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_texts "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_texts "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_texts "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("desc"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_texts "
@@ -3076,6 +3309,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_ellipses "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_ellipses "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_ellipses "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("xpos"))
 	    {
@@ -3203,6 +3443,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_rects "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_rects "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_rects "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("xpos"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_rects "
@@ -3329,6 +3576,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_contraction "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_contraction "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_contraction "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("nodeid"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_contraction "
@@ -3365,6 +3619,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_eg_plots_cases "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_cases "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_cases "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("casename"))
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_cases "
@@ -3390,6 +3651,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_eg_plots_guides "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_eg_plots_guides "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_eg_plots_guides "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("xpos"))
 	    {
@@ -3422,6 +3690,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("red"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots "
@@ -3452,6 +3727,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_network_nodes "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_network_nodes "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_network_nodes "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("entity"))
 	    {
@@ -3536,6 +3818,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_node_labels "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_node_labels "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_node_labels "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("entity"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_node_labels "
@@ -3614,6 +3903,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_nodelegend "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("name"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_nodelegend "
@@ -3685,6 +3981,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_edgelegend "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_edgelegend "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_edgelegend "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("name"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_edgelegend "
@@ -3735,6 +4038,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_directed "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_directed "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_directed "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("tail"))
 	    {
@@ -3824,6 +4134,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_undirected "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_undirected "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_undirected "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("tail"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_undirected "
@@ -3912,6 +4229,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_incidents_to_edges "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_incidents_to_edges "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_incidents_to_edges "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("incident"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_incidents_to_edges "
@@ -3942,6 +4266,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_lines "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_lines "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_lines "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("startx"))
 	    {
@@ -4024,6 +4355,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_texts "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_texts "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_texts "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("desc"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_texts "
@@ -4094,6 +4432,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_ellipses "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_ellipses "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_ellipses "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("xpos"))
 	    {
@@ -4221,6 +4566,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_rects "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_rects "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_rects "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("xpos"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_rects "
@@ -4347,6 +4699,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_settings "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_settings "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_settings "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("lowerbound"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_settings "
@@ -4393,6 +4752,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_ng_plots_cases "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_cases "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_cases "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("casename"))
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_cases "
@@ -4418,6 +4784,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_ng_plots_guides "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_ng_plots_guides "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_ng_plots_guides "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("xpos"))
 	    {
@@ -4449,6 +4822,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("distance"))
 	    {
@@ -4485,6 +4865,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_settings "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_settings "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_settings "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("lowerbound"))
 	    {
@@ -4531,6 +4918,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_items "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_occurrence_items "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("incident"))
 	    {
@@ -4658,6 +5052,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_labels "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_occurrence_labels "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_occurrence_labels "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("incident"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_occurrence_labels "
@@ -4744,6 +5145,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_legend "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_legend "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_legend "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("name"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_legend "
@@ -4794,6 +5202,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_lines "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_lines "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_lines "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("startx"))
 	    {
@@ -4875,6 +5290,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_timelines "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_timelines "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_timelines "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("startx"))
 	    {
@@ -4967,6 +5389,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_texts "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_texts "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_texts "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("desc"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_texts "
@@ -5037,6 +5466,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_ellipses "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_ellipses "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_ellipses "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("xpos"))
 	    {
@@ -5164,6 +5600,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_rects "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_rects "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_rects "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("xpos"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_rects "
@@ -5290,6 +5733,13 @@ void WelcomeDialog::openDatabase()
 	      query->exec("ALTER TABLE saved_og_plots_cases "
 			  "ADD COLUMN plot text;");
 	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_cases "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_cases "
+			  "SET coder = 'Default'");
+	    }
 	  if (!columns.contains("casename"))
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_cases "
@@ -5315,6 +5765,13 @@ void WelcomeDialog::openDatabase()
 	    {
 	      query->exec("ALTER TABLE saved_og_plots_guides "
 			  "ADD COLUMN plot text;");
+	    }
+	  if (!columns.contains("coder"))
+	    {
+	      query->exec("ALTER TABLE saved_og_plots_guides "
+			  "ADD COLUMN coder text;");
+	      query->exec("UPDATE saved_og_plots_guides "
+			  "SET coder = 'Default'");
 	    }
 	  if (!columns.contains("xpos"))
 	    {
@@ -5374,6 +5831,21 @@ void WelcomeDialog::openDatabase()
 			  "ADD COLUMN casename text;");
 	    }
 	  columns.clear();
+	  query->exec("SELECT default_coder FROM save_data");
+	  query->first();	  
+	  QString currentDefault = query->value(0).toString();
+	  query->prepare("SELECT name FROM coders "
+			 "WHERE name = :name");
+	  query->bindValue(":name", currentDefault);
+	  query->exec();
+	  query->first();
+	  if (query->isNull(0))
+	    {
+	      query->prepare("INSERT INTO coders (name) "
+			     "VALUES (:name)");
+	      query->bindValue(":name", currentDefault);
+	      query->exec();
+	    }
 	  qApp->restoreOverrideCursor();
 	  qApp->processEvents();
 	  _exitStatus = 0;

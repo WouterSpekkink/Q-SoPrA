@@ -23,10 +23,15 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
+  
   _codingType = MANUAL;
   _selectedType = "";
   _selectedDirection = "";
-  _selectedCoder = "";
   _tailDescriptionFilter = "";
   _tailRawFilter = "";
   _tailCommentFilter = "";
@@ -62,7 +67,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   incidentsModel->select();
   
   settingsLabel = new QLabel(tr("<h2>Settings:</h2>"), this);
-  selectCoderLabel = new QLabel(tr("<b>Select coder:</b>"), this);
   selectTypeLabel =  new QLabel(tr("<b>Select linkage type:</b>"), this);
   tailIndexLabel = new QLabel(tr("<b>Tail ( / ) - Incident:</b>"), this);
   tailIndexLabel->setStyleSheet("QLabel{color:rgb(151, 74, 189);}");
@@ -88,8 +92,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   headDescriptionFilterLabel = new QLabel(tr("<i>Search descriptions:</i>"), this);
   headRawFilterLabel = new QLabel(tr("<i>Search raw texts:</i>"), this);
   headCommentFilterLabel = new QLabel(tr("<i>Search comments:</i>"), this);
-  coderLabel = new QLabel(tr("<b>Coder:</b>"), this);
-  coderFeedbackLabel = new QLabel(tr(""));
   linkageTypeLabel = new QLabel(tr("<b>Linkage type:</b>"), this);
   linkageTypeFeedbackLabel = new QLabel(tr(""), this);
   linkageFeedbackLabel = new QLabel(tr(""), this);
@@ -120,14 +122,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   headCommentField = new QTextEdit(this);
   linkageCommentField = new QTextEdit(this);
 
-  coderComboBox = new QComboBox(this);
-  coderComboBox->addItem(DEFAULT);
-  typeComboBox = new QComboBox(this);
-  typeComboBox->addItem(DEFAULT);
-
-  createCoderButton = new QPushButton(tr("New coder"), this);
-  editCoderButton = new QPushButton(tr("Edit selected coder"), this);
-  removeCoderButton = new QPushButton(tr("Remove selected coder"), this);
   createTypeButton = new QPushButton(tr("New linkage type"), this);
   editTypeButton = new QPushButton(tr("Edit selected type"), this);
   removeTypeButton = new QPushButton(tr("Remove selected type"), this);
@@ -181,6 +175,9 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   clearEvidenceButton = new QPushButton(tr("Clear evidence"), this);
   clearEvidenceButton->setEnabled(false);
   layoutButton = new QPushButton(tr("Layout graph"), this);
+
+  typeComboBox = new QComboBox(this);
+  typeComboBox->addItem(DEFAULT);
   
   linkageCommentField->installEventFilter(this);
   headTimeStampField->installEventFilter(this);
@@ -195,10 +192,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   headRawField->viewport()->installEventFilter(this);
   setButtons(false);
   
-  connect(coderComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
-  connect(createCoderButton, SIGNAL(clicked()), this, SLOT(addCoder()));
-  connect(editCoderButton, SIGNAL(clicked()), this, SLOT(editCoder()));
-  connect(removeCoderButton, SIGNAL(clicked()), this, SLOT(removeCoder()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
   connect(createTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editLinkageType()));
@@ -264,41 +257,27 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   settingsLabel->setAlignment(Qt::AlignCenter);
   settingsLabel->setMaximumWidth(200);
   settingsLayout->addSpacerItem(new QSpacerItem(40, 0));
-  QPointer<QVBoxLayout> linkageOptionsLayout = new QVBoxLayout;
-  QPointer<QHBoxLayout> coderLayout = new QHBoxLayout;
-  coderLayout->addWidget(selectCoderLabel);
-  coderLayout->addWidget(coderComboBox);
-  coderComboBox->setMaximumWidth(200);
-  coderLayout->addWidget(createCoderButton);
-  createCoderButton->setMaximumWidth(createCoderButton->sizeHint().width());
-  coderLayout->addWidget(editCoderButton);
-  editCoderButton->setMaximumWidth(editCoderButton->sizeHint().width());
-  coderLayout->addWidget(removeCoderButton);
-  removeCoderButton->setMaximumWidth(removeCoderButton->sizeHint().width());
-  coderLayout->addWidget(manualCodingButton);
-  manualCodingButton->setMaximumWidth(manualCodingButton->sizeHint().width());
-  coderLayout->addWidget(assistedCodingButton);
-  assistedCodingButton->setMaximumWidth(assistedCodingButton->sizeHint().width());
-  linkageOptionsLayout->addLayout(coderLayout);
-  coderLayout->setAlignment(Qt::AlignLeft);
-  QPointer<QHBoxLayout> typeLayout = new QHBoxLayout;
-  typeLayout->addWidget(selectTypeLabel);
-  typeLayout->addWidget(typeComboBox);
+  QPointer<QHBoxLayout> linkageOptionsLayout = new QHBoxLayout;
+  linkageOptionsLayout->addWidget(selectTypeLabel);
+  linkageOptionsLayout->addWidget(typeComboBox);
   typeComboBox->setMaximumWidth(200);
-  typeLayout->addWidget(createTypeButton);
+  linkageOptionsLayout->addWidget(createTypeButton);
   createTypeButton->setMaximumWidth(createTypeButton->sizeHint().width());
-  typeLayout->addWidget(editTypeButton);
+  linkageOptionsLayout->addWidget(editTypeButton);
   editTypeButton->setMaximumWidth(editTypeButton->sizeHint().width());
-  typeLayout->addWidget(removeTypeButton);
+  linkageOptionsLayout->addWidget(removeTypeButton);
   removeTypeButton->setMaximumWidth(removeTypeButton->sizeHint().width());
-  linkageOptionsLayout->addLayout(typeLayout);
-  linkageOptionsLayout->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
-  typeLayout->addWidget(selectTypeButton);
+  linkageOptionsLayout->addWidget(selectTypeButton);
   selectTypeButton->setMaximumWidth(selectTypeButton->sizeHint().width());
+  linkageOptionsLayout->addWidget(manualCodingButton);
+  manualCodingButton->setMaximumWidth(manualCodingButton->sizeHint().width());
+  linkageOptionsLayout->addWidget(assistedCodingButton);
+  assistedCodingButton->setMaximumWidth(assistedCodingButton->sizeHint().width());
+  linkageOptionsLayout->setAlignment(Qt::AlignHCenter | Qt::AlignVCenter);
   settingsLayout->addLayout(linkageOptionsLayout);
-  mainLayout->addLayout(settingsLayout);
   settingsLayout->setAlignment(Qt::AlignCenter);
-
+  mainLayout->addLayout(settingsLayout);
+  
   QPointer<QFrame> topLine = new QFrame;
   topLine->setFrameShape(QFrame::HLine);
   mainLayout->addWidget(topLine);
@@ -380,10 +359,6 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
     }
   QPointer<QVBoxLayout> middleLayout = new QVBoxLayout;
   QPointer<QVBoxLayout> linkageFeedbackLayout = new QVBoxLayout;
-  linkageFeedbackLayout->addWidget(coderLabel);
-  coderLabel->setAlignment(Qt::AlignHCenter);
-  linkageFeedbackLayout->addWidget(coderFeedbackLabel);
-  coderFeedbackLabel->setAlignment(Qt::AlignHCenter);
   linkageFeedbackLayout->addWidget(linkageTypeLabel);
   linkageTypeLabel->setAlignment(Qt::AlignHCenter);
   linkageFeedbackLayout->addWidget(linkageTypeFeedbackLabel);
@@ -529,94 +504,40 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   
   setLayout(mainLayout);
 
-  retrieveCoders();
   retrieveLinkages();
 }
 
-void LinkagesWidget::addCoder() 
+void LinkagesWidget::setCurrentCoder(QString coder) 
 {
-  SimpleTextDialog *coderDialog = new SimpleTextDialog(this);
-  coderDialog->setLabel("Coder:");
-  coderDialog->setWindowTitle("Add new coder");
-  coderDialog->exec();
-  if (coderDialog->getExitStatus() == 0) 
-    {
-      QString name = coderDialog->getText();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("INSERT INTO coders (name) "
-		     "VALUES (:name)");
-      query->bindValue(":name", name);
-      query->exec();
-      delete query;
-      coderComboBox->addItem(name);
-    }
-  delete coderDialog;
-}
-
-void LinkagesWidget::editCoder() 
-{
-  if (coderComboBox->currentText() != DEFAULT) 
-    {
-      SimpleTextDialog *coderDialog = new SimpleTextDialog(this);
-      coderDialog->setLabel("Coder:");
-      coderDialog->setWindowTitle("Edit coder:");
-      QString oldName = coderComboBox->currentText();
-      coderDialog->submitText(oldName);
-      coderDialog->exec();
-      if (coderDialog->getExitStatus() == 0) 
-	{
-	  QString name = coderDialog->getText();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("UPDATE coders "
-			 "SET name = :name "
-			 "WHERE name = :oldName");
-	  query->bindValue(":name", name);
-	  query->bindValue(":oldName", oldName);
-	  query->exec();
-	  delete query;
-	  int current = typeComboBox->currentIndex();
-	  coderComboBox->setItemText(current, name);
-	}
-      delete coderDialog;
-    }
-}
-
-void LinkagesWidget::removeCoder() 
-{
-  if (coderComboBox->currentText() != DEFAULT) 
-    {
-      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->setWindowTitle("Removing coder"); 
-      warningBox->addButton(QMessageBox::Yes);
-      warningBox->addButton(QMessageBox::No);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("This will remove the coder and all linkages "
-				     "(s)he created. This action cannot be undone. "
-				     "Are you sure you want to remove this coder?");
-      if (warningBox->exec() == QMessageBox::Yes) 
-	{
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("DELETE FROM coders WHERE name = :name");
-	  query->bindValue(":name", coderComboBox->currentText());
-	  query->exec();
-	  query->prepare("DELETE FROM linkages WHERE coder = :name");
-	  query->bindValue(":name", coderComboBox->currentText());
-	  query->exec();
-	  query->prepare("DELETE FROM linkages_sources WHERE coder = :name");
-	  query->bindValue(":name", coderComboBox->currentText());
-	  query->exec();
-	  query->prepare("DELETE FROM coders_to_linkage_types WHERE coder = :name");
-	  query->bindValue(":name", coderComboBox->currentText());
-	  query->exec();
-	  query->prepare("DELETE FROM linkage_comments WHERE coder = :name");
-	  query->bindValue(":name", coderComboBox->currentText());
-	  query->exec();
-	  delete query;
-	  coderComboBox->removeItem(coderComboBox->currentIndex());
-	}
-      delete warningBox;
-    }
+  _selectedCoder = coder;
+  cleanUp();
+  tailIndexLabel->setText("<b>Tail ( / ) - Incident:</b>");
+  headIndexLabel->setText("<b>Head ( / ) - Incident:</b>");
+  tailTimeStampField->setText("");
+  tailSourceField->setText("");
+  tailDescriptionField->setText("");
+  tailRawField->setText("");
+  tailCommentField->blockSignals(true);
+  tailCommentField->setText("");
+  tailCommentField->blockSignals(false);
+  headTimeStampField->setText("");
+  headSourceField->setText("");
+  headDescriptionField->setText("");
+  headRawField->setText("");
+  headCommentField->blockSignals(true);
+  headCommentField->setText("");
+  headCommentField->blockSignals(false);
+  tailMarkedLabel->setText("");
+  headMarkedLabel->setText("");
+  linkageFeedbackLabel->setText("");
+  setLinkButton->setEnabled(false);
+  unsetLinkButton->setEnabled(false);
+  linkageCommentField->blockSignals(true);
+  linkageCommentField->setText("");
+  linkageCommentField->blockSignals(false);
+  _selectedType = "";
+  _selectedDirection = "";
+  setButtons(false);
 }
 
 void LinkagesWidget::addLinkageType() 
@@ -903,18 +824,6 @@ void LinkagesWidget::removeLinkageType()
     }
 }
 
-void LinkagesWidget::retrieveCoders() 
-{
-  QSqlQuery *query = new QSqlQuery;
-  query->exec("SELECT name FROM coders");
-  while (query->next()) 
-    {
-      QString name = query->value(0).toString();
-      coderComboBox->addItem(name);
-    }
-  delete query;
-}
-
 void LinkagesWidget::retrieveLinkages() 
 {
   QSqlQuery *query = new QSqlQuery;
@@ -932,7 +841,7 @@ void LinkagesWidget::retrieveLinkages()
 
 void LinkagesWidget::setTypeButton() 
 {
-  if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) 
+  if (typeComboBox->currentText() != DEFAULT) 
     {
       selectTypeButton->setEnabled(true);
     }
@@ -950,26 +859,15 @@ void LinkagesWidget::setTypeButton()
       editTypeButton->setEnabled(false);
       removeTypeButton->setEnabled(false);
     }
-  if (coderComboBox->currentText() != DEFAULT) 
-    {
-      editCoderButton->setEnabled(true);
-      removeCoderButton->setEnabled(true);
-    }
-  else 
-    {
-      editCoderButton->setEnabled(false);
-      removeCoderButton->setEnabled(false);
-    }
 }
 
 void LinkagesWidget::setLinkageType(bool checkManual) 
 {
   setComments();
   setLinkageComment();    
-  if (typeComboBox->currentText() != DEFAULT && coderComboBox->currentText() != DEFAULT) 
+  if (typeComboBox->currentText() != DEFAULT) 
     {
       _selectedType = typeComboBox->currentText();
-      _selectedCoder = coderComboBox->currentText();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT coder, type FROM coders_to_linkage_types "
 		     "WHERE coder = :coder AND type = :type");
@@ -1003,7 +901,6 @@ void LinkagesWidget::setLinkageType(bool checkManual)
 	  delete query2;
 	}
       QString coderText = "<i>" + _selectedCoder + "</i>";
-      coderFeedbackLabel->setText(coderText);
       query->prepare("SELECT description FROM linkage_types WHERE name = :name");
       query->bindValue(":name", _selectedType);
       query->exec();

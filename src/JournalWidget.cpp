@@ -24,29 +24,42 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
+  
+  _lastSortedHeader = 0;
+  _lastSortedAscending = true;
+  
   journalLabel = new QLabel("<h2>Journal</h2>", this);
   logLabel = new QLabel("<h2>Selected entry</h2>", this);
 
-  journalModel = new JournalTableModel(this);
-  journalModel->setTable("journal");
-  journalModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Log date"));
-  journalModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entry"));
-  journalModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Needs attention"));
-  journalModel->select();
+  journalModel = new JournalQueryModel(this);
+  journalModel->setQuery("SELECT time, coder, entry, mark FROM journal");
 
   tableView = new ZoomableTableView(this);
   tableView->setModel(journalModel);
-  tableView->setColumnHidden(0, true);
-  tableView->setColumnWidth(1, (parent->width() / 2) / 4);
-  tableView->setColumnWidth(2, (parent->width() / 2) / 2);
-  tableView->setColumnWidth(3, (parent->width() / 2) / 7);
+  tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
+  
+  journalModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Log date"));
+  journalModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Coder"));
+  journalModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Entry"));
+  journalModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Needs attention"));
   tableView->horizontalHeader()->setStretchLastSection(true);
+  tableView->setColumnWidth(0, (parent->width() / 2) / 4);
+  tableView->setColumnWidth(1, (parent->width() / 2) / 7);
+  tableView->setColumnWidth(2, (parent->width() / 2) / 3);
+  tableView->setColumnWidth(3, (parent->width() / 2) / 7);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   tableView->verticalHeader()->setDefaultSectionSize(30);
   tableView->setWordWrap(true);
   tableView->setItemDelegateForColumn(3, new CheckBoxDelegate(tableView));
+
+  updateTable();
   
   logField = new QTextEdit(this);
   logField->setEnabled(false);
@@ -67,6 +80,8 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   connect(tableView->selectionModel(),
 	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
 	  this, SLOT(setData(const QItemSelection &, const QItemSelection &)));
+  connect(journalModel, SIGNAL(armSelection()), this, SLOT(armIndex()));
+  connect(journalModel, SIGNAL(setSelection()), this, SLOT(setIndex()));
   connect(tableView->verticalHeader(),
 	  SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
   connect(exportJournalButton, SIGNAL(clicked()), this, SLOT(exportJournal()));
@@ -90,6 +105,15 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   setLayout(mainLayout);
 }
 
+void JournalWidget::updateTable()
+{
+  journalModel->setQuery("SELECT time, coder, entry, mark FROM journal");
+  while (journalModel->canFetchMore())
+    {
+      journalModel->fetchMore();
+    }
+}
+
 void JournalWidget::setButtons() 
 {
   if (tableView->currentIndex().isValid()) 
@@ -110,9 +134,15 @@ void JournalWidget::saveChanges()
   if (tableView->currentIndex().isValid()) 
     {
       int currentRow = tableView->currentIndex().row();
-      journalModel->setData(journalModel->index(currentRow, 2), logField->toPlainText());
-      journalModel->submitAll();
+      QString time = journalModel->data(journalModel->index(currentRow, 0),
+					Qt::DisplayRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE journal SET entry = :entry WHERE time = :time");
+      query->bindValue(":entry", logField->toPlainText());
+      query->bindValue(":time", time);
+      query->exec();
       saveChangesButton->setEnabled(false);
+      updateTable();
     }
 }
 
@@ -153,17 +183,14 @@ void JournalWidget::addEntry()
   QDateTime time = QDateTime::currentDateTime();
   QString timeText = time.toString(Qt::TextDate);
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("INSERT INTO journal (time, mark) "
-		 "VALUES (:time, :mark)");
+  query->prepare("INSERT INTO journal (time, mark, coder) "
+		 "VALUES (:time, :mark, :coder)");
   query->bindValue(":time", timeText);
   query->bindValue(":mark", 0);
+  query->bindValue(":coder", _selectedCoder);
   query->exec();
-  journalModel->select();
   delete query;
-  if (journalModel->canFetchMore()) 
-    {
-      journalModel->fetchMore();
-    }
+  updateTable();
   QModelIndex newIndex = tableView->model()->index(journalModel->rowCount() - 1, 0);
   tableView->setCurrentIndex(newIndex);
 }
@@ -178,17 +205,23 @@ void JournalWidget::removeEntry()
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("Removing a journal entry cannot be undone. Are you sure you want to remove this entry?");
+      warningBox->setInformativeText("Removing a journal entry cannot be undone. "
+				     "Are you sure you want to remove this entry?");
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
 	  int currentRow = tableView->currentIndex().row();
-	  journalModel->removeRow(currentRow);
-	  journalModel->submitAll();
-	  journalModel->select();
+	  QString time = journalModel->data(journalModel->index(currentRow, 0),
+					    Qt::DisplayRole).toString();
+	  QSqlQuery *query = new QSqlQuery;
+	  query->prepare("DELETE FROM journal WHERE time = :time");
+	  query->bindValue(":time", time);
+	  query->exec();
+	  delete query;
 	  logField->blockSignals(true);
 	  logField->setText("");
 	  logField->blockSignals(false);
 	  logField->setEnabled(false);
+	  updateTable();
 	}
     }
 }
@@ -239,12 +272,14 @@ void JournalWidget::exportJournal()
 	      << "Entry" << "\n";
       // And then we fetch the journal entries.
       QSqlQuery *query = new QSqlQuery;
-      query->exec("SELECT time, entry FROM journal");
+      query->exec("SELECT time, coder, entry FROM journal");
       while (query->next()) 
 	{
 	  QString time = query->value(0).toString();
-	  QString entry = query->value(1).toString();
+	  QString coder = query->value(1).toString();
+	  QString entry = query->value(2).toString();
 	  fileOut << "\"" << time.toStdString() << "\"" << ","
+		  << "\"" << coder.toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(entry).toStdString() << "\"" << "\n";
 	}
       delete query;
@@ -263,7 +298,8 @@ bool JournalWidget::checkChanges()
       warningBox->addButton(QMessageBox::No);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Unsaved changes</h2>");
-      warningBox->setInformativeText("You have unsaved changes to journal entries, are you want to continue?");
+      warningBox->setInformativeText("You have unsaved changes to journal entries, "
+				     "are you want to continue?");
       if (warningBox->exec() == QMessageBox::Yes)
 	{
 	  return true;
@@ -277,4 +313,19 @@ bool JournalWidget::checkChanges()
     {
       return true;
     }
+}
+
+void JournalWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
+}
+
+void JournalWidget::armIndex()
+{
+  _tempIndex = tableView->currentIndex();
+}
+
+void JournalWidget::setIndex()
+{
+  tableView->setCurrentIndex(_tempIndex);
 }

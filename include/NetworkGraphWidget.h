@@ -83,6 +83,7 @@ public:
   ~NetworkGraphWidget();
 
   // Setters
+  void setCurrentCoder(QString coder);
   void setOpenGL(bool state);
   void setAntialiasing(bool state);
   
@@ -347,6 +348,7 @@ private:
   // Private variables    
   QString _selectedType;
   QString _selectedEntityName;
+  QString _selectedCoder;
   int _minOrder;
   int _maxOrder;
   int _maxWeight;

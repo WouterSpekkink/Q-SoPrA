@@ -30,6 +30,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _distance = 70.0;
   _labelsVisible = true;
   _incidentLabelsOnly = false;
@@ -668,7 +673,7 @@ void OccurrenceGraphWidget::checkCongruence()
 		     "WHERE name = :name");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute = :attribute");
+		      "WHERE attribute = :attribute AND coder = :coder");
       for (int i = 0; i != attributeListWidget->rowCount(); i++) 
 	{
 	  QString attribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -689,6 +694,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    {
 	      QString currentAttribute = it.next();
 	      query2->bindValue(":attribute", currentAttribute);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      while (query2->next())
 		{
@@ -717,7 +723,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!attributeIncidents.contains(id))
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "1";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -728,7 +733,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!orderPairs.contains(currentPair))
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "2";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -741,7 +745,7 @@ void OccurrenceGraphWidget::checkCongruence()
 		     "WHERE name = :name");
       QSqlQuery *query3 = new QSqlQuery;
       query3->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute = :attribute");
+		      "WHERE attribute = :attribute AND coder = :coder");
       for (int i = 0; i != attributeListWidget->rowCount(); i++) 
 	{
 	  QString attribute = attributeListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -762,6 +766,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    {
 	      QString currentAttribute = it2.next();
 	      query3->bindValue(":attribute", currentAttribute);
+	      query3->bindValue(":coder", _selectedCoder);
 	      query3->exec();
 	      while (query3->next()) 
 		{
@@ -787,7 +792,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!observed.contains(currentExpected))
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "3";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -807,7 +811,8 @@ void OccurrenceGraphWidget::checkCongruence()
       QSqlDatabase::database().transaction();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT relationship, type, incident FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type AND incident = :incident");
+		     "WHERE relationship = :relationship AND type = :type AND incident = :incident "
+		     "AND coder = :coder");
       QSqlQuery *query2 = new QSqlQuery;
       query2->prepare("SELECT ch_order FROM incidents "
 		      "WHERE id = :incident");
@@ -854,12 +859,12 @@ void OccurrenceGraphWidget::checkCongruence()
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
 	      query->bindValue(":incident", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query->first();
 	      if (query->isNull(0)) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "4";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -872,7 +877,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (query2->isNull(0)) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "5";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -882,7 +886,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      else if (query2->value(0).toInt() != order) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "6";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -892,7 +895,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    }
 	}
       query->prepare("SELECT incident FROM relationships_to_incident "
-		     "WHERE relationship = :relationship AND type = :type");
+		     "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       for (int i = 0; i != relationshipListWidget->rowCount(); i++) 
 	{
 	  QString combi = relationshipListWidget->item(i,0)->data(Qt::DisplayRole).toString();
@@ -929,6 +932,7 @@ void OccurrenceGraphWidget::checkCongruence()
 	    }
 	  query->bindValue(":relationship", relationship);
 	  query->bindValue(":type", type);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  while (query->next()) 
 	    {
@@ -948,7 +952,6 @@ void OccurrenceGraphWidget::checkCongruence()
 	      if (!found) 
 		{
 		  incongruenceLabel->setText("Incongruence detected");
-		  qDebug() << "7";
 		  qApp->restoreOverrideCursor();
 		  qApp->processEvents();
 		  delete query;
@@ -982,7 +985,6 @@ void OccurrenceGraphWidget::checkCongruence()
       if (!currentVector.contains(cit.next()))
 	{
 	  incongruenceLabel->setText("Incongruence detected");
-	  qDebug() << "8";
 	  delete query;
 	  return;
 	}
@@ -993,7 +995,6 @@ void OccurrenceGraphWidget::checkCongruence()
       if (!caseVector.contains(cit2.next()))
 	{
 	  incongruenceLabel->setText("Incongruence detected");
-	  qDebug() << "9";
 	  delete query;
 	  return;
 	}
@@ -1210,7 +1211,7 @@ void OccurrenceGraphWidget::addAttribute()
 	  QVector<int> orders;
 	  QSqlDatabase::database().transaction();
 	  query->prepare("SELECT incident FROM attributes_to_incidents "
-			 "WHERE attribute = :currentAttribute");
+			 "WHERE attribute = :currentAttribute AND coder = :coder");
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
 	  QVectorIterator<QString> it(attributeVector);
@@ -1218,6 +1219,7 @@ void OccurrenceGraphWidget::addAttribute()
 	    {
 	      QString currentAttribute = it.next();
 	      query->bindValue(":currentAttribute", currentAttribute);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{
@@ -1327,7 +1329,7 @@ void OccurrenceGraphWidget::addAttributes()
       query2->prepare("SELECT description FROM entities "
 		      "WHERE name = :name");
       query3->prepare("SELECT incident FROM attributes_to_incidents "
-		      "WHERE attribute  = :currentAttribute");
+		      "WHERE attribute  = :currentAttribute AND coder = :coder");
       query4->prepare("SELECT ch_order, description FROM incidents "
 		      "WHERE id = :id");
       // Then we get the selected attributes; 
@@ -1382,6 +1384,7 @@ void OccurrenceGraphWidget::addAttributes()
 	    {
 	      QString currentChild = it2.next();
 	      query3->bindValue(":currentAttribute", currentChild);
+	      query3->bindValue(":coder", _selectedCoder);
 	      query3->exec();
 	      while (query3->next())
 		{
@@ -1499,7 +1502,7 @@ void OccurrenceGraphWidget::addRelationship()
       query->prepare("SELECT description, directedness FROM relationship_types "
 		     "WHERE name = :type");
       query2->prepare("SELECT incident FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type");
+		     "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       query3->prepare("SELECT ch_order, description FROM incidents WHERE id = :id");
       reset();
       QColor color = relationshipColorDialog->getColor();
@@ -1534,6 +1537,7 @@ void OccurrenceGraphWidget::addRelationship()
 	  QSqlDatabase::database().transaction();
 	  query2->bindValue(":relationship", relationship);
 	  query2->bindValue(":type", type);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->exec();
 	  while (query2->next()) 
 	    {
@@ -1638,7 +1642,7 @@ void OccurrenceGraphWidget::addRelationships()
       query->prepare("SELECT description, directedness FROM relationship_types "
 		     "WHERE name = :type");
       query2->prepare("SELECT incident FROM relationships_to_incidents "
-		      "WHERE relationship = :relationship AND type = :type");
+		      "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       query3->prepare("SELECT ch_order, description FROM incidents "
 		      "WHERE id = :id");
       // Let us then retrieve our data.
@@ -1690,6 +1694,7 @@ void OccurrenceGraphWidget::addRelationships()
 	      clearPlotButton->setEnabled(true);
 	      query2->bindValue(":relationship", relationship);
 	      query2->bindValue(":type", type);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      while (query2->next())
 		{
@@ -5851,8 +5856,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
     {
       QString name = saveDialog->getText();
       QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT plot FROM saved_og_plots WHERE plot = :name");
+      query->prepare("SELECT plot FROM saved_og_plots WHERE plot = :name AND coder = :coder");
       query->bindValue(":name", name);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       bool empty = false;
@@ -5889,67 +5895,79 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  query->prepare("UPDATE saved_og_plots "
 			 "SET distance = :distance, red = :red, green = :green, blue = :blue "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
 	  query->bindValue(":blue", blue);
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_settings
 	  query->prepare("DELETE FROM saved_og_plots_settings "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_occurence_items
 	  query->prepare("DELETE FROM saved_og_plots_occurrence_items "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_occurrence_labels
 	  query->prepare("DELETE FROM saved_og_plots_occurrence_labels "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_legend
 	  query->prepare("DELETE FROM saved_og_plots_legend "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_lines
 	  query->prepare("DELETE FROM saved_og_plots_lines "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_timelines
 	  query->prepare("DELETE FROM saved_og_plots_timelines "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_texts
 	  query->prepare("DELETE FROM saved_og_plots_texts "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_ellipses
 	  query->prepare("DELETE FROM saved_og_plots_ellipses "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_rects
 	  query->prepare("DELETE FROM saved_og_plots_rects "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_cases
 	  query->prepare("DELETE FROM saved_og_plots_cases "
-			 "WHERE plot = :plot");
+			 "WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  // saved_og_plots_guides
 	  query->prepare("DELETE FROM saved_og_plots_guides "
-			"WHERE plot = :plot");
+			"WHERE plot = :plot AND coder = :coder");
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	}
       else 
@@ -5959,9 +5977,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int red = color.red();
 	  int green = color.green();
 	  int blue = color.blue();
-	  query->prepare("INSERT INTO saved_og_plots (plot, distance, red, green, blue) "
-			 "VALUES (:name, :distance, :red, :green, :blue)");
+	  query->prepare("INSERT INTO saved_og_plots (plot, coder, distance, red, green, blue) "
+			 "VALUES (:name, :coder, :distance, :red, :green, :blue)");
 	  query->bindValue(":name", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":distance", _distance);
 	  query->bindValue(":red", red);
 	  query->bindValue(":green", green);
@@ -5969,11 +5988,13 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  query->exec();
 	}
       query->prepare("INSERT INTO saved_og_plots_settings "
-		     "(plot, lowerbound, upperbound, labelson, incidentlabelsonly, "
+		     "(plot, coder, lowerbound, upperbound, labelson, incidentlabelsonly, "
 		     "attributelabelsonly, labelsize) "
-		     "VALUES (:plot, :lowerbound, :upperbound, :labelson, :incidentlabelsonly, "
+		     "VALUES (:plot, :coder, :lowerbound, :upperbound, :labelson, "
+		     ":incidentlabelsonly, "
 		     ":attributelabelsonly, :labelsize)");
       query->bindValue(":plot", name);
+      query->bindValue(":coder", _selectedCoder);
       query->bindValue(":lowerbound", lowerRangeDial->value());
       query->bindValue(":upperbound", upperRangeDial->value());
       int labelson = 0;
@@ -6015,10 +6036,11 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       saveProgress->show();
       QSqlDatabase::database().transaction();
       query->prepare("INSERT INTO saved_og_plots_occurrence_items "
-		     "(plot, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
+		     "(plot, coder, incident, ch_order, attribute, width, curxpos, curypos, orixpos, "
 		     "oriypos, red, green, blue, alpha, highlighted, hred, hgreen, hblue, "
 		     "halpha, zvalue, hidden, perm, relationship, grouped) "
-		     "VALUES (:plot, :incident, :order, :attribute, :width, :curxpos, :curypos, "
+		     "VALUES (:plot, :coder, :incident, :order, :attribute, :width, :curxpos, "
+		     ":curypos, "
 		     ":orixpos, :oriypos, :red, :green, :blue, :alpha, :highlighted, :hred, "
 		     ":hgreen, :hblue, :halpha, :zvalue, :hidden, :perm, :relationship, :grouped)");
       QVectorIterator<OccurrenceItem*> it(allOccurrences);
@@ -6070,6 +6092,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	      grouped = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":incident", incident);
 	  query->bindValue(":order", order);
 	  query->bindValue(":attribute", attribute);
@@ -6117,9 +6140,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_occurrence_labels "
-		     "(plot, incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
+		     "(plot, coder, incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, zvalue, hidden, relationship) "
-		     "VALUES (:plot, :incident, :attribute, :label, :curxpos, :curypos, "
+		     "VALUES (:plot, :coder, :incident, :attribute, :label, :curxpos, :curypos, "
 		     ":xoffset, :yoffset, :red, :green, :blue, :alpha, :zvalue, :hidden, "
 		     ":relationship)");
       QVectorIterator<OccurrenceLabel*> it2(allLabels);
@@ -6149,6 +6172,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	      relationship = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":incident", id);
 	  query->bindValue(":attribute", attribute);
 	  query->bindValue(":label", text);
@@ -6176,9 +6200,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       saveProgress->setModal(true);
       counter = 1;
       saveProgress->show();
-      query->prepare("INSERT INTO saved_og_plots_legend (plot, name, tip, "
+      query->prepare("INSERT INTO saved_og_plots_legend (plot, coder, name, tip, "
 		     "red, green, blue, alpha, relationship) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :relationship)");
+		     "VALUES (:plot, :coder, :name, :tip, :red, :green, :blue, :alpha, "
+		     ":relationship)");
       for (int i = 0; i != attributeListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = attributeListWidget->item(i, 0);
@@ -6190,6 +6215,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
 	  query->bindValue(":red", red);
@@ -6210,9 +6236,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       saveProgress->setModal(true);
       counter = 1;
       saveProgress->show();
-      query->prepare("INSERT INTO saved_og_plots_legend (plot, name, tip, "
+      query->prepare("INSERT INTO saved_og_plots_legend (plot, coder, name, tip, "
 		     "red, green, blue, alpha, relationship) "
-		     "VALUES (:plot, :name, :tip, :red, :green, :blue, :alpha, :relationship)");
+		     "VALUES (:plot, :coder, :name, :tip, :red, :green, :blue, :alpha, "
+		     ":relationship)");
       for (int i = 0; i != relationshipListWidget->rowCount(); i++) 
 	{
 	  QTableWidgetItem *item = relationshipListWidget->item(i, 0);
@@ -6224,6 +6251,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":name", title);
 	  query->bindValue(":tip", tip);
 	  query->bindValue(":red", red);
@@ -6245,9 +6273,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_lines "
-		     "(plot, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
+		     "(plot, coder, startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha) "
-		     "VALUES (:plot, :startx, :starty, :endx, :endy, :arone, :artwo, "
+		     "VALUES (:plot, :coder, :startx, :starty, :endx, :endy, :arone, :artwo, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<LineObject*> it8(_lineVector);
       while (it8.hasNext()) 
@@ -6276,6 +6304,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":startx", startx);
 	  query->bindValue(":starty", starty);
 	  query->bindValue(":endx", endx);
@@ -6303,9 +6332,10 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_timelines "
-		     "(plot, startx, endx, y, penwidth, majorinterval, minordivision, "
+		     "(plot, coder, startx, endx, y, penwidth, majorinterval, minordivision, "
 		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha) "
-		     "VALUES (:plot, :startx, :endx, :y, :penwidth, :majorinterval, :minordivision, "
+		     "VALUES (:plot, :coder, :startx, :endx, :y, :penwidth, :majorinterval, "
+		     ":minordivision, "
 		     ":majorsize, :minorsize, :firsttick, :lasttick, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<TimeLineObject*> it9(_timeLineVector);
@@ -6337,6 +6367,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":startx", startx);
 	  query->bindValue(":endx", endx);
 	  query->bindValue(":y", y);
@@ -6365,9 +6396,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_texts "
-		     "(plot, desc, xpos, ypos, width, size, rotation, "
+		     "(plot, coder, desc, xpos, ypos, width, size, rotation, "
 		     "zvalue, red, green, blue, alpha) "
-		     "VALUES (:plot, :desc, :xpos, :ypos, :width, :size, :rotation, "
+		     "VALUES (:plot, :coder, :desc, :xpos, :ypos, :width, :size, :rotation, "
 		     ":zvalue, :red, :green, :blue, :alpha)");
       QVectorIterator<TextObject*> it10(_textVector);
       while (it10.hasNext()) 
@@ -6386,6 +6417,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int blue = color.blue();
 	  int alpha = color.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":desc", desc);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
@@ -6411,11 +6443,12 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_ellipses "
-		     "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		     "(plot, coder, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		     "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha) "
-		     "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :"
+		     "toprighty, "
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
@@ -6448,6 +6481,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int fillblue = fillColor.blue();
 	  int fillalpha = fillColor.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":topleftx", topleftx);
@@ -6484,11 +6518,12 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_rects "
-		     "(plot, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
+		     "(plot, coder, xpos, ypos, topleftx, toplefty, toprightx, toprighty, "
 		     "bottomleftx, bottomlefty, bottomrightx, bottomrighty, rotation, "
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha) "
-		     "VALUES (:plot, :xpos, :ypos, :topleftx, :toplefty, :toprightx, :toprighty, "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :topleftx, :toplefty, :toprightx, "
+		     ":toprighty, "
 		     ":bottomleftx, :bottomlefty, :bottomrightx, :bottomrighty, :rotation, "
 		     ":penwidth, :penstyle, :zvalue, :red, :green, :blue, :alpha, "
 		     ":fillred, :fillgreen, :fillblue, :fillalpha)");
@@ -6521,6 +6556,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	  int fillblue = fillColor.blue();
 	  int fillalpha = fillColor.alpha();
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":topleftx", topleftx);
@@ -6557,8 +6593,8 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_cases "
-		     "(plot, casename, checked) "
-		     "VALUES (:plot, :casename, :checked)");
+		     "(plot, coder, casename, checked) "
+		     "VALUES (:plot, :coder, :casename, :checked)");
       for (int i = 0; i != caseListWidget->count(); i++) 
 	{
 	  QListWidgetItem *item = caseListWidget->item(i);
@@ -6569,6 +6605,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	      checked = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":casename", casename);
 	  query->bindValue(":checked", checked);
 	  query->exec();
@@ -6587,8 +6624,8 @@ void OccurrenceGraphWidget::saveCurrentPlot()
       counter = 1;
       saveProgress->show();
       query->prepare("INSERT INTO saved_og_plots_guides "
-		     "(plot, xpos, ypos, horizontal) "
-		     "VALUES (:plot, :xpos, :ypos, :horizontal)");
+		     "(plot, coder, xpos, ypos, horizontal) "
+		     "VALUES (:plot, :coder, :xpos, :ypos, :horizontal)");
       QVectorIterator<GuideLine*> it14(_guidesVector);
       while (it14.hasNext())
 	{
@@ -6601,6 +6638,7 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 	      horizontal = 1;
 	    }
 	  query->bindValue(":plot", name);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":xpos", xpos);
 	  query->bindValue(":ypos", ypos);
 	  query->bindValue(":horizontal", horizontal);
@@ -6619,7 +6657,9 @@ void OccurrenceGraphWidget::saveCurrentPlot()
 
 void OccurrenceGraphWidget::seePlots() 
 {
-  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this, OCCURRENCEGRAPH);
+  QPointer<SavedPlotsDialog> savedPlotsDialog = new SavedPlotsDialog(this,
+								     OCCURRENCEGRAPH,
+								     _selectedCoder);
   savedPlotsDialog->exec();
   if (savedPlotsDialog->getExitStatus() == 0) 
     {
@@ -6631,8 +6671,9 @@ void OccurrenceGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT distance, red, green, blue "
 		     "FROM saved_og_plots "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       _distance = query->value(0).toReal();
@@ -6643,8 +6684,9 @@ void OccurrenceGraphWidget::seePlots()
       query->prepare("SELECT lowerbound, upperbound, labelson, incidentlabelsonly, "
 		     "attributelabelsonly, labelsize "
 		     "FROM saved_og_plots_settings "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       int lowerbound = query->value(0).toInt();
@@ -6682,8 +6724,9 @@ void OccurrenceGraphWidget::seePlots()
 		     "oriypos, red, green, blue, alpha, highlighted, hred, hgreen, "
 		     "hblue, halpha, zvalue, hidden, perm, relationship, grouped "
 		     "FROM saved_og_plots_occurrence_items "
-		     "WHERE plot = :plot ");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       QVector<OccurrenceItem*> allOccurrences;
       while (query->next()) 
@@ -6774,8 +6817,9 @@ void OccurrenceGraphWidget::seePlots()
       query->prepare("SELECT incident, attribute, label, curxpos, curypos, xoffset, yoffset, "
 		     "red, green, blue, alpha, zvalue, hidden, relationship "
 		     "FROM saved_og_plots_occurrence_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6829,8 +6873,9 @@ void OccurrenceGraphWidget::seePlots()
 	}
       query->prepare("SELECT name, tip, red, green, blue, alpha, relationship "
 		     "FROM saved_og_plots_legend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6850,7 +6895,8 @@ void OccurrenceGraphWidget::seePlots()
 	    {
 	      attributeListWidget->setRowCount(attributeListWidget->rowCount() + 1);
 	      attributeListWidget->setItem(attributeListWidget->rowCount() - 1, 0, item);
-	      attributeListWidget->setItem(attributeListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+	      attributeListWidget->setItem(attributeListWidget->rowCount() - 1, 1,
+					   new QTableWidgetItem);
 	      attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->setBackground(color);
 	      attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->
 		setFlags(attributeListWidget->item(attributeListWidget->rowCount() - 1, 1)->flags() ^
@@ -6863,9 +6909,11 @@ void OccurrenceGraphWidget::seePlots()
 	      relationshipListWidget->setItem(relationshipListWidget->rowCount() - 1, 0, item);
 	      relationshipListWidget->setItem(relationshipListWidget->rowCount() - 1, 1,
 					      new QTableWidgetItem);
-	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->setBackground(color);
 	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->
-		setFlags(relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->flags() ^
+		setBackground(color);
+	      relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->
+		setFlags(relationshipListWidget->item(relationshipListWidget->rowCount() - 1, 1)->
+			 flags() ^
 			 Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
 	      _presentRelationships.push_back(name);
 	    }
@@ -6873,8 +6921,9 @@ void OccurrenceGraphWidget::seePlots()
       query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
 		     "zvalue, red, green, blue, alpha "
 		     "FROM saved_og_plots_lines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6911,8 +6960,9 @@ void OccurrenceGraphWidget::seePlots()
       query->prepare("SELECT startx, endx, y, penwidth, majorinterval, minordivision, "
 		     "majorsize, minorsize, firsttick, lasttick, zvalue, red, green, blue, alpha "
 		     "FROM saved_og_plots_timelines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6952,8 +7002,9 @@ void OccurrenceGraphWidget::seePlots()
       query->prepare("SELECT desc, xpos, ypos, width, size, rotation, zvalue, "
 		     "red, green, blue, alpha "
 		     "FROM saved_og_plots_texts "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -6986,8 +7037,9 @@ void OccurrenceGraphWidget::seePlots()
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha "
 		     "FROM saved_og_plots_ellipses "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7035,8 +7087,9 @@ void OccurrenceGraphWidget::seePlots()
 		     "penwidth, penstyle, zvalue, red, green, blue, alpha, "
 		     "fillred, fillgreen, fillblue, fillalpha "
 		     "FROM saved_og_plots_rects "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7081,8 +7134,9 @@ void OccurrenceGraphWidget::seePlots()
 	}
       query->prepare("SELECT casename, checked "
 		     "FROM saved_og_plots_cases "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next()) 
 	{
@@ -7101,8 +7155,9 @@ void OccurrenceGraphWidget::seePlots()
 	}
       query->prepare("SELECT xpos, ypos, horizontal "
 		     "FROM saved_og_plots_guides "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
 	{
@@ -7152,63 +7207,75 @@ void OccurrenceGraphWidget::seePlots()
       QSqlQuery *query = new QSqlQuery;
       // saved_og_plots
       query->prepare("DELETE FROM saved_og_plots "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_settings
       query->prepare("DELETE FROM saved_og_plots_settings "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_occurrence_items
       query->prepare("DELETE FROM saved_og_plots_occurrence_items "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_occurrence_labels
       query->prepare("DELETE FROM saved_og_plots_occurrence_labels "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_legend
       query->prepare("DELETE FROM saved_og_plots_legend "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_lines
       query->prepare("DELETE FROM saved_og_plots_lines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_timelines
       query->prepare("DELETE FROM saved_og_plots_timelines "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_texts
       query->prepare("DELETE FROM saved_og_plots_texts "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_ellipses
       query->prepare("DELETE FROM saved_og_plots_ellipses "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_rects
       query->prepare("DELETE FROM saved_og_plots_rects "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_cases
       query->prepare("DELETE FROM saved_og_plots_cases "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       // saved_og_plots_cases
       query->prepare("DELETE FROM saved_og_plots_guides "
-		     "WHERE plot = :plot");
+		     "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       delete query;
       seePlots();
@@ -7231,12 +7298,23 @@ void OccurrenceGraphWidget::clearPlot()
       cleanUp();
       changeLabel->setText("");
       plotLabel->setText("Unsaved plot");
+      incongruenceLabel->setText("");
     }
   else 
     {
       delete warningBox;
       return;
     }
+  updateCases();
+  hideAnnotationsButton->setChecked(false);
+}
+
+void OccurrenceGraphWidget::clearWithoutWarning()
+{
+  cleanUp();
+  changeLabel->setText("");
+  plotLabel->setText("Unsaved plot");
+  incongruenceLabel->setText("");
   updateCases();
   hideAnnotationsButton->setChecked(false);
 }
@@ -7345,6 +7423,11 @@ void OccurrenceGraphWidget::cleanUp()
 void OccurrenceGraphWidget::finalBusiness() 
 {
   cleanUp();
+}
+
+void OccurrenceGraphWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool OccurrenceGraphWidget::eventFilter(QObject *object, QEvent *event) 

@@ -33,7 +33,7 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent)
   relationshipsModel->select();
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(relationshipsModel);
-  filter->setFilterKeyColumn(0);
+  filter->setFilterKeyColumn(5);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
@@ -49,10 +49,14 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent)
   relationshipsModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Description"));
   relationshipsModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Incident"));
   relationshipsModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Text"));
+  relationshipsModel->setHeaderData(5, Qt::Horizontal, QObject::tr("Coder"));
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setSectionsMovable(true);
-  tableView->horizontalHeader()->swapSections(3, 0);
-  tableView->horizontalHeader()->swapSections(3, 2);
+  tableView->horizontalHeader()->swapSections(0, 5);
+  tableView->horizontalHeader()->swapSections(1, 3);
+  tableView->horizontalHeader()->swapSections(2, 3);
+  tableView->horizontalHeader()->swapSections(3, 5);
+  tableView->horizontalHeader()->swapSections(4, 5);
   tableView->setColumnWidth(0, 100);
   tableView->setColumnWidth(1, 400);
   tableView->setColumnWidth(2, 600);
@@ -72,11 +76,12 @@ RawRelationshipsTable::RawRelationshipsTable(QWidget *parent) : QWidget(parent)
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Incidents");
-  filterComboBox->addItem("Relationships");
-  filterComboBox->addItem("Types");
-  filterComboBox->addItem("Descriptions");
-  filterComboBox->addItem("Texts");
+  filterComboBox->addItem("Coder");
+  filterComboBox->addItem("Incident");
+  filterComboBox->addItem("Relationship");
+  filterComboBox->addItem("Type");
+  filterComboBox->addItem("Description");
+  filterComboBox->addItem("Text");
 
   removeTextButton = new QPushButton(tr("Remove selected"), this);
   editTypeButton = new QPushButton(tr("Edit relationship type"), this);
@@ -167,23 +172,28 @@ void RawRelationshipsTable::changeFilter(const QString &text)
 
 void RawRelationshipsTable::setFilterColumn() 
 {
-  if (filterComboBox->currentText() == "Types") 
+  if (filterComboBox->currentText() == "Coder") 
     {
-      filter->setFilterKeyColumn(0);
+      filter->setFilterKeyColumn(5);
     }
-  else if (filterComboBox->currentText() == "Relationships") 
-    {
-      filter->setFilterKeyColumn(1);
-    }
-  else if (filterComboBox->currentText() == "Descriptions") 
-    {
-      filter->setFilterKeyColumn(2);
-    }
-  else if (filterComboBox->currentText() == "Incidents") 
+  else if (filterComboBox->currentText() == "Incident") 
     {
       filter->setFilterKeyColumn(3);
     }
-  else if (filterComboBox->currentText() == "Texts") 
+  else if (filterComboBox->currentText() == "Relationship") 
+    {
+      filter->setFilterKeyColumn(1);
+    }
+  else if (filterComboBox->currentText() == "Type") 
+    {
+      filter->setFilterKeyColumn(0);
+    }
+    else if (filterComboBox->currentText() == "Description") 
+    {
+      filter->setFilterKeyColumn(2);
+    }
+
+  else if (filterComboBox->currentText() == "Text") 
     {
       filter->setFilterKeyColumn(4);
     }
@@ -205,9 +215,9 @@ void RawRelationshipsTable::removeText()
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
 	  int row = tableView->currentIndex().row();
-	  QString type = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
-	  QString relationship = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
-	  QString order = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+	  QString type = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
+	  QString relationship = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
+	  QString order = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT id FROM incidents "
 			 "WHERE ch_order = :order");
@@ -215,14 +225,16 @@ void RawRelationshipsTable::removeText()
 	  query->exec();
 	  query->first();
 	  QString incident = query->value(0).toString();
-	  QString text = tableView->model()->index(row, 4).data(Qt::DisplayRole).toString();
+	  QString text = tableView->model()->index(row, 5).data(Qt::DisplayRole).toString();
+	  QString coder = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
 	  query->prepare("DELETE FROM relationships_to_incidents_sources "
 			 "WHERE relationship = :relationship AND type = :type "
-			 "AND incident = :incident AND source_text = :text");
+			 "AND incident = :incident AND source_text = :text AND coder = :coder");
 	  query->bindValue(":relationship", relationship);
 	  query->bindValue(":type", type);
 	  query->bindValue(":incident", incident);
 	  query->bindValue(":text", text);
+	  query->bindValue(":coder", coder);
 	  query->exec();
 	  delete query;
 	}
@@ -245,7 +257,8 @@ void RawRelationshipsTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first write the header.
-      fileOut << "Incident" << ","
+      fileOut << "Coder" << ","
+	      << "Incident" << ","
 	      << "Relationship" << ","
 	      << "Type" << ","
 	      << "Description" << ","
@@ -253,12 +266,14 @@ void RawRelationshipsTable::exportTable()
       // Then we iterate through the visible table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
 	{
+	  QString coder = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
 	  QString type = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
 	  QString relationship = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
 	  QString description = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
 	  QString incident = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
 	  QString text = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-	  fileOut << incident.toStdString() << ","
+	  fileOut << "\"" << coder.toStdString() << "\"" << ","
+		  << incident.toStdString() << ","
 		  << "\"" << doubleQuote(relationship).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(type).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(description).toStdString() << "\"" << ","
@@ -445,4 +460,3 @@ void RawRelationshipsTable::setRelationshipsWidget(RelationshipsWidget *relation
 {
   _relationshipsWidgetPtr = relationshipsWidgetPtr;
 }
-

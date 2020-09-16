@@ -20,39 +20,30 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
-#include "../include/JournalTableModel.h"
+#include "../include/JournalQueryModel.h"
 
-JournalTableModel::JournalTableModel(QWidget *parent) : QSqlTableModel(parent) 
+JournalQueryModel::JournalQueryModel(QWidget *parent) : QSqlQueryModel(parent) 
 {
 }
 
-QVariant JournalTableModel::data(const QModelIndex &index, int role) const 
+QVariant JournalQueryModel::data(const QModelIndex &index, int role) const 
 {
-  if (index.column() == 3) 
-    { // This is always the column with the boolean variable
-      if (role == Qt::CheckStateRole) 
-	{ // Only do the below when we are setting the checkbox.
+  int col = index.column();
+  if (role == Qt::CheckStateRole)
+    {
+      if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention")
+	{
+	  // Only do the below when we are setting the checkbox.
 	  // We want to fetch the state of the boolean from the sql table.
-	  QSqlQuery *query = new QSqlQuery;
-	  QModelIndex tempIndex = this->createIndex(index.row(), 1);
-	  QString time = QSqlTableModel::data(tempIndex, Qt::DisplayRole).toString(); 
-	  query->prepare("SELECT mark FROM journal WHERE time = :time");
-	  query->bindValue(":time", time);
-	  query->exec();
-	  query->first();
-	  int mark = query->value(0).toInt();
-	  // Return the appropriate check state based on the state of mar.
-	  if (mark == 1) 
+	  int checked  = QSqlQueryModel::data(index).toInt();
+	  if (checked) 
 	    {
-	      delete query;
 	      return Qt::Checked;
 	    }
-	  else if (mark == 0) 
+	  else if (!checked)
 	    {
-	      delete query;
 	      return Qt::Unchecked;
 	    }
-	  delete query;
 	}
       else 
 	{
@@ -66,8 +57,20 @@ QVariant JournalTableModel::data(const QModelIndex &index, int role) const
     }
   else if (role == Qt::ToolTipRole) 
     {
+      if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention")
+	{
+	  int checked  = QSqlQueryModel::data(index).toInt();
+	  if (checked) 
+	    {
+	      return "Yes";
+	    }
+	  else if (!checked) 
+	    {
+	      return "No";
+	    }
+	}
       // I just want the tool tip to show the data in the column.
-      const QString original = QSqlTableModel::data(index, Qt::DisplayRole).toString();
+      const QString original = QSqlQueryModel::data(index, Qt::DisplayRole).toString();
       QString toolTip = breakString(original); // breakString() breaks the text in smaller lines.
       return toolTip;
     }
@@ -78,46 +81,49 @@ QVariant JournalTableModel::data(const QModelIndex &index, int role) const
 	 This can be done easily by returning the default version of the function,
 	 rather than the re-implemented version we have here.
       */
-      return QSqlTableModel::data(index, role);
+      return QSqlQueryModel::data(index, role);
     }
   return QVariant(); // This prevents a compiler warning.
 }
 
-bool JournalTableModel::setData(const QModelIndex & index,
+
+bool JournalQueryModel::setData(const QModelIndex & index,
 				const QVariant & value, int role) 
 {
+  int col = index.column();
   /* 
      Let's check whether the selected column is the column with our boolean variable
-     (always column 3), and whether we are trying to set data under the 
-     Qt::CheckStateRole.
+     and whether we are trying to set data under the Qt::CheckStateRole.
   */
-  if (index.column() == 3 && role == Qt::CheckStateRole) 
+  if (role == Qt::CheckStateRole &&
+      this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention")
     {
-      // Writing the data when the check box is set to checked.
-      QModelIndex tempIndex = this->createIndex(index.row(), 1);
-      QString time = QSqlTableModel::data(tempIndex, Qt::DisplayRole).toString(); 
-      if (value == Qt::Checked) 
+      QString time = this->data(this->index(index.row(), 0), Qt::DisplayRole).toString();
+      if (value == Qt::Checked)
 	{
+	  emit armSelection();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("UPDATE journal SET mark = 1 WHERE time = :time");
 	  query->bindValue(":time", time);
 	  query->exec();
 	  delete query;
-	  return true;
-	  // Writing the data when the check box is set to unchecked
+	  setQuery("SELECT time, coder, entry, mark FROM journal");
+	  emit setSelection();
 	}
       else if (value == Qt::Unchecked) 
 	{
+	  emit armSelection();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("UPDATE journal SET mark = 0 WHERE time = :time");
 	  query->bindValue(":time", time);
 	  query->exec();
 	  delete query;
-	  return true;
+	  setQuery("SELECT time, coder, entry, mark FROM journal");
+	  emit setSelection();
 	}
     }
   // In all other situations revert to default behaviour.
-  return QSqlTableModel::setData(index, value, role);
+  return QSqlQueryModel::setData(index, value, role);
 }
 
 /* 
@@ -125,14 +131,15 @@ bool JournalTableModel::setData(const QModelIndex & index,
    as a 'checkable' column, we need to re-implement the flags() function
    and create a special case for the target column.
 */
-Qt::ItemFlags JournalTableModel::flags(const QModelIndex & index) const 
+Qt::ItemFlags JournalQueryModel::flags(const QModelIndex & index) const 
 {
-  // Column 3 always records the mark variable (our boolean).
-  if (index.column() == 3) 
+  // Column 4 always records the mark variable (our boolean).
+  int col = index.column();
+  if (this->headerData(col, Qt::Horizontal, Qt::DisplayRole) == "Needs attention") 
     {
       // Make sure that this item is checkable.
-      return QSqlTableModel::flags(index) | Qt::ItemIsUserCheckable;
+      return QSqlQueryModel::flags(index) | Qt::ItemIsUserCheckable;
     }
   // Default behaviour in all other cases.
-  return QSqlTableModel::flags(index);
+  return QSqlQueryModel::flags(index);
 }

@@ -31,14 +31,14 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
   attributesModel = new QueryModel(this);
   filter = new QSortFilterProxyModel(this);
   filter->setSourceModel(attributesModel);
-  filter->setFilterKeyColumn(2);
+  filter->setFilterKeyColumn(0);
   tableView = new ZoomableTableView(this);
   tableView->setModel(filter);
   tableView->setEditTriggers(QAbstractItemView::NoEditTriggers);
   
   // Then we set how the data are displayed.
-  attributesModel->setQuery("SELECT name, incident_attributes.description, ch_order, "
-			    "source_text "
+  attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, name, "
+			    "incident_attributes.description, ch_order, source_text "
 			    "FROM incident_attributes "
 			    "INNER JOIN attributes_to_incidents_sources ON " 
 			    "incident_attributes.name = "
@@ -46,23 +46,26 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
 			    "LEFT JOIN incidents ON "
 			    "attributes_to_incidents_sources.incident = incidents.id "
 			    "UNION ALL "
-			    "SELECT name, entities.description, ch_order, source_text "
+			    "SELECT attributes_to_incidents_sources.coder, name, "
+			    "entities.description, ch_order, source_text "
 			    "FROM entities "
 			    "INNER JOIN attributes_to_incidents_sources ON "
 			    "entities.name = attributes_to_incidents_sources.attribute "
 			    "LEFT JOIN incidents ON "
 			    "attributes_to_incidents_sources.incident = incidents.id "
 			    "ORDER BY name ASC");
-  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Attribute"));
-  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Description"));
-  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Incident"));
-  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Text"));
+  attributesModel->setHeaderData(0, Qt::Horizontal, QObject::tr("Coder"));
+  attributesModel->setHeaderData(1, Qt::Horizontal, QObject::tr("Attribute"));
+  attributesModel->setHeaderData(2, Qt::Horizontal, QObject::tr("Description"));
+  attributesModel->setHeaderData(3, Qt::Horizontal, QObject::tr("Incident"));
+  attributesModel->setHeaderData(4, Qt::Horizontal, QObject::tr("Text"));
   tableView->horizontalHeader()->setStretchLastSection(true);
   tableView->horizontalHeader()->setSectionsMovable(true);
-  tableView->horizontalHeader()->swapSections(0, 2);
-  tableView->horizontalHeader()->swapSections(1, 2);
+  tableView->horizontalHeader()->swapSections(1, 3);
+  tableView->horizontalHeader()->swapSections(2, 3);
   tableView->setColumnWidth(0, 200);
-  tableView->setColumnWidth(1, 600);
+  tableView->setColumnWidth(1, 200);
+  tableView->setColumnWidth(2, 600);
   tableView->setSelectionBehavior( QAbstractItemView::SelectRows );
   tableView->setSelectionMode( QAbstractItemView::SingleSelection );
   tableView->verticalHeader()->setDefaultSectionSize(30);
@@ -78,10 +81,11 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
   filterField = new QLineEdit(this);
 
   filterComboBox = new QComboBox(this);
-  filterComboBox->addItem("Incidents");
-  filterComboBox->addItem("Attributes");
-  filterComboBox->addItem("Descriptions");
-  filterComboBox->addItem("Texts");
+  filterComboBox->addItem("Coder");
+  filterComboBox->addItem("Incident");
+  filterComboBox->addItem("Attribute");
+  filterComboBox->addItem("Description");
+  filterComboBox->addItem("Text");
 
   removeTextButton = new QPushButton(tr("Remove selected"), this);
   editAttributeButton = new QPushButton(tr("Edit attribute"), this);
@@ -137,9 +141,10 @@ void RawAttributesTable::sortHeader(int header)
     {
       if (_lastSortedAscending)
 	{
-	  if (header == 0) 
+	  if (header == 0)
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -149,7 +154,33 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY attributes_to_incidents_sources.coder DESC");
+	    }
+	  else if (header == 1) 
+	    {
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -160,9 +191,10 @@ void RawAttributesTable::sortHeader(int header)
 					"incidents.id "
 					"ORDER BY name DESC");
 	    }
-	  else if (header == 1) 
+	  else if (header == 2) 
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -172,7 +204,8 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -183,9 +216,10 @@ void RawAttributesTable::sortHeader(int header)
 					"incidents.id "
 					"ORDER BY incident_attributes.description DESC");
 	    }
-	  else if (header == 2) 
+	  else if (header == 3) 
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -195,7 +229,8 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -206,9 +241,10 @@ void RawAttributesTable::sortHeader(int header)
 					"incidents.id "
 					"ORDER BY ch_order DESC");
 	    }
-	  else if (header == 3) 
+	  else if (header == 4) 
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -218,7 +254,8 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -232,9 +269,10 @@ void RawAttributesTable::sortHeader(int header)
 	}
       else
 	{
-	  if (header == 0) 
+	  if (header == 0)
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -244,7 +282,33 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY attributes_to_incidents_sources.coder ASC");
+	    }
+	  else if (header == 1) 
+	    {
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -255,9 +319,10 @@ void RawAttributesTable::sortHeader(int header)
 					"incidents.id "
 					"ORDER BY name ASC");
 	    }
-	  else if (header == 1) 
+	  else if (header == 2) 
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -267,7 +332,8 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -278,9 +344,10 @@ void RawAttributesTable::sortHeader(int header)
 					"incidents.id "
 					"ORDER BY incident_attributes.description ASC");
 	    }
-	  else if (header == 2) 
+	  else if (header == 3) 
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -290,7 +357,8 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -301,9 +369,10 @@ void RawAttributesTable::sortHeader(int header)
 					"incidents.id "
 					"ORDER BY ch_order ASC");
 	    }
-	  else if (header == 3) 
+	  else if (header == 4) 
 	    {
-	      attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
 					"ch_order, source_text "
 					"FROM incident_attributes "
 					"INNER JOIN attributes_to_incidents_sources ON " 
@@ -313,7 +382,8 @@ void RawAttributesTable::sortHeader(int header)
 					"attributes_to_incidents_sources.incident = "
 					"incidents.id "
 					"UNION ALL "
-					"SELECT name, entities.description, ch_order, "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
 					"source_text "
 					"FROM entities "
 					"INNER JOIN attributes_to_incidents_sources ON "
@@ -329,9 +399,35 @@ void RawAttributesTable::sortHeader(int header)
     }
   else
     {
-      if (header == 0) 
+       if (header == 0)
+	    {
+	      attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+					"name, incident_attributes.description, "
+					"ch_order, source_text "
+					"FROM incident_attributes "
+					"INNER JOIN attributes_to_incidents_sources ON " 
+					"incident_attributes.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"UNION ALL "
+					"SELECT attributes_to_incidents_sources.coder, "
+					"name, entities.description, ch_order, "
+					"source_text "
+					"FROM entities "
+					"INNER JOIN attributes_to_incidents_sources ON "
+					"entities.name = "
+					"attributes_to_incidents_sources.attribute "
+					"LEFT JOIN incidents ON "
+					"attributes_to_incidents_sources.incident = "
+					"incidents.id "
+					"ORDER BY attributes_to_incidents_sources.coder ASC");
+	    }
+      else if (header == 1) 
 	{
-	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+				    "name, incident_attributes.description, "
 				    "ch_order, source_text "
 				    "FROM incident_attributes "
 				    "INNER JOIN attributes_to_incidents_sources ON " 
@@ -341,7 +437,8 @@ void RawAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents_sources.incident = "
 				    "incidents.id "
 				    "UNION ALL "
-				    "SELECT name, entities.description, ch_order, "
+				    "SELECT attributes_to_incidents_sources.coder, "
+				    "name, entities.description, ch_order, "
 				    "source_text "
 				    "FROM entities "
 				    "INNER JOIN attributes_to_incidents_sources ON "
@@ -352,9 +449,10 @@ void RawAttributesTable::sortHeader(int header)
 				    "incidents.id "
 				    "ORDER BY name ASC");
 	}
-      else if (header == 1) 
+      else if (header == 2) 
 	{
-	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+				    "name, incident_attributes.description, "
 				    "ch_order, source_text "
 				    "FROM incident_attributes "
 				    "INNER JOIN attributes_to_incidents_sources ON " 
@@ -364,7 +462,8 @@ void RawAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents_sources.incident = "
 				    "incidents.id "
 				    "UNION ALL "
-				    "SELECT name, entities.description, ch_order, "
+				    "SELECT attributes_to_incidents_sources.coder, "
+				    "name, entities.description, ch_order, "
 				    "source_text "
 				    "FROM entities "
 				    "INNER JOIN attributes_to_incidents_sources ON "
@@ -375,9 +474,10 @@ void RawAttributesTable::sortHeader(int header)
 				    "incidents.id "
 				    "ORDER BY incident_attributes.description ASC");
 	}
-      else if (header == 2) 
+      else if (header == 3) 
 	{
-	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+				    "name, incident_attributes.description, "
 				    "ch_order, source_text "
 				    "FROM incident_attributes "
 				    "INNER JOIN attributes_to_incidents_sources ON " 
@@ -387,7 +487,8 @@ void RawAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents_sources.incident = "
 				    "incidents.id "
 				    "UNION ALL "
-				    "SELECT name, entities.description, ch_order, "
+				    "SELECT attributes_to_incidents_sources.coder, "
+				    "name, entities.description, ch_order, "
 				    "source_text "
 				    "FROM entities "
 				    "INNER JOIN attributes_to_incidents_sources ON "
@@ -398,9 +499,10 @@ void RawAttributesTable::sortHeader(int header)
 				    "incidents.id "
 				    "ORDER BY ch_order ASC");
 	}
-      else if (header == 3) 
+      else if (header == 4) 
 	{
-	  attributesModel->setQuery("SELECT name, incident_attributes.description, "
+	  attributesModel->setQuery("SELECT attributes_to_incidents_sources.coder, "
+				    "name, incident_attributes.description, "
 				    "ch_order, source_text "
 				    "FROM incident_attributes "
 				    "INNER JOIN attributes_to_incidents_sources ON " 
@@ -410,7 +512,8 @@ void RawAttributesTable::sortHeader(int header)
 				    "attributes_to_incidents_sources.incident = "
 				    "incidents.id "
 				    "UNION ALL "
-				    "SELECT name, entities.description, ch_order, "
+				    "SELECT attributes_to_incidents_sources.coder, "
+				    "name, entities.description, ch_order, "
 				    "source_text "
 				    "FROM entities "
 				    "INNER JOIN attributes_to_incidents_sources ON "
@@ -436,21 +539,25 @@ void RawAttributesTable::changeFilter(const QString &text)
 
 void RawAttributesTable::setFilterColumn() 
 {
-  if (filterComboBox->currentText() == "Attributes") 
+  if (filterComboBox->currentText() == "Coder")
     {
       filter->setFilterKeyColumn(0);
     }
-  else if (filterComboBox->currentText() == "Descriptions") 
+  else if (filterComboBox->currentText() == "Attribute") 
     {
       filter->setFilterKeyColumn(1);
     }
-  else if (filterComboBox->currentText() == "Incidents") 
+  else if (filterComboBox->currentText() == "Description") 
     {
       filter->setFilterKeyColumn(2);
     }
-  else if (filterComboBox->currentText() == "Texts") 
+  else if (filterComboBox->currentText() == "Incident") 
     {
       filter->setFilterKeyColumn(3);
+    }
+  else if (filterComboBox->currentText() == "Text") 
+    {
+      filter->setFilterKeyColumn(4);
     }
 }
 
@@ -470,8 +577,9 @@ void RawAttributesTable::removeText()
       if (warningBox->exec() == QMessageBox::Yes) 
 	{
 	  int row = tableView->currentIndex().row();
-	  QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
-	  QString order = tableView->model()->index(row, 2).data(Qt::DisplayRole).toString();
+	  QString coder = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
+	  QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
+	  QString order = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
 	  QSqlQuery *query = new QSqlQuery;
 	  query->prepare("SELECT id FROM incidents "
 			 "WHERE ch_order = :order");
@@ -482,10 +590,11 @@ void RawAttributesTable::removeText()
 	  QString text = tableView->model()->index(row, 3).data(Qt::DisplayRole).toString();
 	  query->prepare("DELETE FROM attributes_to_incidents_sources "
 			 "WHERE attribute = :attribute "
-			 "AND incident = :incident AND source_text = :text");
+			 "AND incident = :incident AND source_text = :text AND coder = :coder");
 	  query->bindValue(":attribute", attribute);
 	  query->bindValue(":incident", incident);
 	  query->bindValue(":text", text);
+	  query->bindValue(":coder", coder);
 	  query->exec();
 	  delete query;
 	}
@@ -500,7 +609,7 @@ void RawAttributesTable::editAttribute()
       // First we need to check whether the selected attribute is an incident attribute or an entity
       bool entity = false;
       int row = tableView->currentIndex().row();
-      QString attribute = tableView->model()->index(row, 0).data(Qt::DisplayRole).toString();
+      QString attribute = tableView->model()->index(row, 1).data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;    
       query->prepare("SELECT name FROM entities WHERE name = :attribute");
       query->bindValue(":attribute", attribute);
@@ -767,18 +876,21 @@ void RawAttributesTable::exportTable()
       // And we create a file outstream.  
       std::ofstream fileOut(fileName.toStdString().c_str());
       // We first write the header.
-      fileOut << "Incident" << ","
+      fileOut << "Coder" << ","
+	      << "Incident" << ","
 	      << "Attribute" << ","
 	      << "Description" << ","
 	      << "Text" << "\n";
       // Then we iterate through the visible table.
       for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
 	{
-	  QString attribute = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
-	  QString description = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
-	  QString incident = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-	  QString text = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-	  fileOut << incident.toStdString() << ","
+	  QString coder = tableView->model()->index(i, 0).data(Qt::DisplayRole).toString();
+	  QString attribute = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+	  QString description = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+	  QString incident = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+	  QString text = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
+	  fileOut << "\"" << coder.toStdString() << "\"" << "," 
+		  << incident.toStdString() << ","
 		  << "\"" << doubleQuote(attribute).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(description).toStdString() << "\"" << ","
 		  << "\"" << doubleQuote(text).toStdString() << "\"" << "\n";

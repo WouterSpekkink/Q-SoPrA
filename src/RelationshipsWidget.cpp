@@ -24,6 +24,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent) 
 {
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first();
+  _selectedCoder = query->value(0).toString();
+  delete query;
   _descriptionFilter = "";
   _rawFilter = "";
   _commentFilter = "";
@@ -394,13 +399,14 @@ void RelationshipsWidget::retrieveData()
 	  markLabel->setText("MARKED");
 	}
       resetFont(relationshipsTree);
-      query->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+      query->exec("SELECT relationship, type, incident, coder FROM relationships_to_incidents");
       while (query->next()) 
 	{
 	  QString relationship = query->value(0).toString();
 	  QString type = query->value(1).toString();
 	  int incident = query->value(2).toInt();
-	  if (incident == id) 
+	  QString coder = query->value(3).toString();
+	  if (incident == id && coder == _selectedCoder) 
 	    {
 	      boldSelected(relationshipsTree, relationship, type);
 	    }
@@ -490,21 +496,23 @@ void RelationshipsWidget::sourceRelationshipText(const QString &relationship,
       QSqlQuery *query = new QSqlQuery;
       query->prepare("SELECT relationship FROM relationships_to_incidents_sources "
 		     "WHERE relationship = :relationship AND type = :type AND "
-		     "incident = :incident AND source_text = :text)");
+		     "incident = :incident AND coder = :coder AND source_text = :text)");
       query->bindValue(":relationship", relationship);
       query->bindValue(":type", type);
       query->bindValue(":incident", incident);
+      query->bindValue(":coder", _selectedCoder);
       query->bindValue(":text", sourceText);
       query->exec();
       query->first();
       if (query->isNull(0)) 
 	{
 	  query->prepare("INSERT INTO relationships_to_incidents_sources "
-			 "(relationship, type, incident, source_text)"
-			 "VALUES (:relationship, :type, :incident, :text)");
+			 "(relationship, type, incident, coder, source_text)"
+			 "VALUES (:relationship, :type, :incident, :coder, :text)");
 	  query->bindValue(":relationship", relationship);
 	  query->bindValue(":type", type);
 	  query->bindValue(":incident", incident);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->bindValue(":text", sourceText);
 	  query->exec();
 	}
@@ -546,10 +554,12 @@ void RelationshipsWidget::highlightText()
 	      cursor.movePosition(QTextCursor::Start);
 	      rawField->setTextCursor(cursor);
 	      query->prepare("SELECT source_text FROM relationships_to_incidents_sources "
-			      "WHERE relationship = :relationship AND type = :type AND incident = :id");
+			     "WHERE relationship = :relationship "
+			     "AND type = :type AND incident = :id AND coder = :coder");
 	      query->bindValue(":relationship", currentName);
 	      query->bindValue(":type", currentType);
 	      query->bindValue(":id", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while(query->next()) 
 		{
@@ -940,21 +950,25 @@ void RelationshipsWidget::assignRelationship()
 	      assignedModel->select();
 	      bool empty = false;
 	      query->prepare("SELECT relationship, incident FROM relationships_to_incidents "
-			      "WHERE relationship = :rel AND type = :type AND incident = :inc");
+			     "WHERE relationship = :rel AND type = :type AND incident = :inc "
+			     "AND coder = :coder");
 	      query->bindValue(":rel", currentRelationship);
 	      query->bindValue(":type", currentType);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query->first();
 	      empty = query->isNull(0);
 	      QTextCursor cursorPos = rawField->textCursor();
 	      if (empty) 
 		{
-		  query->prepare("INSERT INTO relationships_to_incidents (relationship, type, incident) "
-				  "VALUES (:relationship, :type, :incident)");
+		  query->prepare("INSERT INTO relationships_to_incidents (relationship, type, "
+				 "incident, coder) "
+				  "VALUES (:relationship, :type, :incident, :coder)");
 		  query->bindValue(":relationship", currentRelationship);
 		  query->bindValue(":type", currentType);
 		  query->bindValue(":incident", id);
+		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();
 		  sourceRelationshipText(currentRelationship, currentType, id);
 		  rawField->setTextCursor(cursorPos);
@@ -1003,36 +1017,44 @@ void RelationshipsWidget::unassignRelationship()
 	      bool empty = false;
 	      query->prepare("SELECT relationship, incident "
 			     "FROM relationships_to_incidents "
-			     "WHERE relationship = :rel AND type = :type AND incident = :inc  ");
+			     "WHERE relationship = :rel AND type = :type AND incident = :inc "
+			     "AND coder = :coder");
 	      query->bindValue(":rel", currentRelationship);
 	      query->bindValue(":type", currentType);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query->first();
 	      empty = query->isNull(0);
 	      if (!empty) 
 		{
 		  query->prepare("DELETE FROM relationships_to_incidents "
-				 "WHERE relationship = :rel AND type = :type AND incident = :inc");
+				 "WHERE relationship = :rel AND type = :type "
+				 "AND incident = :inc AND coder = :coder");
 		  query->bindValue(":rel", currentRelationship);
 		  query->bindValue(":type", currentType);	  
 		  query->bindValue(":inc", id);
+		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();
 		  query->prepare("DELETE FROM relationships_to_incidents_sources "
-				 "WHERE relationship = :rel AND type = :type AND incident = :inc");
+				 "WHERE relationship = :rel AND type = :type "
+				 "AND incident = :inc AND coder = :coder");
 		  query->bindValue(":rel", currentRelationship);
 		  query->bindValue(":type", currentType);
 		  query->bindValue(":inc", id);
+		  query->bindValue(":coder", _selectedCoder);
 		  query->exec();
 		  assignedModel->select();
 		  resetFont(relationshipsTree);
-		  query->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+		  query->exec("SELECT relationship, type, incident, coder "
+			      "FROM relationships_to_incidents");
 		  while (query->next()) 
 		    {
 		      QString relationship = query->value(0).toString();
 		      QString type = query->value(1).toString();
 		      int incident = query->value(2).toInt();
-		      if (incident == id) 
+		      QString coder = query->value(3).toString();
+		      if (incident == id && coder == _selectedCoder) 
 			{
 			  boldSelected(relationshipsTree, relationship, type);
 			}
@@ -1067,9 +1089,11 @@ void RelationshipsWidget::removeText()
 	  QString sourceText = rawField->textCursor().selectedText().trimmed();
 	  QSqlQuery *query2 = new QSqlQuery;
 	  query2->prepare("DELETE FROM relationships_to_incidents_sources "
-			  "WHERE relationship = :rel AND incident = :inc AND source_text = :text");
+			  "WHERE relationship = :rel AND incident = :inc "
+			  "AND coder = :code AND source_text = :text");
 	  query2->bindValue(":rel", relationship);
 	  query2->bindValue(":inc", id);
+	  query2->bindValue(":coder", _selectedCoder);
 	  query2->bindValue(":text", sourceText);
 	  query2->exec();
 	  delete query2;
@@ -1115,10 +1139,12 @@ void RelationshipsWidget::resetTexts()
 	      QString currentType = typeItem->data(Qt::DisplayRole).toString();
 	      QSqlQuery *query2 = new QSqlQuery;
 	      query2->prepare("DELETE FROM relationships_to_incidents_sources "
-			      "WHERE relationship = :rel AND type = :type AND incident = :inc");
+			      "WHERE relationship = :rel AND type = :type AND incident = :inc "
+			      "AND coder = :coder");
 	      query2->bindValue(":rel", relationship);
 	      query2->bindValue(":type", currentType);
 	      query2->bindValue(":inc", id);
+	      query2->bindValue(":coder", _selectedCoder);
 	      query2->exec();
 	      delete query2;
 	    }
@@ -1398,10 +1424,12 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
       query->first();
       int id = query->value(0).toInt();
       query->prepare("SELECT relationship FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type AND incident = :id");
+		     "WHERE relationship = :relationship AND type = :type AND incident = :id "
+		     "AND coder = :coder");
       query->bindValue(":relationship", relationship);
       query->bindValue(":type", type);
       query->bindValue(":id", id);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       if (query->isNull(0)) 
@@ -1409,9 +1437,10 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
 	  action3->setEnabled(false);
 	}
       query->prepare("SELECT relationship FROM relationships_to_incidents "
-		     "WHERE relationship = :relationship AND type = :type");
+		     "WHERE relationship = :relationship AND type = :type AND coder = :coder");
       query->bindValue(":relationship", relationship);
       query->bindValue(":type", type);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
       if (query->isNull(0)) 
@@ -1501,14 +1530,16 @@ void RelationshipsWidget::unassignAll()
       QString type = typeItem->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
       query->prepare("DELETE FROM relationships_to_incidents "
-		     "WHERE relationship = :rel AND type = :type");
-      query->bindValue(":rel", relationship);
-      query->bindValue(":type", type);	  
-      query->exec();
-      query->prepare("DELETE FROM relationships_to_incidents_sources "
-		     "WHERE relationship = :rel AND type = :type");
+		     "WHERE relationship = :rel AND type = :type AND coder = :coder");
       query->bindValue(":rel", relationship);
       query->bindValue(":type", type);
+      query->bindValue(":coder", _selectedCoder);
+      query->exec();
+      query->prepare("DELETE FROM relationships_to_incidents_sources "
+		     "WHERE relationship = :rel AND type = :type AND coder = :coder");
+      query->bindValue(":rel", relationship);
+      query->bindValue(":type", type);
+      query->bindValue(":coder", _selectedCoder);
       query->exec();
       assignedModel->select();
       resetFont(relationshipsTree);
@@ -1520,13 +1551,14 @@ void RelationshipsWidget::unassignAll()
       query->exec();
       query->first();
       int id = query->value(0).toInt();
-      query->exec("SELECT relationship, type, incident FROM relationships_to_incidents");
+      query->exec("SELECT relationship, type, incident, coder FROM relationships_to_incidents");
       while (query->next()) 
 	{
 	  QString relationship = query->value(0).toString();
 	  QString type = query->value(1).toString();
 	  int incident = query->value(2).toInt();
-	  if (incident == id) 
+	  QString coder = query->value(3).toString();
+	  if (incident == id && coder == _selectedCoder) 
 	    {
 	      boldSelected(relationshipsTree, relationship, type);
 	    }
@@ -1990,11 +2022,13 @@ void RelationshipsWidget::previousCoded()
 			 "(SELECT incident, ch_order, relationship, type "
 			 "FROM relationships_to_incidents "
 			 "LEFT JOIN incidents ON relationships_to_incidents.incident = incidents.id "
-			 "WHERE ch_order < :order AND relationship = :relationship AND type = :type)"
+			 "WHERE ch_order < :order AND relationship = :relationship AND type = :type "
+			 "AND coder = :coder)"
 			 "ORDER BY ch_order desc");
 	  query->bindValue(":order", currentOrder);
 	  query->bindValue(":relationship", relationship);
 	  query->bindValue(":type", currentType);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  int id = 0;
 	  query->first();
@@ -2041,11 +2075,13 @@ void RelationshipsWidget::nextCoded()
 			 "(SELECT incident, ch_order, relationship, type "
 			 "FROM relationships_to_incidents "
 			 "LEFT JOIN incidents ON relationships_to_incidents.incident = incidents.id "
-			 "WHERE ch_order > :order AND relationship = :relationship AND type = :type)"
+			 "WHERE ch_order > :order AND relationship = :relationship AND type = :type "
+			 "AND coder = :coder)"
 			 "ORDER BY ch_order asc");
 	  query->bindValue(":order", currentOrder);
 	  query->bindValue(":relationship", relationship);
 	  query->bindValue(":type", currentType);
+	  query->bindValue(":coder", _selectedCoder);
 	  query->exec();
 	  int id = 0;
 	  query->first();
@@ -2099,10 +2135,12 @@ void RelationshipsWidget::setButtons()
 	      bool empty = false;
 	      query->prepare("SELECT relationship, incident "
 			     "FROM relationships_to_incidents "
-			     "WHERE relationship = :rel AND type = :type AND incident = :inc  ");
+			     "WHERE relationship = :rel AND type = :type AND incident = :inc "
+			     "AND coder = :coder");
 	      query->bindValue(":rel", currentRelationship);
 	      query->bindValue(":type", currentType);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query->first();
 	      empty = query->isNull(0);
@@ -2116,9 +2154,10 @@ void RelationshipsWidget::setButtons()
 		}
 	      query->prepare("SELECT relationship, incident FROM "
 			     "relationships_to_incidents_sources "
-			     "WHERE relationship = :rel AND incident = :inc");
+			     "WHERE relationship = :rel AND incident = :inc AND coder = :coder");
 	      query->bindValue(":rel", currentRelationship);
 	      query->bindValue(":inc", id);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      query->first();
 	      empty = query->isNull(0);
@@ -2249,6 +2288,11 @@ void RelationshipsWidget::resetTree()
 {
   delete relationshipsTree;
   setTree();
+}
+
+void RelationshipsWidget::setCurrentCoder(QString coder)
+{
+  _selectedCoder = coder;
 }
 
 bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event) 
