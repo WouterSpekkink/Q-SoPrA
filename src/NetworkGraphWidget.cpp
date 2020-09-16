@@ -7456,7 +7456,7 @@ void NetworkGraphWidget::seePlots()
       query->exec();
       // saved_ng_plots_cases
       query->prepare("DELETE FROM saved_ng_plots_cases "
-		     "WHERE plot = :plot AND coder = :coder");
+		                 "WHERE plot = :plot AND coder = :coder");
       query->bindValue(":plot", plot);
       query->bindValue(":coder", _selectedCoder);
       query->exec();
