@@ -1672,10 +1672,8 @@ void NetworkGraphWidget::plotEntities()
 void NetworkGraphWidget::getDirectedEdges() 
 {
   QSqlQuery *query = new QSqlQuery;
-  query->prepare("SELECT name, description FROM relationship_types "
-		 "WHERE directedness = :directed");
-  query->bindValue(":directed", "Directed");
-  query->exec();
+  query->exec("SELECT name, description FROM relationship_types "
+		 "WHERE directedness = 'Directed'");
   QSqlQuery *query2 = new QSqlQuery;
   query2->prepare("SELECT name, source, target, comment "
 		  "FROM entity_relationships "
@@ -4960,7 +4958,7 @@ void NetworkGraphWidget::plotNewGraph()
   getEntities();
   plotEntities(); // Should allow for range to be set here.
   getDirectedEdges();
-  getUndirectedEdges();  
+  getUndirectedEdges();
   QPointer<QColorDialog> colorDialog = new QColorDialog(this);
   colorDialog->setOption(QColorDialog::DontUseNativeDialog, true);
   QColor color = QColor(Qt::black);
@@ -5101,6 +5099,7 @@ void NetworkGraphWidget::removeRelationshipType()
     {
       caseListWidget->setEnabled(false);
       setGraphControls(false);
+      cleanUp();
     }
   else
     {
@@ -7582,7 +7581,7 @@ void NetworkGraphWidget::setVisibility()
 	    {
 	      query->bindValue(":relationship", relationship);
 	      query->bindValue(":type", type);
-	      query->bindValue("coder", _selectedCoder);
+	      query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	      while (query->next()) 
 		{

@@ -4075,6 +4075,8 @@ void EventGraphWidget::cleanUp()
   plotLabel->setText("");
   incongruenceLabel->setText("");
   changeLabel->setText("");
+  compareComboBox->clear();
+  compareComboBox->addItem(DEFAULT);
 }
 
 void EventGraphWidget::increaseDistance() 
@@ -4727,6 +4729,7 @@ void EventGraphWidget::compare()
   getCompareEdges(_selectedCompare, _presentTypes[0]);
   plotCompareEdges();
   updateLinkages();
+  setVisibility();
   compareButton->setEnabled(false);
 }
 

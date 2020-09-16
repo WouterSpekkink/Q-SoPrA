@@ -394,8 +394,8 @@ void MainWindow::createActions()
   connect(createCoderAct, SIGNAL(triggered()),
 	  this, SLOT(createCoder()));
 
-  editCoderAct = new QAction(tr("&Edit existing coder"), this);
-  editCoderAct->setStatusTip("Edit existing coder");
+  editCoderAct = new QAction(tr("&Rename existing coder"), this);
+  editCoderAct->setStatusTip("Rename existing coder");
   connect(editCoderAct, SIGNAL(triggered()),
 	  this, SLOT(editCoder()));
 
