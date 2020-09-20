@@ -413,6 +413,11 @@ void MainWindow::createActions()
   switchCoderAct->setStatusTip("Switch coder");
   connect(switchCoderAct, SIGNAL(triggered()),
 	  this, SLOT(switchCoder()));
+
+  compareAttributesAct = new QAction(tr("&Compare attributes between coders"), this);
+  compareAttributesAct->setStatusTip("Compare attributes between coders");
+  connect(compareAttributesAct, SIGNAL(triggered()),
+	  this, SLOT(compareAttributes()));
 }
 
 void MainWindow::createMenus() 
@@ -2907,8 +2912,6 @@ void MainWindow::deleteCoder()
 
 void MainWindow::switchCoder()
 {
-  // TO DO: WARN TO SAVE SETTINGS
-  
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT name FROM coders");
   QVector<QString> coders;
@@ -2987,4 +2990,76 @@ void MainWindow::processCoder(QString coder)
     (missingRelationshipsTableWidget);
   mrt->setCurrentCoder(coder);
   mrt->updateTable();
+}
+
+void MainWindow::compareAttributes()
+{
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first(); 
+  QString selectedCoder = query->value(0).toString();
+  QVector<QString> coders;
+  query->exec("SELECT name FROM coders");
+  while (query->next())
+    {
+      QString coder = query->value(0).toString();
+      if (coder != selectedCoder)
+	{
+	  coders.push_back(coder);
+	}
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to compare with");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      QString compare = coderDialog->getSelection();
+      QVector<QPair<QString, int>> coderOne;
+      QVector<QPair<QString, int>> coderTwo;
+      query->prepare("SELECT attribute. incident FROM attributes_to_incidents "
+		     "WHERE coder = :coder");
+      query->bindValue(":coder", selectedCoder);
+      query->exec();
+      while (query->next())
+	{
+	  QString attribute = query->value(0).toString();
+	  int incident = query->value(1).toInt();
+	  coderOne.push_back(QPair<QString, int>(attribute, incident));
+	}
+      query->bindValue(":coder", compare);
+      query->exec();
+      while (query->next())
+	{
+	  QString attribute = query->value(0).toString();
+	  int incident = query->value(1).toInt();
+	  coderTwo.push_back(QPair<QString, int>(attribute, incident));
+	}
+      QVectorIterator<QPair<QString, int>> coderOneIt(coderOne);
+      int coderTwoHasToo = 0;
+      int coderTwoHasNot = 0;
+      while (coderOneIt.hasNext())
+	{
+	  QPair<QString, int> currentPair = coderOneIt.next();
+	  if (coderTwo.contains(currentPair))
+	    {
+	      coderTwoHasToo++;
+	    }
+	  else
+	    {
+	      coderTwoHasNot++;
+	    }
+	}
+      QVectorIterator<QPair<QString, int>> coderTwoIt(coderTwo);
+      int coderOneHasNot = 0;
+      while (coderTwoIt.hasNext())
+	{
+	  QPair<QString, int> currentPair = coderTwoIt.next();
+	  if (!coderOne.contains(currentPair))
+	    {
+	      coderOneHasNot++;
+	    }
+	}
+    }
+  delete coderDialog;
+  delete query;
 }
