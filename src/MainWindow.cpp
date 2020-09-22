@@ -3014,51 +3014,71 @@ void MainWindow::compareAttributes()
   if (coderDialog->getExitStatus() == 0)
     {
       QString compare = coderDialog->getSelection();
-      QVector<QPair<QString, int>> coderOne;
-      QVector<QPair<QString, int>> coderTwo;
-      query->prepare("SELECT attribute. incident FROM attributes_to_incidents "
-		     "WHERE coder = :coder");
-      query->bindValue(":coder", selectedCoder);
-      query->exec();
+      QMap<int, QVector<QString>> coderOne;
+      QMap<int, QVector<QString>> coderTwo;
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT attribute FROM attributes_to_incidents "
+		      "WHERE incident = :incident AND coder = :coder");
+      query->exec("SELECT id FROM incidents");
       while (query->next())
 	{
-	  QString attribute = query->value(0).toString();
-	  int incident = query->value(1).toInt();
-	  coderOne.push_back(QPair<QString, int>(attribute, incident));
-	}
-      query->bindValue(":coder", compare);
-      query->exec();
-      while (query->next())
-	{
-	  QString attribute = query->value(0).toString();
-	  int incident = query->value(1).toInt();
-	  coderTwo.push_back(QPair<QString, int>(attribute, incident));
-	}
-      QVectorIterator<QPair<QString, int>> coderOneIt(coderOne);
-      int coderTwoHasToo = 0;
-      int coderTwoHasNot = 0;
-      while (coderOneIt.hasNext())
-	{
-	  QPair<QString, int> currentPair = coderOneIt.next();
-	  if (coderTwo.contains(currentPair))
+	  int incident = query->value(0).toInt();
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":coder", selectedCoder);
+	  query2->exec();
+	  QVector<QString> attributes;
+	  while (query2->next())
 	    {
-	      coderTwoHasToo++;
+	      attributes.push_back(query2->value(0).toString());
 	    }
-	  else
+	  coderOne.insert(incident, attributes);
+	  attributes.clear();
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":coder", compare);
+	  query2->exec();
+	  while (query2->next())
 	    {
-	      coderTwoHasNot++;
+	      attributes.push_back(query2->value(0).toString());
 	    }
+	  coderTwo.insert(incident, attributes);
 	}
-      QVectorIterator<QPair<QString, int>> coderTwoIt(coderTwo);
-      int coderOneHasNot = 0;
-      while (coderTwoIt.hasNext())
+      delete query2;
+      int agreement = 0;
+      int disagreement = 0;
+      while (query->previous())
 	{
-	  QPair<QString, int> currentPair = coderTwoIt.next();
-	  if (!coderOne.contains(currentPair))
+	  int incident = query->value(0).toInt();
+	  QVector<QString> coderOneVec = coderOne.value(incident);
+	  QVector<QString> coderTwoVec = coderTwo.value(incident);
+	  QVectorIterator<QString> coderOneVecIt(coderOneVec);
+	  QVectorIterator<QString> coderTwoVecIt(coderTwoVec);
+	  while (coderOneVecIt.hasNext())
 	    {
-	      coderOneHasNot++;
+	      if (coderTwoVec.contains(coderOneVecIt.next()))
+		{
+		  agreement++;
+		}
+	      else
+		{
+		  disagreement++;
+		}
+	    }
+	  while (coderTwoVecIt.hasNext())
+	    {
+	      if (!coderOneVec.contains(coderTwoVecIt.next()))
+		{
+		  disagreement++;
+		}
 	    }
 	}
+        QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	warningBox->setWindowTitle("Agreement");
+	warningBox->addButton(QMessageBox::Ok);
+	warningBox->setIcon(QMessageBox::Warning);
+	warningBox->setText("<h2>Agreement:</h2>");
+	warningBox->setInformativeText("Agreement = " + QString::number(agreement) +
+				       " and disagreement = " + QString::number(disagreement));
+	warningBox->exec();
     }
   delete coderDialog;
   delete query;
