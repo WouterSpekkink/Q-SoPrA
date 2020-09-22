@@ -1365,7 +1365,7 @@ void AttributesWidget::assignAttribute()
 	  if (query->isNull(0)) 
 	    {
 	      query->prepare("INSERT INTO attributes_to_incidents "
-			     "(attribute, incident) "
+			     "(attribute, incident, coder) "
 			     "VALUES (:attribute, :incident, :coder)");
 	      query->bindValue(":attribute", attribute);
 	      query->bindValue(":incident", id);
