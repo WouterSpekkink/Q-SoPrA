@@ -179,6 +179,9 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE coders "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text)");
+	  query->exec("INSERT INTO coders "
+		      "(name) "
+		      "VALUES ('Default')");
 	  query->exec("CREATE TABLE coders_to_linkage_types "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "coder text, "
@@ -196,7 +199,7 @@ void WelcomeDialog::newDatabase()
 		      "(attributes_record integer, "
 		      "relationships_record integer, "
 		      "coder text, "
-		      "defaul_coder text)");
+		      "default_coder text)");
 	  query->exec("INSERT INTO save_data "
 		      "(attributes_record, "
 		      "relationships_record, "
