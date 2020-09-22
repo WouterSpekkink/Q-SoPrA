@@ -468,6 +468,7 @@ void MainWindow::createMenus()
   coderMenu->addAction(deleteCoderAct);
   coderMenu->addAction(renameDefaultCoderAct);
   coderMenu->addAction(switchCoderAct);
+  coderMenu->addAction(compareAttributesAct);
   
   toolMenu = menuBar->addMenu("Tools");
   toolMenu->addAction(dataViewAct);
@@ -3045,7 +3046,8 @@ void MainWindow::compareAttributes()
       delete query2;
       int agreement = 0;
       int disagreement = 0;
-      while (query->previous())
+      query->exec("SELECT id FROM incidents");
+      while (query->next())
 	{
 	  int incident = query->value(0).toInt();
 	  QVector<QString> coderOneVec = coderOne.value(incident);
