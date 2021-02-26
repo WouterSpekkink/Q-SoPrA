@@ -55,7 +55,7 @@ AbstractNode::AbstractNode(int width,
   _constraint = constraint;
   _copy = false;
   _massHidden = false;
-  
+
   setCursor(Qt::OpenHandCursor);
   setAcceptedMouseButtons(Qt::LeftButton);
   setFlag(QGraphicsItem::ItemIsSelectable);

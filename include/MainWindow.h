@@ -117,6 +117,7 @@ private slots:
   void switchCoder();
   void processCoder(QString coder);
   void processDefault(QString oldName, QString newName);
+  void compareAttributes();
 
 protected:
   // Overrride event
@@ -204,6 +205,7 @@ private:
   QPointer<QAction> deleteCoderAct;
   QPointer<QAction> switchCoderAct;
   QPointer<QAction> renameDefaultCoderAct;
+  QPointer<QAction> compareAttributesAct;
 };
 
 #endif

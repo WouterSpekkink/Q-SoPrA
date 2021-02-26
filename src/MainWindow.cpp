@@ -413,6 +413,11 @@ void MainWindow::createActions()
   switchCoderAct->setStatusTip("Switch coder");
   connect(switchCoderAct, SIGNAL(triggered()),
 	  this, SLOT(switchCoder()));
+
+  compareAttributesAct = new QAction(tr("&Compare attributes between coders"), this);
+  compareAttributesAct->setStatusTip("Compare attributes between coders");
+  connect(compareAttributesAct, SIGNAL(triggered()),
+	  this, SLOT(compareAttributes()));
 }
 
 void MainWindow::createMenus() 
@@ -463,6 +468,7 @@ void MainWindow::createMenus()
   coderMenu->addAction(deleteCoderAct);
   coderMenu->addAction(renameDefaultCoderAct);
   coderMenu->addAction(switchCoderAct);
+  coderMenu->addAction(compareAttributesAct);
   
   toolMenu = menuBar->addMenu("Tools");
   toolMenu->addAction(dataViewAct);
@@ -2907,8 +2913,6 @@ void MainWindow::deleteCoder()
 
 void MainWindow::switchCoder()
 {
-  // TO DO: WARN TO SAVE SETTINGS
-  
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT name FROM coders");
   QVector<QString> coders;
@@ -2987,4 +2991,188 @@ void MainWindow::processCoder(QString coder)
     (missingRelationshipsTableWidget);
   mrt->setCurrentCoder(coder);
   mrt->updateTable();
+}
+
+void MainWindow::compareAttributes()
+{
+  // TO DO: Instructions to user
+  QPointer <QMessageBox> warningBox = new QMessageBox(this);
+  warningBox->setWindowTitle("Assumptions of agreement analysis");
+  warningBox->addButton(QMessageBox::Ok);
+  warningBox->setIcon(QMessageBox::Warning);
+  warningBox->setText("<h2>Assumptions of agreement analysis:</h2>");
+  warningBox->setInformativeText("For the calculation of Krippendorff's alpha, Q-SoPrA "
+				 "assumes that two coders have independently coded a set "
+				 "of incidents in one semantic domain.\n\nCodes in the same "
+				 "semantic domain are exclusive. You are therefore asked "
+				 "to select codes that belong to the same semantic domain "
+				 "in the next dialog.\n\nIncidents that are not coded by "
+				 "one or both of the coders are ignored by Q-SoPrA.");
+  warningBox->exec();
+  // We want the user to choose a semantic domain, consist out of codes that
+  // are mutually exclusive
+  QVector<QPair<QString, bool> > tempVec;
+  QPointer<AttributeCheckBoxDialog> attributeDialog = new AttributeCheckBoxDialog(this, INCIDENT);
+  attributeDialog->exec();
+  if (attributeDialog->getExitStatus() == 0) 
+    {
+      tempVec = attributeDialog->getAttributes();
+    }
+  else
+    {
+      return;
+    }
+  QVector<QString> chosenAttributes;
+  QVectorIterator<QPair<QString, bool>> attIt(tempVec);
+  while (attIt.hasNext())
+    {
+      chosenAttributes.push_back(attIt.next().first);
+    }
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT coder FROM save_data");
+  query->first(); 
+  QString selectedCoder = query->value(0).toString();
+  QVector<QString> coders;
+  query->exec("SELECT name FROM coders");
+  while (query->next())
+    {
+      QString coder = query->value(0).toString();
+      if (coder != selectedCoder)
+	{
+	  coders.push_back(coder);
+	}
+    }
+  QPointer<ComboBoxDialog> coderDialog = new ComboBoxDialog(this, coders);
+  coderDialog->setWindowTitle("Select coder to compare with");
+  coderDialog->exec();
+  if (coderDialog->getExitStatus() == 0)
+    {
+      QString compare = coderDialog->getSelection();
+      QMap<int, QString> coderOne;
+      QMap<int, QString> coderTwo;
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT attribute FROM attributes_to_incidents "
+		      "WHERE incident = :incident AND coder = :coder");
+      query->exec("SELECT id FROM incidents");
+      while (query->next())
+	{
+	  int incident = query->value(0).toInt();
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":coder", selectedCoder);
+	  query2->exec();
+	  QVector<QString> attributes;
+	  while (query2->next())
+	    {
+	      QString currentAttribute = query2->value(0).toString();
+	      if (chosenAttributes.contains(currentAttribute))
+		{
+		  attributes.push_back(currentAttribute);
+		}
+	    }
+	  if (attributes.size() > 1)
+	    {
+	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->setWindowTitle("Multiple codes found for incident");
+	      warningBox->addButton(QMessageBox::Ok);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<h2>Cannot proceed:</h2>");
+	      warningBox->setInformativeText("More than one code was found for some incident. "
+					     "The reliability score will only work for semantic "
+					     "domains of mutually exclusive codes.");
+	      warningBox->exec();
+	      return;
+	    }
+	  else if (attributes.size() == 1)
+	    {
+	      coderOne.insert(incident, attributes.first());
+	    }
+	  attributes.clear();
+	  query2->bindValue(":incident", incident);
+	  query2->bindValue(":coder", compare);
+	  query2->exec();
+	  while (query2->next())
+	    {
+	      QString currentAttribute = query2->value(0).toString();
+	      if (chosenAttributes.contains(currentAttribute))
+		{
+		  attributes.push_back(currentAttribute);
+		}
+	    }
+	   if (attributes.size() > 1)
+	    {
+	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+	      warningBox->setWindowTitle("Multiple codes found for incident");
+	      warningBox->addButton(QMessageBox::Ok);
+	      warningBox->setIcon(QMessageBox::Warning);
+	      warningBox->setText("<h2>Cannot proceed:</h2>");
+	      warningBox->setInformativeText("More than one code was found for some incident. "
+					     "The reliability score will only work for semantic "
+					     "domains of mutually exclusive codes.");
+	      warningBox->exec();
+	      return;
+	    }
+	   else if (attributes.size() == 1)
+	     {
+	       coderTwo.insert(incident, attributes.first());
+	     }
+	}
+      delete query2;
+      query->exec("SELECT id FROM incidents");
+      int count = 0;
+      QMap<QPair<QString, QString>, int> matrix;
+      while (query->next())
+	{
+	  int incident = query->value(0).toInt();
+	  if (coderOne.value(incident) != "" && coderTwo.value(incident) != "")
+	    {
+	      count++;
+	      QString coderOneCode = coderOne.value(incident);
+	      QString coderTwoCode = coderTwo.value(incident);
+	      int currentValue = matrix.value(QPair<QString, QString>(coderOneCode,coderTwoCode));
+	      currentValue++;
+	      matrix.insert(QPair<QString, QString>(coderOneCode, coderTwoCode), currentValue);
+	      currentValue = matrix.value(QPair<QString, QString>(coderTwoCode,coderOneCode));
+	      currentValue++;
+	      matrix.insert(QPair<QString, QString>(coderTwoCode, coderOneCode), currentValue);
+	    }
+	}
+      count *= 2;
+      int agreement = 0;
+      QMap<QString, int> rowSums;
+      QMapIterator<QPair<QString, QString>, int> mIt(matrix);
+      while (mIt.hasNext())
+	{
+	  mIt.next();
+	  QPair<QString, QString> cell = mIt.key();
+	  int cellValue = mIt.value();
+	  if (cell.first == cell.second)
+	    {
+	      agreement = agreement + cellValue;
+	    }
+	  int rowSum = rowSums.value(cell.first);
+	  rowSum = rowSum + cellValue;
+	  rowSums.insert(cell.first, rowSum);
+	}
+      int expected = 0;
+      QMapIterator<QString, int> rIt(rowSums);
+      while (rIt.hasNext())
+	{
+	  rIt.next();
+	  int value = rIt.value();
+	  int result = value * (value - 1);
+	  expected = expected + result;
+	}
+      qreal numerator = qreal(((count - 1) * agreement) - expected);
+      qreal divisor = qreal((count * (count - 1)) - expected);
+      qreal alpha = numerator / divisor;
+      QPointer <QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Agreement");
+      warningBox->addButton(QMessageBox::Ok);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Agreement:</h2>");
+      warningBox->setInformativeText("Krippendorff's alpha = " + QString::number(alpha) + ".");
+      warningBox->exec();
+    }
+  delete coderDialog;
+  delete query;
 }

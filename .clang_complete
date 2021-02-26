@@ -2,10 +2,10 @@
 -Iinclude
 -I../common
 -I/usr/include/c++/6.3.0/
--I/usr/include//qt
+-I/usr/include/qt
 -I/usr/include/qt/QtSvg
 -I/usr/include/qt/QtWidgets
 -I/usr/include/qt/QtGui
 -I/usr/include/qt/QtSql
 -I/usr/include/qt/QtCore
--I/usr/lib/qt/mkspecs/linux-g++-
+-I/usr/lib/qt/mkspecs/linux-g++
