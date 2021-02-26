@@ -2928,19 +2928,19 @@ void MainWindow::switchCoder()
       QPointer<QMessageBox> warningBox = new QMessageBox(this);
       warningBox->setWindowTitle("Switching coder");
       QPointer<QAbstractButton> continueButton = warningBox->addButton(tr("Continue"),
-								       QMessageBox::YesRole);
+                                                                       QMessageBox::YesRole);
       warningBox->addButton(QMessageBox::Cancel);
       warningBox->setIcon(QMessageBox::Warning);
       warningBox->setText("<h2>Save changes in visualizations!</h2>");
       warningBox->setInformativeText("Before switching coders, make sure that any changes in "
-				     "visualisations that you would like to keep have been saved. "
-				     "Any unsaved changes are lost upon switching coders.");
+                                     "visualisations that you would like to keep have been saved. "
+                                     "Any unsaved changes are lost upon switching coders.");
       warningBox->exec();
       if (warningBox->clickedButton() == continueButton) 
-	{
-	  QString coder = coderDialog->getSelection();
-	  processCoder(coder);
-	}
+      {
+        QString coder = coderDialog->getSelection();
+        processCoder(coder);
+      }
       delete warningBox;
     }
   delete coderDialog;
