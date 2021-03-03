@@ -1,34 +1,34 @@
 /*
 
-Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
 
-This file is part of Q-SoPrA.
+  This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Q-SoPrA is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
-***********
+  ***********
 
-The technique for drawing arrowhead polygons is based upon examples 
-provided by the Qt Company under the BSD license, 
-with the copyright shown below:
+  The technique for drawing arrowhead polygons is based upon examples
+  provided by the Qt Company under the BSD license,
+  with the copyright shown below:
 
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
+  ** Copyright (C) 2016 The Qt Company Ltd.
+  ** Contact: https://www.qt.io/licensing/
 
-http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-cpp.html
-http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
+  http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-cpp.html
+  http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 
 */
 
@@ -39,7 +39,7 @@ http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 #include <QtCore>
 
 UndirectedEdge::UndirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
-			       QString name, QGraphicsItem *parent)
+                               QString name, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) 
 {
   _start = start;
@@ -85,7 +85,10 @@ void UndirectedEdge::calculate()
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLineOne = QLineF(_controlPoint, _end->pos());
-  _ghostLineOne.setLength(_ghostLineOne.length() - 18);
+  if (_ghostLineOne.length() > 18)
+  {
+    _ghostLineOne.setLength(_ghostLineOne.length() - 18);
+  }
   newLine = QLineF(_end->pos(), _start->pos());
   newLine.setLength(newLine.length() - 18);
   mX = (_end->pos().x() + newLine.p2().x()) / 2;
@@ -94,7 +97,10 @@ void UndirectedEdge::calculate()
   cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLineTwo = QLineF(_controlPoint, _start->pos());
-  _ghostLineTwo.setLength(_ghostLineTwo.length() - 18);
+  if (_ghostLineTwo.length() > 18)
+  {
+    _ghostLineTwo.setLength(_ghostLineTwo.length() - 18);
+  }
   // Then we do some calculations to determine how our arrows are drawn.
   double angle = ::acos(_ghostLineOne.dx() / _ghostLineOne.length());
   if (_ghostLineOne.dy() >= 0)
@@ -104,19 +110,25 @@ void UndirectedEdge::calculate()
     angle2 = (Pi * 2) - angle2;
   qreal arrowSize = 10 + _penWidth;
   _arrowP1 = _ghostLineOne.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-					cos(angle + Pi / 3) * arrowSize);
+                                          cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _ghostLineOne.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-					cos(angle + Pi - Pi / 3) * arrowSize);
+                                          cos(angle + Pi - Pi / 3) * arrowSize);
   _arrowP3 = _ghostLineTwo.p2() - QPointF(sin(angle2 + Pi /3) * arrowSize,
-					cos(angle2 + Pi / 3) * arrowSize);
+                                          cos(angle2 + Pi / 3) * arrowSize);
   _arrowP4 = _ghostLineTwo.p2() - QPointF(sin(angle2 + Pi - Pi / 3) * arrowSize,
-					cos(angle2 + Pi - Pi / 3) * arrowSize);
+                                          cos(angle2 + Pi - Pi / 3) * arrowSize);
   _arrowHeadOne.clear();
   _arrowHeadOne << _ghostLineOne.p2() << _arrowP1 << _arrowP2;
   _arrowHeadTwo.clear();
   _arrowHeadTwo << _ghostLineTwo.p2() << _arrowP3 << _arrowP4;
-  _ghostLineOne.setLength(_ghostLineOne.length() - 5);
-  _ghostLineTwo.setLength(_ghostLineTwo.length() - 5);
+  if (_ghostLineOne.length() > 5)
+  {
+    _ghostLineOne.setLength(_ghostLineOne.length() - 5);
+  }
+  if (_ghostLineTwo.length() > 5)
+  {
+    _ghostLineTwo.setLength(_ghostLineTwo.length() - 5);
+  }
   prepareGeometryChange();
 }
 
@@ -246,10 +258,10 @@ void UndirectedEdge::insertIncidents(const QSet<int> &incidents)
 {
   QSetIterator<int> it(incidents);
   while (it.hasNext())
-    {
-      int incident = it.next();
-      _incidents.insert(incident);
-    }
+  {
+    int incident = it.next();
+    _incidents.insert(incident);
+  }
 }
 
 void UndirectedEdge::insertIncident(const int &incident)

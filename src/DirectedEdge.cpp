@@ -1,34 +1,34 @@
 /*
 
-Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
 
-This file is part of Q-SoPrA.
+  This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Q-SoPrA is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
-***********
+  ***********
 
-The technique for drawing arrowhead polygons is based upon examples 
-provided by the Qt Company under the BSD license, 
-with the copyright shown below:
+  The technique for drawing arrowhead polygons is based upon examples
+  provided by the Qt Company under the BSD license,
+  with the copyright shown below:
 
-** Copyright (C) 2016 The Qt Company Ltd.
-** Contact: https://www.qt.io/licensing/
+  ** Copyright (C) 2016 The Qt Company Ltd.
+  ** Contact: https://www.qt.io/licensing/
 
-http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-cpp.html
-http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
+  http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-cpp.html
+  http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 
 */
 
@@ -39,7 +39,7 @@ http://doc.qt.io/qt-5/qtwidgets-graphicsview-diagramscene-arrow-h.html
 #include <QtCore>
 
 DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
-			   QString name, QGraphicsItem *parent)
+                           QString name, QGraphicsItem *parent)
   : QGraphicsLineItem(parent) 
 {
   _start = start;
@@ -83,20 +83,26 @@ void DirectedEdge::calculate()
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLine = QLineF(_controlPoint, _end->pos());
-  _ghostLine.setLength(_ghostLine.length() - 18);
+  if (_ghostLine.length() > 18)
+  {
+    _ghostLine.setLength(_ghostLine.length() - 18);
+  }
   double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
   if (_ghostLine.dy() >= 0)
-    {
-      angle = (Pi * 2) - angle;
-    }
+  {
+    angle = (Pi * 2) - angle;
+  }
   qreal arrowSize = 10 + _penWidth;
   _arrowP1 = _ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-				     cos(angle + Pi / 3) * arrowSize);
+                                       cos(angle + Pi / 3) * arrowSize);
   _arrowP2 = _ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-				     cos(angle + Pi - Pi / 3) * arrowSize);
+                                       cos(angle + Pi - Pi / 3) * arrowSize);
   _arrowHead.clear();
   _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
-  _ghostLine.setLength(_ghostLine.length() - 5);
+  if (_ghostLine.length() > 5)
+  {
+    _ghostLine.setLength(_ghostLine.length() - 5);
+  }
   prepareGeometryChange();
 }
 
@@ -223,10 +229,10 @@ void DirectedEdge::insertIncidents(const QSet<int> &incidents)
 {
   QSetIterator<int> it(incidents);
   while (it.hasNext())
-    {
-      int incident = it.next();
-      _incidents.insert(incident);
-    }
+  {
+    int incident = it.next();
+    _incidents.insert(incident);
+  }
 }
 
 void DirectedEdge::insertIncident(const int &incident)
