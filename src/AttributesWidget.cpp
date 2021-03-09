@@ -1253,10 +1253,7 @@ void AttributesWidget::highlightText()
     QSqlQuery *query = new QSqlQuery;
     if (currentAttribute->font().bold())
     {
-      query->prepare("SELECT attributes_record FROM save_data "
-                     "WHERE coder = :coder");
-      query->bindValue(":coder", _selectedCoder);
-      query->exec();
+      query->exec("SELECT attributes_record FROM save_data");
       query->first();
       int order = 0;
       if (!query->isNull(0))
