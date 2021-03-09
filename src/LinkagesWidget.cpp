@@ -3761,10 +3761,12 @@ void LinkagesWidget::setLinkageComment()
     query->first();
     int headId = query->value(0).toInt();
     query->prepare("SELECT tail FROM linkage_comments "
-                   "WHERE tail = :tail AND head = :head AND type = :type");
+                   "WHERE tail = :tail AND head = :head "
+                   "AND type = :type AND coder = :coder");
     query->bindValue(":tail", tailId);
     query->bindValue(":head", headId);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":coder", _selectedCoder);
     query->exec();
     query->first();
     if (!(query->isNull(0)))
@@ -3785,10 +3787,11 @@ void LinkagesWidget::setLinkageComment()
 	    {
 	      query->prepare("DELETE FROM linkage_comments "
                        "WHERE tail = :tail AND head = :head AND "
-                       "type = :type");
+                       "type = :type AND coder = :coder");
 	      query->bindValue(":tail", tailId);
 	      query->bindValue(":head", headId);
 	      query->bindValue(":type", _selectedType);
+        query->bindValue(":coder", _selectedCoder);
 	      query->exec();
 	    }
     }

@@ -1,29 +1,29 @@
 /*
 
-Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
 
-This file is part of Q-SoPrA.
+  This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Q-SoPrA is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
 #include "../include/EvidenceDialog.h"
 
 EvidenceDialog::EvidenceDialog(int tail, int head, QString type, QString coder, QWidget *parent)
-: QDialog(parent)
+  : QDialog(parent)
 {
   _tail = tail;
   _head = head;
@@ -105,76 +105,76 @@ void EvidenceDialog::getData()
   headTextField->setTextCursor(headCursor);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT raw FROM incidents "
-		 "WHERE id = :tail");
+                 "WHERE id = :tail");
   query->bindValue(":tail", _tail);
   query->exec();
   query->first();
   tailTextField->setPlainText(query->value(0).toString());
   query->prepare("SELECT raw FROM incidents "
-		 "WHERE id = :head");
+                 "WHERE id = :head");
   query->bindValue(":head", _head);
   query->exec();
   query->first();
   headTextField->setPlainText(query->value(0).toString());
   query->prepare("SELECT istail, source_text FROM linkages_sources "
-		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+                 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", _tail);
   query->bindValue(":head", _head);
   query->bindValue(":type", _type);
   query->bindValue(":coder", _coder);
   query->exec();
   while (query->next())
+  {
+    bool isTail = false;
+    if (query->value(0).toInt() == true)
     {
-      bool isTail = false;
-      if (query->value(0).toInt() == true)
-	{
-	  isTail = true;
-	}
-      if (!query->isNull(1) && isTail)
-	{
-	  QString tailText = query->value(1).toString();
-	  QVector<QString> tailBlocks = splitLines(tailText);
-	  QVectorIterator<QString> it(tailBlocks);
-	  while (it.hasNext()) 
+      isTail = true;
+    }
+    if (!query->isNull(1) && isTail)
+    {
+      QString tailText = query->value(1).toString();
+      QVector<QString> tailBlocks = splitLines(tailText);
+      QVectorIterator<QString> it(tailBlocks);
+      while (it.hasNext())
 	    {
 	      QString currentLine = it.next();
 	      while (tailTextField->find(currentLine, QTextDocument::FindWholeWords)) 
-		{
-		  format.setFontWeight(QFont::Bold);
-		  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-		  format.setUnderlineColor(Qt::blue);
-		  tailTextField->textCursor().mergeCharFormat(format);
-		}
+        {
+          format.setFontWeight(QFont::Bold);
+          format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+          format.setUnderlineColor(Qt::blue);
+          tailTextField->textCursor().mergeCharFormat(format);
+        }
 	    }
-	  tailCursor = tailTextField->textCursor();
-	  tailCursor.movePosition(QTextCursor::Start);
-	  tailTextField->setTextCursor(tailCursor);
-	}
-      else if (!query->isNull(1) && !isTail)
-	{
-	  QString headText = query->value(1).toString();
-	  QVector<QString> headBlocks = splitLines(headText);
-	  QVectorIterator<QString> it(headBlocks);
-	  while (it.hasNext()) 
+      tailCursor = tailTextField->textCursor();
+      tailCursor.movePosition(QTextCursor::Start);
+      tailTextField->setTextCursor(tailCursor);
+    }
+    else if (!query->isNull(1) && !isTail)
+    {
+      QString headText = query->value(1).toString();
+      QVector<QString> headBlocks = splitLines(headText);
+      QVectorIterator<QString> it(headBlocks);
+      while (it.hasNext())
 	    {
 	      QString currentLine = it.next();
 	      while (headTextField->find(currentLine, QTextDocument::FindWholeWords)) 
-		{
-		  format.setFontWeight(QFont::Bold);
-		  format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-		  format.setUnderlineColor(Qt::blue);
-		  headTextField->textCursor().mergeCharFormat(format);
-		}
+        {
+          format.setFontWeight(QFont::Bold);
+          format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+          format.setUnderlineColor(Qt::blue);
+          headTextField->textCursor().mergeCharFormat(format);
+        }
 	    }
-	  headCursor = headTextField->textCursor();
-	  headCursor.movePosition(QTextCursor::Start);
-	  headTextField->setTextCursor(headCursor);
-	}
+      headCursor = headTextField->textCursor();
+      headCursor.movePosition(QTextCursor::Start);
+      headTextField->setTextCursor(headCursor);
     }
+  }
   currentTailPos.movePosition(QTextCursor::Start);
   currentHeadPos.movePosition(QTextCursor::Start);
   query->prepare("SELECT comment FROM linkage_comments "
-		 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
+                 "WHERE tail = :tail AND head = :head AND type = :type AND coder = :coder");
   query->bindValue(":tail", _tail);
   query->bindValue(":head", _head);
   query->bindValue(":type", _type);
@@ -182,9 +182,9 @@ void EvidenceDialog::getData()
   query->exec();
   query->first();
   if (!query->isNull(0))
-    {
-      commentField->setPlainText(query->value(0).toString());
-    }
+  {
+    commentField->setPlainText(query->value(0).toString());
+  }
   delete query;
   tailTextField->verticalScrollBar()->setValue(0);
   headTextField->verticalScrollBar()->setValue(0);
@@ -194,35 +194,35 @@ void EvidenceDialog::saveAndClose()
 {
   QString currentComment = commentField->toPlainText();
   if (currentComment != "")
+  {
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("SELECT comment FROM linkage_comments "
+                   "WHERE type = :type AND tail = :tail AND head = :head");
+    query->bindValue(":type", _type);
+    query->bindValue(":tail", _tail);
+    query->bindValue(":head", _head);
+    query->exec();
+    query->first();
+    if (!query->isNull(0))
     {
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("SELECT comment FROM linkage_comments "
-		     "WHERE type = :type AND tail = :tail AND head = :head");
-      query->bindValue(":type", _type);
-      query->bindValue(":tail", _tail);
-      query->bindValue(":head", _head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0)) 
-	{
-	  query->prepare("UPDATE linkage_comments "
-			 "SET comment = :comment, coder = :coder "
-			 "WHERE type = :type AND tail = :tail AND head = :head");
-	}
-      else
-	{
-	  query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
-			 "VALUES (:comment, :coder, :type, :tail, :head)");
-	}
-      query->bindValue(":comment", currentComment);
-      query->bindValue(":coder", _coder);
-      query->bindValue(":type", _type);
-      query->bindValue(":tail", _tail);
-      query->bindValue(":head", _head);
-      query->exec();      
-      delete query;
-      _comment = _coder + " - " + currentComment;
+      query->prepare("UPDATE linkage_comments "
+                     "SET comment = :comment, coder = :coder "
+                     "WHERE type = :type AND tail = :tail AND head = :head");
     }
+    else
+    {
+      query->prepare("INSERT INTO linkage_comments (comment, coder, type, tail, head) "
+                     "VALUES (:comment, :coder, :type, :tail, :head)");
+    }
+    query->bindValue(":comment", currentComment);
+    query->bindValue(":coder", _coder);
+    query->bindValue(":type", _type);
+    query->bindValue(":tail", _tail);
+    query->bindValue(":head", _head);
+    query->exec();
+    delete query;
+    _comment = _coder + " - " + currentComment;
+  }
   this->close();
 }
 
