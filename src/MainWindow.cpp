@@ -2995,7 +2995,8 @@ void MainWindow::processCoder(QString coder)
 
 void MainWindow::compareAttributes()
 {
-  // TO DO: Instructions to user
+  // TODO: Instructions to user
+  // TODO: Find good way to include attributes that were assigned in event graphs, if sensible.
   QPointer <QMessageBox> warningBox = new QMessageBox(this);
   warningBox->setWindowTitle("Assumptions of agreement analysis");
   warningBox->addButton(QMessageBox::Ok);
@@ -3168,9 +3169,8 @@ void MainWindow::compareAttributes()
     QPointer <QMessageBox> warningBox = new QMessageBox(this);
     warningBox->setWindowTitle("Agreement");
     warningBox->addButton(QMessageBox::Ok);
-    warningBox->setIcon(QMessageBox::Warning);
-    warningBox->setText("<h2>Agreement:</h2>");
-    warningBox->setInformativeText("Krippendorff's alpha = " + QString::number(alpha) + ".");
+    warningBox->setIcon(QMessageBox::Information);
+    warningBox->setText("<h2>Agreement:</h2>\n\nKrippendorff's alpha = " + QString::number(alpha) + ".");
     warningBox->exec();
   }
   delete coderDialog;
