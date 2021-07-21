@@ -21,7 +21,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also make your code fail to compile if you use deprecated APIs.
 # In order to do so, uncomment the following line.
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
-#DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
+DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 # Input
 HEADERS += include/AbstractionDialog.h \
@@ -117,6 +117,7 @@ HEADERS += include/AbstractionDialog.h \
            include/SimpleTextDialog.h \
            include/SortFunctions.h \
            include/SupportingFunctions.h \
+           include/SystemGraphWidget.h \
            include/TextEdit.h \
            include/TextObject.h \
            include/TimeLineObject.h \
@@ -218,6 +219,7 @@ SOURCES += main.cpp \
            src/SimpleTextDialog.cpp \
            src/SortFunctions.cpp \
            src/SupportingFunctions.cpp \
+           src/SystemGraphWidget.cpp \
            src/TextEdit.cpp \
            src/TextObject.cpp \
            src/TimeLineObject.cpp \

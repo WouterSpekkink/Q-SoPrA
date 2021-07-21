@@ -14,7 +14,7 @@ EQ            = =
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_DEPRECATED_WARNINGS -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
+DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_DEPRECATED_WARNINGS -DQT_DISABLE_DEPRECATED_BEFORE=0x060000 -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I/usr/include/qt -I/usr/include/qt/QtSvg -I/usr/include/qt/QtOpenGL -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtSql -I/usr/include/qt/QtCore -I. -I/usr/lib/qt/mkspecs/linux-g++
@@ -145,6 +145,7 @@ SOURCES       = main.cpp \
 		src/SimpleTextDialog.cpp \
 		src/SortFunctions.cpp \
 		src/SupportingFunctions.cpp \
+		src/SystemGraphWidget.cpp \
 		src/TextEdit.cpp \
 		src/TextObject.cpp \
 		src/TimeLineObject.cpp \
@@ -226,6 +227,7 @@ SOURCES       = main.cpp \
 		moc_Scene.cpp \
 		moc_SimpleAttributeSelectionDialog.cpp \
 		moc_SimpleTextDialog.cpp \
+		moc_SystemGraphWidget.cpp \
 		moc_TextEdit.cpp \
 		moc_TimeRangeDialog.cpp \
 		moc_WelcomeDialog.cpp \
@@ -324,6 +326,7 @@ OBJECTS       = main.o \
 		SimpleTextDialog.o \
 		SortFunctions.o \
 		SupportingFunctions.o \
+		SystemGraphWidget.o \
 		TextEdit.o \
 		TextObject.o \
 		TimeLineObject.o \
@@ -406,6 +409,7 @@ OBJECTS       = main.o \
 		moc_Scene.o \
 		moc_SimpleAttributeSelectionDialog.o \
 		moc_SimpleTextDialog.o \
+		moc_SystemGraphWidget.o \
 		moc_TextEdit.o \
 		moc_TimeRangeDialog.o \
 		moc_WelcomeDialog.o \
@@ -562,6 +566,7 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		/usr/lib/qt/mkspecs/modules/qt_Solid.pri \
 		/usr/lib/qt/mkspecs/modules/qt_SonnetCore.pri \
 		/usr/lib/qt/mkspecs/modules/qt_SonnetUi.pri \
+		/usr/lib/qt/mkspecs/modules/qt_Syndication.pri \
 		/usr/lib/qt/mkspecs/features/qt_functions.prf \
 		/usr/lib/qt/mkspecs/features/qt_config.prf \
 		/usr/lib/qt/mkspecs/linux-g++/qmake.conf \
@@ -679,6 +684,7 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		include/SimpleTextDialog.h \
 		include/SortFunctions.h \
 		include/SupportingFunctions.h \
+		include/SystemGraphWidget.h \
 		include/TextEdit.h \
 		include/TextObject.h \
 		include/TimeLineObject.h \
@@ -779,6 +785,7 @@ DIST          = /usr/lib/qt/mkspecs/features/spec_pre.prf \
 		src/SimpleTextDialog.cpp \
 		src/SortFunctions.cpp \
 		src/SupportingFunctions.cpp \
+		src/SystemGraphWidget.cpp \
 		src/TextEdit.cpp \
 		src/TextObject.cpp \
 		src/TimeLineObject.cpp \
@@ -949,6 +956,7 @@ Makefile: Q-SoPrA.pro /usr/lib/qt/mkspecs/linux-g++/qmake.conf /usr/lib/qt/mkspe
 		/usr/lib/qt/mkspecs/modules/qt_Solid.pri \
 		/usr/lib/qt/mkspecs/modules/qt_SonnetCore.pri \
 		/usr/lib/qt/mkspecs/modules/qt_SonnetUi.pri \
+		/usr/lib/qt/mkspecs/modules/qt_Syndication.pri \
 		/usr/lib/qt/mkspecs/features/qt_functions.prf \
 		/usr/lib/qt/mkspecs/features/qt_config.prf \
 		/usr/lib/qt/mkspecs/linux-g++/qmake.conf \
@@ -1127,6 +1135,7 @@ Makefile: Q-SoPrA.pro /usr/lib/qt/mkspecs/linux-g++/qmake.conf /usr/lib/qt/mkspe
 /usr/lib/qt/mkspecs/modules/qt_Solid.pri:
 /usr/lib/qt/mkspecs/modules/qt_SonnetCore.pri:
 /usr/lib/qt/mkspecs/modules/qt_SonnetUi.pri:
+/usr/lib/qt/mkspecs/modules/qt_Syndication.pri:
 /usr/lib/qt/mkspecs/features/qt_functions.prf:
 /usr/lib/qt/mkspecs/features/qt_config.prf:
 /usr/lib/qt/mkspecs/linux-g++/qmake.conf:
@@ -1169,8 +1178,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents resources.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /usr/lib/qt/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents include/AbstractionDialog.h include/AbstractNode.h include/AbstractNodeLabel.h include/AddEvidenceDialog.h include/AttributeCheckBoxDialog.h include/AttributeColorDialog.h include/AttributeCoverageTable.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/ConcordanceDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventTextDialog.h include/EvidenceDialog.h include/ExportTransitionMatrixDialog.h include/GuideLine.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentNode.h include/IncidentNodeLabel.h include/IncidentsAttributesTable.h include/InheritanceDialog.h include/JournalQueryModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/Linkage.h include/LinkagesIndexDialog.h include/LinkageNode.h include/LinkageNodeLabel.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/ModeColorDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RawLinkagesTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipCheckBoxDialog.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipCoverageTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/TextEdit.h include/TextObject.h include/TimeLineObject.h include/TimeRangeDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp src/AbstractionDialog.cpp src/AbstractNode.cpp src/AbstractNodeLabel.cpp src/AddEvidenceDialog.cpp src/AttributeCheckBoxDialog.cpp src/AttributeColorDialog.cpp src/AttributeCoverageTable.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/ConcordanceDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventTextDialog.cpp src/EvidenceDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GuideLine.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentNode.cpp src/IncidentNodeLabel.cpp src/IncidentsAttributesTable.cpp src/InheritanceDialog.cpp src/JournalQueryModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/Linkage.cpp src/LinkagesIndexDialog.cpp src/LinkageNode.cpp src/LinkageNodeLabel.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/ModeColorDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RawLinkagesTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipCheckBoxDialog.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipCoverageTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/TextEdit.cpp src/TextObject.cpp src/TimeLineObject.cpp src/TimeRangeDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents include/AbstractionDialog.h include/AbstractNode.h include/AbstractNodeLabel.h include/AddEvidenceDialog.h include/AttributeCheckBoxDialog.h include/AttributeColorDialog.h include/AttributeCoverageTable.h include/AttributeDialog.h include/AttributeIndexDialog.h include/AttributeSelectionDialog.h include/AttributesWidget.h include/AttributeTreeFilter.h include/BandlessGraphicsView.h include/CaseDialog.h include/CasingWidget.h include/CheckBoxDelegate.h include/ComboBoxDialog.h include/ConcordanceDialog.h include/Constants.h include/DataWidget.h include/DeselectableListWidget.h include/DeselectableTreeView.h include/DeselectableTreeViewEntities.h include/DirectedEdge.h include/EditEntityDialog.h include/EllipseObject.h include/EntitiesAttributesTable.h include/EntitiesFilter.h include/EntityDialog.h include/EntityTableModel.h include/EventGraphWidget.h include/EventItem.h include/EventNodeSettingsDialog.h include/EventQueryModel.h include/EventSequenceDatabase.h include/EventTableModel.h include/EventTextDialog.h include/EvidenceDialog.h include/ExportTransitionMatrixDialog.h include/GuideLine.h include/GraphicsView.h include/HierarchyGraphWidget.h include/IncidentNode.h include/IncidentNodeLabel.h include/IncidentsAttributesTable.h include/InheritanceDialog.h include/JournalQueryModel.h include/JournalWidget.h include/LargeTextDialog.h include/LineageColorDialog.h include/LineObject.h include/Linkage.h include/LinkagesIndexDialog.h include/LinkageNode.h include/LinkageNodeLabel.h include/LinkagesWidget.h include/LinkageTypeDialog.h include/MainWindow.h include/MergeAttributesDialog.h include/MergeRelationshipsDialog.h include/MissingAttributesTable.h include/MissingRelationshipsTable.h include/ModeColorDialog.h include/MultimodeDialog.h include/NetworkGraphWidget.h include/NetworkNode.h include/NetworkNodeLabel.h include/NodeSettingsDialog.h include/OccurrenceGraphWidget.h include/OccurrenceItem.h include/OccurrenceLabel.h include/ProgressBar.h include/QueryModel.h include/RawAttributesTable.h include/RawRelationshipsTable.h include/RawLinkagesTable.h include/RecordDialog.h include/RectObject.h include/RelationalTable.h include/RelationshipCheckBoxDialog.h include/RelationshipColorDialog.h include/RelationshipComboBoxDialog.h include/RelationshipCoverageTable.h include/RelationshipsDialog.h include/RelationshipsWidget.h include/RelationshipTreeFilter.h include/RelationshipTypeDialog.h include/SavedPlotsDialog.h include/Scene.h include/SimpleAttributeSelectionDialog.h include/SimpleTextDialog.h include/SortFunctions.h include/SupportingFunctions.h include/SystemGraphWidget.h include/TextEdit.h include/TextObject.h include/TimeLineObject.h include/TimeRangeDialog.h include/UndirectedEdge.h include/WelcomeDialog.h include/ZoomableListView.h include/ZoomableTableView.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp src/AbstractionDialog.cpp src/AbstractNode.cpp src/AbstractNodeLabel.cpp src/AddEvidenceDialog.cpp src/AttributeCheckBoxDialog.cpp src/AttributeColorDialog.cpp src/AttributeCoverageTable.cpp src/AttributeDialog.cpp src/AttributeIndexDialog.cpp src/AttributeSelectionDialog.cpp src/AttributesWidget.cpp src/AttributeTreeFilter.cpp src/BandlessGraphicsView.cpp src/CaseDialog.cpp src/CasingWidget.cpp src/CheckBoxDelegate.cpp src/ComboBoxDialog.cpp src/ConcordanceDialog.cpp src/Constants.cpp src/DataWidget.cpp src/DeselectableListWidget.cpp src/DeselectableTreeView.cpp src/DeselectableTreeViewEntities.cpp src/DirectedEdge.cpp src/EditEntityDialog.cpp src/EllipseObject.cpp src/EntitiesAttributesTable.cpp src/EntitiesFilter.cpp src/EntityDialog.cpp src/EntityTableModel.cpp src/EventGraphWidget.cpp src/EventNodeSettingsDialog.cpp src/EventQueryModel.cpp src/EventSequenceDatabase.cpp src/EventTableModel.cpp src/EventTextDialog.cpp src/EvidenceDialog.cpp src/ExportTransitionMatrixDialog.cpp src/GuideLine.cpp src/GraphicsView.cpp src/HierarchyGraphWidget.cpp src/IncidentNode.cpp src/IncidentNodeLabel.cpp src/IncidentsAttributesTable.cpp src/InheritanceDialog.cpp src/JournalQueryModel.cpp src/JournalWidget.cpp src/LargeTextDialog.cpp src/LineageColorDialog.cpp src/LineObject.cpp src/Linkage.cpp src/LinkagesIndexDialog.cpp src/LinkageNode.cpp src/LinkageNodeLabel.cpp src/LinkagesWidget.cpp src/LinkageTypeDialog.cpp src/MainWindow.cpp src/MergeAttributesDialog.cpp src/MergeRelationshipsDialog.cpp src/MissingAttributesTable.cpp src/MissingRelationshipsTable.cpp src/ModeColorDialog.cpp src/MultimodeDialog.cpp src/NetworkGraphWidget.cpp src/NetworkNode.cpp src/NetworkNodeLabel.cpp src/NodeSettingsDialog.cpp src/OccurrenceGraphWidget.cpp src/OccurrenceItem.cpp src/OccurrenceLabel.cpp src/ProgressBar.cpp src/QueryModel.cpp src/RawAttributesTable.cpp src/RawRelationshipsTable.cpp src/RawLinkagesTable.cpp src/RecordDialog.cpp src/RectObject.cpp src/RelationalTable.cpp src/RelationshipCheckBoxDialog.cpp src/RelationshipColorDialog.cpp src/RelationshipComboBoxDialog.cpp src/RelationshipCoverageTable.cpp src/RelationshipsDialog.cpp src/RelationshipsWidget.cpp src/RelationshipTreeFilter.cpp src/RelationshipTypeDialog.cpp src/SavedPlotsDialog.cpp src/Scene.cpp src/SimpleAttributeSelectionDialog.cpp src/SimpleTextDialog.cpp src/SortFunctions.cpp src/SupportingFunctions.cpp src/SystemGraphWidget.cpp src/TextEdit.cpp src/TextObject.cpp src/TimeLineObject.cpp src/TimeRangeDialog.cpp src/UndirectedEdge.cpp src/WelcomeDialog.cpp src/ZoomableListView.cpp src/ZoomableTableView.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -1247,10 +1256,10 @@ compiler_moc_predefs_clean:
 moc_predefs.h: /usr/lib/qt/mkspecs/features/data/dummy.cpp
 	g++ -pipe -g -std=gnu++11 -Wall -Wextra -dM -E -o moc_predefs.h /usr/lib/qt/mkspecs/features/data/dummy.cpp
 
-compiler_moc_header_make_all: moc_AbstractionDialog.cpp moc_AddEvidenceDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_ConcordanceDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalQueryModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_TimeRangeDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+compiler_moc_header_make_all: moc_AbstractionDialog.cpp moc_AddEvidenceDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_ConcordanceDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalQueryModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_SystemGraphWidget.cpp moc_TextEdit.cpp moc_TimeRangeDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 compiler_moc_header_clean:
-	-$(DEL_FILE) moc_AbstractionDialog.cpp moc_AddEvidenceDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_ConcordanceDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalQueryModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_TextEdit.cpp moc_TimeRangeDialog.cpp
-	-$(DEL_FILE) moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
+	-$(DEL_FILE) moc_AbstractionDialog.cpp moc_AddEvidenceDialog.cpp moc_AttributeCheckBoxDialog.cpp moc_AttributeColorDialog.cpp moc_AttributeCoverageTable.cpp moc_AttributeDialog.cpp moc_AttributeIndexDialog.cpp moc_AttributeSelectionDialog.cpp moc_AttributesWidget.cpp moc_AttributeTreeFilter.cpp moc_BandlessGraphicsView.cpp moc_CaseDialog.cpp moc_CasingWidget.cpp moc_CheckBoxDelegate.cpp moc_ComboBoxDialog.cpp moc_ConcordanceDialog.cpp moc_DataWidget.cpp moc_DeselectableListWidget.cpp moc_DeselectableTreeView.cpp moc_DeselectableTreeViewEntities.cpp moc_EditEntityDialog.cpp moc_EntitiesAttributesTable.cpp moc_EntitiesFilter.cpp moc_EntityDialog.cpp moc_EntityTableModel.cpp moc_EventGraphWidget.cpp moc_EventNodeSettingsDialog.cpp moc_EventQueryModel.cpp moc_EventSequenceDatabase.cpp moc_EventTableModel.cpp moc_EventTextDialog.cpp moc_EvidenceDialog.cpp moc_ExportTransitionMatrixDialog.cpp moc_GraphicsView.cpp moc_HierarchyGraphWidget.cpp moc_IncidentsAttributesTable.cpp moc_InheritanceDialog.cpp moc_JournalQueryModel.cpp moc_JournalWidget.cpp moc_LargeTextDialog.cpp moc_LineageColorDialog.cpp moc_LinkagesIndexDialog.cpp moc_LinkagesWidget.cpp moc_LinkageTypeDialog.cpp moc_MainWindow.cpp moc_MergeAttributesDialog.cpp moc_MergeRelationshipsDialog.cpp moc_MissingAttributesTable.cpp moc_MissingRelationshipsTable.cpp moc_ModeColorDialog.cpp moc_MultimodeDialog.cpp moc_NetworkGraphWidget.cpp moc_NodeSettingsDialog.cpp moc_OccurrenceGraphWidget.cpp moc_ProgressBar.cpp moc_QueryModel.cpp moc_RawAttributesTable.cpp moc_RawRelationshipsTable.cpp moc_RawLinkagesTable.cpp moc_RecordDialog.cpp moc_RelationalTable.cpp moc_RelationshipCheckBoxDialog.cpp moc_RelationshipColorDialog.cpp moc_RelationshipComboBoxDialog.cpp moc_RelationshipCoverageTable.cpp moc_RelationshipsDialog.cpp moc_RelationshipsWidget.cpp moc_RelationshipTreeFilter.cpp moc_RelationshipTypeDialog.cpp moc_SavedPlotsDialog.cpp moc_Scene.cpp moc_SimpleAttributeSelectionDialog.cpp moc_SimpleTextDialog.cpp moc_SystemGraphWidget.cpp moc_TextEdit.cpp
+	-$(DEL_FILE) moc_TimeRangeDialog.cpp moc_WelcomeDialog.cpp moc_ZoomableListView.cpp moc_ZoomableTableView.cpp
 moc_AbstractionDialog.cpp: include/AbstractionDialog.h \
 		include/SortFunctions.h \
 		include/IncidentNode.h \
@@ -3474,6 +3483,43 @@ moc_SimpleTextDialog.cpp: include/SimpleTextDialog.h \
 		moc_predefs.h \
 		/usr/bin/moc
 	/usr/bin/moc $(DEFINES) --include /home/wouter/Hacking/Q-SoPrA/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/wouter/Hacking/Q-SoPrA -I/home/wouter/Hacking/Q-SoPrA -I/usr/include/qt -I/usr/include/qt/QtSvg -I/usr/include/qt/QtOpenGL -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtSql -I/usr/include/qt/QtCore -I/usr/include/c++/10.2.0 -I/usr/include/c++/10.2.0/x86_64-pc-linux-gnu -I/usr/include/c++/10.2.0/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/include-fixed -I/usr/include include/SimpleTextDialog.h -o moc_SimpleTextDialog.cpp
+
+moc_SystemGraphWidget.cpp: include/SystemGraphWidget.h \
+		include/DeselectableTreeViewEntities.h \
+		include/IncidentNodeLabel.h \
+		include/IncidentNode.h \
+		include/GraphicsView.h \
+		include/SimpleTextDialog.h \
+		include/NetworkNode.h \
+		include/SupportingFunctions.h \
+		include/DirectedEdge.h \
+		include/Constants.h \
+		include/Scene.h \
+		include/Linkage.h \
+		include/AbstractNode.h \
+		include/OccurrenceItem.h \
+		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
+		include/LineObject.h \
+		include/TextObject.h \
+		include/EllipseObject.h \
+		include/AbstractNodeLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
+		include/TimeLineObject.h \
+		include/GuideLine.h \
+		include/ProgressBar.h \
+		include/AttributeColorDialog.h \
+		include/DeselectableTreeView.h \
+		include/AttributeTreeFilter.h \
+		include/DeselectableListWidget.h \
+		include/SortFunctions.h \
+		include/LargeTextDialog.h \
+		include/ModeColorDialog.h \
+		moc_predefs.h \
+		/usr/bin/moc
+	/usr/bin/moc $(DEFINES) --include /home/wouter/Hacking/Q-SoPrA/moc_predefs.h -I/usr/lib/qt/mkspecs/linux-g++ -I/home/wouter/Hacking/Q-SoPrA -I/home/wouter/Hacking/Q-SoPrA -I/usr/include/qt -I/usr/include/qt/QtSvg -I/usr/include/qt/QtOpenGL -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtSql -I/usr/include/qt/QtCore -I/usr/include/c++/10.2.0 -I/usr/include/c++/10.2.0/x86_64-pc-linux-gnu -I/usr/include/c++/10.2.0/backward -I/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/include -I/usr/local/include -I/usr/lib/gcc/x86_64-pc-linux-gnu/10.2.0/include-fixed -I/usr/include include/SystemGraphWidget.h -o moc_SystemGraphWidget.cpp
 
 moc_TextEdit.cpp: include/TextEdit.h \
 		moc_predefs.h \
@@ -6160,6 +6206,41 @@ SortFunctions.o: src/SortFunctions.cpp include/SortFunctions.h \
 SupportingFunctions.o: src/SupportingFunctions.cpp include/SupportingFunctions.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SupportingFunctions.o src/SupportingFunctions.cpp
 
+SystemGraphWidget.o: src/SystemGraphWidget.cpp include/SystemGraphWidget.h \
+		include/DeselectableTreeViewEntities.h \
+		include/IncidentNodeLabel.h \
+		include/IncidentNode.h \
+		include/GraphicsView.h \
+		include/SimpleTextDialog.h \
+		include/NetworkNode.h \
+		include/SupportingFunctions.h \
+		include/DirectedEdge.h \
+		include/Constants.h \
+		include/Scene.h \
+		include/Linkage.h \
+		include/AbstractNode.h \
+		include/OccurrenceItem.h \
+		include/NetworkNodeLabel.h \
+		include/LinkageNode.h \
+		include/LinkageNodeLabel.h \
+		include/LineObject.h \
+		include/TextObject.h \
+		include/EllipseObject.h \
+		include/AbstractNodeLabel.h \
+		include/OccurrenceLabel.h \
+		include/RectObject.h \
+		include/TimeLineObject.h \
+		include/GuideLine.h \
+		include/ProgressBar.h \
+		include/AttributeColorDialog.h \
+		include/DeselectableTreeView.h \
+		include/AttributeTreeFilter.h \
+		include/DeselectableListWidget.h \
+		include/SortFunctions.h \
+		include/LargeTextDialog.h \
+		include/ModeColorDialog.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SystemGraphWidget.o src/SystemGraphWidget.cpp
+
 TextEdit.o: src/TextEdit.cpp include/TextEdit.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o TextEdit.o src/TextEdit.cpp
 
@@ -6448,6 +6529,9 @@ moc_SimpleAttributeSelectionDialog.o: moc_SimpleAttributeSelectionDialog.cpp
 
 moc_SimpleTextDialog.o: moc_SimpleTextDialog.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SimpleTextDialog.o moc_SimpleTextDialog.cpp
+
+moc_SystemGraphWidget.o: moc_SystemGraphWidget.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_SystemGraphWidget.o moc_SystemGraphWidget.cpp
 
 moc_TextEdit.o: moc_TextEdit.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_TextEdit.o moc_TextEdit.cpp
