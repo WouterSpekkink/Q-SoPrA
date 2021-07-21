@@ -1496,7 +1496,7 @@ void EventGraphWidget::seeComponents()
   emit seeHierarchy(_selectedAbstractNode);
 }
 
-void EventGraphWidget::previousDataItem() 
+void EventGraphWidget::previousDataItem()
 {
   setComment();
   if (_vectorPos > 0) 
@@ -10738,7 +10738,8 @@ void EventGraphWidget::exportSystem()
       system.insert(edge, weight);
     }
     // We can pass the resulting map on to our system visualization widget
-
+    _systemGraphWidgetPtr->setSystem(system);
+    emit seeSystem();
   }
 }
 
@@ -13295,6 +13296,11 @@ void EventGraphWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr
 void EventGraphWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
   _relationshipsWidgetPtr = relationshipsWidgetPtr;
+}
+
+void EventGraphWidget::setSystemGraphWidget(SystemGraphWidget *systemGraphWidgetPtr)
+{
+  _systemGraphWidgetPtr = systemGraphWidgetPtr;
 }
 
 void EventGraphWidget::resetTree() 

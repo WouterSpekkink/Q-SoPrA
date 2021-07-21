@@ -188,7 +188,7 @@ private slots:
   void fixTree();
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
   void boldSelected(QAbstractItemModel *model, QString name = "", int event = -1, 
-		    QString type = "", QModelIndex parent = QModelIndex());
+                    QString type = "", QModelIndex parent = QModelIndex());
   void setButtons();
   bool eventFilter(QObject *object, QEvent *event);
   void switchBack();

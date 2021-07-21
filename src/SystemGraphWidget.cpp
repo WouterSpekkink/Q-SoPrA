@@ -26,7 +26,7 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
 {
   _selectedType = "";
   _selectedEntityName = "";
-  _labelsShown = false;
+  _labelsShown = true;
   _massMove = false;
   _maxWeight = 0;
   _vectorPos = 0;
@@ -116,6 +116,8 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
   showTypeButton->setCheckable(true);
   showTypeButton->setChecked(true);
   disableLegendButtons();
+  exitButton = new QPushButton(tr("Return to event graph"), this);
+  exitButton->setStyleSheet("QPushButton {color: blue; font-weight: bold}");
 
   addLineButton = new QPushButton(QIcon(":/images/line_object.png"), "", this);
   addLineButton->setIconSize(QSize(20, 20));
@@ -235,8 +237,6 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
   connect(weightSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setVisibility()));
   connect(edgeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
           this, SLOT(changeEdgeColor(QTableWidgetItem *)));
-  connect(nodeListWidget, SIGNAL(itemClicked(QTableWidgetItem *)),
-          this, SLOT(setModeButtons(QTableWidgetItem *)));
   connect(nodeListWidget, SIGNAL(noneSelected()),
           this, SLOT(disableLegendButtons()));
   connect(nodeListWidget, SIGNAL(itemDoubleClicked(QTableWidgetItem *)),
@@ -299,15 +299,9 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
   connect(zoomSlider, SIGNAL(valueChanged(int)), this, SLOT(processZoomSliderChange(int)));
   connect(zoomSlider, SIGNAL(sliderReleased()), this, SLOT(resetZoomSlider()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
-  
+  connect(exitButton, SIGNAL(clicked()), this, SLOT(switchBack()));
+
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
-  QPointer<QHBoxLayout> topLayout = new QHBoxLayout;
-
-  mainLayout->addLayout(topLayout);
-  QPointer<QFrame> topLine = new QFrame();
-  topLine->setFrameShape(QFrame::HLine);
-  mainLayout->addWidget(topLine);
-
   QPointer<QHBoxLayout> drawHelpLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> plotObjectsLayout = new QHBoxLayout;
   plotObjectsLayout->addWidget(shapesLabel);
@@ -443,6 +437,7 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
   drawOptionsLeftLayout->addWidget(vertLineFour);
   
   QPointer<QHBoxLayout> drawOptionsRightLayout = new QHBoxLayout;
+  drawOptionsRightLayout->addWidget(exitButton);
   drawOptionsRightLayout->addWidget(toggleLegendButton);
   drawOptionsRightLayout->addWidget(toggleGraphicsControlsButton);
   drawOptionsLayout->addLayout(drawOptionsRightLayout);
@@ -454,7 +449,7 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
   infoWidget->hide();
   graphicsWidget->hide();
   legendWidget->hide();
-  setGraphControls(false);
+  setGraphControls(true);
 }
 
 SystemGraphWidget::~SystemGraphWidget()
@@ -512,6 +507,89 @@ void SystemGraphWidget::setAntialiasing(bool state)
     DirectedEdge *current = it.next();
     current->setAntialiasing(state);
   }
+}
+
+void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
+{
+  // TODO:
+  // 1. Improve node descriptions
+  // 2. Check edge names
+  // 3. Do something with weights (maybe make a map for that)
+  // 4. Do something with colours
+
+  // First, let's clean up
+  cleanUp();
+  // Let's unpack our data to create our network
+  QMapIterator<QVector<QString>, int> sIt(system);
+  while (sIt.hasNext())
+  {
+    QVector<QString> currentEdge = sIt.peekNext().key();
+    int currentWeight = sIt.next().value();
+    // Then we use the data to create our nodes
+    // But we first need to check if they already exist
+    QVectorIterator<NetworkNode *> nIt(_nodeVector);
+    NetworkNode *tail = NULL;
+    NetworkNode *head = NULL;
+    while (nIt.hasNext())
+    {
+      NetworkNode *currentNode = nIt.next();
+      if (currentNode->getName() == currentEdge[1])
+      {
+        tail = currentNode;
+      }
+      else if (currentNode->getName() == currentEdge[2])
+      {
+        head = currentNode;
+      }
+    }
+    if (tail == NULL)
+    {
+      NetworkNode *newTail = new NetworkNode(currentEdge[1], "TEMP");
+      newTail->setZValue(3);
+      _nodeVector.push_back(newTail);
+      scene->addItem(newTail);
+      newTail->hide();
+      NetworkNodeLabel *tailLabel =  new NetworkNodeLabel(newTail);
+      tailLabel->setPlainText(newTail->getName());
+      tailLabel->setZValue(4);
+      tailLabel->setDefaultTextColor(Qt::black);
+      _labelVector.push_back(tailLabel);
+      newTail->setLabel(tailLabel);
+      scene->addItem(tailLabel);
+      tailLabel->hide();
+      tail = newTail;
+    }
+    if (head == NULL)
+    {
+      NetworkNode *newHead = new NetworkNode(currentEdge[2], "TEMP");
+      newHead->setZValue(3);
+      _nodeVector.push_back(newHead);
+      scene->addItem(newHead);
+      newHead->hide();
+      NetworkNodeLabel *headLabel =  new NetworkNodeLabel(newHead);
+      headLabel->setPlainText(newHead->getName());
+      headLabel->setZValue(4);
+      headLabel->setDefaultTextColor(Qt::black);
+      _labelVector.push_back(headLabel);
+      newHead->setLabel(headLabel);
+      scene->addItem(headLabel);
+      headLabel->hide();
+      head = newHead;
+    }
+    // And then our edge
+    DirectedEdge *newEdge = new DirectedEdge(tail, head, currentEdge[0], currentEdge[0]);
+    _edgeVector.push_back(newEdge);
+    newEdge->hide();
+    scene->addItem(newEdge);
+  }
+  processHeights();
+  makeLayout();
+}
+
+void SystemGraphWidget::switchBack()
+{
+  hideAnnotationsButton->setChecked(false);
+  emit goToEventGraph();
 }
 
 void SystemGraphWidget::toggleDetails()
@@ -647,6 +725,7 @@ void SystemGraphWidget::makeLayout()
   {
     circularLayout();
   }
+  setVisibility();
 }
 
 void SystemGraphWidget::springLayout()
@@ -2308,7 +2387,6 @@ void SystemGraphWidget::updateEdges()
 void SystemGraphWidget::setVisibility()
 {
   updateWeightControls();
-  QSqlDatabase::database().transaction(); 
   QVectorIterator<DirectedEdge*> it(_edgeVector);
   while (it.hasNext())
   {
@@ -2336,10 +2414,10 @@ void SystemGraphWidget::setVisibility()
     }
   }
   processHeights();
-  QVectorIterator<NetworkNodeLabel*> it4(_labelVector);
-  while (it4.hasNext()) 
+  QVectorIterator<NetworkNodeLabel*> it2(_labelVector);
+  while (it2.hasNext())
   {
-    NetworkNodeLabel *label = it4.next();
+    NetworkNodeLabel *label = it2.next();
     if (label->getNode()->isVisible() && _labelsShown)
     {
       label->show();
@@ -2420,7 +2498,7 @@ void SystemGraphWidget::cleanUp()
   descriptionField->clear();
   snapGuidesButton->setChecked(false);
   toggleSnapGuides();
-  setGraphControls(false);
+  setGraphControls(true);
   weightCheckBox->setCheckState(Qt::Unchecked);
   disableLegendButtons();
 }
@@ -2439,7 +2517,6 @@ bool SystemGraphWidget::eventFilter(QObject *object, QEvent *event)
   if (object == view->viewport() && event->type() == QEvent::MouseButtonRelease) 
   {
     retrieveData();
-    setButtons();
     if (_massMove)
     {
       _massMove = false;

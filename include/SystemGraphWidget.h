@@ -147,16 +147,17 @@ private slots:
   void objectToBack();
   void fixZValues();
   void cleanUp();
-  void setButtons();
   void rescale();
   void retrieveData();
   void previousDataItem();
   void nextDataItem();
   void updateWeightControls();
+  void switchBack();
   bool eventFilter(QObject *object, QEvent *event);
   void finalBusiness();
 
 signals:
+  void goToEventGraph();
   void sendLineColor(QColor&);
   void sendFillColor(QColor&);
 
@@ -188,6 +189,7 @@ private:
   QPointer<DeselectableListWidget> edgeListWidget;
   QPointer<QLineEdit> nameField;
   QPointer<QTextEdit> descriptionField;
+  QPointer<QPushButton> exitButton;
   QPointer<QPushButton> toggleLabelsButton;
   QPointer<QPushButton> toggleGraphicsControlsButton;
   QPointer<QPushButton> toggleLegendButton;

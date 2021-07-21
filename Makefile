@@ -14,7 +14,7 @@ EQ            = =
 
 CC            = gcc
 CXX           = g++
-DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_DEPRECATED_WARNINGS -DQT_DISABLE_DEPRECATED_BEFORE=0x060000 -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
+DEFINES       = -DVERSION_STRING=\"0.9.0\" -DQT_SVG_LIB -DQT_OPENGL_LIB -DQT_WIDGETS_LIB -DQT_GUI_LIB -DQT_SQL_LIB -DQT_CORE_LIB
 CFLAGS        = -pipe -g -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 CXXFLAGS      = -pipe -g -std=gnu++11 -Wall -Wextra -D_REENTRANT -fPIC $(DEFINES)
 INCPATH       = -I. -I. -I/usr/include/qt -I/usr/include/qt/QtSvg -I/usr/include/qt/QtOpenGL -I/usr/include/qt/QtWidgets -I/usr/include/qt/QtGui -I/usr/include/qt/QtSql -I/usr/include/qt/QtCore -I. -I/usr/lib/qt/mkspecs/linux-g++
@@ -1351,6 +1351,7 @@ moc_AbstractionDialog.cpp: include/AbstractionDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1529,6 +1530,7 @@ moc_AttributesWidget.cpp: include/AttributesWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1650,6 +1652,7 @@ moc_CasingWidget.cpp: include/CasingWidget.h \
 		include/CasingWidget.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1793,6 +1796,7 @@ moc_DataWidget.cpp: include/DataWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -1911,6 +1915,7 @@ moc_EditEntityDialog.cpp: include/EditEntityDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2032,6 +2037,7 @@ moc_EntitiesFilter.cpp: include/EntitiesFilter.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2137,6 +2143,7 @@ moc_EntityDialog.cpp: include/EntityDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2230,6 +2237,7 @@ moc_EventGraphWidget.cpp: include/EventGraphWidget.h \
 		include/EventTextDialog.h \
 		include/EvidenceDialog.h \
 		include/AddEvidenceDialog.h \
+		include/SystemGraphWidget.h \
 		include/MainWindow.h \
 		include/EventSequenceDatabase.h \
 		include/DataWidget.h \
@@ -2413,6 +2421,7 @@ moc_HierarchyGraphWidget.cpp: include/HierarchyGraphWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2572,6 +2581,7 @@ moc_LinkagesWidget.cpp: include/LinkagesWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2683,6 +2693,7 @@ moc_MainWindow.cpp: include/MainWindow.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -2912,6 +2923,7 @@ moc_OccurrenceGraphWidget.cpp: include/OccurrenceGraphWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3027,6 +3039,7 @@ moc_RawAttributesTable.cpp: include/RawAttributesTable.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3130,6 +3143,7 @@ moc_RawRelationshipsTable.cpp: include/RawRelationshipsTable.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3310,6 +3324,7 @@ moc_RelationshipsDialog.cpp: include/RelationshipsDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3414,6 +3429,7 @@ moc_RelationshipsWidget.cpp: include/RelationshipsWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3644,6 +3660,7 @@ main.o: main.cpp include/WelcomeDialog.h \
 		include/EventTextDialog.h \
 		include/EvidenceDialog.h \
 		include/AddEvidenceDialog.h \
+		include/SystemGraphWidget.h \
 		include/CheckBoxDelegate.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
@@ -3757,6 +3774,7 @@ AbstractionDialog.o: src/AbstractionDialog.cpp include/AbstractionDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -3926,6 +3944,7 @@ AttributesWidget.o: src/AttributesWidget.cpp include/AttributesWidget.h \
 		include/EventTextDialog.h \
 		include/EvidenceDialog.h \
 		include/AddEvidenceDialog.h \
+		include/SystemGraphWidget.h \
 		include/MainWindow.h \
 		include/EventSequenceDatabase.h \
 		include/DataWidget.h \
@@ -4048,6 +4067,7 @@ BandlessGraphicsView.o: src/BandlessGraphicsView.cpp include/BandlessGraphicsVie
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4153,6 +4173,7 @@ CasingWidget.o: src/CasingWidget.cpp include/CasingWidget.h \
 		include/MissingRelationshipsTable.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4290,6 +4311,7 @@ DataWidget.o: src/DataWidget.cpp include/DataWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4406,6 +4428,7 @@ EditEntityDialog.o: src/EditEntityDialog.cpp include/EditEntityDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4543,6 +4566,7 @@ EntitiesFilter.o: src/EntitiesFilter.cpp include/EntitiesFilter.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4645,6 +4669,7 @@ EntityDialog.o: src/EntityDialog.cpp include/EntityDialog.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4751,6 +4776,7 @@ EventGraphWidget.o: src/EventGraphWidget.cpp include/EventGraphWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -4915,6 +4941,7 @@ GraphicsView.o: src/GraphicsView.cpp include/GraphicsView.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5016,6 +5043,7 @@ HierarchyGraphWidget.o: src/HierarchyGraphWidget.cpp include/HierarchyGraphWidge
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5254,6 +5282,7 @@ LinkagesWidget.o: src/LinkagesWidget.cpp include/LinkagesWidget.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5349,6 +5378,7 @@ MainWindow.o: src/MainWindow.cpp include/MainWindow.h \
 		include/EventTextDialog.h \
 		include/EvidenceDialog.h \
 		include/AddEvidenceDialog.h \
+		include/SystemGraphWidget.h \
 		include/CheckBoxDelegate.h \
 		include/LinkagesWidget.h \
 		include/LinkageTypeDialog.h \
@@ -5612,6 +5642,7 @@ OccurrenceGraphWidget.o: src/OccurrenceGraphWidget.cpp include/OccurrenceGraphWi
 		include/AttributeCoverageTable.h \
 		include/ConcordanceDialog.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5749,6 +5780,7 @@ RawAttributesTable.o: src/RawAttributesTable.cpp include/RawAttributesTable.h \
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -5849,6 +5881,7 @@ RawRelationshipsTable.o: src/RawRelationshipsTable.cpp include/RawRelationshipsT
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -6034,6 +6067,7 @@ RelationshipsDialog.o: src/RelationshipsDialog.cpp include/RelationshipsDialog.h
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
@@ -6136,6 +6170,7 @@ RelationshipsWidget.o: src/RelationshipsWidget.cpp include/RelationshipsWidget.h
 		include/SimpleAttributeSelectionDialog.h \
 		include/AttributeCoverageTable.h \
 		include/RelationshipCoverageTable.h \
+		include/SystemGraphWidget.h \
 		include/RelationshipComboBoxDialog.h \
 		include/LineageColorDialog.h \
 		include/ExportTransitionMatrixDialog.h \
