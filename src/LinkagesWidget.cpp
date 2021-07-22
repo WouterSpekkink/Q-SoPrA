@@ -3922,7 +3922,6 @@ void LinkagesWidget::setLink()
     query->bindValue(":type", _selectedType);
     query->bindValue(":coder", _selectedCoder);
     query->exec();
-    QSqlQuery *query2 = new QSqlQuery;
     while (query->next())
     {
       int tail = query->value(0).toInt();

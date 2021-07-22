@@ -10693,18 +10693,48 @@ void EventGraphWidget::exportSystem()
   QMap<QVector<QString>, QColor> eventsMap;
   // We also make a simpler map to identify event type descriptions
   QMap<QString, QString> eventTypes;
+  // And we will use a query to get those descriptions.
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query->prepare("SELECT description FROM entities "
+                 "WHERE name = :name");
+  query2->prepare("SELECT description FROM incident_attributes "
+                  "WHERE name = :name");
   for (int i = 0; i != eventListWidget->rowCount(); i++)
   {
     QTableWidgetItem *item = eventListWidget->item(i, 0);
-    QString title = item->data(Qt::DisplayRole).toString();
-    QString tip = item->data(Qt::ToolTipRole).toString();
-    QColor color = eventListWidget->item(i, 1)->background().color();
-    QVector<QString> currentType;
-    currentType.push_back(title);
-    currentType.push_back(tip);
-    eventsMap.insert(currentType, color);
-    eventTypes.insert(title, tip);
+    if (item->background().color() != Qt::gray)
+    {
+      QString title = item->data(Qt::DisplayRole).toString();
+      QString description = "";
+      query->bindValue(":name", title);
+      query->exec();
+      query->first();
+      if (query->isNull(0))
+      {
+        query2->bindValue(":name", title);
+        query2->exec();
+        query2->first();
+        if (!query2->isNull(0))
+        {
+          description = query2->value(0).toString();
+        }
+      }
+      else
+      {
+        description = query->value(0).toString();
+      }
+      QString tip = item->data(Qt::ToolTipRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QVector<QString> currentType;
+      currentType.push_back(title);
+      currentType.push_back(tip);
+      eventsMap.insert(currentType, color);
+      eventTypes.insert(title, description);
+    }
   }
+  delete query;
+  delete query2;
   _systemGraphWidgetPtr->setEvents(eventsMap);
   // We then create a map that tells our system
   // widget which linkage types should be in the legend
@@ -10712,13 +10742,16 @@ void EventGraphWidget::exportSystem()
   for (int i = 0; i != linkageListWidget->rowCount(); i++)
   {
     QTableWidgetItem *item = linkageListWidget->item(i, 0);
-    QString title = item->data(Qt::DisplayRole).toString();
-    QString tip = item->data(Qt::ToolTipRole).toString();
-    QColor color = linkageListWidget->item(i, 1)->background().color();
-    QVector<QString> currentEdge;
-    currentEdge.push_back(title);
-    currentEdge.push_back(tip);
-    edgesMap.insert(currentEdge, color);
+    if (item->background().color() != Qt::gray)
+    {
+      QString title = item->data(Qt::DisplayRole).toString();
+      QString tip = item->data(Qt::ToolTipRole).toString();
+      QColor color = linkageListWidget->item(i, 1)->background().color();
+      QVector<QString> currentEdge;
+      currentEdge.push_back(title);
+      currentEdge.push_back(tip);
+      edgesMap.insert(currentEdge, color);
+    }
   }
   _systemGraphWidgetPtr->setEdges(edgesMap);
   // Let's create a map for our system, including edges and their weight

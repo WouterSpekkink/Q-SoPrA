@@ -84,12 +84,13 @@ class SystemGraphWidget : public QWidget
   private slots:
     // Private member functions
     void toggleLegend();
-    void disableLegendButtons();
     void toggleDetails();
     void toggleGraphicsControls();
     void processZoomSliderChange(int value);
     void resetZoomSlider();
     void setGraphControls(bool state);
+    void hideMode();
+    void showMode();
     void hideType();
     void showType();
     void setVisibility();
@@ -155,6 +156,10 @@ class SystemGraphWidget : public QWidget
     void nextDataItem();
     void updateWeightControls();
     void switchBack();
+    void setModeButtons(QTableWidgetItem *item);
+    void setTypeButtons(QTableWidgetItem *item);
+    void disableModeButtons();
+    void disableTypeButtons();
     bool eventFilter(QObject *object, QEvent *event);
     void finalBusiness();
 
@@ -204,6 +209,8 @@ class SystemGraphWidget : public QWidget
     QPointer<QPushButton> exportSvgButton;
     QPointer<QPushButton> exportNodesButton;
     QPointer<QPushButton> exportEdgesButton;
+    QPointer<QPushButton> hideModeButton;
+    QPointer<QPushButton> showModeButton;
     QPointer<QPushButton> hideTypeButton;
     QPointer<QPushButton> showTypeButton;
     QPointer<QPushButton> layoutButton;
@@ -246,6 +253,7 @@ class SystemGraphWidget : public QWidget
     QVector<NetworkNode*> _nodeVector;
     QVector<NetworkNode*> _currentData;
     QVector<DirectedEdge*> _edgeVector;
+    QMap<DirectedEdge*, int> _edgeWeights;
     QVector<NetworkNodeLabel*> _labelVector;
     QVector<LineObject*> _lineVector;
     QVector<TextObject*> _textVector;
