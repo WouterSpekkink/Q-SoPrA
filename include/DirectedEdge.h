@@ -95,6 +95,7 @@ class DirectedEdge : public QGraphicsLineItem
     QPointF _arrowP1;
     QPointF _arrowP2;
     QPointF _controlPoint;
+    QPointF _controlPoint2;
     QString _relType;
     QString _name;
     QString _comment;

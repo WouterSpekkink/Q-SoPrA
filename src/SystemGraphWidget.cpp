@@ -537,7 +537,7 @@ void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
       {
         tail = currentNode;
       }
-      else if (currentNode->getName() == currentEdge[2])
+      if (currentNode->getName() == currentEdge[2])
       {
         head = currentNode;
       }
