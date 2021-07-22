@@ -10691,6 +10691,8 @@ void EventGraphWidget::exportSystem()
   // We first create a map that tells our system
   // widget which event types should be in the legend
   QMap<QVector<QString>, QColor> eventsMap;
+  // We also make a simpler map to identify event type descriptions
+  QMap<QString, QString> eventTypes;
   for (int i = 0; i != eventListWidget->rowCount(); i++)
   {
     QTableWidgetItem *item = eventListWidget->item(i, 0);
@@ -10701,6 +10703,7 @@ void EventGraphWidget::exportSystem()
     currentType.push_back(title);
     currentType.push_back(tip);
     eventsMap.insert(currentType, color);
+    eventTypes.insert(title, tip);
   }
   _systemGraphWidgetPtr->setEvents(eventsMap);
   // We then create a map that tells our system
@@ -10728,10 +10731,12 @@ void EventGraphWidget::exportSystem()
     // Check if linkage is visible
     if (currentLinkage->isVisible())
     {
-      // We create a vector with three values
+      // We create a vector with five values
       // 1: the edge type
       // 2: the tail node
       // 3: the head node
+      // 4: the tail type description
+      // 5: the head type description
       QString type = currentLinkage->getType();
       QString tailMode = "";
       QString headMode = "";
@@ -10762,6 +10767,8 @@ void EventGraphWidget::exportSystem()
       edge.push_back(type);
       edge.push_back(tailMode);
       edge.push_back(headMode);
+      edge.push_back(eventTypes.value(tailMode));
+      edge.push_back(eventTypes.value(headMode));
       // Then we get the current weight of this edge, defaulting to 0
       int weight = system.value(edge, 0);
       // Increment the weight

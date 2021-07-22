@@ -559,7 +559,6 @@ void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
   // 1. Improve node descriptions
   // 2. Check edge names
   // 3. Do something with weights (maybe make a map for that)
-  // 4. Do something with colours
   // Let's unpack our data to create our network
   QMapIterator<QVector<QString>, int> sIt(system);
   while (sIt.hasNext())
@@ -585,7 +584,8 @@ void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
     }
     if (tail == NULL)
     {
-      NetworkNode *newTail = new NetworkNode(currentEdge[1], "TEMP");
+      NetworkNode *newTail = new NetworkNode(currentEdge[1], currentEdge[3]);
+      newTail->setToolTip(currentEdge[3]);
       newTail->setZValue(3);
       _nodeVector.push_back(newTail);
       scene->addItem(newTail);
@@ -602,7 +602,8 @@ void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
     }
     if (head == NULL)
     {
-      NetworkNode *newHead = new NetworkNode(currentEdge[2], "TEMP");
+      NetworkNode *newHead = new NetworkNode(currentEdge[2], currentEdge[4]);
+      newHead->setToolTip(currentEdge[4]);
       newHead->setZValue(3);
       _nodeVector.push_back(newHead);
       scene->addItem(newHead);
