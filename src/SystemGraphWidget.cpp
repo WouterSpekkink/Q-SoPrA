@@ -2675,7 +2675,29 @@ void SystemGraphWidget::exportSvg()
 
 void SystemGraphWidget::exportNodes()
 {
-  // TODO
+  QString fileName =QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
+  if (!fileName.trimmed().isEmpty())
+  {
+    if (!fileName.endsWith(".csv"))
+    {
+      fileName.append(".csv");
+    }
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    fileOut << "Id" << ","
+            << "Label" << ","
+            << "Description" << "\n";
+    QVectorIterator<NetworkNode*> it(_nodeVector);
+    while (it.hasNext())
+    {
+      NetworkNode *node = it.next();
+      QString name = node->getName();
+      QString description = node->getDescription();
+      fileOut << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+              << "\"" << doubleQuote(name).toStdString() << "\"" << ","
+              << "\"" << doubleQuote(description).toStdString() << "\"" << "\n";
+    }
+    fileOut.close();
+  }
 }
 
 void SystemGraphWidget::exportEdges()
@@ -2706,8 +2728,7 @@ void SystemGraphWidget::exportEdges()
         QString source = directed->getStart()->getName();
         QString target = directed->getEnd()->getName();
         QString description = directed->getType();
-        // TODO: update weight
-        int weight = 1;
+        int weight = _edgeWeights.value(directed);
         fileOut << "\"" << doubleQuote(source).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(target).toStdString() << "\"" << ","
                 << "Directed" << ","
