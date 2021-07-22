@@ -10686,6 +10686,38 @@ void EventGraphWidget::exportSystem()
     delete warningBox;
     return;
   }
+  // First, clean up what was already there.
+  _systemGraphWidgetPtr->cleanUp();
+  // We first create a map that tells our system
+  // widget which event types should be in the legend
+  QMap<QVector<QString>, QColor> eventsMap;
+  for (int i = 0; i != eventListWidget->rowCount(); i++)
+  {
+    QTableWidgetItem *item = eventListWidget->item(i, 0);
+    QString title = item->data(Qt::DisplayRole).toString();
+    QString tip = item->data(Qt::ToolTipRole).toString();
+    QColor color = eventListWidget->item(i, 1)->background().color();
+    QVector<QString> currentType;
+    currentType.push_back(title);
+    currentType.push_back(tip);
+    eventsMap.insert(currentType, color);
+  }
+  _systemGraphWidgetPtr->setEvents(eventsMap);
+  // We then create a map that tells our system
+  // widget which linkage types should be in the legend
+  QMap<QVector<QString>, QColor> edgesMap;
+  for (int i = 0; i != linkageListWidget->rowCount(); i++)
+  {
+    QTableWidgetItem *item = linkageListWidget->item(i, 0);
+    QString title = item->data(Qt::DisplayRole).toString();
+    QString tip = item->data(Qt::ToolTipRole).toString();
+    QColor color = linkageListWidget->item(i, 1)->background().color();
+    QVector<QString> currentEdge;
+    currentEdge.push_back(title);
+    currentEdge.push_back(tip);
+    edgesMap.insert(currentEdge, color);
+  }
+  _systemGraphWidgetPtr->setEdges(edgesMap);
   // Let's create a map for our system, including edges and their weight
   QMap<QVector<QString>, int> system;
   // We iterate through all linkages
@@ -10738,9 +10770,9 @@ void EventGraphWidget::exportSystem()
       system.insert(edge, weight);
     }
     // We can pass the resulting map on to our system visualization widget
-    _systemGraphWidgetPtr->setSystem(system);
-    emit seeSystem();
   }
+  _systemGraphWidgetPtr->setSystem(system);
+  emit seeSystem();
 }
 
 void EventGraphWidget::setEventOriginalPosition()

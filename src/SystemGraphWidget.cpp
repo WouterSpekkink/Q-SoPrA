@@ -509,6 +509,50 @@ void SystemGraphWidget::setAntialiasing(bool state)
   }
 }
 
+void SystemGraphWidget::setEvents(QMap<QVector<QString>, QColor> eventsMap)
+{
+  QMapIterator<QVector<QString>, QColor> eIt(eventsMap);
+  while (eIt.hasNext())
+  {
+    QVector<QString> event = eIt.peekNext().key();
+    QColor color = eIt.next().value();
+    QTableWidgetItem *item = new QTableWidgetItem(event[0]);
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    item->setToolTip(event[1]);
+    item->setData(Qt::DisplayRole, event[0]);
+    nodeListWidget->setRowCount(nodeListWidget->rowCount() + 1);
+    nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 0, item);
+    nodeListWidget->setItem(nodeListWidget->rowCount() - 1, 1,
+                            new QTableWidgetItem);
+    nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->setBackground(color);
+    nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->
+      setFlags(nodeListWidget->item(nodeListWidget->rowCount() - 1, 1)->flags() ^
+               Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  }
+}
+
+void SystemGraphWidget::setEdges(QMap<QVector<QString>, QColor> edgesMap)
+{
+  QMapIterator<QVector<QString>, QColor> eIt(edgesMap);
+  while (eIt.hasNext())
+  {
+    QVector<QString> edge = eIt.peekNext().key();
+    QColor color = eIt.next().value();
+    QTableWidgetItem *item = new QTableWidgetItem(edge[0]);
+    item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+    item->setToolTip(edge[1]);
+    item->setData(Qt::DisplayRole, edge[0]);
+    edgeListWidget->setRowCount(edgeListWidget->rowCount() + 1);
+    edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 0, item);
+    edgeListWidget->setItem(edgeListWidget->rowCount() - 1, 1,
+                            new QTableWidgetItem);
+    edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->setBackground(color);
+    edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->
+      setFlags(edgeListWidget->item(edgeListWidget->rowCount() - 1, 1)->flags() ^
+               Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
+  }
+}
+
 void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
 {
   // TODO:
@@ -516,9 +560,6 @@ void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
   // 2. Check edge names
   // 3. Do something with weights (maybe make a map for that)
   // 4. Do something with colours
-
-  // First, let's clean up
-  cleanUp();
   // Let's unpack our data to create our network
   QMapIterator<QVector<QString>, int> sIt(system);
   while (sIt.hasNext())
@@ -581,6 +622,36 @@ void SystemGraphWidget::setSystem(QMap<QVector<QString>, int> system)
     _edgeVector.push_back(newEdge);
     newEdge->hide();
     scene->addItem(newEdge);
+  }
+  // Let's set the colours of our nodes
+  for (int i = 0; i < nodeListWidget->rowCount(); i++)
+  {
+    QString mode = nodeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    QColor color = nodeListWidget->item(i, 1)->background().color();
+    QVectorIterator<NetworkNode *> it(_nodeVector);
+    while (it.hasNext())
+    {
+      NetworkNode *node = it.next();
+      if (node->getName() == mode)
+      {
+        node->setColor(color);
+      }
+    }
+  }
+  // And then let's set the colour of our edges
+  for (int i = 0; i < edgeListWidget->rowCount(); i++)
+  {
+    QString type = edgeListWidget->item(i, 0)->data(Qt::DisplayRole).toString();
+    QColor color = edgeListWidget->item(i, 1)->background().color();
+    QVectorIterator<DirectedEdge *> it(_edgeVector);
+    while (it.hasNext())
+    {
+      DirectedEdge *edge = it.next();
+      if (edge->getType() == type)
+      {
+        edge->setColor(color);
+      }
+    }
   }
   processHeights();
   makeLayout();
@@ -2160,7 +2231,7 @@ void SystemGraphWidget::changeModeColor(QTableWidgetItem *item)
       while (it.hasNext())
       {
         NetworkNode *current = it.next();
-        if (current->getMode() == mode)
+        if (current->getName() == mode)
         {
           current->setColor(fillColor);
           current->getLabel()->setDefaultTextColor(textColor);
