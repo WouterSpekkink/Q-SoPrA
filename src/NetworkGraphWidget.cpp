@@ -2016,7 +2016,7 @@ void NetworkGraphWidget::springLayout()
             first->getLabel()->setNewPos(first->scenePos());
             displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
             second->setPos(secondPos + displacement);
-            second->getLabel()->setPos(second->scenePos());
+            second->getLabel()->setNewPos(second->scenePos());
           }
         }
 	    }
