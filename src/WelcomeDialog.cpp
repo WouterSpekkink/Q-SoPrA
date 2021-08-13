@@ -131,8 +131,8 @@ void WelcomeDialog::newDatabase()
 	  query->exec("CREATE TABLE relationship_types "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "name text, "
-		      "directedness, "
-		      "description)");
+		      "directedness text, "
+		      "description text)");
 	  query->exec("CREATE TABLE relationships_to_incidents "
 		      "(id integer PRIMARY KEY AUTOINCREMENT, "
 		      "relationship text, "
