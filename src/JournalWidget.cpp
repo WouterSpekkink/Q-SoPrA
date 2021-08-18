@@ -1,22 +1,22 @@
 /*
 
-Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
 
-This file is part of Q-SoPrA.
+  This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Q-SoPrA is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -78,12 +78,12 @@ JournalWidget::JournalWidget(QWidget *parent) : QWidget(parent)
   connect(saveChangesButton, SIGNAL(clicked()), this, SLOT(saveChanges()));
   connect(removeEntryButton, SIGNAL(clicked()), this, SLOT(removeEntry()));
   connect(tableView->selectionModel(),
-	  SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
-	  this, SLOT(setData(const QItemSelection &, const QItemSelection &)));
+          SIGNAL(selectionChanged(const QItemSelection &, const QItemSelection &)),
+          this, SLOT(setData(const QItemSelection &, const QItemSelection &)));
   connect(journalModel, SIGNAL(armSelection()), this, SLOT(armIndex()));
   connect(journalModel, SIGNAL(setSelection()), this, SLOT(setIndex()));
   connect(tableView->verticalHeader(),
-	  SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
+          SIGNAL(sectionDoubleClicked(int)), this, SLOT(resetHeader(int)));
   connect(exportJournalButton, SIGNAL(clicked()), this, SLOT(exportJournal()));
   
   QPointer<QHBoxLayout> mainLayout = new QHBoxLayout;
@@ -109,17 +109,17 @@ void JournalWidget::updateTable()
 {
   journalModel->setQuery("SELECT time, coder, entry, mark FROM journal");
   while (journalModel->canFetchMore())
-    {
-      journalModel->fetchMore();
-    }
+  {
+    journalModel->fetchMore();
+  }
 }
 
 void JournalWidget::setButtons() 
 {
   if (tableView->currentIndex().isValid()) 
-    {
-      saveChangesButton->setEnabled(true);
-    }
+  {
+    saveChangesButton->setEnabled(true);
+  }
 }
 
 void JournalWidget::resetButtons() 
@@ -132,50 +132,59 @@ void JournalWidget::resetButtons()
 void JournalWidget::saveChanges() 
 {
   if (tableView->currentIndex().isValid()) 
-    {
-      int currentRow = tableView->currentIndex().row();
-      QString time = journalModel->data(journalModel->index(currentRow, 0),
-					Qt::DisplayRole).toString();
-      QSqlQuery *query = new QSqlQuery;
-      query->prepare("UPDATE journal SET entry = :entry WHERE time = :time");
-      query->bindValue(":entry", logField->toPlainText());
-      query->bindValue(":time", time);
-      query->exec();
-      saveChangesButton->setEnabled(false);
-      updateTable();
-    }
+  {
+    int currentRow = tableView->currentIndex().row();
+    QString time = journalModel->data(journalModel->index(currentRow, 0),
+                                      Qt::DisplayRole).toString();
+    QSqlQuery *query = new QSqlQuery;
+    query->prepare("UPDATE journal SET entry = :entry WHERE time = :time");
+    query->bindValue(":entry", logField->toPlainText());
+    query->bindValue(":time", time);
+    query->exec();
+    saveChangesButton->setEnabled(false);
+    updateTable();
+  }
 }
 
 void JournalWidget::setData(const QItemSelection &selected, const QItemSelection &deselected) 
 {
   Q_UNUSED(selected);
   if (checkChanges())
+  {
+    if (tableView->currentIndex().isValid())
     {
-      if (tableView->currentIndex().isValid()) 
-	{
-	  int currentRow = tableView->currentIndex().row();
-	  QModelIndex wantedIndex = tableView->currentIndex().sibling(currentRow, 2);
-	  QString currentText = wantedIndex.data(Qt::DisplayRole).toString();
-	  logField->blockSignals(true);
-	  logField->setText(currentText);
-	  logField->blockSignals(false);
-	  logField->setEnabled(true);
-	  saveChangesButton->setEnabled(false);
-	  removeEntryButton->setEnabled(true);
-	}
-      else 
-	{
-	  removeEntryButton->setEnabled(false);
-	  saveChangesButton->setEnabled(false);
-	  logField->setEnabled(false);
-	}
+      int currentRow = tableView->currentIndex().row();
+      QModelIndex wantedIndex = tableView->currentIndex().sibling(currentRow, 2);
+      QString currentText = wantedIndex.data(Qt::DisplayRole).toString();
+      logField->blockSignals(true);
+      logField->setText(currentText);
+      logField->blockSignals(false);
+      logField->setEnabled(true);
+      saveChangesButton->setEnabled(false);
+      removeEntryButton->setEnabled(true);
     }
+    else
+    {
+      removeEntryButton->setEnabled(false);
+      saveChangesButton->setEnabled(false);
+      logField->setEnabled(false);
+    }
+  }
   else
+  {
+    int currentRow = 0;
+    if (deselected.empty())
     {
-      tableView->selectionModel()->blockSignals(true);
-      tableView->selectRow(deselected.indexes().first().row());
-      tableView->selectionModel()->blockSignals(false);
+      currentRow = selected.indexes().first().row();
     }
+    else
+    {
+      currentRow = deselected.indexes().first().row();
+    }
+    tableView->selectionModel()->blockSignals(true);
+    tableView->selectRow(currentRow);
+    tableView->selectionModel()->blockSignals(false);
+  }
 }
 
 void JournalWidget::addEntry() 
@@ -184,7 +193,7 @@ void JournalWidget::addEntry()
   QString timeText = time.toString(Qt::TextDate);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("INSERT INTO journal (time, mark, coder) "
-		 "VALUES (:time, :mark, :coder)");
+                 "VALUES (:time, :mark, :coder)");
   query->bindValue(":time", timeText);
   query->bindValue(":mark", 0);
   query->bindValue(":coder", _selectedCoder);
@@ -198,32 +207,32 @@ void JournalWidget::addEntry()
 void JournalWidget::removeEntry() 
 {
   if (tableView->currentIndex().isValid()) 
+  {
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Removing entry");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("Removing a journal entry cannot be undone. "
+                                   "Are you sure you want to remove this entry?");
+    if (warningBox->exec() == QMessageBox::Yes)
     {
-      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->setWindowTitle("Removing entry");
-      warningBox->addButton(QMessageBox::Yes);
-      warningBox->addButton(QMessageBox::No);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Are you sure?</h2>");
-      warningBox->setInformativeText("Removing a journal entry cannot be undone. "
-				     "Are you sure you want to remove this entry?");
-      if (warningBox->exec() == QMessageBox::Yes) 
-	{
-	  int currentRow = tableView->currentIndex().row();
-	  QString time = journalModel->data(journalModel->index(currentRow, 0),
-					    Qt::DisplayRole).toString();
-	  QSqlQuery *query = new QSqlQuery;
-	  query->prepare("DELETE FROM journal WHERE time = :time");
-	  query->bindValue(":time", time);
-	  query->exec();
-	  delete query;
-	  logField->blockSignals(true);
-	  logField->setText("");
-	  logField->blockSignals(false);
-	  logField->setEnabled(false);
-	  updateTable();
-	}
+      int currentRow = tableView->currentIndex().row();
+      QString time = journalModel->data(journalModel->index(currentRow, 0),
+                                        Qt::DisplayRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("DELETE FROM journal WHERE time = :time");
+      query->bindValue(":time", time);
+      query->exec();
+      delete query;
+      logField->blockSignals(true);
+      logField->setText("");
+      logField->blockSignals(false);
+      logField->setEnabled(false);
+      updateTable();
     }
+  }
 }
 
 void JournalWidget::resetHeader(int header) 
@@ -234,24 +243,24 @@ void JournalWidget::resetHeader(int header)
 bool JournalWidget::eventFilter(QObject *object, QEvent *event) 
 {
   if (event->type() == QEvent::Wheel) 
+  {
+    QWheelEvent *wheelEvent = (QWheelEvent*) event;
+    QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
+    if (textEdit)
     {
-      QWheelEvent *wheelEvent = (QWheelEvent*) event;
-      QTextEdit *textEdit = qobject_cast<QTextEdit*>(object);
-      if (textEdit) 
-	{
-	  if(wheelEvent->modifiers() & Qt::ControlModifier) 
-	    {
-	      if (wheelEvent->angleDelta().y() > 0) 
-		{
-		  textEdit->zoomIn(1);
-		}
-	      else if (wheelEvent->angleDelta().y() < 0) 
-		{
-		  textEdit->zoomOut(1);
-		}
-	    }
-	}
+      if(wheelEvent->modifiers() & Qt::ControlModifier)
+      {
+        if (wheelEvent->angleDelta().y() > 0)
+        {
+          textEdit->zoomIn(1);
+        }
+        else if (wheelEvent->angleDelta().y() < 0)
+        {
+          textEdit->zoomOut(1);
+        }
+      }
     }
+  }
   return false;
 }
 
@@ -260,59 +269,59 @@ void JournalWidget::exportJournal()
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"", tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) 
+  {
+    if(!fileName.endsWith(".csv"))
     {
-      if(!fileName.endsWith(".csv")) 
-	{
-	  fileName.append(".csv");
-	}
-      // And we create a file outstream.  
-      std::ofstream fileOut(fileName.toStdString().c_str());
-      // We first write the header of the file.
-      fileOut << "Time" << ","
-	      << "Entry" << "\n";
-      // And then we fetch the journal entries.
-      QSqlQuery *query = new QSqlQuery;
-      query->exec("SELECT time, coder, entry FROM journal");
-      while (query->next()) 
-	{
-	  QString time = query->value(0).toString();
-	  QString coder = query->value(1).toString();
-	  QString entry = query->value(2).toString();
-	  fileOut << "\"" << time.toStdString() << "\"" << ","
-		  << "\"" << coder.toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(entry).toStdString() << "\"" << "\n";
-	}
-      delete query;
-      // And that's it.
-      fileOut.close();
+      fileName.append(".csv");
     }
+    // And we create a file outstream.
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // We first write the header of the file.
+    fileOut << "Time" << ","
+            << "Entry" << "\n";
+    // And then we fetch the journal entries.
+    QSqlQuery *query = new QSqlQuery;
+    query->exec("SELECT time, coder, entry FROM journal");
+    while (query->next())
+    {
+      QString time = query->value(0).toString();
+      QString coder = query->value(1).toString();
+      QString entry = query->value(2).toString();
+      fileOut << "\"" << time.toStdString() << "\"" << ","
+              << "\"" << coder.toStdString() << "\"" << ","
+              << "\"" << doubleQuote(entry).toStdString() << "\"" << "\n";
+    }
+    delete query;
+    // And that's it.
+    fileOut.close();
+  }
 }
 
 bool JournalWidget::checkChanges()
 {
   if (saveChangesButton->isEnabled())
-    {
-      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-      warningBox->setWindowTitle("Changing widget");
-      warningBox->addButton(QMessageBox::Yes);
-      warningBox->addButton(QMessageBox::No);
-      warningBox->setIcon(QMessageBox::Warning);
-      warningBox->setText("<h2>Unsaved changes</h2>");
-      warningBox->setInformativeText("You have unsaved changes to journal entries, "
-				     "are you want to continue?");
-      if (warningBox->exec() == QMessageBox::Yes)
-	{
-	  return true;
-	}
-      else 
-	{
-	  return false;
-	}
-    }
-  else
+  {
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Changing widget");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Unsaved changes</h2>");
+    warningBox->setInformativeText("You have unsaved changes to journal entries, "
+                                   "are you want to continue?");
+    if (warningBox->exec() == QMessageBox::Yes)
     {
       return true;
     }
+    else
+    {
+      return false;
+    }
+  }
+  else
+  {
+    return true;
+  }
 }
 
 void JournalWidget::setCurrentCoder(QString coder)
