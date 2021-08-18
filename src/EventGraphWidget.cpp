@@ -2492,10 +2492,10 @@ void EventGraphWidget::setButtons()
       {
         unassignAttributeButton->setEnabled(true);
         valueField->setEnabled(true);
-        if (!query->isNull(2))
+        if (!query->isNull(3))
         {
           valueField->blockSignals(true);
-          valueField->setText(query->value(2).toString());
+          valueField->setText(query->value(3).toString());
           valueField->blockSignals(false);
         }
       }
