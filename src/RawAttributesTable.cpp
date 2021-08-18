@@ -122,8 +122,9 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
 
 void RawAttributesTable::updateTable() 
 {
-  attributesModel->query().exec();
-  while (attributesModel->canFetchMore()) 
+  QString queryString = attributesModel->query().executedQuery();
+  attributesModel->setQuery(queryString);
+  while (attributesModel->canFetchMore())
   {
     attributesModel->fetchMore();
   }
