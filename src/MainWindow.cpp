@@ -566,69 +566,69 @@ void MainWindow::importFromCsv()
     // We then split the current line into different tokens.
     splitCsvLine(&tokens, buffer);
     /*
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
+      If we still need to import the header, let's do that first.
+      We immediately check if the correct headers were used.
+      If not, we report an error and return, letting the user fix the issue.
     */
     if (headerFound == false)
     {
       if (tokens[0] != "Timing" && tokens[0] != "timing")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"Timing\" in first column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"Timing\" in first column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[1] != "Description" && tokens[1] != "description")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"Description\" "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"Description\" "
                                      "in second column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[2] != "Raw" && tokens[2] != "raw")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"Raw\" in third column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"Raw\" in third column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[3] != "Comments" && tokens[3] != "comments")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"Comments\" in "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"Comments\" in "
                                      "fourth column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[4] != "Source" && tokens[4] != "source")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"Source\" in "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"Source\" in "
                                      "fifth column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       /*
-         If we checked all headers and imported the header correctly,
-         we can set the headerFound bool to true, so that this block
-         is skipped in all subsequent line reads.
+        If we checked all headers and imported the header correctly,
+        we can set the headerFound bool to true, so that this block
+        is skipped in all subsequent line reads.
       */
       headerFound = true;
 
@@ -640,19 +640,19 @@ void MainWindow::importFromCsv()
       std::vector<std::string> row;
       std::vector<std::string>::iterator it;
       if (tokens[0] == "" || tokens[1] == "" || tokens[4] == "")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       for (it = tokens.begin(); it != tokens.end(); it++)
-	    {
-	      row.push_back(*it);
-	    }
+      {
+        row.push_back(*it);
+      }
       // Then we push the row vector into the data vector.
       data.push_back(row);
     }
@@ -736,8 +736,8 @@ bool MainWindow::checkLineBreaks(std::string line)
   for (std::string::size_type i = 0; i != line.length(); i++) 
   {
     /*
-       If we did not find a quote yet, and we find one,
-       we set the lineBreak variable to true.
+      If we did not find a quote yet, and we find one,
+      we set the lineBreak variable to true.
     */
     if (lineBreak == false && line[i] == '"')
     {
@@ -786,22 +786,22 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
     if (inTextField == false && line[i] == '"')
     {
       /*
-         Finding a quote will mean that we are now
-         in a text field if we weren't already.
+        Finding a quote will mean that we are now
+        in a text field if we weren't already.
       */
       inTextField = true;
       previousPos++; // We don't want to include the quote itself.
       stringLength--;
       /*
-         If we are in a text field, and we encounter another quote, then we
-         should first check if it is accompanied by yet another pair of quotes.
-         This is based on the fact that csv files (if written correctly),
-         always use double quotes for
-         quotes that are embedded in text fields.
+        If we are in a text field, and we encounter another quote, then we
+        should first check if it is accompanied by yet another pair of quotes.
+        This is based on the fact that csv files (if written correctly),
+        always use double quotes for
+        quotes that are embedded in text fields.
 
-         We also double check by checking if the current amount of
-         quotes is divisible by 2, that is, if we have an
-         equal number of quotes.
+        We also double check by checking if the current amount of
+        quotes is divisible by 2, that is, if we have an
+        equal number of quotes.
       */
     }
     else if (inTextField == true && line[i] == '"' &&
@@ -816,16 +816,16 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
     {
       // We remove any white spaces before the start of this new token.
       while (line[previousPos] == ' ')
-	    {
-	      previousPos++;
-	      stringLength--;
-	    }
+      {
+        previousPos++;
+        stringLength--;
+      }
       // We create a substring here.
       std::string tempString = line.substr(previousPos, stringLength);
       // In case we have any remaining double quotes, let us remove them.
       if (tempString.size() > 1)
-	    {
-	      for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();) 
+      {
+        for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();)
         {
           if (*(it - 1) == '"' && *it == '"')
           {
@@ -836,7 +836,7 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
             it++;
           }
         }
-	    }
+      }
       // And then we store the resulting string as a new token.
       tokens->push_back(tempString);
       previousPos = i + 1; // We set a new starting position for the next token.
@@ -859,13 +859,13 @@ void MainWindow::splitCsvLine(std::vector<std::string> *tokens,
     for (std::string::iterator it = tempString.begin() + 1; it != tempString.end();)
     {
       if (*(it - 1) == '"' && *it == '"')
-	    {
-	      tempString.erase(it);
-	    }
+      {
+        tempString.erase(it);
+      }
       else
-	    {
-	      it++;
-	    }
+      {
+        it++;
+      }
     }
   }
   tokens->push_back(tempString);
@@ -1303,8 +1303,8 @@ void MainWindow::exportIncidentAttributes()
             << "description" << ","
             << "father" << "\n";
     /*
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
+      The rest is relatively simple. We make a query return almost the entire table
+      and simply write that to a file.
     */
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT name, description, father FROM incident_attributes");
@@ -1348,47 +1348,47 @@ void MainWindow::importIncidentAttributes()
     // We then split the current line into different tokens.
     splitCsvLine(&tokens, buffer);
     /*
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
+      If we still need to import the header, let's do that first.
+      We immediately check if the correct headers were used.
+      If not, we report an error and return, letting the user fix the issue.
     */
     if (headerFound == false)
     {
       if (tokens[0] != "name")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"name\" in first column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"name\" in first column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[1] != "description")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"description\" "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"description\" "
                                      "in second column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[2] != "father")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"father\" in third column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"father\" in third column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       /*
-         If we checked all headers and imported the header correctly,
-         we can set the headerFound bool to true, so that this block
-         is skipped in all subsequent line reads.
+        If we checked all headers and imported the header correctly,
+        we can set the headerFound bool to true, so that this block
+        is skipped in all subsequent line reads.
       */
       headerFound = true;
       // This is the block that is run after the header was already imported.
@@ -1399,19 +1399,19 @@ void MainWindow::importIncidentAttributes()
       std::vector<std::string> row;
       std::vector<std::string>::iterator it;
       if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       for (it = tokens.begin(); it != tokens.end(); it++)
-	    {
-	      row.push_back(*it);
-	    }
+      {
+        row.push_back(*it);
+      }
       // Then we push the row vector into the data vector.
       data.push_back(row);
     }
@@ -1484,8 +1484,8 @@ void MainWindow::exportAssignedIncidentAttributes()
             << "incident" << ","
             << "value" << "\n";
     /*
-       Then we fetch the table, but we also have to translate the incident
-       ids into their order values
+      Then we fetch the table, but we also have to translate the incident
+      ids into their order values
     */
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT attribute, incident, value FROM attributes_to_incidents "
@@ -1529,8 +1529,8 @@ void MainWindow::exportEntities()
             << "description" << ","
             << "father" << "\n";
     /*
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
+      The rest is relatively simple. We make a query return almost the entire table
+      and simply write that to a file.
     */
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT name, description, father FROM entities");
@@ -1574,47 +1574,47 @@ void MainWindow::importEntities()
     // We then split the current line into different tokens.
     splitCsvLine(&tokens, buffer);
     /*
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
+      If we still need to import the header, let's do that first.
+      We immediately check if the correct headers were used.
+      If not, we report an error and return, letting the user fix the issue.
     */
     if (headerFound == false)
     {
       if (tokens[0] != "name")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"name\" in first column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"name\" in first column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[1] != "description")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"description\" "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"description\" "
                                      "in second column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[2] != "father")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"father\" in third column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"father\" in third column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       /*
-         If we checked all headers and imported the header correctly,
-         we can set the headerFound bool to true, so that this block
-         is skipped in all subsequent line reads.
+        If we checked all headers and imported the header correctly,
+        we can set the headerFound bool to true, so that this block
+        is skipped in all subsequent line reads.
       */
       headerFound = true;
       // This is the block that is run after the header was already imported.
@@ -1625,19 +1625,19 @@ void MainWindow::importEntities()
       std::vector<std::string> row;
       std::vector<std::string>::iterator it;
       if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       for (it = tokens.begin(); it != tokens.end(); it++)
-	    {
-	      row.push_back(*it);
-	    }
+      {
+        row.push_back(*it);
+      }
       // Then we push the row vector into the data vector.
       data.push_back(row);
     }
@@ -1708,8 +1708,8 @@ void MainWindow::exportRelTypes()
             << "directedness" << ","
             << "description" << "\n";
     /*
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
+      The rest is relatively simple. We make a query return almost the entire table
+      and simply write that to a file.
     */
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT name, directedness, description FROM relationship_types");
@@ -1753,47 +1753,47 @@ void MainWindow::importRelTypes()
     // We then split the current line into different tokens.
     splitCsvLine(&tokens, buffer);
     /*
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
+      If we still need to import the header, let's do that first.
+      We immediately check if the correct headers were used.
+      If not, we report an error and return, letting the user fix the issue.
     */
     if (headerFound == false)
     {
       if (tokens[0] != "name")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"name\" in first column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"name\" in first column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[1] != "directedness")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"directedness\" "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"directedness\" "
                                      "in second column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[2] != "description")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"description\" in third column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"description\" in third column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       /*
-         If we checked all headers and imported the header correctly,
-         we can set the headerFound bool to true, so that this block
-         is skipped in all subsequent line reads.
+        If we checked all headers and imported the header correctly,
+        we can set the headerFound bool to true, so that this block
+        is skipped in all subsequent line reads.
       */
       headerFound = true;
       // This is the block that is run after the header was already imported.
@@ -1804,29 +1804,29 @@ void MainWindow::importRelTypes()
       std::vector<std::string> row;
       std::vector<std::string>::iterator it;
       if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       else if (!(tokens[1] == DIRECTED.toStdString() || tokens[1] == UNDIRECTED.toStdString()))
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Encountered an invalid directedness value.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Encountered an invalid directedness value.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       for (it = tokens.begin(); it != tokens.end(); it++)
-	    {
-	      row.push_back(*it);
-	    }
+      {
+        row.push_back(*it);
+      }
       // Then we push the row vector into the data vector.
       data.push_back(row);
     }
@@ -1897,10 +1897,10 @@ void MainWindow::exportAssignedRelationships()
     fileOut << "relationship" << ","
             << "incident" << "\n";
     /*
-       The rest is relatively simple. We make a query return almost the entire table,
-       but we also need to translate the incident ids into their order values.
+      The rest is relatively simple. We make a query return almost the entire table,
+      but we also need to translate the incident ids into their order values.
 
-       In addition, to understand where to split the string, we need to do a third query.
+      In addition, to understand where to split the string, we need to do a third query.
     */
     QSqlQuery *query = new QSqlQuery;
     QSqlQuery *query2 = new QSqlQuery;
@@ -1925,17 +1925,17 @@ void MainWindow::exportAssignedRelationships()
       QStringList relationshipParts = QStringList();
       QString outputRelationship = QString();
       if (directedness == DIRECTED)
-	    {
-	      relationshipParts = relationship.split("--->");
-	      outputRelationship = relationshipParts[0] + "-[" + type + "]->" + relationshipParts[1];
-	    }
+      {
+        relationshipParts = relationship.split("--->");
+        outputRelationship = relationshipParts[0] + "-[" + type + "]->" + relationshipParts[1];
+      }
       else if (directedness == UNDIRECTED)
-	    {
-	      relationshipParts = relationship.split("<-->");
-	      outputRelationship = relationshipParts[0] + "<-[" + type + "]->" + relationshipParts[1];
-	    }
+      {
+        relationshipParts = relationship.split("<-->");
+        outputRelationship = relationshipParts[0] + "<-[" + type + "]->" + relationshipParts[1];
+      }
 
-	  
+
       fileOut << "\"" << doubleQuote(outputRelationship).toStdString() << "\"" << ","
               << "\"" << order << "\"" << "\n";
     }
@@ -1964,8 +1964,8 @@ void MainWindow::exportEntityAttributes()
             << "description" << ","
             << "father" << "\n";
     /*
-       The rest is relatively simple. We make a query return almost the entire table
-       and simply write that to a file.
+      The rest is relatively simple. We make a query return almost the entire table
+      and simply write that to a file.
     */
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT name, description, father FROM entity_attributes");
@@ -2009,47 +2009,47 @@ void MainWindow::importEntityAttributes()
     // We then split the current line into different tokens.
     splitCsvLine(&tokens, buffer);
     /*
-       If we still need to import the header, let's do that first.
-       We immediately check if the correct headers were used.
-       If not, we report an error and return, letting the user fix the issue.
+      If we still need to import the header, let's do that first.
+      We immediately check if the correct headers were used.
+      If not, we report an error and return, letting the user fix the issue.
     */
     if (headerFound == false)
     {
       if (tokens[0] != "name")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"name\" in first column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"name\" in first column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[1] != "description")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"description\" "
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"description\" "
                                      "in second column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       if (tokens[2] != "father")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Expected \"father\" in third column.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Expected \"father\" in third column.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       /*
-         If we checked all headers and imported the header correctly,
-         we can set the headerFound bool to true, so that this block
-         is skipped in all subsequent line reads.
+        If we checked all headers and imported the header correctly,
+        we can set the headerFound bool to true, so that this block
+        is skipped in all subsequent line reads.
       */
       headerFound = true;
       // This is the block that is run after the header was already imported.
@@ -2060,19 +2060,19 @@ void MainWindow::importEntityAttributes()
       std::vector<std::string> row;
       std::vector<std::string>::iterator it;
       if (tokens[0] == "" || tokens[1] == "" || tokens[2] == "")
-	    {
-	      QPointer<QMessageBox> errorBox = new QMessageBox(this);
-	      errorBox->setWindowTitle("Error");
-	      errorBox->setText(tr("<b>ERROR</b>"));
-	      errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
-	      errorBox->exec();
-	      delete errorBox;
-	      return;
-	    }
+      {
+        QPointer<QMessageBox> errorBox = new QMessageBox(this);
+        errorBox->setWindowTitle("Error");
+        errorBox->setText(tr("<b>ERROR</b>"));
+        errorBox->setInformativeText("Encountered an empty cell where it is not allowed.");
+        errorBox->exec();
+        delete errorBox;
+        return;
+      }
       for (it = tokens.begin(); it != tokens.end(); it++)
-	    {
-	      row.push_back(*it);
-	    }
+      {
+        row.push_back(*it);
+      }
       // Then we push the row vector into the data vector.
       data.push_back(row);
     }
@@ -2264,10 +2264,10 @@ void MainWindow::editCoder()
                                      "upon editing the currently active coder.");
       warningBox->exec();
       if (warningBox->clickedButton() == continueButton)
-	    {
-	      newCoderDialog->submitText(oldName);
-	      newCoderDialog->exec();
-	      if (newCoderDialog->getExitStatus() == 0) 
+      {
+        newCoderDialog->submitText(oldName);
+        newCoderDialog->exec();
+        if (newCoderDialog->getExitStatus() == 0)
         {
           QString name = newCoderDialog->getText();
           query->prepare("UPDATE coders "
@@ -2280,10 +2280,11 @@ void MainWindow::editCoder()
           query->first();
           if (query->value(0).toString() == oldName)
           {
+            processCoderChange(oldName, name, false);
             processCoder(name);
           }
         }
-	    }
+      }
     }
     delete newCoderDialog;
   }
@@ -2329,36 +2330,38 @@ void MainWindow::renameDefaultCoder()
       query->exec("SELECT coder FROM save_data");
       query->first();
       if (currentDefault == query->value(0).toString())
-	    {
-	      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->setWindowTitle("Editing currently active coder");
-	      QPointer<QAbstractButton> continueButton = warningBox->addButton(tr("Continue"),
+      {
+        QPointer<QMessageBox> warningBox = new QMessageBox(this);
+        warningBox->setWindowTitle("Editing currently active coder");
+        QPointer<QAbstractButton> continueButton = warningBox->addButton(tr("Continue"),
                                                                          QMessageBox::YesRole);
-	      warningBox->addButton(QMessageBox::Cancel);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<h2>Save changes in visualizations!</h2>");
-	      warningBox->setInformativeText("Before editing the currently active coder, please "
+        warningBox->addButton(QMessageBox::Cancel);
+        warningBox->setIcon(QMessageBox::Warning);
+        warningBox->setText("<h2>Save changes in visualizations!</h2>");
+        warningBox->setInformativeText("Before editing the currently active coder, please "
                                        "make sure you saved any changes to visualizations you "
                                        "are currently working on. Unsaved changes will be lost "
                                        "upon editing the currently active coder.");
-	      warningBox->exec();
-	      if (warningBox->clickedButton() == continueButton) 
+        warningBox->exec();
+        if (warningBox->clickedButton() == continueButton)
         {
-          processDefault(currentDefault, newName);
+          processCoderChange(currentDefault, newName, true);
           processCoder(newName);
         }
-	    }
+      }
       else
-	    {
-	      processDefault(currentDefault, newName);
-	    }
+      {
+        processCoderChange(currentDefault, newName, true);
+      }
     }
     delete newCoderDialog;
   }
   delete query;
 }
 
-void MainWindow::processDefault(QString oldName, QString newName)
+void MainWindow::processCoderChange(QString oldName,
+                                    QString newName,
+                                    bool defaultCoder)
 {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("UPDATE coders "
@@ -2367,9 +2370,12 @@ void MainWindow::processDefault(QString oldName, QString newName)
   query->bindValue(":newName", newName);
   query->bindValue(":oldName", oldName);
   query->exec();
-  query->prepare("UPDATE save_data SET default_coder = :newName");
-  query->bindValue(":newName", newName);
-  query->exec();
+  if (defaultCoder)
+  {
+    query->prepare("UPDATE save_data SET default_coder = :newName");
+    query->bindValue(":newName", newName);
+    query->exec();
+  }
   query->prepare("UPDATE attributes_to_incidents "
                  "SET coder = :newName WHERE coder = :oldName");
   query->bindValue(":newName", newName);
@@ -2377,13 +2383,13 @@ void MainWindow::processDefault(QString oldName, QString newName)
   query->exec();
   query->prepare("UPDATE attributes_to_incidents_sources "
                  "SET coder = :newName WHERE coder = :oldName");
-  query->bindValue(":newNname", newName);
-  query->bindValue(":oldNname", oldName);
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
   query->exec();
   query->prepare("UPDATE relationships_to_incidents "
                  "SET coder = :newName WHERE coder = :oldName");
-  query->bindValue(":newNname", newName);
-  query->bindValue(":oldNname", oldName);
+  query->bindValue(":newName", newName);
+  query->bindValue(":oldName", oldName);
   query->exec();
   query->prepare("UPDATE relationships_to_incidents_sources "
                  "SET coder = :newName WHERE coder = :oldName");
@@ -2799,7 +2805,7 @@ void MainWindow::deleteCoder()
                      "WHERE coder = :name");
       query->bindValue(":name", coder);
       query->exec();
-  	  query->prepare("DELETE FROM saved_ng_plots_nodelegend "
+      query->prepare("DELETE FROM saved_ng_plots_nodelegend "
                      "WHERE coder = :name");
       query->bindValue(":name", coder);
       query->exec();
@@ -2914,13 +2920,13 @@ void MainWindow::deleteCoder()
       query->exec("SELECT coder FROM save_data");
       query->first();
       if (query->value(0).toString() == coder)
-	    {
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->exec("SELECT default_coder FROM save_data");
-	      query2->first();
-	      processCoder(query2->value(0).toString());
-	      delete query2;
-	    }
+      {
+        QSqlQuery *query2 = new QSqlQuery;
+        query2->exec("SELECT default_coder FROM save_data");
+        query2->first();
+        processCoder(query2->value(0).toString());
+        delete query2;
+      }
       delete query;
     }
     delete warningBox;
@@ -3079,55 +3085,55 @@ void MainWindow::compareAttributes()
       query2->exec();
       QVector<QString> attributes;
       while (query2->next())
-	    {
-	      QString currentAttribute = query2->value(0).toString();
-	      if (chosenAttributes.contains(currentAttribute))
+      {
+        QString currentAttribute = query2->value(0).toString();
+        if (chosenAttributes.contains(currentAttribute))
         {
           attributes.push_back(currentAttribute);
         }
-	    }
+      }
       if (attributes.size() > 1)
-	    {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->setWindowTitle("Multiple codes found for incident");
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<h2>Cannot proceed:</h2>");
-	      warningBox->setInformativeText("More than one code was found for some incident. "
+      {
+        QPointer <QMessageBox> warningBox = new QMessageBox(this);
+        warningBox->setWindowTitle("Multiple codes found for incident");
+        warningBox->addButton(QMessageBox::Ok);
+        warningBox->setIcon(QMessageBox::Warning);
+        warningBox->setText("<h2>Cannot proceed:</h2>");
+        warningBox->setInformativeText("More than one code was found for some incident. "
                                        "The reliability score will only work for semantic "
                                        "domains of mutually exclusive codes.");
-	      warningBox->exec();
-	      return;
-	    }
+        warningBox->exec();
+        return;
+      }
       else if (attributes.size() == 1)
-	    {
-	      coderOne.insert(incident, attributes.first());
-	    }
+      {
+        coderOne.insert(incident, attributes.first());
+      }
       attributes.clear();
       query2->bindValue(":incident", incident);
       query2->bindValue(":coder", compare);
       query2->exec();
       while (query2->next())
-	    {
-	      QString currentAttribute = query2->value(0).toString();
-	      if (chosenAttributes.contains(currentAttribute))
+      {
+        QString currentAttribute = query2->value(0).toString();
+        if (chosenAttributes.contains(currentAttribute))
         {
           attributes.push_back(currentAttribute);
         }
-	    }
+      }
       if (attributes.size() > 1)
-	    {
-	      QPointer <QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->setWindowTitle("Multiple codes found for incident");
-	      warningBox->addButton(QMessageBox::Ok);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<h2>Cannot proceed:</h2>");
-	      warningBox->setInformativeText("More than one code was found for some incident. "
+      {
+        QPointer <QMessageBox> warningBox = new QMessageBox(this);
+        warningBox->setWindowTitle("Multiple codes found for incident");
+        warningBox->addButton(QMessageBox::Ok);
+        warningBox->setIcon(QMessageBox::Warning);
+        warningBox->setText("<h2>Cannot proceed:</h2>");
+        warningBox->setInformativeText("More than one code was found for some incident. "
                                        "The reliability score will only work for semantic "
                                        "domains of mutually exclusive codes.");
-	      warningBox->exec();
-	      return;
-	    }
+        warningBox->exec();
+        return;
+      }
       else if (attributes.size() == 1)
       {
         coderTwo.insert(incident, attributes.first());
@@ -3141,17 +3147,17 @@ void MainWindow::compareAttributes()
     {
       int incident = query->value(0).toInt();
       if (coderOne.value(incident) != "" && coderTwo.value(incident) != "")
-	    {
-	      count++;
-	      QString coderOneCode = coderOne.value(incident);
-	      QString coderTwoCode = coderTwo.value(incident);
-	      int currentValue = matrix.value(QPair<QString, QString>(coderOneCode,coderTwoCode));
-	      currentValue++;
-	      matrix.insert(QPair<QString, QString>(coderOneCode, coderTwoCode), currentValue);
-	      currentValue = matrix.value(QPair<QString, QString>(coderTwoCode,coderOneCode));
-	      currentValue++;
-	      matrix.insert(QPair<QString, QString>(coderTwoCode, coderOneCode), currentValue);
-	    }
+      {
+        count++;
+        QString coderOneCode = coderOne.value(incident);
+        QString coderTwoCode = coderTwo.value(incident);
+        int currentValue = matrix.value(QPair<QString, QString>(coderOneCode,coderTwoCode));
+        currentValue++;
+        matrix.insert(QPair<QString, QString>(coderOneCode, coderTwoCode), currentValue);
+        currentValue = matrix.value(QPair<QString, QString>(coderTwoCode,coderOneCode));
+        currentValue++;
+        matrix.insert(QPair<QString, QString>(coderTwoCode, coderOneCode), currentValue);
+      }
     }
     count *= 2;
     int agreement = 0;
@@ -3163,9 +3169,9 @@ void MainWindow::compareAttributes()
       QPair<QString, QString> cell = mIt.key();
       int cellValue = mIt.value();
       if (cell.first == cell.second)
-	    {
-	      agreement = agreement + cellValue;
-	    }
+      {
+        agreement = agreement + cellValue;
+      }
       int rowSum = rowSums.value(cell.first);
       rowSum = rowSum + cellValue;
       rowSums.insert(cell.first, rowSum);

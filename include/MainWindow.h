@@ -118,7 +118,7 @@ private slots:
   void deleteCoder();
   void switchCoder();
   void processCoder(QString coder);
-  void processDefault(QString oldName, QString newName);
+  void processCoderChange(QString oldName, QString newName, bool defaultCoder);
   void compareAttributes();
 
 protected:
