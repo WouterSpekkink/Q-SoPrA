@@ -1,22 +1,22 @@
 /*
 
-Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
 
-This file is part of Q-SoPrA.
+  This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Q-SoPrA is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -84,13 +84,13 @@ RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent)
 
   // Connecting the signals
   connect(filterField, SIGNAL(textChanged(const QString &)),
-	  this, SLOT(changeFilter(const QString &)));
+          this, SLOT(changeFilter(const QString &)));
   connect(tableView->verticalHeader(), SIGNAL(sectionDoubleClicked(int)),
-	  this, SLOT(resetHeader(int)));
+          this, SLOT(resetHeader(int)));
   connect(tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)),
-	  this, SLOT(sortHeader(int)));
+          this, SLOT(sortHeader(int)));
   connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
-	  this, SLOT(setFilterColumn()));
+          this, SLOT(setFilterColumn()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   
   // And we create the layout.
@@ -111,9 +111,9 @@ void RawLinkagesTable::updateTable()
 {
   linkagesModel->select();
   while (linkagesModel->canFetchMore()) 
-    {
-      linkagesModel->fetchMore();
-    }
+  {
+    linkagesModel->fetchMore();
+  }
 }
 
 void RawLinkagesTable::resetHeader(int header) 
@@ -125,22 +125,22 @@ void RawLinkagesTable::resetHeader(int header)
 void RawLinkagesTable::sortHeader(int header) 
 {
   if (header == _lastSortedHeader)
+  {
+    if (_lastSortedAscending)
     {
-      if (_lastSortedAscending)
-	{
-	  linkagesModel->sort(header, Qt::DescendingOrder);
-	}
-      else
-	{
-	  linkagesModel->sort(header, Qt::AscendingOrder);
-	}
-      _lastSortedAscending = !_lastSortedAscending;
+      linkagesModel->sort(header, Qt::DescendingOrder);
     }
-  else
+    else
     {
       linkagesModel->sort(header, Qt::AscendingOrder);
-      _lastSortedAscending = true;
     }
+    _lastSortedAscending = !_lastSortedAscending;
+  }
+  else
+  {
+    linkagesModel->sort(header, Qt::AscendingOrder);
+    _lastSortedAscending = true;
+  }
   _lastSortedHeader = header;
   updateTable();
 }
@@ -155,29 +155,29 @@ void RawLinkagesTable::changeFilter(const QString &text)
 void RawLinkagesTable::setFilterColumn() 
 {
   if (filterComboBox->currentText() == "Tail") 
-    {
-      filter->setFilterKeyColumn(1);
-    }
+  {
+    filter->setFilterKeyColumn(1);
+  }
   else if (filterComboBox->currentText() == "Head") 
-    {
-      filter->setFilterKeyColumn(2);
-    }
+  {
+    filter->setFilterKeyColumn(2);
+  }
   else if (filterComboBox->currentText() == "Type") 
-    {
-      filter->setFilterKeyColumn(3);
-    }
+  {
+    filter->setFilterKeyColumn(3);
+  }
   else if (filterComboBox->currentText() == "Coder") 
-    {
-      filter->setFilterKeyColumn(4);
-    }
+  {
+    filter->setFilterKeyColumn(4);
+  }
   else if (filterComboBox->currentText() == "Source") 
-    {
-      filter->setFilterKeyColumn(5);
-    }
+  {
+    filter->setFilterKeyColumn(5);
+  }
   else if (filterComboBox->currentText() == "Source text") 
-    {
-      filter->setFilterKeyColumn(6);
-    }
+  {
+    filter->setFilterKeyColumn(6);
+  }
 }
 
 
@@ -186,40 +186,40 @@ void RawLinkagesTable::exportTable()
   updateTable();
   // We let the user set the file name and location.
   QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"",
-						  tr("csv files (*.csv)"));
+                                                  tr("csv files (*.csv)"));
   if (!fileName.trimmed().isEmpty()) 
+  {
+    if(!fileName.endsWith(".csv"))
     {
-      if(!fileName.endsWith(".csv")) 
-	{
-	  fileName.append(".csv");
-	}
-      // And we create a file outstream.  
-      std::ofstream fileOut(fileName.toStdString().c_str());
-      // We first write the header.
-      fileOut << "Tail" << ","
-	      << "Head" << ","
-	      << "Type" << ","
-	      << "Coder" << ","
-	      << "Source" << ","
-	      << "Source Text" << "\n";
-      // Then we iterate through the visible table.
-      for (int i = 0; i != tableView->verticalHeader()->count(); i++) 
-	{
-	  QString tail = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
-	  QString head = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
-	  QString type = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
-	  QString coder = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
-	  QString source = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
-	  QString sourceText = tableView->model()->index(i, 6).data(Qt::DisplayRole).toString();
-	  fileOut << tail.toStdString() << ","
-		  << head.toStdString() << ","
-		  << "\"" << doubleQuote(type).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(coder).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(source).toStdString() << "\"" << ","
-		  << "\"" << doubleQuote(sourceText).toStdString() << "\"" << "\n";
-	}
-      // And that should be it!
-      fileOut.close();
+      fileName.append(".csv");
     }
+    // And we create a file outstream.
+    std::ofstream fileOut(fileName.toStdString().c_str());
+    // We first write the header.
+    fileOut << "Tail" << ","
+            << "Head" << ","
+            << "Type" << ","
+            << "Coder" << ","
+            << "Source" << ","
+            << "Source Text" << "\n";
+    // Then we iterate through the visible table.
+    for (int i = 0; i != tableView->verticalHeader()->count(); i++)
+    {
+      QString tail = tableView->model()->index(i, 1).data(Qt::DisplayRole).toString();
+      QString head = tableView->model()->index(i, 2).data(Qt::DisplayRole).toString();
+      QString type = tableView->model()->index(i, 3).data(Qt::DisplayRole).toString();
+      QString coder = tableView->model()->index(i, 4).data(Qt::DisplayRole).toString();
+      QString source = tableView->model()->index(i, 5).data(Qt::DisplayRole).toString();
+      QString sourceText = tableView->model()->index(i, 6).data(Qt::DisplayRole).toString();
+      fileOut << tail.toStdString() << ","
+              << head.toStdString() << ","
+              << "\"" << doubleQuote(type).toStdString() << "\"" << ","
+              << "\"" << doubleQuote(coder).toStdString() << "\"" << ","
+              << "\"" << doubleQuote(source).toStdString() << "\"" << ","
+              << "\"" << doubleQuote(sourceText).toStdString() << "\"" << "\n";
+    }
+    // And that should be it!
+    fileOut.close();
+  }
 }
 
