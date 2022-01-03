@@ -96,6 +96,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   linkageTypeFeedbackLabel = new QLabel(tr(""), this);
   linkageFeedbackLabel = new QLabel(tr(""), this);
   linkageCommentLabel = new QLabel(tr("<b>Linkage comments:</b>"), this);
+  caseLabel = new QLabel(tr("<b>Case filter:<b>"), this);
 
   tailTimeStampField = new QLineEdit(this);
   tailTimeStampField->setReadOnly(true);
@@ -178,7 +179,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
 
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
-  
+  caseComboBox = new QComboBox(this);
+
   linkageCommentField->installEventFilter(this);
   headTimeStampField->installEventFilter(this);
   tailTimeStampField->installEventFilter(this);
@@ -267,8 +269,19 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   editTypeButton->setMaximumWidth(editTypeButton->sizeHint().width());
   linkageOptionsLayout->addWidget(removeTypeButton);
   removeTypeButton->setMaximumWidth(removeTypeButton->sizeHint().width());
+  QPointer<QFrame> typeLine = new QFrame;
+  typeLine->setFrameShape(QFrame::VLine);
+  linkageOptionsLayout->addWidget(typeLine);
+  linkageOptionsLayout->addWidget(caseLabel);
+  linkageOptionsLayout->addWidget(caseComboBox);
+  QPointer<QFrame> caseLine = new QFrame;
+  caseLine->setFrameShape(QFrame::VLine);
+  linkageOptionsLayout->addWidget(caseLine);
   linkageOptionsLayout->addWidget(selectTypeButton);
   selectTypeButton->setMaximumWidth(selectTypeButton->sizeHint().width());
+  QPointer<QFrame> loadLine = new QFrame;
+  loadLine->setFrameShape(QFrame::VLine);
+  linkageOptionsLayout->addWidget(loadLine);
   linkageOptionsLayout->addWidget(manualCodingButton);
   manualCodingButton->setMaximumWidth(manualCodingButton->sizeHint().width());
   linkageOptionsLayout->addWidget(assistedCodingButton);
@@ -612,9 +625,9 @@ void LinkagesWidget::editLinkageType()
       QString name = linkageTypeDialog->getName();
       description = linkageTypeDialog->getDescription();
       if (direction != linkageTypeDialog->getDirection())
-	    {
-	      changedDirection = true;
-	    }
+      {
+        changedDirection = true;
+      }
       direction = linkageTypeDialog->getDirection();
       query->prepare("UPDATE linkage_types "
                      "SET name = :name, "
@@ -632,12 +645,12 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head FROM linkages "
+      {
+        query->prepare("SELECT tail, head FROM linkages "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -648,7 +661,7 @@ void LinkagesWidget::editLinkageType()
           query2->bindValue(":oldHead", oldHead);
           query2->exec();
         }
-	    }
+      }
       query->prepare("UPDATE linkages_sources "
                      "SET type = :newType "
                      "WHERE type = :oldType");
@@ -656,13 +669,13 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head, istail "
+      {
+        query->prepare("SELECT tail, head, istail "
                        "FROM linkages_sources "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -680,7 +693,7 @@ void LinkagesWidget::editLinkageType()
           query3->bindValue(":oldHead", oldHead);
           query3->exec();
         }
-	    }
+      }
       query->prepare("UPDATE coders_to_linkage_types "
                      "SET type = :newType "
                      "WHERE type = :oldType");
@@ -688,13 +701,13 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head "
+      {
+        query->prepare("SELECT tail, head "
                        "FROM coders_to_linkage_types "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -705,7 +718,7 @@ void LinkagesWidget::editLinkageType()
           query4->bindValue(":oldHead", oldHead);
           query4->exec();
         }
-	    }
+      }
       query->prepare("UPDATE linkage_comments "
                      "SET type = :newType "
                      "WHERE type = :oldType");
@@ -713,13 +726,13 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head "
+      {
+        query->prepare("SELECT tail, head "
                        "FROM linkage_comments "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -730,7 +743,7 @@ void LinkagesWidget::editLinkageType()
           query5->bindValue(":oldHead", oldHead);
           query5->exec();
         }
-	    }
+      }
       delete query;
       delete query2;
       delete query3;
@@ -839,6 +852,23 @@ void LinkagesWidget::retrieveLinkages()
   delete query;
 }
 
+void LinkagesWidget::retrieveCases()
+{
+  caseComboBox->clear();
+  caseComboBox->addItem("All cases");
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM cases ORDER BY name ASC");
+  while (query->next())
+  {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    caseComboBox->addItem(name);
+    int index = caseComboBox->count() - 1;
+    caseComboBox->setItemData(index, description, Qt::ToolTipRole);
+  }
+  delete query;
+}
+
 void LinkagesWidget::setTypeButton() 
 {
   if (typeComboBox->currentText() != DEFAULT) 
@@ -888,15 +918,15 @@ void LinkagesWidget::setLinkageType(bool checkManual)
       query2->bindValue(":coder", _selectedCoder);
       query2->bindValue(":type", _selectedType);
       if (direction == PAST)
-	    {
-	      query2->bindValue(":tail", 2);
-	      query2->bindValue(":head", 1);
-	    }
+      {
+        query2->bindValue(":tail", 2);
+        query2->bindValue(":head", 1);
+      }
       else if (direction == FUTURE)
-	    {
-	      query2->bindValue(":tail", 1);
-	      query2->bindValue(":head", 2);
-	    }
+      {
+        query2->bindValue(":tail", 1);
+        query2->bindValue(":head", 2);
+      }
       query2->exec();
       delete query2;
     }
@@ -916,6 +946,7 @@ void LinkagesWidget::setLinkageType(bool checkManual)
     plotLinkages();
     scene->setSceneRect(scene->itemsBoundingRect());
     retrieveData();
+    collectCase();
     delete query;
     if (checkManual)
     {
@@ -971,31 +1002,31 @@ void LinkagesWidget::switchLinkageType()
       query2->bindValue(":coder", _selectedCoder);
       query2->bindValue(":type", newType);
       if (direction == PAST)
-	    {
-	      if (_selectedDirection == PAST)
+      {
+        if (_selectedDirection == PAST)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       else if (direction == FUTURE)
-	    {
-	      if (_selectedDirection == FUTURE)
+      {
+        if (_selectedDirection == FUTURE)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       query2->exec();
       delete query2;
     }
@@ -1013,31 +1044,31 @@ void LinkagesWidget::switchLinkageType()
       query2->bindValue(":coder", _selectedCoder);
       query2->bindValue(":type", newType);
       if (direction == PAST)
-	    {
-	      if (_selectedDirection == PAST)
+      {
+        if (_selectedDirection == PAST)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       else if (direction == FUTURE)
-	    {
-	      if (_selectedDirection == FUTURE)
+      {
+        if (_selectedDirection == FUTURE)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       query2->exec();
       delete query2;
     }
@@ -1072,31 +1103,31 @@ void LinkagesWidget::changeTailNode(LinkageNode *node)
     {
       QVectorIterator<LinkageNode*> it(_linkageNodeVector);
       while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedTail->getOrder() - 1)
+      {
+        LinkageNode *current = it.next();
+        if (current->getOrder() == _selectedTail->getOrder() - 1)
         {
           _selectedHead->setUnselected();
           _selectedHead = current;
           _selectedHead->setHead();
           break;
         }
-	    }
+      }
     }
     else if (_selectedDirection == FUTURE && _selectedTail->getOrder() >= _selectedHead->getOrder())
     {
       QVectorIterator<LinkageNode*> it(_linkageNodeVector);
       while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedTail->getOrder() + 1)
+      {
+        LinkageNode *current = it.next();
+        if (current->getOrder() == _selectedTail->getOrder() + 1)
         {
           _selectedHead->setUnselected();
           _selectedHead = current;
           _selectedHead->setHead();
           break;
         }
-	    }
+      }
     }
     QSqlQuery *query = new QSqlQuery;
     query->prepare("UPDATE coders_to_linkage_types "
@@ -1124,31 +1155,31 @@ void LinkagesWidget::changeHeadNode(LinkageNode *node)
     {
       QVectorIterator<LinkageNode*> it(_linkageNodeVector);
       while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedHead->getOrder() + 1)
+      {
+        LinkageNode *current = it.next();
+        if (current->getOrder() == _selectedHead->getOrder() + 1)
         {
           _selectedTail->setUnselected();
           _selectedTail = current;
           _selectedTail->setTail();
           break;
         }
-	    }
+      }
     }
     else if (_selectedDirection == FUTURE && _selectedHead->getOrder() <= _selectedTail->getOrder())
     {
       QVectorIterator<LinkageNode*> it(_linkageNodeVector);
       while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedHead->getOrder() - 1)
+      {
+        LinkageNode *current = it.next();
+        if (current->getOrder() == _selectedHead->getOrder() - 1)
         {
           _selectedTail->setUnselected();
           _selectedTail = current;
           _selectedTail->setTail();
           break;
         }
-	    }
+      }
     }
     QSqlQuery *query = new QSqlQuery;
     query->prepare("UPDATE coders_to_linkage_types "
@@ -1435,16 +1466,16 @@ void LinkagesWidget::plotLinkages()
     {
       LinkageNode *currentItem = it.next();
       if (currentItem->getId() == tail)
-	    {
-	      tempSource = currentItem;
-	    }
+      {
+        tempSource = currentItem;
+      }
       else if (currentItem->getId() == head)
-	    {
-	      tempTarget = currentItem;
-	    }
+      {
+        tempTarget = currentItem;
+      }
       if (tempSource != NULL && tempTarget != NULL)
-	    {
-	      if (tempSource->getOrder() < tempTarget->getOrder()) 
+      {
+        if (tempSource->getOrder() < tempTarget->getOrder())
         {
           Linkage *currentLinkage = new Linkage(_selectedType, _selectedCoder);
           currentLinkage->setZValue(1);
@@ -1455,7 +1486,7 @@ void LinkagesWidget::plotLinkages()
           scene->addItem(currentLinkage);
           break;
         }
-	      else if (tempSource->getOrder() > tempTarget->getOrder()) 
+        else if (tempSource->getOrder() > tempTarget->getOrder())
         {
           Linkage *currentLinkage = new Linkage(_selectedType, _selectedCoder);
           currentLinkage->setZValue(1);
@@ -1466,7 +1497,7 @@ void LinkagesWidget::plotLinkages()
           scene->addItem(currentLinkage);
           break;
         }
-	    } 
+      }
     }
   }
   delete query;
@@ -1512,17 +1543,17 @@ void LinkagesWidget::layoutGraph()
       LinkageNode *second = *it2;
       QVectorIterator<Linkage*> it3(_linkagesVector);
       while (it3.hasNext())
-	    {
-	      Linkage *edge = it3.next();
-	      // Basically we just ask whether the current events are linked.
-	      if ((edge->getStart() == current &&
+      {
+        Linkage *edge = it3.next();
+        // Basically we just ask whether the current events are linked.
+        if ((edge->getStart() == current &&
              edge->getEnd() == second) ||
             (edge->getEnd() == current &&
              edge->getStart() == second))
         {
           partners.push_back(second);
         }
-	    }
+      }
     }
     qreal originHeight = current->scenePos().y();
     std::sort(partners.begin(), partners.end(), eventLessThan);
@@ -1533,9 +1564,9 @@ void LinkagesWidget::layoutGraph()
       LinkageNode *currentPartner = it4.next();
       qreal partnerHeight = originHeight;
       if (partners.size() > 1)
-	    {
-	      partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
-	    }
+      {
+        partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
+      }
       currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
       currentPartner->getLabel()->setNewPos(currentPartner->scenePos());
       partnerCount--;
@@ -1782,6 +1813,29 @@ void LinkagesWidget::setHeadCommentFilter(const QString &text)
   highlightSearch(headCommentField, text);
 }
 
+void LinkagesWidget::collectCase()
+{
+  _caseIncidents.clear();
+  QSqlQuery *query = new QSqlQuery;
+  QString selectedCase = caseComboBox->currentText();
+  if (selectedCase == "All cases")
+  {
+    query->exec("SELECT incident FROM incidents_to_cases");
+  }
+  else
+  {
+    query->prepare("SELECT incident FROM incidents_to_cases "
+                   "WHERE casename = :casename");
+    query->bindValue(":casename", selectedCase);
+  }
+  while (query->next())
+  {
+    _caseIncidents.insert(query->value(0).toInt());
+    query->value(0).toInt();
+  }
+  delete query;
+}
+
 void LinkagesWidget::previousTailDescription() 
 {
   if (linkageFeedbackLabel->text() == "" &&
@@ -1814,50 +1868,62 @@ void LinkagesWidget::previousTailDescription()
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
-    QString searchText = "%" + _tailDescriptionFilter + "%";
-    query->prepare("SELECT ch_order FROM incidents "
-                   "WHERE description LIKE :text "
-                   "AND ch_order < :tail "
-                   "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail >= 2) 
+      QString searchText = "%" + _tailDescriptionFilter + "%";
+      query->prepare("SELECT ch_order FROM incidents "
+                     "WHERE description LIKE :text "
+                     "AND ch_order < :tail "
+                     "ORDER BY ch_order desc");
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      while(incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+          valid = true;
         }
-	    }
-      else if (_selectedDirection ==  FUTURE)
-	    {
-	      if (tail >= 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
-        }
-	    }
+      }
+      else
+      {
+        return;
+      }
+    }
+    if (_selectedDirection == PAST)
+    {
+      if (tail >= 2)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+      }
+    }
+    else if (_selectedDirection ==  FUTURE)
+    {
+      if (tail >= 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+      }
     }
     delete query;
   }
@@ -1910,8 +1976,8 @@ void LinkagesWidget::nextTailDescription()
     {
       tail = query->value(0).toInt();
       if (_selectedDirection == PAST)
-	    {
-	      if (tail <= incidentsModel->rowCount()) 
+      {
+        if (tail <= incidentsModel->rowCount())
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -1923,10 +1989,10 @@ void LinkagesWidget::nextTailDescription()
           retrieveData();
           highlightSearch(tailDescriptionField, _tailDescriptionFilter);
         }
-	    }
+      }
       else if (_selectedDirection == FUTURE)
-	    {
-	      if (tail <= incidentsModel->rowCount() - 1) 
+      {
+        if (tail <= incidentsModel->rowCount() - 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -1938,7 +2004,7 @@ void LinkagesWidget::nextTailDescription()
           retrieveData();
           highlightSearch(tailDescriptionField, _tailDescriptionFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -1991,8 +2057,8 @@ void LinkagesWidget::previousTailRaw()
     {
       tail = query->value(0).toInt();
       if (_selectedDirection == PAST)
-	    {
-	      if (tail >= 2) 
+      {
+        if (tail >= 2)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2004,10 +2070,10 @@ void LinkagesWidget::previousTailRaw()
           retrieveData();
           highlightSearch(tailRawField, _tailRawFilter);
         }
-	    }
+      }
       else if (_selectedDirection ==  FUTURE)
-	    {
-	      if (tail >= 1) 
+      {
+        if (tail >= 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2019,7 +2085,7 @@ void LinkagesWidget::previousTailRaw()
           retrieveData();
           highlightSearch(tailRawField, _tailRawFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2088,8 +2154,8 @@ void LinkagesWidget::nextTailRaw()
     {
       tail = query->value(0).toInt();
       if (_selectedDirection == PAST)
-	    {
-	      if (tail <= incidentsModel->rowCount()) 
+      {
+        if (tail <= incidentsModel->rowCount())
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2101,10 +2167,10 @@ void LinkagesWidget::nextTailRaw()
           retrieveData();
           highlightSearch(tailRawField, _tailRawFilter);
         }
-	    }
+      }
       else if (_selectedDirection == FUTURE)
-	    {
-	      if (tail <= incidentsModel->rowCount() - 1) 
+      {
+        if (tail <= incidentsModel->rowCount() - 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2116,7 +2182,7 @@ void LinkagesWidget::nextTailRaw()
           retrieveData();
           highlightSearch(tailRawField, _tailRawFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2169,8 +2235,8 @@ void LinkagesWidget::previousTailComment()
     {
       tail = query->value(0).toInt();
       if (_selectedDirection == PAST)
-	    {
-	      if (tail >= 2) 
+      {
+        if (tail >= 2)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2182,10 +2248,10 @@ void LinkagesWidget::previousTailComment()
           retrieveData();
           highlightSearch(tailCommentField, _tailCommentFilter);
         }
-	    }
+      }
       else if (_selectedDirection ==  FUTURE)
-	    {
-	      if (tail >= 1) 
+      {
+        if (tail >= 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2197,7 +2263,7 @@ void LinkagesWidget::previousTailComment()
           retrieveData();
           highlightSearch(tailCommentField, _tailCommentFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2250,8 +2316,8 @@ void LinkagesWidget::nextTailComment()
     {
       tail = query->value(0).toInt();
       if (_selectedDirection == PAST)
-	    {
-	      if (tail <= incidentsModel->rowCount()) 
+      {
+        if (tail <= incidentsModel->rowCount())
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2263,10 +2329,10 @@ void LinkagesWidget::nextTailComment()
           retrieveData();
           highlightSearch(tailCommentField, _tailCommentFilter);
         }
-	    }
+      }
       else if (_selectedDirection == FUTURE)
-	    {
-	      if (tail <= incidentsModel->rowCount() - 1) 
+      {
+        if (tail <= incidentsModel->rowCount() - 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -2278,7 +2344,7 @@ void LinkagesWidget::nextTailComment()
           retrieveData();
           highlightSearch(tailCommentField, _tailCommentFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2330,9 +2396,9 @@ void LinkagesWidget::previousHeadDescription()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= tail - 1) 
+      {
+        head = query->value(0).toInt();
+        if (head <= tail - 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2344,7 +2410,7 @@ void LinkagesWidget::previousHeadDescription()
           retrieveData();
           highlightSearch(headDescriptionField, _headDescriptionFilter);
         }
-	    }
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2357,9 +2423,9 @@ void LinkagesWidget::previousHeadDescription()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >= tail + 1) 
+      {
+        head = query->value(0).toInt();
+        if (head >= tail + 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2371,7 +2437,7 @@ void LinkagesWidget::previousHeadDescription()
           retrieveData();
           highlightSearch(headDescriptionField, _headDescriptionFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2423,9 +2489,9 @@ void LinkagesWidget::nextHeadDescription()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >=  1) 
+      {
+        head = query->value(0).toInt();
+        if (head >=  1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2437,7 +2503,7 @@ void LinkagesWidget::nextHeadDescription()
           retrieveData();
           highlightSearch(headDescriptionField, _headDescriptionFilter);
         }
-	    }
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2450,9 +2516,9 @@ void LinkagesWidget::nextHeadDescription()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= incidentsModel->rowCount()) 
+      {
+        head = query->value(0).toInt();
+        if (head <= incidentsModel->rowCount())
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2464,7 +2530,7 @@ void LinkagesWidget::nextHeadDescription()
           retrieveData();
           highlightSearch(headDescriptionField, _headDescriptionFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2516,9 +2582,9 @@ void LinkagesWidget::previousHeadRaw()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= tail - 1) 
+      {
+        head = query->value(0).toInt();
+        if (head <= tail - 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2530,7 +2596,7 @@ void LinkagesWidget::previousHeadRaw()
           retrieveData();
           highlightSearch(headRawField, _headRawFilter);
         }
-	    }
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2543,9 +2609,9 @@ void LinkagesWidget::previousHeadRaw()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >= tail + 1) 
+      {
+        head = query->value(0).toInt();
+        if (head >= tail + 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2557,7 +2623,7 @@ void LinkagesWidget::previousHeadRaw()
           retrieveData();
           highlightSearch(headRawField, _headRawFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2609,9 +2675,9 @@ void LinkagesWidget::nextHeadRaw()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >=  1) 
+      {
+        head = query->value(0).toInt();
+        if (head >=  1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2623,7 +2689,7 @@ void LinkagesWidget::nextHeadRaw()
           retrieveData();
           highlightSearch(headRawField, _headRawFilter);
         }
-	    }
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2636,9 +2702,9 @@ void LinkagesWidget::nextHeadRaw()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= incidentsModel->rowCount()) 
+      {
+        head = query->value(0).toInt();
+        if (head <= incidentsModel->rowCount())
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2650,7 +2716,7 @@ void LinkagesWidget::nextHeadRaw()
           retrieveData();
           highlightSearch(headRawField, _headRawFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2702,9 +2768,9 @@ void LinkagesWidget::previousHeadComment()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= tail - 1) 
+      {
+        head = query->value(0).toInt();
+        if (head <= tail - 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2716,7 +2782,7 @@ void LinkagesWidget::previousHeadComment()
           retrieveData();
           highlightSearch(headCommentField, _headCommentFilter);
         }
-	    }
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2729,9 +2795,9 @@ void LinkagesWidget::previousHeadComment()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >= tail + 1) 
+      {
+        head = query->value(0).toInt();
+        if (head >= tail + 1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2743,7 +2809,7 @@ void LinkagesWidget::previousHeadComment()
           retrieveData();
           highlightSearch(headCommentField, _headCommentFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2795,9 +2861,9 @@ void LinkagesWidget::nextHeadComment()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >=  1) 
+      {
+        head = query->value(0).toInt();
+        if (head >=  1)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2809,7 +2875,7 @@ void LinkagesWidget::nextHeadComment()
           retrieveData();
           highlightSearch(headCommentField, _headCommentFilter);
         }
-	    }
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2822,9 +2888,9 @@ void LinkagesWidget::nextHeadComment()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= incidentsModel->rowCount()) 
+      {
+        head = query->value(0).toInt();
+        if (head <= incidentsModel->rowCount())
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -2836,7 +2902,7 @@ void LinkagesWidget::nextHeadComment()
           retrieveData();
           highlightSearch(headCommentField, _headCommentFilter);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -2873,11 +2939,24 @@ void LinkagesWidget::previousTail()
   int headIndex = 0;
   tailIndex = query->value(0).toInt();
   headIndex = query->value(1).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
-    if (tailIndex != 2)
-    {
-      tailIndex--;
+      while (!valid)
+      {
+        if (tailIndex != 2)
+        {
+          tailIndex--;
+          if (_caseIncidents.contains(tailIndex))
+          {
+            valid = true;
+          }
+        }
+        else
+        {
+          return;
+        }
+      }
       query->prepare("UPDATE coders_to_linkage_types "
                      "SET tail = :tail, head = :head "
                      "WHERE coder =:coder and type = :type ");
@@ -2887,36 +2966,46 @@ void LinkagesWidget::previousTail()
       query->bindValue(":type", _selectedType);
       query->exec();
       retrieveData();
-    }
   }
   else if (_selectedDirection == FUTURE) 
   {
-    if (tailIndex != 1)
+    while (!valid)
     {
-      tailIndex--;
-      if (_codingType == ASSISTED && tailIndex < headIndex)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      if (tailIndex != 1)
+      {
+        tailIndex--;
+        if (_caseIncidents.contains(tailIndex))
+        {
+          valid = true;
+        }
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", tailIndex + 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      {
+        return;
+      }
+    }
+    if (_codingType == ASSISTED && tailIndex < headIndex)
+    {
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET tail = :tail "
+                     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":tail", tailIndex);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      retrieveData();
+    }
+    else
+    {
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET tail = :tail, head = :head "
+                     "WHERE coder = :coder AND type = :type");
+      query->bindValue(":tail", tailIndex);
+      query->bindValue(":head", tailIndex + 1);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->exec();
+      retrieveData();
     }
   }
   delete query;
@@ -2978,28 +3067,28 @@ void LinkagesWidget::nextTail()
     {
       tailIndex++;
       if (_codingType == ASSISTED && tailIndex < headIndex)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", tailIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", tailIndex + 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", tailIndex);
+        query->bindValue(":head", tailIndex + 1);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;  
@@ -3085,17 +3174,17 @@ void LinkagesWidget::previousMarkedTail()
     {
       tail = query->value(0).toInt();
       if (tail >= 2)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tail);
-	      query->bindValue(":head", tail - 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", tail);
+        query->bindValue(":head", tail - 1);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   else if (_selectedDirection == FUTURE) 
@@ -3104,8 +3193,8 @@ void LinkagesWidget::previousMarkedTail()
     {
       tail = query->value(0).toInt();
       if (tail >= 1)
-	    {
-	      if (_codingType == ASSISTED && tail < head) 
+      {
+        if (_codingType == ASSISTED && tail < head)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -3116,7 +3205,7 @@ void LinkagesWidget::previousMarkedTail()
           query->exec();
           retrieveData();
         }
-	      else 
+        else
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail, head = :head "
@@ -3128,7 +3217,7 @@ void LinkagesWidget::previousMarkedTail()
           query->exec();
           retrieveData();
         }
-	    }
+      }
     }
   }
   delete query;
@@ -3180,17 +3269,17 @@ void LinkagesWidget::nextMarkedTail()
     {
       tail = query->value(0).toInt();
       if (tail <= incidentsModel->rowCount())
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tail);
-	      query->bindValue(":head", tail - 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", tail);
+        query->bindValue(":head", tail - 1);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   else if (_selectedDirection == FUTURE) 
@@ -3199,8 +3288,8 @@ void LinkagesWidget::nextMarkedTail()
     {
       tail = query->value(0).toInt();
       if (tail <= incidentsModel->rowCount() - 1)
-	    {
-	      if (_codingType == ASSISTED && tail < head) 
+      {
+        if (_codingType == ASSISTED && tail < head)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail "
@@ -3211,7 +3300,7 @@ void LinkagesWidget::nextMarkedTail()
           query->exec();
           retrieveData();
         }
-	      else 
+        else
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail, head = :head "
@@ -3223,7 +3312,7 @@ void LinkagesWidget::nextMarkedTail()
           query->exec();
           retrieveData();
         }
-	    }
+      }
     }
   }
   delete query;
@@ -3335,44 +3424,44 @@ void LinkagesWidget::previousHead()
     {
       headIndex--;
       if (_codingType == ASSISTED)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", headIndex - 1);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", headIndex - 1);
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
     else
     {
       if (tailIndex != 1 && _codingType == ASSISTED)
-	    {
-	      headIndex--;
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        headIndex--;
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", headIndex - 1);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", headIndex - 1);
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;
@@ -3431,28 +3520,28 @@ void LinkagesWidget::nextHead()
     {
       headIndex++;
       if (_codingType == ASSISTED)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", headIndex - 1);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":tail", headIndex - 1);
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;
@@ -3537,16 +3626,16 @@ void LinkagesWidget::previousMarkedHead()
     {
       head = query->value(0).toInt();
       if (head <= tail - 1)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", head);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   else if (_selectedDirection == FUTURE) 
@@ -3560,8 +3649,8 @@ void LinkagesWidget::previousMarkedHead()
     {
       head = query->value(0).toInt();
       if (head >= tail + 1)
-	    {
-	      if (_codingType == ASSISTED) 
+      {
+        if (_codingType == ASSISTED)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail, head = :head "
@@ -3573,7 +3662,7 @@ void LinkagesWidget::previousMarkedHead()
           query->exec();
           retrieveData();
         }
-	      else 
+        else
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -3584,7 +3673,7 @@ void LinkagesWidget::previousMarkedHead()
           query->exec();
           retrieveData();
         }
-	    }
+      }
     }
   }
   delete query;
@@ -3635,16 +3724,16 @@ void LinkagesWidget::nextMarkedHead()
     {
       head = query->value(0).toInt();
       if (head >= 1)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", head);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   else if (_selectedDirection == FUTURE) 
@@ -3658,8 +3747,8 @@ void LinkagesWidget::nextMarkedHead()
     {
       head = query->value(0).toInt();
       if (head <= incidentsModel->rowCount())
-	    {
-	      if (_codingType == ASSISTED) 
+      {
+        if (_codingType == ASSISTED)
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET tail = :tail, head = :head "
@@ -3671,7 +3760,7 @@ void LinkagesWidget::nextMarkedHead()
           query->exec();
           retrieveData();
         }
-	      else 
+        else
         {
           query->prepare("UPDATE coders_to_linkage_types "
                          "SET head = :head "
@@ -3682,7 +3771,7 @@ void LinkagesWidget::nextMarkedHead()
           query->exec();
           retrieveData();
         }
-	    }
+      }
     }
   }
   delete query;
@@ -3772,43 +3861,43 @@ void LinkagesWidget::setLinkageComment()
     if (!(query->isNull(0)))
     {
       if (comment != "")
-	    {
-	      query->prepare("UPDATE linkage_comments "
+      {
+        query->prepare("UPDATE linkage_comments "
                        "SET comment = :comment, coder = :coder "
                        "WHERE tail = :tail AND head = :head AND type = :type");
-	      query->bindValue(":comment", comment);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":tail", tailId);
-	      query->bindValue(":head", headId);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	    }
+        query->bindValue(":comment", comment);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":tail", tailId);
+        query->bindValue(":head", headId);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+      }
       else
-	    {
-	      query->prepare("DELETE FROM linkage_comments "
+      {
+        query->prepare("DELETE FROM linkage_comments "
                        "WHERE tail = :tail AND head = :head AND "
                        "type = :type AND coder = :coder");
-	      query->bindValue(":tail", tailId);
-	      query->bindValue(":head", headId);
-	      query->bindValue(":type", _selectedType);
+        query->bindValue(":tail", tailId);
+        query->bindValue(":head", headId);
+        query->bindValue(":type", _selectedType);
         query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	    }
+        query->exec();
+      }
     }
     else
     {
       if (comment != "")
-	    {
-	      query->prepare("INSERT INTO linkage_comments "
+      {
+        query->prepare("INSERT INTO linkage_comments "
                        "(tail, head, comment, coder, type)"
                        "VALUES (:tail, :head, :comment, :coder, :type)");
-	      query->bindValue(":tail", tailId);
-	      query->bindValue(":head", headId);
-	      query->bindValue(":comment", comment);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
+        query->bindValue(":tail", tailId);
+        query->bindValue(":head", headId);
+        query->bindValue(":comment", comment);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
         query->exec();
-	    }
+      }
     }
     _linkageCommentBool = false;
     delete query;
@@ -3922,7 +4011,6 @@ void LinkagesWidget::setLink()
     query->bindValue(":type", _selectedType);
     query->bindValue(":coder", _selectedCoder);
     query->exec();
-    QSqlQuery *query2 = new QSqlQuery;
     while (query->next())
     {
       int tail = query->value(0).toInt();
@@ -4030,10 +4118,10 @@ void LinkagesWidget::setLink()
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      if (tailIndex != incidentsModel->rowCount()) 
+      {
+        if (tailIndex != incidentsModel->rowCount())
         {
           tailIndex++;
           headIndex = tailIndex - 1;
@@ -4052,19 +4140,19 @@ void LinkagesWidget::setLink()
           delete query;
           return;
         }
-	    }
+      }
     }
     else if (_selectedDirection == FUTURE)
     {
       QSet<int> paths;
       if (tailIndex != 1)
-	    {
-	      findTails(&paths,
+      {
+        findTails(&paths,
                   &tailsMap,
                   headId);
-	      QSet<int> orderSet;
-	      QSetIterator<int> pIt(paths);
-	      while (pIt.hasNext())
+        QSet<int> orderSet;
+        QSetIterator<int> pIt(paths);
+        while (pIt.hasNext())
         {
           query->prepare("SELECT ch_order FROM incidents "
                          "WHERE id = :id");
@@ -4073,7 +4161,7 @@ void LinkagesWidget::setLink()
           query->first();
           orderSet.insert(query->value(0).toInt());
         }
-	      for (int i = tailIndex - 1; i != 0; i--) 
+        for (int i = tailIndex - 1; i != 0; i--)
         {
           bool found = false;
           if (orderSet.contains(i))
@@ -4124,26 +4212,26 @@ void LinkagesWidget::setLink()
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      headIndex++;
-	      tailIndex = headIndex - 1;
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        headIndex++;
+        tailIndex = headIndex - 1;
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      pause(500);
-	      retrieveData();
-	      delete query;
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      return;
-	    }
+        query->bindValue(":tail", tailIndex);
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        pause(500);
+        retrieveData();
+        delete query;
+        QApplication::restoreOverrideCursor();
+        qApp->processEvents();
+        return;
+      }
     }
   }
   QApplication::restoreOverrideCursor();
@@ -4244,10 +4332,10 @@ void LinkagesWidget::unsetLink()
       LinkageNode* tail = qgraphicsitem_cast<LinkageNode*>(current->getStart());
       LinkageNode* head = qgraphicsitem_cast<LinkageNode*>(current->getEnd());
       if (tail->getId() == tailId && head->getId() == headId)
-	    {
-	      delete current;
-	      _linkagesVector.removeOne(current);
-	    }
+      {
+        delete current;
+        _linkagesVector.removeOne(current);
+      }
     }
   }
   linkageFeedbackLabel->setText("");
@@ -4280,13 +4368,13 @@ void LinkagesWidget::unsetLink()
     {
       QSet<int> paths;
       if (headIndex != 1)
-	    {
-	      findHeads(&paths,
+      {
+        findHeads(&paths,
                   &headsMap,
                   tailId);
-	      QSet<int> orderSet;
-	      QSetIterator<int> pIt(paths);
-	      while (pIt.hasNext())
+        QSet<int> orderSet;
+        QSetIterator<int> pIt(paths);
+        while (pIt.hasNext())
         {
           query->prepare("SELECT ch_order FROM incidents "
                          "WHERE id = :id");
@@ -4295,7 +4383,7 @@ void LinkagesWidget::unsetLink()
           query->first();
           orderSet.insert(query->value(0).toInt());
         }
-	      for (int i = headIndex - 1; i != 0; i--) 
+        for (int i = headIndex - 1; i != 0; i--)
         {
           bool found = false;
           if (orderSet.contains(i))
@@ -4369,10 +4457,10 @@ void LinkagesWidget::unsetLink()
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      if (tailIndex != incidentsModel->rowCount()) 
+      {
+        if (tailIndex != incidentsModel->rowCount())
         {
           tailIndex++;
           headIndex = tailIndex - 1;
@@ -4390,19 +4478,19 @@ void LinkagesWidget::unsetLink()
           delete query;
           return;
         }
-	    }
+      }
     }
     else if (_selectedDirection == FUTURE)
     {
       QSet<int> paths;
       if (tailIndex != 1)
-	    {
-	      findTails(&paths,
+      {
+        findTails(&paths,
                   &tailsMap,
                   headId);
-	      QSet<int> orderSet;
-	      QSetIterator<int> pIt(paths);
-	      while (pIt.hasNext())
+        QSet<int> orderSet;
+        QSetIterator<int> pIt(paths);
+        while (pIt.hasNext())
         {
           query->prepare("SELECT ch_order FROM incidents "
                          "WHERE id = :id");
@@ -4411,7 +4499,7 @@ void LinkagesWidget::unsetLink()
           query->first();
           orderSet.insert(query->value(0).toInt());
         }
-	      for (int i = tailIndex - 1; i != 0; i--) 
+        for (int i = tailIndex - 1; i != 0; i--)
         {
           bool found = false;
           if (orderSet.contains(i))
@@ -4460,25 +4548,25 @@ void LinkagesWidget::unsetLink()
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      headIndex++;
-	      tailIndex = headIndex - 1;
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        headIndex++;
+        tailIndex = headIndex - 1;
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
                        "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      delete query;
-	      return;
-	    }
+        query->bindValue(":tail", tailIndex);
+        query->bindValue(":head", headIndex);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        QApplication::restoreOverrideCursor();
+        qApp->processEvents();
+        delete query;
+        return;
+      }
     }
   }
   QApplication::restoreOverrideCursor();
@@ -4673,10 +4761,10 @@ void LinkagesWidget::highlightText()
       while (headRawField->find(currentLine, QTextDocument::FindWholeWords))
       {
         format.setFontWeight(QFont::Bold);
-	      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	      format.setUnderlineColor(Qt::blue);
-	      headRawField->textCursor().mergeCharFormat(format);
-	    }
+        format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        format.setUnderlineColor(Qt::blue);
+        headRawField->textCursor().mergeCharFormat(format);
+      }
     }
     headCursor = headRawField->textCursor();
     headCursor.movePosition(QTextCursor::Start);

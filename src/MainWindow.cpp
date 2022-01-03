@@ -989,6 +989,7 @@ void MainWindow::switchToLinkageView()
     lw->incidentsModel->select();
     lw->setLinkageType(false);
     lw->retrieveData();
+    lw->retrieveCases();
     EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
     egw->setComment();
     stacked->setCurrentWidget(linkagesWidget);
