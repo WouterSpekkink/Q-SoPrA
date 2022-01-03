@@ -1815,23 +1815,36 @@ void LinkagesWidget::setHeadCommentFilter(const QString &text)
 
 void LinkagesWidget::collectCase()
 {
+  QSet<int> incidents;
   _caseIncidents.clear();
   QSqlQuery *query = new QSqlQuery;
   QString selectedCase = caseComboBox->currentText();
   if (selectedCase == "All cases")
   {
-    query->exec("SELECT incident FROM incidents_to_cases");
+    query->exec("SELECT id FROM incidents");
   }
   else
   {
     query->prepare("SELECT incident FROM incidents_to_cases "
                    "WHERE casename = :casename");
     query->bindValue(":casename", selectedCase);
+    query->exec();
   }
   while (query->next())
   {
-    _caseIncidents.insert(query->value(0).toInt());
+    incidents.insert(query->value(0).toInt());
     query->value(0).toInt();
+  }
+  query->prepare("SELECT ch_order FROM incidents "
+                 "WHERE id = :id");
+  QSetIterator<int> it(incidents);
+  while (it.hasNext())
+  {
+    int incident = it.next();
+    query->bindValue(":id", incident);
+    query->exec();
+    query->first();
+    _caseIncidents.insert(query->value(0).toInt());
   }
   delete query;
 }
