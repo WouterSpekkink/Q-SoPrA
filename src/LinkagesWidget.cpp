@@ -1970,50 +1970,62 @@ void LinkagesWidget::nextTailDescription()
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
+    bool valid = false;
     QString searchText = "%" + _tailDescriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE description LIKE :text "
                    "AND ch_order > :tail "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
+    while (!valid)
+    {
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        return;
+      }
+    }
     incidentsModel->select();
     while(incidentsModel->canFetchMore())
       incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    if (_selectedDirection == PAST)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
+     if (tail <= incidentsModel->rowCount())
       {
-        if (tail <= incidentsModel->rowCount())
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
-        }
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
       }
-      else if (_selectedDirection == FUTURE)
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      if (tail <= incidentsModel->rowCount() - 1)
       {
-        if (tail <= incidentsModel->rowCount() - 1)
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
-        }
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
       }
     }
     delete query;
@@ -2052,49 +2064,58 @@ void LinkagesWidget::previousTailRaw()
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailRawFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE raw LIKE :text "
                    "AND ch_order < :tail "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
       {
-        if (tail >= 2)
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
+          valid = true;
         }
       }
-      else if (_selectedDirection ==  FUTURE)
+      else
       {
-        if (tail >= 1)
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
-        }
+        return;
+      }
+    }
+    if (_selectedDirection == PAST)
+    {
+      if (tail >= 2)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
+      }
+    }
+    else if (_selectedDirection ==  FUTURE)
+    {
+      if (tail >= 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
       }
     }
     delete query;
@@ -2149,49 +2170,61 @@ void LinkagesWidget::nextTailRaw()
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailRawFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE raw LIKE :text "
                    "AND ch_order > :tail "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
+    while (!valid)
+    {
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        return;
+      }
+    }
     incidentsModel->select();
     while(incidentsModel->canFetchMore())
       incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    if (_selectedDirection == PAST)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
+      if (tail <= incidentsModel->rowCount())
       {
-        if (tail <= incidentsModel->rowCount())
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
-        }
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
       }
-      else if (_selectedDirection == FUTURE)
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      if (tail <= incidentsModel->rowCount() - 1)
       {
-        if (tail <= incidentsModel->rowCount() - 1)
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
-        }
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
       }
     }
     delete query;
@@ -2230,49 +2263,58 @@ void LinkagesWidget::previousTailComment()
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailCommentFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE comment LIKE :text "
                    "AND ch_order < :tail "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
       {
-        if (tail >= 2)
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
+          valid = true;
         }
       }
-      else if (_selectedDirection ==  FUTURE)
+      else
       {
-        if (tail >= 1)
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
-        }
+        return;
+      }
+    }
+    if (_selectedDirection == PAST)
+    {
+      if (tail >= 2)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
+      }
+    }
+    else if (_selectedDirection ==  FUTURE)
+    {
+      if (tail >= 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
       }
     }
     delete query;
@@ -2311,49 +2353,61 @@ void LinkagesWidget::nextTailComment()
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailCommentFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE comment LIKE :text "
                    "AND ch_order > :tail "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
+    while (!valid)
+    {
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        return;
+      }
+    }
     incidentsModel->select();
     while(incidentsModel->canFetchMore())
       incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    if (_selectedDirection == PAST)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
+      if (tail <= incidentsModel->rowCount())
       {
-        if (tail <= incidentsModel->rowCount())
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
-        }
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
       }
-      else if (_selectedDirection == FUTURE)
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      if (tail <= incidentsModel->rowCount() - 1)
       {
-        if (tail <= incidentsModel->rowCount() - 1)
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
-        }
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
       }
     }
     delete query;
@@ -2394,31 +2448,43 @@ void LinkagesWidget::previousHeadDescription()
     head = query->value(0).toInt();
     tail = query->value(1).toInt();
     QString searchText = "%" + _headDescriptionFilter + "%";
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE description LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head <= tail - 1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head <= tail - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
       }
     }
     else if (_selectedDirection ==  FUTURE)
@@ -2427,25 +2493,36 @@ void LinkagesWidget::previousHeadDescription()
                      "WHERE description LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head >= tail + 1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head >= tail + 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
       }
     }
     delete query;
