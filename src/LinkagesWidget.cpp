@@ -2561,34 +2561,43 @@ void LinkagesWidget::nextHeadDescription()
     query->first();
     head = query->value(0).toInt();
     QString searchText = "%" + _headDescriptionFilter + "%";
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE description LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head >=  1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head >=  1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
       }
     }
     else if (_selectedDirection ==  FUTURE)
@@ -2597,25 +2606,40 @@ void LinkagesWidget::nextHeadDescription()
                      "WHERE description LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      bool valid = false;
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head <= incidentsModel->rowCount())
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      incidentsModel->select();
+      while (incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+      if (head <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
       }
     }
     delete query;
@@ -2656,31 +2680,43 @@ void LinkagesWidget::previousHeadRaw()
     head = query->value(0).toInt();
     tail = query->value(1).toInt();
     QString searchText = "%" + _headRawFilter + "%";
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE raw LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head <= tail - 1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head <= tail - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
       }
     }
     else if (_selectedDirection ==  FUTURE)
@@ -2689,25 +2725,36 @@ void LinkagesWidget::previousHeadRaw()
                      "WHERE raw LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head >= tail + 1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head >= tail + 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
       }
     }
     delete query;
@@ -2746,34 +2793,43 @@ void LinkagesWidget::nextHeadRaw()
     query->first();
     head = query->value(0).toInt();
     QString searchText = "%" + _headRawFilter + "%";
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE raw LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head >=  1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head >=  1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
       }
     }
     else if (_selectedDirection ==  FUTURE)
@@ -2782,25 +2838,39 @@ void LinkagesWidget::nextHeadRaw()
                      "WHERE raw LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head <= incidentsModel->rowCount())
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      incidentsModel->select();
+      while(incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+      if (head <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
       }
     }
     delete query;
@@ -2841,31 +2911,43 @@ void LinkagesWidget::previousHeadComment()
     head = query->value(0).toInt();
     tail = query->value(1).toInt();
     QString searchText = "%" + _headCommentFilter + "%";
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE comment LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head <= tail - 1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head <= tail - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
       }
     }
     else if (_selectedDirection ==  FUTURE)
@@ -2874,25 +2956,36 @@ void LinkagesWidget::previousHeadComment()
                      "WHERE comment LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head >= tail + 1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head >= tail + 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
       }
     }
     delete query;
@@ -2931,34 +3024,43 @@ void LinkagesWidget::nextHeadComment()
     query->first();
     head = query->value(0).toInt();
     QString searchText = "%" + _headCommentFilter + "%";
-    incidentsModel->select();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE comment LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head >=  1)
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      if (head >=  1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
       }
     }
     else if (_selectedDirection ==  FUTURE)
@@ -2967,25 +3069,40 @@ void LinkagesWidget::nextHeadComment()
                      "WHERE comment LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
+      while (!valid)
       {
-        head = query->value(0).toInt();
-        if (head <= incidentsModel->rowCount())
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
+        else
+        {
+          return;
+        }
+      }
+      incidentsModel->select();
+      while(incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+
+      if (head <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
       }
     }
     delete query;
@@ -3500,7 +3617,7 @@ void LinkagesWidget::jumpTo()
     }
     else
     {
-      Pointer<QMessageBox> warningBox = new QMessageBox(this);
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
       warningBox->setWindowTitle("Invalid indexes");
       warningBox->addButton(QMessageBox::Yes);
       warningBox->addButton(QMessageBox::No);
