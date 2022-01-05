@@ -195,6 +195,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   setButtons(false);
   
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
+  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(retrieveCases()));
   connect(createTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editLinkageType()));
   connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
