@@ -40,8 +40,10 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "EventGraphWidget.h"
 #include "NetworkGraphWidget.h"
 #include "OccurrenceGraphWidget.h"
+#include "LinkagesWidget.h"
 
 class OccurrenceGraphWidget;
+class LinkagesWidget;
 
 class CasingWidget : public QWidget
 {
@@ -59,6 +61,7 @@ public:
   void setEventGraphWidget(EventGraphWidget *eventGraphWidgetPtr);
   void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr);
   void setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGraphWidgetPtr);
+  void setLinkagesWidget(LinkagesWidget *linkagesWidgetPtr);
 
 private slots:
   void createTable();
@@ -88,6 +91,7 @@ private:
   QPointer<EventGraphWidget> _eventGraphWidgetPtr;
   QPointer<NetworkGraphWidget> _networkGraphWidgetPtr;
   QPointer<OccurrenceGraphWidget> _occurrenceGraphWidgetPtr;
+  QPointer<LinkagesWidget> _linkagesWidgetPtr;
 
 };
 

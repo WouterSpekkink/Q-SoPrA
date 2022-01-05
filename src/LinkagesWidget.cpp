@@ -38,8 +38,10 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   _headDescriptionFilter = "";
   _headRawFilter = "";
   _headCommentFilter = "";
+  _selectedCase = "All cases";
   _commentBool = false;
   _linkageCommentBool = false;
+  _graphFiltered = false;
   
   scene = new Scene(this);
   view = new BandlessGraphicsView(scene);
@@ -96,6 +98,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   linkageTypeFeedbackLabel = new QLabel(tr(""), this);
   linkageFeedbackLabel = new QLabel(tr(""), this);
   linkageCommentLabel = new QLabel(tr("<b>Linkage comments:</b>"), this);
+  caseLabel = new QLabel(tr("<b>Case filter:<b>"), this);
 
   tailTimeStampField = new QLineEdit(this);
   tailTimeStampField->setReadOnly(true);
@@ -175,10 +178,12 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   clearEvidenceButton = new QPushButton(tr("Clear evidence"), this);
   clearEvidenceButton->setEnabled(false);
   layoutButton = new QPushButton(tr("Layout graph"), this);
+  caseFilterButton = new QPushButton(tr("Toggle filter"), this);
 
   typeComboBox = new QComboBox(this);
   typeComboBox->addItem(DEFAULT);
-  
+  caseComboBox = new QComboBox(this);
+
   linkageCommentField->installEventFilter(this);
   headTimeStampField->installEventFilter(this);
   tailTimeStampField->installEventFilter(this);
@@ -193,6 +198,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   setButtons(false);
   
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
+  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCase()));
+  connect(caseFilterButton, SIGNAL(clicked()), this, SLOT(toggleFilter()));
   connect(createTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editLinkageType()));
   connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeLinkageType()));
@@ -267,8 +274,19 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   editTypeButton->setMaximumWidth(editTypeButton->sizeHint().width());
   linkageOptionsLayout->addWidget(removeTypeButton);
   removeTypeButton->setMaximumWidth(removeTypeButton->sizeHint().width());
+  QPointer<QFrame> typeLine = new QFrame;
+  typeLine->setFrameShape(QFrame::VLine);
+  linkageOptionsLayout->addWidget(typeLine);
+  linkageOptionsLayout->addWidget(caseLabel);
+  linkageOptionsLayout->addWidget(caseComboBox);
+  QPointer<QFrame> caseLine = new QFrame;
+  caseLine->setFrameShape(QFrame::VLine);
+  linkageOptionsLayout->addWidget(caseLine);
   linkageOptionsLayout->addWidget(selectTypeButton);
   selectTypeButton->setMaximumWidth(selectTypeButton->sizeHint().width());
+  QPointer<QFrame> loadLine = new QFrame;
+  loadLine->setFrameShape(QFrame::VLine);
+  linkageOptionsLayout->addWidget(loadLine);
   linkageOptionsLayout->addWidget(manualCodingButton);
   manualCodingButton->setMaximumWidth(manualCodingButton->sizeHint().width());
   linkageOptionsLayout->addWidget(assistedCodingButton);
@@ -368,7 +386,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   middleLayout->setAlignment(linkageFeedbackLayout, Qt::AlignTop);
   QPointer<QVBoxLayout> viewLayout = new QVBoxLayout;
   viewLayout->addWidget(view);
-  view->setMaximumWidth(500);
+  view->setMaximumWidth(600);
   middleLayout->addLayout(viewLayout);
   QPointer<QHBoxLayout> linkageCodeLayout = new QHBoxLayout;
   linkageCodeLayout->addWidget(setLinkButton);
@@ -391,6 +409,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   switchLinkageTypeButton->setMaximumWidth(switchLinkageTypeButton->sizeHint().width());
   evidenceLayout->addWidget(layoutButton);
   layoutButton->setMaximumWidth(layoutButton->sizeHint().width());
+  evidenceLayout->addWidget(caseFilterButton);
+  caseFilterButton->setMaximumWidth(caseFilterButton->sizeHint().width());
   middleLayout->addLayout(evidenceLayout);
   fieldsLayout->addLayout(middleLayout);
   QPointer<QFrame> sepLineRight = new QFrame();
@@ -505,6 +525,7 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   setLayout(mainLayout);
 
   retrieveLinkages();
+  retrieveCases();
 }
 
 void LinkagesWidget::setCurrentCoder(QString coder) 
@@ -612,9 +633,9 @@ void LinkagesWidget::editLinkageType()
       QString name = linkageTypeDialog->getName();
       description = linkageTypeDialog->getDescription();
       if (direction != linkageTypeDialog->getDirection())
-	    {
-	      changedDirection = true;
-	    }
+      {
+        changedDirection = true;
+      }
       direction = linkageTypeDialog->getDirection();
       query->prepare("UPDATE linkage_types "
                      "SET name = :name, "
@@ -632,12 +653,12 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head FROM linkages "
+      {
+        query->prepare("SELECT tail, head FROM linkages "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -648,7 +669,7 @@ void LinkagesWidget::editLinkageType()
           query2->bindValue(":oldHead", oldHead);
           query2->exec();
         }
-	    }
+      }
       query->prepare("UPDATE linkages_sources "
                      "SET type = :newType "
                      "WHERE type = :oldType");
@@ -656,13 +677,13 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head, istail "
+      {
+        query->prepare("SELECT tail, head, istail "
                        "FROM linkages_sources "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -680,7 +701,7 @@ void LinkagesWidget::editLinkageType()
           query3->bindValue(":oldHead", oldHead);
           query3->exec();
         }
-	    }
+      }
       query->prepare("UPDATE coders_to_linkage_types "
                      "SET type = :newType "
                      "WHERE type = :oldType");
@@ -688,13 +709,13 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head "
+      {
+        query->prepare("SELECT tail, head "
                        "FROM coders_to_linkage_types "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -705,7 +726,7 @@ void LinkagesWidget::editLinkageType()
           query4->bindValue(":oldHead", oldHead);
           query4->exec();
         }
-	    }
+      }
       query->prepare("UPDATE linkage_comments "
                      "SET type = :newType "
                      "WHERE type = :oldType");
@@ -713,13 +734,13 @@ void LinkagesWidget::editLinkageType()
       query->bindValue(":oldType", oldName);
       query->exec();
       if (changedDirection)
-	    {
-	      query->prepare("SELECT tail, head "
+      {
+        query->prepare("SELECT tail, head "
                        "FROM linkage_comments "
                        "WHERE type = :type");
-	      query->bindValue(":type", name);
-	      query->exec();
-	      while (query->next())
+        query->bindValue(":type", name);
+        query->exec();
+        while (query->next())
         {
           int oldTail = query->value(0).toInt();
           int oldHead = query->value(1).toInt();
@@ -730,7 +751,7 @@ void LinkagesWidget::editLinkageType()
           query5->bindValue(":oldHead", oldHead);
           query5->exec();
         }
-	    }
+      }
       delete query;
       delete query2;
       delete query3;
@@ -839,6 +860,23 @@ void LinkagesWidget::retrieveLinkages()
   delete query;
 }
 
+void LinkagesWidget::retrieveCases()
+{
+  caseComboBox->clear();
+  caseComboBox->addItem("All cases");
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM cases ORDER BY name ASC");
+  while (query->next())
+  {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    caseComboBox->addItem(name);
+    int index = caseComboBox->count() - 1;
+    caseComboBox->setItemData(index, description, Qt::ToolTipRole);
+  }
+  delete query;
+}
+
 void LinkagesWidget::setTypeButton() 
 {
   if (typeComboBox->currentText() != DEFAULT) 
@@ -864,15 +902,24 @@ void LinkagesWidget::setTypeButton()
 void LinkagesWidget::setLinkageType(bool checkManual) 
 {
   setComments();
-  setLinkageComment();    
+  setLinkageComment();
+  if (_graphFiltered)
+  {
+    toggleFilter();
+  }
+  incidentsModel->select();
+  while (incidentsModel->canFetchMore())
+    incidentsModel->fetchMore();
   if (typeComboBox->currentText() != DEFAULT) 
   {
     _selectedType = typeComboBox->currentText();
+    collectCase();
     QSqlQuery *query = new QSqlQuery;
-    query->prepare("SELECT coder, type FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+    query->prepare("SELECT coder, type, casename FROM coders_to_linkage_types "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     if (query->isNull(0))
@@ -883,20 +930,93 @@ void LinkagesWidget::setLinkageType(bool checkManual)
       query2->exec();
       query2->first();
       QString direction = query2->value(0).toString();
-      query2->prepare("INSERT INTO coders_to_linkage_types (coder, type, tail, head) "
-                      "VALUES (:coder, :type, :tail, :head)");
+      query2->prepare("INSERT INTO coders_to_linkage_types (coder, type, tail, head, casename) "
+                      "VALUES (:coder, :type, :tail, :head, :casename)");
       query2->bindValue(":coder", _selectedCoder);
       query2->bindValue(":type", _selectedType);
+      query2->bindValue(":casename", _selectedCase);
+      bool headValid = false;
+      bool tailValid = false;
       if (direction == PAST)
-	    {
-	      query2->bindValue(":tail", 2);
-	      query2->bindValue(":head", 1);
-	    }
+      {
+        int head = 1;
+        if (_caseIncidents.contains(head))
+        {
+          headValid = true;
+        }
+        while (!headValid && head != incidentsModel->rowCount())
+        {
+          head++;
+          if (_caseIncidents.contains(head))
+          {
+            headValid = true;
+          }
+        }
+        int tail = head + 1;
+        if (_caseIncidents.contains(tail))
+        {
+          tailValid = true;
+        }
+        while (!tailValid && tail != incidentsModel->rowCount())
+        {
+          tail++;
+          if (_caseIncidents.contains(tail))
+          {
+            tailValid = true;
+          }
+        }
+        if (headValid && tailValid)
+        {
+          query2->bindValue(":tail", tail);
+          query2->bindValue(":head", head);
+        }
+        else
+        {
+          delete query;
+          delete query2;
+          return;
+        }
+      }
       else if (direction == FUTURE)
-	    {
-	      query2->bindValue(":tail", 1);
-	      query2->bindValue(":head", 2);
-	    }
+      {
+        int head = 2;
+        if (_caseIncidents.contains(head))
+        {
+          headValid = true;
+        }
+        while (!headValid && head != incidentsModel->rowCount())
+        {
+          head++;
+          if (_caseIncidents.contains(head))
+          {
+            headValid = true;
+          }
+        }
+        int tail = 1;
+        if (_caseIncidents.contains(tail))
+        {
+          tailValid = true;
+        }
+        while (!tailValid && tail != head - 1)
+        {
+          tail ++;
+          if (_caseIncidents.contains(tail))
+          {
+            tailValid = true;
+          }
+        }
+        if (headValid && tailValid)
+        {
+          query2->bindValue(":tail", tail);
+          query2->bindValue(":head", head);
+        }
+        else
+        {
+          delete query;
+          delete query2;
+          return;
+        }
+      }
       query2->exec();
       delete query2;
     }
@@ -914,6 +1034,7 @@ void LinkagesWidget::setLinkageType(bool checkManual)
     setButtons(true);
     plotIncidents();
     plotLinkages();
+    visualizeCase();
     scene->setSceneRect(scene->itemsBoundingRect());
     retrieveData();
     delete query;
@@ -945,17 +1066,19 @@ void LinkagesWidget::switchLinkageType()
   {
     QString newType = dialog->getSelection();
     query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int tailIndex = query->value(0).toInt();
     int headIndex = query->value(1).toInt();
     query->prepare("SELECT coder, type FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", newType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     if (query->isNull(0))
@@ -966,36 +1089,37 @@ void LinkagesWidget::switchLinkageType()
       query2->exec();
       query2->first();
       QString direction = query2->value(0).toString();
-      query2->prepare("INSERT INTO coders_to_linkage_types (coder, type, tail, head) "
-                      "VALUES (:coder, :type, :tail, :head)");
+      query2->prepare("INSERT INTO coders_to_linkage_types (coder, type, tail, head, casename) "
+                      "VALUES (:coder, :type, :tail, :head, :casename)");
       query2->bindValue(":coder", _selectedCoder);
       query2->bindValue(":type", newType);
+      query2->bindValue(":casename", _selectedCase);
       if (direction == PAST)
-	    {
-	      if (_selectedDirection == PAST)
+      {
+        if (_selectedDirection == PAST)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       else if (direction == FUTURE)
-	    {
-	      if (_selectedDirection == FUTURE)
+      {
+        if (_selectedDirection == FUTURE)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       query2->exec();
       delete query2;
     }
@@ -1009,35 +1133,36 @@ void LinkagesWidget::switchLinkageType()
       QString direction = query2->value(0).toString();
       query2->prepare("UPDATE coders_to_linkage_types "
                       "SET tail = :tail, head = :head "
-                      "WHERE coder = :coder AND type = :type");
+                      "WHERE coder = :coder AND type = :type AND casename = :casename");
       query2->bindValue(":coder", _selectedCoder);
       query2->bindValue(":type", newType);
+      query2->bindValue(":casename", _selectedCase);
       if (direction == PAST)
-	    {
-	      if (_selectedDirection == PAST)
+      {
+        if (_selectedDirection == PAST)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       else if (direction == FUTURE)
-	    {
-	      if (_selectedDirection == FUTURE)
+      {
+        if (_selectedDirection == FUTURE)
         {
           query2->bindValue(":tail", tailIndex);
           query2->bindValue(":head", headIndex);
         }
-	      else
+        else
         {
           query2->bindValue(":tail", headIndex);
           query2->bindValue(":head", tailIndex);
         }
-	    }
+      }
       query2->exec();
       delete query2;
     }
@@ -1053,6 +1178,10 @@ void LinkagesWidget::switchLinkageType()
     QString toolTip = breakString(description);
     linkageTypeFeedbackLabel->setToolTip(toolTip);
     setButtons(true);
+    if (_graphFiltered)
+    {
+      toggleFilter();
+    }
     removeLinkages();
     plotLinkages();
     retrieveData();
@@ -1063,49 +1192,32 @@ void LinkagesWidget::switchLinkageType()
 
 void LinkagesWidget::changeTailNode(LinkageNode *node) 
 {
-  if (node != _selectedTail)
+  if (node != _selectedTail && _caseIncidents.contains(node->getId()))
   {
-    _selectedTail->setUnselected();
-    _selectedTail = node;
-    _selectedTail->setTail();
-    if (_selectedDirection == PAST && _selectedTail->getOrder() <= _selectedHead->getOrder())
+    if (_selectedDirection == PAST && node->getOrder() > _selectedHead->getOrder())
     {
-      QVectorIterator<LinkageNode*> it(_linkageNodeVector);
-      while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedTail->getOrder() - 1)
-        {
-          _selectedHead->setUnselected();
-          _selectedHead = current;
-          _selectedHead->setHead();
-          break;
-        }
-	    }
+      _selectedTail->setUnselected();
+      _selectedTail = node;
+      _selectedTail->setTail();
     }
-    else if (_selectedDirection == FUTURE && _selectedTail->getOrder() >= _selectedHead->getOrder())
+    else if (_selectedDirection == FUTURE && node->getOrder() < _selectedHead->getOrder())
     {
-      QVectorIterator<LinkageNode*> it(_linkageNodeVector);
-      while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedTail->getOrder() + 1)
-        {
-          _selectedHead->setUnselected();
-          _selectedHead = current;
-          _selectedHead->setHead();
-          break;
-        }
-	    }
+      _selectedTail->setUnselected();
+      _selectedTail = node;
+      _selectedTail->setTail();
+    }
+    else
+    {
+      return;
     }
     QSqlQuery *query = new QSqlQuery;
     query->prepare("UPDATE coders_to_linkage_types "
-                   "SET tail = :tail, head = :head "
-                   "WHERE coder = :coder AND type = :type");
+                   "SET tail = :tail "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":tail", _selectedTail->getOrder());
-    query->bindValue(":head", _selectedHead->getOrder());
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":caseName", _selectedCase);
     query->exec();
     delete query;
     scene->update();
@@ -1115,53 +1227,36 @@ void LinkagesWidget::changeTailNode(LinkageNode *node)
 
 void LinkagesWidget::changeHeadNode(LinkageNode *node) 
 {
-  if (node != _selectedHead)
+  if (node != _selectedHead && _caseIncidents.contains(node->getId()))
   {
-    _selectedHead->setUnselected();
-    _selectedHead = node;
-    _selectedHead->setHead();
-    if (_selectedDirection == PAST && _selectedHead->getOrder() >= _selectedTail->getOrder())
-    {
-      QVectorIterator<LinkageNode*> it(_linkageNodeVector);
-      while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedHead->getOrder() + 1)
-        {
-          _selectedTail->setUnselected();
-          _selectedTail = current;
-          _selectedTail->setTail();
-          break;
-        }
-	    }
-    }
-    else if (_selectedDirection == FUTURE && _selectedHead->getOrder() <= _selectedTail->getOrder())
-    {
-      QVectorIterator<LinkageNode*> it(_linkageNodeVector);
-      while (it.hasNext())
-	    {
-	      LinkageNode *current = it.next();
-	      if (current->getOrder() == _selectedHead->getOrder() - 1)
-        {
-          _selectedTail->setUnselected();
-          _selectedTail = current;
-          _selectedTail->setTail();
-          break;
-        }
-	    }
-    }
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("UPDATE coders_to_linkage_types "
-                   "SET tail = :tail, head = :head "
-                   "WHERE coder = :coder AND type = :type");
-    query->bindValue(":tail", _selectedTail->getOrder());
-    query->bindValue(":head", _selectedHead->getOrder());
-    query->bindValue(":coder", _selectedCoder);
-    query->bindValue(":type", _selectedType);
-    query->exec();
-    delete query;
-    scene->update();
-    retrieveData();
+   if (_selectedDirection == PAST && node->getOrder() < _selectedTail->getOrder())
+   {
+     _selectedHead->setUnselected();
+     _selectedHead = node;
+     _selectedHead->setHead();
+   }
+   else if (_selectedDirection == FUTURE && node->getOrder() > _selectedTail->getOrder())
+   {
+     _selectedHead->setUnselected();
+     _selectedHead = node;
+     _selectedHead->setHead();
+   }
+   else
+   {
+     return;
+   }
+   QSqlQuery *query = new QSqlQuery;
+   query->prepare("UPDATE coders_to_linkage_types "
+                  "SET head = :head "
+                  "WHERE coder = :coder AND type = :type AND casename = :casename");
+   query->bindValue(":head", _selectedHead->getOrder());
+   query->bindValue(":coder", _selectedCoder);
+   query->bindValue(":type", _selectedType);
+   query->bindValue(":casename", _selectedCase);
+   query->exec();
+   delete query;
+   scene->update();
+   retrieveData();
   }
 }
 
@@ -1172,17 +1267,37 @@ void LinkagesWidget::retrieveData()
   markEvidenceButton->setEnabled(false);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
-  int headIndex = 0;  
-  if (!(query->isNull(0))) 
+  int headIndex = 0;
+  int tailIndexReal = 0;
+  int headIndexReal = 0;
+  QList<int> currentIncidents = _caseIncidents.values();
+  std::sort(currentIncidents.begin(), currentIncidents.end());
+  if (!(query->isNull(0)))
   {
-    tailIndex = query->value(0).toInt();
-    headIndex = query->value(1).toInt();
+    tailIndexReal = query->value(0).toInt();
+    headIndexReal = query->value(1).toInt();
+    for (int i = 0; i != currentIncidents.length(); i++)
+    {
+      if (currentIncidents[i] == tailIndexReal)
+      {
+        tailIndex = i + 1;
+      }
+      if (currentIncidents[i] == headIndexReal)
+      {
+        headIndex = i + 1;
+      }
+      if (tailIndex != 0 && headIndex != 0)
+      {
+        break;
+      }
+    }
   }
   else 
   {
@@ -1202,13 +1317,13 @@ void LinkagesWidget::retrieveData()
     node->setDirection(_selectedDirection);
     node->setMiddle();
     node->setUnselected();
-    if (node->getOrder() == tailIndex)
+    if (node->getOrder() == tailIndexReal)
     {
       _selectedTail = node;
       _selectedTail->setTail();
       _selectedTail->setSelected(true);
     }
-    else if (node->getOrder() == headIndex)
+    else if (node->getOrder() == headIndexReal)
     {
       _selectedHead = node;
       _selectedHead->setHead();
@@ -1221,7 +1336,7 @@ void LinkagesWidget::retrieveData()
   incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
-  int total = incidentsModel->rowCount();
+  int total = currentIncidents.length();
   QString tailIndexText = "";
   QString headIndexText = "";
   if (_selectedDirection == PAST) 
@@ -1246,7 +1361,7 @@ void LinkagesWidget::retrieveData()
   headIndexLabel->setText(headIndexText);
   query->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
                  "FROM incidents WHERE ch_order = :tail");
-  query->bindValue(":tail", tailIndex);
+  query->bindValue(":tail", tailIndexReal);
   query->exec();
   query->first();
   int tailId = query->value(0).toInt();
@@ -1273,7 +1388,7 @@ void LinkagesWidget::retrieveData()
   }
   query->prepare("SELECT id, timestamp, source, description, raw, comment, mark "
                  "FROM incidents WHERE ch_order = :head");
-  query->bindValue(":head", headIndex);
+  query->bindValue(":head", headIndexReal);
   query->exec();
   query->first();
   int headId = query->value(0).toInt();
@@ -1396,7 +1511,7 @@ void LinkagesWidget::plotIncidents()
     QString toolTip = breakString(query->value(1).toString());
     qreal vertical = qrand() % 100 - 50;
     QPointF position = QPointF((order * 70), vertical);
-    LinkageNode *currentNode = new LinkageNode(position, toolTip, id, order);
+    LinkageNode *currentNode = new LinkageNode(position, toolTip, id, order, order);
     currentNode->setPos(currentNode->getOriginalPos());
     currentNode->setZValue(2);
     currentNode->setDirection(_selectedDirection);
@@ -1435,16 +1550,16 @@ void LinkagesWidget::plotLinkages()
     {
       LinkageNode *currentItem = it.next();
       if (currentItem->getId() == tail)
-	    {
-	      tempSource = currentItem;
-	    }
+      {
+        tempSource = currentItem;
+      }
       else if (currentItem->getId() == head)
-	    {
-	      tempTarget = currentItem;
-	    }
+      {
+        tempTarget = currentItem;
+      }
       if (tempSource != NULL && tempTarget != NULL)
-	    {
-	      if (tempSource->getOrder() < tempTarget->getOrder()) 
+      {
+        if (tempSource->getOrder() < tempTarget->getOrder())
         {
           Linkage *currentLinkage = new Linkage(_selectedType, _selectedCoder);
           currentLinkage->setZValue(1);
@@ -1455,7 +1570,7 @@ void LinkagesWidget::plotLinkages()
           scene->addItem(currentLinkage);
           break;
         }
-	      else if (tempSource->getOrder() > tempTarget->getOrder()) 
+        else if (tempSource->getOrder() > tempTarget->getOrder())
         {
           Linkage *currentLinkage = new Linkage(_selectedType, _selectedCoder);
           currentLinkage->setZValue(1);
@@ -1466,7 +1581,7 @@ void LinkagesWidget::plotLinkages()
           scene->addItem(currentLinkage);
           break;
         }
-	    } 
+      }
     }
   }
   delete query;
@@ -1496,7 +1611,15 @@ void LinkagesWidget::layoutGraph()
   for (it = _linkageNodeVector.begin(); it != _linkageNodeVector.end(); it++)
   {
     LinkageNode *current = *it;
-    int order = current->getOrder();
+    int order = 0;
+    if (_graphFiltered)
+    {
+      order = current->getFilteredOrder();
+    }
+    else
+    {
+      order = current->getOrder();
+    }
     qreal vertical = qrand() % 100 - 50;
     QPointF position = QPointF((order * 70), vertical);
     current->setPos(position);
@@ -1512,17 +1635,17 @@ void LinkagesWidget::layoutGraph()
       LinkageNode *second = *it2;
       QVectorIterator<Linkage*> it3(_linkagesVector);
       while (it3.hasNext())
-	    {
-	      Linkage *edge = it3.next();
-	      // Basically we just ask whether the current events are linked.
-	      if ((edge->getStart() == current &&
+      {
+        Linkage *edge = it3.next();
+        // Basically we just ask whether the current events are linked.
+        if ((edge->getStart() == current &&
              edge->getEnd() == second) ||
             (edge->getEnd() == current &&
              edge->getStart() == second))
         {
           partners.push_back(second);
         }
-	    }
+      }
     }
     qreal originHeight = current->scenePos().y();
     std::sort(partners.begin(), partners.end(), eventLessThan);
@@ -1533,9 +1656,9 @@ void LinkagesWidget::layoutGraph()
       LinkageNode *currentPartner = it4.next();
       qreal partnerHeight = originHeight;
       if (partners.size() > 1)
-	    {
-	      partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
-	    }
+      {
+        partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
+      }
       currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
       currentPartner->getLabel()->setNewPos(currentPartner->scenePos());
       partnerCount--;
@@ -1543,6 +1666,67 @@ void LinkagesWidget::layoutGraph()
   }
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
+}
+
+void LinkagesWidget::toggleFilter()
+{
+  if (_graphFiltered)
+  {
+    _graphFiltered = false;
+    QVectorIterator<LinkageNode*> nit(_linkageNodeVector);
+    while (nit.hasNext())
+    {
+      LinkageNode* current = nit.next();
+      current->show();
+      current->getLabel()->show();
+      current->setPos(QPointF((current->getOrder() * 70),
+                              current->scenePos().y()));
+      current->getLabel()->setNewPos(current->scenePos());
+    }
+    QVectorIterator<Linkage*> lit(_linkagesVector);
+    while (lit.hasNext())
+    {
+      Linkage* current = lit.next();
+      current->show();
+    }
+  }
+  else
+  {
+    _graphFiltered = true;
+    QVectorIterator<LinkageNode*> nit(_linkageNodeVector);
+    while (nit.hasNext())
+    {
+      LinkageNode* current = nit.next();
+      if (current->isValid())
+      {
+        current->show();
+        current->getLabel()->show();
+        current->setPos(QPointF((current->getFilteredOrder() * 70),
+                                current->scenePos().y()));
+        current->getLabel()->setNewPos(current->scenePos());
+      }
+      else
+      {
+        current->hide();
+        current->getLabel()->hide();
+      }
+    }
+    QVectorIterator<Linkage*> lit(_linkagesVector);
+    while (lit.hasNext())
+    {
+      Linkage* current = lit.next();
+      LinkageNode *tail = qgraphicsitem_cast<LinkageNode*>(current->getStart());
+      LinkageNode *head = qgraphicsitem_cast<LinkageNode*>(current->getEnd());
+      if (!_caseIncidents.contains(tail->getId()) || !_caseIncidents.contains(head->getId()))
+      {
+        current->hide();
+      }
+      else
+      {
+        current->show();
+      }
+    }
+  }
 }
 
 void LinkagesWidget::cleanUp()
@@ -1590,9 +1774,10 @@ void LinkagesWidget::editLeftIncident()
   {
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int tailIndex = 0;
@@ -1637,9 +1822,10 @@ void LinkagesWidget::editRightIncident()
   {
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int headIndex = 0;
@@ -1671,9 +1857,10 @@ void LinkagesWidget::checkManualButton()
   switchLinkageTypeButton->setEnabled(true);
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
@@ -1782,6 +1969,82 @@ void LinkagesWidget::setHeadCommentFilter(const QString &text)
   highlightSearch(headCommentField, text);
 }
 
+void LinkagesWidget::setCase()
+{
+  _selectedCase = caseComboBox->currentText();
+}
+
+void LinkagesWidget::collectCase()
+{
+  QSet<int> incidents;
+  _caseIncidents.clear();
+  QSqlQuery *query = new QSqlQuery;
+  if (_selectedCase == "All cases")
+  {
+    query->exec("SELECT id FROM incidents");
+  }
+  else
+  {
+    query->prepare("SELECT incident FROM incidents_to_cases "
+                   "WHERE casename = :casename");
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+  }
+  while (query->next())
+  {
+    incidents.insert(query->value(0).toInt());
+    query->value(0).toInt();
+  }
+  query->prepare("SELECT ch_order FROM incidents "
+                 "WHERE id = :id");
+  QSetIterator<int> it(incidents);
+  while (it.hasNext())
+  {
+    int incident = it.next();
+    query->bindValue(":id", incident);
+    query->exec();
+    query->first();
+    _caseIncidents.insert(query->value(0).toInt());
+  }
+  delete query;
+}
+
+void LinkagesWidget::visualizeCase()
+{
+  std::sort(_linkageNodeVector.begin(), _linkageNodeVector.end(), linkageNodeSort);
+  int filtOrder = 1;
+  QVectorIterator<LinkageNode*> nit(_linkageNodeVector);
+  while (nit.hasNext())
+  {
+    LinkageNode *current = nit.next();
+    if (_caseIncidents.contains(current->getId()))
+    {
+      current->setValid(true);
+      current->setFilteredOrder(filtOrder);
+      filtOrder++;
+    }
+    else
+    {
+      current->setValid(false);
+    }
+  }
+  QVectorIterator<Linkage*> lit(_linkagesVector);
+  while (lit.hasNext())
+  {
+    Linkage *current = lit.next();
+    LinkageNode *tail = qgraphicsitem_cast<LinkageNode*>(current->getStart());
+    LinkageNode *head = qgraphicsitem_cast<LinkageNode*>(current->getEnd());
+    if (!_caseIncidents.contains(tail->getId()) || !_caseIncidents.contains(head->getId()))
+    {
+      current->setColor(QColor(128, 128, 128));
+    }
+    else
+    {
+      current->setColor(Qt::black);
+    }
+  }
+}
+
 void LinkagesWidget::previousTailDescription() 
 {
   if (linkageFeedbackLabel->text() == "" &&
@@ -1804,60 +2067,73 @@ void LinkagesWidget::previousTailDescription()
   setLinkageComment();
   if (_tailDescriptionFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
+    bool valid = false;
     QString searchText = "%" + _tailDescriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE description LIKE :text "
                    "AND ch_order < :tail "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail >= 2) 
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+          valid = true;
         }
-	    }
-      else if (_selectedDirection ==  FUTURE)
-	    {
-	      if (tail >= 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
-        }
-	    }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (_selectedDirection == PAST)
+    {
+      if (tail >= 2)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+      }
+    }
+    else if (_selectedDirection ==  FUTURE)
+    {
+      if (tail >= 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+      }
     }
     delete query;
   }
@@ -1885,60 +2161,76 @@ void LinkagesWidget::nextTailDescription()
   setLinkageComment();
   if (_tailDescriptionFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
+    bool valid = false;
     QString searchText = "%" + _tailDescriptionFilter + "%";
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE description LIKE :text "
                    "AND ch_order > :tail "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
+    while (!valid)
+    {
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    incidentsModel->select();
     while(incidentsModel->canFetchMore())
       incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    if (_selectedDirection == PAST)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail <= incidentsModel->rowCount()) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
-        }
-	    }
-      else if (_selectedDirection == FUTURE)
-	    {
-	      if (tail <= incidentsModel->rowCount() - 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailDescriptionField, _tailDescriptionFilter);
-        }
-	    }
+     if (tail <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+      }
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      if (tail <= incidentsModel->rowCount() - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailDescriptionField, _tailDescriptionFilter);
+      }
     }
     delete query;
   }
@@ -1966,60 +2258,73 @@ void LinkagesWidget::previousTailRaw()
   setLinkageComment();
   if (_tailRawFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailRawFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE raw LIKE :text "
                    "AND ch_order < :tail "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail >= 2) 
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
+          valid = true;
         }
-	    }
-      else if (_selectedDirection ==  FUTURE)
-	    {
-	      if (tail >= 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
-        }
-	    }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (_selectedDirection == PAST)
+    {
+      if (tail >= 2)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
+      }
+    }
+    else if (_selectedDirection ==  FUTURE)
+    {
+      if (tail >= 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
+      }
     }
     delete query;
   }
@@ -2063,60 +2368,76 @@ void LinkagesWidget::nextTailRaw()
   setLinkageComment();
   if (_tailRawFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailRawFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE raw LIKE :text "
                    "AND ch_order > :tail "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
+    while (!valid)
+    {
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    incidentsModel->select();
     while(incidentsModel->canFetchMore())
       incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    if (_selectedDirection == PAST)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail <= incidentsModel->rowCount()) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
-        }
-	    }
-      else if (_selectedDirection == FUTURE)
-	    {
-	      if (tail <= incidentsModel->rowCount() - 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailRawField, _tailRawFilter);
-        }
-	    }
+      if (tail <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
+      }
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      if (tail <= incidentsModel->rowCount() - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailRawField, _tailRawFilter);
+      }
     }
     delete query;
   }
@@ -2144,60 +2465,73 @@ void LinkagesWidget::previousTailComment()
   setLinkageComment();
   if (_tailCommentFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailCommentFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE comment LIKE :text "
                    "AND ch_order < :tail "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail >= 2) 
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
+          valid = true;
         }
-	    }
-      else if (_selectedDirection ==  FUTURE)
-	    {
-	      if (tail >= 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
-        }
-	    }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (_selectedDirection == PAST)
+    {
+      if (tail >= 2)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
+      }
+    }
+    else if (_selectedDirection ==  FUTURE)
+    {
+      if (tail >= 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
+      }
     }
     delete query;
   }
@@ -2225,60 +2559,76 @@ void LinkagesWidget::nextTailComment()
   setLinkageComment();
   if (_tailCommentFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int tail = 0;
     query->first();
     tail = query->value(0).toInt();
     QString searchText = "%" + _tailCommentFilter + "%";
+    bool valid = false;
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE comment LIKE :text "
                    "AND ch_order > :tail "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":tail", tail);
-    query->exec();
-    query->first();
+    while (!valid)
+    {
+      query->bindValue(":text", searchText);
+      query->bindValue(":tail", tail);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        tail = query->value(0).toInt();
+        if (_caseIncidents.contains(tail))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    incidentsModel->select();
     while(incidentsModel->canFetchMore())
       incidentsModel->fetchMore();
-    if (!query->isNull(0))
+    if (_selectedDirection == PAST)
     {
-      tail = query->value(0).toInt();
-      if (_selectedDirection == PAST)
-	    {
-	      if (tail <= incidentsModel->rowCount()) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
-        }
-	    }
-      else if (_selectedDirection == FUTURE)
-	    {
-	      if (tail <= incidentsModel->rowCount() - 1) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(tailCommentField, _tailCommentFilter);
-        }
-	    }
+      if (tail <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
+      }
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      if (tail <= incidentsModel->rowCount() - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(tailCommentField, _tailCommentFilter);
+      }
     }
     delete query;
   }
@@ -2306,12 +2656,12 @@ void LinkagesWidget::previousHeadDescription()
   setLinkageComment();
   if (_headDescriptionFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head, tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int head = 0;
     int tail = 0;
@@ -2319,32 +2669,46 @@ void LinkagesWidget::previousHeadDescription()
     head = query->value(0).toInt();
     tail = query->value(1).toInt();
     QString searchText = "%" + _headDescriptionFilter + "%";
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE description LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= tail - 1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head <= tail - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2352,26 +2716,39 @@ void LinkagesWidget::previousHeadDescription()
                      "WHERE description LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >= tail + 1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head >= tail + 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
+      }
     }
     delete query;
   }
@@ -2399,45 +2776,57 @@ void LinkagesWidget::nextHeadDescription()
   setLinkageComment();
   if (_headDescriptionFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int head = 0;
     query->first();
     head = query->value(0).toInt();
     QString searchText = "%" + _headDescriptionFilter + "%";
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE description LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >=  1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head >=  1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2445,26 +2834,43 @@ void LinkagesWidget::nextHeadDescription()
                      "WHERE description LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= incidentsModel->rowCount()) 
+      bool valid = false;
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headDescriptionField, _headDescriptionFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      incidentsModel->select();
+      while (incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+      if (head <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headDescriptionField, _headDescriptionFilter);
+      }
     }
     delete query;
   }
@@ -2492,12 +2898,12 @@ void LinkagesWidget::previousHeadRaw()
   setLinkageComment();
   if (_headRawFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head, tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int head = 0;
     int tail = 0;
@@ -2505,32 +2911,46 @@ void LinkagesWidget::previousHeadRaw()
     head = query->value(0).toInt();
     tail = query->value(1).toInt();
     QString searchText = "%" + _headRawFilter + "%";
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE raw LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= tail - 1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head <= tail - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2538,26 +2958,39 @@ void LinkagesWidget::previousHeadRaw()
                      "WHERE raw LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >= tail + 1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head >= tail + 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
+      }
     }
     delete query;
   }
@@ -2585,45 +3018,57 @@ void LinkagesWidget::nextHeadRaw()
   setLinkageComment();
   if (_headRawFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int head = 0;
     query->first();
     head = query->value(0).toInt();
     QString searchText = "%" + _headRawFilter + "%";
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE raw LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >=  1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head >=  1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2631,26 +3076,42 @@ void LinkagesWidget::nextHeadRaw()
                      "WHERE raw LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= incidentsModel->rowCount()) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headRawField, _headRawFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      incidentsModel->select();
+      while(incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+      if (head <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headRawField, _headRawFilter);
+      }
     }
     delete query;
   }
@@ -2678,12 +3139,12 @@ void LinkagesWidget::previousHeadComment()
   setLinkageComment();
   if (_headCommentFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head, tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int head = 0;
     int tail = 0;
@@ -2691,32 +3152,46 @@ void LinkagesWidget::previousHeadComment()
     head = query->value(0).toInt();
     tail = query->value(1).toInt();
     QString searchText = "%" + _headCommentFilter + "%";
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE comment LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= tail - 1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head <= tail - 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2724,26 +3199,39 @@ void LinkagesWidget::previousHeadComment()
                      "WHERE comment LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >= tail + 1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head >= tail + 1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
+      }
     }
     delete query;
   }
@@ -2771,45 +3259,57 @@ void LinkagesWidget::nextHeadComment()
   setLinkageComment();
   if (_headCommentFilter != "") 
   {
-    incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     int head = 0;
     query->first();
     head = query->value(0).toInt();
     QString searchText = "%" + _headCommentFilter + "%";
-    while(incidentsModel->canFetchMore())
-      incidentsModel->fetchMore();
+    bool valid = false;
     if (_selectedDirection == PAST)
     {
       query->prepare("SELECT ch_order FROM incidents "
                      "WHERE comment LIKE :text "
                      "AND ch_order < :head "
                      "ORDER BY ch_order desc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head >=  1) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      if (head >=  1)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
+      }
     }
     else if (_selectedDirection ==  FUTURE)
     {
@@ -2817,26 +3317,43 @@ void LinkagesWidget::nextHeadComment()
                      "WHERE comment LIKE :text "
                      "AND ch_order > :head "
                      "ORDER BY ch_order asc");
-      query->bindValue(":text", searchText);
-      query->bindValue(":head", head);
-      query->exec();
-      query->first();
-      if (!query->isNull(0))
-	    {
-	      head = query->value(0).toInt();
-	      if (head <= incidentsModel->rowCount()) 
+      while (!valid)
+      {
+        query->bindValue(":text", searchText);
+        query->bindValue(":head", head);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          highlightSearch(headCommentField, _headCommentFilter);
+          head = query->value(0).toInt();
+          if (_caseIncidents.contains(head))
+          {
+            valid = true;
+          }
         }
-	    }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
+      incidentsModel->select();
+      while(incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
+
+      if (head <= incidentsModel->rowCount())
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+        highlightSearch(headCommentField, _headCommentFilter);
+      }
     }
     delete query;
   }
@@ -2864,60 +3381,72 @@ void LinkagesWidget::previousTail()
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
   int headIndex = 0;
   tailIndex = query->value(0).toInt();
   headIndex = query->value(1).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
-    if (tailIndex != 2)
-    {
-      tailIndex--;
+      while (!valid)
+      {
+        if (tailIndex != headIndex + 1 && tailIndex > headIndex)
+        {
+          tailIndex--;
+          if (_caseIncidents.contains(tailIndex))
+          {
+            valid = true;
+          }
+        }
+        else
+        {
+          delete query;
+          return;
+        }
+      }
       query->prepare("UPDATE coders_to_linkage_types "
-                     "SET tail = :tail, head = :head "
-                     "WHERE coder =:coder and type = :type ");
+                     "SET tail = :tail "
+                     "WHERE coder =:coder AND type = :type AND casename = :casename");
       query->bindValue(":tail", tailIndex);
-      query->bindValue(":head", tailIndex - 1);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":type", _selectedType);
+      query->bindValue(":casename", _selectedCase);
       query->exec();
       retrieveData();
-    }
   }
   else if (_selectedDirection == FUTURE) 
   {
-    if (tailIndex != 1)
+    while (!valid)
     {
-      tailIndex--;
-      if (_codingType == ASSISTED && tailIndex < headIndex)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      if (tailIndex != 1)
+      {
+        tailIndex--;
+        if (_caseIncidents.contains(tailIndex))
+        {
+          valid = true;
+        }
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", tailIndex + 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      {
+        delete query;
+        return; // See previousHead function
+      }
     }
+    query->prepare("UPDATE coders_to_linkage_types "
+                   "SET tail = :tail, head = :head "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
+    query->bindValue(":tail", tailIndex);
+    query->bindValue(":coder", _selectedCoder);
+    query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -2947,59 +3476,71 @@ void LinkagesWidget::nextTail()
     incidentsModel->fetchMore();
   QSqlQuery  *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
   int headIndex = 0;
   tailIndex = query->value(0).toInt();
   headIndex = query->value(1).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
-    if (tailIndex != incidentsModel->rowCount())
+    while (!valid)
     {
-      tailIndex++;
-      query->prepare("UPDATE coders_to_linkage_types "
-                     "SET tail = :tail, head = :head "
-                     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":tail", tailIndex);
-      query->bindValue(":head", tailIndex - 1);
-      query->bindValue(":coder", _selectedCoder);
-      query->bindValue(":type", _selectedType);
-      query->exec();
-      retrieveData();
+      if (tailIndex != incidentsModel->rowCount())
+      {
+        tailIndex++;
+        if (_caseIncidents.contains(tailIndex))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE coders_to_linkage_types "
+                   "SET tail = :tail "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
+    query->bindValue(":tail", tailIndex);
+    query->bindValue(":coder", _selectedCoder);
+    query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+    retrieveData();
   }
   else if (_selectedDirection == FUTURE) 
   {
-    if (tailIndex != incidentsModel->rowCount() - 1)
+    while (!valid)
     {
-      tailIndex++;
-      if (_codingType == ASSISTED && tailIndex < headIndex)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      if (tailIndex != headIndex + 1 && tailIndex > headIndex)
+      {
+        tailIndex++;
+        if (_caseIncidents.contains(tailIndex))
+        {
+          valid = true;
+        }
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", tailIndex + 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      {
+        delete query;
+        return;
+      }
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET tail = :tail "
+                     "WHERE coder = :coder AND type = :type AND casename = :casename");
+      query->bindValue(":tail", tailIndex);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":casename", _selectedCase);
+      query->exec();
+      retrieveData();
     }
   }
   delete query;  
@@ -3009,9 +3550,10 @@ void LinkagesWidget::markTail()
 {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tail = 0;
@@ -3065,70 +3607,83 @@ void LinkagesWidget::previousMarkedTail()
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   int tail = 0;
   int head = 0;
   query->first();
   tail = query->value(0).toInt();
   head = query->value(1).toInt();
+  bool valid = false;
   query->prepare("SELECT ch_order FROM incidents "
                  "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
-  query->bindValue(":order", tail);
-  query->exec();
-  query->first();
-  if (_selectedDirection == PAST) 
+  while (!valid)
   {
+    query->bindValue(":order", tail);
+    query->exec();
+    query->first();
     if (!query->isNull(0))
     {
       tail = query->value(0).toInt();
-      if (tail >= 2)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tail);
-	      query->bindValue(":head", tail - 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+      if (_caseIncidents.contains(tail))
+      {
+        valid = true;
+      }
+    }
+    else
+    {
+      delete query;
+      return;
     }
   }
-  else if (_selectedDirection == FUTURE) 
+  if (_selectedDirection == PAST) 
   {
-    if (!query->isNull(0))
+    if (tail >= 2)
     {
-      tail = query->value(0).toInt();
-      if (tail >= 1)
-	    {
-	      if (_codingType == ASSISTED && tail < head) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-        }
-	      else 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":head", tail + 1);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-        }
-	    }
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET tail = :tail, head = :head "
+                     "WHERE coder = :coder AND type = :type AND casename = :casename");
+      query->bindValue(":tail", tail);
+      query->bindValue(":head", tail - 1);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":casename", _selectedCase);
+      query->exec();
+      retrieveData();
+    }
+  }
+  else if (_selectedDirection == FUTURE)
+  {
+    if (tail >= 1)
+    {
+      if (_codingType == ASSISTED && tail < head)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
+      else
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail, head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":head", tail + 1);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;
@@ -3155,75 +3710,92 @@ void LinkagesWidget::nextMarkedTail()
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   int tail = 0;
   int head = 0;
   query->first();
   tail = query->value(0).toInt();
   head = query->value(1).toInt();
+  bool valid = false;
   query->prepare("SELECT ch_order FROM incidents "
                  "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
-  query->bindValue(":order", tail);
-  query->exec();
-  query->first();
-  incidentsModel->select();
-  if (incidentsModel->canFetchMore()) 
+  while (!valid)
   {
-    incidentsModel->fetchMore();
-  }
-  if (_selectedDirection == PAST) 
-  {
+    query->bindValue(":order", tail);
+    query->exec();
+    query->first();
     if (!query->isNull(0))
     {
       tail = query->value(0).toInt();
+      if (_caseIncidents.contains(tail))
+      {
+        valid = true;
+      }
+    }
+    else
+    {
+      delete query;
+      return;
+    }
+  }
+  if (_selectedDirection == PAST)
+  {
+    if (!query->isNull(0))
+    {
+      incidentsModel->select();
+      while (incidentsModel->canFetchMore())
+        incidentsModel->fetchMore();
       if (tail <= incidentsModel->rowCount())
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
                        "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tail);
-	      query->bindValue(":head", tail - 1);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":head", tail - 1);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   else if (_selectedDirection == FUTURE) 
   {
-    if (!query->isNull(0))
+    incidentsModel->select();
+    while (incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    if (tail <= incidentsModel->rowCount() - 1)
     {
-      tail = query->value(0).toInt();
-      if (tail <= incidentsModel->rowCount() - 1)
-	    {
-	      if (_codingType == ASSISTED && tail < head) 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-        }
-	      else 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tail);
-          query->bindValue(":head", tail + 1);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-        }
-	    }
+      if (_codingType == ASSISTED && tail < head)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
+      else
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail, head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", tail);
+        query->bindValue(":head", tail + 1);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;
@@ -3268,17 +3840,33 @@ void LinkagesWidget::jumpTo()
       tailIndex = indexDialog->getTailIndex();
       headIndex = indexDialog->getHeadIndex() + tailIndex;
     }
-    QSqlQuery *query = new QSqlQuery;
-    query->prepare("UPDATE coders_to_linkage_types "
-                   "SET tail = :tail, head = :head "
-                   "WHERE coder = :coder AND type = :type");
-    query->bindValue(":tail", tailIndex);
-    query->bindValue(":head", headIndex);
-    query->bindValue(":coder", _selectedCoder);
-    query->bindValue(":type", _selectedType);
-    query->exec();
-    retrieveData();
-    delete query;
+    if (_caseIncidents.contains(tailIndex) && _caseIncidents.contains(headIndex))
+    {
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET tail = :tail, head = :head "
+                     "WHERE coder = :coder AND type = :type AND casename = :casename");
+      query->bindValue(":tail", tailIndex);
+      query->bindValue(":head", headIndex);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":casename", _selectedCase);
+      query->exec();
+      retrieveData();
+      delete query;
+    }
+    else
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Invalid indexes");
+      warningBox->addButton(QMessageBox::Yes);
+      warningBox->addButton(QMessageBox::No);
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Invalid indexes selected</h2>");
+      warningBox->setInformativeText("One or both of the incidents you selected "
+                                     "are not present in the currently selected "
+                                     "case.");
+    }
   }
   delete indexDialog;
 }
@@ -3305,75 +3893,72 @@ void LinkagesWidget::previousHead()
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head, tail FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int headIndex = 0;
   int tailIndex = 0;
   headIndex = query->value(0).toInt();
   tailIndex = query->value(1).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
-    if (headIndex != tailIndex - 1)
+    while (!valid)
     {
-      headIndex++;
-      query->prepare("UPDATE coders_to_linkage_types "
-                     "SET head = :head "
-                     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":head", headIndex);
-      query->bindValue(":coder", _selectedCoder);
-      query->bindValue(":type", _selectedType);
-      query->exec();
-      retrieveData();
+      if (headIndex != tailIndex - 1 && headIndex < tailIndex)
+      {
+        headIndex++;
+        if (_caseIncidents.contains(headIndex))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE coders_to_linkage_types "
+                   "SET head = :head "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
+    query->bindValue(":head", headIndex);
+    query->bindValue(":coder", _selectedCoder);
+    query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+    retrieveData();
   }
   else if (_selectedDirection == FUTURE) 
   {
-    if (headIndex != tailIndex + 1)
+    while (!valid)
     {
-      headIndex--;
-      if (_codingType == ASSISTED)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", headIndex - 1);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      if (headIndex != tailIndex + 1 && headIndex > tailIndex)
+      {
+        headIndex--;
+        if (_caseIncidents.contains(headIndex))
+        {
+          valid = true;
+        }
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      {
+        delete query;
+        return;
+      }
     }
-    else
-    {
-      if (tailIndex != 1 && _codingType == ASSISTED)
-	    {
-	      headIndex--;
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", headIndex - 1);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
-    }
+    query->prepare("UPDATE coders_to_linkage_types "
+                   "SET head = :head "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
+    query->bindValue(":head", headIndex);
+    query->bindValue(":coder", _selectedCoder);
+    query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -3403,57 +3988,73 @@ void LinkagesWidget::nextHead()
     incidentsModel->fetchMore();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int headIndex = 0;
   headIndex = query->value(0).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
-    if (headIndex != 1)
+    while (!valid)
     {
-      headIndex--;
-      query->prepare("UPDATE coders_to_linkage_types "
-                     "SET head = :head "
-                     "WHERE coder = :coder AND type = :type");
-      query->bindValue(":head", headIndex);
-      query->bindValue(":coder", _selectedCoder);
-      query->bindValue(":type", _selectedType);
-      query->exec();
-      retrieveData();
-    }
-  }
-  else if (_selectedDirection == FUTURE) 
-  {
-    if (headIndex != incidentsModel->rowCount())
-    {
-      headIndex++;
-      if (_codingType == ASSISTED)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", headIndex - 1);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      if (headIndex != 1)
+      {
+        headIndex--;
+        if (_caseIncidents.contains(headIndex))
+        {
+          valid = true;
+        }
+      }
       else
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	    }
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE coders_to_linkage_types "
+                   "SET head = :head "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
+    query->bindValue(":head", headIndex);
+    query->bindValue(":coder", _selectedCoder);
+    query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+    retrieveData();
+    }
+  else if (_selectedDirection == FUTURE)
+  {
+    incidentsModel->select();
+    while (incidentsModel->canFetchMore())
+      incidentsModel->fetchMore();
+    while (!valid)
+    {
+      if (headIndex != incidentsModel->rowCount())
+      {
+        headIndex++;
+        if (_caseIncidents.contains(headIndex))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    query->prepare("UPDATE coders_to_linkage_types "
+                   "SET head = :head "
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
+    query->bindValue(":head", headIndex);
+    query->bindValue(":coder", _selectedCoder);
+    query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -3462,9 +4063,10 @@ void LinkagesWidget::markHead()
 {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->first();
   int head = 0;
   head = query->value(0).toInt();
@@ -3517,74 +4119,103 @@ void LinkagesWidget::previousMarkedHead()
   setLinkageComment();
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head, tail FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   int head = 0;
   int tail = 0;
   query->first();
   head = query->value(0).toInt();
   tail = query->value(1).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
-    query->bindValue(":order", head);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      head = query->value(0).toInt();
-      if (head <= tail - 1)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", head);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+      query->bindValue(":order", head);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        head = query->value(0).toInt();
+        if (_caseIncidents.contains(head))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (head <= tail - 1)
+    {
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET head = :head "
+                     "WHERE coder = :coder AND type = :type AND casename = :casename");
+      query->bindValue(":head", head);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":casename", _selectedCase);
+      query->exec();
+      retrieveData();
     }
   }
   else if (_selectedDirection == FUTURE) 
   {
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
-    query->bindValue(":order", head);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      head = query->value(0).toInt();
-      if (head >= tail + 1)
-	    {
-	      if (_codingType == ASSISTED) 
+      query->bindValue(":order", head);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        head = query->value(0).toInt();
+        if (_caseIncidents.contains(head))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", head - 1);
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
+          valid = true;
         }
-	      else 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-        }
-	    }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (head >= tail + 1)
+    {
+      if (_codingType == ASSISTED)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail, head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", head - 1);
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
+      else
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;
@@ -3612,77 +4243,104 @@ void LinkagesWidget::nextMarkedHead()
   setLinkageComment();
   incidentsModel->select();
   while (incidentsModel->canFetchMore()) 
-  {
     incidentsModel->fetchMore();
-  }
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   int head = 0;
   query->first();
   head = query->value(0).toInt();
+  bool valid = false;
   if (_selectedDirection == PAST) 
   {
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
-    query->bindValue(":order", head);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      head = query->value(0).toInt();
-      if (head >= 1)
-	    {
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":head", head);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);	
-	      query->exec();
-	      retrieveData();
-	    }
+      query->bindValue(":order", head);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        head = query->value(0).toInt();
+        if (_caseIncidents.contains(head))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (head >= 1)
+    {
+      query->prepare("UPDATE coders_to_linkage_types "
+                     "SET head = :head "
+                     "WHERE coder = :coder AND type = :type AND casename = :casename");
+      query->bindValue(":head", head);
+      query->bindValue(":coder", _selectedCoder);
+      query->bindValue(":type", _selectedType);
+      query->bindValue(":casename", _selectedCase);
+      query->exec();
+      retrieveData();
     }
   }
   else if (_selectedDirection == FUTURE) 
   {
     query->prepare("SELECT ch_order FROM incidents "
                    "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
-    query->bindValue(":order", head);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      head = query->value(0).toInt();
-      if (head <= incidentsModel->rowCount())
-	    {
-	      if (_codingType == ASSISTED) 
+      query->bindValue(":order", head);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        head = query->value(0).toInt();
+        if (_caseIncidents.contains(head))
         {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", head - 1);
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
+          valid = true;
         }
-	      else 
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":head", head);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-        }
-	    }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
+    }
+    if (head <= incidentsModel->rowCount())
+    {
+      if (_codingType == ASSISTED)
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET tail = :tail, head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":tail", head - 1);
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
+      else
+      {
+        query->prepare("UPDATE coders_to_linkage_types "
+                       "SET head = :head "
+                       "WHERE coder = :coder AND type = :type AND casename = :casename");
+        query->bindValue(":head", head);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
+        query->bindValue(":casename", _selectedCase);
+        query->exec();
+        retrieveData();
+      }
     }
   }
   delete query;
@@ -3702,9 +4360,10 @@ void LinkagesWidget::setComments()
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int tailIndex = 0;
@@ -3714,9 +4373,10 @@ void LinkagesWidget::setComments()
     query->bindValue(":tail", tailIndex);
     query->exec();
     query->prepare("SELECT head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int headIndex = 0;
@@ -3743,9 +4403,10 @@ void LinkagesWidget::setLinkageComment()
     incidentsModel->select();
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int tailIndex = query->value(0).toInt();
@@ -3772,43 +4433,43 @@ void LinkagesWidget::setLinkageComment()
     if (!(query->isNull(0)))
     {
       if (comment != "")
-	    {
-	      query->prepare("UPDATE linkage_comments "
+      {
+        query->prepare("UPDATE linkage_comments "
                        "SET comment = :comment, coder = :coder "
                        "WHERE tail = :tail AND head = :head AND type = :type");
-	      query->bindValue(":comment", comment);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":tail", tailId);
-	      query->bindValue(":head", headId);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	    }
+        query->bindValue(":comment", comment);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":tail", tailId);
+        query->bindValue(":head", headId);
+        query->bindValue(":type", _selectedType);
+        query->exec();
+      }
       else
-	    {
-	      query->prepare("DELETE FROM linkage_comments "
+      {
+        query->prepare("DELETE FROM linkage_comments "
                        "WHERE tail = :tail AND head = :head AND "
                        "type = :type AND coder = :coder");
-	      query->bindValue(":tail", tailId);
-	      query->bindValue(":head", headId);
-	      query->bindValue(":type", _selectedType);
+        query->bindValue(":tail", tailId);
+        query->bindValue(":head", headId);
+        query->bindValue(":type", _selectedType);
         query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	    }
+        query->exec();
+      }
     }
     else
     {
       if (comment != "")
-	    {
-	      query->prepare("INSERT INTO linkage_comments "
+      {
+        query->prepare("INSERT INTO linkage_comments "
                        "(tail, head, comment, coder, type)"
                        "VALUES (:tail, :head, :comment, :coder, :type)");
-	      query->bindValue(":tail", tailId);
-	      query->bindValue(":head", headId);
-	      query->bindValue(":comment", comment);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
+        query->bindValue(":tail", tailId);
+        query->bindValue(":head", headId);
+        query->bindValue(":comment", comment);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":type", _selectedType);
         query->exec();
-	    }
+      }
     }
     _linkageCommentBool = false;
     delete query;
@@ -3832,14 +4493,13 @@ void LinkagesWidget::setLink()
   }
   incidentsModel->select();
   while (incidentsModel->canFetchMore()) 
-  {
     incidentsModel->fetchMore();
-  }
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
@@ -3922,7 +4582,6 @@ void LinkagesWidget::setLink()
     query->bindValue(":type", _selectedType);
     query->bindValue(":coder", _selectedCoder);
     query->exec();
-    QSqlQuery *query2 = new QSqlQuery;
     while (query->next())
     {
       int tail = query->value(0).toInt();
@@ -3955,22 +4614,23 @@ void LinkagesWidget::setLink()
         }
         for (int i = headIndex - 1; i != 0; i--)
         {
-          bool found = false;
-          if (orderSet.contains(i))
+          bool valid = false;
+          if (orderSet.contains(i) || !_caseIncidents.contains(i))
           {
-            found = true;
+            valid = true;
           }
-          if (!found)
+          if (!valid)
           {
-            if (headIndex != 1)
+            if (headIndex != 1 && _caseIncidents.contains(i))
             {
               headIndex = i;
               query->prepare("UPDATE coders_to_linkage_types "
                              "SET head = :head "
-                             "WHERE coder = :coder AND type = :type");
+                             "WHERE coder = :coder AND type = :type AND casename = :casename");
               query->bindValue(":head", headIndex);
               query->bindValue(":coder", _selectedCoder);
               query->bindValue(":type", _selectedType);
+              query->bindValue(":casename", _selectedCase);
               query->exec();
               pause(500);
               retrieveData();
@@ -3983,23 +4643,56 @@ void LinkagesWidget::setLink()
             {
               if (tailIndex != incidentsModel->rowCount())
               {
-                tailIndex++;
+                bool tailValid = false;
+                bool headValid = false;
+                while (!tailValid && tailIndex != incidentsModel->rowCount())
+                {
+                  tailIndex++;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
                 headIndex = tailIndex - 1;
-                query->prepare("UPDATE coders_to_linkage_types "
-                               "SET tail = :tail, head = :head "
-                               "WHERE coder = :coder "
-                               "AND type = :type");
-                query->bindValue(":tail", tailIndex);
-                query->bindValue(":head", headIndex);
-                query->bindValue(":coder", _selectedCoder);
-                query->bindValue(":type", _selectedType);
-                query->exec();
-                pause(500);
-                retrieveData();
-                delete query;
-                QApplication::restoreOverrideCursor();
-                qApp->processEvents();
-                return;
+                if (_caseIncidents.contains(headIndex))
+                {
+                  headValid = true;
+                }
+                while (!headValid && headIndex != 1)
+                {
+                  headIndex--;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                if (tailValid && headValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder "
+                                 "AND type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  pause(500);
+                  retrieveData();
+                  delete query;
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  return;
+                }
+                else
+                {
+                  delete query;
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  return;
+                }
               }
             }
           }
@@ -4009,62 +4702,127 @@ void LinkagesWidget::setLink()
             {
               if (tailIndex != incidentsModel->rowCount())
               {
-                tailIndex++;
+                bool tailValid = false;
+                bool headValid = false;
+                while (!tailValid && tailIndex != incidentsModel->rowCount())
+                {
+                  tailIndex++;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
                 headIndex = tailIndex - 1;
-                query->prepare("UPDATE coders_to_linkage_types "
-                               "SET tail = :tail, head = :head "
-                               "WHERE coder = :coder "
-                               "AND type = :type");
-                query->bindValue(":tail", tailIndex);
-                query->bindValue(":head", headIndex);
-                query->bindValue(":coder", _selectedCoder);
-                query->bindValue(":type", _selectedType);
-                query->exec();
-                pause(500);
-                retrieveData();
-                QApplication::restoreOverrideCursor();
-                qApp->processEvents();
-                delete query;
-                return;
+                if (_caseIncidents.contains(headIndex))
+                {
+                  headValid = true;
+                }
+                while (!headValid && headIndex != 1)
+                {
+                  headIndex--;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                if (tailValid && headValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder "
+                                 "AND type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  pause(500);
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
               }
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      if (tailIndex != incidentsModel->rowCount()) 
+      {
+        if (tailIndex != incidentsModel->rowCount())
         {
-          tailIndex++;
+          bool tailValid = false;
+          bool headValid = false;
+          while (!tailValid && tailIndex != incidentsModel->rowCount())
+          {
+            tailIndex++;
+            if (_caseIncidents.contains(tailIndex))
+            {
+              tailValid = true;
+            }
+          }
           headIndex = tailIndex - 1;
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type");
-          query->bindValue(":tail", tailIndex);
-          query->bindValue(":head", headIndex);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          pause(500);
-          retrieveData();
-          QApplication::restoreOverrideCursor();
-          qApp->processEvents();
-          delete query;
-          return;
+          if (_caseIncidents.contains(headIndex))
+          {
+            headValid = true;
+          }
+          while (!headValid && headIndex != 1)
+          {
+            headIndex--;
+            if (_caseIncidents.contains(headIndex))
+            {
+              headValid = true;
+            }
+          }
+          if (tailValid && headValid)
+          {
+            query->prepare("UPDATE coders_to_linkage_types "
+                           "SET tail = :tail, head = :head "
+                           "WHERE coder = :coder AND type = :type AND casename = :casename");
+            query->bindValue(":tail", tailIndex);
+            query->bindValue(":head", headIndex);
+            query->bindValue(":coder", _selectedCoder);
+            query->bindValue(":type", _selectedType);
+            query->bindValue(":casename", _selectedCase);
+            query->exec();
+            pause(500);
+            retrieveData();
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+          else
+          {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
         }
-	    }
+      }
     }
     else if (_selectedDirection == FUTURE)
     {
       QSet<int> paths;
       if (tailIndex != 1)
-	    {
-	      findTails(&paths,
+      {
+        findTails(&paths,
                   &tailsMap,
                   headId);
-	      QSet<int> orderSet;
-	      QSetIterator<int> pIt(paths);
-	      while (pIt.hasNext())
+        QSet<int> orderSet;
+        QSetIterator<int> pIt(paths);
+        while (pIt.hasNext())
         {
           query->prepare("SELECT ch_order FROM incidents "
                          "WHERE id = :id");
@@ -4073,77 +4831,203 @@ void LinkagesWidget::setLink()
           query->first();
           orderSet.insert(query->value(0).toInt());
         }
-	      for (int i = tailIndex - 1; i != 0; i--) 
+        for (int i = tailIndex - 1; i != 0; i--)
         {
-          bool found = false;
-          if (orderSet.contains(i))
+          bool valid = false;
+          if (orderSet.contains(i) || !_caseIncidents.contains(i))
           {
-            found = true;
+            valid = true;
           }
-          if (!found)
+          if (!valid)
           {
-            tailIndex = i;
-            query->prepare("UPDATE coders_to_linkage_types "
-                           "SET tail = :tail "
-                           "WHERE coder = :coder AND type = :type");
-            query->bindValue(":tail", tailIndex);
-            query->bindValue(":coder", _selectedCoder);
-            query->bindValue(":type", _selectedType);
-            query->exec();
-            pause(500);
-            retrieveData();
-            delete query;
-            QApplication::restoreOverrideCursor();
-            qApp->processEvents();
-            return;
+            if (tailIndex != 1 && _caseIncidents.contains(i))
+            {
+              tailIndex = i;
+              query->prepare("UPDATE coders_to_linkage_types "
+                             "SET tail = :tail "
+                             "WHERE coder = :coder AND type = :type AND casename = :casename");
+              query->bindValue(":tail", tailIndex);
+              query->bindValue(":coder", _selectedCoder);
+              query->bindValue(":type", _selectedType);
+              query->bindValue(":casename", _selectedCase);
+              query->exec();
+              pause(500);
+              retrieveData();
+              delete query;
+              QApplication::restoreOverrideCursor();
+              qApp->processEvents();
+              return;
+            }
+            else
+            {
+              if (headIndex != incidentsModel->rowCount())
+              {
+                bool headValid = false;
+                bool tailValid = false;
+                while (!headValid && headIndex != incidentsModel->rowCount())
+                {
+                  headIndex++;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                tailIndex = headIndex - 1;
+                if (_caseIncidents.contains(headIndex))
+                {
+                  tailValid = true;
+                }
+                while (!tailValid && tailIndex != 1)
+                {
+                  tailIndex--;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
+                if (headValid && tailValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder "
+                                 "AND type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  pause(500);
+                  retrieveData();
+                  delete query;
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+              }
+            }
           }
           else
           {
             if (i == 1)
             {
-              if (headIndex != incidentsModel->rowCount())
+              if (tailIndex != incidentsModel->rowCount())
               {
-                headIndex++;
+                bool headValid = false;
+                bool tailValid = false;
+                while (!headValid && headIndex != incidentsModel->rowCount())
+                {
+                  headIndex++;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
                 tailIndex = headIndex - 1;
-                query->prepare("UPDATE coders_to_linkage_types "
-                               "SET tail = :tail, head = :head "
-                               "WHERE coder = :coder "
-                               "AND type = :type");
-                query->bindValue(":tail", tailIndex);
-                query->bindValue(":head", headIndex);
-                query->bindValue(":coder", _selectedCoder);
-                query->bindValue(":type", _selectedType);
-                query->exec();
-                pause(500);
-                retrieveData();
-                delete query;
-                QApplication::restoreOverrideCursor();
-                qApp->processEvents();
-                return;
+                if (_caseIncidents.contains(tailIndex))
+                {
+                  tailValid = true;
+                }
+                while (!tailValid && tailIndex != 1)
+                {
+                  tailIndex--;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
+                if (headValid && tailValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND type = :type AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  pause(500);
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
               }
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      headIndex++;
-	      tailIndex = headIndex - 1;
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      pause(500);
-	      retrieveData();
-	      delete query;
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      return;
-	    }
+      {
+        if (headIndex != incidentsModel->rowCount())
+        {
+          bool headValid = false;
+          bool tailValid = false;
+          while (!headValid && headIndex != incidentsModel->rowCount())
+          {
+            headIndex++;
+            if (_caseIncidents.contains(headIndex))
+            {
+              headValid = true;
+            }
+          }
+          tailIndex = headIndex - 1;
+          if (_caseIncidents.contains(tailIndex))
+          {
+            tailValid = true;
+          }
+          while (!tailValid && tailIndex != 1)
+          {
+            tailIndex--;
+            if (_caseIncidents.contains(tailIndex))
+            {
+              tailValid = true;
+            }
+          }
+          if (headValid && tailValid)
+          {
+            query->prepare("UPDATE coders_to_linkage_types "
+                           "SET tail = :tail, head = :head "
+                           "WHERE coder = :coder AND type = :type AND casename = :casename");
+            query->bindValue(":tail", tailIndex);
+            query->bindValue(":head", headIndex);
+            query->bindValue(":coder", _selectedCoder);
+            query->bindValue(":type", _selectedType);
+            query->bindValue(":casename", _selectedCase);
+            query->exec();
+            pause(500);
+            retrieveData();
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+          else
+          {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+        }
+      }
     }
   }
   QApplication::restoreOverrideCursor();
@@ -4185,14 +5069,13 @@ void LinkagesWidget::unsetLink()
   }
   incidentsModel->select();
   while (incidentsModel->canFetchMore()) 
-  {
     incidentsModel->fetchMore();
-  }
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
@@ -4244,10 +5127,10 @@ void LinkagesWidget::unsetLink()
       LinkageNode* tail = qgraphicsitem_cast<LinkageNode*>(current->getStart());
       LinkageNode* head = qgraphicsitem_cast<LinkageNode*>(current->getEnd());
       if (tail->getId() == tailId && head->getId() == headId)
-	    {
-	      delete current;
-	      _linkagesVector.removeOne(current);
-	    }
+      {
+        delete current;
+        _linkagesVector.removeOne(current);
+      }
     }
   }
   linkageFeedbackLabel->setText("");
@@ -4280,13 +5163,13 @@ void LinkagesWidget::unsetLink()
     {
       QSet<int> paths;
       if (headIndex != 1)
-	    {
-	      findHeads(&paths,
+      {
+        findHeads(&paths,
                   &headsMap,
                   tailId);
-	      QSet<int> orderSet;
-	      QSetIterator<int> pIt(paths);
-	      while (pIt.hasNext())
+        QSet<int> orderSet;
+        QSetIterator<int> pIt(paths);
+        while (pIt.hasNext())
         {
           query->prepare("SELECT ch_order FROM incidents "
                          "WHERE id = :id");
@@ -4295,24 +5178,25 @@ void LinkagesWidget::unsetLink()
           query->first();
           orderSet.insert(query->value(0).toInt());
         }
-	      for (int i = headIndex - 1; i != 0; i--) 
+        for (int i = headIndex - 1; i != 0; i--)
         {
-          bool found = false;
-          if (orderSet.contains(i))
+          bool valid = false;
+          if (orderSet.contains(i) || !_caseIncidents.contains(i))
           {
-            found = true;
+            valid = true;
           }
-          if (!found)
+          if (!valid)
           {
-            if (headIndex != 1)
+            if (headIndex != 1 && _caseIncidents.contains(i))
             {
               headIndex = i;
               query->prepare("UPDATE coders_to_linkage_types "
                              "SET head = :head "
-                             "WHERE coder = :coder AND type = :type");
+                             "WHERE coder = :coder AND type = :type AND casename = :casename");
               query->bindValue(":head", headIndex);
               query->bindValue(":coder", _selectedCoder);
               query->bindValue(":type", _selectedType);
+              query->bindValue(":casename", _selectedCase);
               query->exec();
               retrieveData();
               delete query;
@@ -4324,109 +5208,155 @@ void LinkagesWidget::unsetLink()
             {
               if (tailIndex != incidentsModel->rowCount())
               {
-                tailIndex++;
+                bool tailValid = false;
+                bool headValid = false;
+                while (!tailValid && tailIndex != incidentsModel->rowCount())
+                {
+                  tailIndex++;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
                 headIndex = tailIndex - 1;
-                query->prepare("UPDATE coders_to_linkage_types "
-                               "SET tail = :tail, head = :head "
-                               "WHERE coder = :coder AND "
-                               "type = :type");
-                query->bindValue(":tail", tailIndex);
-                query->bindValue(":head", headIndex);
-                query->bindValue(":coder", _selectedCoder);
-                query->bindValue(":type", _selectedType);
-                query->exec();
-                retrieveData();
-                QApplication::restoreOverrideCursor();
-                qApp->processEvents();
-                delete query;
-                return;
+                if (_caseIncidents.contains(headIndex))
+                {
+                  headValid = true;
+                }
+                while (!headValid && headIndex != 1)
+                {
+                  headIndex--;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                if (tailValid && headValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND "
+                                 "type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
               }
             }
           }
-          else
+        else
           {
             if (i == 1)
             {
               if (tailIndex != incidentsModel->rowCount())
               {
-                tailIndex++;
+                bool tailValid = false;
+                bool headValid = false;
+                while (!tailValid && tailIndex != incidentsModel->rowCount())
+                {
+                  tailIndex++;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
                 headIndex = tailIndex - 1;
-                query->prepare("UPDATE coders_to_linkage_types "
-                               "SET tail = :tail, head = :head "
-                               "WHERE coder = :coder AND "
-                               "type = :type");
-                query->bindValue(":tail", tailIndex);
-                query->bindValue(":head", headIndex);
-                query->bindValue(":coder", _selectedCoder);
-                query->bindValue(":type", _selectedType);
-                query->exec();
-                retrieveData();
-                QApplication::restoreOverrideCursor();
-                qApp->processEvents();
-                delete query;
-                return;
+                if (_caseIncidents.contains(headIndex))
+                {
+                  headValid = true;
+                }
+                while (!headValid && headIndex != 1)
+                {
+                  headIndex--;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                if (tailValid && headValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND "
+                                 "type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
               }
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      if (tailIndex != incidentsModel->rowCount()) 
+      {
+        if (tailIndex != incidentsModel->rowCount())
         {
-          tailIndex++;
-          headIndex = tailIndex - 1;
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type  = :type");
-          query->bindValue(":tail", tailIndex);
-          query->bindValue(":head", headIndex);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->exec();
-          retrieveData();
-          QApplication::restoreOverrideCursor();
-          qApp->processEvents();
-          delete query;
-          return;
-        }
-	    }
-    }
-    else if (_selectedDirection == FUTURE)
-    {
-      QSet<int> paths;
-      if (tailIndex != 1)
-	    {
-	      findTails(&paths,
-                  &tailsMap,
-                  headId);
-	      QSet<int> orderSet;
-	      QSetIterator<int> pIt(paths);
-	      while (pIt.hasNext())
-        {
-          query->prepare("SELECT ch_order FROM incidents "
-                         "WHERE id = :id");
-          query->bindValue(":id", pIt.next());
-          query->exec();
-          query->first();
-          orderSet.insert(query->value(0).toInt());
-        }
-	      for (int i = tailIndex - 1; i != 0; i--) 
-        {
-          bool found = false;
-          if (orderSet.contains(i))
+          bool tailValid = false;
+          bool headValid = false;
+          while (!tailValid && tailIndex != incidentsModel->rowCount())
           {
-            found = true;
+            tailIndex++;
+            if (_caseIncidents.contains(tailIndex))
+            {
+              tailValid = true;
+            }
           }
-          if (!found)
+          headIndex = tailIndex - 1;
+          if (_caseIncidents.contains(headIndex))
           {
-            tailIndex = i;
+            headValid = true;
+          }
+          while (!headValid && headIndex != 1)
+          {
+            headIndex--;
+            if (_caseIncidents.contains(headIndex))
+            {
+              headValid = true;
+            }
+          }
+          if (tailValid && headValid)
+          {
             query->prepare("UPDATE coders_to_linkage_types "
-                           "SET tail = :tail "
-                           "WHERE coder = :coder AND type = :type");
+                           "SET tail = :tail, head = :head "
+                           "WHERE coder = :coder AND type = :type AND casename = :casename");
             query->bindValue(":tail", tailIndex);
+            query->bindValue(":head", headIndex);
             query->bindValue(":coder", _selectedCoder);
             query->bindValue(":type", _selectedType);
+            query->bindValue(":casename", _selectedCase);
             query->exec();
             retrieveData();
             QApplication::restoreOverrideCursor();
@@ -4436,49 +5366,230 @@ void LinkagesWidget::unsetLink()
           }
           else
           {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+        }
+      }
+    }
+    else if (_selectedDirection == FUTURE)
+    {
+      QSet<int> paths;
+      if (tailIndex != 1)
+      {
+        findTails(&paths,
+                  &tailsMap,
+                  headId);
+        QSet<int> orderSet;
+        QSetIterator<int> pIt(paths);
+        while (pIt.hasNext())
+        {
+          query->prepare("SELECT ch_order FROM incidents "
+                         "WHERE id = :id");
+          query->bindValue(":id", pIt.next());
+          query->exec();
+          query->first();
+          orderSet.insert(query->value(0).toInt());
+        }
+        for (int i = tailIndex - 1; i != 0; i--)
+        {
+          bool valid = false;
+          if (orderSet.contains(i) || !_caseIncidents.contains(i))
+          {
+            valid = true;
+          }
+          if (!valid)
+          {
+            if (tailIndex != 1 && _caseIncidents.contains(i))
+            {
+              tailIndex = i;
+              query->prepare("UPDATE coders_to_linkage_types "
+                             "SET tail = :tail "
+                             "WHERE coder = :coder AND type = :type AND casename = :casename");
+              query->bindValue(":tail", tailIndex);
+              query->bindValue(":coder", _selectedCoder);
+              query->bindValue(":type", _selectedType);
+              query->bindValue(":casename", _selectedCase);
+              query->exec();
+              retrieveData();
+              QApplication::restoreOverrideCursor();
+              qApp->processEvents();
+              delete query;
+              return;
+            }
+            else
+            {
+              if (headIndex != incidentsModel->rowCount())
+              {
+                bool headValid = false;
+                bool tailValid = false;
+                while (!headValid && headIndex != incidentsModel->rowCount())
+                {
+                  headIndex++;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                tailIndex = headIndex - 1;
+                if (_caseIncidents.contains(tailIndex))
+                {
+                  tailValid = true;
+                }
+                while (!tailValid && tailIndex != 1)
+                {
+                  tailIndex--;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
+                if (headValid && tailValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND "
+                                 "type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+              }
+            }
+          }
+          else
+          {
             if (i == 1)
             {
               if (headIndex != incidentsModel->rowCount())
               {
-                headIndex++;
+                bool headValid = false;
+                bool tailValid = false;
+                while (!headValid && headIndex != incidentsModel->rowCount())
+                {
+                  headIndex++;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
                 tailIndex = headIndex - 1;
-                query->prepare("UPDATE coders_to_linkage_types "
-                               "SET tail = :tail, head = :head "
-                               "WHERE coder = :coder AND "
-                               "type = :type");
-                query->bindValue(":tail", tailIndex);
-                query->bindValue(":head", headIndex);
-                query->bindValue(":coder", _selectedCoder);
-                query->bindValue(":type", _selectedType);
-                query->exec();
-                retrieveData();
-                QApplication::restoreOverrideCursor();
-                qApp->processEvents();
-                delete query;
-                return;
+                if (_caseIncidents.contains(tailIndex))
+                {
+                  tailValid = false;
+                }
+                while (!tailValid && tailIndex != 1)
+                {
+                  tailIndex--;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
+                if (headValid && tailValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND "
+                                 "type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
               }
             }
           }
         }
-	    }
+      }
       else
-	    {
-	      headIndex++;
-	      tailIndex = headIndex - 1;
-	      query->prepare("UPDATE coders_to_linkage_types "
-                       "SET tail = :tail, head = :head "
-                       "WHERE coder = :coder AND type = :type");
-	      query->bindValue(":tail", tailIndex);
-	      query->bindValue(":head", headIndex);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":type", _selectedType);
-	      query->exec();
-	      retrieveData();
-	      QApplication::restoreOverrideCursor();
-	      qApp->processEvents();
-	      delete query;
-	      return;
-	    }
+      {
+        if (headIndex != incidentsModel->rowCount())
+        {
+          bool headValid = false;
+          bool tailValid = false;
+          while (!headValid && headIndex != incidentsModel->rowCount())
+          {
+            headIndex++;
+            if (_caseIncidents.contains(headIndex))
+            {
+              headValid = true;
+            }
+          }
+          tailIndex = headIndex - 1;
+          if (_caseIncidents.contains(tailIndex))
+          {
+            tailValid = false;
+          }
+          while (!tailValid && tailIndex != 1)
+          {
+            tailIndex--;
+            if (_caseIncidents.contains(tailIndex))
+            {
+              tailValid = true;
+            }
+          }
+          if (headValid && tailValid)
+          {
+            headIndex++;
+            tailIndex = headIndex - 1;
+            query->prepare("UPDATE coders_to_linkage_types "
+                           "SET tail = :tail, head = :head "
+                           "WHERE coder = :coder AND type = :type AND casename = :casename");
+            query->bindValue(":tail", tailIndex);
+            query->bindValue(":head", headIndex);
+            query->bindValue(":coder", _selectedCoder);
+            query->bindValue(":type", _selectedType);
+            query->bindValue(":casename", _selectedCase);
+            query->exec();
+            retrieveData();
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+          else
+          {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+        }
+      }
     }
   }
   QApplication::restoreOverrideCursor();
@@ -4507,9 +5618,10 @@ void LinkagesWidget::markEvidence()
   {
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                   "WHERE coder = :coder AND type = :type");
+                   "WHERE coder = :coder AND type = :type AND casename = :casename");
     query->bindValue(":coder", _selectedCoder);
     query->bindValue(":type", _selectedType);
+    query->bindValue(":casename", _selectedCase);
     query->exec();
     query->first();
     int tailIndex = 0;
@@ -4543,9 +5655,10 @@ void LinkagesWidget::clearEvidence()
 {
   QSqlQuery *query = new QSqlQuery;
   query->prepare("SELECT tail, head FROM coders_to_linkage_types "
-                 "WHERE coder = :coder AND type = :type");
+                 "WHERE coder = :coder AND type = :type AND casename = :casename");
   query->bindValue(":coder", _selectedCoder);
   query->bindValue(":type", _selectedType);
+  query->bindValue(":casename", _selectedCase);
   query->exec();
   query->first();
   int tailIndex = 0;
@@ -4673,10 +5786,10 @@ void LinkagesWidget::highlightText()
       while (headRawField->find(currentLine, QTextDocument::FindWholeWords))
       {
         format.setFontWeight(QFont::Bold);
-	      format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
-	      format.setUnderlineColor(Qt::blue);
-	      headRawField->textCursor().mergeCharFormat(format);
-	    }
+        format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
+        format.setUnderlineColor(Qt::blue);
+        headRawField->textCursor().mergeCharFormat(format);
+      }
     }
     headCursor = headRawField->textCursor();
     headCursor.movePosition(QTextCursor::Start);
@@ -4845,9 +5958,43 @@ void LinkagesWidget::setButtons(bool status)
   linkageCommentField->setEnabled(status);
   view->setEnabled(status);
   layoutButton->setEnabled(status);
+  caseFilterButton->setEnabled(status);
 }
 
-bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 
+void LinkagesWidget::setOpenGL(bool state)
+{
+  if (state == true)
+  {
+    QPointer<QOpenGLWidget> openGL = new QOpenGLWidget(this);
+    QSurfaceFormat format;
+    format.setSamples(4);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    openGL->setFormat(format);
+    view->setViewport(openGL);
+    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    view->viewport()->installEventFilter(this);
+    view->setScene(scene);
+  }
+  else
+  {
+    view->setViewport(new QWidget());
+    view->viewport()->installEventFilter(this);
+    view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+  }
+}
+
+void LinkagesWidget::setAntialiasing(bool state)
+{
+  QVectorIterator<Linkage*> it(_linkagesVector);
+  while (it.hasNext())
+  {
+    Linkage *current = it.next();
+    current->setAntialiasing(state);
+  }
+}
+
+bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
 {
   if (event->type() == QEvent::Wheel) 
   {
