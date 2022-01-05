@@ -55,6 +55,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   // Some of these widgets need some pointers to each other to communicate properly.
   //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(linkagesWidget);
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
@@ -81,6 +82,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   cw->setEventGraphWidget(egw);
   cw->setNetworkGraphWidget(ngw);
   cw->setOccurrenceGraphWidget(ogw);
+  cw->setLinkagesWidget(lw);
   
   QString sliderSheet = QString("QSlider::groove:horizontal { "
                                 "border: 1px solid #999999; "
@@ -989,13 +991,11 @@ void MainWindow::switchToLinkageView()
     lw->incidentsModel->select();
     lw->setLinkageType(false);
     lw->retrieveData();
-    lw->retrieveCases();
     EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
     egw->setComment();
     stacked->setCurrentWidget(linkagesWidget);
   }
 }
-
 
 void MainWindow::switchToJournalView() 
 {
