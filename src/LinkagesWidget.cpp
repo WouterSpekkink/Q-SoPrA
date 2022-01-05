@@ -903,7 +903,10 @@ void LinkagesWidget::setLinkageType(bool checkManual)
 {
   setComments();
   setLinkageComment();
-  _graphFiltered = false;
+  if (_graphFiltered)
+  {
+    toggleFilter();
+  }
   incidentsModel->select();
   while (incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
@@ -969,6 +972,8 @@ void LinkagesWidget::setLinkageType(bool checkManual)
         }
         else
         {
+          delete query;
+          delete query2;
           return;
         }
       }
@@ -1007,6 +1012,8 @@ void LinkagesWidget::setLinkageType(bool checkManual)
         }
         else
         {
+          delete query;
+          delete query2;
           return;
         }
       }
@@ -1171,6 +1178,10 @@ void LinkagesWidget::switchLinkageType()
     QString toolTip = breakString(description);
     linkageTypeFeedbackLabel->setToolTip(toolTip);
     setButtons(true);
+    if (_graphFiltered)
+    {
+      toggleFilter();
+    }
     removeLinkages();
     plotLinkages();
     retrieveData();
@@ -2088,6 +2099,7 @@ void LinkagesWidget::previousTailDescription()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -2181,6 +2193,7 @@ void LinkagesWidget::nextTailDescription()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -2277,6 +2290,7 @@ void LinkagesWidget::previousTailRaw()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -2386,6 +2400,7 @@ void LinkagesWidget::nextTailRaw()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -2482,6 +2497,7 @@ void LinkagesWidget::previousTailComment()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -2575,6 +2591,7 @@ void LinkagesWidget::nextTailComment()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -2675,6 +2692,7 @@ void LinkagesWidget::previousHeadDescription()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -2714,6 +2732,7 @@ void LinkagesWidget::previousHeadDescription()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -2791,6 +2810,7 @@ void LinkagesWidget::nextHeadDescription()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -2831,6 +2851,7 @@ void LinkagesWidget::nextHeadDescription()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -2913,6 +2934,7 @@ void LinkagesWidget::previousHeadRaw()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -2952,6 +2974,7 @@ void LinkagesWidget::previousHeadRaw()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3029,6 +3052,7 @@ void LinkagesWidget::nextHeadRaw()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3068,6 +3092,7 @@ void LinkagesWidget::nextHeadRaw()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3150,6 +3175,7 @@ void LinkagesWidget::previousHeadComment()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3189,6 +3215,7 @@ void LinkagesWidget::previousHeadComment()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3266,6 +3293,7 @@ void LinkagesWidget::nextHeadComment()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3305,6 +3333,7 @@ void LinkagesWidget::nextHeadComment()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3377,6 +3406,7 @@ void LinkagesWidget::previousTail()
         }
         else
         {
+          delete query;
           return;
         }
       }
@@ -3404,6 +3434,7 @@ void LinkagesWidget::previousTail()
       }
       else
       {
+        delete query;
         return; // See previousHead function
       }
     }
@@ -3470,6 +3501,7 @@ void LinkagesWidget::nextTail()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -3497,6 +3529,7 @@ void LinkagesWidget::nextTail()
       }
       else
       {
+        delete query;
         return;
       }
       query->prepare("UPDATE coders_to_linkage_types "
@@ -3602,6 +3635,7 @@ void LinkagesWidget::previousMarkedTail()
     }
     else
     {
+      delete query;
       return;
     }
   }
@@ -3704,6 +3738,7 @@ void LinkagesWidget::nextMarkedTail()
     }
     else
     {
+      delete query;
       return;
     }
   }
@@ -3883,6 +3918,7 @@ void LinkagesWidget::previousHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -3910,6 +3946,7 @@ void LinkagesWidget::previousHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -3974,6 +4011,7 @@ void LinkagesWidget::nextHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -4004,6 +4042,7 @@ void LinkagesWidget::nextHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -4110,6 +4149,7 @@ void LinkagesWidget::previousMarkedHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -4145,6 +4185,7 @@ void LinkagesWidget::previousMarkedHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -4233,6 +4274,7 @@ void LinkagesWidget::nextMarkedHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -4268,6 +4310,7 @@ void LinkagesWidget::nextMarkedHead()
       }
       else
       {
+        delete query;
         return;
       }
     }
@@ -4645,6 +4688,9 @@ void LinkagesWidget::setLink()
                 }
                 else
                 {
+                  delete query;
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
                   return;
                 }
               }
@@ -4701,6 +4747,9 @@ void LinkagesWidget::setLink()
                 }
                 else
                 {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
                   return;
                 }
               }
@@ -4755,6 +4804,9 @@ void LinkagesWidget::setLink()
           }
           else
           {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
             return;
           }
         }
@@ -4788,7 +4840,7 @@ void LinkagesWidget::setLink()
           }
           if (!valid)
           {
-            if (_caseIncidents.contains(i))
+            if (tailIndex != 1 && _caseIncidents.contains(i))
             {
               tailIndex = i;
               query->prepare("UPDATE coders_to_linkage_types "
@@ -4806,10 +4858,7 @@ void LinkagesWidget::setLink()
               qApp->processEvents();
               return;
             }
-          }
-          else
-          {
-            if (i == 1)
+            else
             {
               if (headIndex != incidentsModel->rowCount())
               {
@@ -4858,6 +4907,66 @@ void LinkagesWidget::setLink()
                 }
                 else
                 {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+              }
+            }
+          }
+          else
+          {
+            if (i == 1)
+            {
+              if (tailIndex != incidentsModel->rowCount())
+              {
+                bool headValid = false;
+                bool tailValid = false;
+                while (!headValid && headIndex != incidentsModel->rowCount())
+                {
+                  headIndex++;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                tailIndex = headIndex - 1;
+                if (_caseIncidents.contains(tailIndex))
+                {
+                  tailValid = true;
+                }
+                while (!tailValid && tailIndex != 1)
+                {
+                  tailIndex--;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
+                if (headValid && tailValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND type = :type AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  pause(500);
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
                   return;
                 }
               }
@@ -4867,50 +4976,56 @@ void LinkagesWidget::setLink()
       }
       else
       {
-        bool headValid = false;
-        bool tailValid = false;
-        while (!headValid && headIndex != incidentsModel->rowCount())
+        if (headIndex != incidentsModel->rowCount())
         {
-          headIndex++;
-          if (_caseIncidents.contains(headIndex))
+          bool headValid = false;
+          bool tailValid = false;
+          while (!headValid && headIndex != incidentsModel->rowCount())
           {
-            headValid = true;
+            headIndex++;
+            if (_caseIncidents.contains(headIndex))
+            {
+              headValid = true;
+            }
           }
-        }
-        tailIndex = headIndex - 1;
-        if (_caseIncidents.contains(tailIndex))
-        {
-          tailValid = true;
-        }
-        while (!tailValid && tailIndex != 1)
-        {
-          tailIndex--;
+          tailIndex = headIndex - 1;
           if (_caseIncidents.contains(tailIndex))
           {
             tailValid = true;
           }
-        }
-        if (headValid && tailValid)
-        {
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type AND casename = :casename");
-          query->bindValue(":tail", tailIndex);
-          query->bindValue(":head", headIndex);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->bindValue(":casename", _selectedCase);
-          query->exec();
-          pause(500);
-          retrieveData();
-          delete query;
-          QApplication::restoreOverrideCursor();
-          qApp->processEvents();
-          return;
-        }
-        else
-        {
-          return;
+          while (!tailValid && tailIndex != 1)
+          {
+            tailIndex--;
+            if (_caseIncidents.contains(tailIndex))
+            {
+              tailValid = true;
+            }
+          }
+          if (headValid && tailValid)
+          {
+            query->prepare("UPDATE coders_to_linkage_types "
+                           "SET tail = :tail, head = :head "
+                           "WHERE coder = :coder AND type = :type AND casename = :casename");
+            query->bindValue(":tail", tailIndex);
+            query->bindValue(":head", headIndex);
+            query->bindValue(":coder", _selectedCoder);
+            query->bindValue(":type", _selectedType);
+            query->bindValue(":casename", _selectedCase);
+            query->exec();
+            pause(500);
+            retrieveData();
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+          else
+          {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
         }
       }
     }
@@ -5137,6 +5252,9 @@ void LinkagesWidget::unsetLink()
                 }
                 else
                 {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
                   return;
                 }
               }
@@ -5192,6 +5310,9 @@ void LinkagesWidget::unsetLink()
                 }
                 else
                 {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
                   return;
                 }
               }
@@ -5245,6 +5366,9 @@ void LinkagesWidget::unsetLink()
           }
           else
           {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
             return;
           }
         }
@@ -5276,22 +5400,80 @@ void LinkagesWidget::unsetLink()
           {
             valid = true;
           }
-          if (!valid && _caseIncidents.contains(i))
+          if (!valid)
           {
-            tailIndex = i;
-            query->prepare("UPDATE coders_to_linkage_types "
-                           "SET tail = :tail "
-                           "WHERE coder = :coder AND type = :type AND casename = :casename");
-            query->bindValue(":tail", tailIndex);
-            query->bindValue(":coder", _selectedCoder);
-            query->bindValue(":type", _selectedType);
-            query->bindValue(":casename", _selectedCase);
-            query->exec();
-            retrieveData();
-            QApplication::restoreOverrideCursor();
-            qApp->processEvents();
-            delete query;
-            return;
+            if (tailIndex != 1 && _caseIncidents.contains(i))
+            {
+              tailIndex = i;
+              query->prepare("UPDATE coders_to_linkage_types "
+                             "SET tail = :tail "
+                             "WHERE coder = :coder AND type = :type AND casename = :casename");
+              query->bindValue(":tail", tailIndex);
+              query->bindValue(":coder", _selectedCoder);
+              query->bindValue(":type", _selectedType);
+              query->bindValue(":casename", _selectedCase);
+              query->exec();
+              retrieveData();
+              QApplication::restoreOverrideCursor();
+              qApp->processEvents();
+              delete query;
+              return;
+            }
+            else
+            {
+              if (headIndex != incidentsModel->rowCount())
+              {
+                bool headValid = false;
+                bool tailValid = false;
+                while (!headValid && headIndex != incidentsModel->rowCount())
+                {
+                  headIndex++;
+                  if (_caseIncidents.contains(headIndex))
+                  {
+                    headValid = true;
+                  }
+                }
+                tailIndex = headIndex - 1;
+                if (_caseIncidents.contains(tailIndex))
+                {
+                  tailValid = true;
+                }
+                while (!tailValid && tailIndex != 1)
+                {
+                  tailIndex--;
+                  if (_caseIncidents.contains(tailIndex))
+                  {
+                    tailValid = true;
+                  }
+                }
+                if (headValid && tailValid)
+                {
+                  query->prepare("UPDATE coders_to_linkage_types "
+                                 "SET tail = :tail, head = :head "
+                                 "WHERE coder = :coder AND "
+                                 "type = :type "
+                                 "AND casename = :casename");
+                  query->bindValue(":tail", tailIndex);
+                  query->bindValue(":head", headIndex);
+                  query->bindValue(":coder", _selectedCoder);
+                  query->bindValue(":type", _selectedType);
+                  query->bindValue(":casename", _selectedCase);
+                  query->exec();
+                  retrieveData();
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+                else
+                {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
+                  return;
+                }
+              }
+            }
           }
           else
           {
@@ -5343,6 +5525,9 @@ void LinkagesWidget::unsetLink()
                 }
                 else
                 {
+                  QApplication::restoreOverrideCursor();
+                  qApp->processEvents();
+                  delete query;
                   return;
                 }
               }
@@ -5352,51 +5537,57 @@ void LinkagesWidget::unsetLink()
       }
       else
       {
-        bool headValid = false;
-        bool tailValid = false;
-        while (!headValid && headIndex != incidentsModel->rowCount())
+        if (headIndex != incidentsModel->rowCount())
         {
-          headIndex++;
-          if (_caseIncidents.contains(headIndex))
+          bool headValid = false;
+          bool tailValid = false;
+          while (!headValid && headIndex != incidentsModel->rowCount())
           {
-            headValid = true;
+            headIndex++;
+            if (_caseIncidents.contains(headIndex))
+            {
+              headValid = true;
+            }
           }
-        }
-        tailIndex = headIndex - 1;
-        if (_caseIncidents.contains(tailIndex))
-        {
-          tailValid = false;
-        }
-        while (!tailValid && tailIndex != 1)
-        {
-          tailIndex--;
+          tailIndex = headIndex - 1;
           if (_caseIncidents.contains(tailIndex))
           {
-            tailValid = true;
+            tailValid = false;
           }
-        }
-        if (headValid && tailValid)
-        {
-          headIndex++;
-          tailIndex = headIndex - 1;
-          query->prepare("UPDATE coders_to_linkage_types "
-                         "SET tail = :tail, head = :head "
-                         "WHERE coder = :coder AND type = :type AND casename = :casename");
-          query->bindValue(":tail", tailIndex);
-          query->bindValue(":head", headIndex);
-          query->bindValue(":coder", _selectedCoder);
-          query->bindValue(":type", _selectedType);
-          query->bindValue(":casename", _selectedCase);
-          query->exec();
-          retrieveData();
-          QApplication::restoreOverrideCursor();
-          qApp->processEvents();
-          delete query;
-          return;
-        }
-        else
-        {
-          return;
+          while (!tailValid && tailIndex != 1)
+          {
+            tailIndex--;
+            if (_caseIncidents.contains(tailIndex))
+            {
+              tailValid = true;
+            }
+          }
+          if (headValid && tailValid)
+          {
+            headIndex++;
+            tailIndex = headIndex - 1;
+            query->prepare("UPDATE coders_to_linkage_types "
+                           "SET tail = :tail, head = :head "
+                           "WHERE coder = :coder AND type = :type AND casename = :casename");
+            query->bindValue(":tail", tailIndex);
+            query->bindValue(":head", headIndex);
+            query->bindValue(":coder", _selectedCoder);
+            query->bindValue(":type", _selectedType);
+            query->bindValue(":casename", _selectedCase);
+            query->exec();
+            retrieveData();
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
+          else
+          {
+            QApplication::restoreOverrideCursor();
+            qApp->processEvents();
+            delete query;
+            return;
+          }
         }
       }
     }
@@ -5770,7 +5961,40 @@ void LinkagesWidget::setButtons(bool status)
   caseFilterButton->setEnabled(status);
 }
 
-bool LinkagesWidget::eventFilter(QObject *object, QEvent *event) 
+void LinkagesWidget::setOpenGL(bool state)
+{
+  if (state == true)
+  {
+    QPointer<QOpenGLWidget> openGL = new QOpenGLWidget(this);
+    QSurfaceFormat format;
+    format.setSamples(4);
+    format.setDepthBufferSize(24);
+    format.setStencilBufferSize(8);
+    openGL->setFormat(format);
+    view->setViewport(openGL);
+    view->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
+    view->viewport()->installEventFilter(this);
+    view->setScene(scene);
+  }
+  else
+  {
+    view->setViewport(new QWidget());
+    view->viewport()->installEventFilter(this);
+    view->setViewportUpdateMode(QGraphicsView::BoundingRectViewportUpdate);
+  }
+}
+
+void LinkagesWidget::setAntialiasing(bool state)
+{
+  QVectorIterator<Linkage*> it(_linkagesVector);
+  while (it.hasNext())
+  {
+    Linkage *current = it.next();
+    current->setAntialiasing(state);
+  }
+}
+
+bool LinkagesWidget::eventFilter(QObject *object, QEvent *event)
 {
   if (event->type() == QEvent::Wheel) 
   {

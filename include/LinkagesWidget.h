@@ -66,6 +66,8 @@ class LinkagesWidget : public QWidget
 
         // Setters
         void setCurrentCoder(QString coder);
+        void setOpenGL(bool state);
+        void setAntialiasing(bool state);
 
         // Functions that need to be exposed
         void retrieveCases();

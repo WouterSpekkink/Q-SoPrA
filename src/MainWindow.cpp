@@ -168,6 +168,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   createActions();
   createMenus();
 
+  // Initialize openGL
+  setOpenGL();
+
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Q-SoPrA");
 
@@ -383,6 +386,7 @@ void MainWindow::createActions()
   setOpenGLAct->setChecked(false);
 #ifndef QT_NO_OPENGL
   setOpenGLAct->setEnabled(true);
+  setOpenGLAct->setChecked(true);
   connect(setOpenGLAct, SIGNAL(triggered()), this, SLOT(setOpenGL()));
 #endif
   setAntialiasingAct = new QAction(tr("&Activate edge antialiasing"), this);
@@ -2164,10 +2168,12 @@ void MainWindow::setOpenGL()
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   egw->setOpenGL(openGL);
   ngw->setOpenGL(openGL);
   ogw->setOpenGL(openGL);
-  hgw->setOpenGL(openGL);
+  hgw->setOpenGL(openGL);                       \
+  lw->setOpenGL(openGL);
 }
 
 void MainWindow::setAntialiasing()
@@ -2181,10 +2187,12 @@ void MainWindow::setAntialiasing()
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   egw->setAntialiasing(antialiasing);
   ngw->setAntialiasing(antialiasing);
   ogw->setAntialiasing(antialiasing);
   hgw->setAntialiasing(antialiasing);
+  lw->setAntialiasing(antialiasing);
 }
 
 void MainWindow::createCoder()
