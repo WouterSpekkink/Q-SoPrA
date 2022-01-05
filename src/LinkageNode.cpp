@@ -26,10 +26,11 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "../include/LinkageNodeLabel.h"
 
 LinkageNode::LinkageNode(QPointF originalPosition,
-			 QString toolTip,
-			 int id,
-			 int order,
-			 QGraphicsItem *parent)
+                         QString toolTip,
+                         int id,
+                         int order,
+                         int filteredOrder,
+                         QGraphicsItem *parent)
   : QGraphicsItem(parent) 
 {
   _color = QColor(255, 255, 255);
@@ -37,6 +38,7 @@ LinkageNode::LinkageNode(QPointF originalPosition,
   _originalPos = originalPosition;
   _id = id;
   _order = order;
+  _filteredOrder = filteredOrder;
   _labelPtr = NULL;
   _first = false;
   _last = false;
@@ -50,13 +52,13 @@ LinkageNode::LinkageNode(QPointF originalPosition,
 QRectF LinkageNode::boundingRect() const 
 {
   if (_tail || _head)
-    {
-      return QRectF(-26, -56, _width + 12, 102);
-    }
+  {
+    return QRectF(-26, -56, _width + 12, 102);
+  }
   else
-    {
-      return QRectF(-26, -26, _width + 12, 52);
-    }
+  {
+    return QRectF(-26, -26, _width + 12, 52);
+  }
 }
 
 QPainterPath LinkageNode::shape() const 
@@ -72,37 +74,44 @@ void LinkageNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
   Q_UNUSED(widget);
   painter->setPen(Qt::NoPen);
   painter->setPen(QPen(Qt::black, 1));
-  _color = QColor(255, 255, 255);
+  if (_valid)
+  {
+    _color = QColor(255, 255, 255);
+  }
+  else
+  {
+    _color = QColor(128, 128, 128);
+  }
   if (_tail) 
-    {
-      _color = QColor(151, 74, 189, 255);
-    }
+  {
+    _color = QColor(151, 74, 189, 255);
+  }
   else if (_head)
-    {
-      _color = QColor(74, 189, 81, 255);
-    }
+  {
+    _color = QColor(74, 189, 81, 255);
+  }
   painter->setBrush(QBrush(_color));  
   painter->drawEllipse(-20, -20, _width, 40);
   if (_tail)
-    {
-      QFont font = painter->font();
-      font.setPointSize(14);
-      painter->setFont(font);
-      QRectF textRect = QRectF(-20, -50, 100, 100);
-      QRectF boundingRect;
-      QString text = "Tail";
-      painter->drawText(textRect, 0, text, &boundingRect);
-    }
+  {
+    QFont font = painter->font();
+    font.setPointSize(14);
+    painter->setFont(font);
+    QRectF textRect = QRectF(-20, -50, 100, 100);
+    QRectF boundingRect;
+    QString text = "Tail";
+    painter->drawText(textRect, 0, text, &boundingRect);
+  }
   else if (_head)
-    {
-      QFont font = painter->font();
-      font.setPointSize(14);
-      painter->setFont(font);
-      QRectF textRect = QRectF(-20, -50, 100, 100);
-      QString text = "Head";
-      QRectF boundingRect;
-      painter->drawText(textRect, 0, text, &boundingRect);
-    }
+  {
+    QFont font = painter->font();
+    font.setPointSize(14);
+    painter->setFont(font);
+    QRectF textRect = QRectF(-20, -50, 100, 100);
+    QString text = "Head";
+    QRectF boundingRect;
+    painter->drawText(textRect, 0, text, &boundingRect);
+  }
   update();
 }
 
@@ -110,36 +119,36 @@ void LinkageNode::paint(QPainter *painter, const QStyleOptionGraphicsItem *optio
 void LinkageNode::mousePressEvent(QGraphicsSceneMouseEvent *event) 
 {
   if (event->button() == Qt::LeftButton) 
-    {
-      setSelected(true);
-    }
+  {
+    setSelected(true);
+  }
 }
 
 void LinkageNode::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
 {
   if (event->modifiers() & Qt::ShiftModifier) 
+  {
+    setCursor(Qt::SizeAllCursor);
+    QPointF newPos = event->scenePos();
+    this->setPos(newPos);
+    if (_labelPtr != NULL)
     {
-      setCursor(Qt::SizeAllCursor);
-      QPointF newPos = event->scenePos();
-      this->setPos(newPos);
-      if (_labelPtr != NULL) 
-	{
-	  _labelPtr->setNewPos(this->scenePos());
-	}
+      _labelPtr->setNewPos(this->scenePos());
     }
+  }
   else 
+  {
+    setCursor(Qt::SizeVerCursor);
+    QPointF currentPos = this->scenePos();
+    qreal currentX = currentPos.x();
+    QPointF newPos = event->scenePos();
+    newPos.setX(currentX);
+    this->setPos(newPos);
+    if (_labelPtr != NULL)
     {
-      setCursor(Qt::SizeVerCursor);
-      QPointF currentPos = this->scenePos();
-      qreal currentX = currentPos.x();
-      QPointF newPos = event->scenePos();
-      newPos.setX(currentX);
-      this->setPos(newPos);
-      if (_labelPtr != NULL) 
-	{
-	  _labelPtr->setNewPos(this->scenePos());
-	}
+      _labelPtr->setNewPos(this->scenePos());
     }
+  }
 }
 
 QPointF LinkageNode::getOriginalPos() const 
@@ -155,6 +164,16 @@ int LinkageNode::getId() const
 int LinkageNode::getOrder() const 
 {
   return _order;
+}
+
+int LinkageNode::getFilteredOrder() const
+{
+  return _filteredOrder;
+}
+
+void LinkageNode::setFilteredOrder(int filteredOrder)
+{
+  _filteredOrder = filteredOrder;
 }
 
 void LinkageNode::setOriginalPos(QPointF originalPos) 
@@ -225,6 +244,16 @@ void LinkageNode::setHead()
 {
   _tail = false;
   _head = true;
+}
+
+void LinkageNode::setValid(bool valid)
+{
+  _valid = valid;
+}
+
+bool LinkageNode::isValid() const
+{
+  return _valid;
 }
 
 void LinkageNode::setUnselected()

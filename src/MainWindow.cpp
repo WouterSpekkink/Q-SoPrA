@@ -56,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   // Some of these widgets need some pointers to each other to communicate properly.
   //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
   AttributesWidget *aw = qobject_cast<AttributesWidget*>(attributesWidget);
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(linkagesWidget);
   EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(eventGraphWidget);
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(networkGraphWidget);
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
@@ -84,7 +85,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   cw->setEventGraphWidget(egw);
   cw->setNetworkGraphWidget(ngw);
   cw->setOccurrenceGraphWidget(ogw);
-
+  cw->setLinkagesWidget(lw);
   QString sliderSheet = QString("QSlider::groove:horizontal { "
                                 "border: 1px solid #999999; "
                                 "height: 6px; "
@@ -171,6 +172,9 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   // Functions to create the menu bar.
   createActions();
   createMenus();
+
+  // Initialize openGL
+  setOpenGL();
 
   // Final stuff before showing the default widget (dataWidget).
   setWindowTitle("Q-SoPrA");
@@ -387,6 +391,7 @@ void MainWindow::createActions()
   setOpenGLAct->setChecked(false);
 #ifndef QT_NO_OPENGL
   setOpenGLAct->setEnabled(true);
+  setOpenGLAct->setChecked(true);
   connect(setOpenGLAct, SIGNAL(triggered()), this, SLOT(setOpenGL()));
 #endif
   setAntialiasingAct = new QAction(tr("&Activate edge antialiasing"), this);
@@ -1000,7 +1005,6 @@ void MainWindow::switchToLinkageView()
     stacked->setCurrentWidget(linkagesWidget);
   }
 }
-
 
 void MainWindow::switchToJournalView() 
 {
@@ -2179,10 +2183,12 @@ void MainWindow::setOpenGL()
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   egw->setOpenGL(openGL);
   ngw->setOpenGL(openGL);
   ogw->setOpenGL(openGL);
-  hgw->setOpenGL(openGL);
+  hgw->setOpenGL(openGL);                       \
+  lw->setOpenGL(openGL);
 }
 
 void MainWindow::setAntialiasing()
@@ -2196,10 +2202,12 @@ void MainWindow::setAntialiasing()
   NetworkGraphWidget *ngw = qobject_cast<NetworkGraphWidget*>(stacked->widget(6));
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(stacked->widget(7));
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(stacked->widget(8));
+  LinkagesWidget *lw = qobject_cast<LinkagesWidget*>(stacked->widget(3));
   egw->setAntialiasing(antialiasing);
   ngw->setAntialiasing(antialiasing);
   ogw->setAntialiasing(antialiasing);
   hgw->setAntialiasing(antialiasing);
+  lw->setAntialiasing(antialiasing);
 }
 
 void MainWindow::createCoder()
