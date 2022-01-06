@@ -33,6 +33,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   _rawFilter = "";
   _commentFilter = "";
   _commentBool = false;
+  _selectedCase = "All cases";
   
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
@@ -75,6 +76,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
   attributeFilterLabel = new QLabel("<b>Filter attributes:</b>", this);
   valueLabel = new QLabel("<b>Value:</b>", this);
+  caseLabel = new QLabel("<b>Case filter:</b>", this);
   
   timeStampField = new QLineEdit(this);
   timeStampField->setReadOnly(true);
@@ -127,6 +129,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   resetTextsButton = new QPushButton("Reset texts", this);
   resetTextsButton->setEnabled(false);
 
+  caseComboBox = new QComboBox(this);
+
   attributesTreeView->installEventFilter(this);
   timeStampField->installEventFilter(this);
   sourceField->installEventFilter(this);
@@ -138,7 +142,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
     which I do somewhere in the below.
   */
   attributesTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
- 
+
+  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCase()));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -201,6 +206,8 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   topFieldsLayout->addSpacerItem(new QSpacerItem(20, 0));
   topFieldsLayout->addWidget(sourceLabel);
   topFieldsLayout->addWidget(sourceField);
+  topFieldsLayout->addWidget(caseLabel);
+  topFieldsLayout->addWidget(caseComboBox);
   leftLayout->addLayout(topFieldsLayout);
   QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> descriptionLayoutLeft = new QHBoxLayout;
@@ -311,6 +318,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
     commentFilterField->setMaximumWidth(200);
   }
   setLayout(mainLayout);
+  retrieveCases();
 }
 
 void AttributesWidget::setCommentBool() 
@@ -338,6 +346,63 @@ void AttributesWidget::setComment()
   }
 }
 
+void AttributesWidget::retrieveCases()
+{
+  caseComboBox->clear();
+  caseComboBox->addItem("All cases");
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM cases ORDER BY name ASC");
+  while (query->next())
+  {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    caseComboBox->addItem(name);
+    int index = caseComboBox->count() - 1;
+    caseComboBox->setItemData(index, description, Qt::ToolTipRole);
+  }
+  delete query;
+}
+
+void AttributesWidget::setCase()
+{
+  _selectedCase = caseComboBox->currentText();
+  collectCase();
+}
+
+void AttributesWidget::collectCase()
+{
+  QSet<int> incidents;
+  _caseIncidents.clear();
+  QSqlQuery *query = new QSqlQuery;
+  if (_selectedCase == "All cases")
+  {
+    query->exec("SELECT id FROM incidents");
+  }
+  else
+  {
+    query->prepare("SELECT incident FROM incidents_to_cases "
+                   "WHERE casename = :casename");
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+  }
+  while (query->next())
+  {
+    incidents.insert(query->value(0).toInt());
+    query->value(0).toInt();
+  }
+  query->prepare("SELECT ch_order FROM incidents "
+                 "WHERE id = :id");
+  QSetIterator<int> it(incidents);
+  while (it.hasNext())
+  {
+    int incident = it.next();
+    query->bindValue(":id", incident);
+    query->exec();
+    query->first();
+    _caseIncidents.insert(query->value(0).toInt());
+  }
+}
+
 void AttributesWidget::previousIncident() 
 {
   setComment();
@@ -346,15 +411,28 @@ void AttributesWidget::previousIncident()
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  if (order > 1) 
+  bool valid = false;
+  while (!valid)
   {
-    order--;
-    query->prepare("UPDATE save_data "
-                   "SET attributes_record=:new");
-    query->bindValue(":new", order);
-    query->exec();
-    retrieveData();
+    if (order > 1)
+    {
+      order--;
+      if (_caseIncidents.contains(order))
+      {
+        valid = true;
+      }
+    }
+    else
+    {
+      delete query;
+      return;
+    }
   }
+  query->prepare("UPDATE save_data "
+                 "SET attributes_record=:new");
+  query->bindValue(":new", order);
+  query->exec();
+  retrieveData();
   delete query;
 }
 
@@ -371,13 +449,22 @@ void AttributesWidget::jumpIncident()
   {
     order = indexDialog->getIndex();
     QSqlQuery *query = new QSqlQuery;
-    if (order > 0)
+    if (order > 0 && _caseIncidents.contains(order))
     {
       query->prepare("UPDATE save_data "
                      "SET attributes_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
+    }
+    else if (!_caseIncidents.contains(order))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Invalid index");
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Invalid index</h2>");
+      warningBox->setInformativeText("You have selected an incident that is not "
+                                     "linked to the currently selected case.");
     }
     delete query;
   }
@@ -387,23 +474,36 @@ void AttributesWidget::jumpIncident()
 void AttributesWidget::nextIncident() 
 {
   setComment();
-  incidentsModel->select();
   QSqlQuery *query = new QSqlQuery;
   query->exec("SELECT attributes_record FROM save_data");
   int order = 0;
   query->first();
   order = query->value(0).toInt();
+  incidentsModel->select();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
-  if (order < incidentsModel->rowCount()) 
+  bool valid = false;
+  while (!valid)
   {
-    order++;
-    query->prepare("UPDATE save_data "
-                   "SET attributes_record=:new");
-    query->bindValue(":new", order);
-    query->exec();
-    retrieveData();
+    if (order < incidentsModel->rowCount())
+    {
+      order++;
+      if (_caseIncidents.contains(order))
+      {
+        valid = true;
+      }
+    }
+    else
+    {
+      delete query;
+      return;
+    }
   }
+  query->prepare("UPDATE save_data "
+                 "SET attributes_record=:new");
+  query->bindValue(":new", order);
+  query->exec();
+  retrieveData();
   delete query;
 }
 
@@ -449,22 +549,35 @@ void AttributesWidget::previousMarked()
   int order = 0;
   query->first();
   order = query->value(0).toInt();
-  if (order != 1) 
+  bool valid = false;
+  query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order "
+                 "AND mark = 1 ORDER BY ch_order DESC");
+  if (order != 1)
   {
-    query->prepare("SELECT ch_order FROM incidents WHERE ch_order < :order "
-                   "AND mark = 1 ORDER BY ch_order DESC");
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record = :new");
-      query->bindValue(":new", order);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+          {
+            valid = true;
+          }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record = :new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -480,22 +593,35 @@ void AttributesWidget::nextMarked()
   order = query->value(0).toInt();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
-  if (order != incidentsModel->rowCount()) 
+  bool valid = false;
+  query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order "
+                 "AND mark = 1 ORDER BY ch_order ASC");
+  if (order != incidentsModel->rowCount())
   {
-    query->prepare("SELECT ch_order FROM incidents WHERE ch_order > :order "
-                   "AND mark = 1 ORDER BY ch_order ASC");
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record = :new");
-      query->bindValue(":new", order);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record = :new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -543,20 +669,33 @@ void AttributesWidget::previousDescription()
                    "WHERE description LIKE :text "
                    "AND ch_order < :order "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(descriptionField, _descriptionFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(descriptionField, _descriptionFilter);
     delete query;
   }
 }
@@ -575,20 +714,33 @@ void AttributesWidget::nextDescription()
                    "WHERE description LIKE :text "
                    "AND ch_order > :order "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(descriptionField, _descriptionFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(descriptionField, _descriptionFilter);
     delete query;
   }
 }
@@ -656,20 +808,33 @@ void AttributesWidget::previousRaw()
                    "WHERE raw LIKE :text "
                    "AND ch_order < :order "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(rawField, _rawFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(rawField, _rawFilter);
     delete query;
   }
 }
@@ -689,20 +854,33 @@ void AttributesWidget::nextRaw()
                    "WHERE raw LIKE :text "
                    "AND ch_order > :order "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(rawField, _rawFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(rawField, _rawFilter);
     delete query;
   }
 }
@@ -728,20 +906,33 @@ void AttributesWidget::previousComment()
                    "WHERE comment LIKE :text "
                    "AND ch_order < :order "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(commentField, _commentFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(commentField, _commentFilter);
     delete query;
   }
 }
@@ -761,20 +952,33 @@ void AttributesWidget::nextComment()
                    "WHERE comment LIKE :text "
                    "AND ch_order > :order "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET attributes_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(commentField, _commentFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(commentField, _commentFilter);
     delete query;
   }
 }
@@ -806,36 +1010,36 @@ void AttributesWidget::newAttribute()
       entityDialog->setNew();
       entityDialog->exec();
       if (entityDialog->getExitStatus() == 0)
-	    {
-	      QString name = entityDialog->getName();
-	      QString description = entityDialog->getDescription();
-	      QStandardItem *attribute = new QStandardItem(name);    
-	      attribute->setToolTip(description);
-	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-	      QStandardItem *father = attributesTree->
+      {
+        QString name = entityDialog->getName();
+        QString description = entityDialog->getDescription();
+        QStandardItem *attribute = new QStandardItem(name);
+        attribute->setToolTip(description);
+        QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+        QStandardItem *father = attributesTree->
           itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-	      QFont fatherFont = father->font();
-	      int fontSize = fatherFont.pointSize();
-	      QFont attributeFont = attribute->font();
-	      attributeFont.setPointSize(fontSize);
-	      attribute->setFont(attributeFont);
-	      father->appendRow(attribute);
-	      attribute->setToolTip(hint);
-	      attribute->setEditable(false);
-	      QString fatherName = currentParent;
-	      if (fatherName == ENTITIES) 
+        QFont fatherFont = father->font();
+        int fontSize = fatherFont.pointSize();
+        QFont attributeFont = attribute->font();
+        attributeFont.setPointSize(fontSize);
+        attribute->setFont(attributeFont);
+        father->appendRow(attribute);
+        attribute->setToolTip(hint);
+        attribute->setEditable(false);
+        QString fatherName = currentParent;
+        if (fatherName == ENTITIES)
         {
           fatherName = "NONE";
         }
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("INSERT INTO entities (name, description, father) "
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("INSERT INTO entities (name, description, father) "
                        "VALUES (:name, :description, :father)");
-	      query->bindValue(":name", name);
-	      query->bindValue(":description", description);
-	      query->bindValue(":father", fatherName);
-	      query->exec();
-	      delete query;
-	    }
+        query->bindValue(":name", name);
+        query->bindValue(":description", description);
+        query->bindValue(":father", fatherName);
+        query->exec();
+        delete query;
+      }
       delete entityDialog;
       _eventGraphWidgetPtr->resetTree();
     }
@@ -844,31 +1048,31 @@ void AttributesWidget::newAttribute()
       QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
       attributeDialog->exec();
       if (attributeDialog->getExitStatus() == 0)
-	    {
-	      name = attributeDialog->getName();
-	      description = attributeDialog->getDescription();
-	      QStandardItem *attribute = new QStandardItem(name);    
-	      attribute->setToolTip(description);
-	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-	      QStandardItem *father = attributesTree->
+      {
+        name = attributeDialog->getName();
+        description = attributeDialog->getDescription();
+        QStandardItem *attribute = new QStandardItem(name);
+        attribute->setToolTip(description);
+        QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+        QStandardItem *father = attributesTree->
           itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-	      QFont fatherFont = father->font();
-	      int fontSize = fatherFont.pointSize();
-	      QFont attributeFont = attribute->font();
-	      attributeFont.setPointSize(fontSize);
-	      father->appendRow(attribute);
-	      attribute->setToolTip(hint);
-	      attribute->setEditable(false);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("INSERT INTO incident_attributes (name, description, father) "
+        QFont fatherFont = father->font();
+        int fontSize = fatherFont.pointSize();
+        QFont attributeFont = attribute->font();
+        attributeFont.setPointSize(fontSize);
+        father->appendRow(attribute);
+        attribute->setToolTip(hint);
+        attribute->setEditable(false);
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("INSERT INTO incident_attributes (name, description, father) "
                        "VALUES (:name, :description, :father)");
-	      query->bindValue(":name", name);
-	      query->bindValue(":description", description);
-	      query->bindValue(":father", currentParent);
-	      query->exec();
-	      delete query;
-	      _eventGraphWidgetPtr->resetTree();
-	    }
+        query->bindValue(":name", name);
+        query->bindValue(":description", description);
+        query->bindValue(":father", currentParent);
+        query->exec();
+        delete query;
+        _eventGraphWidgetPtr->resetTree();
+      }
       delete attributeDialog;
     }
   }
@@ -917,24 +1121,24 @@ void AttributesWidget::editAttribute()
     {
       QModelIndex tempIndex = attributesTreeView->currentIndex();
       while (tempIndex.parent().isValid())
-	    {
-	      tempIndex = tempIndex.parent();
-	    }
+      {
+        tempIndex = tempIndex.parent();
+      }
       QString top = tempIndex.data().toString();
       if (top == ENTITIES)
-	    {
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT description FROM entities WHERE name = :name");
-	      query->bindValue(":name", name);
-	      query->exec();
-	      query->first();
-	      QString description = query->value(0).toString();
-	      EntityDialog *entityDialog = new EntityDialog(this);
-	      entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
-	      entityDialog->submitName(name);
-	      entityDialog->submitDescription(description);
-	      entityDialog->exec();
-	      if (entityDialog->getExitStatus() == 0) 
+      {
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT description FROM entities WHERE name = :name");
+        query->bindValue(":name", name);
+        query->exec();
+        query->first();
+        QString description = query->value(0).toString();
+        EntityDialog *entityDialog = new EntityDialog(this);
+        entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
+        entityDialog->submitName(name);
+        entityDialog->submitDescription(description);
+        entityDialog->exec();
+        if (entityDialog->getExitStatus() == 0)
         {
           QString newName = entityDialog->getName();
           description = entityDialog->getDescription();
@@ -946,22 +1150,22 @@ void AttributesWidget::editAttribute()
           currentAttribute->setToolTip(hint);
           updateEntityAfterEdit(newName, description, name);
         }
-	      delete query;
-	      delete entityDialog;
-	    }
+        delete query;
+        delete entityDialog;
+      }
       else
-	    {
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
-	      query->bindValue(":name", name);
-	      query->exec();
-	      query->first();
-	      QString description = query->value(0).toString();
-	      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
-	      attributeDialog->submitName(name);
-	      attributeDialog->submitDescription(description);
-	      attributeDialog->exec();
-	      if (attributeDialog->getExitStatus() == 0) 
+      {
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+        query->bindValue(":name", name);
+        query->exec();
+        query->first();
+        QString description = query->value(0).toString();
+        QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+        attributeDialog->submitName(name);
+        attributeDialog->submitDescription(description);
+        attributeDialog->exec();
+        if (attributeDialog->getExitStatus() == 0)
         {
           QString newName = attributeDialog->getName();
           description = attributeDialog->getDescription();
@@ -1007,9 +1211,9 @@ void AttributesWidget::editAttribute()
           this->setCursor(Qt::ArrowCursor);
           _eventGraphWidgetPtr->resetTree();
         }
-	      delete query;
-	      delete attributeDialog;
-	    }
+        delete query;
+        delete attributeDialog;
+      }
     }
     attributesTree->sort(0, Qt::AscendingOrder);
     attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -1075,13 +1279,13 @@ void AttributesWidget::updateEntityAfterEdit(const QString name,
       QString directedness = query2->value(0).toString();
       QString arrow = "";
       if (directedness == UNDIRECTED)
-	    {
-	      arrow = "<-->";
-	    }
+      {
+        arrow = "<-->";
+      }
       else if (directedness == DIRECTED)
-	    {
-	      arrow = "--->";
-	    }
+      {
+        arrow = "--->";
+      }
       QString newRelationship = name + arrow + target;
       query2->prepare("UPDATE entity_relationships "
                       "SET source = :source, name = :name "
@@ -1123,13 +1327,13 @@ void AttributesWidget::updateEntityAfterEdit(const QString name,
       QString directedness = query2->value(0).toString();
       QString arrow = "";
       if (directedness == UNDIRECTED)
-	    {
-	      arrow = "<-->";
-	    }
+      {
+        arrow = "<-->";
+      }
       else if (directedness == DIRECTED)
-	    {
-	      arrow = "--->";
-	    }
+      {
+        arrow = "--->";
+      }
       QString newRelationship = source + arrow + name;
       query2->prepare("UPDATE entity_relationships "
                       "SET target = :target, name = :name "
@@ -1283,11 +1487,11 @@ void AttributesWidget::highlightText()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      QString currentText = query->value(0).toString();
-	      QVector<QString> blocks = splitLines(currentText);
-	      QVectorIterator<QString> it(blocks);
-	      while (it.hasNext()) 
+      {
+        QString currentText = query->value(0).toString();
+        QVector<QString> blocks = splitLines(currentText);
+        QVectorIterator<QString> it(blocks);
+        while (it.hasNext())
         {
           QString currentLine = it.next();
           while (rawField->find(currentLine, QTextDocument::FindWholeWords))
@@ -1298,10 +1502,10 @@ void AttributesWidget::highlightText()
             rawField->textCursor().mergeCharFormat(format);
           }
         }
-	      cursor = rawField->textCursor();
-	      cursor.movePosition(QTextCursor::Start);
-	      rawField->setTextCursor(cursor);
-	    }
+        cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+      }
       rawField->setTextCursor(currentPos);
     }
     else
@@ -1364,26 +1568,26 @@ void AttributesWidget::assignAttribute()
       query->first();
       QTextCursor cursPos = rawField->textCursor();
       if (query->isNull(0))
-	    {
-	      query->prepare("INSERT INTO attributes_to_incidents "
+      {
+        query->prepare("INSERT INTO attributes_to_incidents "
                        "(attribute, incident, coder) "
                        "VALUES (:attribute, :incident, :coder)");
-	      query->bindValue(":attribute", attribute);
-	      query->bindValue(":incident", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      sourceAttributeText(attribute, id);
-	      boldSelected(attributesTree, attribute);
-	      highlightText();
-	      rawField->setTextCursor(cursPos);
-	      valueField->setEnabled(true);
-	    }
+        query->bindValue(":attribute", attribute);
+        query->bindValue(":incident", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        sourceAttributeText(attribute, id);
+        boldSelected(attributesTree, attribute);
+        highlightText();
+        rawField->setTextCursor(cursPos);
+        valueField->setEnabled(true);
+      }
       else
-	    {
-	      sourceAttributeText(attribute, id);
-	      highlightText();
-	      rawField->setTextCursor(cursPos);
-	    }
+      {
+        sourceAttributeText(attribute, id);
+        highlightText();
+        rawField->setTextCursor(cursPos);
+      }
       setButtons();
     }
     delete query;
@@ -1423,23 +1627,23 @@ void AttributesWidget::unassignAttribute()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      query->prepare("DELETE FROM attributes_to_incidents "
+      {
+        query->prepare("DELETE FROM attributes_to_incidents "
                        "WHERE attribute = :att AND incident = :inc AND coder = :cod");
-	      query->bindValue(":att", attribute);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":cod", _selectedCoder);
-	      query->exec();
-	      query->prepare("DELETE FROM attributes_to_incidents_sources "
+        query->bindValue(":att", attribute);
+        query->bindValue(":inc", id);
+        query->bindValue(":cod", _selectedCoder);
+        query->exec();
+        query->prepare("DELETE FROM attributes_to_incidents_sources "
                        "WHERE attribute = :att AND incident = :inc AND coder = :cod");
-	      query->bindValue(":att", attribute);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":cod", _selectedCoder);
-	      query->exec();
-	      assignedModel->select();
-	      resetFont(attributesTree);
-	      query->exec("SELECT attribute, incident, coder FROM attributes_to_incidents");
-	      while (query->next()) 
+        query->bindValue(":att", attribute);
+        query->bindValue(":inc", id);
+        query->bindValue(":cod", _selectedCoder);
+        query->exec();
+        assignedModel->select();
+        resetFont(attributesTree);
+        query->exec("SELECT attribute, incident, coder FROM attributes_to_incidents");
+        while (query->next())
         {
           QString attribute = query->value(0).toString();
           int incident = query->value(1).toInt();
@@ -1449,19 +1653,19 @@ void AttributesWidget::unassignAttribute()
             boldSelected(attributesTree, attribute);
           }
         }
-	      valueField->setText("");
-	      valueField->setEnabled(false);
-	      valueButton->setEnabled(false);
-	      QTextCharFormat format;
-	      format.setFontWeight(QFont::Normal);
-	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	      rawField->selectAll();
-	      rawField->textCursor().mergeCharFormat(format);
-	      rawField->setFontWeight(QFont::Normal);
-	      QTextCursor cursor = rawField->textCursor();
-	      cursor.movePosition(QTextCursor::Start);
-	      rawField->setTextCursor(cursor);
-	    }
+        valueField->setText("");
+        valueField->setEnabled(false);
+        valueButton->setEnabled(false);
+        QTextCharFormat format;
+        format.setFontWeight(QFont::Normal);
+        format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+        rawField->selectAll();
+        rawField->textCursor().mergeCharFormat(format);
+        rawField->setFontWeight(QFont::Normal);
+        QTextCursor cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+      }
     }
     delete query;
     rawField->verticalScrollBar()->setValue(barPos);
@@ -1528,16 +1732,16 @@ void AttributesWidget::resetTexts()
       query->first();
       int id = 0;
       if (!(query->isNull(0)))
-	    {
-	      id = query->value(0).toInt();
-	      QString attribute = attributesTreeView->currentIndex().data().toString();
-	      query->prepare("DELETE FROM attributes_to_incidents_sources "
+      {
+        id = query->value(0).toInt();
+        QString attribute = attributesTreeView->currentIndex().data().toString();
+        query->prepare("DELETE FROM attributes_to_incidents_sources "
                        "WHERE attribute = :att AND incident = :inc AND coder = :cod");
-	      query->bindValue(":att", attribute);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":cod", _selectedCoder);
-	      query->exec();
-	    }
+        query->bindValue(":att", attribute);
+        query->bindValue(":inc", id);
+        query->bindValue(":cod", _selectedCoder);
+        query->exec();
+      }
       highlightText();
       delete query;
     }
@@ -1581,12 +1785,12 @@ void AttributesWidget::removeUnusedAttributes()
     for (it3 = temp.begin(); it3 != temp.end(); it3++)
     {
       if (!takenAttributes.contains(*it3))
-	    {
-	      found = true;
-	      query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	    }
+      {
+        found = true;
+        query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
+        query2->bindValue(":current", *it3);
+        query2->exec();
+      }
     }
     if (!found)
     {
@@ -1614,21 +1818,21 @@ void AttributesWidget::removeUnusedAttributes()
     for (it3 = temp.begin(); it3 != temp.end(); it3++)
     {
       if (!takenAttributes.contains(*it3))
-	    {
-	      found = true;
-	      query2->prepare("DELETE FROM entities WHERE name = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	      query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	      query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	      query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	    }
+      {
+        found = true;
+        query2->prepare("DELETE FROM entities WHERE name = :current");
+        query2->bindValue(":current", *it3);
+        query2->exec();
+        query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
+        query2->bindValue(":current", *it3);
+        query2->exec();
+        query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
+        query2->bindValue(":current", *it3);
+        query2->exec();
+        query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
+        query2->bindValue(":current", *it3);
+        query2->exec();
+      }
     }
     if (!found)
     {
@@ -1808,9 +2012,9 @@ void AttributesWidget::retrieveData()
       int incident = query->value(1).toInt();
       QString coder = query->value(2).toString();
       if (incident == id && coder == _selectedCoder)
-	    {
-	      boldSelected(attributesTree, attribute);
-	    }
+      {
+        boldSelected(attributesTree, attribute);
+      }
     }
     attributesTreeView->setModel(treeFilter);
     attributesTreeView->resetSelection();
@@ -1894,14 +2098,17 @@ void AttributesWidget::previousCoded()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
-      if (order == -1 && !(query->isNull(0)))
-	    {
-	      order = query->value(0).toInt();
-	    }
-      else if (!(query->isNull(0)) && query->value(0).toInt() > order)
-	    {
-	      order = query->value(0).toInt();
-	    }
+      if (order == -1 && !query->isNull(0)
+          && _caseIncidents.contains(query->value(0).toInt()))
+      {
+        order = query->value(0).toInt();
+      }
+      else if (!(query->isNull(0))
+               && query->value(0).toInt() > order
+               && _caseIncidents.contains(query->value(0).toInt()))
+      {
+        order = query->value(0).toInt();
+      }
     }
     if (order != -1)
     {
@@ -1961,14 +2168,17 @@ void AttributesWidget::nextCoded()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       query->first();
-      if (order == -1 && !(query->isNull(0)))
-	    {
-	      order = query->value(0).toInt();
-	    }
-      else if (!(query->isNull(0)) && query->value(0).toInt() < order)
-	    {
-	      order = query->value(0).toInt();
-	    }
+      if (order == -1 && !query->isNull(0)
+          && _caseIncidents.contains(query->value(0).toInt()))
+      {
+        order = query->value(0).toInt();
+      }
+      else if (!(query->isNull(0)) &&
+               query->value(0).toInt() < order
+               && _caseIncidents.contains(query->value(0).toInt()))
+      {
+        order = query->value(0).toInt();
+      }
     }
     if (order != -1)
     {
@@ -2034,13 +2244,13 @@ void AttributesWidget::setButtons()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      unassignAttributeButton->setEnabled(true);
-	    }
+      {
+        unassignAttributeButton->setEnabled(true);
+      }
       else
-	    {
-	      unassignAttributeButton->setEnabled(false);
-	    }
+      {
+        unassignAttributeButton->setEnabled(false);
+      }
       query->prepare("SELECT attribute, incident FROM "
                      "attributes_to_incidents_sources "
                      "WHERE attribute = :att AND incident = :inc AND coder = :cod");
@@ -2050,23 +2260,23 @@ void AttributesWidget::setButtons()
       query->exec();
       query->first();
       if (!query->isNull(0))
-	    {
-	      removeTextButton->setEnabled(true);
-	      resetTextsButton->setEnabled(true);
-	    }
+      {
+        removeTextButton->setEnabled(true);
+        resetTextsButton->setEnabled(true);
+      }
       else
-	    {
-	      removeTextButton->setEnabled(false);
-	      resetTextsButton->setEnabled(false);
-	    }
+      {
+        removeTextButton->setEnabled(false);
+        resetTextsButton->setEnabled(false);
+      }
       if (currentAttribute != ENTITIES)
-	    {
-	      assignAttributeButton->setEnabled(true);
-	    }
+      {
+        assignAttributeButton->setEnabled(true);
+      }
       else
-	    {
-	      assignAttributeButton->setEnabled(false);
-	    }
+      {
+        assignAttributeButton->setEnabled(false);
+      }
       previousCodedButton->setEnabled(true);
       nextCodedButton->setEnabled(true);
     }
@@ -2187,13 +2397,13 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
     if (QAction *action = menu.exec(globalPos))
     {
       if (action->text() == ADDATTRIBUTEACTION)
-	    {
-	      attributesTreeView->clearSelection();
-	      const QModelIndex index;
-	      attributesTreeView->selectionModel()->
+      {
+        attributesTreeView->clearSelection();
+        const QModelIndex index;
+        attributesTreeView->selectionModel()->
           setCurrentIndex(index, QItemSelectionModel::Select);
-	      newAttribute();
-	    }
+        newAttribute();
+      }
     }
     return;
   }
@@ -2222,9 +2432,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query2->exec();
       query2->first();
       if (!query2->isNull(0))
-	    {
-	      found = true;
-	    }
+      {
+        found = true;
+      }
     }
     if (!found)
     {
@@ -2235,21 +2445,21 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
     if (QAction *action = menu.exec(globalPos))
     {
       if (action->text() == ADDATTRIBUTEACTION)
-	    {
-	      newAttribute();
-	    }
+      {
+        newAttribute();
+      }
       else if (action->text() == EDITATTRIBUTEACTION)
-	    {
-	      editAttribute();
-	    }
+      {
+        editAttribute();
+      }
       else if (action->text() == AUTOASSIGNALLACTION)
-	    {
-	      autoAssignAll();
-	    }
+      {
+        autoAssignAll();
+      }
       else if (action->text() == UNASSIGNALLACTION)
-	    {
-	      unassignAllEntities();
-	    }
+      {
+        unassignAllEntities();
+      }
     }
   }
   else 
@@ -2283,9 +2493,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query->exec();
       query->first();
       if (query->isNull(0))
-	    {
-	      action6->setEnabled(false);
-	    }
+      {
+        action6->setEnabled(false);
+      }
       QSqlQuery *query2 = new QSqlQuery;
       query2->exec("SELECT attributes_record FROM save_data");
       query2->first();
@@ -2296,9 +2506,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query2->first();
       int id = 0;
       if (!query2->isNull(0))
-	    {
-	      id = query2->value(0).toInt();
-	    }
+      {
+        id = query2->value(0).toInt();
+      }
       query2->prepare("SELECT attribute FROM attributes_to_incidents "
                       "WHERE attribute = :entity AND incident = :id AND coder = :coder");
       query2->bindValue(":entity", selected);
@@ -2307,38 +2517,38 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query2->exec();
       query2->first();
       if (query2->isNull(0))
-	    {
-	      action4->setEnabled(false);
-	    }
+      {
+        action4->setEnabled(false);
+      }
       delete query;
       delete query2;
       if (QAction *action = menu.exec(globalPos))
-	    {
-	      if (action->text() == ADDATTRIBUTEACTION) 
+      {
+        if (action->text() == ADDATTRIBUTEACTION)
         {
           newAttribute();
         }
-	      else if (action->text() == EDITATTRIBUTEACTION)
+        else if (action->text() == EDITATTRIBUTEACTION)
         {
           editAttribute();
         }
-	      else if (action->text() == ASSIGNATTRIBUTEACTION) 
+        else if (action->text() == ASSIGNATTRIBUTEACTION)
         {
           assignAttribute();
         }
-	      else if (action->text() == UNASSIGNATTRIBUTEACTION) 
+        else if (action->text() == UNASSIGNATTRIBUTEACTION)
         {
           unassignAttribute();
         }
-	      else if (action->text() == AUTOASSIGNSPECIFICACTION) 
+        else if (action->text() == AUTOASSIGNSPECIFICACTION)
         {
           autoAssignEntityAt(targetIndex);
         }
-	      else if (action->text() == UNASSIGNALLACTION) 
+        else if (action->text() == UNASSIGNALLACTION)
         {
           unassignAllAttribute(targetIndex);
         }
-	    }
+      }
     }
     else
     {
@@ -2363,9 +2573,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query->exec();
       query->first();
       if (query->isNull(0))
-	    {
-	      action5->setEnabled(false);
-	    }
+      {
+        action5->setEnabled(false);
+      }
       QSqlQuery *query2 = new QSqlQuery;
       query2->exec("SELECT attributes_record FROM save_data");
       query2->first();
@@ -2376,9 +2586,9 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query2->first();
       int id = 0;
       if (!query2->isNull(0))
-	    {
-	      id = query2->value(0).toInt();
-	    }
+      {
+        id = query2->value(0).toInt();
+      }
       query2->prepare("SELECT attribute FROM attributes_to_incidents "
                       "WHERE attribute = :attribute AND incident = :id AND coder = :coder");
       query2->bindValue(":attribute", selected);
@@ -2387,38 +2597,38 @@ void AttributesWidget::treeContextMenu(const QPoint &pos)
       query2->exec();
       query2->first();
       if (query2->isNull(0))
-	    {
-	      action4->setEnabled(false);
-	    }
+      {
+        action4->setEnabled(false);
+      }
       delete query;
       delete query2;
       if (QAction *action = menu.exec(globalPos))
-	    {
-	      if (action->text() == ADDATTRIBUTEACTION) 
+      {
+        if (action->text() == ADDATTRIBUTEACTION)
         {
           newAttribute();
         }
-	      else if (action->text() == EDITATTRIBUTEACTION)
+        else if (action->text() == EDITATTRIBUTEACTION)
         {
           editAttribute();
         }
-	      else if (action->text() == ASSIGNATTRIBUTEACTION) 
+        else if (action->text() == ASSIGNATTRIBUTEACTION)
         {
           assignAttribute();
         }
-	      else if (action->text() == UNASSIGNATTRIBUTEACTION) 
+        else if (action->text() == UNASSIGNATTRIBUTEACTION)
         {
           unassignAttribute();
         }
-	      else if (action->text() == UNASSIGNALLACTION) 
+        else if (action->text() == UNASSIGNALLACTION)
         {
           unassignAllAttribute(targetIndex);
         }
-	      else if (action->text() == MERGEATTRIBUTESACTION) 
+        else if (action->text() == MERGEATTRIBUTESACTION)
         {
           mergeAttributes(targetIndex);
         }
-	    }
+      }
     }
   }
 }
@@ -2447,42 +2657,42 @@ void AttributesWidget::autoAssignAll()
       QString selected = it.next();
       QVector<QString> valid;
       if (tail)
-	    {
-	      query->prepare("SELECT name FROM entity_relationships "
+      {
+        query->prepare("SELECT name FROM entity_relationships "
                        "WHERE type = :type AND source = :entity");
-	      query->bindValue(":type", selectedRelationship);
-	      query->bindValue(":entity", selected);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":type", selectedRelationship);
+        query->bindValue(":entity", selected);
+        query->exec();
+        while (query->next())
         {
           QString current = query->value(0).toString();
           valid.push_back(current);
         }
-	    }
+      }
       if (head)
-	    {
-	      query->prepare("SELECT name FROM entity_relationships "
+      {
+        query->prepare("SELECT name FROM entity_relationships "
                        "WHERE type = :type AND target = :entity");
-	      query->bindValue(":type", selectedRelationship);
-	      query->bindValue(":entity", selected);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":type", selectedRelationship);
+        query->bindValue(":entity", selected);
+        query->exec();
+        while (query->next())
         {
           QString current = query->value(0).toString();
           valid.push_back(current);
         }
-	    }
+      }
       QVectorIterator<QString> it2(valid);
       while (it2.hasNext())
-	    {
-	      QString current = it2.next();
-	      query->prepare("SELECT incident FROM relationships_to_incidents "
+      {
+        QString current = it2.next();
+        query->prepare("SELECT incident FROM relationships_to_incidents "
                        "WHERE type = :type AND relationship = :name AND coder = :coder");
-	      query->bindValue(":type", selectedRelationship);
-	      query->bindValue(":name", current);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":type", selectedRelationship);
+        query->bindValue(":name", current);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        while (query->next())
         {
           int incident = query->value(0).toInt();
           QSqlQuery *query2 = new QSqlQuery;
@@ -2511,13 +2721,13 @@ void AttributesWidget::autoAssignAll()
           }
           delete query2;
         }
-	      query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
+        query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
                        "WHERE type = :type AND relationship = :name AND coder = :coder");
-	      query->bindValue(":type", selectedRelationship);
-	      query->bindValue(":name", current);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":type", selectedRelationship);
+        query->bindValue(":name", current);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        while (query->next())
         {
           int incident = query->value(0).toInt();
           QString sourceText = query->value(1).toString();
@@ -2550,7 +2760,7 @@ void AttributesWidget::autoAssignAll()
           }
           delete query2;
         }
-	    }
+      }
     }
   }
   resetFont(attributesTree);
@@ -2601,10 +2811,10 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
       query->bindValue(":entity", selected);
       query->exec();
       while (query->next())
-	    {
-	      QString current = query->value(0).toString();
-	      valid.push_back(current);
-	    }
+      {
+        QString current = query->value(0).toString();
+        valid.push_back(current);
+      }
     }
     if (head)
     {
@@ -2614,10 +2824,10 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
       query->bindValue(":entity", selected);
       query->exec();
       while (query->next())
-	    {
-	      QString current = query->value(0).toString();
-	      valid.push_back(current);
-	    }
+      {
+        QString current = query->value(0).toString();
+        valid.push_back(current);
+      }
     }
     QVectorIterator<QString> it(valid);
     while (it.hasNext())
@@ -2630,23 +2840,23 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int incident = query->value(0).toInt();
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+      {
+        int incident = query->value(0).toInt();
+        QSqlQuery *query2 = new QSqlQuery;
+        query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
                         "WHERE attribute = :attribute AND incident = :incident "
                         "AND coder = :coder");
-	      query2->bindValue(":attribute", selected);
-	      query2->bindValue(":incident", incident);
-	      query2->bindValue(":coder", _selectedCoder);
-	      query2->exec();
-	      query2->first();
-	      bool found = false;
-	      if (!query2->isNull(0)) 
+        query2->bindValue(":attribute", selected);
+        query2->bindValue(":incident", incident);
+        query2->bindValue(":coder", _selectedCoder);
+        query2->exec();
+        query2->first();
+        bool found = false;
+        if (!query2->isNull(0))
         {
           found = true;
         }
-	      if (!found) 
+        if (!found)
         {
           query2->prepare("INSERT INTO attributes_to_incidents (attribute, incident, coder)"
                           "VALUES (:attribute, :incident, :coder)");
@@ -2655,8 +2865,8 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
           query2->bindValue(":coder", _selectedCoder);
           query2->exec();
         }
-	      delete query2;
-	    }
+        delete query2;
+      }
       query->prepare("SELECT incident, source_text FROM relationships_to_incidents_sources "
                      "WHERE type = :type AND relationship = :name AND coder = :coder");
       query->bindValue(":type", selectedRelationship);
@@ -2664,25 +2874,25 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int incident = query->value(0).toInt();
-	      QString sourceText = query->value(1).toString();
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources"
+      {
+        int incident = query->value(0).toInt();
+        QString sourceText = query->value(1).toString();
+        QSqlQuery *query2 = new QSqlQuery;
+        query2->prepare("SELECT attribute, incident FROM attributes_to_incidents_sources"
                         "WHERE attribute = :attribute AND incident = :incident "
                         "AND coder = :coder AND source_text = :sourceText");
-	      query2->bindValue(":attribute", selected);
-	      query2->bindValue(":incident", incident);
-	      query2->bindValue(":coder", _selectedCoder);
-	      query2->bindValue(":sourceText", sourceText);
-	      query2->exec();
-	      query2->first();
-	      bool found = false;
-	      if (!query2->isNull(0)) 
+        query2->bindValue(":attribute", selected);
+        query2->bindValue(":incident", incident);
+        query2->bindValue(":coder", _selectedCoder);
+        query2->bindValue(":sourceText", sourceText);
+        query2->exec();
+        query2->first();
+        bool found = false;
+        if (!query2->isNull(0))
         {
           found = true;
         }
-	      if (!found) 
+        if (!found)
         {
           query2->prepare("INSERT INTO attributes_to_incidents_sources "
                           "(attribute, incident, coder, source_text) "
@@ -2693,8 +2903,8 @@ void AttributesWidget::autoAssignEntityAt(QModelIndex &index)
           query2->bindValue(":source_text", sourceText);
           query2->exec();
         }
-	      delete query2;
-	    }
+        delete query2;
+      }
     }
   }
   resetFont(attributesTree);
@@ -2845,16 +3055,16 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
       mergeDialog->setWindowTitle("Select attribute to merge with");
       mergeDialog->exec();
       if (mergeDialog->getExitStatus() == 0)
-	    {
-	      QPointer<QMessageBox> warningBox = new QMessageBox(this);
-	      warningBox->setWindowTitle("Merging attributes");
-	      warningBox->addButton(QMessageBox::Yes);
-	      warningBox->addButton(QMessageBox::No);
-	      warningBox->setIcon(QMessageBox::Warning);
-	      warningBox->setText("<h2>Are you sure?</h2>");
-	      warningBox->setInformativeText("Merging attributes cannot be undone. "
+      {
+        QPointer<QMessageBox> warningBox = new QMessageBox(this);
+        warningBox->setWindowTitle("Merging attributes");
+        warningBox->addButton(QMessageBox::Yes);
+        warningBox->addButton(QMessageBox::No);
+        warningBox->setIcon(QMessageBox::Warning);
+        warningBox->setText("<h2>Are you sure?</h2>");
+        warningBox->setInformativeText("Merging attributes cannot be undone. "
                                        "Are you sure you want to proceed?");
-	      if (warningBox->exec() == QMessageBox::Yes) 
+        if (warningBox->exec() == QMessageBox::Yes)
         {
           QString partner = mergeDialog->getAttribute();
           QSqlQuery *query = new QSqlQuery;
@@ -2945,7 +3155,7 @@ void AttributesWidget::mergeAttributes(QModelIndex &index)
           fixTree();
           _eventGraphWidgetPtr->resetTree();
         }
-	    }
+      }
     }
   }
 }
@@ -2978,16 +3188,16 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
     if (name != ENTITIES)
     {
       if (name == currentName)
-	    {
-	      if (currentAttribute->font().underline()) 
+      {
+        if (currentAttribute->font().underline())
         {
           currentAttribute->setFont(font3);
         }
-	      else 
+        else
         {
           currentAttribute->setFont(font);
         }
-	      if (currentAttribute->parent()) 
+        if (currentAttribute->parent())
         {
           while (currentAttribute->parent())
           {
@@ -3030,7 +3240,7 @@ void AttributesWidget::boldSelected(QAbstractItemModel *model, QString name, QMo
             }
           }
         }
-	    } 
+      }
     }
     else
     {
@@ -3089,9 +3299,9 @@ void AttributesWidget::changeTreeFontSize(QAbstractItemModel *model, QModelIndex
       font.setPointSize(fontSize + size);
       currentAttribute->setFont(font);
       if (model->hasChildren(index))
-	    {
-	      changeTreeFontSize(model, index, size);
-	    }
+      {
+        changeTreeFontSize(model, index, size);
+      }
     }
   }
 }
@@ -3170,16 +3380,16 @@ bool AttributesWidget::eventFilter(QObject *object, QEvent *event)
     {
       QWheelEvent *wheelEvent = (QWheelEvent*) event;
       if(wheelEvent->modifiers() & Qt::ControlModifier)
-	    {
-	      if (wheelEvent->angleDelta().y() > 0) 
+      {
+        if (wheelEvent->angleDelta().y() > 0)
         {
           changeTreeFontSize(attributesTree, QModelIndex(), 1);
         }
-	      else if (wheelEvent->angleDelta().y() < 0) 
+        else if (wheelEvent->angleDelta().y() < 0)
         {
           changeTreeFontSize(attributesTree, QModelIndex(), -1);
         }
-	    }
+      }
     }
   }
   else if (((object == descriptionField->viewport() && descriptionField->isEnabled()) ||
@@ -3209,16 +3419,16 @@ bool AttributesWidget::eventFilter(QObject *object, QEvent *event)
     if (textEdit)
     {
       if(wheelEvent->modifiers() & Qt::ControlModifier)
-	    {
-	      if (wheelEvent->angleDelta().y() > 0) 
+      {
+        if (wheelEvent->angleDelta().y() > 0)
         {
           textEdit->zoomIn(1);
         }
-	      else if (wheelEvent->angleDelta().y() < 0) 
+        else if (wheelEvent->angleDelta().y() < 0)
         {
           textEdit->zoomOut(1);
         }
-	    }
+      }
     }
   }
   return false;

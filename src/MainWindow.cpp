@@ -86,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   cw->setNetworkGraphWidget(ngw);
   cw->setOccurrenceGraphWidget(ogw);
   cw->setLinkagesWidget(lw);
+  cw->setAttributesWidget(aw);
   QString sliderSheet = QString("QSlider::groove:horizontal { "
                                 "border: 1px solid #999999; "
                                 "height: 6px; "
