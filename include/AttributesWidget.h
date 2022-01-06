@@ -74,6 +74,7 @@ class AttributesWidget : public QWidget
     // Functions that need to be exposed
     void resetTree();
     void retrieveCases();
+    void collectCase();
 
   private slots:
     // Private member functions
@@ -86,7 +87,6 @@ class AttributesWidget : public QWidget
     void previousMarked();
     void nextMarked();
     void setCase();
-    void collectCase();
     void setDescriptionFilter(const QString &text);
     void previousDescription();
     void nextDescription();
