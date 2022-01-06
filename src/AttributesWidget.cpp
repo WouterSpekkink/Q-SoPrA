@@ -33,6 +33,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   _rawFilter = "";
   _commentFilter = "";
   _commentBool = false;
+  _selectedCase = "All cases";
   
   incidentsModel = new QSqlTableModel(this);  
   incidentsModel->setTable("incidents");
@@ -572,17 +573,12 @@ void AttributesWidget::previousMarked()
         return;
       }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record = :new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
-  else
-  {
-    delete query;
-    return;
-  }
-  query->prepare("UPDATE save_data "
-                 "SET attributes_record = :new");
-  query->bindValue(":new", order);
-  query->exec();
-  retrieveData();
   delete query;
 }
 
@@ -621,17 +617,12 @@ void AttributesWidget::nextMarked()
         return;
       }
     }
+    query->prepare("UPDATE save_data "
+                   "SET attributes_record = :new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
-  else
-  {
-    delete query;
-    return;
-  }
-  query->prepare("UPDATE save_data "
-                 "SET attributes_record = :new");
-  query->bindValue(":new", order);
-  query->exec();
-  retrieveData();
   delete query;
 }
 

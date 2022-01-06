@@ -62,7 +62,8 @@ class CasingWidget : public QWidget
     void setNetworkGraphWidget(NetworkGraphWidget *networkGraphWidgetPtr);
     void setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGraphWidgetPtr);
     void setLinkagesWidget(LinkagesWidget *linkagesWidgetPtr);
-void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
+    void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
+    void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
 
   private slots:
     void createTable();
@@ -94,7 +95,7 @@ void setAttributesWidget(AttributesWidget *attributesWidgetPtr);
     QPointer<OccurrenceGraphWidget> _occurrenceGraphWidgetPtr;
     QPointer<LinkagesWidget> _linkagesWidgetPtr;
     QPointer<AttributesWidget> _attributesWidgetPtr;
-
+    QPointer<RelationshipsWidget> _relationshipsWidgetPtr;
 };
 
 #endif

@@ -33,6 +33,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   _rawFilter = "";
   _commentFilter = "";
   _commentBool = false;
+  _selectedCase = "All cases";
 
   incidentsModel = new QSqlTableModel(this);
   incidentsModel->setTable("incidents");
@@ -76,6 +77,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   commentFilterLabel = new QLabel("<i>Search comments:</i>", this);
   relationshipCommentLabel = new QLabel("<b>Comment:</b>", this);
   relationshipFilterLabel = new QLabel("<b>Filter relationships:</b>", this);
+  caseLabel = new QLabel("<b>Case filter:<b>");
 
   timeStampField = new QLineEdit(this);
   timeStampField->setReadOnly(true);
@@ -133,6 +135,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   resetTextsButton = new QPushButton("Reset texts", this);
   resetTextsButton->setEnabled(false);
 
+  caseComboBox = new QComboBox(this);
+
   relationshipsTreeView->installEventFilter(this);
   timeStampField->installEventFilter(this);
   sourceField->installEventFilter(this);
@@ -142,6 +146,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
 
   relationshipsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCase()));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -209,6 +214,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   topFieldsLayout->addSpacerItem(new QSpacerItem(20, 0));
   topFieldsLayout->addWidget(sourceLabel);
   topFieldsLayout->addWidget(sourceField);
+  topFieldsLayout->addWidget(caseLabel);
+  topFieldsLayout->addWidget(caseComboBox);
   leftLayout->addLayout(topFieldsLayout);
   QPointer<QHBoxLayout> descriptionLayout = new QHBoxLayout;
   QPointer<QHBoxLayout> descriptionLayoutLeft = new QHBoxLayout;
@@ -325,6 +332,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
     commentFilterField->setMaximumWidth(200);
   }
   setLayout(mainLayout);
+  retrieveCases();
 }
 
 void RelationshipsWidget::setCommentBool()
@@ -348,6 +356,62 @@ void RelationshipsWidget::setComment()
     query->exec();
     _commentBool = false;
     delete query;
+  }
+}
+
+void RelationshipsWidget::retrieveCases()
+{
+  caseComboBox->clear();
+  caseComboBox->addItem("All cases");
+  QSqlQuery *query = new QSqlQuery;
+  query->exec("SELECT name, description FROM cases ORDER BY name ASC");
+  while (query->next())
+  {
+    QString name = query->value(0).toString();
+    QString description = query->value(1).toString();
+    caseComboBox->addItem(name);
+    int index = caseComboBox->count() - 1;
+    caseComboBox->setItemData(index, description, Qt::ToolTipRole);
+  }
+  delete query;
+}
+void RelationshipsWidget::setCase()
+{
+  _selectedCase = caseComboBox->currentText();
+  collectCase();
+}
+
+void RelationshipsWidget::collectCase()
+{
+  QSet<int> incidents;
+  _caseIncidents.clear();
+  QSqlQuery *query = new QSqlQuery;
+  if (_selectedCase == "All cases")
+  {
+    query->exec("SELECT id FROM incidents");
+  }
+  else
+  {
+    query->prepare("SELECT incident FROM incidents_to_cases "
+                   "WHERE casename = :casename");
+    query->bindValue(":casename", _selectedCase);
+    query->exec();
+  }
+  while (query->next())
+  {
+    incidents.insert(query->value(0).toInt());
+    query->value(0).toInt();
+  }
+  query->prepare("SELECT ch_order FROM incidents "
+                 "WHERE id = :id");
+  QSetIterator<int> it(incidents);
+  while (it.hasNext())
+  {
+    int incident = it.next();
+    query->bindValue(":id", incident);
+    query->exec();
+    query->first();
+    _caseIncidents.insert(query->value(0).toInt());
   }
 }
 
@@ -407,9 +471,9 @@ void RelationshipsWidget::retrieveData()
       int incident = query->value(2).toInt();
       QString coder = query->value(3).toString();
       if (incident == id && coder == _selectedCoder)
-	    {
-	      boldSelected(relationshipsTree, relationship, type);
-	    }
+      {
+        boldSelected(relationshipsTree, relationship, type);
+      }
     }
     relationshipsTreeView->setModel(treeFilter);
     relationshipsTreeView->resetSelection();
@@ -535,33 +599,33 @@ void RelationshipsWidget::highlightText()
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
       QSqlQuery *query = new QSqlQuery;
       if (currentRelationship->font().bold())
-	    {
-	      query->exec("SELECT relationships_record FROM save_data");
-	      query->first();
-	      int order = query->value(0).toInt();
-	      query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
-	      query->bindValue(":order", order);
-	      query->exec();
-	      query->first();
-	      int id = 0;
-	      id = query->value(0).toInt();
-	      QTextCharFormat format;
-	      format.setFontWeight(QFont::Normal);
-	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	      rawField->selectAll();
-	      rawField->textCursor().mergeCharFormat(format);
-	      QTextCursor cursor = rawField->textCursor();
-	      cursor.movePosition(QTextCursor::Start);
-	      rawField->setTextCursor(cursor);
-	      query->prepare("SELECT source_text FROM relationships_to_incidents_sources "
+      {
+        query->exec("SELECT relationships_record FROM save_data");
+        query->first();
+        int order = query->value(0).toInt();
+        query->prepare("SELECT id FROM incidents WHERE ch_order = :order");
+        query->bindValue(":order", order);
+        query->exec();
+        query->first();
+        int id = 0;
+        id = query->value(0).toInt();
+        QTextCharFormat format;
+        format.setFontWeight(QFont::Normal);
+        format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+        rawField->selectAll();
+        rawField->textCursor().mergeCharFormat(format);
+        QTextCursor cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+        query->prepare("SELECT source_text FROM relationships_to_incidents_sources "
                        "WHERE relationship = :relationship "
                        "AND type = :type AND incident = :id AND coder = :coder");
-	      query->bindValue(":relationship", currentName);
-	      query->bindValue(":type", currentType);
-	      query->bindValue(":id", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while(query->next())
+        query->bindValue(":relationship", currentName);
+        query->bindValue(":type", currentType);
+        query->bindValue(":id", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        while(query->next())
         {
           QString currentText = query->value(0).toString();
           QVector<QString> blocks = splitLines(currentText);
@@ -581,22 +645,22 @@ void RelationshipsWidget::highlightText()
           cursor.movePosition(QTextCursor::Start);
           rawField->setTextCursor(cursor);
         }
-	      rawField->setTextCursor(currentPos);
-	    }
+        rawField->setTextCursor(currentPos);
+      }
       else
-	    {
-	      QString currentSelected = rawField->textCursor().selectedText();
-	      QTextCharFormat format;
-	      format.setFontWeight(QFont::Normal);
-	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	      rawField->selectAll();
-	      rawField->textCursor().mergeCharFormat(format);
-	      QTextCursor cursor = rawField->textCursor();
-	      cursor.movePosition(QTextCursor::Start);
-	      rawField->setTextCursor(cursor);
-	      rawField->find(currentSelected);
-	      rawField->setTextCursor(currentPos);
-	    }
+      {
+        QString currentSelected = rawField->textCursor().selectedText();
+        QTextCharFormat format;
+        format.setFontWeight(QFont::Normal);
+        format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+        rawField->selectAll();
+        rawField->textCursor().mergeCharFormat(format);
+        QTextCursor cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+        rawField->find(currentSelected);
+        rawField->setTextCursor(currentPos);
+      }
       delete query;
     }
     else
@@ -737,11 +801,11 @@ void RelationshipsWidget::editType()
       typeDialog->submitDirectedness(oldDirectedness);
       typeDialog->exec();
       if (typeDialog->getExitStatus() == 0)
-	    {
-	      QString newName = typeDialog->getName();
-	      description = typeDialog->getDescription();
-	      QString directedness = typeDialog->getDirectedness();
-	      if (oldDirectedness == DIRECTED && directedness == UNDIRECTED)
+      {
+        QString newName = typeDialog->getName();
+        description = typeDialog->getDescription();
+        QString directedness = typeDialog->getDirectedness();
+        if (oldDirectedness == DIRECTED && directedness == UNDIRECTED)
         {
           QPointer<QMessageBox> warningBox = new QMessageBox(this);
           warningBox->setWindowTitle("Changing directedness");
@@ -760,14 +824,14 @@ void RelationshipsWidget::editType()
             return;
           }
         }
-	      QVector<QPair<QString, QString>> finished;
-	      QStandardItem *currentType = relationshipsTree->
+        QVector<QPair<QString, QString>> finished;
+        QStandardItem *currentType = relationshipsTree->
           itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
-	      currentType->setData(newName);
-	      currentType->setData(newName, Qt::DisplayRole);
-	      QString hint = breakString(directedness + " - " + description);
-	      currentType->setToolTip(hint);
-	      for (int i = 0; i != currentType->rowCount(); i++)
+        currentType->setData(newName);
+        currentType->setData(newName, Qt::DisplayRole);
+        QString hint = breakString(directedness + " - " + description);
+        currentType->setToolTip(hint);
+        for (int i = 0; i != currentType->rowCount(); i++)
         {
           bool deleteCurrent = false;
           QStandardItem *currentChild = currentType->takeChild(i);
@@ -879,18 +943,18 @@ void RelationshipsWidget::editType()
             }
           }
         }
-	      query->prepare("UPDATE relationship_types SET name = :newname, "
+        query->prepare("UPDATE relationship_types SET name = :newname, "
                        "directedness = :newdirectedness, description = :newdescription "
                        "WHERE name = :oldname");
-	      query->bindValue(":newname", newName);
-	      query->bindValue(":newdirectedness", directedness);
-	      query->bindValue(":newdescription", description);
-	      query->bindValue(":oldname", currentName);
-	      query->exec();
-	      this->setCursor(Qt::WaitCursor);
-	      retrieveData();
-	      this->setCursor(Qt::ArrowCursor);
-	    }
+        query->bindValue(":newname", newName);
+        query->bindValue(":newdirectedness", directedness);
+        query->bindValue(":newdescription", description);
+        query->bindValue(":oldname", currentName);
+        query->exec();
+        this->setCursor(Qt::WaitCursor);
+        retrieveData();
+        this->setCursor(Qt::ArrowCursor);
+      }
       delete query;
     }
     relationshipsTree->sort(0, Qt::AscendingOrder);
@@ -944,23 +1008,23 @@ void RelationshipsWidget::assignRelationship()
       query->exec();
       query->first();
       if (!(query->isNull(0)))
-	    {
-	      int id = 0;
-	      id = query->value(0).toInt();
-	      assignedModel->select();
-	      bool empty = false;
-	      query->prepare("SELECT relationship, incident FROM relationships_to_incidents "
+      {
+        int id = 0;
+        id = query->value(0).toInt();
+        assignedModel->select();
+        bool empty = false;
+        query->prepare("SELECT relationship, incident FROM relationships_to_incidents "
                        "WHERE relationship = :rel AND type = :type AND incident = :inc "
                        "AND coder = :coder");
-	      query->bindValue(":rel", currentRelationship);
-	      query->bindValue(":type", currentType);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      query->first();
-	      empty = query->isNull(0);
-	      QTextCursor cursorPos = rawField->textCursor();
-	      if (empty)
+        query->bindValue(":rel", currentRelationship);
+        query->bindValue(":type", currentType);
+        query->bindValue(":inc", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        query->first();
+        empty = query->isNull(0);
+        QTextCursor cursorPos = rawField->textCursor();
+        if (empty)
         {
           query->prepare("INSERT INTO relationships_to_incidents (relationship, type, "
                          "incident, coder) "
@@ -975,14 +1039,14 @@ void RelationshipsWidget::assignRelationship()
           boldSelected(relationshipsTree, currentRelationship, currentType);
           highlightText();
         }
-	      else
+        else
         {
           sourceRelationshipText(currentRelationship, currentType, id);
           highlightText();
           rawField->setTextCursor(cursorPos);
         }
-	      setButtons();
-	    }
+        setButtons();
+      }
       delete query;
     }
   }
@@ -1011,22 +1075,22 @@ void RelationshipsWidget::unassignRelationship()
       query->first();
       int id = 0;
       if (!(query->isNull(0)))
-	    {
-	      id = query->value(0).toInt();
-	      assignedModel->select();
-	      bool empty = false;
-	      query->prepare("SELECT relationship, incident "
+      {
+        id = query->value(0).toInt();
+        assignedModel->select();
+        bool empty = false;
+        query->prepare("SELECT relationship, incident "
                        "FROM relationships_to_incidents "
                        "WHERE relationship = :rel AND type = :type AND incident = :inc "
                        "AND coder = :coder");
-	      query->bindValue(":rel", currentRelationship);
-	      query->bindValue(":type", currentType);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      query->first();
-	      empty = query->isNull(0);
-	      if (!empty)
+        query->bindValue(":rel", currentRelationship);
+        query->bindValue(":type", currentType);
+        query->bindValue(":inc", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        query->first();
+        empty = query->isNull(0);
+        if (!empty)
         {
           query->prepare("DELETE FROM relationships_to_incidents "
                          "WHERE relationship = :rel AND type = :type "
@@ -1062,7 +1126,7 @@ void RelationshipsWidget::unassignRelationship()
           highlightText();
           unassignRelationshipButton->setEnabled(false);
         }
-	    }
+      }
       delete query;
     }
   }
@@ -1129,25 +1193,25 @@ void RelationshipsWidget::resetTexts()
       query->first();
       int id = 0;
       if (!(query->isNull(0)))
-	    {
-	      id = query->value(0).toInt();
-	      QString relationship = relationshipsTreeView->
+      {
+        id = query->value(0).toInt();
+        QString relationship = relationshipsTreeView->
           currentIndex().data(Qt::UserRole).toString();
-	      QStandardItem *currentItem = relationshipsTree->
+        QStandardItem *currentItem = relationshipsTree->
           itemFromIndex(treeFilter->mapToSource(relationshipsTreeView->currentIndex()));
-	      QStandardItem *typeItem = currentItem->parent();
-	      QString currentType = typeItem->data(Qt::DisplayRole).toString();
-	      QSqlQuery *query2 = new QSqlQuery;
-	      query2->prepare("DELETE FROM relationships_to_incidents_sources "
+        QStandardItem *typeItem = currentItem->parent();
+        QString currentType = typeItem->data(Qt::DisplayRole).toString();
+        QSqlQuery *query2 = new QSqlQuery;
+        query2->prepare("DELETE FROM relationships_to_incidents_sources "
                         "WHERE relationship = :rel AND type = :type AND incident = :inc "
                         "AND coder = :coder");
-	      query2->bindValue(":rel", relationship);
-	      query2->bindValue(":type", currentType);
-	      query2->bindValue(":inc", id);
-	      query2->bindValue(":coder", _selectedCoder);
-	      query2->exec();
-	      delete query2;
-	    }
+        query2->bindValue(":rel", relationship);
+        query2->bindValue(":type", currentType);
+        query2->bindValue(":inc", id);
+        query2->bindValue(":coder", _selectedCoder);
+        query2->exec();
+        delete query2;
+      }
       highlightText();
       delete query;
     }
@@ -1181,39 +1245,39 @@ void RelationshipsWidget::newRelationship()
       relationshipsDialog->submitDirectedness(directedness);
       relationshipsDialog->exec();
       if (relationshipsDialog->getExitStatus() == 0)
-	    {
-	      QString name = relationshipsDialog->getName();
-	      QString leftEntity = relationshipsDialog->getLeftEntity();
-	      QString rightEntity = relationshipsDialog->getRightEntity();
-	      QString itemName = QString();
-	      if (directedness == DIRECTED)
+      {
+        QString name = relationshipsDialog->getName();
+        QString leftEntity = relationshipsDialog->getLeftEntity();
+        QString rightEntity = relationshipsDialog->getRightEntity();
+        QString itemName = QString();
+        if (directedness == DIRECTED)
         {
           itemName = leftEntity + "-[" + currentType + "]->" + rightEntity;
         }
-	      else if (directedness == UNDIRECTED)
+        else if (directedness == UNDIRECTED)
         {
           itemName = leftEntity + "<-[" + currentType + "]->" + rightEntity;
         }
-	      QStandardItem *newItem = new QStandardItem(itemName);
-	      newItem->setData(name, Qt::UserRole);
-	      newItem->setEditable(false);
-	      newItem->setToolTip(hint);
-	      currentItem->appendRow(newItem);
-	      query->prepare("INSERT INTO entity_relationships (name, source, target, type)"
+        QStandardItem *newItem = new QStandardItem(itemName);
+        newItem->setData(name, Qt::UserRole);
+        newItem->setEditable(false);
+        newItem->setToolTip(hint);
+        currentItem->appendRow(newItem);
+        query->prepare("INSERT INTO entity_relationships (name, source, target, type)"
                        "VALUES (:name, :source, :target, :type)");
-	      query->bindValue(":name", name);
-	      query->bindValue(":source", leftEntity);
-	      query->bindValue(":target", rightEntity);
-	      query->bindValue(":type", currentType);
-	      query->exec();
-	    }
+        query->bindValue(":name", name);
+        query->bindValue(":source", leftEntity);
+        query->bindValue(":target", rightEntity);
+        query->bindValue(":type", currentType);
+        query->exec();
+      }
       if (relationshipsDialog->getEntityEdited() == 1)
-	    {
-	      delete relationshipsTree;
-	      setTree();
-	      relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
-	      retrieveData();
-	    }
+      {
+        delete relationshipsTree;
+        setTree();
+        relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+        retrieveData();
+      }
       delete relationshipsDialog;
       delete query;
     }
@@ -1256,53 +1320,53 @@ void RelationshipsWidget::editRelationship()
       relationshipsDialog->submitName(currentRelationship);
       relationshipsDialog->exec();
       if (relationshipsDialog->getExitStatus() == 0)
-	    {
-	      QString name = relationshipsDialog->getName();
-	      QString leftEntity = relationshipsDialog->getLeftEntity();
-	      QString rightEntity = relationshipsDialog->getRightEntity();
-	      QString itemName = QString();
-	      if (directedness == DIRECTED)
+      {
+        QString name = relationshipsDialog->getName();
+        QString leftEntity = relationshipsDialog->getLeftEntity();
+        QString rightEntity = relationshipsDialog->getRightEntity();
+        QString itemName = QString();
+        if (directedness == DIRECTED)
         {
           itemName = leftEntity + "-[" + currentType + "]->" + rightEntity;
         }
-	      else if (directedness == UNDIRECTED)
+        else if (directedness == UNDIRECTED)
         {
           itemName = leftEntity + "<-[" + currentType + "]->" + rightEntity;
         }
-	      query->prepare("UPDATE entity_relationships "
+        query->prepare("UPDATE entity_relationships "
                        "SET name = :name, source = :leftEntity, target = :rightEntity "
                        "WHERE name = :oldName AND type = :type");
-	      query->bindValue(":name", name);
-	      query->bindValue(":leftEntity", leftEntity);
-	      query->bindValue(":rightEntity", rightEntity);
-	      query->bindValue(":oldName", currentRelationship);
-	      query->bindValue(":type", currentType);
-	      query->exec();
-	      query->prepare("UPDATE relationships_to_incidents "
+        query->bindValue(":name", name);
+        query->bindValue(":leftEntity", leftEntity);
+        query->bindValue(":rightEntity", rightEntity);
+        query->bindValue(":oldName", currentRelationship);
+        query->bindValue(":type", currentType);
+        query->exec();
+        query->prepare("UPDATE relationships_to_incidents "
                        "SET relationship = :newName "
                        "WHERE relationship = :oldName AND type = :type");
-	      query->bindValue(":newName", name);
-	      query->bindValue(":oldName", currentRelationship);
-	      query->bindValue(":type", currentType);
-	      query->exec();
-	      query->prepare("UPDATE relationships_to_incidents_sources "
+        query->bindValue(":newName", name);
+        query->bindValue(":oldName", currentRelationship);
+        query->bindValue(":type", currentType);
+        query->exec();
+        query->prepare("UPDATE relationships_to_incidents_sources "
                        "SET relationship = :newName "
                        "WHERE relationship = :oldName AND type = :type");
-	      query->bindValue(":newName", name);
-	      query->bindValue(":oldName", currentRelationship);
-	      query->bindValue(":type", currentType);
-	      query->exec();
-	      currentItem->setData(itemName, Qt::DisplayRole);
-	    }
+        query->bindValue(":newName", name);
+        query->bindValue(":oldName", currentRelationship);
+        query->bindValue(":type", currentType);
+        query->exec();
+        currentItem->setData(itemName, Qt::DisplayRole);
+      }
       if (relationshipsDialog->getEntityEdited() == 1)
-	    {
-	      delete relationshipsTree;
-	      setTree();
-	      relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
-	      retrieveData();
-	      _attributesWidgetPtr->resetTree();
-	      _eventGraphWidgetPtr->resetTree();
-	    }
+      {
+        delete relationshipsTree;
+        setTree();
+        relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+        retrieveData();
+        _attributesWidgetPtr->resetTree();
+        _eventGraphWidgetPtr->resetTree();
+      }
       delete relationshipsDialog;
       delete query;
     }
@@ -1371,17 +1435,17 @@ void RelationshipsWidget::setTree()
       QStringList relationshipParts = QStringList();
       QString itemName = QString();
       if (currentDirection == DIRECTED)
-	    {
-	      relationshipParts = name.split("--->");
-	      itemName = relationshipParts[0] + "-[" + currentType
+      {
+        relationshipParts = name.split("--->");
+        itemName = relationshipParts[0] + "-[" + currentType
           + "]->" + relationshipParts[1];
-	    }
+      }
       else if (currentDirection == UNDIRECTED)
-	    {
-	      relationshipParts = name.split("<-->");
-	      itemName = relationshipParts[0] + "<-[" + currentType
+      {
+        relationshipParts = name.split("<-->");
+        itemName = relationshipParts[0] + "<-[" + currentType
           + "]->" + relationshipParts[1];
-	    }
+      }
       QStandardItem *relationship = new QStandardItem(itemName);
       relationship->setData(name, Qt::UserRole);
       type->setChild(children, relationship);
@@ -1450,21 +1514,21 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
     if (QAction *action = menu->exec(globalPos))
     {
       if (action->text() == EDITRELATIONSHIPACTION)
-	    {
-	      editRelationship();
-	    }
+      {
+        editRelationship();
+      }
       if (action->text() == ASSIGNRELATIONSHIPACTION)
-	    {
-	      assignRelationship();
-	    }
+      {
+        assignRelationship();
+      }
       else if (action->text() == UNASSIGNRELATIONSHIPACTION)
-	    {
-	      unassignRelationship();
-	    }
+      {
+        unassignRelationship();
+      }
       else if (action->text() == UNASSIGNALLACTION)
-	    {
-	      unassignAll();
-	    }
+      {
+        unassignAll();
+      }
     }
     delete query;
     delete action1;
@@ -1482,13 +1546,13 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
     if (QAction *action = menu->exec(globalPos))
     {
       if (action->text() == ADDRELATIONSHIPACTION)
-	    {
-	      newRelationship();
-	    }
+      {
+        newRelationship();
+      }
       else if (action->text() == EDITRELATIONSHIPTYPEACTION)
-	    {
-	      editType();
-	    }
+      {
+        editType();
+      }
     }
     delete action1;
     delete action2;
@@ -1502,9 +1566,9 @@ void RelationshipsWidget::treeContextMenu(const QPoint &pos)
     if (QAction *action = menu->exec(globalPos))
     {
       if (action->text() == ADDRELATIONSHIPTYPEACTION)
-	    {
-	      newType();
-	    }
+      {
+        newType();
+      }
     }
     delete action1;
     delete menu;
@@ -1559,9 +1623,9 @@ void RelationshipsWidget::unassignAll()
       int incident = query->value(2).toInt();
       QString coder = query->value(3).toString();
       if (incident == id && coder == _selectedCoder)
-	    {
-	      boldSelected(relationshipsTree, relationship, type);
-	    }
+      {
+        boldSelected(relationshipsTree, relationship, type);
+      }
     }
     highlightText();
     unassignRelationshipButton->setEnabled(false);
@@ -1577,15 +1641,28 @@ void RelationshipsWidget::previousIncident()
   query->exec("SELECT relationships_record FROM save_data");
   query->first();
   int order = query->value(0).toInt();
-  if (order != 1)
+  bool valid = false;
+  while (!valid)
   {
-    order--;
-    query->prepare("UPDATE save_data "
-                   "SET relationships_record=:new");
-    query->bindValue(":new", order);
-    query->exec();
-    retrieveData();
+    if (order != 1)
+    {
+      order--;
+      if (_caseIncidents.contains(order))
+      {
+        valid = true;
+      }
+    }
+    else
+    {
+      delete query;
+      return;
+    }
   }
+  query->prepare("UPDATE save_data "
+                 "SET relationships_record=:new");
+  query->bindValue(":new", order);
+  query->exec();
+  retrieveData();
   delete query;
 }
 
@@ -1602,13 +1679,22 @@ void RelationshipsWidget::jumpIncident()
   {
     order = indexDialog->getIndex();
     QSqlQuery *query = new QSqlQuery;
-    if (order > 0)
+    if (order > 0 && _caseIncidents.contains(order))
     {
       query->prepare("UPDATE save_data "
                      "SET relationships_record=:new");
       query->bindValue(":new", order);
       query->exec();
       retrieveData();
+    }
+    else if (!_caseIncidents.contains(order))
+    {
+      QPointer<QMessageBox> warningBox = new QMessageBox(this);
+      warningBox->setWindowTitle("Invalid index");
+      warningBox->setIcon(QMessageBox::Warning);
+      warningBox->setText("<h2>Invalid index</h2>");
+      warningBox->setInformativeText("You have selected an incident that is not "
+                                     "linked to the currently selected case.");
     }
     delete query;
   }
@@ -1625,15 +1711,28 @@ void RelationshipsWidget::nextIncident()
   int order = query->value(0).toInt();
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
-  if (order != incidentsModel->rowCount())
+  bool valid = false;
+  while (!valid)
   {
-    order++;
-    query->prepare("UPDATE save_data "
-                   "SET relationships_record=:new");
-    query->bindValue(":new", order);
-    query->exec();
-    retrieveData();
+    if (order != incidentsModel->rowCount())
+    {
+      order++;
+      if (_caseIncidents.contains(order))
+      {
+        valid = true;
+      }
+    }
+    else
+    {
+      delete query;
+      return;
+    }
   }
+  query->prepare("UPDATE save_data "
+                 "SET relationships_record=:new");
+  query->bindValue(":new", order);
+  query->exec();
+  retrieveData();
   delete query;
 }
 
@@ -1679,20 +1778,33 @@ void RelationshipsWidget::previousMarked()
   int order = query->value(0).toInt();
   query->prepare("SELECT ch_order FROM incidents "
                  "WHERE ch_order < :order AND mark = 1 ORDER BY ch_order desc");
-  query->bindValue(":order", order);
-  query->exec();
-  query->first();
+  bool valid = false;
   if (order != 1)
   {
-    if (!query->isNull(0))
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -1706,23 +1818,36 @@ void RelationshipsWidget::nextMarked()
   int order = query->value(0).toInt();
   query->prepare("SELECT ch_order FROM incidents "
                  "WHERE ch_order > :order AND mark = 1 ORDER BY ch_order asc");
-  query->bindValue(":order", order);
-  query->exec();
-  query->first();
   incidentsModel->select();
+  bool valid = false;
   while(incidentsModel->canFetchMore())
     incidentsModel->fetchMore();
   if (order != incidentsModel->rowCount())
   {
-    if (!query->isNull(0))
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
   }
   delete query;
 }
@@ -1769,20 +1894,33 @@ void RelationshipsWidget::previousDescription()
                    "WHERE description LIKE :text "
                    "AND ch_order < :order "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(descriptionField, _descriptionFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(descriptionField, _descriptionFilter);
     delete query;
   }
 }
@@ -1801,20 +1939,33 @@ void RelationshipsWidget::nextDescription()
                    "WHERE description LIKE :text "
                    "AND ch_order > :order "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(descriptionField, _descriptionFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(descriptionField, _descriptionFilter);
     delete query;
   }
 }
@@ -1881,20 +2032,33 @@ void RelationshipsWidget::previousRaw()
                    "WHERE raw LIKE :text "
                    "AND ch_order < :order "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(rawField, _rawFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(rawField, _rawFilter);
     delete query;
   }
 }
@@ -1913,20 +2077,33 @@ void RelationshipsWidget::nextRaw()
                    "WHERE raw LIKE :text "
                    "AND ch_order > :order "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(rawField, _rawFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(rawField, _rawFilter);
     delete query;
   }
 }
@@ -1951,20 +2128,33 @@ void RelationshipsWidget::previousComment()
                    "WHERE comment LIKE :text "
                    "AND ch_order < :order "
                    "ORDER BY ch_order desc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(commentField, _commentFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(commentField, _commentFilter);
     delete query;
   }
 }
@@ -1983,20 +2173,33 @@ void RelationshipsWidget::nextComment()
                    "WHERE comment LIKE :text "
                    "AND ch_order > :order "
                    "ORDER BY ch_order asc");
-    query->bindValue(":text", searchText);
-    query->bindValue(":order", order);
-    query->exec();
-    query->first();
-    if (!query->isNull(0))
+    bool valid = false;
+    while (!valid)
     {
-      order = query->value(0).toInt();
-      query->prepare("UPDATE save_data "
-                     "SET relationships_record=:new");
-      query->bindValue(":new", order);
+      query->bindValue(":text", searchText);
+      query->bindValue(":order", order);
       query->exec();
-      retrieveData();
-      highlightSearch(commentField, _commentFilter);
+      query->first();
+      if (!query->isNull(0))
+      {
+        order = query->value(0).toInt();
+        if (_caseIncidents.contains(order))
+        {
+          valid = true;
+        }
+      }
+      else
+      {
+        delete query;
+        return;
+      }
     }
+    query->prepare("UPDATE save_data "
+                   "SET relationships_record=:new");
+    query->bindValue(":new", order);
+    query->exec();
+    retrieveData();
+    highlightSearch(commentField, _commentFilter);
     delete query;
   }
 }
@@ -2017,7 +2220,7 @@ void RelationshipsWidget::previousCoded()
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
-      int currentOrder = query->value(0).toInt();
+      int order = query->value(0).toInt();
       query->prepare("SELECT incident, ch_order FROM "
                      "(SELECT incident, ch_order, relationship, type "
                      "FROM relationships_to_incidents "
@@ -2025,28 +2228,44 @@ void RelationshipsWidget::previousCoded()
                      "WHERE ch_order < :order AND relationship = :relationship AND type = :type "
                      "AND coder = :coder)"
                      "ORDER BY ch_order desc");
-      query->bindValue(":order", currentOrder);
-      query->bindValue(":relationship", relationship);
-      query->bindValue(":type", currentType);
-      query->bindValue(":coder", _selectedCoder);
+      bool valid = false;
+      QSqlQuery *query2 = new QSqlQuery;
+      query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+      while (!valid)
+      {
+        query->bindValue(":order", order);
+        query->bindValue(":relationship", relationship);
+        query->bindValue(":type", currentType);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        int id = 0;
+        query->first();
+        if (!(query->isNull(0)))
+        {
+          id = query->value(0).toInt();
+          query2->bindValue(":id", id);
+          query2->exec();
+          query2->first();
+          order = query2->value(0).toInt();
+          if (_caseIncidents.contains(order))
+          {
+            valid = true;
+          }
+        }
+        else
+        {
+          delete query;
+          delete query2;
+          return;
+        }
+      }
+      query->prepare("UPDATE save_data "
+                     "SET relationships_record=:new");
+      query->bindValue(":new", order);
       query->exec();
-      int id = 0;
-      query->first();
-      if (!(query->isNull(0)))
-	    {
-	      id = query->value(0).toInt();
-	      query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      int newOrder = query->value(0).toInt();
-	      query->prepare("UPDATE save_data "
-                       "SET relationships_record=:new");
-	      query->bindValue(":new", newOrder);
-	      query->exec();
-	      retrieveData();
-	    }
+      retrieveData();
       delete query;
+      delete query2;
       relationshipsTreeView->setCurrentIndex(currentIndex);
       relationshipsTreeView->selectionModel()->select(currentIndex,
                                                       QItemSelectionModel::SelectCurrent);
@@ -2070,7 +2289,7 @@ void RelationshipsWidget::nextCoded()
       QSqlQuery *query = new QSqlQuery;
       query->exec("SELECT relationships_record FROM save_data");
       query->first();
-      int currentOrder = query->value(0).toInt();
+      int order = query->value(0).toInt();
       query->prepare("SELECT incident, ch_order FROM "
                      "(SELECT incident, ch_order, relationship, type "
                      "FROM relationships_to_incidents "
@@ -2078,28 +2297,44 @@ void RelationshipsWidget::nextCoded()
                      "WHERE ch_order > :order AND relationship = :relationship AND type = :type "
                      "AND coder = :coder)"
                      "ORDER BY ch_order asc");
-      query->bindValue(":order", currentOrder);
-      query->bindValue(":relationship", relationship);
-      query->bindValue(":type", currentType);
-      query->bindValue(":coder", _selectedCoder);
+      bool valid = false;
+      QSqlQuery *query2 = new QSqlQuery;
+      while (!valid)
+      {
+        query->bindValue(":order", order);
+        query->bindValue(":relationship", relationship);
+        query->bindValue(":type", currentType);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        int id = 0;
+        query->first();
+        if (!(query->isNull(0)))
+        {
+          id = query->value(0).toInt();
+          query2->prepare("SELECT ch_order FROM incidents WHERE id = :id");
+          query2->bindValue(":id", id);
+          query2->exec();
+          query2->first();
+          order = query2->value(0).toInt();
+          if (_caseIncidents.contains(order))
+          {
+            valid = true;
+          }
+        }
+        else
+        {
+          delete query;
+          delete query2;
+          return;
+        }
+      }
+      query->prepare("UPDATE save_data "
+                     "SET relationships_record=:new");
+      query->bindValue(":new", order);
       query->exec();
-      int id = 0;
-      query->first();
-      if (!(query->isNull(0)))
-	    {
-	      id = query->value(0).toInt();
-	      query->prepare("SELECT ch_order FROM incidents WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      int newOrder = query->value(0).toInt();
-	      query->prepare("UPDATE save_data "
-                       "SET relationships_record=:new");
-	      query->bindValue(":new", newOrder);
-	      query->exec();
-	      retrieveData();
-	    }
+      retrieveData();
       delete query;
+      delete query2;
       relationshipsTreeView->setCurrentIndex(currentIndex);
       relationshipsTreeView->selectionModel()->select(currentIndex,
                                                       QItemSelectionModel::SelectCurrent);
@@ -2129,55 +2364,55 @@ void RelationshipsWidget::setButtons()
       query->first();
       int id = 0;
       if (!(query->isNull(0)))
-	    {
-	      id = query->value(0).toInt();
-	      assignedModel->select();
-	      bool empty = false;
-	      query->prepare("SELECT relationship, incident "
+      {
+        id = query->value(0).toInt();
+        assignedModel->select();
+        bool empty = false;
+        query->prepare("SELECT relationship, incident "
                        "FROM relationships_to_incidents "
                        "WHERE relationship = :rel AND type = :type AND incident = :inc "
                        "AND coder = :coder");
-	      query->bindValue(":rel", currentRelationship);
-	      query->bindValue(":type", currentType);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      query->first();
-	      empty = query->isNull(0);
-	      if (!empty)
+        query->bindValue(":rel", currentRelationship);
+        query->bindValue(":type", currentType);
+        query->bindValue(":inc", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        query->first();
+        empty = query->isNull(0);
+        if (!empty)
         {
           unassignRelationshipButton->setEnabled(true);
         }
-	      else
+        else
         {
           unassignRelationshipButton->setEnabled(false);
         }
-	      query->prepare("SELECT relationship, incident FROM "
+        query->prepare("SELECT relationship, incident FROM "
                        "relationships_to_incidents_sources "
                        "WHERE relationship = :rel AND incident = :inc AND coder = :coder");
-	      query->bindValue(":rel", currentRelationship);
-	      query->bindValue(":inc", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      query->first();
-	      empty = query->isNull(0);
-	      if (!empty)
+        query->bindValue(":rel", currentRelationship);
+        query->bindValue(":inc", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        query->first();
+        empty = query->isNull(0);
+        if (!empty)
         {
           removeTextButton->setEnabled(true);
           resetTextsButton->setEnabled(true);
         }
-	      else
+        else
         {
           removeTextButton->setEnabled(false);
           resetTextsButton->setEnabled(false);
         }
-	      assignRelationshipButton->setEnabled(true);
-	      previousCodedButton->setEnabled(true);
-	      nextCodedButton->setEnabled(true);
-	      newRelationshipButton->setEnabled(false);
-	      editRelationshipButton->setEnabled(true);
-	      editTypeButton->setEnabled(false);
-	    }
+        assignRelationshipButton->setEnabled(true);
+        previousCodedButton->setEnabled(true);
+        nextCodedButton->setEnabled(true);
+        newRelationshipButton->setEnabled(false);
+        editRelationshipButton->setEnabled(true);
+        editTypeButton->setEnabled(false);
+      }
       delete query;
     }
     else
@@ -2220,14 +2455,14 @@ void RelationshipsWidget::boldSelected(QAbstractItemModel *model, QString name, 
       QString currentType = typeItem->data(Qt::DisplayRole).toString();
       QFont font;
       if (name == currentName && type == currentType)
-	    {
-	      font.setBold(true);
-	      currentRelationship->setFont(font);
-	      font.setBold(false);
-	      font.setUnderline(true);
-	      currentRelationship->parent()->setFont(font);
-	      font.setUnderline(false);
-	    }
+      {
+        font.setBold(true);
+        currentRelationship->setFont(font);
+        font.setBold(false);
+        font.setUnderline(true);
+        currentRelationship->parent()->setFont(font);
+        font.setUnderline(false);
+      }
     }
     if (model->hasChildren(index))
     {
@@ -2325,22 +2560,22 @@ bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event)
     if (textEdit)
     {
       if(wheelEvent->modifiers() & Qt::ControlModifier)
-	    {
-	      if (wheelEvent->angleDelta().y() > 0)
+      {
+        if (wheelEvent->angleDelta().y() > 0)
         {
           textEdit->zoomIn(1);
         }
-	      else if (wheelEvent->angleDelta().y() < 0)
+        else if (wheelEvent->angleDelta().y() < 0)
         {
           textEdit->zoomOut(1);
         }
-	    }
+      }
     }
     else if (treeView)
     {
       if(wheelEvent->modifiers() & Qt::ControlModifier)
-	    {
-	      if (wheelEvent->angleDelta().y() > 0)
+      {
+        if (wheelEvent->angleDelta().y() > 0)
         {
           QFont font = treeView->font();
           int currentSize = font.pointSize();
@@ -2351,7 +2586,7 @@ bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event)
             treeView->setFont(font);
           }
         }
-	      else if (wheelEvent->angleDelta().y() < 0)
+        else if (wheelEvent->angleDelta().y() < 0)
         {
           QFont font = treeView->font();
           int currentSize = font.pointSize();
@@ -2362,7 +2597,7 @@ bool RelationshipsWidget::eventFilter(QObject *object, QEvent *event)
             treeView->setFont(font);
           }
         }
-	    }
+      }
     }
   }
   return false;
