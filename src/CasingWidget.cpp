@@ -169,6 +169,7 @@ void CasingWidget::updateTable()
   _occurrenceGraphWidgetPtr->updateCases();
   _linkagesWidgetPtr->retrieveCases();
   _linkagesWidgetPtr->collectCase();
+  //TODO attributeswidget
   QApplication::restoreOverrideCursor();
   qApp->processEvents();
 }
@@ -479,4 +480,9 @@ void CasingWidget::setOccurrenceGraphWidget(OccurrenceGraphWidget *occurrenceGra
 void CasingWidget::setLinkagesWidget(LinkagesWidget *linkagesWidgetPtr)
 {
   _linkagesWidgetPtr = linkagesWidgetPtr;
+}
+
+void CasingWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr)
+{
+  _attributesWidgetPtr = attributesWidgetPtr;
 }
