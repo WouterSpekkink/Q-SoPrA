@@ -107,7 +107,8 @@ class RelationshipsWidget : public QWidget
     void entitiesOverview();
     void newRelationship();
     void editRelationship();
-    void removeUnusedRelationships();
+    void removeRelationship();
+    void removeType();
     void assignRelationship();
     void unassignRelationship();
     void removeText();
@@ -182,7 +183,8 @@ class RelationshipsWidget : public QWidget
     QPointer<QPushButton> entitiesOverviewButton;
     QPointer<QPushButton> newRelationshipButton;
     QPointer<QPushButton> editRelationshipButton;
-    QPointer<QPushButton> removeUnusedRelationshipsButton;
+    QPointer<QPushButton> removeRelationshipButton;
+    QPointer<QPushButton> removeTypeButton;
     QPointer<QPushButton> assignRelationshipButton;
     QPointer<QPushButton> unassignRelationshipButton;
     QPointer<QPushButton> expandTreeButton;

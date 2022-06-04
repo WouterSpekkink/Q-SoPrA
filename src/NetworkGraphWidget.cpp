@@ -149,7 +149,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   addAttributeButton = new QPushButton(tr("New attribute"), infoWidget);
   editAttributeButton = new QPushButton(tr("Edit attribute"), infoWidget);
   editAttributeButton->setEnabled(false);
-  removeUnusedAttributesButton = new QPushButton(tr("Remove unused"), infoWidget);
+  removeAttributeButton = new QPushButton(tr("Remove attribute"), infoWidget);
   toggleLegendButton = new QPushButton(tr("Toggle legend"), this);
   toggleLegendButton->setCheckable(true);
   addButton = new QPushButton(tr("Add relationship type"), this);
@@ -331,7 +331,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(unassignAttributeButton, SIGNAL(clicked()), this, SLOT(unassignAttribute()));
   connect(addAttributeButton, SIGNAL(clicked()), this, SLOT(addAttribute()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
-  connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(removeAttributeButton, SIGNAL(clicked()), this, SLOT(removeAttribute()));
   connect(previousNodeButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
   connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
   connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
@@ -520,7 +520,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> attributesBottomLayout = new QHBoxLayout;
   attributesBottomLayout->addWidget(addAttributeButton);
   attributesBottomLayout->addWidget(editAttributeButton);
-  attributesBottomLayout->addWidget(removeUnusedAttributesButton);
+  attributesBottomLayout->addWidget(removeAttributeButton);
   detailsLayout->addLayout(attributesBottomLayout);
   infoWidget->setLayout(detailsLayout);
   screenLayout->addWidget(infoWidget);
@@ -1174,7 +1174,7 @@ void NetworkGraphWidget::resetFont(QAbstractItemModel *model, QModelIndex parent
     QStandardItem *currentAttribute = attributesTree->itemFromIndex(index);
     QFont font;
     font.setBold(false);
-    font.setItalic(false);
+    font.setUnderline(false);
     currentAttribute->setFont(font);
     if (model->hasChildren(index))
     {
@@ -1194,13 +1194,13 @@ void NetworkGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
     QFont font;
     font.setBold(true);
     QFont font2;
-    font2.setItalic(true);
+    font2.setUnderline(true);
     QFont font3;
     font3.setBold(true);
-    font3.setItalic(true);
+    font3.setUnderline(true);
     if (name == currentName)
     {
-      if (currentAttribute->font().italic())
+      if (currentAttribute->font().underline())
       {
         currentAttribute->setFont(font3);
       }
@@ -1587,37 +1587,60 @@ void NetworkGraphWidget::editAttribute()
   attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
 }
 
-void NetworkGraphWidget::removeUnusedAttributes() 
+void NetworkGraphWidget::removeAttribute()
 {
-  QSqlQuery *query = new QSqlQuery;
-  QSqlQuery *query2 = new QSqlQuery;
-  bool unfinished = true;
-  while (unfinished) 
+  if (attributesTreeView->currentIndex().isValid())
   {
-    query->exec("SELECT name FROM entity_attributes EXCEPT SELECT attribute "
-                "FROM attributes_to_entities EXCEPT SELECT father "
-                "FROM entity_attributes");
-    while (query->next())
+    QString attribute = attributesTreeView->currentIndex().data().toString();
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Removing attribute");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("This will remove the attribute. "
+                                   "This does not work if the attribute is already "
+                                   "assigned to an entity or if the entity has children. "
+                                   "Are you sure you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes)
     {
-      QString current = query->value(0).toString();
-      query2->prepare("DELETE FROM entity_attributes WHERE name = :current");
-      query2->bindValue(":current", current);
-      query2->exec();
-    }
-    query->first();
-    if (query->isNull(0))
-    {
-      unfinished = false;
+      bool taken = false;
+      QSqlQuery *query = new QSqlQuery;
+      query->prepare("SELECT name FROM entity_attributes "
+                     "WHERE father = :attribute");
+      query->bindValue(":attribute", attribute);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        taken = true;
+      }
+      query->prepare("SELECT attribute FROM attributes_to_entities "
+                     "WHERE attribute = :attribute");
+      query->bindValue(":attribute", attribute);
+      query->exec();
+      query->first();
+      if (!query->isNull(0))
+      {
+        taken = true;
+      }
+      if (!taken)
+      {
+        query->prepare("DELETE FROM entity_attributes WHERE name = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+      }
+      this->setCursor(Qt::WaitCursor);
+      attributesTreeView->setSortingEnabled(false);
+      delete attributesTree;
+      setTree();
+      attributesTreeView->setSortingEnabled(true);
+      attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+      this->setCursor(Qt::ArrowCursor);
+      retrieveData();
+      delete query;
     }
   }
-  this->setCursor(Qt::WaitCursor);
-  attributesTreeView->setSortingEnabled(false);
-  resetTree();
-  attributesTreeView->setSortingEnabled(true);
-  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  this->setCursor(Qt::ArrowCursor);
-  delete query;  
-  delete query2;
 }
 
 void NetworkGraphWidget::getTypes() 
@@ -7959,6 +7982,7 @@ void NetworkGraphWidget::setButtons()
     {
       unassignAttributeButton->setEnabled(true);
       assignAttributeButton->setEnabled(false);
+      removeAttributeButton->setEnabled(true);
       valueField->setEnabled(true);
       if (!query->isNull(2))
       {
@@ -7971,6 +7995,7 @@ void NetworkGraphWidget::setButtons()
     {
       unassignAttributeButton->setEnabled(false);
       assignAttributeButton->setEnabled(true);
+      removeAttributeButton->setEnabled(true);
     }
     editAttributeButton->setEnabled(true);
     delete query;
@@ -7978,6 +8003,12 @@ void NetworkGraphWidget::setButtons()
   else 
   {
     editAttributeButton->setEnabled(false);
+    assignAttributeButton->setEnabled(false);
+    unassignAttributeButton->setEnabled(false);
+    removeAttributeButton->setEnabled(false);
+  }
+  if (_selectedEntityName == "")
+  {
     assignAttributeButton->setEnabled(false);
     unassignAttributeButton->setEnabled(false);
   }

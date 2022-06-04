@@ -161,7 +161,7 @@ class EventGraphWidget : public QWidget
     void newAttribute();
     void editAttribute();
     void updateEntityAfterEdit(const QString name, const QString description, const QString oldName);
-    void removeUnusedAttributes();
+    void removeAttribute();
     void seeComponents();
     void previousDataItem();
     void nextDataItem();
@@ -430,7 +430,7 @@ class EventGraphWidget : public QWidget
     QPointer<QPushButton> unassignAttributeButton;
     QPointer<QPushButton> addAttributeButton;
     QPointer<QPushButton> editAttributeButton;
-    QPointer<QPushButton> removeUnusedAttributesButton;
+    QPointer<QPushButton> removeAttributeButton;
     QPointer<QPushButton> removeTextButton;
     QPointer<QPushButton> resetTextsButton;
     QPointer<QPushButton> removeModeButton;

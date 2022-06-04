@@ -83,7 +83,7 @@ private slots:
   void addAttribute();
   void editAttribute();
   void mergeAttributes();
-  void removeUnusedAttributes();
+  void removeAttribute();
   void setTree();
   void buildHierarchy(QStandardItem *top, QString name);
   void resetFont(QAbstractItemModel *model, QModelIndex parent = QModelIndex());
@@ -112,7 +112,7 @@ private:
   QPointer<QPushButton> addAttributeButton;
   QPointer<QPushButton> editAttributeButton;
   QPointer<QPushButton> mergeAttributesButton;
-  QPointer<QPushButton> removeUnusedAttributesButton;
+  QPointer<QPushButton> removeAttributeButton;
   QPointer<QPushButton> cancelCloseButton;
   QPointer<QPushButton> saveCloseButton;
   QPointer<QPushButton> expandButton;
