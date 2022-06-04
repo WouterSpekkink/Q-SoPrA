@@ -1401,9 +1401,9 @@ void RelationshipsWidget::removeRelationship()
         currentIndex().data(Qt::UserRole).toString();
       QSqlQuery *query = new QSqlQuery;
       QSqlQuery *query2 = new QSqlQuery;
-      query->prepare("SELECT name, type FROM relationships_to_incidents "
-                     "WHERE name = :name AND type =:type");
-      query->bindValue(":name", currentRelationship);
+      query->prepare("SELECT relationship, type FROM relationships_to_incidents "
+                     "WHERE relationship = :relationship AND type =:type");
+      query->bindValue(":relationship", currentRelationship);
       query->bindValue(":type", currentType);
       query->exec();
       query->first();
