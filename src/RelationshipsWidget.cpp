@@ -123,7 +123,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   newRelationshipButton->setEnabled(false);
   editRelationshipButton = new QPushButton("Edit relationship", this);
   editRelationshipButton->setEnabled(false);
-  removeUnusedRelationshipsButton = new QPushButton("Removed unused relationships", this);
+  removeRelationshipButton = new QPushButton("Remove relationship", this);
+  removeTypeButton = new QPushButton("Remove type", this);
   assignRelationshipButton = new QPushButton("Assign relationship", this);
   assignRelationshipButton->setEnabled(false);
   unassignRelationshipButton = new QPushButton("Unassign relationship", this);
@@ -177,7 +178,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   connect(newTypeButton, SIGNAL(clicked()), this, SLOT(newType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editType()));
   connect(entitiesOverviewButton, SIGNAL(clicked()), this, SLOT(entitiesOverview()));
-  connect(removeUnusedRelationshipsButton, SIGNAL(clicked()), this, SLOT(removeUnusedRelationships()));
+  connect(removeRelationshipButton, SIGNAL(clicked()), this, SLOT(removeRelationship()));
+  connect(removeTypeButton, SIGNAL(clicked()), this, SLOT(removeType()));
   connect(assignRelationshipButton, SIGNAL(clicked()), this, SLOT(assignRelationship()));
   connect(unassignRelationshipButton, SIGNAL(clicked()), this, SLOT(unassignRelationship()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
@@ -307,7 +309,8 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> rightButtonMiddleLayout = new QHBoxLayout;
   rightButtonMiddleLayout->addWidget(newRelationshipButton);
   rightButtonMiddleLayout->addWidget(editRelationshipButton);
-  rightButtonMiddleLayout->addWidget(removeUnusedRelationshipsButton);
+  rightButtonMiddleLayout->addWidget(removeRelationshipButton);
+  rightButtonMiddleLayout->addWidget(removeTypeButton);
   rightLayout->addLayout(rightButtonMiddleLayout);
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(newTypeButton);
@@ -1373,39 +1376,101 @@ void RelationshipsWidget::editRelationship()
   }
 }
 
-void RelationshipsWidget::removeUnusedRelationships()
+void RelationshipsWidget::removeRelationship()
 {
-  QSqlQuery *query = new QSqlQuery;
-  QSqlQuery *query2 = new QSqlQuery;
-  query->exec("SELECT name, type FROM entity_relationships EXCEPT SELECT relationship, type "
-              "FROM relationships_to_incidents");
-  while (query->next())
+  if (relationshipsTreeView->currentIndex().isValid())
   {
-    QString currentName = query->value(0).toString();
-    QString currentType = query->value(1).toString();
-    query2->prepare("DELETE FROM entity_relationships WHERE name = :current AND type = :type");
-    query2->bindValue(":current", currentName);
-    query2->bindValue(":type", currentType);
-    query2->exec();
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Removing relationship");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("This will remove the selected relationship from the relationship tree "
+                                   "This will not work when the relationship is assigned to any "
+                                   "incident, or when the relationship is stored in graphs "
+                                   "Do you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes)
+    {
+      QStandardItem *currentItem = relationshipsTree->
+        itemFromIndex(treeFilter->
+                      mapToSource(relationshipsTreeView->currentIndex()));
+      QString currentType = currentItem->parent()->
+        data(Qt::DisplayRole).toString();
+      QString currentRelationship = relationshipsTreeView->
+        currentIndex().data(Qt::UserRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      query->prepare("SELECT name, type FROM relationships_to_incidents "
+                     "WHERE name = :name AND type =:type");
+      query->bindValue(":name", currentRelationship);
+      query->bindValue(":type", currentType);
+      query->exec();
+      query->first();
+      if (query->isNull(0))
+      {
+        query2->prepare("DELETE FROM entity_relationships "
+                        "WHERE name = :current AND type = :type");
+        query2->bindValue(":current", currentRelationship);
+        query2->bindValue(":type", currentType);
+        query2->exec();
+      }
+     this->setCursor(Qt::WaitCursor);
+     relationshipsTreeView->setSortingEnabled(false);
+     setTree();
+     relationshipsTreeView->setSortingEnabled(true);
+     relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+     retrieveData();
+     this->setCursor(Qt::ArrowCursor);
+     delete query;
+     delete query2;
+    }
   }
-  query->exec("SELECT name FROM relationship_types EXCEPT SELECT type "
-              "FROM entity_relationships");
-  while(query->next())
+}
+
+void RelationshipsWidget::removeType()
+{
+  if (relationshipsTreeView->currentIndex().isValid())
   {
-    QString current = query->value(0).toString();
-    query2->prepare("DELETE FROM relationship_types WHERE name = :current");
-    query2->bindValue(":current", current);
-    query2->exec();
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Removing type");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("This will remove the selected relationship type from the relationship tree "
+                                   "This will not work relationships of this type exist in the tree. "
+                                   "Do you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes)
+    {
+      QStandardItem *currentItem = relationshipsTree->
+        itemFromIndex(treeFilter->
+                      mapToSource(relationshipsTreeView->currentIndex()));
+      QString currentType = currentItem->data(Qt::DisplayRole).toString();
+      QSqlQuery *query = new QSqlQuery;
+      QSqlQuery *query2 = new QSqlQuery;
+      query->prepare("SELECT type FROM entity_relationships "
+                     "WHERE type = :type");
+      query->bindValue(":type", currentType);
+      query->exec();
+      query->first();
+      if (query->isNull(0))
+      {
+        query2->prepare("DELETE FROM relationship_types WHERE name = :current");
+        query2->bindValue(":current", currentType);
+        query2->exec();
+      }
+      this->setCursor(Qt::WaitCursor);
+      relationshipsTreeView->setSortingEnabled(false);
+      setTree();
+      relationshipsTreeView->setSortingEnabled(true);
+      relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
+      retrieveData();
+      this->setCursor(Qt::ArrowCursor);
+      delete query;
+      delete query2;
+    }
   }
-  this->setCursor(Qt::WaitCursor);
-  relationshipsTreeView->setSortingEnabled(false);
-  setTree();
-  relationshipsTreeView->setSortingEnabled(true);
-  relationshipsTreeView->sortByColumn(0, Qt::AscendingOrder);
-  retrieveData();
-  this->setCursor(Qt::ArrowCursor);
-  delete query;
-  delete query2;
 }
 
 void RelationshipsWidget::setTree()
@@ -2412,6 +2477,8 @@ void RelationshipsWidget::setButtons()
         newRelationshipButton->setEnabled(false);
         editRelationshipButton->setEnabled(true);
         editTypeButton->setEnabled(false);
+        removeTypeButton->setEnabled(false);
+        removeRelationshipButton->setEnabled(true);
       }
       delete query;
     }
@@ -2422,10 +2489,12 @@ void RelationshipsWidget::setButtons()
       assignRelationshipButton->setEnabled(false);
       unassignRelationshipButton->setEnabled(false);
       editTypeButton->setEnabled(true);
+      removeTypeButton->setEnabled(true);
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
       previousCodedButton->setEnabled(false);
       nextCodedButton->setEnabled(false);
+      removeRelationshipButton->setEnabled(false);
     }
   }
   else
@@ -2435,6 +2504,7 @@ void RelationshipsWidget::setButtons()
     assignRelationshipButton->setEnabled(false);
     unassignRelationshipButton->setEnabled(false);
     editTypeButton->setEnabled(false);
+    removeTypeButton->setEnabled(false);
     removeTextButton->setEnabled(false);
     resetTextsButton->setEnabled(false);
     previousCodedButton->setEnabled(false);

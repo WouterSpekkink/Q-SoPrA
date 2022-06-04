@@ -2591,7 +2591,7 @@ void EventGraphWidget::removeAttribute()
     warningBox->setIcon(QMessageBox::Warning);
     warningBox->setText("<h2>Are you sure?</h2>");
     warningBox->setInformativeText("This will remove the selected attribute from the attributes tree "
-                                   "This only works when the attribute is not assigned to any "
+                                   "This will not work when the attribute is assigned to any "
                                    "incident, when the attribute is stored in graphs, or "
                                    "when the attribute has children. "
                                    "Do you want to proceed?");
