@@ -124,7 +124,9 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
   editRelationshipButton = new QPushButton("Edit relationship", this);
   editRelationshipButton->setEnabled(false);
   removeRelationshipButton = new QPushButton("Remove relationship", this);
+  removeRelationshipButton->setEnabled(false);
   removeTypeButton = new QPushButton("Remove type", this);
+  removeTypeButton->setEnabled(false);
   assignRelationshipButton = new QPushButton("Assign relationship", this);
   assignRelationshipButton->setEnabled(false);
   unassignRelationshipButton = new QPushButton("Unassign relationship", this);
@@ -2503,6 +2505,7 @@ void RelationshipsWidget::setButtons()
     editRelationshipButton->setEnabled(false);
     assignRelationshipButton->setEnabled(false);
     unassignRelationshipButton->setEnabled(false);
+    removeRelationshipButton->setEnabled(false);
     editTypeButton->setEnabled(false);
     removeTypeButton->setEnabled(false);
     removeTextButton->setEnabled(false);
