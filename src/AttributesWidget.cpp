@@ -116,6 +116,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   unassignAttributeButton = new QPushButton("Unassign attribute", this);
   unassignAttributeButton->setEnabled(false);
   removeAttributeButton = new QPushButton("Remove attribute", this);
+  removeAttributeButton->setEnabled(false);
   valueButton = new QPushButton("Store value", this);
   valueButton->setEnabled(false);
   expandTreeButton = new QPushButton("Expand all", this);
