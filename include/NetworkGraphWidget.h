@@ -122,7 +122,7 @@ class NetworkGraphWidget : public QWidget
     void unassignAttribute();
     void addAttribute();
     void editAttribute();
-    void removeUnusedAttributes();
+    void removeAttribute();
     void multimodeTransformation();
     void removeMode();
     void setModeButtons(QTableWidgetItem *item);
@@ -292,7 +292,7 @@ class NetworkGraphWidget : public QWidget
     QPointer<QPushButton> unassignAttributeButton;
     QPointer<QPushButton> addAttributeButton;
     QPointer<QPushButton> editAttributeButton;
-    QPointer<QPushButton> removeUnusedAttributesButton;
+    QPointer<QPushButton> removeAttributeButton;
     QPointer<QPushButton> addModeButton;
     QPointer<QPushButton> addModesButton;
     QPointer<QPushButton> nodeColorButton;
