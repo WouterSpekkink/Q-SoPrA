@@ -110,7 +110,7 @@ class AttributesWidget : public QWidget
     void unassignAttribute();
     void removeText();
     void resetTexts();
-    void removeUnusedAttributes();
+    void removeAttribute();
     void setTree();
     void expandTree();
     void collapseTree();
@@ -185,7 +185,7 @@ class AttributesWidget : public QWidget
     QPointer<QPushButton> editAttributeButton;
     QPointer<QPushButton> assignAttributeButton;
     QPointer<QPushButton> unassignAttributeButton;
-    QPointer<QPushButton> removeUnusedAttributesButton;
+    QPointer<QPushButton> removeAttributeButton;
     QPointer<QPushButton> valueButton;
     QPointer<QPushButton> expandTreeButton;
     QPointer<QPushButton> collapseTreeButton;

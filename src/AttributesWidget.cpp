@@ -115,7 +115,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   assignAttributeButton->setEnabled(false);
   unassignAttributeButton = new QPushButton("Unassign attribute", this);
   unassignAttributeButton->setEnabled(false);
-  removeUnusedAttributesButton = new QPushButton("Remove unused attributes", this);
+  removeAttributeButton = new QPushButton("Remove attribute", this);
   valueButton = new QPushButton("Store value", this);
   valueButton->setEnabled(false);
   expandTreeButton = new QPushButton("Expand all", this);
@@ -171,7 +171,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(attributeFilterField, SIGNAL(textChanged(const QString &)),
           this, SLOT(changeFilter(const QString &)));
-  connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(removeAttributeButton, SIGNAL(clicked()), this, SLOT(removeAttribute()));
   connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
   connect(attributesTreeView->selectionModel(),
@@ -299,7 +299,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> rightButtonBottomLayout = new QHBoxLayout;
   rightButtonBottomLayout->addWidget(newAttributeButton);
   rightButtonBottomLayout->addWidget(editAttributeButton);
-  rightButtonBottomLayout->addWidget(removeUnusedAttributesButton);
+  rightButtonBottomLayout->addWidget(removeAttributeButton);
   rightLayout->addLayout(rightButtonBottomLayout);
   mainLayout->addLayout(rightLayout);
   // I want to set the size of some widgets based on the availabe screen width
@@ -1750,105 +1750,99 @@ void AttributesWidget::resetTexts()
   }
 }
 
-void AttributesWidget::removeUnusedAttributes() 
+void AttributesWidget::removeAttribute()
 {
-  QSqlQuery *query = new QSqlQuery;
-  QSqlQuery *query2 = new QSqlQuery;
-  bool unfinished = true;
-  QVector<AbstractNode*> abstractNodeVector = _eventGraphWidgetPtr->getAbstractNodes();
-  QSet<QString> takenAttributes;
-  QVectorIterator<AbstractNode*> it(abstractNodeVector);
-  while (it.hasNext()) 
+  if (attributesTreeView->currentIndex().isValid())
   {
-    AbstractNode* current = it.next();
-    QSet<QString> attributes = current->getAttributes();
-    QSet<QString>::iterator it2;
-    for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Removing attribute");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("This will remove the selected attribute from the attributes tree "
+                                   "This only works when the attribute is not assigned to any "
+                                   "incident, when the attribute is stored in graphs, or "
+                                   "when the attribute has children. "
+                                   "Do you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes)
     {
-      takenAttributes.insert(*it2);
-    }
-  }
-  while (unfinished) 
-  {
-    query->exec("SELECT name FROM incident_attributes "
-                "EXCEPT SELECT attribute FROM attributes_to_incidents "
-                "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
-                "EXCEPT SELECT father FROM incident_attributes");
-    QSet<QString> temp;
-    while (query->next())
-    {
-      QString current = query->value(0).toString();
-      temp.insert(current);
-    }
-    QSet<QString>::iterator it3;
-    bool found = false;
-    for (it3 = temp.begin(); it3 != temp.end(); it3++)
-    {
-      if (!takenAttributes.contains(*it3))
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      QSqlQuery *query = new QSqlQuery;
+      QVector<AbstractNode*> abstractNodeVector = _eventGraphWidgetPtr->getAbstractNodes();
+      QSet<QString> takenAttributes;
+      QVectorIterator<AbstractNode*> it(abstractNodeVector);
+      while (it.hasNext())
       {
-        found = true;
-        query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
-        query2->bindValue(":current", *it3);
-        query2->exec();
+        AbstractNode* current = it.next();
+        QSet<QString> attributes = current->getAttributes();
+        QSet<QString>::iterator it2;
+        for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
+        {
+          takenAttributes.insert(*it2);
+        }
       }
-    }
-    if (!found)
-    {
-      unfinished = false;
-    }
-  }
-  unfinished =  true;
-  while (unfinished) 
-  {
-    query->exec("SELECT name FROM entities "
-                "EXCEPT SELECT source FROM entity_relationships "
-                "EXCEPT SELECT target FROM entity_relationships "
-                "EXCEPT SELECT attribute FROM attributes_to_incidents "
-                "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
-                "EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
-                "EXCEPT SELECT father FROM entities");
-    QSet<QString> temp;
-    while (query->next())
-    {
-      QString current = query->value(0).toString();
-      temp.insert(current);
-    }
-    QSet<QString>::iterator it3;
-    bool found = false;
-    for (it3 = temp.begin(); it3 != temp.end(); it3++)
-    {
-      if (!takenAttributes.contains(*it3))
+      query->exec("SELECT attribute FROM attributes_to_incidents");
+      while (query->next())
       {
-        found = true;
-        query2->prepare("DELETE FROM entities WHERE name = :current");
-        query2->bindValue(":current", *it3);
-        query2->exec();
-        query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-        query2->bindValue(":current", *it3);
-        query2->exec();
-        query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
-        query2->bindValue(":current", *it3);
-        query2->exec();
-        query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
-        query2->bindValue(":current", *it3);
-        query2->exec();
+        takenAttributes.insert(query->value(0).toString());
       }
-    }
-    if (!found)
-    {
-      unfinished = false;
+      query->exec("SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT source FROM entity_relationships");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT target FROM entity_relationships");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT attribute FROM saved_og_plots_occurrence_items");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT father FROM incident_attributes");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT father FROM entities");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      if (!takenAttributes.contains(attribute))
+      {
+        query->prepare("DELETE FROM incident_attributes "
+                       "WHERE name = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+        query->prepare("DELETE FROM entitites "
+                       "WHERE name = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+        query->prepare("DELETE FROM attributes_to_entities "
+                       "WHERE entity = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+      }
+      this->setCursor(Qt::WaitCursor);
+      attributesTreeView->setSortingEnabled(false);
+      resetTree();
+      _eventGraphWidgetPtr->resetTree();
+      attributesTreeView->setSortingEnabled(true);
+      attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+      retrieveData();
+      this->setCursor(Qt::ArrowCursor);
+      delete query;
     }
   }
-  this->setCursor(Qt::WaitCursor);
-  attributesTreeView->setSortingEnabled(false);
-  resetTree();
-  _eventGraphWidgetPtr->resetTree();
-  attributesTreeView->setSortingEnabled(true);
-  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  retrieveData();
-  this->setCursor(Qt::ArrowCursor);
-  delete query;  
-  delete query2;
 }
 
 void AttributesWidget::setValueButton() 
@@ -2281,6 +2275,7 @@ void AttributesWidget::setButtons()
       nextCodedButton->setEnabled(true);
     }
     editAttributeButton->setEnabled(true);
+    removeAttributeButton->setEnabled(true);
     delete query;
   }
   else 
@@ -2292,6 +2287,7 @@ void AttributesWidget::setButtons()
     unassignAttributeButton->setEnabled(false);
     removeTextButton->setEnabled(false);
     resetTextsButton->setEnabled(false);
+    removeAttributeButton->setEnabled(false);
   }
 }
 
