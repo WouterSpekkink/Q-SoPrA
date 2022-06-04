@@ -1840,6 +1840,7 @@ void AttributesWidget::removeAttribute()
       attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
       retrieveData();
       this->setCursor(Qt::ArrowCursor);
+      setButtons();
       delete query;
     }
   }

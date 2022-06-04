@@ -244,7 +244,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   unassignAttributeButton = new QPushButton(tr("Unassign attribute"), attWidget);
   addAttributeButton = new QPushButton(tr("New attribute"), attWidget);
   editAttributeButton = new QPushButton(tr("Edit attribute"), attWidget);
-  removeUnusedAttributesButton = new QPushButton(tr("Remove unused"), attWidget);
+  removeAttributeButton = new QPushButton(tr("Remove attribute"), attWidget);
   seeAttributesButton = new QPushButton(tr("Attributes"), commentWidget);
   seeCommentsButton = new QPushButton(tr("Comments"), attWidget);
   removeTextButton = new QPushButton("Remove text", attWidget);
@@ -403,7 +403,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
   connect(valueField, SIGNAL(textChanged(const QString &)), this, SLOT(setValueButton()));
   connect(valueButton, SIGNAL(clicked()), this, SLOT(setValue()));
-  connect(removeUnusedAttributesButton, SIGNAL(clicked()), this, SLOT(removeUnusedAttributes()));
+  connect(removeAttributeButton, SIGNAL(clicked()), this, SLOT(removeAttribute()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
@@ -682,7 +682,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   QPointer<QHBoxLayout> attributesBottomLayout = new QHBoxLayout;
   attributesBottomLayout->addWidget(addAttributeButton);
   attributesBottomLayout->addWidget(editAttributeButton);
-  attributesBottomLayout->addWidget(removeUnusedAttributesButton);
+  attributesBottomLayout->addWidget(removeAttributeButton);
   attributesLayout->addLayout(attributesBottomLayout);
   QPointer<QHBoxLayout> textButtonsLayout = new QHBoxLayout;
   textButtonsLayout->addWidget(removeTextButton);
@@ -886,11 +886,11 @@ void EventGraphWidget::checkCongruence()
     {
       IncidentNode *current = _incidentNodeVector[i];
       if (current->getId() != temp[i])
-	    {
-	      incongruenceLabel->setText("Incongruence detected");
-	      delete query;
-	      return;
-	    }
+      {
+        incongruenceLabel->setText("Incongruence detected");
+        delete query;
+        return;
+      }
     }
     QVectorIterator<QString> it(_presentTypes);
     while (it.hasNext())
@@ -902,13 +902,13 @@ void EventGraphWidget::checkCongruence()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int tailId = query->value(0).toInt();
-	      int headId = query->value(1).toInt();
-	      bool tailVisible = false;
-	      bool headVisible = false;
-	      QVectorIterator<IncidentNode *> it2(_incidentNodeVector);
-	      while (it2.hasNext()) 
+      {
+        int tailId = query->value(0).toInt();
+        int headId = query->value(1).toInt();
+        bool tailVisible = false;
+        bool headVisible = false;
+        QVectorIterator<IncidentNode *> it2(_incidentNodeVector);
+        while (it2.hasNext())
         {
           IncidentNode *currentIncidentNode = it2.next();
           if (currentIncidentNode->isVisible())
@@ -923,7 +923,7 @@ void EventGraphWidget::checkCongruence()
             }
           }
         }
-	      if (tailVisible && headVisible) 
+        if (tailVisible && headVisible)
         {
           QVectorIterator<Linkage *> it3(_edgeVector);
           bool found = false;
@@ -948,7 +948,7 @@ void EventGraphWidget::checkCongruence()
             return;
           }
         }
-	    }
+      }
     }
     QVectorIterator<Linkage *> it3(_edgeVector);
     while (it3.hasNext())
@@ -958,16 +958,16 @@ void EventGraphWidget::checkCongruence()
       IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(current->getStart());
       IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(current->getEnd());
       if (startIncidentNode && endIncidentNode)
-	    {
-	      int currentTail = startIncidentNode->getId();
-	      int currentHead = endIncidentNode->getId();
-	      bool found = false;
-	      query->prepare("SELECT tail, head FROM linkages "
+      {
+        int currentTail = startIncidentNode->getId();
+        int currentHead = endIncidentNode->getId();
+        bool found = false;
+        query->prepare("SELECT tail, head FROM linkages "
                        "WHERE type = :type AND coder = :coder");
-	      query->bindValue(":type", currentType);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":type", currentType);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        while (query->next())
         {
           int tail = query->value(0).toInt();
           int head = query->value(1).toInt();
@@ -976,13 +976,13 @@ void EventGraphWidget::checkCongruence()
             found = true;
           }
         }
-	      if (!found) 
+        if (!found)
         {
           incongruenceLabel->setText("Incongruence detected");
           delete query;
           return;
         }
-	    }
+      }
     }
     // Let's check for congruence of cases
     QVector<QString> currentVector;
@@ -1002,21 +1002,21 @@ void EventGraphWidget::checkCongruence()
     while (cit.hasNext())
     {
       if (!currentVector.contains(cit.next()))
-	    {
-	      incongruenceLabel->setText("Incongruence detected");
-	      delete query;
-	      return;
-	    }
+      {
+        incongruenceLabel->setText("Incongruence detected");
+        delete query;
+        return;
+      }
     }
     QVectorIterator<QString> cit2(currentVector);
     while (cit2.hasNext())
     {
       if (!caseVector.contains(cit2.next()))
-	    {
-	      incongruenceLabel->setText("Incongruence detected");
-	      delete query;
-	      return;
-	    }
+      {
+        incongruenceLabel->setText("Incongruence detected");
+        delete query;
+        return;
+      }
     }
     delete query;
     incongruenceLabel->setText("");
@@ -1229,7 +1229,6 @@ void EventGraphWidget::setGraphControls(bool state)
   upperRangeDial->setEnabled(state);
   lowerRangeSpinBox->setEnabled(state);
   upperRangeSpinBox->setEnabled(state);
-
 }
 
 void EventGraphWidget::updateCases() 
@@ -1259,16 +1258,16 @@ void EventGraphWidget::checkCases()
     if (item->checkState() == Qt::Checked)
     {
       if (!_checkedCases.contains(item->data(Qt::DisplayRole).toString()))
-	    {
-	      _checkedCases.push_back(item->data(Qt::DisplayRole).toString());
-	    }
+      {
+        _checkedCases.push_back(item->data(Qt::DisplayRole).toString());
+      }
     }
     else
     {
       if (_checkedCases.contains(item->data(Qt::DisplayRole).toString()))
-	    {
-	      _checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
-	    }
+      {
+        _checkedCases.removeOne(item->data(Qt::DisplayRole).toString());
+      }
     }
   }
   setVisibility();
@@ -1345,35 +1344,35 @@ void EventGraphWidget::retrieveData()
       AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it.peekNext());
       Linkage *linkage = qgraphicsitem_cast<Linkage*>(it.peekNext());
       if (incidentNode)
-	    {
-	      IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(it.next());
-	      currentIncidentNode->setSelectionColor(Qt::black);
-	      currentIncidentNode->update();
-	      if (currentIncidentNode->isVisible()) 
+      {
+        IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(it.next());
+        currentIncidentNode->setSelectionColor(Qt::black);
+        currentIncidentNode->update();
+        if (currentIncidentNode->isVisible())
         {
           _currentData.push_back(currentIncidentNode);
         }
-	    }	else if (abstractNode) 
-	    {
-	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(it.next());
-	      currentAbstractNode->setSelectionColor(Qt::black);
-	      currentAbstractNode->update();
-	      if (currentAbstractNode->isVisible()) 
+      }	else if (abstractNode)
+      {
+        AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(it.next());
+        currentAbstractNode->setSelectionColor(Qt::black);
+        currentAbstractNode->update();
+        if (currentAbstractNode->isVisible())
         {
           _currentData.push_back(currentAbstractNode);
         }
-	    }
+      }
       else if (linkage && scene->selectedItems().size() > 1)
-	    {
-	      scene->blockSignals(true);
-	      linkage->setSelected(false);
-	      scene->blockSignals(false);
-	      it.next();
-	    }
+      {
+        scene->blockSignals(true);
+        linkage->setSelected(false);
+        scene->blockSignals(false);
+        it.next();
+      }
       else
-	    {
-	      it.next();
-	    }
+      {
+        it.next();
+      }
     }
     if (_currentData.size() > 0)
     {
@@ -1385,23 +1384,23 @@ void EventGraphWidget::retrieveData()
       IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(_currentData.at(_vectorPos));
       AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(_currentData.at(_vectorPos));
       if (currentIncidentNode)
-	    {
-	      _selectedAbstractNode = NULL;
-	      seeComponentsButton->setEnabled(false);
-	      sourceLabel->setText("<b>Source:</b>");
-	      rawLabel->show();
-	      rawField->show();
-	      currentIncidentNode->setSelectionColor(Qt::red);
-	      currentIncidentNode->update();
-	      int id = currentIncidentNode->getId();
-	      _selectedIncident = id;
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
+      {
+        _selectedAbstractNode = NULL;
+        seeComponentsButton->setEnabled(false);
+        sourceLabel->setText("<b>Source:</b>");
+        rawLabel->show();
+        rawField->show();
+        currentIncidentNode->setSelectionColor(Qt::red);
+        currentIncidentNode->update();
+        int id = currentIncidentNode->getId();
+        _selectedIncident = id;
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
                        "WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      if (query->isNull(0)) 
+        query->bindValue(":id", id);
+        query->exec();
+        query->first();
+        if (query->isNull(0))
         {
           timeStampField->setText("Incident was deleted");
           descriptionField->setText("Incident was deleted");
@@ -1409,7 +1408,7 @@ void EventGraphWidget::retrieveData()
           commentField->setText("Incident was deleted");
           sourceField->setText("Incident was deleted");
         }
-	      else 
+        else
         {
           QString timeStamp = query->value(0).toString();
           QString description = query->value(1).toString();
@@ -1435,35 +1434,35 @@ void EventGraphWidget::retrieveData()
           }
           delete query2;
         }
-	      delete query;
-	    }
+        delete query;
+      }
       else if (currentAbstractNode)
-	    {
-	      _selectedAbstractNode = currentAbstractNode;
-	      _selectedIncident = 0;
-	      currentAbstractNode->setSelectionColor(Qt::red);
-	      currentAbstractNode->update();
-	      seeComponentsButton->setEnabled(true);
-	      descriptionField->setText(currentAbstractNode->getDescription());
-	      sourceLabel->setText("<b>Number of incidents:</b>");
-	      int id = currentAbstractNode->getIncidents().first()->getId();
-	      rawLabel->hide();
-	      rawField->hide();
-	      QString timing = currentAbstractNode->getTiming();
-	      QString countText = QString::number(currentAbstractNode->getIncidents().size());
-	      timeStampField->setText(timing);
-	      sourceField->setText(countText);
-	      commentField->setText(currentAbstractNode->getComment());
-	      resetFont(attributesTree);
-	      QSet<QString> attributes = currentAbstractNode->getAttributes();
-	      QSet<QString>::iterator it2;
-	      id = currentAbstractNode->getId();
-	      for (it2 = attributes.begin(); it2 != attributes.end(); it2++) 
+      {
+        _selectedAbstractNode = currentAbstractNode;
+        _selectedIncident = 0;
+        currentAbstractNode->setSelectionColor(Qt::red);
+        currentAbstractNode->update();
+        seeComponentsButton->setEnabled(true);
+        descriptionField->setText(currentAbstractNode->getDescription());
+        sourceLabel->setText("<b>Number of incidents:</b>");
+        int id = currentAbstractNode->getIncidents().first()->getId();
+        rawLabel->hide();
+        rawField->hide();
+        QString timing = currentAbstractNode->getTiming();
+        QString countText = QString::number(currentAbstractNode->getIncidents().size());
+        timeStampField->setText(timing);
+        sourceField->setText(countText);
+        commentField->setText(currentAbstractNode->getComment());
+        resetFont(attributesTree);
+        QSet<QString> attributes = currentAbstractNode->getAttributes();
+        QSet<QString>::iterator it2;
+        id = currentAbstractNode->getId();
+        for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
         {
           QString attribute  = *it2;
           boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
         }
-	    }
+      }
       previousEventButton->setEnabled(true);
       nextEventButton->setEnabled(true);
     }
@@ -1542,26 +1541,26 @@ void EventGraphWidget::previousDataItem()
       query->exec();
       query->first();
       if (query->isNull(0))
-	    {
-	      timeStampField->setText("Incident was deleted");
-	      descriptionField->setText("Incident was deleted");
-	      rawField->setText("Incident was deleted");
-	      commentField->setText("Incident was deleted");
-	      sourceField->setText("Incident was deleted");
-	    }
+      {
+        timeStampField->setText("Incident was deleted");
+        descriptionField->setText("Incident was deleted");
+        rawField->setText("Incident was deleted");
+        commentField->setText("Incident was deleted");
+        sourceField->setText("Incident was deleted");
+      }
       else
-	    {
-	      QString timeStamp = query->value(0).toString();
-	      QString description = query->value(1).toString();
-	      QString raw = query->value(2).toString();
-	      QString comment = query->value(3).toString();
-	      QString source = query->value(4).toString();
-	      timeStampField->setText(timeStamp);
-	      descriptionField->setText(description);
-	      rawField->setText(raw);
-	      commentField->setText(comment);
-	      sourceField->setText(source);
-	    }
+      {
+        QString timeStamp = query->value(0).toString();
+        QString description = query->value(1).toString();
+        QString raw = query->value(2).toString();
+        QString comment = query->value(3).toString();
+        QString source = query->value(4).toString();
+        timeStampField->setText(timeStamp);
+        descriptionField->setText(description);
+        rawField->setText(raw);
+        commentField->setText(comment);
+        sourceField->setText(source);
+      }
       resetFont(attributesTree);
       query->prepare("SELECT attribute FROM attributes_to_incidents "
                      "WHERE incident = :id AND coder = :coder");
@@ -1569,10 +1568,10 @@ void EventGraphWidget::previousDataItem()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      QString attribute = query->value(0).toString();
-	      boldSelected(attributesTree, attribute, id, INCIDENT);
-	    }
+      {
+        QString attribute = query->value(0).toString();
+        boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
       delete query;
     }
     else if (currentAbstractNode)
@@ -1596,10 +1595,10 @@ void EventGraphWidget::previousDataItem()
       QSet<QString>::iterator it2;
       id = currentAbstractNode->getId();
       for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
-	    {
-	      QString attribute  = *it2;
-	      boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
-	    }
+      {
+        QString attribute  = *it2;
+        boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
+      }
     }
   }
   else 
@@ -1649,26 +1648,26 @@ void EventGraphWidget::previousDataItem()
       query->exec();
       query->first();
       if (query->isNull(0))
-	    {
-	      timeStampField->setText("Incident was deleted");
-	      descriptionField->setText("Incident was deleted");
-	      rawField->setText("Incident was deleted");
-	      commentField->setText("Incident was deleted");
-	      sourceField->setText("Incident was deleted");
-	    }
+      {
+        timeStampField->setText("Incident was deleted");
+        descriptionField->setText("Incident was deleted");
+        rawField->setText("Incident was deleted");
+        commentField->setText("Incident was deleted");
+        sourceField->setText("Incident was deleted");
+      }
       else
-	    {
-	      QString timeStamp = query->value(0).toString();
-	      QString description = query->value(1).toString();
-	      QString raw = query->value(2).toString();
-	      QString comment = query->value(3).toString();
-	      QString source = query->value(4).toString();
-	      timeStampField->setText(timeStamp);
-	      descriptionField->setText(description);
-	      rawField->setText(raw);
-	      commentField->setText(comment);
-	      sourceField->setText(source);
-	    }
+      {
+        QString timeStamp = query->value(0).toString();
+        QString description = query->value(1).toString();
+        QString raw = query->value(2).toString();
+        QString comment = query->value(3).toString();
+        QString source = query->value(4).toString();
+        timeStampField->setText(timeStamp);
+        descriptionField->setText(description);
+        rawField->setText(raw);
+        commentField->setText(comment);
+        sourceField->setText(source);
+      }
       resetFont(attributesTree);
       query->prepare("SELECT attribute FROM attributes_to_incidents "
                      "WHERE incident = :id AND coder = :coder");
@@ -1676,10 +1675,10 @@ void EventGraphWidget::previousDataItem()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      QString attribute = query->value(0).toString();
-	      boldSelected(attributesTree, attribute, id, INCIDENT);
-	    }
+      {
+        QString attribute = query->value(0).toString();
+        boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
       delete query;
     }
     else if (currentAbstractNode)
@@ -1701,10 +1700,10 @@ void EventGraphWidget::previousDataItem()
       QSet<QString>::iterator it2;
       id = currentAbstractNode->getId();
       for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
-	    {
-	      QString attribute  = *it2;
-	      boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
-	    }
+      {
+        QString attribute  = *it2;
+        boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
+      }
     }
   }
 }
@@ -1759,26 +1758,26 @@ void EventGraphWidget::nextDataItem()
       query->exec();
       query->first();
       if (query->isNull(0))
-	    {
-	      timeStampField->setText("Incident was deleted");
-	      descriptionField->setText("Incident was deleted");
-	      rawField->setText("Incident was deleted");
-	      commentField->setText("Incident was deleted");
-	      sourceField->setText("Incident was deleted");
-	    }
+      {
+        timeStampField->setText("Incident was deleted");
+        descriptionField->setText("Incident was deleted");
+        rawField->setText("Incident was deleted");
+        commentField->setText("Incident was deleted");
+        sourceField->setText("Incident was deleted");
+      }
       else
-	    {
-	      QString timeStamp = query->value(0).toString();
-	      QString description = query->value(1).toString();
-	      QString raw = query->value(2).toString();
-	      QString comment = query->value(3).toString();
-	      QString source = query->value(4).toString();
-	      timeStampField->setText(timeStamp);
-	      descriptionField->setText(description);
-	      rawField->setText(raw);
-	      commentField->setText(comment);
-	      sourceField->setText(source);
-	    }
+      {
+        QString timeStamp = query->value(0).toString();
+        QString description = query->value(1).toString();
+        QString raw = query->value(2).toString();
+        QString comment = query->value(3).toString();
+        QString source = query->value(4).toString();
+        timeStampField->setText(timeStamp);
+        descriptionField->setText(description);
+        rawField->setText(raw);
+        commentField->setText(comment);
+        sourceField->setText(source);
+      }
       resetFont(attributesTree);
       query->prepare("SELECT attribute FROM attributes_to_incidents "
                      "WHERE incident = :id AND coder = :coder");
@@ -1786,10 +1785,10 @@ void EventGraphWidget::nextDataItem()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      QString attribute = query->value(0).toString();
-	      boldSelected(attributesTree, attribute, id, INCIDENT);
-	    }
+      {
+        QString attribute = query->value(0).toString();
+        boldSelected(attributesTree, attribute, id, INCIDENT);
+      }
       delete query;
     }
     else if (currentAbstractNode)
@@ -1812,10 +1811,10 @@ void EventGraphWidget::nextDataItem()
       QSet<QString>::iterator it2;
       id = currentAbstractNode->getId();
       for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
-	    {
-	      QString attribute  = *it2;
-	      boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
-	    }
+      {
+        QString attribute  = *it2;
+        boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
+      }
     }
   }
   else 
@@ -1866,39 +1865,39 @@ void EventGraphWidget::nextDataItem()
       query->exec();
       query->first();
       if (query->isNull(0))
-	    {
-	      timeStampField->setText("Incident was deleted");
-	      descriptionField->setText("Incident was deleted");
-	      rawField->setText("Incident was deleted");
-	      commentField->setText("Incident was deleted");
-	      sourceField->setText("Incident was deleted");
-	    }
+      {
+        timeStampField->setText("Incident was deleted");
+        descriptionField->setText("Incident was deleted");
+        rawField->setText("Incident was deleted");
+        commentField->setText("Incident was deleted");
+        sourceField->setText("Incident was deleted");
+      }
       else
-	    {
-	      QString timeStamp = query->value(0).toString();
-	      QString description = query->value(1).toString();
-	      QString raw = query->value(2).toString();
-	      QString comment = query->value(3).toString();
-	      QString source = query->value(4).toString();
-	      timeStampField->setText(timeStamp);
-	      descriptionField->setText(description);
-	      rawField->setText(raw);
-	      commentField->setText(comment);
-	      sourceField->setText(source);
-	      delete query;
-	      resetFont(attributesTree);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT attribute FROM attributes_to_incidents "
+      {
+        QString timeStamp = query->value(0).toString();
+        QString description = query->value(1).toString();
+        QString raw = query->value(2).toString();
+        QString comment = query->value(3).toString();
+        QString source = query->value(4).toString();
+        timeStampField->setText(timeStamp);
+        descriptionField->setText(description);
+        rawField->setText(raw);
+        commentField->setText(comment);
+        sourceField->setText(source);
+        delete query;
+        resetFont(attributesTree);
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT attribute FROM attributes_to_incidents "
                        "WHERE incident = :id AND coder = :coder");
-	      query->bindValue(":id", id);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":id", id);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        while (query->next())
         {
           QString attribute = query->value(0).toString();
           boldSelected(attributesTree, attribute, id, INCIDENT);
         }
-	    }
+      }
     }
     else if (currentAbstractNode)
     {
@@ -1920,10 +1919,10 @@ void EventGraphWidget::nextDataItem()
       QSet<QString>::iterator it2;
       id = currentAbstractNode->getId();
       for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
-	    {
-	      QString attribute  = *it2;
-	      boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
-	    }
+      {
+        QString attribute  = *it2;
+        boldSelected(attributesTree, attribute, id, ABSTRACTNODE);
+      }
     }
   }
 }
@@ -2064,9 +2063,9 @@ void EventGraphWidget::changeTreeFontSize(QAbstractItemModel *model, QModelIndex
       font.setPointSize(fontSize + size);
       currentAttribute->setFont(font);
       if (model->hasChildren(index))
-	    {
-	      changeTreeFontSize(model, index, size);
-	    }
+      {
+        changeTreeFontSize(model, index, size);
+      }
     }
   }
 }
@@ -2100,16 +2099,16 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
     if (name != ENTITIES)
     {
       if (name == currentName)
-	    {
-	      if (currentAttribute->font().underline()) 
+      {
+        if (currentAttribute->font().underline())
         {
           currentAttribute->setFont(font3);
         }
-	      else 
+        else
         {
           currentAttribute->setFont(font);
         }
-	      if (currentAttribute->parent()) 
+        if (currentAttribute->parent())
         {
           while (currentAttribute->parent())
           {
@@ -2169,7 +2168,7 @@ void EventGraphWidget::boldSelected(QAbstractItemModel *model, QString name,
             }
           }
         }
-	    }
+      }
     }
     else
     {
@@ -2203,23 +2202,23 @@ void EventGraphWidget::assignAttribute()
       empty = query->isNull(0);
       QTextCursor cursPos = rawField->textCursor();
       if (empty)
-	    {
-	      query->prepare("INSERT INTO attributes_to_incidents (attribute, incident, coder) "
+      {
+        query->prepare("INSERT INTO attributes_to_incidents (attribute, incident, coder) "
                        "VALUES (:attribute, :incident, :coder)");
-	      query->bindValue(":attribute", attribute);
-	      query->bindValue(":incident", _selectedIncident);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      sourceAttributeText(attribute, _selectedIncident);
-	      boldSelected(attributesTree, attribute, _selectedIncident, INCIDENT);
-	      valueField->setEnabled(true);
-	    }
+        query->bindValue(":attribute", attribute);
+        query->bindValue(":incident", _selectedIncident);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        sourceAttributeText(attribute, _selectedIncident);
+        boldSelected(attributesTree, attribute, _selectedIncident, INCIDENT);
+        valueField->setEnabled(true);
+      }
       else
-	    {
-	      sourceAttributeText(attribute, _selectedIncident);
-	      highlightText();
-	      rawField->setTextCursor(cursPos);
-	    }
+      {
+        sourceAttributeText(attribute, _selectedIncident);
+        highlightText();
+        rawField->setTextCursor(cursPos);
+      }
       delete query;
       setButtons();
     }
@@ -2231,11 +2230,11 @@ void EventGraphWidget::assignAttribute()
       QString attribute = attributesTreeView->currentIndex().data().toString();
       QSet<QString> attributes = _selectedAbstractNode->getAttributes();
       if (!attributes.contains(attribute))
-	    {
-	      _selectedAbstractNode->insertAttribute(attribute);
-	      boldSelected(attributesTree, attribute, _selectedAbstractNode->getId(), ABSTRACTNODE);
-	      valueField->setEnabled(true);
-	    }
+      {
+        _selectedAbstractNode->insertAttribute(attribute);
+        boldSelected(attributesTree, attribute, _selectedAbstractNode->getId(), ABSTRACTNODE);
+        valueField->setEnabled(true);
+      }
     }
     setButtons();
   }
@@ -2262,34 +2261,34 @@ void EventGraphWidget::unassignAttribute()
       query->first();
       empty = query->isNull(0);
       if (!empty)
-	    {
-	      query->prepare("DELETE FROM attributes_to_incidents "
+      {
+        query->prepare("DELETE FROM attributes_to_incidents "
                        "WHERE attribute = :att AND incident = :incident AND coder = :coder");
-	      query->bindValue(":att", attribute);
-	      query->bindValue(":incident", _selectedIncident);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      query2->prepare("DELETE FROM attributes_to_incidents_sources "
+        query->bindValue(":att", attribute);
+        query->bindValue(":incident", _selectedIncident);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        query2->prepare("DELETE FROM attributes_to_incidents_sources "
                         "WHERE attribute = :att AND incident = :incident AND coder = :coder");
-	      query2->bindValue(":att", attribute);
-	      query2->bindValue(":inc", _selectedIncident);
-	      query2->bindValue(":coder", _selectedCoder);
-	      query2->exec();
-	      resetFont(attributesTree);
-	      query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
+        query2->bindValue(":att", attribute);
+        query2->bindValue(":inc", _selectedIncident);
+        query2->bindValue(":coder", _selectedCoder);
+        query2->exec();
+        resetFont(attributesTree);
+        query2->prepare("SELECT attribute, incident FROM attributes_to_incidents "
                         "WHERE incident = :incident AND coder = :coder");
-	      query2->bindValue(":incident", _selectedIncident);
-	      query2->bindValue(":coder", _selectedCoder);
-	      query2->exec();
-	      while (query2->next()) 
+        query2->bindValue(":incident", _selectedIncident);
+        query2->bindValue(":coder", _selectedCoder);
+        query2->exec();
+        while (query2->next())
         {
           QString attribute = query2->value(0).toString();
           boldSelected(attributesTree, attribute, _selectedIncident, INCIDENT);
         }
-	      valueField->setText("");
-	      valueField->setEnabled(false);
-	      valueButton->setEnabled(false);
-	    }
+        valueField->setText("");
+        valueField->setEnabled(false);
+        valueButton->setEnabled(false);
+      }
       setButtons();
       delete query;
       delete query2;
@@ -2302,21 +2301,21 @@ void EventGraphWidget::unassignAttribute()
       QString attribute = attributesTreeView->currentIndex().data().toString();
       QSet<QString> attributes = _selectedAbstractNode->getAttributes();
       if (attributes.contains(attribute))
-	    {
-	      _selectedAbstractNode->removeAttribute(attribute);
-	      QSet<QString>::iterator it;
-	      resetFont(attributesTree);
-	      attributes = _selectedAbstractNode->getAttributes();
-	      for (it = attributes.begin(); it != attributes.end(); it++) 
+      {
+        _selectedAbstractNode->removeAttribute(attribute);
+        QSet<QString>::iterator it;
+        resetFont(attributesTree);
+        attributes = _selectedAbstractNode->getAttributes();
+        for (it = attributes.begin(); it != attributes.end(); it++)
         {
           QString current = *it;
           boldSelected(attributesTree, current, _selectedAbstractNode->getId(), ABSTRACTNODE);
         }
-	      setButtons();
-	      valueField->setText("");
-	      valueField->setEnabled(false);
-	      valueButton->setEnabled(false);
-	    }
+        setButtons();
+        valueField->setText("");
+        valueField->setEnabled(false);
+        valueButton->setEnabled(false);
+      }
     }
   }
   setButtons();
@@ -2406,19 +2405,19 @@ void EventGraphWidget::removeText()
     {
       QString attribute = attributesTreeView->currentIndex().data().toString();
       if (rawField->textCursor().selectedText().trimmed() != "")
-	    {
-	      QString sourceText = rawField->textCursor().selectedText().trimmed();
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("DELETE FROM attributes_to_incidents_sources "
+      {
+        QString sourceText = rawField->textCursor().selectedText().trimmed();
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("DELETE FROM attributes_to_incidents_sources "
                        "WHERE attribute = :att AND incident = :inc AND coder = :coder "
                        "AND source_text = :text");
-	      query->bindValue(":att", attribute);
-	      query->bindValue(":inc", _selectedIncident);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":text", sourceText);
-	      query->exec();
-	      delete query;
-	    }
+        query->bindValue(":att", attribute);
+        query->bindValue(":inc", _selectedIncident);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":text", sourceText);
+        query->exec();
+        delete query;
+      }
       setButtons();
       highlightText();
     }
@@ -2440,9 +2439,9 @@ void EventGraphWidget::resetTexts()
       warningBox->setInformativeText("Resetting source texts cannot be undone. "
                                      "Are you sure you want to proceed?");
       if (warningBox->exec() == QMessageBox::Yes)
-	    {
-	      QSqlQuery *query = new QSqlQuery;
-	      if (!(query->isNull(0))) 
+      {
+        QSqlQuery *query = new QSqlQuery;
+        if (!(query->isNull(0)))
         {
           QString attribute = attributesTreeView->currentIndex().data().toString();
           query->prepare("DELETE FROM attributes_to_incidents_sources "
@@ -2452,9 +2451,9 @@ void EventGraphWidget::resetTexts()
           query->bindValue(":coder", _selectedCoder);
           query->exec();
         }
-	      highlightText();
-	      delete query;
-	    }
+        highlightText();
+        delete query;
+      }
       setButtons();
       delete warningBox;
     }
@@ -2485,20 +2484,20 @@ void EventGraphWidget::setButtons()
       query->first();
       empty = query->isNull(0);
       if (!empty)
-	    {
-	      unassignAttributeButton->setEnabled(true);
-	      valueField->setEnabled(true);
-	      if (!query->isNull(3))
+      {
+        unassignAttributeButton->setEnabled(true);
+        valueField->setEnabled(true);
+        if (!query->isNull(3))
         {
           valueField->blockSignals(true);
           valueField->setText(query->value(3).toString());
           valueField->blockSignals(false);
         }
-	    }
+      }
       else
-	    {
-	      unassignAttributeButton->setEnabled(false);
-	    }
+      {
+        unassignAttributeButton->setEnabled(false);
+      }
       query->prepare("SELECT attribute, incident FROM "
                      "attributes_to_incidents_sources "
                      "WHERE attribute = :att AND incident = :inc AND coder = :coder");
@@ -2509,23 +2508,23 @@ void EventGraphWidget::setButtons()
       query->first();
       empty = query->isNull(0);
       if (!empty)
-	    {
-	      removeTextButton->setEnabled(true);
-	      resetTextsButton->setEnabled(true);
-	    }
+      {
+        removeTextButton->setEnabled(true);
+        resetTextsButton->setEnabled(true);
+      }
       else
-	    {
-	      removeTextButton->setEnabled(false);
-	      resetTextsButton->setEnabled(false);
-	    }
+      {
+        removeTextButton->setEnabled(false);
+        resetTextsButton->setEnabled(false);
+      }
       if (currentAttribute != ENTITIES)
-	    {
-	      assignAttributeButton->setEnabled(true);
-	    }
+      {
+        assignAttributeButton->setEnabled(true);
+      }
       else
-	    {
-	      assignAttributeButton->setEnabled(false);
-	    }
+      {
+        assignAttributeButton->setEnabled(false);
+      }
       delete query;
     }
     else if (_selectedAbstractNode != NULL)
@@ -2534,31 +2533,31 @@ void EventGraphWidget::setButtons()
       QSet<QString> attributes = _selectedAbstractNode->getAttributes();
       QMap<QString, QString> values = _selectedAbstractNode->getValues();
       if (attributes.contains(currentAttribute))
-	    {
-	      unassignAttributeButton->setEnabled(true);
-	      valueField->setEnabled(true);
-	      QString currentValue = values[currentAttribute];
-	      if (currentValue != "")
+      {
+        unassignAttributeButton->setEnabled(true);
+        valueField->setEnabled(true);
+        QString currentValue = values[currentAttribute];
+        if (currentValue != "")
         {
           valueField->blockSignals(true);
           valueField->setText(currentValue);
           valueField->blockSignals(false);
         }
-	    }
+      }
       else
-	    {
-	      unassignAttributeButton->setEnabled(false);
-	    }
+      {
+        unassignAttributeButton->setEnabled(false);
+      }
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
       if (currentAttribute != ENTITIES)
-	    {
-	      assignAttributeButton->setEnabled(true);
-	    }
+      {
+        assignAttributeButton->setEnabled(true);
+      }
       else
-	    {
-	      assignAttributeButton->setEnabled(false);
-	    }
+      {
+        assignAttributeButton->setEnabled(false);
+      }
       removeTextButton->setEnabled(false);
       resetTextsButton->setEnabled(false);
     }
@@ -2570,113 +2569,109 @@ void EventGraphWidget::setButtons()
     {
       editAttributeButton->setEnabled(false);
     }
+    removeAttributeButton->setEnabled(true);
   }
   else 
   {
     assignAttributeButton->setEnabled(false);
     editAttributeButton->setEnabled(false);
     unassignAttributeButton->setEnabled(false);
+    removeAttributeButton->setEnabled(false);
   }
 }
 
-void EventGraphWidget::removeUnusedAttributes() 
+void EventGraphWidget::removeAttribute()
 {
-  QSqlQuery *query = new QSqlQuery;
-  QSqlQuery *query2 = new QSqlQuery;
-  bool unfinished = true;
-  QSet<QString> takenAttributes;
-  QVectorIterator<AbstractNode*> it(_abstractNodeVector);
-  while (it.hasNext()) 
+  if (attributesTreeView->currentIndex().isValid())
   {
-    AbstractNode *current = it.next();
-    QSet<QString> attributes = current->getAttributes();
-    QSet<QString>::iterator it2;
-    for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
+    QPointer<QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Removing attribute");
+    warningBox->addButton(QMessageBox::Yes);
+    warningBox->addButton(QMessageBox::No);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<h2>Are you sure?</h2>");
+    warningBox->setInformativeText("This will remove the selected attribute from the attributes tree "
+                                   "This only works when the attribute is not assigned to any "
+                                   "incident, when the attribute is stored in graphs, or "
+                                   "when the attribute has children. "
+                                   "Do you want to proceed?");
+    if (warningBox->exec() == QMessageBox::Yes)
     {
-      takenAttributes.insert(*it2);
+      QString attribute = attributesTreeView->currentIndex().data().toString();
+      QSqlQuery *query = new QSqlQuery;
+      QSet<QString> takenAttributes;
+      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
+      while (it.hasNext())
+      {
+        AbstractNode* current = it.next();
+        QSet<QString> attributes = current->getAttributes();
+        QSet<QString>::iterator it2;
+        for (it2 = attributes.begin(); it2 != attributes.end(); it2++)
+        {
+          takenAttributes.insert(*it2);
+        }
+      }
+      query->exec("SELECT attribute FROM attributes_to_incidents");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT source FROM entity_relationships");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT target FROM entity_relationships");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT attribute FROM saved_og_plots_occurrence_items");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT father FROM incident_attributes");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      query->exec("SELECT father FROM entities");
+      while (query->next())
+      {
+        takenAttributes.insert(query->value(0).toString());
+      }
+      if (!takenAttributes.contains(attribute))
+      {
+        query->prepare("DELETE FROM incident_attributes "
+                       "WHERE name = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+        query->prepare("DELETE FROM entitites "
+                       "WHERE name = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+        query->prepare("DELETE FROM attributes_to_entities "
+                       "WHERE entity = :attribute");
+        query->bindValue(":attribute", attribute);
+        query->exec();
+      }
+      this->setCursor(Qt::WaitCursor);
+      attributesTreeView->setSortingEnabled(false);
+      resetTree();
+      attributesTreeView->setSortingEnabled(true);
+      attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
+      retrieveData();
+      this->setCursor(Qt::ArrowCursor);
+      delete query;
+      setButtons();
     }
   }
-  while (unfinished) 
-  {
-    query->exec("SELECT name FROM incident_attributes "
-                "EXCEPT SELECT attribute FROM attributes_to_incidents "
-                "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
-                "EXCEPT SELECT father FROM incident_attributes");
-    QSet<QString> temp;
-    while (query->next())
-    {
-      QString current = query->value(0).toString();
-      temp.insert(current);
-    }
-    QSet<QString>::iterator it3;
-    bool found = false;
-    for (it3 = temp.begin(); it3 != temp.end(); it3++)
-    {
-      if (!takenAttributes.contains(*it3))
-	    {
-	      found = true;
-	      query2->prepare("DELETE FROM incident_attributes WHERE name = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	    }
-    }
-    if (!found)
-    {
-      unfinished = false;
-    }
-  }
-  unfinished =  true;
-  while (unfinished) 
-  {
-    query->exec("SELECT name FROM entities "
-                "EXCEPT SELECT source FROM entity_relationships "
-                "EXCEPT SELECT target FROM entity_relationships "
-                "EXCEPT SELECT attribute FROM attributes_to_incidents "
-                "EXCEPT SELECT attribute FROM saved_eg_plots_attributes_to_abstract_nodes "
-                "EXCEPT SELECT attribute FROM saved_og_plots_occurrence_items "
-                "EXCEPT SELECT father FROM entities");
-    QSet<QString> temp;
-    while (query->next())
-    {
-      QString current = query->value(0).toString();
-      temp.insert(current);
-    }
-    QSet<QString>::iterator it3;
-    bool found = false;
-    for (it3 = temp.begin(); it3 != temp.end(); it3++)
-    {
-      if (!takenAttributes.contains(*it3))
-	    {
-	      found = true;
-	      query2->prepare("DELETE FROM entities WHERE name = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	      query2->prepare("DELETE FROM attributes_to_entities WHERE entity = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	      query2->prepare("DELETE FROM attributes_to_incidents WHERE attribute = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	      query2->prepare("DELETE FROM attributes_to_incidents_sources WHERE attribute = :current");
-	      query2->bindValue(":current", *it3);
-	      query2->exec();
-	    }
-    }
-    if (!found)
-    {
-      unfinished = false;
-    }
-  }
-  this->setCursor(Qt::WaitCursor);
-  attributesTreeView->setSortingEnabled(false);
-  resetTree();
-  _attributesWidgetPtr->resetTree();
-  attributesTreeView->setSortingEnabled(true);
-  attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
-  retrieveData();
-  this->setCursor(Qt::ArrowCursor);
-  delete query;  
-  delete query2;
 }
 
 void EventGraphWidget::highlightText() 
@@ -2691,24 +2686,24 @@ void EventGraphWidget::highlightText()
         itemFromIndex(treeFilter->mapToSource(attributesTreeView->currentIndex()));
       QString currentName = attributesTreeView->currentIndex().data().toString();
       if (currentAttribute->font().bold())
-	    {
-	      QTextCharFormat format;
-	      format.setFontWeight(QFont::Normal);
-	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	      rawField->selectAll();
-	      rawField->textCursor().mergeCharFormat(format);
-	      QTextCursor cursor = rawField->textCursor();
-	      cursor.movePosition(QTextCursor::Start);
-	      rawField->setTextCursor(cursor);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT source_text "
+      {
+        QTextCharFormat format;
+        format.setFontWeight(QFont::Normal);
+        format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+        rawField->selectAll();
+        rawField->textCursor().mergeCharFormat(format);
+        QTextCursor cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT source_text "
                        "FROM attributes_to_incidents_sources "
                        "WHERE attribute = :attribute AND incident = :id AND coder = :coder");
-	      query->bindValue(":attribute", currentName);
-	      query->bindValue(":id", _selectedIncident);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->exec();
-	      while (query->next()) 
+        query->bindValue(":attribute", currentName);
+        query->bindValue(":id", _selectedIncident);
+        query->bindValue(":coder", _selectedCoder);
+        query->exec();
+        while (query->next())
         {
           QString currentText = query->value(0).toString();
           QVector<QString> blocks = splitLines(currentText);
@@ -2728,23 +2723,23 @@ void EventGraphWidget::highlightText()
           cursor.movePosition(QTextCursor::Start);
           rawField->setTextCursor(cursor);
         }
-	      rawField->setTextCursor(currentPos);
-	      delete query;
-	    }
+        rawField->setTextCursor(currentPos);
+        delete query;
+      }
       else
-	    {
-	      QString currentSelected = rawField->textCursor().selectedText();
-	      QTextCharFormat format;
-	      format.setFontWeight(QFont::Normal);
-	      format.setUnderlineStyle(QTextCharFormat::NoUnderline);
-	      rawField->selectAll();
-	      rawField->textCursor().mergeCharFormat(format);
-	      QTextCursor cursor = rawField->textCursor();
-	      cursor.movePosition(QTextCursor::Start);
-	      rawField->setTextCursor(cursor);
-	      rawField->find(currentSelected);
-	      rawField->setTextCursor(currentPos);
-	    }
+      {
+        QString currentSelected = rawField->textCursor().selectedText();
+        QTextCharFormat format;
+        format.setFontWeight(QFont::Normal);
+        format.setUnderlineStyle(QTextCharFormat::NoUnderline);
+        rawField->selectAll();
+        rawField->textCursor().mergeCharFormat(format);
+        QTextCursor cursor = rawField->textCursor();
+        cursor.movePosition(QTextCursor::Start);
+        rawField->setTextCursor(cursor);
+        rawField->find(currentSelected);
+        rawField->setTextCursor(currentPos);
+      }
     }
     else
     {
@@ -2818,31 +2813,31 @@ void EventGraphWidget::newAttribute()
       entityDialog->setNew();
       entityDialog->exec();
       if (entityDialog->getExitStatus() == 0)
-	    {
-	      QString name = entityDialog->getName();
-	      QString description = entityDialog->getDescription();
-	      QStandardItem *attribute = new QStandardItem(name);    
-	      attribute->setToolTip(description);
-	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-	      QStandardItem *father = attributesTree->
+      {
+        QString name = entityDialog->getName();
+        QString description = entityDialog->getDescription();
+        QStandardItem *attribute = new QStandardItem(name);
+        attribute->setToolTip(description);
+        QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+        QStandardItem *father = attributesTree->
           itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-	      father->appendRow(attribute);
-	      attribute->setToolTip(hint);
-	      attribute->setEditable(false);
-	      QString fatherName = currentParent;
-	      if (fatherName == ENTITIES) 
+        father->appendRow(attribute);
+        attribute->setToolTip(hint);
+        attribute->setEditable(false);
+        QString fatherName = currentParent;
+        if (fatherName == ENTITIES)
         {
           fatherName = "NONE";
         }
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("INSERT INTO entities (name, description, father) "
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("INSERT INTO entities (name, description, father) "
                        "VALUES (:name, :description, :father)");
-	      query->bindValue(":name", name);
-	      query->bindValue(":description", description);
-	      query->bindValue(":father", fatherName);
-	      query->exec();
-	      delete query;
-	    }
+        query->bindValue(":name", name);
+        query->bindValue(":description", description);
+        query->bindValue(":father", fatherName);
+        query->exec();
+        delete query;
+      }
       delete entityDialog;
       _attributesWidgetPtr->resetTree();
     }
@@ -2851,27 +2846,27 @@ void EventGraphWidget::newAttribute()
       QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
       attributeDialog->exec();
       if (attributeDialog->getExitStatus() == 0)
-	    {
-	      name = attributeDialog->getName();
-	      description = attributeDialog->getDescription();
-	      QStandardItem *attribute = new QStandardItem(name);    
-	      attribute->setToolTip(description);
-	      QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
-	      QStandardItem *father = attributesTree->
+      {
+        name = attributeDialog->getName();
+        description = attributeDialog->getDescription();
+        QStandardItem *attribute = new QStandardItem(name);
+        attribute->setToolTip(description);
+        QString hint = "<FONT SIZE = 3>" + description + "</FONT>";
+        QStandardItem *father = attributesTree->
           itemFromIndex(treeFilter->mapToSource((attributesTreeView->currentIndex())));
-	      father->appendRow(attribute);
-	      attribute->setToolTip(hint);
-	      attribute->setEditable(false);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("INSERT INTO incident_attributes (name, description, father) "
+        father->appendRow(attribute);
+        attribute->setToolTip(hint);
+        attribute->setEditable(false);
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("INSERT INTO incident_attributes (name, description, father) "
                        "VALUES (:name, :description, :father)");
-	      query->bindValue(":name", name);
-	      query->bindValue(":description", description);
-	      query->bindValue(":father", currentParent);
-	      query->exec();
-	      delete query;
-	      _attributesWidgetPtr->resetTree();
-	    }
+        query->bindValue(":name", name);
+        query->bindValue(":description", description);
+        query->bindValue(":father", currentParent);
+        query->exec();
+        delete query;
+        _attributesWidgetPtr->resetTree();
+      }
       delete attributeDialog;
     }
   }
@@ -2915,24 +2910,24 @@ void EventGraphWidget::editAttribute()
     {
       QModelIndex tempIndex = attributesTreeView->currentIndex();
       while (tempIndex.parent().isValid())
-	    {
-	      tempIndex = tempIndex.parent();
-	    }
+      {
+        tempIndex = tempIndex.parent();
+      }
       QString top = tempIndex.data().toString();
       if (top == ENTITIES)
-	    {
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT description FROM entities WHERE name = :name");
-	      query->bindValue(":name", name);
-	      query->exec();
-	      query->first();
-	      QString description = query->value(0).toString();
-	      EntityDialog *entityDialog = new EntityDialog(this);
-	      entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
-	      entityDialog->submitName(name);
-	      entityDialog->submitDescription(description);
-	      entityDialog->exec();
-	      if (entityDialog->getExitStatus() == 0) 
+      {
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT description FROM entities WHERE name = :name");
+        query->bindValue(":name", name);
+        query->exec();
+        query->first();
+        QString description = query->value(0).toString();
+        EntityDialog *entityDialog = new EntityDialog(this);
+        entityDialog->setRelationshipsWidget(_relationshipsWidgetPtr);
+        entityDialog->submitName(name);
+        entityDialog->submitDescription(description);
+        entityDialog->exec();
+        if (entityDialog->getExitStatus() == 0)
         {
           QString newName = entityDialog->getName();
           description = entityDialog->getDescription();
@@ -2944,22 +2939,22 @@ void EventGraphWidget::editAttribute()
           currentAttribute->setToolTip(hint);
           updateEntityAfterEdit(newName, description, name);
         }
-	      delete query;
-	      delete entityDialog;
-	    }
+        delete query;
+        delete entityDialog;
+      }
       else
-	    {
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
-	      query->bindValue(":name", name);
-	      query->exec();
-	      query->first();
-	      QString description = query->value(0).toString();
-	      QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
-	      attributeDialog->submitName(name);
-	      attributeDialog->submitDescription(description);
-	      attributeDialog->exec();
-	      if (attributeDialog->getExitStatus() == 0) 
+      {
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT description FROM incident_attributes WHERE name = :name");
+        query->bindValue(":name", name);
+        query->exec();
+        query->first();
+        QString description = query->value(0).toString();
+        QPointer<AttributeDialog> attributeDialog = new AttributeDialog(this, INCIDENT);
+        attributeDialog->submitName(name);
+        attributeDialog->submitDescription(description);
+        attributeDialog->exec();
+        if (attributeDialog->getExitStatus() == 0)
         {
           QString newName = attributeDialog->getName();
           description = attributeDialog->getDescription();
@@ -3005,9 +3000,9 @@ void EventGraphWidget::editAttribute()
           this->setCursor(Qt::ArrowCursor);
           _attributesWidgetPtr->resetTree();
         }
-	      delete query;
-	      delete attributeDialog;
-	    }
+        delete query;
+        delete attributeDialog;
+      }
     }
     attributesTree->sort(0, Qt::AscendingOrder);
     attributesTreeView->sortByColumn(0, Qt::AscendingOrder);
@@ -3072,13 +3067,13 @@ void EventGraphWidget::updateEntityAfterEdit(const QString name,
       QString directedness = query2->value(0).toString();
       QString arrow = "";
       if (directedness == UNDIRECTED)
-	    {
-	      arrow = "<-->";
-	    }
+      {
+        arrow = "<-->";
+      }
       else if (directedness == DIRECTED)
-	    {
-	      arrow = "--->";
-	    }
+      {
+        arrow = "--->";
+      }
       QString newRelationship = name + arrow + target;
       query2->prepare("UPDATE entity_relationships "
                       "SET source = :source, name = :name "
@@ -3120,13 +3115,13 @@ void EventGraphWidget::updateEntityAfterEdit(const QString name,
       QString directedness = query2->value(0).toString();
       QString arrow = "";
       if (directedness == UNDIRECTED)
-	    {
-	      arrow = "<-->";
-	    }
+      {
+        arrow = "<-->";
+      }
       else if (directedness == DIRECTED)
-	    {
-	      arrow = "--->";
-	    }
+      {
+        arrow = "--->";
+      }
       QString newRelationship = source + arrow + name;
       query2->prepare("UPDATE entity_relationships "
                       "SET target = :target, name = :name "
@@ -3237,16 +3232,16 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
     {
       IncidentNode *currentItem = it.next();
       if (currentItem->getId() == tail)
-	    {
-	      tempSource = currentItem;
-	    }
+      {
+        tempSource = currentItem;
+      }
       else if (currentItem->getId() == head)
-	    {
-	      tempTarget = currentItem;
-	    }
+      {
+        tempTarget = currentItem;
+      }
       if (tempSource != NULL && tempTarget != NULL)
-	    {
-	      if (tempSource->getOrder() < tempTarget->getOrder()) 
+      {
+        if (tempSource->getOrder() < tempTarget->getOrder())
         {
           Linkage *currentEdge = new Linkage(type, coder);
           currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
@@ -3257,7 +3252,7 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
           _edgeVector.push_back(currentEdge);
           break;
         }
-	      else if (tempSource->getOrder() > tempTarget->getOrder()) 
+        else if (tempSource->getOrder() > tempTarget->getOrder())
         {
           Linkage *currentEdge = new Linkage(type, coder);
           currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
@@ -3268,7 +3263,7 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
           _edgeVector.push_back(currentEdge);
           break;
         }
-	    } 
+      }
     }
   }
   delete query;
@@ -3344,17 +3339,17 @@ void EventGraphWidget::layoutGraph()
       IncidentNode *second = *it2;
       QVectorIterator<Linkage *> it3(_edgeVector);
       while (it3.hasNext())
-	    {
-	      Linkage *edge = it3.next();
-	      // Basically we just ask whether the current events are linked.
-	      if ((edge->getStart() == current &&
+      {
+        Linkage *edge = it3.next();
+        // Basically we just ask whether the current events are linked.
+        if ((edge->getStart() == current &&
              edge->getEnd() == second) ||
             (edge->getEnd() == current &&
              edge->getStart() == second))
         {
           partners.push_back(second);
         }
-	    }
+      }
     }
     qreal originHeight = current->scenePos().y();
     std::sort(partners.begin(), partners.end(), eventLessThan);
@@ -3365,9 +3360,9 @@ void EventGraphWidget::layoutGraph()
       IncidentNode *currentPartner = it4.next();
       qreal partnerHeight = originHeight;
       if (partners.size() > 1)
-	    {
-	      partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
-	    }
+      {
+        partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
+      }
       currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
       partnerCount--;
     }
@@ -3434,17 +3429,17 @@ void EventGraphWidget::redoLayout()
       QGraphicsItem *second = *it6;
       QVectorIterator<Linkage *> it7(_edgeVector);
       while (it7.hasNext())
-	    {
-	      Linkage *edge = it7.next();
-	      // Basically we just ask whether the current events are linked.
-	      if ((edge->getStart() == current &&
+      {
+        Linkage *edge = it7.next();
+        // Basically we just ask whether the current events are linked.
+        if ((edge->getStart() == current &&
              edge->getEnd() == second) ||
             (edge->getEnd() == current &&
              edge->getStart() == second))
         {
           partners.push_back(second);
         }
-	    }
+      }
     }
     qreal originHeight = current->scenePos().y();
     std::sort(partners.begin(), partners.end(), eventLessThan);
@@ -3455,9 +3450,9 @@ void EventGraphWidget::redoLayout()
       QGraphicsItem *currentPartner = it8.next();
       qreal partnerHeight = originHeight;
       if (partners.size() > 1)
-	    {
-	      partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
-	    }
+      {
+        partnerHeight = originHeight + (pow(-1, partnerCount) * partnerCount * 50);
+      }
       currentPartner->setPos(currentPartner->scenePos().x(), partnerHeight);
       partnerCount--;
     }
@@ -3506,9 +3501,9 @@ void EventGraphWidget::dateLayout(int scale)
       QVector<IncidentNode*> incidents = abstract->getIncidents();
       QVectorIterator<IncidentNode*> it3(incidents);
       while (it3.hasNext())
-	    {
-	      visible.push_back(it3.next());
-	    }
+      {
+        visible.push_back(it3.next());
+      }
     }
     allEvents.push_back(abstract);
   }
@@ -3594,65 +3589,65 @@ void EventGraphWidget::dateLayout(int scale)
       QString dateString = query->value(0).toString();
       QDate date;
       if (dateString.length() == 4) // We are dealing with a year only.
-	    {
-	      date = QDate::fromString(dateString, "yyyy");
-	    }
+      {
+        date = QDate::fromString(dateString, "yyyy");
+      }
       if (dateString.length() == 7) // We are dealing with a month and year.
-	    {
-	      if (dateString[2] == '/')
+      {
+        if (dateString[2] == '/')
         {
           date = QDate::fromString(dateString, "MM/yyyy");
         }
-	      else if (dateString[2] == '-')
+        else if (dateString[2] == '-')
         {
           date = QDate::fromString(dateString, "MM-yyyy");
         }
-	      else if (dateString[4] == '\\') 
+        else if (dateString[4] == '\\')
         {
           date = QDate::fromString(dateString, "yyyy\\MM");
         }
-	      else if (dateString[4] == '-')
+        else if (dateString[4] == '-')
         {
           date = QDate::fromString(dateString, "yyyy-MM");
         }
-	    }
+      }
       if (dateString.length() == 10) // We are dealing with a day, month and year.
-	    {
-	      if (dateString[2] == '/')
+      {
+        if (dateString[2] == '/')
         {
           date = QDate::fromString(dateString, "dd/MM/yyyy");
         }
-	      else if (dateString[2] == '-')
+        else if (dateString[2] == '-')
         {
           date = QDate::fromString(dateString, "dd-MM-yyyy");
         }
-	      else if (dateString[4] == '\\') 
+        else if (dateString[4] == '\\')
         {
           date = QDate::fromString(dateString, "yyyy\\MM\\dd");
         }
-	      else if (dateString[4] == '-')
+        else if (dateString[4] == '-')
         {
           date = QDate::fromString(dateString, "yyyy-MM-dd");
         }
-	    }
+      }
       if (date.isValid())
-	    {
-	      days.insert(incident, firstDate.daysTo(date));
-	      validTotal++;
-	      dates.insert(incident, date);
-	      if (dateString.length() == 4)
+      {
+        days.insert(incident, firstDate.daysTo(date));
+        validTotal++;
+        dates.insert(incident, date);
+        if (dateString.length() == 4)
         {
           precision.insert(incident, 1);
         }
-	      else if (dateString.length() == 7)
+        else if (dateString.length() == 7)
         {
           precision.insert(incident, 2);
         }
-	      else if (dateString.length() == 10)
+        else if (dateString.length() == 10)
         {
           precision.insert(incident, 3);
         }
-	    }
+      }
     }
     qreal lastValid = first->scenePos().x();
     int lastPrecision = precision.value(first);
@@ -3678,9 +3673,9 @@ void EventGraphWidget::dateLayout(int scale)
       it4.toFront();
       it4.next(); // skip the first one
       while (it4.hasNext())
-	    {
-	      IncidentNode *incident = it4.next();
-	      if (days.contains(incident))
+      {
+        IncidentNode *incident = it4.next();
+        if (days.contains(incident))
         {
           qint64 daysTo = days.value(incident);
           qreal x = scale * daysTo + first->scenePos().x();
@@ -3775,7 +3770,7 @@ void EventGraphWidget::dateLayout(int scale)
             }
           }
         }
-	      else
+        else
         {
           QVectorIterator<IncidentNode*> it5 = it4;
           bool foundValid = false;
@@ -3808,22 +3803,22 @@ void EventGraphWidget::dateLayout(int scale)
             incident->getLabel()->setNewPos(incident->scenePos());
           }
         }
-	    }
+      }
       it2.toFront();
       while (it2.hasNext())
-	    {
-	      AbstractNode *abstract = it2.next();
-	      QVector<IncidentNode*> incidents = abstract->getIncidents();
-	      std::sort(incidents.begin(), incidents.end(), componentsSort);
-	      IncidentNode *first = incidents.first();
-	      IncidentNode *last = incidents.last();
-	      int oldWidth = abstract->getWidth();
-	      int newWidth = last->scenePos().x() - first->scenePos().x() + last->getWidth();
-	      abstract->setPos(first->scenePos().x(), first->scenePos().y());
-	      int diff = (newWidth - oldWidth) / 2;
-	      abstract->setWidth(newWidth);
-	      abstract->getLabel()->setNewPos(abstract->scenePos(), diff);
-	    }
+      {
+        AbstractNode *abstract = it2.next();
+        QVector<IncidentNode*> incidents = abstract->getIncidents();
+        std::sort(incidents.begin(), incidents.end(), componentsSort);
+        IncidentNode *first = incidents.first();
+        IncidentNode *last = incidents.last();
+        int oldWidth = abstract->getWidth();
+        int newWidth = last->scenePos().x() - first->scenePos().x() + last->getWidth();
+        abstract->setPos(first->scenePos().x(), first->scenePos().y());
+        int diff = (newWidth - oldWidth) / 2;
+        abstract->setWidth(newWidth);
+        abstract->getLabel()->setNewPos(abstract->scenePos(), diff);
+      }
       // Let's make sure that we have no overlap.
       noOverlap();
     }
@@ -3851,22 +3846,22 @@ void EventGraphWidget::memorizeLayout()
     if (order > upperRangeDial->value())
     {
       if (it.findPrevious(incident))
-	    {
-	      IncidentNode *previous = it.previous();
-	      if (previous->getAbstractNode() == NULL)
+      {
+        IncidentNode *previous = it.previous();
+        if (previous->getAbstractNode() == NULL)
         {
           QPair<QGraphicsItem*, QPointF> currentPair(previous, previous->scenePos());
           _layoutMemory = currentPair;
           break;
         }
-	      else
+        else
         {
           AbstractNode *abstract = previous->getAbstractNode();
           QPair<QGraphicsItem*, QPointF> currentPair(abstract, abstract->scenePos());
           _layoutMemory = currentPair;
           break;
         }
-	    }
+      }
     }
   }
 }
@@ -3882,22 +3877,22 @@ void EventGraphWidget::correctLayout()
     if (order > upperRangeDial->value())
     {
       if(incident->getAbstractNode() == NULL)
-	    {
-	      QGraphicsItem* preceding = _layoutMemory.first;
-	      QPointF oldPos = _layoutMemory.second;
-	      qreal distance = preceding->scenePos().x() - oldPos.x();
-	      incident->setPos(incident->scenePos().x() + distance, incident->scenePos().y());
-	      incident->getLabel()->setNewPos(incident->scenePos());
-	    }
+      {
+        QGraphicsItem* preceding = _layoutMemory.first;
+        QPointF oldPos = _layoutMemory.second;
+        qreal distance = preceding->scenePos().x() - oldPos.x();
+        incident->setPos(incident->scenePos().x() + distance, incident->scenePos().y());
+        incident->getLabel()->setNewPos(incident->scenePos());
+      }
       else
-	    {
-	      AbstractNode *abstract = incident->getAbstractNode();
-	      QGraphicsItem* preceding = _layoutMemory.first;
-	      QPointF oldPos = _layoutMemory.second;
-	      qreal distance = preceding->scenePos().x() - oldPos.x();
-	      abstract->setPos(abstract->scenePos().x() + distance, abstract->scenePos().y());
-	      abstract->getLabel()->setNewPos(abstract->scenePos());
-	    }
+      {
+        AbstractNode *abstract = incident->getAbstractNode();
+        QGraphicsItem* preceding = _layoutMemory.first;
+        QPointF oldPos = _layoutMemory.second;
+        qreal distance = preceding->scenePos().x() - oldPos.x();
+        abstract->setPos(abstract->scenePos().x() + distance, abstract->scenePos().y());
+        abstract->getLabel()->setNewPos(abstract->scenePos());
+      }
     }
   }
 }
@@ -3926,9 +3921,9 @@ void EventGraphWidget::noOverlap()
       QGraphicsItem *first = it3.next();
       QVectorIterator<QGraphicsItem*> it4(allEvents);
       while (it4.hasNext())
-	    {
-	      QGraphicsItem *second = it4.next();
-	      if (first != second)
+      {
+        QGraphicsItem *second = it4.next();
+        if (first != second)
         {
           qreal dist = qSqrt(qPow(first->scenePos().x() - second->scenePos().x(), 2) +
                              qPow(first->scenePos().y() - second->scenePos().y(), 2));
@@ -3987,7 +3982,7 @@ void EventGraphWidget::noOverlap()
             }
           }
         }
-	    }
+      }
     }
   }
 }
@@ -4091,13 +4086,13 @@ void EventGraphWidget::increaseDistance()
     if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
     {
       if (incident->getAbstractNode() == NULL)
-	    {
-	      temp.push_back(incident);
-	    }
+      {
+        temp.push_back(incident);
+      }
       else
-	    {
-	      temp.push_back(incident->getAbstractNode());
-	    }
+      {
+        temp.push_back(incident->getAbstractNode());
+      }
     }
   }
   std::sort(temp.begin(), temp.end(), eventLessThan);
@@ -4111,31 +4106,31 @@ void EventGraphWidget::increaseDistance()
     {
       incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
       if (incidentNode != first)
-	    {
-	      qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
-	      qreal newDistance = distance * 1.1;
-	      incidentNode->setPos(QPointF(first->scenePos().x() +
+      {
+        qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
+        qreal newDistance = distance * 1.1;
+        incidentNode->setPos(QPointF(first->scenePos().x() +
                                      newDistance, incidentNode->scenePos().y()));
-	      incidentNode->setPos(QPointF(first->scenePos().x() +
+        incidentNode->setPos(QPointF(first->scenePos().x() +
                                      newDistance, incidentNode->scenePos().y()));
-	      incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
-	    }
+        incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
+      }
     }
     else if (abstractNode)
     {
       abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
       if (abstractNode != first)
-	    {
-	      qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
-	      qreal newDistance = distance * 1.1;
-	      abstractNode->setPos(QPointF(first->scenePos().x() +
+      {
+        qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
+        qreal newDistance = distance * 1.1;
+        abstractNode->setPos(QPointF(first->scenePos().x() +
                                      newDistance, abstractNode->scenePos().y()));
-	      int oldWidth = abstractNode->getWidth();
-	      int newWidth = oldWidth * 0.9;
-	      int diff = (newWidth - oldWidth) / 2;
-	      abstractNode->setWidth(newWidth);
-	      abstractNode->getLabel()->setNewPos(abstractNode->scenePos(), diff);
-	    }
+        int oldWidth = abstractNode->getWidth();
+        int newWidth = oldWidth * 0.9;
+        int diff = (newWidth - oldWidth) / 2;
+        abstractNode->setWidth(newWidth);
+        abstractNode->getLabel()->setNewPos(abstractNode->scenePos(), diff);
+      }
     }
   }
   correctLayout();
@@ -4155,13 +4150,13 @@ void EventGraphWidget::decreaseDistance()
     if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
     {
       if (incident->getAbstractNode() == NULL)
-	    {
-	      temp.push_back(incident);
-	    }
+      {
+        temp.push_back(incident);
+      }
       else
-	    {
-	      temp.push_back(incident->getAbstractNode());
-	    }
+      {
+        temp.push_back(incident->getAbstractNode());
+      }
     }
   }
   std::sort(temp.begin(), temp.end(), eventLessThan);
@@ -4175,37 +4170,37 @@ void EventGraphWidget::decreaseDistance()
     {
       incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.next());
       if (incidentNode != first)
-	    {
-	      qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
-	      qreal newDistance = distance * 0.9;
-	      incidentNode->setPos(QPointF(first->scenePos().x() +
+      {
+        qreal distance = incidentNode->scenePos().x() - first->scenePos().x();
+        qreal newDistance = distance * 0.9;
+        incidentNode->setPos(QPointF(first->scenePos().x() +
                                      newDistance, incidentNode->scenePos().y()));
-	      incidentNode->setPos(QPointF(first->scenePos().x() +
+        incidentNode->setPos(QPointF(first->scenePos().x() +
                                      newDistance, incidentNode->scenePos().y()));
-	      incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
-	    }
+        incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
+      }
     }
     else if (abstractNode)
     {
       abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.next());
       if (abstractNode != first)
-	    {
-	      qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
-	      qreal newDistance = distance * 0.9;
-	      abstractNode->setPos(QPointF(first->scenePos().x() +
+      {
+        qreal distance = abstractNode->scenePos().x() - first->scenePos().x();
+        qreal newDistance = distance * 0.9;
+        abstractNode->setPos(QPointF(first->scenePos().x() +
                                      newDistance, abstractNode->scenePos().y()));
-	      int oldWidth = abstractNode->getWidth();
-	      int newWidth = oldWidth * 0.9;
-	      int diff = (newWidth - oldWidth) / 2;
-	      abstractNode->setWidth(newWidth);
-	      abstractNode->getLabel()->setNewPos(abstractNode->scenePos(), diff);
-	    }
+        int oldWidth = abstractNode->getWidth();
+        int newWidth = oldWidth * 0.9;
+        int diff = (newWidth - oldWidth) / 2;
+        abstractNode->setWidth(newWidth);
+        abstractNode->getLabel()->setNewPos(abstractNode->scenePos(), diff);
+      }
     }
   }
   correctLayout();
   updateLinkages();
 }
-	
+
 void EventGraphWidget::expandGraph() 
 {
   setChangeLabel();
@@ -4235,12 +4230,12 @@ void EventGraphWidget::expandGraph()
     if (current->getAbstractNode() == NULL)
     {
       if (counter >= lowerRangeDial->value() && counter <= upperRangeDial->value())
-	    {
-	      qreal currentY = current->scenePos().y();
-	      qreal diffY  = (currentY - virtualCenter) * 1.1;
-	      current->setPos(current->scenePos().x(), virtualCenter + diffY);
-	      current->getLabel()->setNewPos(current->scenePos());
-	    }
+      {
+        qreal currentY = current->scenePos().y();
+        qreal diffY  = (currentY - virtualCenter) * 1.1;
+        current->setPos(current->scenePos().x(), virtualCenter + diffY);
+        current->getLabel()->setNewPos(current->scenePos());
+      }
     }
   }
   it2.toFront();
@@ -4255,9 +4250,9 @@ void EventGraphWidget::expandGraph()
       IncidentNode *incident = it3.next();
       int order = incident->getOrder();
       if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
-	    {
-	      valid = true;
-	    }
+      {
+        valid = true;
+      }
     }
     if (valid)
     {
@@ -4355,27 +4350,27 @@ void EventGraphWidget::minimiseCurrentGraph()
       IncidentNode *itemIncidentNode = qgraphicsitem_cast<IncidentNode *>(item);
       AbstractNode *itemAbstractNode = qgraphicsitem_cast<AbstractNode*>(item);
       if (itemIncidentNode)
-	    {
-	      if (itemIncidentNode->isVisible() &&
+      {
+        if (itemIncidentNode->isVisible() &&
             itemIncidentNode->scenePos().x() +
             itemIncidentNode->getWidth() < current->scenePos().x())
         {
           target = item;
         }
-	    }
+      }
       else if (itemAbstractNode)
-	    {
-	      if (itemAbstractNode->isVisible() &&
+      {
+        if (itemAbstractNode->isVisible() &&
             itemAbstractNode->scenePos().x() +
             itemAbstractNode->getWidth() < current->scenePos().x())
         {
           target = item;
         }
-	    }
+      }
       else
-	    {
-	      break;
-	    }
+      {
+        break;
+      }
     }
     if (target != NULL)
     {
@@ -4383,32 +4378,32 @@ void EventGraphWidget::minimiseCurrentGraph()
       AbstractNode *targetAbstractNode = qgraphicsitem_cast<AbstractNode*>(target);
       int width = 0;
       if (targetIncidentNode)
-	    {
-	      width = targetIncidentNode->getWidth();
-	    }
+      {
+        width = targetIncidentNode->getWidth();
+      }
       else if (targetAbstractNode)
-	    {
-	      width = targetAbstractNode->getWidth();
-	    }
+      {
+        width = targetAbstractNode->getWidth();
+      }
       if (current->scenePos().x() - target->scenePos().x() - width + 40 > 70)
-	    {
-	      qreal oldX = current->scenePos().x();
-	      current->setPos(target->scenePos().x() +
+      {
+        qreal oldX = current->scenePos().x();
+        current->setPos(target->scenePos().x() +
                         70 + width - 40, current->scenePos().y());
-	      qreal newX = current->scenePos().x();
-	      qreal dist = oldX - newX;
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
-	      if (incidentNode) 
+        qreal newX = current->scenePos().x();
+        qreal dist = oldX - newX;
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+        if (incidentNode)
         {
           incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
         }
-	      QVectorIterator<QGraphicsItem*> it5(allEvents);
-	      while (it5.hasNext()) 
+        QVectorIterator<QGraphicsItem*> it5(allEvents);
+        while (it5.hasNext())
         {
           QGraphicsItem *follow = it5.next();
           if (follow->scenePos().x() > current->scenePos().x())
@@ -4429,7 +4424,7 @@ void EventGraphWidget::minimiseCurrentGraph()
             }
           }
         }
-	    }
+      }
     }
   }
   updateLinkages();
@@ -4470,9 +4465,9 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
     {
       QGraphicsItem *temp = it.next();
       if (temp == item)
-	    {
-	      source = temp;
-	    }
+      {
+        source = temp;
+      }
     }
     if (source != NULL)
     {
@@ -4481,20 +4476,20 @@ void EventGraphWidget::processMoveItems(QGraphicsItem *item, QPointF pos)
       qreal yDiff = newY - currentY;
       QVectorIterator<QGraphicsItem*> it2(_currentData);
       while (it2.hasNext())
-	    {
-	      QGraphicsItem *current = it2.next();
-	      current->setPos(current->scenePos().x(), current->scenePos().y() + yDiff);
-	      IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(current);
-	      AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
-	      if (currentIncidentNode) 
+      {
+        QGraphicsItem *current = it2.next();
+        current->setPos(current->scenePos().x(), current->scenePos().y() + yDiff);
+        IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(current);
+        AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+        if (currentIncidentNode)
         {
           currentIncidentNode->getLabel()->setNewPos(currentIncidentNode->scenePos());
         }
-	      else if (currentAbstractNode) 
+        else if (currentAbstractNode)
         {
           currentAbstractNode->getLabel()->setNewPos(currentAbstractNode->scenePos());
         }
-	    }
+      }
     }
   }
 }
@@ -4510,17 +4505,17 @@ void EventGraphWidget::setPlotButtons()
     plotButton->setEnabled(false);
   }
   if (!_presentTypes.contains(typeComboBox->currentText()))
+  {
+    if (_presentTypes.size() == 0 ||
+        _abstractNodeVector.size() > 0)
     {
-      if (_presentTypes.size() == 0 ||
-          _abstractNodeVector.size() > 0)
-      {
-        addLinkageTypeButton->setEnabled(false);
-      }
-      else
-      {
-        addLinkageTypeButton->setEnabled(true);
-      }
+      addLinkageTypeButton->setEnabled(false);
     }
+    else
+    {
+      addLinkageTypeButton->setEnabled(true);
+    }
+  }
   else
   {
     addLinkageTypeButton->setEnabled(false);
@@ -4535,9 +4530,9 @@ void EventGraphWidget::setPlotButtons()
     {
       QString currentCoder = query->value(0).toString();
       if (currentCoder != _selectedCoder)
-	    {
-	      compareComboBox->addItem(currentCoder);
-	    }
+      {
+        compareComboBox->addItem(currentCoder);
+      }
     }
     delete query;
   }
@@ -4604,9 +4599,9 @@ void EventGraphWidget::plotGraph()
     {
       QString currentCoder = query->value(0).toString();
       if (currentCoder != _selectedCoder)
-	    {
-	      compareComboBox->addItem(currentCoder);
-	    }
+      {
+        compareComboBox->addItem(currentCoder);
+      }
     }
   }
   delete query;
@@ -4679,9 +4674,9 @@ void EventGraphWidget::addLinkageType()
     {
       QString currentCoder = query->value(0).toString();
       if (currentCoder != _selectedCoder)
-	    {
-	      compareComboBox->addItem(currentCoder);
-	    }
+      {
+        compareComboBox->addItem(currentCoder);
+      }
     }
   }
   delete query;
@@ -4704,13 +4699,13 @@ void EventGraphWidget::setCompareButton()
         compareComboBox->currentText() != _selectedCoder)
     {
       if (_abstractNodeVector.size() > 0)
-	    {
-	      compareButton->setEnabled(false);
-	    }
+      {
+        compareButton->setEnabled(false);
+      }
       else
-	    {
-	      compareButton->setEnabled(true);
-	    }
+      {
+        compareButton->setEnabled(true);
+      }
     }
     else
     {
@@ -4776,19 +4771,19 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type)
     {
       IncidentNode *currentItem = it.next();
       if (currentItem->getId() == tail)
-	    {
-	      tempSource = currentItem;
-	    }
+      {
+        tempSource = currentItem;
+      }
       else if (currentItem->getId() == head)
-	    {
-	      tempTarget = currentItem;
-	    }
+      {
+        tempTarget = currentItem;
+      }
       if (tempSource != NULL && tempTarget != NULL)
-	    {
-	      bool sameFound = false;
-	      QVectorIterator<Linkage*> it2(_edgeVector);
-	      QColor edgeColor = QColor(Qt::gray);
-	      while (it2.hasNext()) 
+      {
+        bool sameFound = false;
+        QVectorIterator<Linkage*> it2(_edgeVector);
+        QColor edgeColor = QColor(Qt::gray);
+        while (it2.hasNext())
         {
           Linkage *currentEdge = it2.next();
           edgeColor = currentEdge->getColor();
@@ -4800,7 +4795,7 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type)
             sameFound = true;
           }
         }
-	      if (sameFound == false) 
+        if (sameFound == false)
         {
           Linkage *compareEdge = new Linkage(type, coder);
           compareEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
@@ -4811,8 +4806,8 @@ void EventGraphWidget::getCompareEdges(QString coder, QString type)
           _compareVector.push_back(compareEdge);
           compareEdge->setToolTip(toolTip);
         }
-	      break;
-	    }
+        break;
+      }
     }
     delete query2;
   }
@@ -4875,14 +4870,14 @@ void EventGraphWidget::saveCurrentPlot()
       warningBox->setInformativeText("A plot with this name already exists "
                                      "Do you want to overwrite this plot?");
       if (warningBox->exec() == QMessageBox::Yes)
-	    {
-	      delete warningBox;
-	    }
+      {
+        delete warningBox;
+      }
       else
-	    {
-	      delete warningBox;
-	      return;
-	    }
+      {
+        delete warningBox;
+        return;
+      }
     }
     if (!empty)
     {
@@ -5081,17 +5076,17 @@ void EventGraphWidget::saveCurrentPlot()
       int hidden = 1;
       int masshidden = 0;
       if (currentItem->isDislodged())
-	    {
-	      dislodged = 1;
-	    }
+      {
+        dislodged = 1;
+      }
       if (currentItem->isVisible())
-	    {
-	      hidden = 0;
-	    }
+      {
+        hidden = 0;
+      }
       if (currentItem->isMassHidden())
-	    {
-	      masshidden = 1;
-	    }
+      {
+        masshidden = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":incident", incident);
@@ -5145,9 +5140,9 @@ void EventGraphWidget::saveCurrentPlot()
       int zvalue = currentLabel->zValue();
       int hidden = 1;
       if (currentLabel->isVisible())
-	    {
-	      hidden = 0;
-	    }
+      {
+        hidden = 0;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":incident", id);
@@ -5202,31 +5197,31 @@ void EventGraphWidget::saveCurrentPlot()
       int hidden = 1;
       int massHidden = 0;
       if (incidentNodeTail)
-	    {
-	      tail = incidentNodeTail->getId();
-	    }
+      {
+        tail = incidentNodeTail->getId();
+      }
       else if (abstractNodeTail)
-	    {
-	      tail = abstractNodeTail->getId();
-	      mTail = 1;
-	    }
+      {
+        tail = abstractNodeTail->getId();
+        mTail = 1;
+      }
       if (incidentNodeHead)
-	    {
-	      head = incidentNodeHead->getId();
-	    }
+      {
+        head = incidentNodeHead->getId();
+      }
       else if (abstractNodeHead)
-	    {
-	      head = abstractNodeHead->getId();
-	      mHead = 1;
-	    }
+      {
+        head = abstractNodeHead->getId();
+        mHead = 1;
+      }
       if (currentEdge->isVisible())
-	    {
-	      hidden = 0;
-	    }
+      {
+        hidden = 0;
+      }
       if (currentEdge->isMassHidden())
-	    {
-	      massHidden = 1;
-	    }
+      {
+        massHidden = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":tail", tail);
@@ -5278,28 +5273,28 @@ void EventGraphWidget::saveCurrentPlot()
       QVector<IncidentNode *> incidents = currentAbstractNode->getIncidents();
       QVectorIterator<IncidentNode *> tit(incidents);
       while (tit.hasNext())
-	    {
-	      IncidentNode *currentIncident = tit.next();
-	      query->bindValue(":plot", name);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":incident", currentIncident->getId());
-	      query->bindValue(":abstractnode", currentAbstractNode->getId());
-	      query->exec();
-	    }
+      {
+        IncidentNode *currentIncident = tit.next();
+        query->bindValue(":plot", name);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":incident", currentIncident->getId());
+        query->bindValue(":abstractnode", currentAbstractNode->getId());
+        query->exec();
+      }
       QSet<QString> attributes = currentAbstractNode->getAttributes();
       QMap<QString, QString> values = currentAbstractNode->getValues();
       QSet<QString>::iterator tit2;
       for (tit2 = attributes.begin(); tit2 != attributes.end(); tit2++)
-	    {
-	      QString attribute = *tit2;
-	      QString value = values.value(attribute);
-	      query2->bindValue(":plot", name);
-	      query2->bindValue(":coder", _selectedCoder);
-	      query2->bindValue(":attribute", attribute);
-	      query2->bindValue(":abstractnode", currentAbstractNode->getId());
-	      query2->bindValue(":value", value);
-	      query2->exec();
-	    }
+      {
+        QString attribute = *tit2;
+        QString value = values.value(attribute);
+        query2->bindValue(":plot", name);
+        query2->bindValue(":coder", _selectedCoder);
+        query2->bindValue(":attribute", attribute);
+        query2->bindValue(":abstractnode", currentAbstractNode->getId());
+        query2->bindValue(":value", value);
+        query2->exec();
+      }
       QString timing = currentAbstractNode->getTiming();
       QString description = currentAbstractNode->getDescription();
       QString comment = currentAbstractNode->getComment();
@@ -5319,17 +5314,17 @@ void EventGraphWidget::saveCurrentPlot()
       int hidden = 1;
       int masshidden = 0;
       if (currentAbstractNode->isDislodged())
-	    {
-	      dislodged = 1;
-	    }
+      {
+        dislodged = 1;
+      }
       if (currentAbstractNode->isVisible())
-	    {
-	      hidden = 0;
-	    }
+      {
+        hidden = 0;
+      }
       if (currentAbstractNode->isMassHidden())
-	    {
-	      masshidden = 1;
-	    }
+      {
+        masshidden = 1;
+      }
       query3->bindValue(":plot", name);
       query3->bindValue(":coder", _selectedCoder);
       query3->bindValue(":eventid", currentAbstractNode->getId());
@@ -5375,16 +5370,16 @@ void EventGraphWidget::saveCurrentPlot()
     {
       IncidentNode *currentIncidentNode = it5.next();
       if (currentIncidentNode->getAbstractNode() != NULL)
-	    {
-	      query->bindValue(":plot", name);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":incident", currentIncidentNode->getId());
-	      query->bindValue(":abstractnode", currentIncidentNode->getAbstractNode()->getId());
-	      query->exec();
-	      counter++;
-	      saveProgress->setProgress(counter);
-	      qApp->processEvents();
-	    }
+      {
+        query->bindValue(":plot", name);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":incident", currentIncidentNode->getId());
+        query->bindValue(":abstractnode", currentIncidentNode->getAbstractNode()->getId());
+        query->exec();
+        counter++;
+        saveProgress->setProgress(counter);
+        qApp->processEvents();
+      }
     }
     saveProgress->close();
     delete saveProgress;
@@ -5403,13 +5398,13 @@ void EventGraphWidget::saveCurrentPlot()
       AbstractNode *currentAbstractNode = it6.next();
       AbstractNode *currentFather = currentAbstractNode->getAbstractNode();
       if (currentAbstractNode->getAbstractNode() != NULL)
-	    {
-	      query->bindValue(":plot", name);
-	      query->bindValue(":coder", _selectedCoder);
-	      query->bindValue(":son", currentAbstractNode->getId());
-	      query->bindValue(":father", currentFather->getId());
-	      query->exec();
-	    }
+      {
+        query->bindValue(":plot", name);
+        query->bindValue(":coder", _selectedCoder);
+        query->bindValue(":son", currentAbstractNode->getId());
+        query->bindValue(":father", currentFather->getId());
+        query->exec();
+      }
       counter++;
       saveProgress->setProgress(counter);
       qApp->processEvents();
@@ -5445,9 +5440,9 @@ void EventGraphWidget::saveCurrentPlot()
       int zvalue = currentLabel->zValue();
       int hidden = 1;
       if (currentLabel->isVisible())
-	    {
-	      hidden = 0;
-	    }
+      {
+        hidden = 0;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":eventid", id);
@@ -5497,9 +5492,9 @@ void EventGraphWidget::saveCurrentPlot()
       int textalpha = textColor.alpha();
       int hidden = 0;
       if (eventListWidget->item(i,0)->background() == QColor(Qt::gray))
-	    {
-	      hidden = 1;
-	    }
+      {
+        hidden = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":name", title);
@@ -5542,13 +5537,13 @@ void EventGraphWidget::saveCurrentPlot()
       int arone = 0;
       int artwo = 0;
       if (currentLine->arrow1())
-	    {
-	      arone = 1;
-	    }
+      {
+        arone = 1;
+      }
       if (currentLine->arrow2())
-	    {
-	      artwo = 1;
-	    }
+      {
+        artwo = 1;
+      }
       int penwidth = currentLine->getPenWidth();
       int penstyle = currentLine->getPenStyle();
       int zValue = currentLine->zValue();
@@ -5606,14 +5601,14 @@ void EventGraphWidget::saveCurrentPlot()
       qreal minorsize = currentTimeLine->getMinorTickSize();
       int firsttick = 0;
       if (currentTimeLine->getFirstTick())
-	    {
-	      firsttick = 1;
-	    }
+      {
+        firsttick = 1;
+      }
       int lasttick = 0;
       if (currentTimeLine->getForceLastTick())
-	    {
-	      lasttick = 1;
-	    }
+      {
+        lasttick = 1;
+      }
       int zValue = currentTimeLine->zValue();
       QColor color = currentTimeLine->getColor();
       int red = color.red();
@@ -5861,14 +5856,14 @@ void EventGraphWidget::saveCurrentPlot()
       IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode*>(current);
       AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       if (incidentNode)
-	    {
-	      id  = incidentNode->getId();
-	    }
+      {
+        id  = incidentNode->getId();
+      }
       else if (abstractNode)
-	    {
-	      id = abstractNode->getId();
-	      abstract = 1;
-	    }
+      {
+        id = abstractNode->getId();
+        abstract = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":nodeid", id);
@@ -5897,9 +5892,9 @@ void EventGraphWidget::saveCurrentPlot()
       QString casename = item->text();
       int checked = 0;
       if (item->checkState() == Qt::Checked)
-	    {
-	      checked = 1;
-	    }
+      {
+        checked = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":casename", casename);
@@ -5928,9 +5923,9 @@ void EventGraphWidget::saveCurrentPlot()
       qreal ypos = guide->getOrientationPoint().y();
       int horizontal = 0;
       if (guide->isHorizontal())
-	    {
-	      horizontal = 1;
-	    }
+      {
+        horizontal = 1;
+      }
       query->bindValue(":plot", name);
       query->bindValue(":coder", _selectedCoder);
       query->bindValue(":xpos", xpos);
@@ -6029,13 +6024,13 @@ void EventGraphWidget::seePlots()
       query2->first();
       QString toolTip = "";
       if (query2->isNull(0))
-	    {
-	      toolTip = "Incident was deleted";
-	    }
+      {
+        toolTip = "Incident was deleted";
+      }
       else
-	    {
-	      toolTip = breakString(query2->value(0).toString());
-	    }
+      {
+        toolTip = breakString(query2->value(0).toString());
+      }
       delete query2;
       QPointF currentPos = QPointF(currentX, currentY);
       QPointF originalPos = QPointF(originalX, originalY);
@@ -6047,21 +6042,21 @@ void EventGraphWidget::seePlots()
       _incidentNodeVector.push_back(currentItem);
       scene->addItem(currentItem);
       if (dislodged == 1)
-	    {
-	      currentItem->setDislodged(true);
-	    }
+      {
+        currentItem->setDislodged(true);
+      }
       if (hidden == 1)
-	    {
-	      currentItem->hide();
-	    }
+      {
+        currentItem->hide();
+      }
       else
-	    {
-	      currentItem->show();
-	    }
+      {
+        currentItem->show();
+      }
       if (masshidden == 1)
-	    {
-	      currentItem->setMassHidden(true);
-	    }
+      {
+        currentItem->setMassHidden(true);
+      }
     }
     query->prepare("SELECT incident, label, curxpos, curypos, xoffset, yoffset, "
                    "red, green, blue, alpha, zvalue, hidden "
@@ -6086,10 +6081,10 @@ void EventGraphWidget::seePlots()
       int hidden = query->value(11).toInt();
       QVectorIterator<IncidentNode *> it(_incidentNodeVector);
       while (it.hasNext())
-	    {
-	      IncidentNode *currentItem = it.next();
-	      int nodeId = currentItem->getId();
-	      if (nodeId == id) 
+      {
+        IncidentNode *currentItem = it.next();
+        int nodeId = currentItem->getId();
+        if (nodeId == id)
         {
           IncidentNodeLabel *currentLabel = new IncidentNodeLabel(currentItem);
           currentLabel->setPlainText(text);
@@ -6111,7 +6106,7 @@ void EventGraphWidget::seePlots()
           }
           break;
         }
-	    }
+      }
     }
     query->prepare("SELECT eventid, ch_order, abstraction, timing, description, comment, width, "
                    "mode, curxpos, curypos, orixpos, oriypos, dislodged, red, green, blue, alpha, "
@@ -6155,10 +6150,10 @@ void EventGraphWidget::seePlots()
       query2->exec();
       QVector<IncidentNode *> incidents;
       while (query2->next())
-	    {
-	      int incidentId = query2->value(0).toInt();
-	      QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-	      while (it.hasNext()) 
+      {
+        int incidentId = query2->value(0).toInt();
+        QVectorIterator<IncidentNode *> it(_incidentNodeVector);
+        while (it.hasNext())
         {
           IncidentNode *currentIncidentNode = it.next();
           if (incidentId == currentIncidentNode->getId())
@@ -6167,7 +6162,7 @@ void EventGraphWidget::seePlots()
             break;
           }
         }
-	    }
+      }
       std::sort(incidents.begin(), incidents.end(), eventLessThan);
       query2->prepare("SELECT attribute, value FROM saved_eg_plots_attributes_to_abstract_nodes "
                       "WHERE plot = :plot AND coder = :coder AND abstractnode = :id");
@@ -6178,21 +6173,21 @@ void EventGraphWidget::seePlots()
       QSet<QString> attributes;
       QMap<QString, QString> values;
       while (query2->next())
-	    {
-	      QString attribute = query2->value(0).toString();
-	      QString value = query2->value(1).toString();
-	      attributes.insert(attribute);
-	      values.insert(attribute, value);
-	    }
+      {
+        QString attribute = query2->value(0).toString();
+        QString value = query2->value(1).toString();
+        attributes.insert(attribute);
+        values.insert(attribute, value);
+      }
       delete query2;
       AbstractNode *newAbstractNode = new AbstractNode(width, description, originalPos, id,
                                                        constraint, incidents);
       QVectorIterator<IncidentNode *> it(incidents);
       while (it.hasNext())
-	    {
-	      IncidentNode *currentIncidentNode = it.next();
-	      currentIncidentNode->hide();
-	    }
+      {
+        IncidentNode *currentIncidentNode = it.next();
+        currentIncidentNode->hide();
+      }
       newAbstractNode->setTiming(timing);
       newAbstractNode->setOriginalPos(originalPos);
       newAbstractNode->setPos(currentPos);
@@ -6203,17 +6198,17 @@ void EventGraphWidget::seePlots()
       newAbstractNode->setOrder(order);
       newAbstractNode->setMode(mode);
       if (hidden == 1)
-	    {
-	      newAbstractNode->hide();
-	    }
+      {
+        newAbstractNode->hide();
+      }
       if (dislodged == 1)
-	    {
-	      newAbstractNode->setDislodged(true);
-	    }
+      {
+        newAbstractNode->setDislodged(true);
+      }
       if (masshidden == 1)
-	    {
-	      newAbstractNode->setMassHidden(true);
-	    }
+      {
+        newAbstractNode->setMassHidden(true);
+      }
       scene->addItem(newAbstractNode);
       _abstractNodeVector.push_back(newAbstractNode);
     }
@@ -6229,9 +6224,9 @@ void EventGraphWidget::seePlots()
       int abstractNodeId = query->value(1).toInt();
       QVectorIterator<IncidentNode *> it(_incidentNodeVector);
       while (it.hasNext())
-	    {
-	      IncidentNode *incidentNode = it.next();
-	      if (incidentNode->getId() == incidentId) 
+      {
+        IncidentNode *incidentNode = it.next();
+        if (incidentNode->getId() == incidentId)
         {
           QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
           while (it2.hasNext())
@@ -6244,7 +6239,7 @@ void EventGraphWidget::seePlots()
             }
           }
         }
-	    }
+      }
     }
     query->prepare("SELECT son, father "
                    "FROM saved_eg_plots_abstract_nodes_to_abstract_nodes "
@@ -6258,9 +6253,9 @@ void EventGraphWidget::seePlots()
       int father = query->value(1).toInt();
       QVectorIterator<AbstractNode*> it(_abstractNodeVector);
       while (it.hasNext())
-	    {
-	      AbstractNode *sonIncidentNode = it.next();
-	      if (sonIncidentNode->getId() == son) 
+      {
+        AbstractNode *sonIncidentNode = it.next();
+        if (sonIncidentNode->getId() == son)
         {
           QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
           while (it2.hasNext())
@@ -6273,7 +6268,7 @@ void EventGraphWidget::seePlots()
             }
           }
         }
-	    }
+      }
     }
     query->prepare("SELECT eventid, label, curxpos, curypos, xoffset, yoffset, "
                    "red, green, blue, alpha, zvalue, hidden "
@@ -6298,10 +6293,10 @@ void EventGraphWidget::seePlots()
       int hidden = query->value(11).toInt();
       QVectorIterator<AbstractNode*> it(_abstractNodeVector);
       while (it.hasNext())
-	    {
-	      AbstractNode *currentAbstractNode = it.next();
-	      int abstractNodeId = currentAbstractNode->getId();
-	      if (abstractNodeId == abstractNode) 
+      {
+        AbstractNode *currentAbstractNode = it.next();
+        int abstractNodeId = currentAbstractNode->getId();
+        if (abstractNodeId == abstractNode)
         {
           AbstractNodeLabel *currentLabel = new AbstractNodeLabel(currentAbstractNode);
           currentLabel->setPlainText(text);
@@ -6323,7 +6318,7 @@ void EventGraphWidget::seePlots()
           }
           break;
         }
-	    }
+      }
     }
     std::sort(_abstractNodeVector.begin(), _abstractNodeVector.end(), eventLessThan);
     QSet<QString> types;
@@ -6352,75 +6347,75 @@ void EventGraphWidget::seePlots()
       bool tailAbstractNode = false;
       bool headAbstractNode = false;
       if (tM == 1)
-	    {
-	      tailAbstractNode = true;
-	    }
+      {
+        tailAbstractNode = true;
+      }
       if (hM == 1)
-	    {
-	      headAbstractNode = true;
-	    }
+      {
+        headAbstractNode = true;
+      }
       if (!types.contains(linkage))
-	    {
-	      _presentTypes.push_back(linkage);
-	      QTableWidgetItem *item = new QTableWidgetItem(linkage);
-	      QSqlQuery *query3 = new QSqlQuery;
-	      query3->prepare("SELECT description, direction FROM linkage_types WHERE name = :name");
-	      query3->bindValue(":name", linkage);
-	      query3->exec();
-	      query3->first();
-	      QString description = query3->value(0).toString();
-	      QString direction = query3->value(1).toString();
-	      QString tip = linkage + " (" + direction + ") - " + description;
-	      delete query3;
-	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	      item->setToolTip(tip);
-	      item->setData(Qt::DisplayRole, linkage);
-	      linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
-	      linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
-	      linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-	      linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(color);
-	      linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
+      {
+        _presentTypes.push_back(linkage);
+        QTableWidgetItem *item = new QTableWidgetItem(linkage);
+        QSqlQuery *query3 = new QSqlQuery;
+        query3->prepare("SELECT description, direction FROM linkage_types WHERE name = :name");
+        query3->bindValue(":name", linkage);
+        query3->exec();
+        query3->first();
+        QString description = query3->value(0).toString();
+        QString direction = query3->value(1).toString();
+        QString tip = linkage + " (" + direction + ") - " + description;
+        delete query3;
+        item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+        item->setToolTip(tip);
+        item->setData(Qt::DisplayRole, linkage);
+        linkageListWidget->setRowCount(linkageListWidget->rowCount() + 1);
+        linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 0, item);
+        linkageListWidget->setItem(linkageListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+        linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->setBackground(color);
+        linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->
           setFlags(linkageListWidget->item(linkageListWidget->rowCount() - 1, 1)->flags() ^
                    Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	      if (massHidden)
+        if (massHidden)
         {
           linkageListWidget->item(linkageListWidget->rowCount() - 1, 0)->
             setBackground(Qt::gray);
         }
-	    }      
+      }
       types.insert(linkage);
       QString toolTip = "";
       if (!(tailAbstractNode) && !(headAbstractNode))
-	    {
-	      QSqlQuery *query2 =  new QSqlQuery;
-	      query2->prepare("SELECT comment, coder FROM linkage_comments "
+      {
+        QSqlQuery *query2 =  new QSqlQuery;
+        query2->prepare("SELECT comment, coder FROM linkage_comments "
                         "WHERE tail = :tail AND head = :head AND type = :type");
-	      query2->bindValue(":tail", tail);
-	      query2->bindValue(":head", head);
-	      query2->bindValue(":type", linkage);
-	      query2->exec();
-	      query2->first();
-	      QString comment = "";
-	      QString commentCoder = "";
-	      if (!(query2->isNull(0))) 
+        query2->bindValue(":tail", tail);
+        query2->bindValue(":head", head);
+        query2->bindValue(":type", linkage);
+        query2->exec();
+        query2->first();
+        QString comment = "";
+        QString commentCoder = "";
+        if (!(query2->isNull(0)))
         {
           comment = query2->value(0).toString();
           commentCoder = query2->value(1).toString();
           toolTip = breakString(commentCoder + " - " + comment);
         }
-	      else 
+        else
         {
           toolTip = "No comments";
         }
-	      delete query2;
-	    }
+        delete query2;
+      }
       QVectorIterator<IncidentNode *> it(_incidentNodeVector);
       QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
       QGraphicsItem *tempSource = NULL;
       QGraphicsItem *tempTarget = NULL;
       if (tailAbstractNode && !(headAbstractNode))
-	    {
-	      while (it2.hasNext()) 
+      {
+        while (it2.hasNext())
         {
           AbstractNode *currentSource = it2.next();
           if (currentSource->getId() == tail)
@@ -6428,7 +6423,7 @@ void EventGraphWidget::seePlots()
             tempSource = currentSource;
           }
         }
-	      while (it.hasNext()) 
+        while (it.hasNext())
         {
           IncidentNode *currentTarget = it.next();
           if (currentTarget->getId() == head)
@@ -6436,10 +6431,10 @@ void EventGraphWidget::seePlots()
             tempTarget = currentTarget;
           }
         }
-	    }
+      }
       else if (!(tailAbstractNode) && headAbstractNode)
-	    {
-	      while (it.hasNext()) 
+      {
+        while (it.hasNext())
         {
           IncidentNode *currentSource = it.next();
           if (currentSource->getId() == tail)
@@ -6447,7 +6442,7 @@ void EventGraphWidget::seePlots()
             tempSource = currentSource;
           }
         }
-	      while (it2.hasNext()) 
+        while (it2.hasNext())
         {
           AbstractNode *currentTarget = it2.next();
           if (currentTarget->getId() == head)
@@ -6455,10 +6450,10 @@ void EventGraphWidget::seePlots()
             tempTarget = currentTarget;
           }
         }
-	    }
+      }
       else if (tailAbstractNode && headAbstractNode)
-	    {
-	      while (it2.hasNext()) 
+      {
+        while (it2.hasNext())
         {
           AbstractNode *currentSource = it2.next();
           if (currentSource->getId() == tail)
@@ -6466,8 +6461,8 @@ void EventGraphWidget::seePlots()
             tempSource = currentSource;
           }
         }
-	      it2.toFront();
-	      while (it2.hasNext()) 
+        it2.toFront();
+        while (it2.hasNext())
         {
           AbstractNode *currentTarget = it2.next();
           if (currentTarget->getId() == head)
@@ -6475,10 +6470,10 @@ void EventGraphWidget::seePlots()
             tempTarget = currentTarget;
           }
         }
-	    }
+      }
       else if (!(tailAbstractNode) && !(headAbstractNode))
-	    {
-	      while (it.hasNext()) 
+      {
+        while (it.hasNext())
         {
           IncidentNode *currentSource = it.next();
           if (currentSource->getId() == tail)
@@ -6486,8 +6481,8 @@ void EventGraphWidget::seePlots()
             tempSource = currentSource;
           }
         }
-	      it.toFront();
-	      while (it.hasNext()) 
+        it.toFront();
+        while (it.hasNext())
         {
           IncidentNode *currentTarget = it.next();
           if (currentTarget->getId() == head)
@@ -6495,30 +6490,30 @@ void EventGraphWidget::seePlots()
             tempTarget = currentTarget;
           }
         }
-	    }
+      }
       if (tempSource != NULL && tempTarget != NULL)
-	    {
-	      Linkage *currentEdge = new Linkage(linkage, _selectedCoder);
-	      currentEdge->setZValue(zvalue);
-	      currentEdge->setStartItem(tempSource);
-	      currentEdge->setEndItem(tempTarget);
-	      currentEdge->setToolTip(toolTip);
-	      currentEdge->setColor(color);
-	      _edgeVector.push_back(currentEdge);
-	      scene->addItem(currentEdge);
-	      if (hidden == 1) 
+      {
+        Linkage *currentEdge = new Linkage(linkage, _selectedCoder);
+        currentEdge->setZValue(zvalue);
+        currentEdge->setStartItem(tempSource);
+        currentEdge->setEndItem(tempTarget);
+        currentEdge->setToolTip(toolTip);
+        currentEdge->setColor(color);
+        _edgeVector.push_back(currentEdge);
+        scene->addItem(currentEdge);
+        if (hidden == 1)
         {
           currentEdge->hide();
         }
-	      else 
+        else
         {
           currentEdge->show();
         }
-	      if (massHidden) 
+        if (massHidden)
         {
           currentEdge->setMassHidden(true);
         }
-	    }
+      }
     }
     query->prepare("SELECT name, tip, red, green, blue, alpha, "
                    "textred, textgreen, textblue, textalpha, hidden "
@@ -6557,9 +6552,9 @@ void EventGraphWidget::seePlots()
         setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
                  Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
       if (hidden)
-	    {
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 0)->setBackground(Qt::gray);
-	    }
+      {
+        eventListWidget->item(eventListWidget->rowCount() - 1, 0)->setBackground(Qt::gray);
+      }
     }
     query->prepare("SELECT startx, starty, endx, endy, arone, artwo, penwidth, penstyle, "
                    "zvalue, red, green, blue, alpha "
@@ -6589,13 +6584,13 @@ void EventGraphWidget::seePlots()
       newLine->setZValue(zValue);
       newLine->setColor(color);
       if (arone == 1)
-	    {
-	      newLine->setArrow1(true);
-	    }
+      {
+        newLine->setArrow1(true);
+      }
       if (artwo == 1)
-	    {
-	      newLine->setArrow2(true);
-	    }
+      {
+        newLine->setArrow2(true);
+      }
       newLine->setPenWidth(penwidth);
       newLine->setPenStyle(penstyle);
       scene->addItem(newLine);
@@ -6629,13 +6624,13 @@ void EventGraphWidget::seePlots()
                                                        majorinterval, minordivision,
                                                        majorsize, minorsize);
       if (firsttick == 0)
-	    {
-	      newTimeLine->setFirstTick(false);
-	    }
+      {
+        newTimeLine->setFirstTick(false);
+      }
       if (lasttick == 1)
-	    {
-	      newTimeLine->setForceLastTick(true);
-	    }
+      {
+        newTimeLine->setForceLastTick(true);
+      }
       _timeLineVector.push_back(newTimeLine);
       newTimeLine->setZValue(zValue);
       newTimeLine->setColor(color);
@@ -6788,9 +6783,9 @@ void EventGraphWidget::seePlots()
       qreal xpos = query->value(2).toReal();
       qreal ypos = query->value(3).toReal();
       if (abstract == 1)
-	    {
-	      QVectorIterator<AbstractNode*> it(_abstractNodeVector);
-	      while (it.hasNext())
+      {
+        QVectorIterator<AbstractNode*> it(_abstractNodeVector);
+        while (it.hasNext())
         {
           AbstractNode *current = it.next();
           if (current->getId() == id)
@@ -6799,11 +6794,11 @@ void EventGraphWidget::seePlots()
             break;
           }
         }
-	    }
+      }
       else
-	    {
-	      QVectorIterator<IncidentNode*> it(_incidentNodeVector);
-	      while (it.hasNext())
+      {
+        QVectorIterator<IncidentNode*> it(_incidentNodeVector);
+        while (it.hasNext())
         {
           IncidentNode *current = it.next();
           if (current->getId() == id)
@@ -6812,7 +6807,7 @@ void EventGraphWidget::seePlots()
             break;
           }
         }
-	    }
+      }
     }
     _contracted = false;
     query->prepare("SELECT casename, checked "
@@ -6828,13 +6823,13 @@ void EventGraphWidget::seePlots()
       QListWidgetItem *item = new QListWidgetItem(casename, caseListWidget);
       item->setFlags(item->flags() | Qt::ItemIsUserCheckable);
       if (checked == 1)
-	    {
-	      item->setCheckState(Qt::Checked);
-	    }
+      {
+        item->setCheckState(Qt::Checked);
+      }
       else
-	    {
-	      item->setCheckState(Qt::Unchecked);
-	    }
+      {
+        item->setCheckState(Qt::Unchecked);
+      }
     }
     query->prepare("SELECT xpos, ypos, horizontal "
                    "FROM saved_eg_plots_guides "
@@ -6849,9 +6844,9 @@ void EventGraphWidget::seePlots()
       int horizontal = query->value(2).toInt();
       bool isHorizontal = false;
       if (horizontal == 1)
-	    {
-	      isHorizontal = true;
-	    }
+      {
+        isHorizontal = true;
+      }
       GuideLine* guide = new GuideLine(isHorizontal);
       _guidesVector.push_back(guide);
       scene->addItem(guide);
@@ -7079,10 +7074,10 @@ void EventGraphWidget::addMode()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int currentIncident = query->value(0).toInt();
-	      QVectorIterator<IncidentNode *> it2(_incidentNodeVector);
-	      while (it2.hasNext()) 
+      {
+        int currentIncident = query->value(0).toInt();
+        QVectorIterator<IncidentNode *> it2(_incidentNodeVector);
+        while (it2.hasNext())
         {
           IncidentNode *currentIncidentNode = it2.next();
           if (currentIncidentNode->getId() == currentIncident)
@@ -7093,36 +7088,36 @@ void EventGraphWidget::addMode()
             currentIncidentNode->setMassHidden(false);
           }
         }
-	    }
+      }
       QVectorIterator<AbstractNode*> it3(_abstractNodeVector);
       while (it3.hasNext())
-	    {
-	      AbstractNode *currentAbstractNode = it3.next();
-	      QSet<QString> attributes = currentAbstractNode->getAttributes();
-	      if (attributes.contains(currentAttribute)) 
+      {
+        AbstractNode *currentAbstractNode = it3.next();
+        QSet<QString> attributes = currentAbstractNode->getAttributes();
+        if (attributes.contains(currentAttribute))
         {
           currentAbstractNode->setColor(color);
           currentAbstractNode->setMode(attribute);
           currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
           currentAbstractNode->setMassHidden(false);
         }
-	    }
+      }
     }
     bool found = false;
     for (int i = 0; i < eventListWidget->rowCount(); i++)
     {
       if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == attribute)
-	    {
-	      found = true;
-	      QTableWidgetItem *item = eventListWidget->item(i,0);
-	      QString toolTip = breakString(attribute + " - " + description);
-	      item->setToolTip(toolTip);
-	      eventListWidget->item(i, 1)->setBackground(color);
-	      QVariant textColorVar = QVariant(textColor.rgb()); 
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)
+      {
+        found = true;
+        QTableWidgetItem *item = eventListWidget->item(i,0);
+        QString toolTip = breakString(attribute + " - " + description);
+        item->setToolTip(toolTip);
+        eventListWidget->item(i, 1)->setBackground(color);
+        QVariant textColorVar = QVariant(textColor.rgb());
+        eventListWidget->item(eventListWidget->rowCount() - 1, 1)
           ->setData(Qt::UserRole, textColorVar);
-	      break;
-	    }
+        break;
+      }
     }
     if (!found)
     {
@@ -7193,27 +7188,27 @@ void EventGraphWidget::addModes()
       findChildren(currentAttribute, &childrenVector, isEntity);
       QString description = QString();
       if (isEntity)
-	    {
-	      query2->bindValue(":name", currentAttribute);
-	      query2->exec();
-	      query2->first();
-	      description = query2->value(0).toString();
-	    }
+      {
+        query2->bindValue(":name", currentAttribute);
+        query2->exec();
+        query2->first();
+        description = query2->value(0).toString();
+      }
       else
-	    {
-	      query->bindValue(":name", currentAttribute);
-	      query->exec();
-	      query->first();
-	      description = query->value(0).toString();
-	    }
+      {
+        query->bindValue(":name", currentAttribute);
+        query->exec();
+        query->first();
+        description = query->value(0).toString();
+      }
       QVectorIterator<QString> it2(childrenVector);
       while (it2.hasNext())
-	    {
-	      QString currentChild = it2.next();
-	      query3->bindValue(":currentAttribute", currentChild);
-	      query3->bindValue(":coder", _selectedCoder);
-	      query3->exec();
-	      while (query3->next())
+      {
+        QString currentChild = it2.next();
+        query3->bindValue(":currentAttribute", currentChild);
+        query3->bindValue(":coder", _selectedCoder);
+        query3->exec();
+        while (query3->next())
         {
           int currentIncident = query3->value(0).toInt();
           QVectorIterator<IncidentNode *> it3(_incidentNodeVector);
@@ -7229,8 +7224,8 @@ void EventGraphWidget::addModes()
             }
           }
         }
-	      QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
-	      while (it4.hasNext()) 
+        QVectorIterator<AbstractNode*> it4(_abstractNodeVector);
+        while (it4.hasNext())
         {
           AbstractNode *currentAbstractNode = it4.next();
           QSet<QString> attributes = currentAbstractNode->getAttributes();
@@ -7242,11 +7237,11 @@ void EventGraphWidget::addModes()
             currentAbstractNode->setMassHidden(false);
           }
         }
-	    }
+      }
       bool found = false;
       for (int i = 0; i < eventListWidget->rowCount(); i++)
-	    {
-	      if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == currentAttribute) 
+      {
+        if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == currentAttribute)
         {
           found = true;
           QTableWidgetItem *item = eventListWidget->item(i,0);
@@ -7255,25 +7250,25 @@ void EventGraphWidget::addModes()
           eventListWidget->item(i, 1)->setBackground(currentColor);
           break;
         }
-	    }
+      }
       if (!found)
-	    {
-	      QTableWidgetItem *item = new QTableWidgetItem(currentAttribute);
-	      item->setFlags(item->flags() ^ Qt::ItemIsEditable);
-	      QString toolTip = breakString(currentAttribute + " - " + description);
-	      item->setToolTip(toolTip);
-	      item->setData(Qt::DisplayRole, currentAttribute);
-	      eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
-	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
-	      eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(currentColor);
-	      QVariant textColorVar = QVariant(QColor(Qt::black).rgb());
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
+      {
+        QTableWidgetItem *item = new QTableWidgetItem(currentAttribute);
+        item->setFlags(item->flags() ^ Qt::ItemIsEditable);
+        QString toolTip = breakString(currentAttribute + " - " + description);
+        item->setToolTip(toolTip);
+        item->setData(Qt::DisplayRole, currentAttribute);
+        eventListWidget->setRowCount(eventListWidget->rowCount() + 1);
+        eventListWidget->setItem(eventListWidget->rowCount() - 1, 0, item);
+        eventListWidget->setItem(eventListWidget->rowCount() - 1, 1, new QTableWidgetItem);
+        eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setBackground(currentColor);
+        QVariant textColorVar = QVariant(QColor(Qt::black).rgb());
+        eventListWidget->item(eventListWidget->rowCount() - 1, 1)->setData(Qt::UserRole,
                                                                            textColorVar);
-	      eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
+        eventListWidget->item(eventListWidget->rowCount() - 1, 1)->
           setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
                    Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
-	    }
+      }
     }
     delete query;
     delete query2;
@@ -7355,10 +7350,10 @@ void EventGraphWidget::removeMode()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int currentIncident = query->value(0).toInt();
-	      QVectorIterator<IncidentNode *> it4(_incidentNodeVector);
-	      while (it4.hasNext()) 
+      {
+        int currentIncident = query->value(0).toInt();
+        QVectorIterator<IncidentNode *> it4(_incidentNodeVector);
+        while (it4.hasNext())
         {
           IncidentNode *currentIncidentNode = it4.next();
           if (currentIncidentNode->getId() == currentIncident)
@@ -7375,13 +7370,13 @@ void EventGraphWidget::removeMode()
             }
           }
         }
-	    }
+      }
       QVectorIterator<AbstractNode*> it5(_abstractNodeVector);
       while (it5.hasNext())
-	    {
-	      AbstractNode *currentAbstractNode = it5.next();
-	      QSet<QString> attributes = currentAbstractNode->getAttributes();
-	      if (attributes.contains(currentAttribute)) 
+      {
+        AbstractNode *currentAbstractNode = it5.next();
+        QSet<QString> attributes = currentAbstractNode->getAttributes();
+        if (attributes.contains(currentAttribute))
         {
           currentAbstractNode->setColor(color);
           currentAbstractNode->setMode(currentMode);
@@ -7394,7 +7389,7 @@ void EventGraphWidget::removeMode()
             currentAbstractNode->setMassHidden(false);
           }
         }
-	    }
+      }
     }
     delete query;
   }
@@ -7453,10 +7448,10 @@ void EventGraphWidget::setModeButtons(QTableWidgetItem *item)
       AbstractNode *current = it2.next();
       QString mode = current->getMode();
       if (text == mode)
-	    {
-	      hidden = current->isMassHidden();
-	      break;
-	    }
+      {
+        hidden = current->isMassHidden();
+        break;
+      }
     }
   }
   if (hidden)
@@ -7553,19 +7548,19 @@ void EventGraphWidget::setLinkageButtons(QTableWidgetItem *item)
     {
       Linkage *current = it.next();
       if (current->getType() == text)
-	    {
-	      if (current->isMassHidden()) 
+      {
+        if (current->isMassHidden())
         {
           hideLinkageTypeButton->setEnabled(false);
           showLinkageTypeButton->setEnabled(true);
         }
-	      else 
+        else
         {
           hideLinkageTypeButton->setEnabled(true);
           showLinkageTypeButton->setEnabled(false);
         }
-	      break;
-	    }
+        break;
+      }
     }
     if (_presentTypes.size() > 0)
     {
@@ -7643,10 +7638,10 @@ void EventGraphWidget::restoreModeColors()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int currentIncident = query->value(0).toInt();
-	      QVectorIterator<IncidentNode *> it4(_incidentNodeVector);
-	      while (it4.hasNext()) 
+      {
+        int currentIncident = query->value(0).toInt();
+        QVectorIterator<IncidentNode *> it4(_incidentNodeVector);
+        while (it4.hasNext())
         {
           IncidentNode *currentIncidentNode = it4.next();
           if (currentIncidentNode->getId() == currentIncident)
@@ -7664,13 +7659,13 @@ void EventGraphWidget::restoreModeColors()
             }
           }
         }
-	    }
+      }
       QVectorIterator<AbstractNode*> it5(_abstractNodeVector);
       while (it5.hasNext())
-	    {
-	      AbstractNode *currentAbstractNode = it5.next();
-	      QSet<QString> attributes = currentAbstractNode->getAttributes();
-	      if (attributes.contains(currentAttribute)) 
+      {
+        AbstractNode *currentAbstractNode = it5.next();
+        QSet<QString> attributes = currentAbstractNode->getAttributes();
+        if (attributes.contains(currentAttribute))
         {
           currentAbstractNode->setColor(color);
           currentAbstractNode->getLabel()->setDefaultTextColor(textColor);
@@ -7684,7 +7679,7 @@ void EventGraphWidget::restoreModeColors()
             currentAbstractNode->setMassHidden(false);
           }
         }
-	    }
+      }
     }
     delete query;
   }
@@ -7699,20 +7694,20 @@ void EventGraphWidget::restoreModeColors()
     {
       IncidentNode *incidentNode = it.next();
       if (incidentNode->getMode() == mode)
-	    {
-	      incidentNode->setColor(color);
-	      incidentNode->getLabel()->setDefaultTextColor(textColor);
-	    }
+      {
+        incidentNode->setColor(color);
+        incidentNode->getLabel()->setDefaultTextColor(textColor);
+      }
     }
     QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
     while (it2.hasNext())
     {
       AbstractNode *abstractNode = it2.next();
       if (abstractNode->getMode() == mode)
-	    {
-	      abstractNode->setColor(color);
-	      abstractNode->getLabel()->setDefaultTextColor(textColor);
-	    }
+      {
+        abstractNode->setColor(color);
+        abstractNode->getLabel()->setDefaultTextColor(textColor);
+      }
     }
   }
   setChangeLabel();
@@ -7824,10 +7819,10 @@ void EventGraphWidget::setEdgeColor()
       QColor color = colorDialog->selectedColor();
       QVectorIterator<Linkage*> it(_edgeVector);
       while (it.hasNext())
-	    {
-	      Linkage *currentLinkage = it.next();
-	      currentLinkage->setColor(color);
-	    }
+      {
+        Linkage *currentLinkage = it.next();
+        currentLinkage->setColor(color);
+      }
     }
     delete colorDialog;
   }
@@ -7883,24 +7878,24 @@ void EventGraphWidget::changeModeColor(QTableWidgetItem *item)
       QString mode = neighbour->data(Qt::DisplayRole).toString();
       QVectorIterator<IncidentNode *> it(_incidentNodeVector);
       while (it.hasNext())
-	    {
-	      IncidentNode *current = it.next();
-	      if (current->getMode() == mode) 
+      {
+        IncidentNode *current = it.next();
+        if (current->getMode() == mode)
         {
           current->setColor(fillColor);
           current->getLabel()->setDefaultTextColor(textColor);
         }
-	    }
+      }
       QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
       while (it2.hasNext())
-	    {
-	      AbstractNode *current = it2.next();
-	      if (current->getMode() == mode) 
+      {
+        AbstractNode *current = it2.next();
+        if (current->getMode() == mode)
         {
           current->setColor(fillColor);
           current->getLabel()->setDefaultTextColor(textColor);
         }
-	    }
+      }
       setChangeLabel();
     }
   }
@@ -7921,13 +7916,13 @@ void EventGraphWidget::changeLinkageColor(QTableWidgetItem *item)
       QString type = neighbour->data(Qt::DisplayRole).toString();
       QVectorIterator<Linkage*> it(_edgeVector);
       while (it.hasNext())
-	    {
-	      Linkage *current = it.next();
-	      if (current->getType() == type) 
+      {
+        Linkage *current = it.next();
+        if (current->getType() == type)
         {
           current->setColor(color);
         }
-	    }
+      }
     }
   }
 }
@@ -8030,13 +8025,13 @@ void EventGraphWidget::toggleLabels()
     if (currentIncidentNode->isVisible())
     {
       if (_labelsVisible)
-	    {
-	      currentItem->hide();
-	    }
+      {
+        currentItem->hide();
+      }
       else
-	    {
-	      currentItem->show();
-	    }
+      {
+        currentItem->show();
+      }
     }
   }
   QVectorIterator<AbstractNodeLabel*> it2(_abstractNodeLabelVector);
@@ -8047,13 +8042,13 @@ void EventGraphWidget::toggleLabels()
     if (currentIncidentNode->isVisible())
     {
       if (_labelsVisible)
-	    {
-	      currentItem->hide();
-	    }
+      {
+        currentItem->hide();
+      }
       else
-	    {
-	      currentItem->show();
-	    }
+      {
+        currentItem->show();
+      }
     }
   }
   _labelsVisible = !(_labelsVisible);
@@ -8142,28 +8137,28 @@ void EventGraphWidget::setVisibility()
     else
     {
       if (currentItem->getAbstractNode() == NULL)
-	    {
-	      if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) 
+      {
+        if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
         {
           currentItem->show();
         }
-	      else 
+        else
         {
           currentItem->hide();
         }
-	    }
+      }
       else
-	    {
-	      currentItem->hide();
-	      if (order >= lowerRangeDial->value() && order <= upperRangeDial->value()) 
+      {
+        currentItem->hide();
+        if (order >= lowerRangeDial->value() && order <= upperRangeDial->value())
         {
           currentItem->getAbstractNode()->show();
         }
-	      else 
+        else
         {
           currentItem->getAbstractNode()->hide();
         }
-	    }
+      }
     }
   }
   if (_checkedCases.size() > 0) 
@@ -8175,24 +8170,24 @@ void EventGraphWidget::setVisibility()
       QVectorIterator<QString> it2(_checkedCases);
       bool found = false;
       while (it2.hasNext())
-	    {
-	      QString currentCase = it2.next();
-	      query->bindValue(":incident", currentItem->getId());
-	      query->bindValue(":casename", currentCase);
-	      query->exec();
-	      query->first();
-	      if (!query->isNull(0)) 
+      {
+        QString currentCase = it2.next();
+        query->bindValue(":incident", currentItem->getId());
+        query->bindValue(":casename", currentCase);
+        query->exec();
+        query->first();
+        if (!query->isNull(0))
         {
           found = true;
         }
-	    }
+      }
       if (!found)
-	    {
-	      if (currentItem->getAbstractNode() == NULL) 
+      {
+        if (currentItem->getAbstractNode() == NULL)
         {
           currentItem->hide();
         }
-	      else 
+        else
         {
           bool keep = false;
           QVector<IncidentNode *> contents =
@@ -8220,7 +8215,7 @@ void EventGraphWidget::setVisibility()
             currentItem->getAbstractNode()->hide();
           }
         }
-	    }
+      }
     }
   }
   QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
@@ -8256,13 +8251,13 @@ void EventGraphWidget::setVisibility()
       QGraphicsItem *tail = currentEdge->getStart();
       QGraphicsItem *head = currentEdge->getEnd();
       if (tail->isVisible() && head->isVisible())
-	    {
-	      currentEdge->setVisible(true);
-	    }
+      {
+        currentEdge->setVisible(true);
+      }
       else
-	    {
-	      currentEdge->setVisible(false);
-	    }
+      {
+        currentEdge->setVisible(false);
+      }
     }
   }
   QVectorIterator<IncidentNodeLabel*> it6(_incidentNodeLabelVector);
@@ -8277,9 +8272,9 @@ void EventGraphWidget::setVisibility()
     else
     {
       if (_labelsVisible)
-	    {
-	      currentText->show();
-	    }
+      {
+        currentText->show();
+      }
     }
   }
   QVectorIterator<AbstractNodeLabel*> it7(_abstractNodeLabelVector);
@@ -8294,9 +8289,9 @@ void EventGraphWidget::setVisibility()
     else
     {
       if (_labelsVisible)
-	    {
-	      currentText->show();
-	    }
+      {
+        currentText->show();
+      }
     }
   }
   setHeights();
@@ -8322,8 +8317,8 @@ void EventGraphWidget::setHeights()
     {
       Linkage *currentLinkage = it2.next();
       if (currentLinkage->isVisible())
-	    {
-	      if (currentLinkage->getType() == currentType) 
+      {
+        if (currentLinkage->getType() == currentType)
         {
           QGraphicsItem *start = currentLinkage->getStart();
           QGraphicsItem *end = currentLinkage->getEnd();
@@ -8366,7 +8361,7 @@ void EventGraphWidget::setHeights()
             currentLinkage->setHeight(0);
           }
         }
-	    }
+      }
       finished.push_back(currentType);
     }
   }
@@ -8411,50 +8406,50 @@ void EventGraphWidget::setTimeRange()
       int order = query->value(1).toInt();
       QDate date;
       if (dateString.length() == 4) // We are dealing with a year only.
-	    {
-	      date = QDate::fromString(dateString, "yyyy");
-	    }
+      {
+        date = QDate::fromString(dateString, "yyyy");
+      }
       if (dateString.length() == 7) // We are dealing with a month and year.
-	    {
-	      if (dateString[2] == '/')
+      {
+        if (dateString[2] == '/')
         {
           date = QDate::fromString(dateString, "MM/yyyy");
         }
-	      else if (dateString[2] == '-')
+        else if (dateString[2] == '-')
         {
           date = QDate::fromString(dateString, "MM-yyyy");
         }
-	      else if (dateString[4] == '\\') 
+        else if (dateString[4] == '\\')
         {
           date = QDate::fromString(dateString, "yyyy\\MM");
         }
-	      else if (dateString[4] == '-')
+        else if (dateString[4] == '-')
         {
           date = QDate::fromString(dateString, "yyyy-MM");
         }
-	    }
+      }
       if (dateString.length() == 10) // We are dealing with a day, month and year.
-	    {
-	      if (dateString[2] == '/')
+      {
+        if (dateString[2] == '/')
         {
           date = QDate::fromString(dateString, "dd/MM/yyyy");
         }
-	      else if (dateString[2] == '-')
+        else if (dateString[2] == '-')
         {
           date = QDate::fromString(dateString, "dd-MM-yyyy");
         }
-	      else if (dateString[4] == '\\') 
+        else if (dateString[4] == '\\')
         {
           date = QDate::fromString(dateString, "yyyy\\MM\\dd");
         }
-	      else if (dateString[4] == '-')
+        else if (dateString[4] == '-')
         {
           date = QDate::fromString(dateString, "yyyy-MM-dd");
         }
-	    }
+      }
       if (date.isValid())
-	    {
-	      if (date.daysTo(startDate) <= 0)
+      {
+        if (date.daysTo(startDate) <= 0)
         {
           if (currentStart.isNull())
           {
@@ -8462,15 +8457,15 @@ void EventGraphWidget::setTimeRange()
             lowerBound = order;
           }
         }
-	      if (date.daysTo(endDate) >= 0 && !finished)
+        if (date.daysTo(endDate) >= 0 && !finished)
         {
           upperBound = order;
         }
-	      else if (date.daysTo(endDate) < 0)
+        else if (date.daysTo(endDate) < 0)
         {
           finished = true;
         }
-	    }
+      }
     }
     if (currentStart.isNull())
     {
@@ -8591,23 +8586,23 @@ void EventGraphWidget::exportTable()
       IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
       AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       if (incidentNode)
-	    {
-	      QString timing = "";
-	      QString description = "";
-	      QString raw = "";
-	      QString comment = "";
-	      QString source = "";
-	      QString mode = incidentNode->getMode();
-	      QString type = "Incident";
-	      int id = incidentNode->getId();
-	      QString order = incidentNode->getLabel()->toPlainText();
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
+      {
+        QString timing = "";
+        QString description = "";
+        QString raw = "";
+        QString comment = "";
+        QString source = "";
+        QString mode = incidentNode->getMode();
+        QString type = "Incident";
+        int id = incidentNode->getId();
+        QString order = incidentNode->getLabel()->toPlainText();
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT timestamp, description, raw, comment, source FROM incidents "
                        "WHERE id = :id");
-	      query->bindValue(":id", id);
-	      query->exec();
-	      query->first();
-	      if (!(query->isNull(0))) 
+        query->bindValue(":id", id);
+        query->exec();
+        query->first();
+        if (!(query->isNull(0)))
         {
           timing = query->value(0).toString();
           description = query->value(1).toString();
@@ -8615,8 +8610,8 @@ void EventGraphWidget::exportTable()
           comment = query->value(3).toString();
           source = query->value(4).toString();
         }
-	      delete query;
-	      fileOut << row << ","
+        delete query;
+        fileOut << row << ","
                 << order.toStdString() << ","
                 << "\"" << doubleQuote(timing).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(description).toStdString() << "\"" << ","
@@ -8626,40 +8621,40 @@ void EventGraphWidget::exportTable()
                 << "\"" << doubleQuote(mode).toStdString() << "\"" << ","
                 << "NA" << ","
                 << "\"" << doubleQuote(source).toStdString() << "\""<< "\n";
-	    }
+      }
       else if (abstractNode)
-	    {
-	      QString timing = abstractNode->getTiming();
-	      QString description = abstractNode->getDescription();
-	      QString raw = "";
-	      QString comment = abstractNode->getComment();
-	      QString source = "";
-	      QString mode = abstractNode->getMode();
-	      QString type = "";
-	      QString id = abstractNode->getLabel()->toPlainText();
-	      if (abstractNode->getConstraint() == PATHS)
+      {
+        QString timing = abstractNode->getTiming();
+        QString description = abstractNode->getDescription();
+        QString raw = "";
+        QString comment = abstractNode->getComment();
+        QString source = "";
+        QString mode = abstractNode->getMode();
+        QString type = "";
+        QString id = abstractNode->getLabel()->toPlainText();
+        if (abstractNode->getConstraint() == PATHS)
         {
           type = "Paths based";
         }
-	      else if (abstractNode->getConstraint() == SEMIPATHS)
+        else if (abstractNode->getConstraint() == SEMIPATHS)
         {
           type = "Semi-paths based";
         }
-	      else if (abstractNode->getConstraint() == COMPOSITEEVENT)
+        else if (abstractNode->getConstraint() == COMPOSITEEVENT)
         {
           type = "Composite event";
         }
-	      else if (abstractNode->getConstraint() == NOCONSTRAINT)
+        else if (abstractNode->getConstraint() == NOCONSTRAINT)
         {
           type = "No constraint";
         }
-	      QString components = "";
-	      QVector<IncidentNode *> incidents = abstractNode->getIncidents();
-	      int incidentId = abstractNode->getIncidents().first()->getId();
-	      QSqlQuery *query = new QSqlQuery;
-	      delete query;
-	      QVectorIterator<IncidentNode *> it4(incidents);
-	      while (it4.hasNext()) 
+        QString components = "";
+        QVector<IncidentNode *> incidents = abstractNode->getIncidents();
+        int incidentId = abstractNode->getIncidents().first()->getId();
+        QSqlQuery *query = new QSqlQuery;
+        delete query;
+        QVectorIterator<IncidentNode *> it4(incidents);
+        while (it4.hasNext())
         {
           IncidentNode *incident = it4.next();
           incidentId = incident->getId();
@@ -8692,7 +8687,7 @@ void EventGraphWidget::exportTable()
           }
           delete query;
         }
-	      fileOut << row << ","
+        fileOut << row << ","
                 << "\"" << id.toStdString() << "\"" << ","
                 << "\"" << doubleQuote(timing).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(description).toStdString() << "\"" ","
@@ -8702,7 +8697,7 @@ void EventGraphWidget::exportTable()
                 << "\"" << doubleQuote(mode).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(components).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(source).toStdString() << "\"" << "\n";
-	    }
+      }
     }
     // And that should be it.
     fileOut.close();
@@ -8765,11 +8760,11 @@ void EventGraphWidget::exportNodes()
       query->exec();
       query->first();
       if (!(query->isNull(0)))
-	    {
-	      description = query->value(0).toString();
-	      timing = query->value(1).toString();
-	      comment = query->value(2).toString();
-	    }
+      {
+        description = query->value(0).toString();
+        timing = query->value(1).toString();
+        comment = query->value(2).toString();
+      }
       delete query;
       ids.push_back("i" + label);
       labels.push_back(label);
@@ -8793,26 +8788,26 @@ void EventGraphWidget::exportNodes()
       QString identifier = "";
       QString type = "";
       if (abstractNode->getConstraint() == PATHS)
-	    {
-	      identifier = "p";
-	      type = "Paths based";
-	    }
+      {
+        identifier = "p";
+        type = "Paths based";
+      }
       else if (abstractNode->getConstraint() == SEMIPATHS)
-	    {
-	      identifier = "s";
-	      type = "Semi-paths based";
-	    }
+      {
+        identifier = "s";
+        type = "Semi-paths based";
+      }
       else if (abstractNode->getConstraint() == COMPOSITEEVENT)
-	    {
-	      identifier = "c";
-	      type = "Composite event";
-	    }
+      {
+        identifier = "c";
+        type = "Composite event";
+      }
       else if (abstractNode->getConstraint() == NOCONSTRAINT)
-	    {
-	      identifier = "n";
-	      type = "No constraint";
+      {
+        identifier = "n";
+        type = "No constraint";
 
-	    }
+      }
       QString id = identifier + QString::number(abstractNode->getOrder());
       ids.push_back(id);
       labels.push_back(label);
@@ -8865,17 +8860,17 @@ void EventGraphWidget::exportEdges()
     {
       Linkage *edge = it.next();
       if (edge->isVisible())
-	    {
-	      IncidentNode *incidentNodeStart = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
-	      IncidentNode *incidentNodeEnd = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
-	      AbstractNode *abstractNodeStart = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
-	      AbstractNode *abstractNodeEnd = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
-	      QString description = edge->getType();
-	      QString coder = _selectedCoder;
-	      QString source = "";
-	      QString target = "";
-	      QString comment = "";	      
-	      if (incidentNodeStart && incidentNodeEnd)
+      {
+        IncidentNode *incidentNodeStart = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
+        IncidentNode *incidentNodeEnd = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
+        AbstractNode *abstractNodeStart = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
+        AbstractNode *abstractNodeEnd = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
+        QString description = edge->getType();
+        QString coder = _selectedCoder;
+        QString source = "";
+        QString target = "";
+        QString comment = "";
+        if (incidentNodeStart && incidentNodeEnd)
         {
           QSqlQuery *query = new QSqlQuery;
           query->prepare("SELECT comment, coder FROM linkage_comments "
@@ -8891,12 +8886,12 @@ void EventGraphWidget::exportEdges()
           }
           delete query;
         }
-	      if (incidentNodeStart && incidentNodeEnd) 
+        if (incidentNodeStart && incidentNodeEnd)
         {
           source = "i" + QString::number(incidentNodeStart->getOrder());
           target = "i" + QString::number(incidentNodeEnd->getOrder());
         }
-	      else if (incidentNodeStart && abstractNodeEnd) 
+        else if (incidentNodeStart && abstractNodeEnd)
         {
           source = "i" + QString::number(incidentNodeStart->getOrder());
           if (abstractNodeEnd->getConstraint() == PATHS)
@@ -8916,7 +8911,7 @@ void EventGraphWidget::exportEdges()
             target = "n" + QString::number(abstractNodeEnd->getOrder());
           }
         }
-	      else if (abstractNodeStart && abstractNodeEnd) 
+        else if (abstractNodeStart && abstractNodeEnd)
         {
           if (abstractNodeStart->getConstraint() == PATHS)
           {
@@ -8951,7 +8946,7 @@ void EventGraphWidget::exportEdges()
             target = "n" + QString::number(abstractNodeEnd->getOrder());
           }
         }
-	      else if (abstractNodeStart && incidentNodeEnd) 
+        else if (abstractNodeStart && incidentNodeEnd)
         {
           if (abstractNodeStart->getConstraint() == PATHS)
           {
@@ -8971,13 +8966,13 @@ void EventGraphWidget::exportEdges()
           }
           target = "i" + QString::number(incidentNodeEnd->getId());
         }
-	      fileOut << doubleQuote(source).toStdString() << ","
+        fileOut << doubleQuote(source).toStdString() << ","
                 << doubleQuote(target).toStdString() << ","
                 << "Directed" << ","
                 << "\"" << doubleQuote(description).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(coder).toStdString() << "\"" << ","
                 << "\"" << doubleQuote(comment).toStdString() << "\"" << "\n";
-	    }
+      }
     }
     // And that should be it!
     fileOut.close();
@@ -9089,14 +9084,14 @@ void EventGraphWidget::abstractEvents()
       QVector<IncidentNode *> tempIncidents = abstractionDialog->getCollectedIncidents();
       QString chosenAttribute = abstractionDialog->getAttribute();
       if (tempIncidents.size() > 0)
-	    {
-	      std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
-	      qreal lowestX = 0.0;
-	      qreal highestX = 0.0;
-	      qreal lowestY = 0.0;
-	      qreal highestY = 0.0;
-	      QVectorIterator<IncidentNode *> it2(tempIncidents);
-	      while (it2.hasNext()) 
+      {
+        std::sort(tempIncidents.begin(), tempIncidents.end(), componentsSort);
+        qreal lowestX = 0.0;
+        qreal highestX = 0.0;
+        qreal lowestY = 0.0;
+        qreal highestY = 0.0;
+        QVectorIterator<IncidentNode *> it2(tempIncidents);
+        while (it2.hasNext())
         {
           IncidentNode *current = it2.next();
           if (lowestX == 0.0)
@@ -9132,19 +9127,19 @@ void EventGraphWidget::abstractEvents()
             highestY = current->scenePos().y();
           }
         }
-	      int width = highestX - lowestX + tempIncidents.last()->getWidth();
-	      qreal xPos = lowestX;
-	      qreal yPos = lowestY + ((highestY - lowestY) / 2);
-	      QPointF originalPos = QPointF(xPos, yPos);
-	      QString description = abstractionDialog->getDescription();
-	      AbstractNode *current = new AbstractNode(width, description, originalPos,
+        int width = highestX - lowestX + tempIncidents.last()->getWidth();
+        qreal xPos = lowestX;
+        qreal yPos = lowestY + ((highestY - lowestY) / 2);
+        QPointF originalPos = QPointF(xPos, yPos);
+        QString description = abstractionDialog->getDescription();
+        AbstractNode *current = new AbstractNode(width, description, originalPos,
                                                  (_abstractNodeVector.size() + 1) * -1,
                                                  abstractionDialog->getConstraint(),
                                                  tempIncidents);
-	      current->setPos(originalPos);
-	      current->setZValue(_incidentNodeVector[0]->zValue());
-	      QVectorIterator<QGraphicsItem*> it3(_currentData);
-	      while (it3.hasNext()) 
+        current->setPos(originalPos);
+        current->setZValue(_incidentNodeVector[0]->zValue());
+        QVectorIterator<QGraphicsItem*> it3(_currentData);
+        while (it3.hasNext())
         {
           IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it3.peekNext());
           AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it3.peekNext());
@@ -9229,10 +9224,10 @@ void EventGraphWidget::abstractEvents()
             }
           }
         }
-	      _abstractNodeVector.push_back(current);
-	      current->setTiming(abstractionDialog->getTiming());
-	      scene->addItem(current);
-	      if (abstractionDialog->isInheriting())
+        _abstractNodeVector.push_back(current);
+        current->setTiming(abstractionDialog->getTiming());
+        scene->addItem(current);
+        if (abstractionDialog->isInheriting())
         {
           QVector<QString> inheritance = abstractionDialog->getInheritance();
           QVectorIterator<QString> it7(inheritance);
@@ -9241,28 +9236,28 @@ void EventGraphWidget::abstractEvents()
             current->insertAttribute(it7.next());
           }
         }
-	      AbstractNodeLabel *abstractNodeLabel = new AbstractNodeLabel(current);
-	      current->setLabel(abstractNodeLabel);
-	      qreal xOffset = (current->getWidth() / 2) - 20;
-	      abstractNodeLabel->setOffset(QPointF(xOffset,0));
-	      abstractNodeLabel->setNewPos(current->scenePos());
-	      abstractNodeLabel->setZValue(_incidentNodeVector[0]->zValue() + 1);
-	      abstractNodeLabel->setDefaultTextColor(Qt::black);
-	      abstractNodeLabel->setFontSize(_labelSize);
-	      _abstractNodeLabelVector.push_back(abstractNodeLabel);
-	      scene->addItem(abstractNodeLabel);
-	      rewireLinkages(current, tempIncidents);
-	      updateAbstractNodeOrder();
-	      updateLinkages();
-	      setVisibility();
-	      _currentData.clear();
-	      current->setSelected(true);
-	      retrieveData();
-	      setChangeLabel();
-	      addLinkageTypeButton->setEnabled(false);
-	      compareButton->setEnabled(false);
-	      restoreModeColors();
-	    }
+        AbstractNodeLabel *abstractNodeLabel = new AbstractNodeLabel(current);
+        current->setLabel(abstractNodeLabel);
+        qreal xOffset = (current->getWidth() / 2) - 20;
+        abstractNodeLabel->setOffset(QPointF(xOffset,0));
+        abstractNodeLabel->setNewPos(current->scenePos());
+        abstractNodeLabel->setZValue(_incidentNodeVector[0]->zValue() + 1);
+        abstractNodeLabel->setDefaultTextColor(Qt::black);
+        abstractNodeLabel->setFontSize(_labelSize);
+        _abstractNodeLabelVector.push_back(abstractNodeLabel);
+        scene->addItem(abstractNodeLabel);
+        rewireLinkages(current, tempIncidents);
+        updateAbstractNodeOrder();
+        updateLinkages();
+        setVisibility();
+        _currentData.clear();
+        current->setSelected(true);
+        retrieveData();
+        setChangeLabel();
+        addLinkageTypeButton->setEnabled(false);
+        compareButton->setEnabled(false);
+        restoreModeColors();
+      }
       delete abstractionDialog;
     }
     else
@@ -9287,9 +9282,9 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
     for (int i = 0; i < linkageListWidget->rowCount(); i++)
     {
       if (linkageListWidget->item(i, 0)->data(Qt::DisplayRole) == currentType)
-	    {
-	      edgeColor = linkageListWidget->item(i, 1)->background().color();
-	    }
+      {
+        edgeColor = linkageListWidget->item(i, 1)->background().color();
+      }
     }
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
@@ -9303,9 +9298,9 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
     {
       IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(tit.next());
       if (incidentNode)
-	    {
-	      incidentId.push_back(incidentNode->getId());
-	    }
+      {
+        incidentId.push_back(incidentNode->getId());
+      }
     }
     QVectorIterator<IncidentNode *> it(incidents);
     while (it.hasNext())
@@ -9320,22 +9315,22 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
       query->exec();
       QSet<int> tailSet;
       while (query->next())
-	    {
-	      int tail = query->value(0).toInt();
-	      if (!(incidentId.contains(tail))) 
+      {
+        int tail = query->value(0).toInt();
+        if (!(incidentId.contains(tail)))
         {
           tailSet.insert(tail);
         }
-	    }
+      }
       QList<int> tailList = tailSet.toList();
       QListIterator<int> it2(tailList);
       while (it2.hasNext())
-	    {
-	      QGraphicsItem *tempTarget = abstractNode;
-	      QGraphicsItem *tempSource = NULL;
-	      int currentTail = it2.next();
-	      QVectorIterator<IncidentNode *> et(_incidentNodeVector);
-	      while (et.hasNext()) 
+      {
+        QGraphicsItem *tempTarget = abstractNode;
+        QGraphicsItem *tempSource = NULL;
+        int currentTail = it2.next();
+        QVectorIterator<IncidentNode *> et(_incidentNodeVector);
+        while (et.hasNext())
         {
           IncidentNode *currentIncidentNode = et.next();
           if (currentIncidentNode->getId() == currentTail)
@@ -9390,7 +9385,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
             }
           }
         }
-	    }
+      }
       query->prepare("SELECT head FROM linkages "
                      "WHERE tail = :tail AND coder = :coder AND type = :type");
       query->bindValue(":tail", incident);
@@ -9399,22 +9394,22 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
       query->exec();
       QSet<int> headSet;
       while (query->next())
-	    {
-	      int head = query->value(0).toInt();
-	      if (!(incidentId.contains(head))) 
+      {
+        int head = query->value(0).toInt();
+        if (!(incidentId.contains(head)))
         {
           headSet.insert(head);
         }
-	    }
+      }
       QList<int> headList = headSet.toList();
       QListIterator<int> it4(headList);
       while (it4.hasNext())
-	    {
-	      QGraphicsItem *tempTarget = NULL;
-	      QGraphicsItem *tempSource = abstractNode;
-	      int currentHead = it4.next();
-	      QVectorIterator<IncidentNode *> et(_incidentNodeVector);
-	      while (et.hasNext()) 
+      {
+        QGraphicsItem *tempTarget = NULL;
+        QGraphicsItem *tempSource = abstractNode;
+        int currentHead = it4.next();
+        QVectorIterator<IncidentNode *> et(_incidentNodeVector);
+        while (et.hasNext())
         {
           IncidentNode *currentIncidentNode = et.next();
           if (currentIncidentNode->getId() == currentHead)
@@ -9469,7 +9464,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
             }
           }
         }
-	    }
+      }
     }
     delete query;
   }
@@ -9491,10 +9486,10 @@ void EventGraphWidget::disaggregateEvent()
       QVector<IncidentNode *> tempIncidents = abstractNode->getIncidents();
       QVectorIterator<IncidentNode *> it2(tempIncidents);
       while (it2.hasNext())
-	    {
-	      IncidentNode *tempIncident = it2.next();
-	      tempIncident->setAbstractNode(abstractNode);
-	    }
+      {
+        IncidentNode *tempIncident = it2.next();
+        tempIncident->setAbstractNode(abstractNode);
+      }
     }
   }
   QVectorIterator<IncidentNode *> it2(_incidentNodeVector);
@@ -9578,11 +9573,11 @@ void EventGraphWidget::disaggregateEvent()
     {
       QVectorIterator<QGraphicsItem*> it7(allEvents);
       while (it7.hasNext())
-	    {
-	      QGraphicsItem *item = it7.next();
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(item);
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(item);
-	      if (incidentNode) 
+      {
+        QGraphicsItem *item = it7.next();
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(item);
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(item);
+        if (incidentNode)
         {
           if (incidentNode->scenePos().x() >= currentPos.x())
           {
@@ -9595,7 +9590,7 @@ void EventGraphWidget::disaggregateEvent()
             }
           }
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           if (abstractNode->scenePos().x() >= currentPos.x())
           {
@@ -9608,7 +9603,7 @@ void EventGraphWidget::disaggregateEvent()
             }
           }
         }
-	    }
+      }
     }
   }
   /* 
@@ -9739,24 +9734,24 @@ void EventGraphWidget::recolorEvents()
       delete colorDialog;
       QListIterator<QGraphicsItem*> it(scene->selectedItems());
       while (it.hasNext())
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
-	      AbstractNode *abstractNode =  qgraphicsitem_cast<AbstractNode*>(it.peekNext());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
+        AbstractNode *abstractNode =  qgraphicsitem_cast<AbstractNode*>(it.peekNext());
+        if (incidentNode)
         {
           IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(it.next());
           currentIncidentNode->setColor(color);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           AbstractNode *currentIncidentNode = qgraphicsitem_cast<AbstractNode*>(it.next());
           currentIncidentNode->setColor(color);
         }
-	      else 
+        else
         {
           it.next();
         }
-	    }
+      }
     }
   }
 }
@@ -9774,26 +9769,26 @@ void EventGraphWidget::recolorLabels()
       delete colorDialog;
       QListIterator<QGraphicsItem*> it(scene->selectedItems());
       while (it.hasNext())
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it.peekNext());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(it.peekNext());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(it.peekNext());
+        if (incidentNode)
         {
           IncidentNode *currentIncidentNode = qgraphicsitem_cast<IncidentNode *>(it.next());
           IncidentNodeLabel *currentLabel = currentIncidentNode->getLabel();
           currentLabel->setDefaultTextColor(color);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           AbstractNode *currentIncidentNode = qgraphicsitem_cast<AbstractNode*>(it.next());
           AbstractNodeLabel *currentLabel = currentIncidentNode->getLabel();
           currentLabel->setDefaultTextColor(color);
         }
-	      else 
+        else
         {
           it.next();
         }
-	    }
+      }
     }
   }
 }
@@ -9818,51 +9813,51 @@ void EventGraphWidget::colorLineage()
       bool modes = lineage->modesOn();
       QVectorIterator<IncidentNode *> it(_incidentNodeVector);
       while (it.hasNext())
-	    {
-	      IncidentNode *current = it.next();
-	      current->setColor(unrelatedFill);
-	      if (modes)
+      {
+        IncidentNode *current = it.next();
+        current->setColor(unrelatedFill);
+        if (modes)
         {
           current->setMode(UNRELATEDMODE);
         }
-	      current->getLabel()->setDefaultTextColor(unrelatedText);
-	    }
+        current->getLabel()->setDefaultTextColor(unrelatedText);
+      }
       QVectorIterator<AbstractNode*> it2(_abstractNodeVector);
       while (it2.hasNext())
-	    {
-	      AbstractNode *current = it2.next();
-	      current->setColor(unrelatedFill);
-	      if (modes)
+      {
+        AbstractNode *current = it2.next();
+        current->setColor(unrelatedFill);
+        if (modes)
         {
           current->setMode(UNRELATEDMODE);
         }
-	      current->getLabel()->setDefaultTextColor(unrelatedText);
-	    }
+        current->getLabel()->setDefaultTextColor(unrelatedText);
+      }
       IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
       AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       if (incidentNode)
-	    {
-	      incidentNode->setColor(originFill);
-	      if (modes)
+      {
+        incidentNode->setColor(originFill);
+        if (modes)
         {
           incidentNode->setMode(ORIGINMODE);
         }
-	      incidentNode->getLabel()->setDefaultTextColor(originText);
-	    }
+        incidentNode->getLabel()->setDefaultTextColor(originText);
+      }
       else if (abstractNode)
-	    {
-	      abstractNode->setColor(originFill);
-	      if (modes)
+      {
+        abstractNode->setColor(originFill);
+        if (modes)
         {
           abstractNode->setMode(ORIGINMODE);
         }
-	      abstractNode->getLabel()->setDefaultTextColor(originText);
-	    }
+        abstractNode->getLabel()->setDefaultTextColor(originText);
+      }
       if (_presentTypes.size() > 1)
-	    {
-	      QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, _presentTypes);
-	      relationshipChooser->exec();
-	      if (relationshipChooser->getExitStatus() == 0) 
+      {
+        QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, _presentTypes);
+        relationshipChooser->exec();
+        if (relationshipChooser->getExitStatus() == 0)
         {
           QString selection = relationshipChooser->getSelection();
           QSet<QGraphicsItem*> finished;
@@ -9874,26 +9869,26 @@ void EventGraphWidget::colorLineage()
           findDescendants(descendantsFill, descendantsText, current,
                           &finished, selection, modes);
         }
-	    }
+      }
       else
-	    {
-	      QString selection = _presentTypes[0];
-	      QSet<QGraphicsItem*> finished;
-	      finished.insert(current);
-	      findAncestors(ancestorsFill, ancestorsText, current,
+      {
+        QString selection = _presentTypes[0];
+        QSet<QGraphicsItem*> finished;
+        finished.insert(current);
+        findAncestors(ancestorsFill, ancestorsText, current,
                       &finished, selection, modes);
-	      finished.clear();
-	      finished.insert(current);
-	      findDescendants(descendantsFill, descendantsText, current,
+        finished.clear();
+        finished.insert(current);
+        findDescendants(descendantsFill, descendantsText, current,
                         &finished, selection, modes);
-	    }
+      }
       if (modes)
-	    {
-	      bool ancestorFound = false;
-	      bool originFound = false;
-	      bool descendantFound = false;
-	      bool unrelatedFound = false;
-	      for (int i = 0; i < eventListWidget->rowCount(); i++) 
+      {
+        bool ancestorFound = false;
+        bool originFound = false;
+        bool descendantFound = false;
+        bool unrelatedFound = false;
+        for (int i = 0; i < eventListWidget->rowCount(); i++)
         {
           if (eventListWidget->item(i, 0)->data(Qt::DisplayRole) == ANCESTORMODE)
           {
@@ -9944,7 +9939,7 @@ void EventGraphWidget::colorLineage()
               ->setData(Qt::UserRole, textColorVar);
           }
         }
-	      if (!ancestorFound) 
+        if (!ancestorFound)
         {
           QTableWidgetItem *item = new QTableWidgetItem(ANCESTORMODE);
           item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -9963,7 +9958,7 @@ void EventGraphWidget::colorLineage()
             setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
                      Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
         }
-	      if (!descendantFound)
+        if (!descendantFound)
         {
           QTableWidgetItem *item = new QTableWidgetItem(DESCENDANTMODE);
           item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -9982,7 +9977,7 @@ void EventGraphWidget::colorLineage()
             setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
                      Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
         }
-	      if (!originFound)
+        if (!originFound)
         {
           QTableWidgetItem *item = new QTableWidgetItem(ORIGINMODE);
           item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -10001,7 +9996,7 @@ void EventGraphWidget::colorLineage()
             setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
                      Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
         }
-	      if (!unrelatedFound)
+        if (!unrelatedFound)
         {
           QTableWidgetItem *item = new QTableWidgetItem(UNRELATEDMODE);
           item->setFlags(item->flags() ^ Qt::ItemIsEditable);
@@ -10020,7 +10015,7 @@ void EventGraphWidget::colorLineage()
             setFlags(eventListWidget->item(eventListWidget->rowCount() - 1, 1)->flags() ^
                      Qt::ItemIsEditable ^ Qt::ItemIsSelectable);
         }
-	    }
+      }
     }
   }
 }
@@ -10045,10 +10040,10 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
     {
       Linkage *edge = it.next();
       if (edge->getStart() == origin)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
+        if (incidentNode)
         {
           incidentNode->setColor(ancestorFill);
           if (modes)
@@ -10057,7 +10052,7 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
           }
           incidentNode->getLabel()->setDefaultTextColor(ancestorText);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setColor(ancestorFill);
           if (modes)
@@ -10066,12 +10061,12 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
           }
           abstractNode->getLabel()->setDefaultTextColor(ancestorText);
         }
-	      if (!pFinished->contains(edge->getEnd())) 
+        if (!pFinished->contains(edge->getEnd()))
         {
           pFinished->insert(edge->getEnd());
           findAncestors(ancestorFill, ancestorText, edge->getEnd(), pFinished, type, modes);
         }
-	    }
+      }
     }
   }
   else if (direction == FUTURE) 
@@ -10081,10 +10076,10 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
     {
       Linkage *edge = it.next();
       if (edge->getEnd() == origin)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
+        if (incidentNode)
         {
           incidentNode->setColor(ancestorFill);
           if (modes)
@@ -10093,7 +10088,7 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
           }
           incidentNode->getLabel()->setDefaultTextColor(ancestorText);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setColor(ancestorFill);
           if (modes)
@@ -10102,12 +10097,12 @@ void EventGraphWidget::findAncestors(QColor ancestorFill,
           }
           abstractNode->getLabel()->setDefaultTextColor(ancestorText);
         }
-	      if (!pFinished->contains(edge->getStart())) 
+        if (!pFinished->contains(edge->getStart()))
         {
           pFinished->insert(edge->getStart());
           findAncestors(ancestorFill, ancestorText, edge->getStart(), pFinished, type, modes);
         }
-	    }
+      }
     }
   }
   delete query;
@@ -10134,10 +10129,10 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
     {
       Linkage *edge = it.next();
       if (edge->getEnd() == origin)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
+        if (incidentNode)
         {
           incidentNode->setColor(descendantFill);
           if (modes)
@@ -10146,7 +10141,7 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
           }
           incidentNode->getLabel()->setDefaultTextColor(descendantText);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setColor(descendantFill);
           if (modes)
@@ -10155,13 +10150,13 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
           }
           abstractNode->getLabel()->setDefaultTextColor(descendantText);
         }
-	      if (!pFinished->contains(edge->getStart())) 
+        if (!pFinished->contains(edge->getStart()))
         {
           pFinished->insert(edge->getStart());
           findDescendants(descendantFill, descendantText, edge->getStart(),
                           pFinished, type, modes);
         }
-	    }
+      }
     }
   }
   else if (direction == FUTURE) 
@@ -10171,10 +10166,10 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
     {
       Linkage *edge = it.next();
       if (edge->getStart() == origin)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
+        if (incidentNode)
         {
           incidentNode->setColor(descendantFill);
           if (modes)
@@ -10183,7 +10178,7 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
           }
           incidentNode->getLabel()->setDefaultTextColor(descendantText);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setColor(descendantFill);
           if (modes)
@@ -10192,13 +10187,13 @@ void EventGraphWidget::findDescendants(QColor descendantFill,
           }
           abstractNode->getLabel()->setDefaultTextColor(descendantText);
         }
-	      if (!pFinished->contains(edge->getEnd())) 
+        if (!pFinished->contains(edge->getEnd()))
         {
           pFinished->insert(edge->getEnd());
           findDescendants(descendantFill, descendantText, edge->getEnd(),
                           pFinished, type, modes);
         }
-	    }
+      }
     }
   }
   delete query;
@@ -10238,24 +10233,24 @@ void EventGraphWidget::addToCase()
       IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
       AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
       if (incident)
-	    {
-	      int id = incident->getId();
-	      query->bindValue(":casename", selection);
-	      query->bindValue(":incident", id);
-	      query->exec();
-	      query->first();
-	      if (query->isNull(0))
+      {
+        int id = incident->getId();
+        query->bindValue(":casename", selection);
+        query->bindValue(":incident", id);
+        query->exec();
+        query->first();
+        if (query->isNull(0))
         {
           query2->bindValue(":incident", id);
           query2->bindValue(":casename", selection);
           query2->exec();
         }
-	    }
+      }
       else if (abstract)
-	    {
-	      QVector<IncidentNode*> incidents = abstract->getIncidents();
-	      QVectorIterator<IncidentNode*> it2(incidents);
-	      while (it2.hasNext())
+      {
+        QVector<IncidentNode*> incidents = abstract->getIncidents();
+        QVectorIterator<IncidentNode*> it2(incidents);
+        while (it2.hasNext())
         {
           IncidentNode *incident = it2.next();
           int id = incident->getId();
@@ -10270,7 +10265,7 @@ void EventGraphWidget::addToCase()
             query2->exec();
           }
         }
-	    }
+      }
     }
   }
   delete query;
@@ -10302,17 +10297,17 @@ void EventGraphWidget::removeFromCase()
       IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
       AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
       if (incident)
-	    {
-	      int id = incident->getId();
-	      query->bindValue(":casename", selection);
-	      query->bindValue(":incident", id);
-	      query->exec();
-	    }
+      {
+        int id = incident->getId();
+        query->bindValue(":casename", selection);
+        query->bindValue(":incident", id);
+        query->exec();
+      }
       else if (abstract)
-	    {
-	      QVector<IncidentNode*> incidents = abstract->getIncidents();
-	      QVectorIterator<IncidentNode*> it2(incidents);
-	      while (it2.hasNext())
+      {
+        QVector<IncidentNode*> incidents = abstract->getIncidents();
+        QVectorIterator<IncidentNode*> it2(incidents);
+        while (it2.hasNext())
         {
           IncidentNode *incident = it2.next();
           int id = incident->getId();
@@ -10320,7 +10315,7 @@ void EventGraphWidget::removeFromCase()
           query->bindValue(":incident", id);
           query->exec();
         }
-	    }
+      }
     }
   }
   delete query;
@@ -10351,17 +10346,17 @@ void EventGraphWidget::createNewCase()
       IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
       AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
       if (incident)
-	    {
-	      int id = incident->getId();
-	      query2->bindValue(":casename", casename);
-	      query2->bindValue(":incident", id);
-	      query2->exec();
-	    }
+      {
+        int id = incident->getId();
+        query2->bindValue(":casename", casename);
+        query2->bindValue(":incident", id);
+        query2->exec();
+      }
       else if (abstract)
-	    {
-	      QVector<IncidentNode*> incidents = abstract->getIncidents();
-	      QVectorIterator<IncidentNode*> it2(incidents);
-	      while (it2.hasNext())
+      {
+        QVector<IncidentNode*> incidents = abstract->getIncidents();
+        QVectorIterator<IncidentNode*> it2(incidents);
+        while (it2.hasNext())
         {
           IncidentNode *incident = it2.next();
           int id = incident->getId();
@@ -10369,7 +10364,7 @@ void EventGraphWidget::createNewCase()
           query2->bindValue(":incident", id);
           query2->exec();
         }
-	    }
+      }
     }
   }
   delete query;
@@ -10432,21 +10427,21 @@ void EventGraphWidget::exportTransitionMatrix()
       QVectorIterator<AbstractNode*> abstractNodeIt(_abstractNodeVector);
       int occurrence = 0;
       while (incidentNodeIt.hasNext())
-	    {
-	      IncidentNode *currentIncidentNode = incidentNodeIt.next();
-	      if (currentIncidentNode->isVisible())
+      {
+        IncidentNode *currentIncidentNode = incidentNodeIt.next();
+        if (currentIncidentNode->isVisible())
         {
           allEvents.push_back(currentIncidentNode);
         }
-	    }
+      }
       while (abstractNodeIt.hasNext())
-	    {
-	      AbstractNode *currentAbstractNode = abstractNodeIt.next();
-	      if (currentAbstractNode->isVisible())
+      {
+        AbstractNode *currentAbstractNode = abstractNodeIt.next();
+        if (currentAbstractNode->isVisible())
         {
           allEvents.push_back(currentAbstractNode);
         }
-	    }
+      }
       // If we want to look at attributes instead of mode, it is better
       // to identify the relevant attributes before we iterate through
       // all events.
@@ -10454,66 +10449,66 @@ void EventGraphWidget::exportTransitionMatrix()
       QVector<QString> attributeVector;
       QVectorIterator<QGraphicsItem*> allIt(allEvents);
       while (allIt.hasNext())
-	    {
-	      QGraphicsItem* currentIncidentNode = allIt.next();
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(currentIncidentNode);
-	      AbstractNode *abstractNodeItem = qgraphicsitem_cast<AbstractNode*>(currentIncidentNode);
-	      if (incidentNode) 
+      {
+        QGraphicsItem* currentIncidentNode = allIt.next();
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(currentIncidentNode);
+        AbstractNode *abstractNodeItem = qgraphicsitem_cast<AbstractNode*>(currentIncidentNode);
+        if (incidentNode)
         {
           if (incidentNode->getMode() == rowMode)
           {
             occurrence++;
           }
         }
-	      else if (abstractNodeItem) 
+        else if (abstractNodeItem)
         {
           if (abstractNodeItem->getMode() == rowMode)
           {
             occurrence++;
           }
         }
-	    }
+      }
       rowMarginals.push_back(occurrence);
       // And we add the results to the appropriate columns.
       for (int j = 0; j != eventListWidget->rowCount(); j++)
-	    {
-	      QTableWidgetItem *colItem = eventListWidget->item(j, 0);
-	      QString colMode = colItem->data(Qt::DisplayRole).toString();
-	      // Now we need to iterate through our edges.
-	      QVectorIterator<Linkage*> it(_edgeVector);
-	      int count = 0;
-	      QVector<QString> rowVector;
-	      rowVector.push_back(rowMode);
-	      QSqlQuery *query = new QSqlQuery;
-	      query->prepare("SELECT name FROM entities WHERE name = :name");
-	      query->bindValue(":name", rowMode);
-	      query->exec();
-	      query->first();
-	      bool entity = false;
-	      if (!query->isNull(0)) 
+      {
+        QTableWidgetItem *colItem = eventListWidget->item(j, 0);
+        QString colMode = colItem->data(Qt::DisplayRole).toString();
+        // Now we need to iterate through our edges.
+        QVectorIterator<Linkage*> it(_edgeVector);
+        int count = 0;
+        QVector<QString> rowVector;
+        rowVector.push_back(rowMode);
+        QSqlQuery *query = new QSqlQuery;
+        query->prepare("SELECT name FROM entities WHERE name = :name");
+        query->bindValue(":name", rowMode);
+        query->exec();
+        query->first();
+        bool entity = false;
+        if (!query->isNull(0))
         {
           entity = true;
         }
-	      findChildren(rowMode, &rowVector, entity);
-	      QVector<QString> colVector;
-	      colVector.push_back(colMode);
-	      query->prepare("SELECT name FROM entities WHERE name = :name");
-	      query->bindValue(":name", colMode);
-	      query->exec();
-	      query->first();
-	      entity = false;
-	      if (!query->isNull(0)) 
+        findChildren(rowMode, &rowVector, entity);
+        QVector<QString> colVector;
+        colVector.push_back(colMode);
+        query->prepare("SELECT name FROM entities WHERE name = :name");
+        query->bindValue(":name", colMode);
+        query->exec();
+        query->first();
+        entity = false;
+        if (!query->isNull(0))
         {
           entity = true;
         }
-	      findChildren(colMode, &colVector, entity);
-	      QSet<int> rowIncidents;
-	      QSet<int> colIncidents;
-	      QVectorIterator<QString> rit(rowVector);
-	      QVectorIterator<QString> cit(colVector);
-	      query->prepare("SELECT incident FROM attributes_to_incidents "
+        findChildren(colMode, &colVector, entity);
+        QSet<int> rowIncidents;
+        QSet<int> colIncidents;
+        QVectorIterator<QString> rit(rowVector);
+        QVectorIterator<QString> cit(colVector);
+        query->prepare("SELECT incident FROM attributes_to_incidents "
                        "WHERE attribute = :attribute AND coder = :coder");
-	      while (rit.hasNext())
+        while (rit.hasNext())
         {
           QString currentAttribute = rit.next();
           query->bindValue(":attribute", currentAttribute);
@@ -10524,7 +10519,7 @@ void EventGraphWidget::exportTransitionMatrix()
             rowIncidents.insert(query->value(0).toInt());
           }
         }
-	      while (cit.hasNext())
+        while (cit.hasNext())
         {
           QString currentAttribute = cit.next();
           query->bindValue(":attribute", currentAttribute);
@@ -10535,8 +10530,8 @@ void EventGraphWidget::exportTransitionMatrix()
             colIncidents.insert(query->value(0).toInt());
           }
         }
-	      QMap<QGraphicsItem*, QSet<QString>> observedEnds;
-	      while (it.hasNext()) 
+        QMap<QGraphicsItem*, QSet<QString>> observedEnds;
+        while (it.hasNext())
         {
           Linkage *edge = it.next();
           if (edge->getType() == type)
@@ -10588,10 +10583,10 @@ void EventGraphWidget::exportTransitionMatrix()
             }
           }
         }
-	      // We push the current cell value to our row vector.
-	      currentRow.push_back(count);
-	      delete query;
-	    }
+        // We push the current cell value to our row vector.
+        currentRow.push_back(count);
+        delete query;
+      }
       // We push the number of transitions observed into the appropriate row.
       transitionsRow.push_back(transitions);
       // And then we add our row to the matrix.
@@ -10605,25 +10600,25 @@ void EventGraphWidget::exportTransitionMatrix()
       QString fileName = QFileDialog::getSaveFileName(this, tr("Save table"),"",
                                                       tr("csv files (*.csv)"));
       if (!fileName.trimmed().isEmpty())
-	    {
-	      if(!fileName.endsWith(".csv")) 
+      {
+        if(!fileName.endsWith(".csv"))
         {
           fileName.append(".csv");
         }
-	      // And we create a file outstream.  
-	      std::ofstream fileOut(fileName.toStdString().c_str());
-	      // We first write the header.
-	      QVectorIterator<QString> it2(names);
-	      while (it2.hasNext()) 
+        // And we create a file outstream.
+             std::ofstream fileOut(fileName.toStdString().c_str());
+        // We first write the header.
+        QVectorIterator<QString> it2(names);
+        while (it2.hasNext())
         {
           QString currentName = it2.next();
           fileOut << "," << "\"" << doubleQuote(currentName).toStdString() << "\"";
         }
-	      // Add occurrence label and end the header with a newline symbol.
-	      fileOut << "," << "Occurrence" << "\n"; 
-	      int counter = 0;
-	      QVectorIterator<QVector<int>> it3(matrix);
-	      while (it3.hasNext()) 
+        // Add occurrence label and end the header with a newline symbol.
+        fileOut << "," << "Occurrence" << "\n";
+        int counter = 0;
+        QVectorIterator<QVector<int>> it3(matrix);
+        while (it3.hasNext())
         {
           QVector<int> currentRow = it3.next();
           fileOut << doubleQuote(names[counter]).toStdString(); // First row contains row names.
@@ -10647,17 +10642,17 @@ void EventGraphWidget::exportTransitionMatrix()
           fileOut << "," << rowMarginals[counter] << "\n";
           counter++;
         }
-	      // Our final row is the number of times our items were observed in transitions.
-	      fileOut << "Transitions observed";
-	      QVectorIterator<int> it5(transitionsRow);
-	      while (it5.hasNext()) 
+        // Our final row is the number of times our items were observed in transitions.
+        fileOut << "Transitions observed";
+        QVectorIterator<int> it5(transitionsRow);
+        while (it5.hasNext())
         {
           int currentCol = it5.next();
           fileOut << "," << currentCol;
         }
-	      // And that is it.
-	      fileOut.close();
-	    }
+        // And that is it.
+        fileOut.close();
+      }
     }
     delete exportDialog;
   }
@@ -10731,18 +10726,18 @@ void EventGraphWidget::normalizeDistance()
       AbstractNode *itemAbstractNode = qgraphicsitem_cast<AbstractNode*>(item);
       if (itemIncidentNode && itemIncidentNode->scenePos().x() +
           itemIncidentNode->getWidth() < current->scenePos().x())
-	    {
-	      target = item;
-	    }
+      {
+        target = item;
+      }
       else if (itemAbstractNode && itemAbstractNode->scenePos().x() +
                itemAbstractNode->getWidth() < current->scenePos().x())
-	    {
-	      target = item;
-	    }
+      {
+        target = item;
+      }
       else
-	    {
-	      break;
-	    }
+      {
+        break;
+      }
     }
     if (target != NULL)
     {
@@ -10750,24 +10745,24 @@ void EventGraphWidget::normalizeDistance()
       AbstractNode *targetAbstractNode = qgraphicsitem_cast<AbstractNode*>(target);
       int width = 0;
       if (targetIncidentNode)
-	    {
-	      width = targetIncidentNode->getWidth();
-	    }
+      {
+        width = targetIncidentNode->getWidth();
+      }
       else if (targetAbstractNode)
-	    {
-	      width = targetAbstractNode->getWidth();
-	    }
+      {
+        width = targetAbstractNode->getWidth();
+      }
       current->setPos(target->scenePos().x() + 70 + width - 40, current->scenePos().y());
       IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
       AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
       if (incidentNode)
-	    {
-	      incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
-	    }
+      {
+        incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
+      }
       else if (abstractNode)
-	    {
-	      abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
-	    }
+      {
+        abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+      }
     }
   }
 }
@@ -10782,36 +10777,36 @@ void EventGraphWidget::makeParallel()
     {
       QGraphicsItem *current = it.next();
       if (lowest == NULL)
-	    {
-	      lowest = current;
-	    }
+      {
+        lowest = current;
+      }
       else
-	    {
-	      if (current->scenePos().x() < lowest->scenePos().x()) 
+      {
+        if (current->scenePos().x() < lowest->scenePos().x())
         {
           lowest = current;
         }
-	    }
+      }
     }
     QVectorIterator<QGraphicsItem*> it2(_currentData);
     while (it2.hasNext())
     {
       QGraphicsItem *current = it2.next();
       if (current != lowest)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+        if (incidentNode)
         {
           incidentNode->setPos(lowest->scenePos().x(), incidentNode->scenePos().y());
           incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setPos(lowest->scenePos().x(), abstractNode->scenePos().y());
           abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
         }
-	    } 
+      }
     }
   }
 }
@@ -10841,25 +10836,25 @@ void EventGraphWidget::closeGap()
       IncidentNode *itemIncidentNode = qgraphicsitem_cast<IncidentNode *>(item);
       AbstractNode *itemAbstractNode = qgraphicsitem_cast<AbstractNode*>(item);
       if (itemIncidentNode)
-	    {
-	      if (itemIncidentNode->isVisible() &&
+      {
+        if (itemIncidentNode->isVisible() &&
             itemIncidentNode->scenePos().x() + itemIncidentNode->getWidth() < current->scenePos().x())
         {
           target = item;
         }
-	    }
+      }
       else if (itemAbstractNode)
-	    {
-	      if (itemAbstractNode->isVisible() &&
+      {
+        if (itemAbstractNode->isVisible() &&
             itemAbstractNode->scenePos().x() + itemAbstractNode->getWidth() < current->scenePos().x())
         {
           target = item;
         }
-	    }
+      }
       else
-	    {
-	      break;
-	    }
+      {
+        break;
+      }
     }
     if (target != NULL)
     {
@@ -10867,33 +10862,33 @@ void EventGraphWidget::closeGap()
       AbstractNode *targetAbstractNode = qgraphicsitem_cast<AbstractNode*>(target);
       int width = 0;
       if (targetIncidentNode)
-	    {
-	      width = targetIncidentNode->getWidth();
-	    }
+      {
+        width = targetIncidentNode->getWidth();
+      }
       else if (targetAbstractNode)
-	    {
-	      width = targetAbstractNode->getWidth();
-	    }
+      {
+        width = targetAbstractNode->getWidth();
+      }
       if (current->scenePos().x() - target->scenePos().x() - width + 40 > 70)
-	    {
-	      qreal oldX = current->scenePos().x();
-	      current->setPos(target->scenePos().x() + 70 + width - 40, current->scenePos().y());
-	      qreal newX = current->scenePos().x();
-	      qreal dist = oldX - newX;
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
-	      if (incidentNode) 
+      {
+        qreal oldX = current->scenePos().x();
+        current->setPos(target->scenePos().x() + 70 + width - 40, current->scenePos().y());
+        qreal newX = current->scenePos().x();
+        qreal dist = oldX - newX;
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(current);
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+        if (incidentNode)
         {
           incidentNode->setOriginalPos(incidentNode->scenePos());
           incidentNode->getLabel()->setNewPos(incidentNode->scenePos());
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setOriginalPos(abstractNode->scenePos());
           abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
         }
-	      QVectorIterator<QGraphicsItem*> it5(allEvents);
-	      while (it5.hasNext()) 
+        QVectorIterator<QGraphicsItem*> it5(allEvents);
+        while (it5.hasNext())
         {
           QGraphicsItem *follow = it5.next();
           if (follow->scenePos().x() > current->scenePos().x())
@@ -10914,7 +10909,7 @@ void EventGraphWidget::closeGap()
             }
           }
         }
-	    }
+      }
     }
   }
 }
@@ -10948,23 +10943,23 @@ void EventGraphWidget::addLinkage()
       QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, _presentTypes);
       relationshipChooser->exec();
       if (relationshipChooser->getExitStatus() == 0)
-	    {
-	      type = relationshipChooser->getSelection();
-	    }
+      {
+        type = relationshipChooser->getSelection();
+      }
       else
-	    {
-	      delete relationshipChooser;
-	      return;
-	    }
+      {
+        delete relationshipChooser;
+        return;
+      }
       delete relationshipChooser;
     }
     QColor edgeColor = QColor(Qt::gray);
     for (int i = 0; i < linkageListWidget->rowCount(); i++)
     {
       if (linkageListWidget->item(i, 0)->data(Qt::DisplayRole) == type)
-	    {
-	      edgeColor = linkageListWidget->item(i, 1)->background().color();
-	    }
+      {
+        edgeColor = linkageListWidget->item(i, 1)->background().color();
+      }
     }
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
@@ -11004,8 +10999,8 @@ void EventGraphWidget::addLinkage()
       query->prepare("INSERT INTO linkages (tail, head, type, coder) "
                      "VALUES (:tail, :head, :type, :coder)");
       if (incidentNodeOne->getOrder() < incidentNodeTwo->getOrder())
-	    {
-	      if (direction == PAST) 
+      {
+        if (direction == PAST)
         {
           query->bindValue(":tail", idTwo);
           query->bindValue(":head", idOne);
@@ -11021,7 +11016,7 @@ void EventGraphWidget::addLinkage()
           _edgeVector.push_back(newLinkage);
           scene->addItem(newLinkage);
         }
-	      else if (direction == FUTURE) 
+        else if (direction == FUTURE)
         {
           query->bindValue(":tail", idOne);
           query->bindValue(":head", idTwo);
@@ -11038,10 +11033,10 @@ void EventGraphWidget::addLinkage()
           _edgeVector.push_back(newLinkage);
           scene->addItem(newLinkage);
         }
-	    }
+      }
       else
-	    {
-	      if (direction == PAST) 
+      {
+        if (direction == PAST)
         {
           query->bindValue(":tail", idOne);
           query->bindValue(":head", idTwo);
@@ -11057,7 +11052,7 @@ void EventGraphWidget::addLinkage()
           _edgeVector.push_back(newLinkage);
           scene->addItem(newLinkage);
         }
-	      else if (direction == FUTURE) 
+        else if (direction == FUTURE)
         {
           query->bindValue(":tail", idTwo);
           query->bindValue(":head", idOne);
@@ -11074,7 +11069,7 @@ void EventGraphWidget::addLinkage()
           _edgeVector.push_back(newLinkage);
           scene->addItem(newLinkage);
         }
-	    }
+      }
     }
     delete query;
   }
@@ -11094,23 +11089,23 @@ void EventGraphWidget::addLinkageEvidence()
       QPointer<ComboBoxDialog> relationshipChooser = new ComboBoxDialog(this, _presentTypes);
       relationshipChooser->exec();
       if (relationshipChooser->getExitStatus() == 0)
-	    {
-	      type = relationshipChooser->getSelection();
-	    }
+      {
+        type = relationshipChooser->getSelection();
+      }
       else
-	    {
-	      delete relationshipChooser;
-	      return;
-	    }
+      {
+        delete relationshipChooser;
+        return;
+      }
       delete relationshipChooser;
     }
     QColor edgeColor = QColor(Qt::gray);
     for (int i = 0; i < linkageListWidget->rowCount(); i++)
     {
       if (linkageListWidget->item(i, 0)->data(Qt::DisplayRole) == type)
-	    {
-	      edgeColor = linkageListWidget->item(i, 1)->background().color();
-	    }
+      {
+        edgeColor = linkageListWidget->item(i, 1)->background().color();
+      }
     }
     QSqlQuery *query = new QSqlQuery;
     query->prepare("SELECT direction FROM linkage_types WHERE name = :type");
@@ -11150,8 +11145,8 @@ void EventGraphWidget::addLinkageEvidence()
       query->prepare("INSERT INTO linkages (tail, head, type, coder) "
                      "VALUES (:tail, :head, :type, :coder)");
       if (incidentNodeOne->getOrder() < incidentNodeTwo->getOrder())
-	    {
-	      if (direction == PAST) 
+      {
+        if (direction == PAST)
         {
           QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idTwo,
                                                                              idOne,
@@ -11176,7 +11171,7 @@ void EventGraphWidget::addLinkageEvidence()
             scene->addItem(newLinkage);
           }
         }
-	      else if (direction == FUTURE) 
+        else if (direction == FUTURE)
         {
           QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idOne,
                                                                              idTwo,
@@ -11202,10 +11197,10 @@ void EventGraphWidget::addLinkageEvidence()
             scene->addItem(newLinkage);
           }
         }
-	    }
+      }
       else
-	    {
-	      if (direction == PAST) 
+      {
+        if (direction == PAST)
         {
           QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idOne,
                                                                              idTwo,
@@ -11230,7 +11225,7 @@ void EventGraphWidget::addLinkageEvidence()
             scene->addItem(newLinkage);
           }
         }
-	      else if (direction == FUTURE) 
+        else if (direction == FUTURE)
         {
           QPointer<AddEvidenceDialog> evidenceDialog = new AddEvidenceDialog(idTwo,
                                                                              idOne,
@@ -11256,7 +11251,7 @@ void EventGraphWidget::addLinkageEvidence()
             scene->addItem(newLinkage);
           }
         }
-	    }
+      }
     }
     delete query;
   }
@@ -11339,23 +11334,23 @@ void EventGraphWidget::selectAncestors(QGraphicsItem *origin,
     if (edge->getType() == type)
     {
       if (edge->getEnd() == origin)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getStart());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getStart());
+        if (incidentNode)
         {
           incidentNode->setSelected(true);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setSelected(true);
         }
-	      if (!pFinished->contains(edge->getStart())) 
+        if (!pFinished->contains(edge->getStart()))
         {
           pFinished->insert(edge->getStart());
           selectAncestors(edge->getStart(), pFinished, type);
         }
-	    }
+      }
     }
   }
 }
@@ -11371,23 +11366,23 @@ void EventGraphWidget::selectDescendants(QGraphicsItem *origin,
     if (edge->getType() == type)
     {
       if (edge->getStart() == origin)
-	    {
-	      IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
-	      AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
-	      if (incidentNode) 
+      {
+        IncidentNode *incidentNode = qgraphicsitem_cast<IncidentNode *>(edge->getEnd());
+        AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(edge->getEnd());
+        if (incidentNode)
         {
           incidentNode->setSelected(true);
         }
-	      else if (abstractNode) 
+        else if (abstractNode)
         {
           abstractNode->setSelected(true);
         }
-	      if (!pFinished->contains(edge->getEnd())) 
+        if (!pFinished->contains(edge->getEnd()))
         {
           pFinished->insert(edge->getEnd());
           selectDescendants(edge->getEnd(), pFinished, type);
         }
-	    }
+      }
     }
   }
 }
@@ -11438,9 +11433,9 @@ void EventGraphWidget::seeLinkageEvidence()
       QString type = linkage->getType();
       QString coder = _selectedCoder;
       if (linkage->getPenStyle() == 4)
-	    {
-	      coder = _selectedCompare;
-	    }
+      {
+        coder = _selectedCompare;
+      }
       QPointer<EvidenceDialog> evidenceDialog = new EvidenceDialog(tail, head, type, coder, this);
       evidenceDialog->exec();
       QString comment = evidenceDialog->getComment();
@@ -11501,10 +11496,10 @@ void EventGraphWidget::removeNormalLinkage()
       warningBox->setText("<h2>Are you sure?</h2>");
       warningBox->setInformativeText("Are you sure you want to remove this linkage?");
       if (warningBox->exec() == QMessageBox::Yes)
-	    {
-	      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
-	      IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
-	      if (startIncidentNode && endIncidentNode) 
+      {
+        IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
+        IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
+        if (startIncidentNode && endIncidentNode)
         {
           int tail = startIncidentNode->getId();
           int head = endIncidentNode->getId();
@@ -11533,7 +11528,7 @@ void EventGraphWidget::removeNormalLinkage()
           setHeights();
           return;
         }
-	      else 
+        else
         {
           QPointer<QMessageBox> warningBox2 = new QMessageBox(this);
           warningBox->setWindowTitle("Removing linkage");
@@ -11544,12 +11539,12 @@ void EventGraphWidget::removeNormalLinkage()
                                           "events as tail and/or head.");
           warningBox2->exec();
         }
-	    }
+      }
       else
-	    {
-	      delete warningBox;
-	      return;
-	    }
+      {
+        delete warningBox;
+        return;
+      }
     }
   }
 }
@@ -11584,16 +11579,16 @@ void EventGraphWidget::keepLinkage()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int tail = query->value(0).toInt();
-	      int head = query->value(1).toInt();
-	      QSet<int> currentTails = tailsMap.value(head);
-	      QSet<int> currentHeads = headsMap.value(tail);
-	      currentTails.insert(tail);
-	      currentHeads.insert(head);
-	      headsMap.insert(tail, currentHeads);
-	      tailsMap.insert(head, currentTails);
-	    }
+      {
+        int tail = query->value(0).toInt();
+        int head = query->value(1).toInt();
+        QSet<int> currentTails = tailsMap.value(head);
+        QSet<int> currentHeads = headsMap.value(tail);
+        currentTails.insert(tail);
+        currentHeads.insert(head);
+        headsMap.insert(tail, currentHeads);
+        tailsMap.insert(head, currentTails);
+      }
       IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
       IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
       int tail = startIncidentNode->getId();
@@ -11611,24 +11606,24 @@ void EventGraphWidget::keepLinkage()
       findTails(&markTwo, &tailsMap, tail);
       QSetIterator<int> it2(markOne);
       while (it2.hasNext())
-	    {
-	      int currentPathMate = it2.next();
-	      QSet<int> currentHeads = headsMap.value(currentPathMate);
-	      if (currentHeads.contains(head))
+      {
+        int currentPathMate = it2.next();
+        QSet<int> currentHeads = headsMap.value(currentPathMate);
+        if (currentHeads.contains(head))
         {
           linkage->setPenStyle(2);
         }
-	    }
+      }
       QSetIterator<int> it3(markTwo);
       while (it3.hasNext())
-	    {
-	      int currentPathMate = it3.next();
-	      QSet<int> currentHeads = headsMap.value(currentPathMate);
-	      if (currentHeads.contains(head))
+      {
+        int currentPathMate = it3.next();
+        QSet<int> currentHeads = headsMap.value(currentPathMate);
+        if (currentHeads.contains(head))
         {
           linkage->setPenStyle(2);
         }
-	    }
+      }
     }
   }
 }
@@ -11650,16 +11645,16 @@ void EventGraphWidget::acceptLinkage()
       query->bindValue(":coder", _selectedCoder);
       query->exec();
       while (query->next())
-	    {
-	      int tail = query->value(0).toInt();
-	      int head = query->value(1).toInt();
-	      QSet<int> currentTails = tailsMap.value(head);
-	      QSet<int> currentHeads = headsMap.value(tail);
-	      currentTails.insert(tail);
-	      currentHeads.insert(head);
-	      headsMap.insert(tail, currentHeads);
-	      tailsMap.insert(head, currentTails);
-	    }
+      {
+        int tail = query->value(0).toInt();
+        int head = query->value(1).toInt();
+        QSet<int> currentTails = tailsMap.value(head);
+        QSet<int> currentHeads = headsMap.value(tail);
+        currentTails.insert(tail);
+        currentHeads.insert(head);
+        headsMap.insert(tail, currentHeads);
+        tailsMap.insert(head, currentTails);
+      }
       IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getStart());
       IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(linkage->getEnd());
       int tail = startIncidentNode->getId();
@@ -11686,24 +11681,24 @@ void EventGraphWidget::acceptLinkage()
       findTails(&markTwo, &tailsMap, tail);
       QSetIterator<int> it2(markOne);
       while (it2.hasNext())
-	    {
-	      int currentPathMate = it2.next();
-	      QSet<int> currentHeads = headsMap.value(currentPathMate);
-	      if (currentHeads.contains(head))
+      {
+        int currentPathMate = it2.next();
+        QSet<int> currentHeads = headsMap.value(currentPathMate);
+        if (currentHeads.contains(head))
         {
           linkage->setPenStyle(2);
         }
-	    }
+      }
       QSetIterator<int> it3(markTwo);
       while (it3.hasNext())
-	    {
-	      int currentPathMate = it3.next();
-	      QSet<int> currentHeads = headsMap.value(currentPathMate);
-	      if (currentHeads.contains(head))
+      {
+        int currentPathMate = it3.next();
+        QSet<int> currentHeads = headsMap.value(currentPathMate);
+        if (currentHeads.contains(head))
         {
           linkage->setPenStyle(2);
         }
-	    }
+      }
     }
   }
 }
@@ -12409,13 +12404,13 @@ void EventGraphWidget::duplicateLine()
       QPointF newEndPos = line->getEndPos();
       LineObject *newLineObject = new LineObject(newStartPos, newEndPos);
       if (line->arrow1())
-	    {
-	      newLineObject->setArrow1(true);
-	    }
+      {
+        newLineObject->setArrow1(true);
+      }
       if (line->arrow2())
-	    {
-	      newLineObject->setArrow2(true);
-	    }
+      {
+        newLineObject->setArrow2(true);
+      }
       newLineObject->setPenWidth(line->getPenWidth());
       newLineObject->setPenStyle(line->getPenStyle());
       newLineObject->setColor(line->getColor());
@@ -12472,10 +12467,10 @@ void EventGraphWidget::changeText()
       textDialog->submitText(oldText);
       textDialog->exec();
       if (textDialog->getExitStatus() == 0)
-	    {
-	      QString newText = textDialog->getText();
-	      text->setPlainText(newText);
-	    }
+      {
+        QString newText = textDialog->getText();
+        text->setPlainText(newText);
+      }
       delete textDialog;
       setChangeLabel();
     }
@@ -12551,21 +12546,21 @@ void EventGraphWidget::duplicateText()
       textDialog->submitText(oldText);
       textDialog->exec();
       if (textDialog->getExitStatus() == 0)
-	    {
-	      QString alteredText = textDialog->getText();
-	      TextObject *newText = new TextObject(alteredText);
-	      _textVector.push_back(newText);
-	      scene->addItem(newText);
-	      QPointF pos = text->scenePos();
-	      newText->setPos(pos);
-	      newText->setZValue(text->zValue());
-	      newText->setDefaultTextColor(text->defaultTextColor());
-	      newText->setRotationValue(text->getRotationValue());
-	      newText->setFont(text->font());
-	      newText->adjustSize();
-	      newText->setTextWidth(newText->textWidth() + 50);
-	      setChangeLabel();
-	    }
+      {
+        QString alteredText = textDialog->getText();
+        TextObject *newText = new TextObject(alteredText);
+        _textVector.push_back(newText);
+        scene->addItem(newText);
+        QPointF pos = text->scenePos();
+        newText->setPos(pos);
+        newText->setZValue(text->zValue());
+        newText->setDefaultTextColor(text->defaultTextColor());
+        newText->setRotationValue(text->getRotationValue());
+        newText->setFont(text->font());
+        newText->adjustSize();
+        newText->setTextWidth(newText->textWidth() + 50);
+        setChangeLabel();
+      }
       delete textDialog;
     }
   }
@@ -12864,41 +12859,41 @@ void EventGraphWidget::objectOneForward()
     {
       int currentZValue = ellipse->zValue();
       if (currentZValue < maxZ + 1)
-	    {
-	      ellipse->setZValue(currentZValue + 1);
-	    }
+      {
+        ellipse->setZValue(currentZValue + 1);
+      }
     }
     else if (rect)
     {
       int currentZValue = rect->zValue();
       if (currentZValue < maxZ + 1)
-	    {
-	      rect->setZValue(currentZValue + 1);
-	    }
+      {
+        rect->setZValue(currentZValue + 1);
+      }
     }
     else if (line)
     {
       int currentZValue = line->zValue();
       if (currentZValue <  maxZ + 1)
-	    {
-	      line->setZValue(currentZValue + 1);
-	    }
+      {
+        line->setZValue(currentZValue + 1);
+      }
     }
     else if (text)
     {
       int currentZValue = text->zValue();
       if (currentZValue < maxZ + 1)
-	    {
-	      text->setZValue(currentZValue + 1);
-	    }
+      {
+        text->setZValue(currentZValue + 1);
+      }
     }
     else if (timeline)
     {
       int currentZValue = timeline->zValue();
       if (currentZValue < maxZ + 1)
-	    {
-	      timeline->setZValue(currentZValue + 1);
-	    }
+      {
+        timeline->setZValue(currentZValue + 1);
+      }
     }
   }
   fixZValues();
@@ -12917,9 +12912,9 @@ void EventGraphWidget::objectOneBackward()
     {
       int currentZValue = ellipse->zValue();
       if (currentZValue > 1)
-	    {
-	      ellipse->setZValue(currentZValue - 1);
-	      if (ellipse->zValue() == 1) 
+      {
+        ellipse->setZValue(currentZValue - 1);
+        if (ellipse->zValue() == 1)
         {
           QListIterator<QGraphicsItem*> it(scene->items());
           while (it.hasNext())
@@ -12931,15 +12926,15 @@ void EventGraphWidget::objectOneBackward()
             }
           }
         }
-	    }
+      }
     }
     else if (rect)
     {
       int currentZValue = rect->zValue();
       if (currentZValue > 1)
-	    {
-	      rect->setZValue(currentZValue - 1);
-	      if (rect->zValue() == 1) 
+      {
+        rect->setZValue(currentZValue - 1);
+        if (rect->zValue() == 1)
         {
           QListIterator<QGraphicsItem*> it(scene->items());
           while (it.hasNext())
@@ -12951,15 +12946,15 @@ void EventGraphWidget::objectOneBackward()
             }
           }
         }
-	    }
+      }
     }
     else if (line)
     {
       int currentZValue = line->zValue();
       if (currentZValue > 1)
-	    {
-	      line->setZValue(currentZValue - 1);
-	      if (line->zValue() == 1) 
+      {
+        line->setZValue(currentZValue - 1);
+        if (line->zValue() == 1)
         {
           QListIterator<QGraphicsItem*> it(scene->items());
           while (it.hasNext())
@@ -12971,15 +12966,15 @@ void EventGraphWidget::objectOneBackward()
             }
           }
         }
-	    }
+      }
     }
     else if (text)
     {
       int currentZValue = text->zValue();
       if (currentZValue > 1)
-	    {
-	      text->setZValue(currentZValue - 1);
-	      if (text->zValue() == 1) 
+      {
+        text->setZValue(currentZValue - 1);
+        if (text->zValue() == 1)
         {
           QListIterator<QGraphicsItem*> it(scene->items());
           while (it.hasNext())
@@ -12991,15 +12986,15 @@ void EventGraphWidget::objectOneBackward()
             }
           }
         }
-	    }
+      }
     }
     else if (timeline)
     {
       int currentZValue = timeline->zValue();
       if (currentZValue > 1)
-	    {
-	      timeline->setZValue(currentZValue - 1);
-	      if (timeline->zValue() == 1) 
+      {
+        timeline->setZValue(currentZValue - 1);
+        if (timeline->zValue() == 1)
         {
           QListIterator<QGraphicsItem*> it(scene->items());
           while (it.hasNext())
@@ -13011,7 +13006,7 @@ void EventGraphWidget::objectOneBackward()
             }
           }
         }
-	    }
+      }
     }
   }
   fixZValues();
@@ -13078,65 +13073,65 @@ void EventGraphWidget::objectToBack()
       ellipse->setZValue(1);
       QListIterator<QGraphicsItem*> it(scene->items());
       while (it.hasNext())
-	    {
-	      QGraphicsItem *current = it.next();
-	      if (current != ellipse) 
+      {
+        QGraphicsItem *current = it.next();
+        if (current != ellipse)
         {
           current->setZValue(current->zValue() + 1);
         }
-	    }
+      }
     }
     else if (rect)
     {
       rect->setZValue(1);
       QListIterator<QGraphicsItem*> it(scene->items());
       while (it.hasNext())
-	    {
-	      QGraphicsItem *current = it.next();
-	      if (current != rect) 
+      {
+        QGraphicsItem *current = it.next();
+        if (current != rect)
         {
           current->setZValue(current->zValue() + 1);
         }
-	    }
+      }
     }
     else if (line)
     {
       line->setZValue(1);
       QListIterator<QGraphicsItem*> it(scene->items());
       while (it.hasNext())
-	    {
-	      QGraphicsItem *current = it.next();
-	      if (current != line) 
+      {
+        QGraphicsItem *current = it.next();
+        if (current != line)
         {
           current->setZValue(current->zValue() + 1);
         }
-	    }
+      }
     }
     else if (text)
     {
       text->setZValue(1);
       QListIterator<QGraphicsItem*> it(scene->items());
       while (it.hasNext())
-	    {
-	      QGraphicsItem *current = it.next();
-	      if (current != text) 
+      {
+        QGraphicsItem *current = it.next();
+        if (current != text)
         {
           current->setZValue(current->zValue() + 1);
         }
-	    }
+      }
     }
     else if (timeline)
     {
       timeline->setZValue(1);
       QListIterator<QGraphicsItem*> it(scene->items());
       while (it.hasNext())
-	    {
-	      QGraphicsItem *current = it.next();
-	      if (current != text) 
+      {
+        QGraphicsItem *current = it.next();
+        if (current != text)
         {
           current->setZValue(current->zValue() + 1);
         }
-	    }
+      }
     }
   }
   fixZValues();
@@ -13165,18 +13160,18 @@ void EventGraphWidget::fixZValues()
       bool currentZFound = false;
       QListIterator<QGraphicsItem*> it2(scene->items());
       while (it2.hasNext())
-	    {
-	      QGraphicsItem *current = it2.next();
-	      if (current->zValue() == i) 
+      {
+        QGraphicsItem *current = it2.next();
+        if (current->zValue() == i)
         {
           currentZFound = true;
           break;
         }
-	    }
+      }
       if (!currentZFound)
-	    {
-	      QListIterator<QGraphicsItem*> it3(scene->items());
-	      while (it3.hasNext()) 
+      {
+        QListIterator<QGraphicsItem*> it3(scene->items());
+        while (it3.hasNext())
         {
           QGraphicsItem *current = it3.next();
           if (current->zValue() > i)
@@ -13184,7 +13179,7 @@ void EventGraphWidget::fixZValues()
             current->setZValue(current->zValue() - 1);
           }
         }
-	    }
+      }
     }
   }
   QVectorIterator<GuideLine*> it4(_guidesVector);
@@ -13273,16 +13268,16 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event)
     {
       QWheelEvent *wheelEvent = (QWheelEvent*) event;
       if(wheelEvent->modifiers() & Qt::ControlModifier)
-	    {
-	      if (wheelEvent->angleDelta().y() > 0) 
+      {
+        if (wheelEvent->angleDelta().y() > 0)
         {
           changeTreeFontSize(attributesTree, QModelIndex(), 1);
         }
-	      else if (wheelEvent->angleDelta().y() < 0) 
+        else if (wheelEvent->angleDelta().y() < 0)
         {
           changeTreeFontSize(attributesTree, QModelIndex(), -1);
         }
-	    }
+      }
     }
   }
   else if (object == zoomSlider)
@@ -13296,14 +13291,14 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event)
     else if (event->type() == QEvent::MouseButtonPress)
     {
       if (zoomSlider->sliderPosition() == 0)
-	    {
-	      return false;
-	    }
+      {
+        return false;
+      }
       else
-	    {
-	      event->ignore();
-	      return true;
-	    }
+      {
+        event->ignore();
+        return true;
+      }
     }
   }
   else if (event->type() == QEvent::Wheel) 
@@ -13313,16 +13308,16 @@ bool EventGraphWidget::eventFilter(QObject *object, QEvent *event)
     if (textEdit)
     {
       if(wheelEvent->modifiers() & Qt::ControlModifier)
-	    {
-	      if (wheelEvent->angleDelta().y() > 0) 
+      {
+        if (wheelEvent->angleDelta().y() > 0)
         {
           textEdit->zoomIn(1);
         }
-	      else if (wheelEvent->angleDelta().y() < 0) 
+        else if (wheelEvent->angleDelta().y() < 0)
         {
           textEdit->zoomOut(1);
         }
-	    }
+      }
     }
   }
   return false;
