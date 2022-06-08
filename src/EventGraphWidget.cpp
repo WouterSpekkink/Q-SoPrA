@@ -1058,8 +1058,7 @@ void EventGraphWidget::setAntialiasing(bool state)
   QVectorIterator<Linkage*> it(_edgeVector);
   while (it.hasNext())
   {
-    Linkage *current = it.next();
-    current->setAntialiasing(state);
+    it.next()->setAntialiasing(state);
   }
 }
 
@@ -1359,7 +1358,8 @@ void EventGraphWidget::retrieveData()
         {
           _currentData.push_back(currentIncidentNode);
         }
-      }	else if (abstractNode)
+      }
+      else if (abstractNode)
       {
         AbstractNode *currentAbstractNode = qgraphicsitem_cast<AbstractNode*>(it.next());
         currentAbstractNode->setSelectionColor(Qt::black);
@@ -3338,30 +3338,37 @@ void EventGraphWidget::makeLayout()
 
 void EventGraphWidget::layoutGraph() 
 {
-  QVector<IncidentNode*>::iterator it;
-  for (it = _incidentNodeVector.begin(); it != _incidentNodeVector.end(); it++) 
+  // We iterate through our nodes and find all their candidate partners
+  // we check if they are actually partners (connected by a linkage)
+  // and then add them to a vector of partners.
+  // We then use that vector of partners to create our layout
+  QVector<IncidentNode*>::iterator candidateIt;
+  // Iterating through our nodes.
+  for (QVector<IncidentNode*>::iterator it = _incidentNodeVector.begin();
+       it != _incidentNodeVector.end(); it++)
   {
-    IncidentNode *current = *it;
-    QVector<IncidentNode*>::iterator it2;
+    IncidentNode *currentNode = *it;
     QVector<IncidentNode*> partners;
-    for (it2 = it + 1; it2 != _incidentNodeVector.end(); it2++)
+    // Then we look for partners
+    for (candidateIt = it + 1; candidateIt != _incidentNodeVector.end(); candidateIt++)
     {
-      IncidentNode *second = *it2;
-      QVectorIterator<Linkage *> it3(_edgeVector);
-      while (it3.hasNext())
+      IncidentNode *currentCandidate = *candidateIt;
+      // We use the find_if algorithm with a custom predicate to see if a linkage
+      // between our current node and the candidate partner exists.
+      QPair<int, int> currentIncidents(currentNode->getId(), currentCandidate->getId());
+      QVector<Linkage*>::iterator edgeIt = std::find_if(_edgeVector.begin(),
+                                                        _edgeVector.end(),
+                                                        find_by_incident_nodes(currentIncidents));
+      // If a linkage between the nodes exists, then the iterator should not be equal
+      // to the end of the vector.
+      // So then we have found a partner.
+      if (edgeIt != _edgeVector.end())
       {
-        Linkage *edge = it3.next();
-        // Basically we just ask whether the current events are linked.
-        if ((edge->getStart() == current &&
-             edge->getEnd() == second) ||
-            (edge->getEnd() == current &&
-             edge->getStart() == second))
-        {
-          partners.push_back(second);
-        }
+        partners.push_back(currentCandidate);
       }
     }
-    qreal originHeight = current->scenePos().y();
+    // Then we walk through the partners to change their position.
+    qreal originHeight = currentNode->scenePos().y();
     std::sort(partners.begin(), partners.end(), eventLessThan);
     int partnerCount = partners.size();
     QVectorIterator<IncidentNode*> it4(partners);
@@ -3379,6 +3386,7 @@ void EventGraphWidget::layoutGraph()
   }
 }
 
+// TODO: refactor the function below
 void EventGraphWidget::redoLayout()
 {
   QVector<QGraphicsItem*> allEvents;
