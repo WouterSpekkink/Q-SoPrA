@@ -259,14 +259,3 @@ void findBoth(QSet<int> *paths,
     }
   }
 }
-
-struct find_by_id
-{
-  find_by_id(const QString & id) : id(id) {}
-  bool operator()(const IncidentNode & incident)
-  {
-    return incident.getId() == id;
-  }
-  private:
-    QString id;
-};
