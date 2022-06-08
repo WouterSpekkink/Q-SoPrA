@@ -1,22 +1,22 @@
 /*
 
-Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
 
-This file is part of Q-SoPrA.
+  This file is part of Q-SoPrA.
 
-Q-SoPrA is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
 
-Q-SoPrA is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License
-along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 
 */
 
@@ -30,39 +30,39 @@ QString breakString(QString original)
 {
   QString result = "";
   if (original.length() <= 50) 
-    {
-      result = original;
-    }
+  {
+    result = original;
+  }
   else 
+  {
+    QString subString = "";
+    int count = 0;
+    for (QString::size_type it = 0; it != original.length(); it++)
     {
-      QString subString = "";
-      int count = 0;
-      for (QString::size_type it = 0; it != original.length(); it++) 
-	{
-	  subString.append(original[it]);
-	  count++;
-	  if (count >= 50 || original[it] == '\n') 
-	    {
-	      if (it != original.length() - 1) 
-		{
-		  if (original[it + 1] == '\n') 
-		    {
-		      result += subString;
-		      subString = "";
-		      count = 0;
-		    }
-		  else if (original[it + 1] == ' ') 
-		    {
-		      subString.append("\n");
-		      result += subString;
-		      subString = "";
-		      count = 0;
-		    }
-		}
-	    }
-	}
-      result += subString;
+      subString.append(original[it]);
+      count++;
+      if (count >= 50 || original[it] == '\n')
+      {
+        if (it != original.length() - 1)
+        {
+          if (original[it + 1] == '\n')
+          {
+            result += subString;
+            subString = "";
+            count = 0;
+          }
+          else if (original[it + 1] == ' ')
+          {
+            subString.append("\n");
+            result += subString;
+            subString = "";
+            count = 0;
+          }
+        }
+      }
     }
+    result += subString;
+  }
   return result;
 }
 
@@ -75,13 +75,13 @@ QString doubleQuote(QString original)
 {
   QString copy = QString();
   for (QString::size_type i = 0; i != original.length(); i++) 
+  {
+    copy.append(original[i]);
+    if (original[i] == '"')
     {
       copy.append(original[i]);
-      if (original[i] == '"') 
-	{
-	  copy.append(original[i]);
-	}
     }
+  }
   return copy;
 }
 
@@ -94,12 +94,12 @@ QString removeChar(QString original, QChar chara)
 {
   QString newString = QString();
   for (QString::size_type i = 0; i != original.length(); i++) 
+  {
+    if (original[i] != chara)
     {
-      if (original[i] != chara) 
-	{
-	  newString.append(original[i]);
-	}
+      newString.append(original[i]);
     }
+  }
   return newString;
 }
 
@@ -127,24 +127,24 @@ QVector<QString> splitLines(QString original)
   QVector<QString> result;
   QString temp = QString();
   for (QString::size_type i = 0; i != original.length(); i++) 
+  {
+    if (original[i] != QChar::ParagraphSeparator)
     {
-      if (original[i] != QChar::ParagraphSeparator) 
-	{
-	  temp.append(original[i]);
-	}
-      else 
-	{
-	  if (temp.length() > 0) 
-	    {
-	      result.push_back(temp);
-	    }
-	  temp = "";
-	}
+      temp.append(original[i]);
     }
+    else
+    {
+      if (temp.length() > 0)
+      {
+        result.push_back(temp);
+      }
+      temp = "";
+    }
+  }
   if (temp.length() > 0) 
-    {
-      result.push_back(temp);
-    }
+  {
+    result.push_back(temp);
+  }
   return result;
 }
 
@@ -157,16 +157,16 @@ QString fixBreakLines(QString original)
 {
   QString newString = QString();
   for (QString::size_type i = 0; i != original.length(); i++) 
+  {
+    if (original[i] != '\n')
     {
-      if (original[i] != '\n') 
-	{
-	  newString.append(original[i]);
-	}
-      else 
-	{
-	  newString.append(' ');
-	}
+      newString.append(original[i]);
     }
+    else
+    {
+      newString.append(' ');
+    }
+  }
   return newString;
 }
 
@@ -176,86 +176,97 @@ QString fixBreakLines(QString original)
   I mostly rewrote it to make use of pointers.
 */
 void backtrack(int depth,
-	       int expected,
-	       QVector<QString> vector,
-	       QVector<QString> *combination,
-	       QSet<QVector<QString>> *set)
+               int expected,
+               QVector<QString> vector,
+               QVector<QString> *combination,
+               QSet<QVector<QString>> *set)
 {
   if (depth < expected)
+  {
+    for(int i = 0; i < vector.size(); i++)
     {
-      for(int i = 0; i < vector.size(); i++)
-	{
-	  combination->push_back(vector[i]);
-	  backtrack(depth + 1, expected, vector, combination, set);
-	  combination->pop_back();
-	}
+      combination->push_back(vector[i]);
+      backtrack(depth + 1, expected, vector, combination, set);
+      combination->pop_back();
     }
+  }
   else
-    {
-      set->insert(*combination);
-    }
+  {
+    set->insert(*combination);
+  }
 }
-	  
+
 void findHeads(QSet<int> *paths,
-	       QMap<int, QSet<int>> *headsMap,
-	       int currentIncident) 
+               QMap<int, QSet<int>> *headsMap,
+               int currentIncident)
 {
   QSet<int> heads = headsMap->value(currentIncident);
   QSetIterator<int> hIt(heads);
   while (hIt.hasNext())
+  {
+    int currentHead = hIt.next();
+    if (!paths->contains(currentHead))
     {
-      int currentHead = hIt.next();
-      if (!paths->contains(currentHead))
-	{
-	  paths->insert(currentHead);
-	  findHeads(paths, headsMap, currentHead);
-	}
+      paths->insert(currentHead);
+      findHeads(paths, headsMap, currentHead);
     }
+  }
 }
 
 void findTails(QSet<int> *paths,
-	       QMap<int, QSet<int>> *tailsMap,
-	       int currentIncident) 
+               QMap<int, QSet<int>> *tailsMap,
+               int currentIncident)
 {
   QSet<int> tails = tailsMap->value(currentIncident);
   QSetIterator<int> tIt(tails);
   while (tIt.hasNext())
+  {
+    int currentTail = tIt.next();
+    if (!paths->contains(currentTail))
     {
-      int currentTail = tIt.next();
-      if (!paths->contains(currentTail))
-	{
-	  paths->insert(currentTail);
-	  findTails(paths, tailsMap, currentTail);
-	}
+      paths->insert(currentTail);
+      findTails(paths, tailsMap, currentTail);
     }
+  }
 }
 
 void findBoth(QSet<int> *paths,
-	      QMap<int, QSet<int>> *tailsMap,
-	      QMap<int, QSet<int>> *headsMap,
-	      int currentIncident,
-	      QSet<int> *incidentIds)
+              QMap<int, QSet<int>> *tailsMap,
+              QMap<int, QSet<int>> *headsMap,
+              int currentIncident,
+              QSet<int> *incidentIds)
 {
   QSet<int> tails = tailsMap->value(currentIncident);
   QSetIterator<int> tIt(tails);
   QSet<int> heads = headsMap->value(currentIncident);
   QSetIterator<int> hIt(heads);
   while (tIt.hasNext())
+  {
+    int currentTail = tIt.next();
+    if (!paths->contains(currentTail) && incidentIds->contains(currentTail))
     {
-      int currentTail = tIt.next();
-      if (!paths->contains(currentTail) && incidentIds->contains(currentTail))
-	{
-	  paths->insert(currentTail);;
-	  findBoth(paths, tailsMap, headsMap, currentTail, incidentIds);
-	}
+      paths->insert(currentTail);;
+      findBoth(paths, tailsMap, headsMap, currentTail, incidentIds);
     }
+  }
   while (hIt.hasNext())
+  {
+    int currentHead = hIt.next();
+    if (!paths->contains(currentHead) && incidentIds->contains(currentHead))
     {
-      int currentHead = hIt.next();
-      if (!paths->contains(currentHead) && incidentIds->contains(currentHead))
-	{
-	  paths->insert(currentHead);
-	  findBoth(paths, tailsMap, headsMap, currentHead, incidentIds);
-	}
+      paths->insert(currentHead);
+      findBoth(paths, tailsMap, headsMap, currentHead, incidentIds);
     }
+  }
 }
+
+struct find_by_id
+{
+  find_by_id(const QString & id) : id(id) {}
+  bool operator()(const IncidentNode & incident)
+  {
+    return incident.getId() == id;
+  }
+  private:
+    QString id;
+};

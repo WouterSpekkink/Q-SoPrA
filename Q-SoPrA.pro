@@ -66,6 +66,7 @@ HEADERS += include/AbstractionDialog.h \
            include/GuideLine.h \
            include/GraphicsView.h \
            include/HierarchyGraphWidget.h \
+           include/HelpStructs.h \
            include/IncidentNode.h \
            include/IncidentNodeLabel.h \
            include/IncidentsAttributesTable.h \

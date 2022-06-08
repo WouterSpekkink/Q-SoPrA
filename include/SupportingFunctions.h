@@ -27,6 +27,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QVector>
 #include <QMap>
 #include <QSet>
+#include "IncidentNode.h"
 
 QString breakString(QString original);
 QString doubleQuote(QString original);
@@ -34,15 +35,15 @@ QString removeChar(QString original, QChar chara);
 QVector<QString> splitLines(QString original);
 QString fixBreakLines(QString original);
 void findHeads(QSet<int> *paths,
-	       QMap<int, QSet<int>> *headsMap,
-	       int currentIncident);
+               QMap<int, QSet<int>> *headsMap,
+               int currentIncident);
 void findTails(QSet<int> *paths,
-	       QMap<int, QSet<int>> *tailsMap,
-	       int currentIncident);
+               QMap<int, QSet<int>> *tailsMap,
+               int currentIncident);
 void findBoth(QSet<int> *paths,
-	      QMap<int, QSet<int>> *tailsMap,
-	      QMap<int, QSet<int>> *headsMap,
-	      int currentIncident,
-	      QSet<int> *incidentIds);
+              QMap<int, QSet<int>> *tailsMap,
+              QMap<int, QSet<int>> *headsMap,
+              int currentIncident,
+              QSet<int> *incidentIds);
 
-#endif 
+#endif

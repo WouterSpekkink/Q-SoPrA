@@ -78,6 +78,7 @@
 #include "EvidenceDialog.h"
 #include "AddEvidenceDialog.h"
 #include "TimeRangeDialog.h"
+#include "HelpStructs.h"
 
 // Need a forward declaration here
 class AttributesWidget;

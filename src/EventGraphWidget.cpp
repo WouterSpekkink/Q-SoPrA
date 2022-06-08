@@ -727,7 +727,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   legendWidget->setMinimumWidth(250);
   legendWidget->setMaximumWidth(250);
   legendWidget->setLayout(legendLayout);
-  screenLayout->addWidget(legendWidget);				   
+  screenLayout->addWidget(legendWidget);
   
   QPointer<QVBoxLayout> graphicsControlsLayout = new QVBoxLayout;
   graphicsControlsLayout->addWidget(casesLabel);
@@ -863,25 +863,38 @@ EventGraphWidget::~EventGraphWidget()
   delete scene;
 }
 
+// The function below checks for incongruencies between the displayed graph
+// and the underlying data, which may occur when the data has been altered
+// after creating the graph
 void EventGraphWidget::checkCongruence() 
 {
+  // We only need to do this if there are actually incidents displayed in the graph,
+  // that is, if the graph is not empty
   if (_incidentNodeVector.size() > 0) 
   {
+    // First we get all the incident ids
     QSqlQuery *query = new QSqlQuery;
     query->exec("SELECT id FROM incidents ORDER BY ch_order ASC");
+    // We also put these ids in a temporary vector
+    // This vector has them sorted by order
     QVector<int> temp;
     while (query->next())
     {
       int id = query->value(0).toInt();
       temp.push_back(id);
     }
-    std::sort(_incidentNodeVector.begin(), _incidentNodeVector.end(), componentsSort);
+    // We check if the number of incidents in the graph (not necessarily the visible ones)
+    // and the underlying dataset are the same.
     if (temp.size() != _incidentNodeVector.size())
     {
       incongruenceLabel->setText("Incongruence detected");
       delete query;
       return;
     }
+    // We need to sort our incident node vector by order for the next step.
+    std::sort(_incidentNodeVector.begin(), _incidentNodeVector.end(), componentsSort);
+    // We iterate through the incident nodes to see if they have the same sorting
+    // as the underlyin data.
     for (QVector<IncidentNode *>::size_type i = 0; i != _incidentNodeVector.size(); i++)
     {
       IncidentNode *current = _incidentNodeVector[i];
@@ -892,56 +905,54 @@ void EventGraphWidget::checkCongruence()
         return;
       }
     }
+    // Next we consider incongruencies between our visualized linkages and the
+    // underlying linkage data.
+    // We first prepare a query that we will use in the process.
+    query->prepare("SELECT tail, head FROM linkages "
+                   "WHERE type = :type AND coder = :coder");
+    // Then we iterate through the linkage types that are currently in the graph.
     QVectorIterator<QString> it(_presentTypes);
     while (it.hasNext())
     {
       QString currentType = it.next();
-      query->prepare("SELECT tail, head FROM linkages "
-                     "WHERE type = :type AND coder = :coder");
+      // We get all the linkage data for the current linkage type.
       query->bindValue(":type", currentType);
       query->bindValue(":coder", _selectedCoder);
       query->exec();
+      // Then we iterate through that linkage data.
       while (query->next())
       {
         int tailId = query->value(0).toInt();
         int headId = query->value(1).toInt();
+        // We only do checks for linkages of which the nodes are visible (WHY???)
         bool tailVisible = false;
         bool headVisible = false;
-        QVectorIterator<IncidentNode *> it2(_incidentNodeVector);
-        while (it2.hasNext())
+        // Then we first find the corresponding incident nodes in our node vector.
+        // If we find them, we check if these nodes are currently visible and
+        // we set our booleans accordingly.
+        // To find them, we use find_if with a custom predicate.
+        QVector<IncidentNode*>::iterator tailIt =
+          std::find_if(_incidentNodeVector.begin(), _incidentNodeVector.end(), find_by_id(tailId));
+        QVector<IncidentNode*>::iterator headIt =
+          std::find_if(_incidentNodeVector.begin(), _incidentNodeVector.end(), find_by_id(headId));
+        if (tailIt != _incidentNodeVector.end())
         {
-          IncidentNode *currentIncidentNode = it2.next();
-          if (currentIncidentNode->isVisible())
-          {
-            if (currentIncidentNode->getId() == tailId)
-            {
-              tailVisible = true;
-            }
-            else if (currentIncidentNode->getId() == headId)
-            {
-              headVisible = true;
-            }
-          }
+          tailVisible = (*tailIt)->isVisible();
         }
+        if (headIt != _incidentNodeVector.end())
+        {
+          headVisible = (*headIt)->isVisible();
+        }
+        // If both are visible, we go to the next step, which is to see if there is a linkage
+        // that corresponds with the underlying linkage data.
         if (tailVisible && headVisible)
         {
-          QVectorIterator<Linkage *> it3(_edgeVector);
-          bool found = false;
-          while (it3.hasNext())
-          {
-            Linkage *current = it3.next();
-            IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode *>(current->getStart());
-            IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode *>(current->getEnd());
-            if (startIncidentNode && endIncidentNode)
-            {
-              if (startIncidentNode->getId() == tailId &&
-                  endIncidentNode->getId() == headId)
-              {
-                found = true;
-              }
-            }
-          }
-          if (!found)
+          // We do this by using the find_if algorithm with a custom predicate that search for a linkge
+          // with a matching pair of nodes.
+          QPair<int, int> nodes(tailId, headId);
+          QVector<Linkage*>::iterator linkIt = std::find_if(_edgeVector.begin(), _edgeVector.end(), find_by_incident_nodes(nodes));
+          // If the linkage is not found, the iterator will match the end of the vector.
+          if (linkIt == _edgeVector.end())
           {
             incongruenceLabel->setText("Incongruence detected");
             delete query;
@@ -950,6 +961,11 @@ void EventGraphWidget::checkCongruence()
         }
       }
     }
+    // Next we check if the nodes attached to all our linkages in the graph
+    // are also present in our underlying dataset of linkages.
+    // We prepare a query for that.
+    query->prepare("SELECT tail, head FROM linkages "
+                   "WHERE type = :type AND coder = :coder");
     QVectorIterator<Linkage *> it3(_edgeVector);
     while (it3.hasNext())
     {
@@ -962,11 +978,10 @@ void EventGraphWidget::checkCongruence()
         int currentTail = startIncidentNode->getId();
         int currentHead = endIncidentNode->getId();
         bool found = false;
-        query->prepare("SELECT tail, head FROM linkages "
-                       "WHERE type = :type AND coder = :coder");
         query->bindValue(":type", currentType);
         query->bindValue(":coder", _selectedCoder);
         query->exec();
+        // I wonder if I can make this search more efficient.
         while (query->next())
         {
           int tail = query->value(0).toInt();
@@ -974,6 +989,7 @@ void EventGraphWidget::checkCongruence()
           if (currentTail == tail && currentHead == head)
           {
             found = true;
+            break;
           }
         }
         if (!found)
@@ -985,6 +1001,8 @@ void EventGraphWidget::checkCongruence()
       }
     }
     // Let's check for congruence of cases
+    // We do this by comparing our current list of cases (as a vector)
+    // with the list of cases in our underlying data.
     QVector<QString> currentVector;
     for (int i = 0; i != caseListWidget->count(); i++)
     {
@@ -998,25 +1016,14 @@ void EventGraphWidget::checkCongruence()
       QString currentCase = query->value(0).toString();
       caseVector.push_back(currentCase);
     }
-    QVectorIterator<QString> cit(caseVector);
-    while (cit.hasNext())
+    // If we sort the vectors, they should be the same.
+    std::sort(currentVector.begin(), currentVector.end());
+    std::sort(caseVector.begin(), caseVector.end());
+    if (currentVector != caseVector)
     {
-      if (!currentVector.contains(cit.next()))
-      {
-        incongruenceLabel->setText("Incongruence detected");
-        delete query;
-        return;
-      }
-    }
-    QVectorIterator<QString> cit2(currentVector);
-    while (cit2.hasNext())
-    {
-      if (!caseVector.contains(cit2.next()))
-      {
-        incongruenceLabel->setText("Incongruence detected");
-        delete query;
-        return;
-      }
+      incongruenceLabel->setText("Incongruence detected");
+      delete query;
+      return;
     }
     delete query;
     incongruenceLabel->setText("");
@@ -3192,17 +3199,21 @@ void EventGraphWidget::plotIncidents()
   }
 }
 
-void EventGraphWidget::getEdges(QString coder, QString type, QColor color) 
+void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
 {
+  // First we fetch the linkages from our sql dataset.
   QSqlQuery *query = new QSqlQuery;
   QSqlQuery *query2 = new QSqlQuery;
   query->prepare("SELECT tail, head FROM linkages "
                  "WHERE coder = :coder AND type = :type");
+  // The second query is to get the linkage comments.
   query2->prepare("SELECT comment, coder FROM linkage_comments "
                   "WHERE tail = :tail AND head = :head AND type = :type");
   query->bindValue(":coder", coder);
   query->bindValue(":type", type);
   query->exec();
+  // Now we have all the linkages and we can iterate through them.
+  // We find any comments on the linkages first and make tooltips out of them.
   while (query->next()) 
   {
     int tail = query->value(0).toInt();
@@ -3225,44 +3236,43 @@ void EventGraphWidget::getEdges(QString coder, QString type, QColor color)
     {
       toolTip = "No comments";
     }
-    QVectorIterator<IncidentNode *> it(_incidentNodeVector);
-    IncidentNode *tempSource = NULL;
-    IncidentNode *tempTarget = NULL;
-    while (it.hasNext())
+    // Then we find the incident nodes that are linked by
+    // our current linkage.
+    // We use the std::find_if function for that,
+    // using a struct to create a custom predicate
+    QVector<IncidentNode *>::iterator tailIt =
+      std::find_if(_incidentNodeVector.begin(),
+                   _incidentNodeVector.end(),
+                   find_by_id(tail));
+    QVector<IncidentNode *>::iterator headIt =
+      std::find_if(_incidentNodeVector.begin(),
+                   _incidentNodeVector.end(),
+                   find_by_id(head));
+    // If we found both, we create a linkage
+    if (tailIt != _incidentNodeVector.end() &&
+        headIt != _incidentNodeVector.end())
     {
-      IncidentNode *currentItem = it.next();
-      if (currentItem->getId() == tail)
+      IncidentNode *tail = *tailIt;
+      IncidentNode *head = *headIt;
+      if (tail->getOrder() < head->getOrder())
       {
-        tempSource = currentItem;
+        Linkage *currentEdge = new Linkage(type, coder);
+        currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
+        currentEdge->setStartItem(tail);
+        currentEdge->setEndItem(head);
+        currentEdge->setToolTip(toolTip);
+        currentEdge->setColor(color);
+        _edgeVector.push_back(currentEdge);
       }
-      else if (currentItem->getId() == head)
+      else if (tail->getOrder() > head->getOrder())
       {
-        tempTarget = currentItem;
-      }
-      if (tempSource != NULL && tempTarget != NULL)
-      {
-        if (tempSource->getOrder() < tempTarget->getOrder())
-        {
-          Linkage *currentEdge = new Linkage(type, coder);
-          currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
-          currentEdge->setStartItem(tempSource);
-          currentEdge->setEndItem(tempTarget);
-          currentEdge->setToolTip(toolTip);
-          currentEdge->setColor(color);
-          _edgeVector.push_back(currentEdge);
-          break;
-        }
-        else if (tempSource->getOrder() > tempTarget->getOrder())
-        {
-          Linkage *currentEdge = new Linkage(type, coder);
-          currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
-          currentEdge->setStartItem(tempSource);
-          currentEdge->setEndItem(tempTarget);
-          currentEdge->setToolTip(toolTip);
-          currentEdge->setColor(color);
-          _edgeVector.push_back(currentEdge);
-          break;
-        }
+        Linkage *currentEdge = new Linkage(type, coder);
+        currentEdge->setZValue(_incidentNodeVector[0]->zValue() - 1);
+        currentEdge->setStartItem(tail);
+        currentEdge->setEndItem(head);
+        currentEdge->setToolTip(toolTip);
+        currentEdge->setColor(color);
+        _edgeVector.push_back(currentEdge);
       }
     }
   }
