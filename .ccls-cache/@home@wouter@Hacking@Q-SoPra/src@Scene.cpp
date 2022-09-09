@@ -1,0 +1,2779 @@
+
+/*
+
+  Qualitative Social Process Analysis (Q-SoPrA)
+  Copyright (C) 2019 University of Manchester
+
+  This file is part of Q-SoPrA.
+
+  Q-SoPrA is free software: you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation, either version 3 of the License, or
+  (at your option) any later version.
+
+  Q-SoPrA is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
+
+*/
+
+#include "../include/Scene.h"
+#include "../include/GraphicsView.h"
+#include "../include/BandlessGraphicsView.h"
+#include <math.h>
+#include <QtCore>
+
+Scene::Scene(QObject *parent) : QGraphicsScene(parent) 
+{
+  _selectedOccurrencePtr = NULL;
+  _selectedEllipsePtr = NULL;
+  _selectedAbstractNodePtr = NULL;
+  _selectedGuideLine = NULL;
+  _selectedIncidentNodePtr = NULL;
+  _selectedLinePtr = NULL;
+  _selectedNetworkNodeLabelPtr = NULL;
+  _selectedNetworkNodePtr = NULL;
+  _selectedRectPtr = NULL;
+  _selectedTextPtr = NULL;
+  _tempEllipsePtr = NULL;
+  _tempGuideLinePtr = NULL;
+  _tempLinePtr = NULL;
+  _tempRectPtr = NULL;
+  _tempTextPtr = NULL;
+  _tempTimeLinePtr = NULL;
+  _snapGuides = false;
+  _moveOn = false;
+  _rotateEllipse = false;
+  _rotateRect = false;
+  _rotateText = false;
+  _hierarchyMove = false;
+  _eventWidthChange = false;
+  _moveNetworkNodeLabel = false;
+  _gettingLinePoints = false;
+  _linePointsStarted = false;
+  _gettingSingleArrowPoints = false;
+  _singleArrowPointsStarted = false;
+  _gettingDoubleArrowPoints = false;
+  _doubleArrowPointsStarted = false;
+  _gettingTimeLinePoints = false;
+  _timeLinePointsStarted = false;
+  _gettingEllipseArea = false;
+  _ellipseAreaStarted = false;
+  _gettingRectArea = false;
+  _rectAreaStarted = false;
+  _gettingTextArea = false;
+  _textAreaStarted = false;
+  _massMoveNodes = false;
+  _gettingHorizontalGuideLine = false;
+  _gettingVerticalGuideLine = false;
+  _lineStart = QPointF();
+  _lineEnd = QPointF();
+  _drawArea = QRectF();
+  _currentPenStyle = 1;
+  _currentPenWidth = 1;
+  _currentLineColor = QColor(Qt::black);
+  _currentFillColor = QColor(Qt::transparent);
+  _currentMajorInterval = 100.0;
+  _currentMinorDivision = 2.0;
+  _currentMajorTickSize = 20.0;
+  _currentMinorTickSize = 10.0;
+  _currentTimeLineWidth = 1;
+  _currentTimeLineColor = QColor(Qt::black);
+}
+
+void Scene::setSnapGuides(bool state)
+{
+  _snapGuides = state;
+}
+
+void Scene::setPenStyle(int style)
+{
+  _currentPenStyle = style + 1;
+}
+
+void Scene::setPenWidth(int width)
+{
+  _currentPenWidth = width;
+}
+
+void Scene::setLineColor(QColor &color)
+{
+  _currentLineColor = color;
+}
+
+void Scene::setFillColor(QColor &color)
+{
+  _currentFillColor = color;
+}
+
+void Scene::setMajorInterval(qreal &majorInterval)
+{
+  _currentMajorInterval = majorInterval;
+}
+
+void Scene::setMinorDivision(qreal &minorDivision)
+{
+  _currentMinorDivision = minorDivision;
+}
+
+void Scene::setMajorTickSize(qreal &majorTickSize)
+{
+  _currentMajorTickSize = majorTickSize;
+}
+
+void Scene::setMinorTickSize(qreal &minorTickSize)
+{
+  _currentMinorTickSize = minorTickSize;
+}
+
+void Scene::setTimeLineWidth(int width)
+{
+  _currentTimeLineWidth = width;
+}
+
+void Scene::setTimeLineColor(QColor &color)
+{
+  _currentTimeLineColor = color;
+}
+
+void Scene::resetAreas()
+{
+  _gettingLinePoints = false;
+  _linePointsStarted = false;
+  _gettingSingleArrowPoints = false;
+  _singleArrowPointsStarted = false;
+  _gettingDoubleArrowPoints = false;
+  _doubleArrowPointsStarted = false;
+  _gettingTimeLinePoints = false;
+  _timeLinePointsStarted = false;
+  _gettingEllipseArea = false;
+  _ellipseAreaStarted = false;
+  _gettingRectArea = false;
+  _rectAreaStarted = false;
+  _gettingTextArea = false;
+  _textAreaStarted = false;
+  _gettingHorizontalGuideLine = false;
+  _gettingVerticalGuideLine = false;
+  if (_tempEllipsePtr)
+  {
+    delete _tempEllipsePtr;
+    _tempEllipsePtr = NULL;
+  }
+  if (_tempGuideLinePtr)
+  {
+    delete _tempGuideLinePtr;
+    _tempGuideLinePtr = NULL;
+  }
+  if (_tempLinePtr)
+  {
+    delete _tempLinePtr;
+    _tempLinePtr = NULL;
+  }
+  if (_tempRectPtr)
+  {
+    delete _tempRectPtr;
+    _tempRectPtr = NULL;
+  }
+  if (_tempTextPtr)
+  {
+    delete _tempTextPtr;
+    _tempTextPtr = NULL;
+  }
+  if (_tempTimeLinePtr)
+  {
+    delete _tempTimeLinePtr;
+    _tempTimeLinePtr = NULL;
+  }
+  QApplication::restoreOverrideCursor();
+}
+
+void Scene::prepLinePoints()
+{
+  resetAreas();
+  _gettingLinePoints = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepSingleArrowPoints()
+{
+  resetAreas();
+  _gettingSingleArrowPoints = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepDoubleArrowPoints()
+{
+  resetAreas();
+  _gettingDoubleArrowPoints = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepTimeLinePoints()
+{
+  resetAreas();
+  _gettingTimeLinePoints = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepEllipseArea()
+{
+  resetAreas();
+  _gettingEllipseArea = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepRectArea()
+{
+  resetAreas();
+  _gettingRectArea = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepTextArea()
+{
+  resetAreas();
+  _gettingTextArea = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+}
+
+void Scene::prepHorizontalGuideLine()
+{
+  resetAreas();
+  _gettingHorizontalGuideLine = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+  _tempGuideLinePtr = new GuideLine(true);
+  _tempGuideLinePtr->setPos(0.0, 0.0);
+  _tempGuideLinePtr->setZValue(7);
+  addItem(_tempGuideLinePtr);
+}
+
+void Scene::prepVerticalGuideLine()
+{
+  resetAreas();
+  _gettingVerticalGuideLine = true;
+  QApplication::setOverrideCursor(Qt::CrossCursor);
+  _tempGuideLinePtr = new GuideLine(false);
+  _tempGuideLinePtr->setPos(0.0, 0.0);
+  _tempGuideLinePtr->setZValue(7);
+  addItem(_tempGuideLinePtr);
+}
+
+QRectF Scene::itemsBoundingRect() const 
+{
+  QRectF boundingRect;
+  const auto items_ = items();
+  for (QGraphicsItem *item : items_)
+  {
+    if (item->isVisible() && item->type() != QGraphicsItem::UserType + 16)
+    {
+      boundingRect |= item->sceneBoundingRect();
+    }
+  }
+  return boundingRect.adjusted(-500, -500, 500, 500);
+}
+
+void Scene::modEventWidth(QGraphicsItem *item) 
+{
+  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(item);
+  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(item);
+  if (incident) 
+  {
+    _eventWidthChange = true;
+    _selectedIncidentNodePtr = incident;
+    clearSelection();
+    incident->setSelected(true);
+  }
+  else if (abstractNode) 
+  {
+    _selectedAbstractNodePtr = abstractNode;
+    _eventWidthChange = true;
+    clearSelection();
+    abstractNode->setSelected(true);
+  }
+}
+
+void Scene::wheelEvent(QGraphicsSceneWheelEvent *wheelEvent) 
+{
+  if (_eventWidthChange) 
+  {
+    _eventWidthChange = false;
+  }
+  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>
+    (itemAt(wheelEvent->scenePos(), QTransform()));
+  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>
+    (itemAt(wheelEvent->scenePos(), QTransform()));
+  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>
+    (itemAt(wheelEvent->scenePos(), QTransform()));
+  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>
+    (itemAt(wheelEvent->scenePos(), QTransform()));
+  TextObject *text = qgraphicsitem_cast<TextObject*>
+    (itemAt(wheelEvent->scenePos(), QTransform()));
+  if (incidentNodeLabel) 
+  {
+    incident = incidentNodeLabel->getNode();
+  }
+  if (abstractNodeLabel) 
+  {
+    abstractNode = abstractNodeLabel->getAbstractNode();
+  }
+  if (incident && !incident->isCopy()) 
+  {
+    if (wheelEvent->modifiers() & Qt::ShiftModifier)
+    {
+      if (incident->isSelected())
+      {
+        if (wheelEvent->delta() > 0)
+        {
+          incident->setWidth(incident->getWidth() + 5);
+          QPointF original = incident->scenePos();
+          incident->getLabel()->setNewPos(original, 2.5);
+        }
+        else if (wheelEvent->delta() < 0 && incident->getWidth() > 40)
+        {
+          incident->setWidth(incident->getWidth() - 5);
+          QPointF original = incident->scenePos();
+          incident->getLabel()->setNewPos(original, -2.5);
+        }
+        emit relevantChange();
+        wheelEvent->accept();
+      }
+      else
+      {
+        wheelEvent->ignore();
+      }
+    }
+    else if (wheelEvent->modifiers() & Qt::ControlModifier)
+    {
+      wheelEvent->ignore();
+    }
+  }
+  else if (abstractNode && !abstractNode->isCopy()) 
+  {
+    if (wheelEvent->modifiers() & Qt::ShiftModifier)
+    {
+      if (abstractNode->isSelected())
+      {
+        if (wheelEvent->delta() > 0)
+        {
+          abstractNode->setWidth(abstractNode->getWidth() + 5);
+          QPointF original = abstractNode->scenePos();
+          abstractNode->getLabel()->setNewPos(original, 2.5);
+        }
+        else if (wheelEvent->delta() < 0 && abstractNode->getWidth() > 40)
+        {
+          abstractNode->setWidth(abstractNode->getWidth() - 5);
+          QPointF original = abstractNode->scenePos();
+          abstractNode->getLabel()->setNewPos(original, -2.5);
+        }
+        emit relevantChange();
+        wheelEvent->accept();
+      }
+      else
+      {
+        wheelEvent->ignore();
+      }
+    }
+    else if (wheelEvent->modifiers() & Qt::ControlModifier)
+    {
+      wheelEvent->ignore();
+    }
+  }
+  else if (text) 
+  {
+    if (text->isSelected())
+    {
+      if (wheelEvent->modifiers() & Qt::ControlModifier)
+      {
+        if (wheelEvent->delta() > 0)
+        {
+          QFont font = text->font();
+          int size = font.pointSize();
+          if (size <= 999)
+          {
+            size++;
+            font.setPointSize(size);
+            text->setFont(font);
+          }
+        }
+        else if (wheelEvent->delta() < 0)
+        {
+          QFont font = text->font();
+          int size = font.pointSize();
+          if (size >= 9)
+          {
+            size--;
+            font.setPointSize(size);
+            text->setFont(font);
+          }
+        }
+      }
+      if (wheelEvent->modifiers() & Qt::ShiftModifier)
+      {
+        if (wheelEvent->delta() > 0)
+        {
+          int width = text->textWidth();
+          width = width + 10;
+          text->setTextWidth(width);
+        }
+        else if (wheelEvent->delta() < 0)
+        {
+          int width = text->textWidth();
+          width = width - 10;
+          text->setTextWidth(width);
+        }
+      }
+      emit relevantChange();
+      wheelEvent->accept();
+    }
+  }
+  else 
+  {
+    wheelEvent->ignore();
+  }
+}
+
+void Scene::stopRotation()
+{
+  if (_rotateEllipse)
+  {
+    _rotateEllipse = false;
+    _selectedEllipsePtr = NULL;
+  }
+  if (_rotateRect)
+  {
+    _rotateRect = false;
+    _selectedRectPtr = NULL;
+  }
+  if (_rotateText)
+  {
+    _rotateText = false;
+    _selectedTextPtr = NULL;
+  }
+}
+
+void Scene::mousePressEvent(QGraphicsSceneMouseEvent *event) 
+{
+  if (_eventWidthChange) 
+  {
+    _eventWidthChange = false;
+    return;
+  }
+  if (_massMoveNodes) 
+  {
+    _massMoveNodes = false;
+    return;
+  }
+  if (event->button() == Qt::RightButton && isPreparingArea())
+  {
+    resetAreas();
+    return;
+  }
+  if (_gettingHorizontalGuideLine)
+  {
+    emit sendHorizontalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
+    _gettingHorizontalGuideLine = false;
+    if (_tempGuideLinePtr)
+    {
+      delete _tempGuideLinePtr;
+      _tempGuideLinePtr = NULL;
+    }
+  }
+  else if (_gettingVerticalGuideLine)
+  {
+    emit sendVerticalGuideLinePos(_tempGuideLinePtr->getOrientationPoint());
+    _gettingVerticalGuideLine = false;
+    if (_tempGuideLinePtr)
+    {
+      delete _tempGuideLinePtr;
+      _tempGuideLinePtr = NULL;
+    }
+  }
+  stopRotation();
+  IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>
+    (itemAt(event->scenePos(), QTransform()));
+  IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>
+    (itemAt(event->scenePos(), QTransform()));
+  AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>
+    (itemAt(event->scenePos(), QTransform()));
+  NetworkNodeLabel *networkLabel = qgraphicsitem_cast<NetworkNodeLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>
+    (itemAt(event->scenePos(), QTransform()));
+  OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
+    (itemAt(event->scenePos(), QTransform()));
+  //  LinkageNode *linkageNode = qgraphicsitem_cast<LinkageNode*>
+  //  (itemAt(event->scenePos(), QTransform()));
+  //  LinkageNodeLabel *linkageNodeLabel = qgraphicsitem_cast<LinkageNodeLabel*>
+  //  (itemAt(event->scenePos(), QTransform()));
+  LineObject *line = qgraphicsitem_cast<LineObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  TextObject *text = qgraphicsitem_cast<TextObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  RectObject *rect = qgraphicsitem_cast<RectObject*>
+    (itemAt(event->scenePos(), QTransform()));
+  TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>
+    (itemAt(event->scenePos(), QTransform()));	  
+  Linkage *linkage = qgraphicsitem_cast<Linkage*>
+    (itemAt(event->scenePos(), QTransform()));
+  GuideLine *guide = qgraphicsitem_cast<GuideLine*>
+    (itemAt(event->scenePos(), QTransform()));
+  if (event->button() == Qt::LeftButton)
+  {
+    if (event->modifiers() & Qt::ControlModifier)
+    {
+      if (_gettingLinePoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _linePointsStarted = true;
+        _tempLinePtr = new LineObject(_lineStart, _lineEnd);
+        _tempLinePtr->setPenStyle(_currentPenStyle);
+        _tempLinePtr->setPenWidth(_currentPenWidth);
+        _tempLinePtr->setColor(_currentLineColor);
+        _tempLinePtr->setZValue(5);
+        addItem(_tempLinePtr);
+      }
+      else if (_gettingSingleArrowPoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _singleArrowPointsStarted = true;
+        _tempLinePtr = new LineObject(_lineStart, _lineEnd);
+        _tempLinePtr->setArrow1(true);
+        _tempLinePtr->setPenStyle(_currentPenStyle);
+        _tempLinePtr->setPenWidth(_currentPenWidth);
+        _tempLinePtr->setColor(_currentLineColor);
+        _tempLinePtr->setZValue(5);
+        addItem(_tempLinePtr);
+      }
+      else if (_gettingDoubleArrowPoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _doubleArrowPointsStarted = true;
+        _tempLinePtr = new LineObject(_lineStart, _lineEnd);
+        _tempLinePtr->setArrow1(true);
+        _tempLinePtr->setArrow2(true);
+        _tempLinePtr->setPenStyle(_currentPenStyle);
+        _tempLinePtr->setPenWidth(_currentPenWidth);
+        _tempLinePtr->setColor(_currentLineColor);
+        _tempLinePtr->setZValue(5);
+        addItem(_tempLinePtr);
+      }
+      else if (_gettingEllipseArea)
+      {
+        _lastMousePos = event->scenePos();
+        _ellipseAreaStarted = true;
+        _tempEllipsePtr = new EllipseObject;
+        _tempEllipsePtr->setPos(_tempEllipsePtr->mapFromScene(event->scenePos()));
+        _tempEllipsePtr->setBottomRight(_tempEllipsePtr->mapFromScene(event->scenePos()));
+        _tempEllipsePtr->setPenStyle(_currentPenStyle);
+        _tempEllipsePtr->setPenWidth(_currentPenWidth);
+        _tempEllipsePtr->setColor(_currentLineColor);
+        _tempEllipsePtr->setFillColor(_currentFillColor);
+        _tempEllipsePtr->setZValue(5);
+        addItem(_tempEllipsePtr);
+      }
+      else if (_gettingRectArea)
+      {
+        _lastMousePos = event->scenePos();
+        _rectAreaStarted = true;
+        _tempRectPtr = new RectObject;
+        _tempRectPtr->setPos(_tempRectPtr->mapFromScene(event->scenePos()));
+        _tempRectPtr->setBottomRight(_tempRectPtr->mapFromScene(event->scenePos()));
+        _tempRectPtr->setPenStyle(_currentPenStyle);
+        _tempRectPtr->setPenWidth(_currentPenWidth);
+        _tempRectPtr->setColor(_currentLineColor);
+        _tempRectPtr->setFillColor(_currentFillColor);
+        _tempRectPtr->setZValue(5);
+        addItem(_tempRectPtr);
+      }
+      else if (_gettingTimeLinePoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _timeLinePointsStarted = true;
+        _tempTimeLinePtr = new TimeLineObject(_lineStart.x(), _lineEnd.x(), _lineEnd.y(),
+                                              _currentMajorInterval, _currentMinorDivision,
+                                              _currentMajorTickSize, _currentMinorTickSize);
+        _tempTimeLinePtr->setPenWidth(_currentTimeLineWidth);
+        _tempTimeLinePtr->setColor(_currentTimeLineColor);
+        _tempTimeLinePtr->setZValue(5);
+        addItem(_tempTimeLinePtr);
+      }
+      else
+      {
+        if (incidentNodeLabel)
+        {
+          incident = incidentNodeLabel->getNode();
+        }
+        if (abstractNodeLabel)
+        {
+          abstractNode = abstractNodeLabel->getAbstractNode();
+        }
+        if (occurrenceLabel)
+        {
+          occurrence = occurrenceLabel->getOccurrence();
+        }
+        //	      if (linkageNodeLabel)
+        //		{
+        //		  linkageNode = linkageNodeLabel->getNode();
+        //	}
+        if (linkage)
+        {
+          clearSelection();
+          linkage->setSelected(true);
+          if (!linkage->isCopy())
+          {
+            emit resetItemSelection();
+          }
+        }
+        if (incident)
+        {
+          if (incident->isCopy())
+          {
+            clearSelection();
+            incident->setSelected(true);
+            _selectedIncidentNodePtr = incident;
+            _hierarchyMove = true;
+          }
+          else
+          {
+            emit resetItemSelection();
+            incident->setSelected(true);
+            _selectedIncidentNodePtr = incident;
+            _moveOn = true;
+          }
+        }
+        else if (abstractNode)
+        {
+          if (abstractNode->isCopy())
+          {
+            clearSelection();
+            abstractNode->setSelected(true);
+            _selectedAbstractNodePtr = abstractNode;
+            _hierarchyMove = true;
+          }
+          else
+          {
+            emit resetItemSelection();
+            abstractNode->setSelected(true);
+            _selectedAbstractNodePtr = abstractNode;
+            _moveOn = true;
+          }
+        }
+        else if (networkNode)
+        {
+          networkNode->setSelected(true);
+          _selectedNetworkNodePtr = networkNode;
+          _moveOn = true;
+        }
+        else if (occurrence)
+        {
+          clearSelection();
+          occurrence->setSelected(true);
+          _selectedOccurrencePtr = occurrence;
+          if (!occurrence->isGrouped())
+          {
+            _moveOn = true;
+          }
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (line)
+        {
+          clearSelection();
+          _selectedLinePtr = line;
+          line->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (ellipse)
+        {
+          clearSelection();
+          _selectedEllipsePtr = ellipse;
+          ellipse->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (rect)
+        {
+          clearSelection();
+          _selectedRectPtr = rect;
+          rect->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (text)
+        {
+          clearSelection();
+          text->setSelected(true);
+          _selectedTextPtr = text;
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (timeline)
+        {
+          clearSelection();
+          _selectedTimeLinePtr = timeline;
+          timeline->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+      }
+    }
+    else if (event->modifiers() & Qt::ShiftModifier)
+    {
+      if (incidentNodeLabel)
+      {
+        incident = incidentNodeLabel->getNode();
+      }
+      if (abstractNodeLabel)
+      {
+        abstractNode = abstractNodeLabel->getAbstractNode();
+      }
+      if (incident)
+      {
+        if (event->modifiers() & Qt::AltModifier)
+        {
+          if (incident->isCopy())
+          {
+            incident->setPos(incident->getOriginalPos());
+            incident->getLabel()->setNewPos(incident->scenePos());
+          }
+          else
+          {
+            incident->setPos(incident->getOriginalPos().x(), incident->scenePos().y());
+            incident->getLabel()->setNewPos(incident->scenePos());
+          }
+          emit resetItemSelection();
+        }
+        else
+        {
+          clearSelection();
+          incident->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+      }
+      else if (abstractNode)
+      {
+        if (event->modifiers() & Qt::AltModifier)
+        {
+          if (abstractNode->isCopy())
+          {
+            abstractNode->setPos(abstractNode->getOriginalPos());
+            abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+          }
+          else
+          {
+            abstractNode->setPos(abstractNode->getOriginalPos().x(),
+                                 abstractNode->scenePos().y());
+            abstractNode->getLabel()->setNewPos(abstractNode->scenePos());
+          }
+          emit resetItemSelection();
+        }
+        else
+        {
+          clearSelection();
+          abstractNode->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+      }
+      else if (line)
+      {
+        clearSelection();
+        line->setSelected(true);
+        _selectedLinePtr = line;
+        emit resetItemSelection();
+        QGraphicsScene::mousePressEvent(event);
+      }
+      else if (ellipse)
+      {
+        clearSelection();
+        _selectedEllipsePtr = ellipse;
+        ellipse->setSelected(true);
+        emit resetItemSelection();
+        QGraphicsScene::mousePressEvent(event);
+      }
+      else if (rect)
+      {
+        clearSelection();
+        rect->setSelected(true);
+        emit resetItemSelection();
+        _selectedRectPtr = rect;
+        QGraphicsScene::mousePressEvent(event);
+      }
+      else if (text)
+      {
+        clearSelection();
+        text->setSelected(true);
+        emit resetItemSelection();
+        _selectedTextPtr = text;
+        QGraphicsScene::mousePressEvent(event);
+      }
+      else if (timeline)
+      {
+        clearSelection();
+        timeline->setSelected(true);
+        emit resetItemSelection();
+        _selectedTimeLinePtr = timeline;
+        QGraphicsScene::mousePressEvent(event);
+      }
+      else if (guide)
+      {
+        clearSelection();
+        _selectedGuideLine = guide;
+        guide->setSelected(true);
+        emit resetItemSelection();
+      }
+    }
+    else
+    {
+      if (_gettingLinePoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _linePointsStarted = true;
+        _tempLinePtr = new LineObject(_lineStart, _lineEnd);
+        _tempLinePtr->setPenStyle(_currentPenStyle);
+        _tempLinePtr->setPenWidth(_currentPenWidth);
+        _tempLinePtr->setColor(_currentLineColor);
+        _tempLinePtr->setZValue(5);
+        addItem(_tempLinePtr);
+      }
+      else if (_gettingSingleArrowPoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _singleArrowPointsStarted = true;
+        _tempLinePtr = new LineObject(_lineStart, _lineEnd);
+        _tempLinePtr->setArrow1(true);
+        _tempLinePtr->setPenStyle(_currentPenStyle);
+        _tempLinePtr->setPenWidth(_currentPenWidth);
+        _tempLinePtr->setColor(_currentLineColor);
+        _tempLinePtr->setZValue(5);
+        addItem(_tempLinePtr);
+      }
+      else if (_gettingDoubleArrowPoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _doubleArrowPointsStarted = true;
+        _tempLinePtr = new LineObject(_lineStart, _lineEnd);
+        _tempLinePtr->setArrow1(true);
+        _tempLinePtr->setArrow2(true);
+        _tempLinePtr->setPenStyle(_currentPenStyle);
+        _tempLinePtr->setPenWidth(_currentPenWidth);
+        _tempLinePtr->setColor(_currentLineColor);
+        _tempLinePtr->setZValue(5);
+        addItem(_tempLinePtr);
+      }
+      else if (_gettingTimeLinePoints)
+      {
+        _lastMousePos = event->scenePos();
+        _lineStart = _lastMousePos;
+        _lineEnd = _lastMousePos;
+        _timeLinePointsStarted = true;
+        _tempTimeLinePtr = new TimeLineObject(_lineStart.x(), _lineEnd.x(), _lineEnd.y(),
+                                              _currentMajorInterval, _currentMinorDivision,
+                                              _currentMajorTickSize, _currentMinorTickSize);
+        _tempTimeLinePtr->setPenWidth(_currentTimeLineWidth);
+        _tempTimeLinePtr->setColor(_currentTimeLineColor);
+        _tempTimeLinePtr->setZValue(5);
+        addItem(_tempTimeLinePtr);
+      }
+      else if (_gettingEllipseArea)
+      {
+        _lastMousePos = event->scenePos();
+        _ellipseAreaStarted = true;
+        _tempEllipsePtr = new EllipseObject;
+        _tempEllipsePtr->setPos(_tempEllipsePtr->mapFromScene(event->scenePos()));
+        _tempEllipsePtr->setBottomRight(_tempEllipsePtr->mapFromScene(event->scenePos()));
+        _tempEllipsePtr->setPenStyle(_currentPenStyle);
+        _tempEllipsePtr->setPenWidth(_currentPenWidth);
+        _tempEllipsePtr->setColor(_currentLineColor);
+        _tempEllipsePtr->setFillColor(_currentFillColor);
+        _tempEllipsePtr->setZValue(5);
+        addItem(_tempEllipsePtr);
+      }
+      else if (_gettingRectArea)
+      {
+        _lastMousePos = event->scenePos();
+        _rectAreaStarted = true;
+        _tempRectPtr = new RectObject;
+        _tempRectPtr->setPos(_tempRectPtr->mapFromScene(event->scenePos()));
+        _tempRectPtr->setBottomRight(_tempRectPtr->mapFromScene(event->scenePos()));
+        _tempRectPtr->setPenStyle(_currentPenStyle);
+        _tempRectPtr->setPenWidth(_currentPenWidth);
+        _tempRectPtr->setColor(_currentLineColor);
+        _tempRectPtr->setFillColor(_currentFillColor);
+        _tempRectPtr->setZValue(5);
+        addItem(_tempRectPtr);
+      }
+      else if (_gettingTextArea)
+      {
+        _lastMousePos = event->scenePos();
+        _textAreaStarted = true;
+        _tempTextPtr = new TextObject("Example text");
+        _tempTextPtr->setPos(_tempTextPtr->mapFromScene(event->scenePos()));
+        _tempTextPtr->setTextWidth(event->scenePos().x() - _lastMousePos.x());
+        _tempTextPtr->setDefaultTextColor(_currentLineColor);
+        _tempTextPtr->setZValue(6);
+        addItem(_tempTextPtr);
+      }
+      else
+      {
+        if (incidentNodeLabel)
+        {
+          incident = incidentNodeLabel->getNode();
+        }
+        if (abstractNodeLabel)
+        {
+          abstractNode = abstractNodeLabel->getAbstractNode();
+        }
+        if (occurrenceLabel)
+        {
+          occurrence = occurrenceLabel->getOccurrence();
+        }
+        if (incident)
+        {
+          clearSelection();
+          incident->setSelected(true);
+          emit resetItemSelection();
+        }
+        else if (abstractNode)
+        {
+          clearSelection();
+          abstractNode->setSelected(true);
+          emit resetItemSelection();
+        }
+        else if (networkNode)
+        {
+          clearSelection();
+          networkNode->setSelected(true);
+        }
+        else if (networkLabel)
+        {
+          clearSelection();
+          _moveNetworkNodeLabel = true;
+          _selectedNetworkNodeLabelPtr = networkLabel;
+          _lastMousePos = event->scenePos();
+        }
+        else if (occurrence)
+        {
+          clearSelection();
+          occurrence->setSelected(true);
+          _selectedOccurrencePtr = occurrence;
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (line)
+        {
+          clearSelection();
+          _selectedLinePtr = line;
+          line->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (ellipse)
+        {
+          clearSelection();
+          _selectedEllipsePtr = ellipse;
+          ellipse->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (rect)
+        {
+          clearSelection();
+          _selectedRectPtr = rect;
+          rect->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (text)
+        {
+          clearSelection();
+          text->setSelected(true);
+          _selectedTextPtr = text;
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (timeline)
+        {
+          clearSelection();
+          _selectedTimeLinePtr = timeline;
+          timeline->setSelected(true);
+          emit resetItemSelection();
+          QGraphicsScene::mousePressEvent(event);
+        }
+        else if (guide)
+        {
+          clearSelection();
+          guide->setSelected(true);
+          emit resetItemSelection();
+          _selectedGuideLine = guide;
+          QGraphicsScene::mousePressEvent(event);
+        }
+        _selectedIncidentNodePtr = NULL;
+        _selectedAbstractNodePtr = NULL;
+        _selectedNetworkNodePtr = NULL;
+        emit resetItemSelection();
+        QGraphicsScene::mousePressEvent(event);
+      }
+    }
+  }
+  else if(event->button() == Qt::MiddleButton)
+  {
+    if (text)
+    {
+      clearSelection();
+      text->setSelected(true);
+      emit resetItemSelection();
+      _selectedTextPtr = text;
+      QGraphicsScene::mousePressEvent(event);
+    }
+    else if (ellipse)
+    {
+      clearSelection();
+      ellipse->setSelected(true);
+      emit resetItemSelection();
+      _selectedEllipsePtr = ellipse;
+      QGraphicsScene::mousePressEvent(event);
+    }
+    else if (rect)
+    {
+      clearSelection();
+      rect->setSelected(true);
+      emit resetItemSelection();
+      _selectedRectPtr = rect;
+      QGraphicsScene::mousePressEvent(event);
+    }
+  }
+  else
+  {
+    Scene::contextMenuEvent((QGraphicsSceneContextMenuEvent*) event);
+  }
+}
+
+void Scene::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) 
+{
+  _moveOn = false;
+  _rotateEllipse = false;
+  _rotateRect = false;
+  _rotateText = false;
+  _hierarchyMove = false;
+  _moveNetworkNodeLabel = false;
+  if (_gettingLinePoints && _linePointsStarted)
+  {
+    qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2) +
+                        pow(_lineStart.y() * _lineEnd.y(), 2));
+    if (length > 0)
+    {
+      emit sendLinePoints(_lineStart, _lineEnd);
+    }
+  }
+  _gettingLinePoints = false;
+  _linePointsStarted = false;
+  if (_gettingSingleArrowPoints && _singleArrowPointsStarted)
+  {
+    qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2) +
+                        pow(_lineStart.y() * _lineEnd.y(), 2));
+    if (length > 0)
+    {
+      emit sendSingleArrowPoints(_lineStart, _lineEnd);
+    }
+  }
+  _gettingSingleArrowPoints = false;
+  _singleArrowPointsStarted = false;
+  if (_gettingDoubleArrowPoints && _doubleArrowPointsStarted)
+  {
+    qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2) +
+                        pow(_lineStart.y() * _lineEnd.y(), 2));
+    if (length > 0)
+    {
+      emit sendDoubleArrowPoints(_lineStart, _lineEnd);
+    }
+  }
+  _gettingDoubleArrowPoints = false;
+  _doubleArrowPointsStarted = false;
+  if (_tempLinePtr)
+  {
+    delete _tempLinePtr;
+  }
+  if (_gettingTimeLinePoints && _timeLinePointsStarted)
+  {
+    qreal length = sqrt(pow(_lineStart.x() * _lineEnd.x(), 2));
+    if (length > 0)
+    {
+      emit sendTimeLinePoints(_lineStart.x(), _lineEnd.x(), _lineEnd.y());
+    }
+  }
+  _gettingTimeLinePoints = false;
+  _timeLinePointsStarted =false;
+  if (_tempTimeLinePtr)
+  {
+    delete _tempTimeLinePtr;
+  }
+  if (_gettingEllipseArea && _ellipseAreaStarted)
+  {
+    if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
+    {
+      emit sendEllipseArea(QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                                  _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight())));
+    }
+  }
+  if (_tempEllipsePtr)
+  {
+    delete _tempEllipsePtr;
+  }
+  _gettingEllipseArea = false;
+  _ellipseAreaStarted = false;
+  if (_gettingRectArea && _rectAreaStarted)
+  {
+    if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
+    {
+      emit sendRectArea(QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                               _tempRectPtr->mapToScene(_tempRectPtr->bottomRight())));
+    }
+  }
+  if (_tempRectPtr)
+  {
+    delete _tempRectPtr;
+  }
+  _gettingRectArea = false;
+  _rectAreaStarted = false;
+  if (_gettingTextArea && _textAreaStarted)
+  {
+    if (_drawArea.width() > 0.0 && _drawArea.height() > 0.0)
+    {
+      emit sendTextArea(_drawArea, _tempTextPtr->font().pointSizeF());
+    }
+  }
+  if (_tempTextPtr)
+  {
+    delete _tempTextPtr;
+  }
+  _gettingTextArea = false;
+  _textAreaStarted = false;
+  _lineStart = QPointF();
+  _lineEnd = QPointF();
+  _drawArea = QRectF();
+  QListIterator<QGraphicsItem*> it(this->items());
+  while (it.hasNext()) 
+  {
+    QGraphicsItem *current = it.next();
+    IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+    AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>(current);
+    NetworkNode *networkNode = qgraphicsitem_cast<NetworkNode*>(current);
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>(current);
+    LineObject *line = qgraphicsitem_cast<LineObject*>(current);
+    TextObject *text = qgraphicsitem_cast<TextObject*>(current);
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>(current);
+    RectObject *rect = qgraphicsitem_cast<RectObject*>(current);
+    TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>(current);
+    if (incident)
+    {
+      incident->setCursor(Qt::OpenHandCursor);
+    }
+    else if (abstractNode)
+    {
+      abstractNode->setCursor(Qt::OpenHandCursor);
+    }
+    else if (networkNode)
+    {
+      networkNode->setCursor(Qt::OpenHandCursor);
+    }
+    else if (occurrence)
+    {
+      occurrence->setCursor(Qt::OpenHandCursor);
+    }
+    else if (line)
+    {
+      sendEvent(line, event);
+    }
+    else if (text)
+    {
+      sendEvent(text, event);
+    }
+    else if (ellipse)
+    {
+      sendEvent(ellipse, event);
+    }
+    else if (rect)
+    {
+      sendEvent(rect, event);
+    }
+    else if (timeline)
+    {
+      sendEvent(timeline, event);
+    }
+  }
+  _selectedIncidentNodePtr = NULL;
+  _selectedAbstractNodePtr = NULL;
+  _selectedNetworkNodePtr = NULL;
+  _selectedOccurrencePtr = NULL;
+  _selectedLinePtr = NULL;
+  _selectedEllipsePtr = NULL;
+  _selectedTextPtr = NULL;
+  _selectedNetworkNodeLabelPtr = NULL;
+  _selectedTimeLinePtr = NULL;
+  _selectedGuideLine = NULL;
+  _tempLinePtr = NULL;
+  _tempEllipsePtr = NULL;
+  _tempRectPtr = NULL;
+  _tempTextPtr = NULL;
+  _tempTimeLinePtr = NULL;
+  QApplication::restoreOverrideCursor();
+  qApp->processEvents();
+  QGraphicsScene::mouseReleaseEvent(event);
+}
+  
+void Scene::mouseMoveEvent(QGraphicsSceneMouseEvent *event) 
+{
+  if (_eventWidthChange) 
+  {
+    if (_selectedIncidentNodePtr != NULL)
+    {
+      QPointF eventPos = _selectedIncidentNodePtr->scenePos();
+      if (event->scenePos().x() > eventPos.x() && _selectedIncidentNodePtr->getWidth() >= 40)
+      {
+        int newWidth = event->scenePos().x() - _selectedIncidentNodePtr->scenePos().x();
+        if (newWidth >= 40)
+        {
+          _selectedIncidentNodePtr->setWidth(newWidth);
+          _selectedIncidentNodePtr->getLabel()->
+            setOffset(QPointF(newWidth / 2 - 20, 0));
+          _selectedIncidentNodePtr->getLabel()->
+            setNewPos(_selectedIncidentNodePtr->scenePos());
+        }
+      }
+      else
+      {
+        _selectedIncidentNodePtr->setWidth(40);
+        _selectedIncidentNodePtr->getLabel()->
+          setOffset(QPointF(40 / 2 - 20, 0));
+        _selectedIncidentNodePtr->getLabel()->
+          setNewPos(_selectedIncidentNodePtr->scenePos());
+      }
+    }
+    else if (_selectedAbstractNodePtr != NULL)
+    {
+      QPointF abstractNodePos = _selectedAbstractNodePtr->scenePos();
+      if (event->scenePos().x() > abstractNodePos.x() &&
+          _selectedAbstractNodePtr->getWidth() >= 40)
+      {
+        int newWidth = event->scenePos().x() - _selectedAbstractNodePtr->scenePos().x();
+        if (newWidth >= 40)
+        {
+          _selectedAbstractNodePtr->setWidth(newWidth);
+          _selectedAbstractNodePtr->getLabel()->
+            setOffset(QPointF(newWidth / 2 - 20, 0));
+          _selectedAbstractNodePtr->getLabel()->
+            setNewPos(_selectedAbstractNodePtr->scenePos());
+        }
+      }
+      else
+      {
+        _selectedAbstractNodePtr->setWidth(40);
+        _selectedAbstractNodePtr->getLabel()->
+          setOffset(QPointF(40 / 2 - 20, 0));
+        _selectedAbstractNodePtr->getLabel()->
+          setNewPos(_selectedAbstractNodePtr->scenePos());
+      }
+    }
+  }
+  else if (_massMoveNodes)
+  {
+    if (selectedItems().size() == 1)
+    {
+      QGraphicsItem *current = selectedItems().first();
+      if (event->scenePos().x() > _initPos.x())
+      {
+        QPointF oldPos = current->scenePos();
+        QPointF newPos = QPointF(event->scenePos().x(), _initPos.y());
+        current->setPos(newPos);
+        IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>(current);
+        AbstractNode *abstract = qgraphicsitem_cast<AbstractNode*>(current);
+        if (incident)
+        {
+          incident->getLabel()->setNewPos(incident->scenePos());
+        }
+        else if (abstract)
+        {
+          abstract->getLabel()->setNewPos(abstract->scenePos());
+        }
+        QListIterator<QGraphicsItem*> it(items());
+        while (it.hasNext())
+        {
+          QGraphicsItem *part = it.next();
+          if (part != current)
+          {
+            IncidentNode *incidentPart = qgraphicsitem_cast<IncidentNode*>(part);
+            AbstractNode *abstractPart = qgraphicsitem_cast<AbstractNode*>(part);
+            if (incidentPart)
+            {
+              if (incidentPart->scenePos().x() > _initPos.x())
+              {
+                qreal xDiff = incidentPart->scenePos().x() - oldPos.x();
+                QPointF newPos = QPointF(event->scenePos().x() +
+                                         xDiff, incidentPart->pos().y());
+                incidentPart->setPos(newPos);
+                incidentPart->getLabel()->setNewPos(incidentPart->scenePos());
+              }
+            }
+            else if (abstractPart)
+            {
+              if (abstractPart->scenePos().x() > _initPos.x())
+              {
+                qreal xDiff = abstractPart->scenePos().x() - oldPos.x();
+                QPointF newPos = QPointF(event->scenePos().x() +
+                                         xDiff, abstractPart->pos().y());
+                abstractPart->setPos(newPos);
+                abstractPart->getLabel()->setNewPos(abstractPart->scenePos());
+              }
+            }
+          }
+        }
+      }
+      emit relevantChange();
+    }
+  }
+  else if (_gettingLinePoints)
+  {
+    if (_linePointsStarted)
+    {
+      if (event->modifiers() & Qt::ControlModifier)
+      {
+        if (abs((event->scenePos().y() - _lineStart.y()) /
+                (event->scenePos().x() - _lineStart.x())) < 1)
+        {
+          _lineEnd = QPointF(event->scenePos().x(), _lineStart.y());
+        }
+        else
+        {
+          _lineEnd = QPointF(_lineStart.x(), event->scenePos().y());
+        }
+      }
+      else
+      {
+        _lineEnd = event->scenePos();
+      }
+      _tempLinePtr->setStartPos(_lineStart);
+      _tempLinePtr->setEndPos(_lineEnd);
+    }
+    clearSelection();
+  }
+  else if (_gettingSingleArrowPoints)
+  {
+    if (_singleArrowPointsStarted)
+    {
+      if (event->modifiers() & Qt::ControlModifier)
+      {
+        if (abs((event->scenePos().y() - _lineStart.y()) /
+                (event->scenePos().x() - _lineStart.x())) < 1)
+        {
+          _lineEnd = QPointF(event->scenePos().x(), _lineStart.y());
+        }
+        else
+        {
+          _lineEnd = QPointF(_lineStart.x(), event->scenePos().y());
+        }
+      }
+      else
+      {
+        _lineEnd = event->scenePos();
+      }
+      _tempLinePtr->setStartPos(_lineStart);
+      _tempLinePtr->setEndPos(_lineEnd);
+    }
+    clearSelection();
+  }
+  else if (_gettingDoubleArrowPoints)
+  {
+    if (_doubleArrowPointsStarted)
+    {
+      if (event->modifiers() & Qt::ControlModifier)
+      {
+        if (abs((event->scenePos().y() - _lineStart.y()) /
+                (event->scenePos().x() - _lineStart.x())) < 1)
+        {
+          _lineEnd = QPointF(event->scenePos().x(), _lineStart.y());
+        }
+        else
+        {
+          _lineEnd = QPointF(_lineStart.x(), event->scenePos().y());
+        }
+      }
+      else
+      {
+        _lineEnd = event->scenePos();
+      }
+      _tempLinePtr->setStartPos(_lineStart);
+      _tempLinePtr->setEndPos(_lineEnd);
+    }
+    clearSelection();
+  }
+  else if (_gettingTimeLinePoints)
+  {
+    if (_timeLinePointsStarted)
+    {
+      _lineStart = QPointF(_lastMousePos.x(), event->scenePos().y());
+      _lineEnd = event->scenePos();
+      _tempTimeLinePtr->setStartX(_lineStart.x());
+      _tempTimeLinePtr->setEndX(_lineEnd.x());
+      _tempTimeLinePtr->setY(_lineEnd.y());
+    }
+    clearSelection();
+  }
+  else if (_gettingEllipseArea)
+  {
+    if (_ellipseAreaStarted)
+    {
+      QPointF topLeft = _tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft());
+      QPointF bottomLeft = _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomLeft());
+      QPointF topRight = _tempEllipsePtr->mapToScene(_tempEllipsePtr->topRight());
+      QPointF bottomRight = _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight());
+      QPointF left = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getLeft(),
+                                                         _tempEllipsePtr->getCenter().y()));
+      QPointF right = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getRight(),
+                                                          _tempEllipsePtr->getCenter().y()));
+      QPointF top = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getCenter().x(),
+                                                        _tempEllipsePtr->getTop()));
+      QPointF bottom = _tempEllipsePtr->mapToScene(QPointF(_tempEllipsePtr->getCenter().x(),
+                                                           _tempEllipsePtr->getBottom()));
+      qreal distTopLeft = sqrt(pow((event->scenePos().x() - topLeft.x()), 2) +
+                               pow((event->scenePos().y() - topLeft.y()), 2));
+      qreal distTopRight = sqrt(pow((event->scenePos().x() - topRight.x()), 2) +
+                                pow((event->scenePos().y() - topRight.y()), 2));
+      qreal distBottomLeft = sqrt(pow((event->scenePos().x() - bottomLeft.x()), 2) +
+                                  pow((event->scenePos().y() - bottomLeft.y()), 2));
+      qreal distBottomRight = sqrt(pow((event->scenePos().x() - bottomRight.x()), 2) +
+                                   pow((event->scenePos().y() - bottomRight.y()), 2));
+      qreal distLeft = sqrt(pow((event->scenePos().x() - left.x()), 2) +
+                            pow((event->scenePos().y() - left.y()), 2));
+      qreal distRight = sqrt(pow((event->scenePos().x() - right.x()), 2) +
+                             pow((event->scenePos().y() - right.y()), 2));
+      qreal distTop = sqrt(pow((event->scenePos().x() - top.x()), 2) +
+                           pow((event->scenePos().y() - top.y()), 2));
+      qreal distBottom = sqrt(pow((event->scenePos().x() - bottom.x()), 2) +
+                              pow((event->scenePos().y() - bottom.y()), 2));
+      QVector<qreal> temp;
+      temp.push_back(distTopLeft);
+      temp.push_back(distTopRight);
+      temp.push_back(distBottomLeft);
+      temp.push_back(distBottomRight);
+      temp.push_back(distLeft);
+      temp.push_back(distRight);
+      temp.push_back(distTop);
+      temp.push_back(distBottom);
+      qreal minimum = -1.0;
+      QVectorIterator<qreal> it(temp);
+      while (it.hasNext())
+      {
+        qreal current = it.next();
+        if (minimum == -1 || current < minimum)
+        {
+          minimum = current;
+        }
+      }
+      if (minimum == distTopLeft)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setTopLeft(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+        }
+      }
+      else if (minimum == distTopRight)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setTopRight(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setTopRight(_tempEllipsePtr->
+                                       mapFromScene(_drawArea.topRight()));
+        }
+      }
+      else if (minimum == distBottomLeft)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setBottomLeft(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setBottomLeft(_tempEllipsePtr->
+                                         mapFromScene(_drawArea.bottomLeft()));
+        }
+      }
+      else if (minimum == distBottomRight)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setBottomRight(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+      }
+      else if (minimum == distLeft)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setLeft(event->scenePos().x());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setHeight(_drawArea.width());
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setLeft(_tempEllipsePtr->
+                                   mapFromScene(event->scenePos()).x());
+        }
+      }
+      else if (minimum == distRight)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setRight(event->scenePos().x());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setHeight(_drawArea.width());
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setRight(_tempEllipsePtr->mapFromScene(event->scenePos()).x());
+        }
+      }
+      else if (minimum == distTop)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setTop(event->scenePos().y());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setWidth(_drawArea.height());
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setTop(_tempEllipsePtr->mapFromScene(event->scenePos()).y());
+        }
+      }
+      else if (minimum == distBottom)
+      {
+        QPointF anchor = _tempEllipsePtr->mapToScene(_tempEllipsePtr->getCenter());
+        _drawArea = QRectF(_tempEllipsePtr->mapToScene(_tempEllipsePtr->topLeft()),
+                           _tempEllipsePtr->mapToScene(_tempEllipsePtr->bottomRight()));
+        _drawArea.setBottom(event->scenePos().y());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setWidth(_drawArea.height());
+          _drawArea.moveCenter(anchor);
+          _tempEllipsePtr->setTopLeft(_tempEllipsePtr->
+                                      mapFromScene(_drawArea.topLeft()));
+          _tempEllipsePtr->setBottomRight(_tempEllipsePtr->
+                                          mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempEllipsePtr->setBottom(_tempEllipsePtr->mapFromScene(event->scenePos()).y());
+        }
+      }
+    }
+  }
+  else if (_gettingRectArea)
+  {
+    if (_rectAreaStarted)
+    {
+      QPointF topLeft = _tempRectPtr->mapToScene(_tempRectPtr->topLeft());
+      QPointF bottomLeft = _tempRectPtr->mapToScene(_tempRectPtr->bottomLeft());
+      QPointF topRight = _tempRectPtr->mapToScene(_tempRectPtr->topRight());
+      QPointF bottomRight = _tempRectPtr->mapToScene(_tempRectPtr->bottomRight());
+      QPointF left = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getLeft(),
+                                                      _tempRectPtr->getCenter().y()));
+      QPointF right = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getRight(),
+                                                       _tempRectPtr->getCenter().y()));
+      QPointF top = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getCenter().x(),
+                                                     _tempRectPtr->getTop()));
+      QPointF bottom = _tempRectPtr->mapToScene(QPointF(_tempRectPtr->getCenter().x(),
+                                                        _tempRectPtr->getBottom()));
+      qreal distTopLeft = sqrt(pow((event->scenePos().x() - topLeft.x()), 2) +
+                               pow((event->scenePos().y() - topLeft.y()), 2));
+      qreal distTopRight = sqrt(pow((event->scenePos().x() - topRight.x()), 2) +
+                                pow((event->scenePos().y() - topRight.y()), 2));
+      qreal distBottomLeft = sqrt(pow((event->scenePos().x() - bottomLeft.x()), 2) +
+                                  pow((event->scenePos().y() - bottomLeft.y()), 2));
+      qreal distBottomRight = sqrt(pow((event->scenePos().x() - bottomRight.x()), 2) +
+                                   pow((event->scenePos().y() - bottomRight.y()), 2));
+      qreal distLeft = sqrt(pow((event->scenePos().x() - left.x()), 2) +
+                            pow((event->scenePos().y() - left.y()), 2));
+      qreal distRight = sqrt(pow((event->scenePos().x() - right.x()), 2) +
+                             pow((event->scenePos().y() - right.y()), 2));
+      qreal distTop = sqrt(pow((event->scenePos().x() - top.x()), 2) +
+                           pow((event->scenePos().y() - top.y()), 2));
+      qreal distBottom = sqrt(pow((event->scenePos().x() - bottom.x()), 2) +
+                              pow((event->scenePos().y() - bottom.y()), 2));
+      QVector<qreal> temp;
+      temp.push_back(distTopLeft);
+      temp.push_back(distTopRight);
+      temp.push_back(distBottomLeft);
+      temp.push_back(distBottomRight);
+      temp.push_back(distLeft);
+      temp.push_back(distRight);
+      temp.push_back(distTop);
+      temp.push_back(distBottom);
+      qreal minimum = -1.0;
+      QVectorIterator<qreal> it(temp);
+      while (it.hasNext())
+      {
+        qreal current = it.next();
+        if (minimum == -1 || current < minimum)
+        {
+          minimum = current;
+        }
+      }
+      if (minimum == distTopLeft)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setTopLeft(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+        }
+      }
+      else if (minimum == distTopRight)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setTopRight(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setTopRight(_tempRectPtr->
+                                    mapFromScene(_drawArea.topRight()));
+        }
+      }
+      else if (minimum == distBottomLeft)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setBottomLeft(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setBottomLeft(_tempRectPtr->
+                                      mapFromScene(_drawArea.bottomLeft()));
+        }
+      }
+      else if (minimum == distBottomRight)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setBottomRight(event->scenePos());
+        qreal xDist = sqrt(pow(_lastMousePos.x() - event->scenePos().x(), 2));
+        qreal yDist = sqrt(pow(_lastMousePos.y() - event->scenePos().y(), 2));
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          if (xDist > yDist)
+          {
+            _drawArea.setHeight(_drawArea.width());
+          }
+          else if (xDist < yDist)
+          {
+            _drawArea.setWidth(_drawArea.height());
+          }
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+      }
+      else if (minimum == distLeft)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setLeft(event->scenePos().x());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setHeight(_drawArea.width());
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setLeft(_tempRectPtr->
+                                mapFromScene(event->scenePos()).x());
+        }
+      }
+      else if (minimum == distRight)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setRight(event->scenePos().x());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setHeight(_drawArea.width());
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setRight(_tempRectPtr->mapFromScene(event->scenePos()).x());
+        }
+      }
+      else if (minimum == distTop)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setTop(event->scenePos().y());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setWidth(_drawArea.height());
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setTop(_tempRectPtr->mapFromScene(event->scenePos()).y());
+        }
+      }
+      else if (minimum == distBottom)
+      {
+        QPointF anchor = _tempRectPtr->mapToScene(_tempRectPtr->getCenter());
+        _drawArea = QRectF(_tempRectPtr->mapToScene(_tempRectPtr->topLeft()),
+                           _tempRectPtr->mapToScene(_tempRectPtr->bottomRight()));
+        _drawArea.setBottom(event->scenePos().y());
+        if (event->modifiers() & Qt::ControlModifier)
+        {
+          _drawArea.setWidth(_drawArea.height());
+          _drawArea.moveCenter(anchor);
+          _tempRectPtr->setTopLeft(_tempRectPtr->
+                                   mapFromScene(_drawArea.topLeft()));
+          _tempRectPtr->setBottomRight(_tempRectPtr->
+                                       mapFromScene(_drawArea.bottomRight()));
+        }
+        else
+        {
+          _tempRectPtr->setBottom(_tempRectPtr->mapFromScene(event->scenePos()).y());
+        }
+      }
+    }
+  }
+  else if (_gettingTextArea)
+  {
+    if (_textAreaStarted)
+    {
+      _drawArea = QRectF(_lastMousePos, event->scenePos()).normalized();
+      _tempTextPtr->setTextWidth(_drawArea.width());
+      if (_drawArea.height() / 2 > 0)
+      {
+        QFont font = _tempTextPtr->font();
+        font.setPointSizeF(_drawArea.height() / 2);
+        _tempTextPtr->setFont(font);
+      }
+      clearSelection();
+      _tempTextPtr->setSelected(true);
+    }
+  }
+  else if (_gettingHorizontalGuideLine)
+  {
+    _tempGuideLinePtr->setOrientationPoint(event->scenePos());
+  }
+  else if (_gettingVerticalGuideLine)
+  {
+    _tempGuideLinePtr->setOrientationPoint(event->scenePos());
+  }
+  else if (_hierarchyMove) 
+  {
+    if (_selectedIncidentNodePtr)
+    {
+      emit moveItems(_selectedIncidentNodePtr, event->scenePos());
+    }
+    else if (_selectedAbstractNodePtr)
+    {
+      emit moveItems(_selectedAbstractNodePtr, event->scenePos());
+    }
+    emit relevantChange();
+  }
+  else if (_rotateEllipse)
+  {
+    sendEvent(_selectedEllipsePtr, event);
+  }
+  else if (_rotateRect) 
+  {
+    sendEvent(_selectedRectPtr, event);
+  }
+  else if (_rotateText) 
+  {
+    sendEvent(_selectedTextPtr, event);
+  }
+  else if (_moveNetworkNodeLabel) 
+  {
+    QPointF newPos = event->scenePos();
+    qreal newXDiff = newPos.x() - _lastMousePos.x();
+    qreal newYDiff = newPos.y() - _lastMousePos.y();
+    _selectedNetworkNodeLabelPtr->setPos(_selectedNetworkNodeLabelPtr->scenePos() +
+                                         QPointF(newXDiff, newYDiff));
+    qreal xDist = _selectedNetworkNodeLabelPtr->scenePos().x() -
+      _selectedNetworkNodeLabelPtr->getNode()->scenePos().x();
+    qreal yDist = _selectedNetworkNodeLabelPtr->scenePos().y() -
+      _selectedNetworkNodeLabelPtr->getNode()->scenePos().y();
+    _selectedNetworkNodeLabelPtr->setOffset(QPointF(xDist, yDist));
+    _lastMousePos = event->scenePos();
+    emit relevantChange();
+  }
+  else 
+  {
+    if (selectedItems().size() > 1 && _moveOn)
+    {
+      if (_selectedIncidentNodePtr)
+      {
+        emit moveItems(_selectedIncidentNodePtr, event->scenePos());
+        emit relevantChange();
+      }
+      else if (_selectedAbstractNodePtr)
+      {
+        emit moveItems(_selectedAbstractNodePtr, event->scenePos());
+        emit relevantChange();
+      }
+      else if (_selectedNetworkNodePtr)
+      {
+        emit moveItems(_selectedNetworkNodePtr, event->scenePos());
+        emit relevantChange();
+      }
+      else
+      {
+        _moveOn = false;
+      }
+    }
+    GraphicsView *view = qobject_cast<GraphicsView*>(views()[0]);
+    BandlessGraphicsView *bandless = qobject_cast<BandlessGraphicsView*>(views()[0]);
+    if (view)
+    {
+      if (!view->isPanning())
+      {
+        QApplication::restoreOverrideCursor();
+      }
+    }
+    else if (bandless)
+    {
+      if (!bandless->isPanning())
+      {
+        QApplication::restoreOverrideCursor();
+      }
+    }
+    QGraphicsScene::mouseMoveEvent(event);
+  }
+}
+
+void Scene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event) 
+{
+  if (!event->modifiers())
+  {
+    IncidentNode *incident = qgraphicsitem_cast<IncidentNode*>
+      (itemAt(event->scenePos(), QTransform()));
+    Linkage *linkage = qgraphicsitem_cast<Linkage*>
+      (itemAt(event->scenePos(), QTransform()));
+    IncidentNodeLabel *incidentNodeLabel = qgraphicsitem_cast<IncidentNodeLabel*>
+      (itemAt(event->scenePos(), QTransform()));
+    AbstractNode *abstractNode = qgraphicsitem_cast<AbstractNode*>
+      (itemAt(event->scenePos(), QTransform()));
+    AbstractNodeLabel *abstractNodeLabel = qgraphicsitem_cast<AbstractNodeLabel*>
+      (itemAt(event->scenePos(), QTransform()));
+    NetworkNode *node = qgraphicsitem_cast<NetworkNode*>
+      (itemAt(event->scenePos(), QTransform()));
+    OccurrenceItem *occurrence = qgraphicsitem_cast<OccurrenceItem*>
+      (itemAt(event->scenePos(), QTransform()));
+    OccurrenceLabel *occurrenceLabel = qgraphicsitem_cast<OccurrenceLabel*>
+      (itemAt(event->scenePos(), QTransform()));
+    LinkageNode *linkageNode = qgraphicsitem_cast<LinkageNode*>
+      (itemAt(event->scenePos(), QTransform()));
+    LinkageNodeLabel *linkageNodeLabel = qgraphicsitem_cast<LinkageNodeLabel*>
+      (itemAt(event->scenePos(), QTransform()));
+    LineObject *line = qgraphicsitem_cast<LineObject*>
+      (itemAt(event->scenePos(), QTransform()));
+    TextObject *text = qgraphicsitem_cast<TextObject*>
+      (itemAt(event->scenePos(), QTransform()));
+    EllipseObject *ellipse = qgraphicsitem_cast<EllipseObject*>
+      (itemAt(event->scenePos(), QTransform()));
+    RectObject *rect = qgraphicsitem_cast<RectObject*>
+      (itemAt(event->scenePos(), QTransform()));
+    TimeLineObject *timeline = qgraphicsitem_cast<TimeLineObject*>
+      (itemAt(event->scenePos(), QTransform()));
+    GuideLine *guide = qgraphicsitem_cast<GuideLine*>
+      (itemAt(event->scenePos(), QTransform()));
+    if (incidentNodeLabel)
+    {
+      incident = incidentNodeLabel->getNode();
+    }
+    if (abstractNodeLabel)
+    {
+      abstractNode = abstractNodeLabel->getAbstractNode();
+    }
+    if (occurrenceLabel)
+    {
+      occurrence = occurrenceLabel->getOccurrence();
+    }
+    if (linkageNodeLabel)
+    {
+      linkageNode = linkageNodeLabel->getNode();
+    }
+    if (incident && !incident->isCopy())
+    {
+      QMenu *menu = new QMenu();
+      QMenu *abstractionMenu = new QMenu("Abstraction");
+      QMenu *colorMenu = new QMenu("Colouring");
+      QMenu *posMenu = new QMenu("Positioning");
+      QMenu *selectionMenu = new QMenu("Selection");
+      QMenu *linkageMenu = new QMenu("Linkages");
+      QMenu *descMenu = new QMenu("Description");
+      QMenu *caseMenu = new QMenu("Cases");
+      menu->addMenu(abstractionMenu);
+      menu->addMenu(colorMenu);
+      menu->addMenu(posMenu);
+      menu->addMenu(selectionMenu);
+      menu->addMenu(linkageMenu);
+      menu->addMenu(descMenu);
+      menu->addMenu(caseMenu);
+      QAction *action1 = new QAction(ABSTRACTACTION, this);
+      abstractionMenu->addAction(action1);
+      QAction *action2 = new QAction(MAKEABSTRACTNODEACTION, this);
+      abstractionMenu->addAction(action2);
+      QAction *action3= new QAction(RECOLOREVENTSACTION, this);
+      colorMenu->addAction(action3);
+      QAction *action4 = new QAction(RECOLORLABELSACTION, this);
+      colorMenu->addAction(action4);
+      QAction *action5 = new QAction(COLORLINEAGEACTION, this);
+      colorMenu->addAction(action5);
+      QAction *action6 = new QAction(SETWIDTHACTION, this);
+      posMenu->addAction(action6);
+      QAction *action7 = new QAction(MASSMOVEINCIDENTNODESACTION, this);
+      posMenu->addAction(action7);
+      QAction *action8 = new QAction(ORIGINALPOSACTION, this);
+      posMenu->addAction(action8);
+      QAction *action9= new QAction(SETTLEACTION, this);
+      posMenu->addAction(action9);
+      QAction *action10 = new QAction(PARALLELACTION, this);
+      posMenu->addAction(action10);
+      QAction *action11 = new QAction(NORMALIZEACTION, this);
+      posMenu->addAction(action11);
+      QAction *action12 = new QAction(CLOSEGAPACTION, this);
+      posMenu->addAction(action12);
+      QAction *action13 = new QAction(ADDLINKAGEACTION, this);
+      linkageMenu->addAction(action13);
+      QAction *action14 = new QAction(ADDLINKAGEEVIDENCEACTION, this);
+      linkageMenu->addAction(action14);
+      QAction *action15 = new QAction(SELECTFOLLOWERSACTION, this);
+      selectionMenu->addAction(action15);
+      QAction *action16 = new QAction(SELECTPREDECESSORSACTION, this);
+      selectionMenu->addAction(action16);
+      QAction *action17 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+      descMenu->addAction(action17);
+      QAction *action18 = new QAction(ADDTOCASEACTION, this);
+      caseMenu->addAction(action18);
+      QAction *action19 = new QAction(CREATENEWCASEACTION, this);
+      caseMenu->addAction(action19);
+      QAction *action20 = new QAction(REMOVEFROMCASEACTION, this);
+      caseMenu->addAction(action20);
+      if (selectedItems().size() > 1)
+      {
+        action2->setEnabled(false);
+        action5->setEnabled(false);
+        action6->setEnabled(false);
+        action7->setEnabled(false);
+        action9->setEnabled(false);
+        action11->setEnabled(false);
+        action12->setEnabled(false);
+        action15->setEnabled(false);
+        action16->setEnabled(false);
+        action17->setEnabled(false);
+      }
+      if (selectedItems().size() == 1)
+      {
+        action1->setEnabled(false);
+        action10->setEnabled(false);
+      }
+      action13->setEnabled(false);
+      action14->setEnabled(false);
+      if (selectedItems().size() == 2)
+      {
+        IncidentNode *incidentNodeOne = qgraphicsitem_cast<IncidentNode*>(selectedItems()[0]);
+        IncidentNode *incidentNodeTwo = qgraphicsitem_cast<IncidentNode*>(selectedItems()[1]);
+        if (incidentNodeOne && incidentNodeTwo)
+        {
+          action13->setEnabled(true);
+          action14->setEnabled(true);
+        }
+      }
+      if (QAction *action = menu->exec(event->screenPos()))
+      {
+        if (action->text() == MASSMOVEINCIDENTNODESACTION)
+        {
+          _massMoveNodes = true;
+          _initPos = incident->scenePos();
+        }
+        else
+        {
+          emit IncidentNodeContextMenuAction(action->text());
+        }
+      }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete action8;
+      delete action9;
+      delete action10;
+      delete action11;
+      delete action12;
+      delete action13;
+      delete action14;
+      delete action15;
+      delete action16;
+      delete action17;
+      delete action18;
+      delete action19;
+      delete action20;
+      delete menu;
+      delete abstractionMenu;
+      delete colorMenu;
+      delete posMenu;
+      delete selectionMenu;
+      delete linkageMenu;
+      delete descMenu;
+      delete caseMenu;
+    }
+    else if (abstractNode && !abstractNode->isCopy())
+    {
+      QMenu *menu = new QMenu;
+      QMenu *abstractionMenu = new QMenu("Abstraction");
+      QMenu *colorMenu = new QMenu("Colouring");
+      QMenu *posMenu = new QMenu("Positioning");
+      QMenu *selectionMenu = new QMenu("Selection");
+      QMenu *descMenu = new QMenu("Description");
+      QMenu *caseMenu = new QMenu("Cases");
+      menu->addMenu(abstractionMenu);
+      menu->addMenu(colorMenu);
+      menu->addMenu(posMenu);
+      menu->addMenu(selectionMenu);
+      menu->addMenu(descMenu);
+      menu->addMenu(caseMenu);
+      QAction *action1 = new QAction(ABSTRACTACTION, this);
+      abstractionMenu->addAction(action1);
+      QAction *action2 = new QAction(DISAGGREGATEACTION, this);
+      abstractionMenu->addAction(action2);
+      QAction *action3= new QAction(RECOLOREVENTSACTION, this);
+      colorMenu->addAction(action3);
+      QAction *action4 = new QAction(RECOLORLABELSACTION, this);
+      colorMenu->addAction(action4);
+      QAction *action5 = new QAction(COLORLINEAGEACTION, this);
+      colorMenu->addAction(action5);
+      QAction *action6 = new QAction(SETWIDTHACTION, this);
+      posMenu->addAction(action6);
+      QAction *action7= new QAction(MASSMOVEABSTRACTNODESACTION, this);
+      posMenu->addAction(action7);
+      QAction *action8= new QAction(SETTLEACTION, this);
+      posMenu->addAction(action8);
+      QAction *action9 = new QAction(PARALLELACTION, this);
+      posMenu->addAction(action9);
+      QAction *action10 = new QAction(NORMALIZEACTION, this);
+      posMenu->addAction(action10);
+      QAction *action11 = new QAction(CLOSEGAPACTION, this);
+      posMenu->addAction(action11);
+      QAction *action12 = new QAction(CHANGEDESCRIPTIONACTION, this);
+      descMenu->addAction(action12);
+      QAction *action13 = new QAction(SELECTFOLLOWERSACTION, this);
+      selectionMenu->addAction(action13);
+      QAction *action14 = new QAction(SELECTPREDECESSORSACTION, this);
+      selectionMenu->addAction(action14);
+      QAction *action15 = new QAction(COPYDESCRIPTIONTOTEXTACTION, this);
+      descMenu->addAction(action15);
+      QAction *action16 = new QAction(ADDTOCASEACTION, this);
+      caseMenu->addAction(action16);
+      QAction *action17 = new QAction(CREATENEWCASEACTION, this);
+      caseMenu->addAction(action17);
+      QAction *action18 = new QAction(REMOVEFROMCASEACTION, this);
+      caseMenu->addAction(action18);
+      if (selectedItems().size() > 1)
+      {
+        action2->setEnabled(false);
+        action5->setEnabled(false);
+        action6->setEnabled(false);
+        action7->setEnabled(false);
+        action8->setEnabled(false);
+        action10->setEnabled(false);
+        action11->setEnabled(false);
+        action12->setEnabled(false);
+        action13->setEnabled(false);
+        action14->setEnabled(false);
+        action15->setEnabled(false);
+      }
+      if (selectedItems().size() == 1)
+      {
+        action1->setEnabled(false);
+        action9->setEnabled(false);
+      }
+      if (QAction *action = menu->exec(event->screenPos()))
+      {
+        if (action->text() == MASSMOVEABSTRACTNODESACTION)
+        {
+          _massMoveNodes = true;
+          _initPos = abstractNode->scenePos();
+        }
+        else
+        {
+          emit IncidentNodeContextMenuAction(action->text());
+        }
+      }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete action8;
+      delete action9;
+      delete action10;
+      delete action11;
+      delete action12;
+      delete action13;
+      delete action14;
+      delete action15;
+      delete action16;
+      delete action17;
+      delete action18;
+      delete menu;
+      delete abstractionMenu;
+      delete colorMenu;
+      delete posMenu;
+      delete selectionMenu;
+      delete descMenu;
+      delete caseMenu;
+    }
+    else if (linkage && !linkage->isCopy())
+    {
+      clearSelection();
+      linkage->setSelected(true);
+      QMenu *menu = new QMenu;
+      QAction *action1 = new QAction(SEELINKAGEEVIDENCEACTION, this);
+      QAction *action2 = new QAction(REMOVELINKAGEACTION, this);
+      QAction *action3 = new QAction(KEEPLINKAGEACTION, this);
+      QAction *action4 = new QAction(ACCEPTLINKAGEACTION, this);
+      QAction *action5 = new QAction(REJECTLINKAGEACTION, this);
+      QAction *action6 = new QAction(IGNOREMEACTION, this);
+      QAction *action7 = new QAction(REMOVENORMALLINKAGEACTION, this);
+      IncidentNode *startIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getStart());
+      IncidentNode *endIncidentNode = qgraphicsitem_cast<IncidentNode*>(linkage->getEnd());
+      if (linkage->getPenStyle() == 3)
+      {
+        menu->addAction(action1);
+        menu->addAction(action2);
+        menu->addAction(action3);
+      }
+      else if (linkage->getPenStyle() == 4)
+      {
+        menu->addAction(action1);
+        menu->addAction(action4);
+        menu->addAction(action5);
+      }
+      else if (linkage->getPenStyle() == 2)
+      {
+        menu->addAction(action1);
+        menu->addAction(action2);
+        menu->addAction(action3);
+        menu->addAction(action6);
+      }
+      else if (linkage->getPenStyle() == 1 && startIncidentNode && endIncidentNode)
+      {
+        menu->addAction(action1);
+        menu->addAction(action7);
+      }
+      if (QAction *action = menu->exec(event->screenPos()))
+      {
+        emit LinkageContextMenuAction(action->text());
+      }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete menu;
+    }
+    else if (occurrence)
+    {
+      QMenu *menu = new QMenu;
+      QAction *action1 = new QAction(SETHIGHLIGHTEDACTION, this);
+      menu->addAction(action1);
+      QAction *action2 = new QAction(UNSETHIGHLIGHTEDACTION, this);
+      menu->addAction(action2);
+      if (occurrence->isHighlighted())
+      {
+        action1->setEnabled(false);
+      }
+      else
+      {
+        action2->setEnabled(false);
+      }
+      if (QAction *action = menu->exec(event->screenPos()))
+      {
+        emit OccurrenceItemContextMenuAction(occurrence, action->text());
+      }
+      delete action1;
+      delete action2;
+      delete menu;
+    }
+    else if (linkageNode)
+    {
+      QMenu *menu = new QMenu;
+      QAction *action1 = new QAction(SELECTTAILACTION, this);
+      menu->addAction(action1);
+      QAction *action2 = new QAction(SELECTHEADACTION, this);
+      menu->addAction(action2);
+      if (linkageNode->getDirection() == PAST)
+      {
+        if (linkageNode->isFirst() || !linkageNode->isValid())
+        {
+          action1->setEnabled(false);
+        }
+      }
+      else if (linkageNode->getDirection() == FUTURE)
+      {
+        if (linkageNode->isLast() || !linkageNode->isValid())
+        {
+          action2->setEnabled(false);
+        }
+      }
+      if (QAction *action = menu->exec(event->screenPos()))
+      {
+        emit LinkageNodeContextMenuAction(linkageNode, action->text());
+      }
+      delete action1;
+      delete action2;
+      delete menu;
+    }
+    else if (node)
+    {
+      QMenu *menu = new QMenu;
+      QMenu *persistenceMenu = new QMenu("Persistence");
+      QMenu *colorMenu = new QMenu("Colouring");
+      menu->addMenu(persistenceMenu);
+      menu->addMenu(colorMenu);
+      QAction *action1 = new QAction(SETPERSISTENTACTION, this);
+      persistenceMenu->addAction(action1);
+      QAction *action2 = new QAction(UNSETPERSISTENTACTION, this);
+      persistenceMenu->addAction(action2);
+      QAction *action3 = new QAction(RECOLORNODESACTION, this);
+      colorMenu->addAction(action3);
+      QAction *action4 = new QAction(RECOLORNODELABELSACTION, this);
+      colorMenu->addAction(action4);
+      if (selectedItems().size() == 1)
+      {
+        if (node->isPersistent())
+        {
+          action1->setEnabled(false);
+          action2->setEnabled(true);
+        }
+        else
+        {
+          action1->setEnabled(true);
+          action2->setEnabled(false);
+        }
+      }
+      else
+      {
+        action1->setEnabled(false);
+        action2->setEnabled(false);
+      }
+      if (QAction *action = menu->exec(event->screenPos()))
+      {
+        emit NetworkNodeContextMenuAction(action->text());
+      }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete menu;
+      delete persistenceMenu;
+      delete colorMenu;
+    }
+    else if (line)
+    {
+      clearSelection();
+      line->setSelected(true);
+      QMenu *menu = new QMenu;
+      QMenu *editMenu = new QMenu("Edit");
+      QMenu *positionMenu = new QMenu("Position");
+      menu->addMenu(editMenu);
+      menu->addMenu(positionMenu);
+      QAction *action1 = new QAction(TOGGLEARROW1, this);
+      editMenu->addAction(action1);
+      QAction *action2 = new QAction(TOGGLEARROW2, this);
+      editMenu->addAction(action2);
+      QAction *action3 = new QAction(COPYOBJECT, this);
+      menu->addAction(action3);
+      QAction *action4 = new QAction(DELETELINE, this);
+      menu->addAction(action4);
+      QAction *action5 = new QAction(ONEFORWARD, this);
+      positionMenu->addAction(action5);
+      QAction *action6 = new QAction(ONEBACKWARD, this);
+      positionMenu->addAction(action6);
+      QAction *action7 = new QAction(BRINGFORWARD, this);
+      positionMenu->addAction(action7);
+      QAction *action8 = new QAction(BRINGBACKWARD, this);
+      positionMenu->addAction(action8);
+      if (QAction *action = menu->exec(event->screenPos()))
+	    {
+	      emit LineContextMenuAction(action->text());
+	    }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete action8;
+      delete menu;
+      delete editMenu;
+      delete positionMenu;
+    }
+    else if (text)
+    {
+      clearSelection();
+      text->setSelected(true);
+      QMenu *menu = new QMenu;
+      QMenu *positionMenu = new QMenu("Position");
+      menu->addMenu(positionMenu);
+      QAction *action1 = new QAction(CHANGETEXT, this);
+      menu->addAction(action1);
+      QAction *action2 = new QAction(ROTATETEXT, this);
+      menu->addAction(action2);
+      QAction *action3 = new QAction(COPYOBJECT, this);
+      menu->addAction(action3);
+      QAction *action4 = new QAction(DELETETEXT, this);
+      menu->addAction(action4);
+      QAction *action5 = new QAction(ONEFORWARD, this);
+      positionMenu->addAction(action5);
+      QAction *action6 = new QAction(ONEBACKWARD, this);
+      positionMenu->addAction(action6);
+      QAction *action7 = new QAction(BRINGFORWARD, this);
+      positionMenu->addAction(action7);
+      QAction *action8 = new QAction(BRINGBACKWARD, this);
+      positionMenu->addAction(action8);
+      if (QAction *action = menu->exec(event->screenPos()))
+	    {
+	      if (action->text() == ROTATETEXT)
+        {
+          _selectedTextPtr = text;
+          _selectedTextPtr->setRotating(true);
+          _rotateText = true;
+        }
+	      else
+        {
+          emit TextContextMenuAction(action->text());
+        }
+	    }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete action8;
+      delete menu;
+      delete positionMenu;
+    }
+    else if (ellipse)
+    {
+      clearSelection();
+      ellipse->setSelected(true);
+      QMenu *menu = new QMenu;
+      QMenu *positionMenu = new QMenu("Position");
+      menu->addMenu(positionMenu);
+      QAction *action1 = new QAction(COPYOBJECT, this);
+      menu->addAction(action1);
+      QAction *action2 = new QAction(ROTATEELLIPSE, this);
+      menu->addAction(action2);
+      QAction *action3 = new QAction(DELETEELLIPSE, this);
+      menu->addAction(action3);
+      QAction *action4 = new QAction(ONEFORWARD, this);
+      positionMenu->addAction(action4);
+      QAction *action5 = new QAction(ONEBACKWARD, this);
+      positionMenu->addAction(action5);
+      QAction *action6 = new QAction(BRINGFORWARD, this);
+      positionMenu->addAction(action6);
+      QAction *action7 = new QAction(BRINGBACKWARD, this);
+      positionMenu->addAction(action7);
+      if (QAction *action = menu->exec(event->screenPos()))
+	    {
+	      if (action->text() == ROTATEELLIPSE)
+        {
+          _selectedEllipsePtr = ellipse;
+          ellipse->setRotating(true);
+          _rotateEllipse = true;
+        }
+	      else
+        {
+          emit EllipseContextMenuAction(action->text());
+        }
+	    }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete menu;
+      delete positionMenu;
+    }
+    else if (rect)
+    {
+      clearSelection();
+      rect->setSelected(true);
+      QMenu *menu = new QMenu;
+      QMenu *positionMenu = new QMenu("Position");
+      menu->addMenu(positionMenu);
+      QAction *action1 = new QAction(COPYOBJECT, this);
+      menu->addAction(action1);
+      QAction *action2 = new QAction(ROTATERECT, this);
+      menu->addAction(action2);
+      QAction *action3 = new QAction(DELETERECT, this);
+      menu->addAction(action3);
+      QAction *action4 = new QAction(ONEFORWARD, this);
+      positionMenu->addAction(action4);
+      QAction *action5 = new QAction(ONEBACKWARD, this);
+      positionMenu->addAction(action5);
+      QAction *action6 = new QAction(BRINGFORWARD, this);
+      positionMenu->addAction(action6);
+      QAction *action7 = new QAction(BRINGBACKWARD, this);
+      positionMenu->addAction(action7);
+      if (QAction *action = menu->exec(event->screenPos()))
+	    {
+	      if (action->text() == ROTATERECT)
+        {
+          _selectedRectPtr = rect;
+          rect->setRotating(true);
+          _rotateRect = true;
+        }
+	      else
+        {
+          emit RectContextMenuAction(action->text());
+        }
+	    }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete menu;
+      delete positionMenu;
+    }
+    else if (timeline)
+    {
+      clearSelection();
+      timeline->setSelected(true);
+      QMenu *menu = new QMenu;
+      QMenu *tickMenu = new QMenu("Ticks");
+      QMenu *positionMenu = new QMenu("Position");
+      menu->addMenu(tickMenu);
+      menu->addMenu(positionMenu);
+      QAction *action1 = new QAction(TOGGLEFIRSTTICK, this);
+      tickMenu->addAction(action1);
+      QAction *action2 = new QAction(FORCELASTTICK, this);
+      tickMenu->addAction(action2);
+      QAction *action3 = new QAction(COPYOBJECT, this);
+      menu->addAction(action3);
+      QAction *action4 = new QAction(DELETETIMELINE, this);
+      menu->addAction(action4);
+      QAction *action5 = new QAction(ONEFORWARD, this);
+      positionMenu->addAction(action5);
+      QAction *action6 = new QAction(ONEBACKWARD, this);
+      positionMenu->addAction(action6);
+      QAction *action7 = new QAction(BRINGFORWARD, this);
+      positionMenu->addAction(action7);
+      QAction *action8 = new QAction(BRINGBACKWARD, this);
+      positionMenu->addAction(action8);
+      if (QAction *action = menu->exec(event->screenPos()))
+	    {
+	      emit TimeLineContextMenuAction(action->text());
+	    }
+      delete action1;
+      delete action2;
+      delete action3;
+      delete action4;
+      delete action5;
+      delete action6;
+      delete action7;
+      delete action8;
+      delete menu;
+      delete tickMenu;
+      delete positionMenu;
+    }
+    else if (guide)
+    {
+      clearSelection();
+      guide->setSelected(true);
+      QMenu *menu = new QMenu;
+      QAction *action1 = new QAction(DELETEGUIDEACTION, this);
+      menu->addAction(action1);
+      if (QAction *action = menu->exec(event->screenPos()))
+	    {
+	      emit GuideLineContextMenuAction(action->text());
+	    }
+      delete menu;
+      delete action1;
+    }
+  }
+}
+
+OccurrenceItem* Scene::getSelectedOccurrence() 
+{
+  return _selectedOccurrencePtr;
+}
+
+void Scene::occurrencePosJumped(OccurrenceItem *item, QPointF newPos)
+{
+  if (_moveOn)
+  {
+    emit moveLine(item, newPos);
+  }
+  else
+  {
+    emit moveItems(item, newPos);
+  }
+  emit relevantChange();
+}
+
+bool Scene::isPreparingArea()
+{
+  if (_gettingLinePoints || _gettingSingleArrowPoints ||
+      _gettingDoubleArrowPoints || _gettingTimeLinePoints ||
+      _gettingEllipseArea || _gettingRectArea || _gettingTextArea ||
+      _gettingHorizontalGuideLine || _gettingVerticalGuideLine)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool Scene::isRotating()
+{
+  if (_rotateEllipse || _rotateRect || _rotateText)
+  {
+    return true;
+  }
+  else
+  {
+    return false;
+  }
+}
+
+bool Scene::isSnappingGuides()
+{
+  return _snapGuides;
+}
