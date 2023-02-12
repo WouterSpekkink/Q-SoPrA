@@ -58,35 +58,60 @@ DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
 
 QRectF DirectedEdge::boundingRect() const 
 {
-  return _strokePath.controlPointRect(); 
+  // If self-loop
+  if (_start == _end)
+  {
+    return _strokePath.boundingRect().marginsAdded(QMarginsF(5.0,5.0,5.0,5.0));
+  }
+  else
+  {
+    return _strokePath.controlPointRect().marginsAdded(QMarginsF(5.0,5.0,5.0,5.0));
+  }
 }
 
 void DirectedEdge::updatePosition() 
 {
-  calculate();
   QPainterPath myPath;
   myPath.moveTo(_start->pos());
-  myPath.quadTo(_controlPoint, _ghostLine.p2());
+  // In case we have a self-loop
+  if (_start == _end)
+  {
+    myPath.addEllipse(QPointF(_start->pos().x(), _start->pos().y() + 20.0),
+                      _height / 2, _height / 2);
+  }
+  else
+  {
+    calculate();
+    myPath.quadTo(_controlPoint, _ghostLine.p2());
+  }
   _strokePath = myPath;
 }
 
 void DirectedEdge::calculate() 
 {
+  // In case we have a self-loop
+  // Calculate the distance between the two nodes
   qreal dX = _end->pos().x() - _start->pos().x();
   qreal dY = _end->pos().y() - _start->pos().y();
   qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
+  // We 'imagine' a line between the two nodes but reduce its length
   QLineF newLine = QLineF(_start->pos(), _end->pos());
   newLine.setLength(newLine.length() - 18 - (_penWidth - 2.0f));
+  // We calculate the midpoint of this shortened line
   qreal mX = (_start->pos().x() + newLine.p2().x()) / 2;
   qreal mY = (_start->pos().y() + newLine.p2().y()) / 2;
+  // And then we calculate the control point somewhere 'above' it
   qreal cX = _height * (-1 * (dY / distance)) + mX;
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
+  // We make another imaginary line from the control point to the end point
+  // This is to orient our arrow
   _ghostLine = QLineF(_controlPoint, _end->pos());
   if (_ghostLine.length() > 18)
   {
     _ghostLine.setLength(_ghostLine.length() - 18);
   }
+  // Now we make our arrow
   double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
   if (_ghostLine.dy() >= 0)
   {
@@ -99,6 +124,7 @@ void DirectedEdge::calculate()
                                        cos(angle + Pi - Pi / 3) * arrowSize);
   _arrowHead.clear();
   _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
+  // I believe this part is to prevent an error
   if (_ghostLine.length() > 5)
   {
     _ghostLine.setLength(_ghostLine.length() - 5);
@@ -112,15 +138,27 @@ void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QW
   QPen myPen = QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
   painter->setPen(myPen);
   painter->setBrush(_color);
-  calculate();
   QPainterPath myPath;
   myPath.moveTo(_start->pos());
-  myPath.quadTo(_controlPoint, _ghostLine.p2());
-  _strokePath = myPath;
-  painter->strokePath(myPath, myPen);
-  myPen.setWidth(1);
-  painter->setPen(myPen);
-  painter->drawPolygon(_arrowHead);
+  // When we have a self-loop
+  if (_start == _end)
+  {
+    prepareGeometryChange();
+    myPath.addEllipse(QPointF(_start->pos().x(), _start->pos().y() + 20.0),
+                      _height / 2, _height / 2);
+    _strokePath = myPath;
+    painter->strokePath(myPath, myPen);
+  }
+  else
+  {
+    calculate();
+    myPath.quadTo(_controlPoint, _ghostLine.p2());
+    _strokePath = myPath;
+    painter->strokePath(myPath, myPen);
+    myPen.setWidth(1);
+    painter->setPen(myPen);
+    painter->drawPolygon(_arrowHead);
+  }
 }
 
 QPainterPath DirectedEdge::shape() const

@@ -79,6 +79,7 @@
 #include "AddEvidenceDialog.h"
 #include "TimeRangeDialog.h"
 #include "HelpStructs.h"
+#include "SystemGraphWidget.h"
 
 // Need a forward declaration here
 class AttributesWidget;
@@ -99,6 +100,7 @@ class EventGraphWidget : public QWidget
     void setCurrentCoder(QString coder);
     void setAttributesWidget(AttributesWidget* attributesWidgetPtr);
     void setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr);
+    void setSystemGraphWidget(SystemGraphWidget *systemGraphWidgetPtr);
     void setOpenGL(bool state);
     void setAntialiasing(bool state);
   
@@ -233,6 +235,7 @@ class EventGraphWidget : public QWidget
     void recolorLabels();
     void colorLineage();
     void exportTransitionMatrix();
+    void exportSystem();
     void findAncestors(QColor ancestorFill,
                        QColor ancestorText,
                        QGraphicsItem *origin,
@@ -330,6 +333,7 @@ class EventGraphWidget : public QWidget
   
   signals:
     void seeHierarchy(AbstractNode*);
+    void seeSystem();
     void changeEventWidth(QGraphicsItem*);
     void sendLineColor(QColor&);
     void sendFillColor(QColor&);
@@ -433,6 +437,7 @@ class EventGraphWidget : public QWidget
     QPointer<QPushButton> removeModeButton;
     QPointer<QPushButton> restoreModeColorsButton;
     QPointer<QPushButton> exportTransitionMatrixButton;
+    QPointer<QPushButton> exportSystemButton;
     QPointer<QPushButton> moveModeUpButton;
     QPointer<QPushButton> moveModeDownButton;
     QPointer<QPushButton> hideModeButton;
@@ -530,7 +535,7 @@ class EventGraphWidget : public QWidget
     // Do not delete
     QPointer<AttributesWidget> _attributesWidgetPtr;
     QPointer<RelationshipsWidget> _relationshipsWidgetPtr;
-    
+    QPointer<SystemGraphWidget> _systemGraphWidgetPtr;
 };
 
 #endif

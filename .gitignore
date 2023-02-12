@@ -1,10 +1,6 @@
-/Test_Files
-/Datasets
-/RECOVERED_FILES
-/recovery
-/release
-.directory
+.ccls-cache
 .qmake.stash
+Test_Files
 include/.directory
 src/.directory
 .supp
@@ -14,3 +10,4 @@ GRTAGS
 GPATH
 Q-SoPrA
 .DirIcon
+.ccls-cache

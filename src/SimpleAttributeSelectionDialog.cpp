@@ -207,8 +207,8 @@ void SimpleAttributeSelectionDialog::buildEntities(QStandardItem *top, QString n
 
 void SimpleAttributeSelectionDialog::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
  
 void SimpleAttributeSelectionDialog::setAttribute() 

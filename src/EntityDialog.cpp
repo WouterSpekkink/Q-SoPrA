@@ -275,8 +275,8 @@ void EntityDialog::getValue()
 
 void EntityDialog::setFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void EntityDialog::assignAttribute() 

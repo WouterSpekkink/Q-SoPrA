@@ -166,8 +166,8 @@ void MergeAttributesDialog::buildHierarchy(QStandardItem *top, QString name)
 
 void MergeAttributesDialog::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
  
 void MergeAttributesDialog::setAttribute() 

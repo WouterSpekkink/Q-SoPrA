@@ -95,8 +95,9 @@ EditEntityDialog::EditEntityDialog(QWidget *parent) : QDialog(parent)
 
 void EditEntityDialog::filterEntity(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive, QRegExp::Wildcard);
-  entitiesFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  entitiesFilter->setFilterRegularExpression(regExp);
+
 }
 
 void EditEntityDialog::addEntity() 

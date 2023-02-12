@@ -50,7 +50,7 @@ void DeselectableTreeView::mousePressEvent(QMouseEvent *event)
 void DeselectableTreeView::dropEvent(QDropEvent *event) 
 {
   setSortingEnabled(false);
-  QModelIndex targetIndex = indexAt(event->pos());
+  QModelIndex targetIndex = indexAt(event->position().toPoint());
   QString childName = selectionModel()->currentIndex().data().toString();
   bool entity = false;
   QModelIndex tempIndex = selectionModel()->currentIndex();

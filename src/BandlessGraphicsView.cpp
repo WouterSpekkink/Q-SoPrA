@@ -207,12 +207,11 @@ void BandlessGraphicsView::wheelEvent(QWheelEvent* event)
       event->ignore();
       QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
       wheelEvent.setWidget(viewport());
-      wheelEvent.setScenePos(mapToScene(event->pos()));
-      wheelEvent.setScreenPos(event->globalPos());
+      wheelEvent.setScenePos(mapToScene(event->position().toPoint()));
+      wheelEvent.setScreenPos(event->globalPosition().toPoint());
       wheelEvent.setButtons(event->buttons());
       wheelEvent.setModifiers(event->modifiers());
-      wheelEvent.setDelta(event->delta());
-      wheelEvent.setOrientation(event->orientation());
+      wheelEvent.setPixelDelta(event->pixelDelta());
       wheelEvent.setAccepted(false);
       qApp->sendEvent(this->scene(), &wheelEvent);
       event->setAccepted(wheelEvent.isAccepted());
@@ -220,7 +219,7 @@ void BandlessGraphicsView::wheelEvent(QWheelEvent* event)
 	{
 	  this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
 	  double scaleFactor = 1.15;
-	  if (event->delta() > 0) 
+	  if (event->pixelDelta().y() > 0) 
 	    {
 	      this->scale(scaleFactor, scaleFactor);
 	    }
@@ -235,26 +234,25 @@ void BandlessGraphicsView::wheelEvent(QWheelEvent* event)
       event->ignore();
       QGraphicsSceneWheelEvent wheelEvent(QEvent::GraphicsSceneWheel);
       wheelEvent.setWidget(viewport());
-      wheelEvent.setScenePos(mapToScene(event->pos()));
-      wheelEvent.setScreenPos(event->globalPos());
+      wheelEvent.setScenePos(mapToScene(event->position().toPoint()));
+      wheelEvent.setScreenPos(event->globalPosition().toPoint());
       wheelEvent.setButtons(event->buttons());
       wheelEvent.setModifiers(event->modifiers());
-      wheelEvent.setDelta(event->delta());
-      wheelEvent.setOrientation(event->orientation());
+      wheelEvent.setPixelDelta(event->pixelDelta());
       wheelEvent.setAccepted(false);
       qApp->sendEvent(this->scene(), &wheelEvent);
       event->setAccepted(wheelEvent.isAccepted());
       if (!(event->isAccepted())) 
 	{
-	  if (event->delta() > 0) 
+	  if (event->pixelDelta().x() > 0) 
 	    {
 	      this->horizontalScrollBar()->
-		setValue(this->horizontalScrollBar()->value() - event->delta());
+		setValue(this->horizontalScrollBar()->value() - event->pixelDelta().x());
 	    }
 	  else 
 	    {
 	      this->horizontalScrollBar()->
-		setValue(this->horizontalScrollBar()->value() - event->delta());
+		setValue(this->horizontalScrollBar()->value() - event->pixelDelta().x());
 	    }
 	}
     }

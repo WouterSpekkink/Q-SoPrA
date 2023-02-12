@@ -22,7 +22,6 @@
 #include "../include/EventGraphWidget.h"
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
-#include <QGL>
 #endif
 
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) 
@@ -257,6 +256,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   removeModeButton->setEnabled(false);
   restoreModeColorsButton = new QPushButton(tr("Restore modes"), legendWidget);
   exportTransitionMatrixButton = new QPushButton(tr("Export transitions"), legendWidget);
+  exportSystemButton = new QPushButton(tr("Export system"), legendWidget);
   moveModeUpButton = new QPushButton(tr("Up"), legendWidget);
   moveModeUpButton->setEnabled(false);
   moveModeDownButton = new QPushButton(tr("Down"), legendWidget);
@@ -408,8 +408,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
-  connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)),
+  connect(typeComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPlotButtons()));
+  connect(compareComboBox, SIGNAL(currentTextChanged(const QString &)),
           this, SLOT(setCompareButton()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotGraph()));
   connect(addLinkageTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
@@ -435,7 +435,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
   connect(addTimeLineButton, SIGNAL(clicked()), scene, SLOT(prepTimeLinePoints()));
-  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penStyleComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
@@ -552,6 +552,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(hideModeButton, SIGNAL(clicked()), this, SLOT(hideMode()));
   connect(showModeButton, SIGNAL(clicked()), this, SLOT(showMode()));
   connect(exportTransitionMatrixButton, SIGNAL(clicked()), this, SLOT(exportTransitionMatrix()));
+  connect(exportSystemButton, SIGNAL(clicked()), this, SLOT(exportSystem()));
   connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(finalBusiness()));
     
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
@@ -719,6 +720,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   legendLayout->addWidget(removeModeButton);
   legendLayout->addWidget(restoreModeColorsButton);
   legendLayout->addWidget(exportTransitionMatrixButton);
+  legendLayout->addWidget(exportSystemButton);
   legendLayout->addWidget(linkageLegendLabel);
   legendLayout->addWidget(linkageListWidget);
   legendLayout->addWidget(hideLinkageTypeButton);
@@ -1218,6 +1220,7 @@ void EventGraphWidget::setGraphControls(bool state)
   hideAnnotationsButton->setEnabled(state);
   setTimeRangeButton->setEnabled(state);
   exportTransitionMatrixButton->setEnabled(state);
+  exportSystemButton->setEnabled(state);
   restoreModeColorsButton->setEnabled(state);
   addModeButton->setEnabled(state);
   addModesButton->setEnabled(state);
@@ -1498,7 +1501,7 @@ void EventGraphWidget::seeComponents()
   emit seeHierarchy(_selectedAbstractNode);
 }
 
-void EventGraphWidget::previousDataItem() 
+void EventGraphWidget::previousDataItem()
 {
   setComment();
   if (_vectorPos > 0) 
@@ -2795,8 +2798,8 @@ void EventGraphWidget::fixTree()
 
 void EventGraphWidget::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void EventGraphWidget::newAttribute() 
@@ -3178,7 +3181,7 @@ void EventGraphWidget::getIncidents()
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = breakString(query->value(1).toString());
-    qreal vertical = qrand() % 500 - 250;
+    qreal vertical = QRandomGenerator::global()->bounded(500) - 250;
     QPointF position = QPointF((order * 70), vertical);
     IncidentNode *currentItem = new IncidentNode(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
@@ -3415,7 +3418,7 @@ void EventGraphWidget::redoLayout()
   {
     IncidentNode *incident = it4.next();
     int order = incident->getOrder();
-    qreal vertical = qrand() % 3000 - 1500;
+    qreal vertical = QRandomGenerator::global()->bounded(3000)- 1500;
     QPointF position = QPointF((order * 70), vertical);
     incident->setPos(position);
     incident->setOriginalPos(position);
@@ -9340,7 +9343,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
           tailSet.insert(tail);
         }
       }
-      QList<int> tailList = tailSet.toList();
+      QList<int> tailList(tailSet.begin(), tailSet.end()); 
       QListIterator<int> it2(tailList);
       while (it2.hasNext())
       {
@@ -9419,7 +9422,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
           headSet.insert(head);
         }
       }
-      QList<int> headList = headSet.toList();
+      QList<int> headList(headSet.begin(), headSet.end());
       QListIterator<int> it4(headList);
       while (it4.hasNext())
       {
@@ -10624,7 +10627,7 @@ void EventGraphWidget::exportTransitionMatrix()
           fileName.append(".csv");
         }
         // And we create a file outstream.
-             std::ofstream fileOut(fileName.toStdString().c_str());
+        std::ofstream fileOut(fileName.toStdString().c_str());
         // We first write the header.
         QVectorIterator<QString> it2(names);
         while (it2.hasNext())
@@ -10678,6 +10681,150 @@ void EventGraphWidget::exportTransitionMatrix()
   {
     delete exportDialog;
   }
+}
+
+void EventGraphWidget::exportSystem()
+{
+  if (eventListWidget->rowCount() < 2)
+  {
+    QPointer <QMessageBox> warningBox = new QMessageBox(this);
+    warningBox->setWindowTitle("Exporting system map");
+    warningBox->addButton(QMessageBox::Ok);
+    warningBox->setIcon(QMessageBox::Warning);
+    warningBox->setText("<b>Too few modes assigned</b>");
+    warningBox->setInformativeText("This function only works "
+                                   "after you assigned at least 2 modes.");
+    warningBox->exec();
+    delete warningBox;
+    return;
+  }
+  // First, clean up what was already there.
+  _systemGraphWidgetPtr->cleanUp();
+  // We first create a map that tells our system
+  // widget which event types should be in the legend
+  QMap<QVector<QString>, QColor> eventsMap;
+  // We also make a simpler map to identify event type descriptions
+  QMap<QString, QString> eventTypes;
+  // And we will use a query to get those descriptions.
+  QSqlQuery *query = new QSqlQuery;
+  QSqlQuery *query2 = new QSqlQuery;
+  query->prepare("SELECT description FROM entities "
+                 "WHERE name = :name");
+  query2->prepare("SELECT description FROM incident_attributes "
+                  "WHERE name = :name");
+  for (int i = 0; i != eventListWidget->rowCount(); i++)
+  {
+    QTableWidgetItem *item = eventListWidget->item(i, 0);
+    if (item->background().color() != Qt::gray)
+    {
+      QString title = item->data(Qt::DisplayRole).toString();
+      QString description = "";
+      query->bindValue(":name", title);
+      query->exec();
+      query->first();
+      if (query->isNull(0))
+      {
+        query2->bindValue(":name", title);
+        query2->exec();
+        query2->first();
+        if (!query2->isNull(0))
+        {
+          description = query2->value(0).toString();
+        }
+      }
+      else
+      {
+        description = query->value(0).toString();
+      }
+      QString tip = item->data(Qt::ToolTipRole).toString();
+      QColor color = eventListWidget->item(i, 1)->background().color();
+      QVector<QString> currentType;
+      currentType.push_back(title);
+      currentType.push_back(tip);
+      eventsMap.insert(currentType, color);
+      eventTypes.insert(title, description);
+    }
+  }
+  delete query;
+  delete query2;
+  _systemGraphWidgetPtr->setEvents(eventsMap);
+  // We then create a map that tells our system
+  // widget which linkage types should be in the legend
+  QMap<QVector<QString>, QColor> edgesMap;
+  for (int i = 0; i != linkageListWidget->rowCount(); i++)
+  {
+    QTableWidgetItem *item = linkageListWidget->item(i, 0);
+    if (item->background().color() != Qt::gray)
+    {
+      QString title = item->data(Qt::DisplayRole).toString();
+      QString tip = item->data(Qt::ToolTipRole).toString();
+      QColor color = linkageListWidget->item(i, 1)->background().color();
+      QVector<QString> currentEdge;
+      currentEdge.push_back(title);
+      currentEdge.push_back(tip);
+      edgesMap.insert(currentEdge, color);
+    }
+  }
+  _systemGraphWidgetPtr->setEdges(edgesMap);
+  // Let's create a map for our system, including edges and their weight
+  QMap<QVector<QString>, int> system;
+  // We iterate through all linkages
+  QVectorIterator<Linkage *> eIt(_edgeVector);
+  while (eIt.hasNext())
+  {
+    Linkage *currentLinkage = eIt.next();
+    // Check if linkage is visible
+    if (currentLinkage->isVisible())
+    {
+      // We create a vector with five values
+      // 1: the edge type
+      // 2: the tail node
+      // 3: the head node
+      // 4: the tail type description
+      // 5: the head type description
+      QString type = currentLinkage->getType();
+      QString tailMode = "";
+      QString headMode = "";
+      QGraphicsItem *tailItem = currentLinkage->getStart();
+      IncidentNode *incidentTail = qgraphicsitem_cast<IncidentNode*>(tailItem);
+      AbstractNode *abstractTail = qgraphicsitem_cast<AbstractNode*>(tailItem);
+      if (incidentTail)
+      {
+        tailMode = incidentTail->getMode();
+      }
+      else if (abstractTail)
+      {
+        tailMode = abstractTail->getMode();
+      }
+      QGraphicsItem *headItem = currentLinkage->getEnd();
+      IncidentNode *incidentHead = qgraphicsitem_cast<IncidentNode*>(headItem);
+      AbstractNode *abstractHead = qgraphicsitem_cast<AbstractNode*>(headItem);
+      if (incidentHead)
+      {
+        headMode = incidentHead->getMode();
+      }
+      else if (abstractHead)
+      {
+        headMode = abstractHead->getMode();
+      }
+      // This is enough to create our edge as a vector
+      QVector<QString> edge;
+      edge.push_back(type);
+      edge.push_back(tailMode);
+      edge.push_back(headMode);
+      edge.push_back(eventTypes.value(tailMode));
+      edge.push_back(eventTypes.value(headMode));
+      // Then we get the current weight of this edge, defaulting to 0
+      int weight = system.value(edge, 0);
+      // Increment the weight
+      weight++;
+      // And re-insert the edge
+      system.insert(edge, weight);
+    }
+    // We can pass the resulting map on to our system visualization widget
+  }
+  _systemGraphWidgetPtr->setSystem(system);
+  emit seeSystem();
 }
 
 void EventGraphWidget::setEventOriginalPosition()
@@ -13233,6 +13380,11 @@ void EventGraphWidget::setAttributesWidget(AttributesWidget *attributesWidgetPtr
 void EventGraphWidget::setRelationshipsWidget(RelationshipsWidget *relationshipsWidgetPtr) 
 {
   _relationshipsWidgetPtr = relationshipsWidgetPtr;
+}
+
+void EventGraphWidget::setSystemGraphWidget(SystemGraphWidget *systemGraphWidgetPtr)
+{
+  _systemGraphWidgetPtr = systemGraphWidgetPtr;
 }
 
 void EventGraphWidget::resetTree() 

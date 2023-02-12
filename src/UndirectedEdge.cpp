@@ -58,7 +58,7 @@ UndirectedEdge::UndirectedEdge(NetworkNode *start, NetworkNode *end, QString typ
 
 QRectF UndirectedEdge::boundingRect() const 
 {
-  return _strokePath.controlPointRect(); 
+  return _strokePath.controlPointRect().marginsAdded(QMarginsF(5.0,5.0,5.0,5.0));
 }
 
 void UndirectedEdge::updatePosition() 

@@ -38,6 +38,7 @@
 #include <QColorDialog>
 #include <QHeaderView>
 #include <QStandardItemModel>
+#include <QOpenGLWidget>
 #include <fstream>
 #include "DeselectableTreeViewEntities.h"
 #include "IncidentNodeLabel.h"

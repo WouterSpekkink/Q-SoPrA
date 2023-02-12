@@ -40,11 +40,11 @@ bool AttributeTreeFilter::filterAcceptsRow(int sourceRow, const QModelIndex &sou
 	    }
 	}
       QString key = sourceModel()->data(sourceIndex, Qt::DisplayRole).toString();
-      return key.contains(filterRegExp());
+      return key.contains(filterRegularExpression());
     }
   QStandardItemModel *currentModel = qobject_cast<QStandardItemModel*>(sourceModel());
   QStandardItem *currentItem = currentModel->itemFromIndex(sourceModel()->
 							   index(sourceRow, 0, sourceParent));
   return (!currentItem->parent() || (currentItem->data(Qt::DisplayRole).
-				     toString().contains(filterRegExp())));
+				     toString().contains(filterRegularExpression())));
 }
