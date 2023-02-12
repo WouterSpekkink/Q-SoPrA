@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
     window->show();
     delete welcome;
   } else if (welcome->getExitStatus() == 1) {
-    return 0;
+
     delete welcome;
   } else if (welcome->getExitStatus() == 2) {
     QPointer<QMessageBox> messageBox = new QMessageBox(0);

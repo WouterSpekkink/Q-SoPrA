@@ -35,7 +35,7 @@ RecordDialog::RecordDialog(QWidget *parent)
   connect(cancelButton, SIGNAL(clicked()), this, SLOT(cancelAndClose()));
 
   // Let's add a shorcut
-  simplifyShortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_S), this);
+  simplifyShortcut = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_S), this);
   connect(simplifyShortcut, SIGNAL(activated()), rawField, SLOT(simplifyText()));
   
   // Let's set the layout next.

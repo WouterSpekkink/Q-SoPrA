@@ -22,7 +22,6 @@
 #include "../include/EventGraphWidget.h"
 #ifndef QT_NO_OPENGL
 #include <QtOpenGL>
-#include <QGL>
 #endif
 
 EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent) 
@@ -409,8 +408,8 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(resetTextsButton, SIGNAL(clicked()), this, SLOT(resetTexts()));
   connect(seeCommentsButton, SIGNAL(clicked()), this, SLOT(showComments()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
-  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButtons()));
-  connect(compareComboBox, SIGNAL(currentIndexChanged(const QString &)),
+  connect(typeComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPlotButtons()));
+  connect(compareComboBox, SIGNAL(currentTextChanged(const QString &)),
           this, SLOT(setCompareButton()));
   connect(plotButton, SIGNAL(clicked()), this, SLOT(plotGraph()));
   connect(addLinkageTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
@@ -436,7 +435,7 @@ EventGraphWidget::EventGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
   connect(addTimeLineButton, SIGNAL(clicked()), scene, SLOT(prepTimeLinePoints()));
-  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penStyleComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
@@ -2792,8 +2791,8 @@ void EventGraphWidget::fixTree()
 
 void EventGraphWidget::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void EventGraphWidget::newAttribute() 
@@ -3175,7 +3174,7 @@ void EventGraphWidget::getIncidents()
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = breakString(query->value(1).toString());
-    qreal vertical = qrand() % 500 - 250;
+    qreal vertical = QRandomGenerator::global()->bounded(500) - 250;
     QPointF position = QPointF((order * 70), vertical);
     IncidentNode *currentItem = new IncidentNode(40, toolTip, position, id, order);
     currentItem->setPos(currentItem->getOriginalPos());
@@ -3401,7 +3400,7 @@ void EventGraphWidget::redoLayout()
   {
     IncidentNode *incident = it4.next();
     int order = incident->getOrder();
-    qreal vertical = qrand() % 3000 - 1500;
+    qreal vertical = QRandomGenerator::global()->bounded(3000)- 1500;
     QPointF position = QPointF((order * 70), vertical);
     incident->setPos(position);
     incident->setOriginalPos(position);
@@ -9326,7 +9325,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
           tailSet.insert(tail);
         }
       }
-      QList<int> tailList = tailSet.toList();
+      QList<int> tailList(tailSet.begin(), tailSet.end()); 
       QListIterator<int> it2(tailList);
       while (it2.hasNext())
       {
@@ -9405,7 +9404,7 @@ void EventGraphWidget::rewireLinkages(AbstractNode *abstractNode, QVector<Incide
           headSet.insert(head);
         }
       }
-      QList<int> headList = headSet.toList();
+      QList<int> headList(headSet.begin(), headSet.end());
       QListIterator<int> it4(headList);
       while (it4.hasNext())
       {

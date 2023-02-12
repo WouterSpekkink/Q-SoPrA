@@ -149,7 +149,7 @@ RelationshipsWidget::RelationshipsWidget(QWidget *parent) : QWidget(parent)
 
   relationshipsTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCase()));
+  connect(caseComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setCase()));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -686,8 +686,8 @@ void RelationshipsWidget::highlightText()
 
 void RelationshipsWidget::changeFilter(const QString &text)
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void RelationshipsWidget::setCommentButton()

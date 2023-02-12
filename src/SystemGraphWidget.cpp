@@ -267,7 +267,7 @@ SystemGraphWidget::SystemGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
-  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penStyleComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
@@ -1036,8 +1036,8 @@ void SystemGraphWidget::springLayout()
     }
     else if (node)
     {
-      qreal x = qrand() % 5000;
-      qreal y = qrand() % 5000;
+      qreal x = QRandomGenerator::global()->generate() % 5000;
+      qreal y = QRandomGenerator::global()->generate() % 5000;
       node->setPos(x, y);
       if (node->isVisible())
       {
@@ -1128,10 +1128,10 @@ void SystemGraphWidget::springLayout()
           if (dist < 50)
           {
             overlapping = true;
-            QPointF displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
+            QPointF displacement = QPointF(QRandomGenerator::global()->bounded(100) - 50, QRandomGenerator::global()->bounded(100) - 50);
             first->setPos(firstPos + displacement);
             first->getLabel()->setNewPos(first->scenePos());
-            displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
+            displacement = QPointF(QRandomGenerator::global()->bounded(100) - 50, QRandomGenerator::global()->bounded(100) - 50);
             second->setPos(secondPos + displacement);
             second->getLabel()->setNewPos(second->scenePos());
           }

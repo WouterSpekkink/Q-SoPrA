@@ -31,6 +31,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QtWidgets/QCheckBox>
 #include <QPointer>
 #include <QtSql>
+#include <QRegularExpression>
 #include "Constants.h"
 #include "DeselectableTreeView.h"
 #include "AttributeTreeFilter.h"

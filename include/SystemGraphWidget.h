@@ -33,6 +33,7 @@
 #include <QMessageBox>
 #include <QSvgGenerator>
 #include <QFileDialog>
+#include <QOpenGLWidget>
 #include <math.h>
 #include <QGraphicsTextItem>
 #include <QColorDialog>

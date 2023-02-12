@@ -332,7 +332,7 @@ OccurrenceGraphWidget::OccurrenceGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
-  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penStyleComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
@@ -784,7 +784,7 @@ void OccurrenceGraphWidget::checkCongruence()
 		  observed.insert(item->getId());
 		}
 	    }
-	  QList<int> expectedList = expected.toList();
+	  QList<int> expectedList(expected.begin(), expected.end()); 
 	  QListIterator<int> it4(expectedList);
 	  while (it4.hasNext())
 	    {

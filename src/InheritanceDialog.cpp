@@ -29,7 +29,7 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
   _exitStatus = 1;
   
   // Let's then create our check boxes
-  QList<QString> attributeList = attributes.toList();
+  QList<QString> attributeList(attributes.begin(), attributes.end()); 
   std::sort(attributeList.begin(), attributeList.end());
   QListIterator<QString> it(attributeList);
 
@@ -62,7 +62,7 @@ InheritanceDialog::InheritanceDialog(QWidget *parent, QSet<QString> attributes) 
   QPointer<QVBoxLayout> mainLayout = new QVBoxLayout;
   mainLayout->addWidget(titleLabel);
   QPointer<QVBoxLayout> checkBoxLayout = new QVBoxLayout;
-  QVectorIterator<QCheckBox*> it2(checkBoxVector);
+  QListIterator<QCheckBox*> it2(checkBoxVector);
   while (it2.hasNext())
     {
       QCheckBox* current = it2.next();
@@ -107,7 +107,7 @@ InheritanceDialog::~InheritanceDialog()
 
 void InheritanceDialog::selectAll()
 {
-  QVectorIterator<QCheckBox*> it(checkBoxVector);
+  QListIterator<QCheckBox*> it(checkBoxVector);
   while (it.hasNext())
     {
       QCheckBox *current = it.next();
@@ -117,7 +117,7 @@ void InheritanceDialog::selectAll()
 
 void InheritanceDialog::deselectAll()
 {
-  QVectorIterator<QCheckBox*> it(checkBoxVector);
+  QListIterator<QCheckBox*> it(checkBoxVector);
   while (it.hasNext())
     {
       QCheckBox *current = it.next();

@@ -197,8 +197,8 @@ LinkagesWidget::LinkagesWidget(QWidget *parent) : QWidget(parent)
   headRawField->viewport()->installEventFilter(this);
   setButtons(false);
   
-  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setTypeButton()));
-  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCase()));
+  connect(typeComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setTypeButton()));
+  connect(caseComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setCase()));
   connect(caseFilterButton, SIGNAL(clicked()), this, SLOT(toggleFilter()));
   connect(createTypeButton, SIGNAL(clicked()), this, SLOT(addLinkageType()));
   connect(editTypeButton, SIGNAL(clicked()), this, SLOT(editLinkageType()));
@@ -1509,7 +1509,7 @@ void LinkagesWidget::plotIncidents()
     query2->first();
     int id = query2->value(0).toInt();
     QString toolTip = breakString(query->value(1).toString());
-    qreal vertical = qrand() % 100 - 50;
+    qreal vertical = QRandomGenerator::global()->bounded(100) - 50;
     QPointF position = QPointF((order * 70), vertical);
     LinkageNode *currentNode = new LinkageNode(position, toolTip, id, order, order);
     currentNode->setPos(currentNode->getOriginalPos());
@@ -1620,7 +1620,7 @@ void LinkagesWidget::layoutGraph()
     {
       order = current->getOrder();
     }
-    qreal vertical = qrand() % 100 - 50;
+    qreal vertical = QRandomGenerator::global()->bounded(100) - 50;
     QPointF position = QPointF((order * 70), vertical);
     current->setPos(position);
     current->getLabel()->setNewPos(current->scenePos());

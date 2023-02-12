@@ -33,6 +33,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include <QMessageBox>
 #include <QSvgGenerator>
 #include <QFileDialog>
+#include <QOpenGLWidget>
 #include "EventGraphWidget.h"
 #include "IncidentNodeLabel.h"
 #include "BandlessGraphicsView.h"

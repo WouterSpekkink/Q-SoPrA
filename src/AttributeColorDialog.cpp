@@ -234,8 +234,8 @@ void AttributeColorDialog::buildEntities(QStandardItem *top, QString name)
 
 void AttributeColorDialog::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void AttributeColorDialog::setColor() 

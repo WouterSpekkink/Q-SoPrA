@@ -24,7 +24,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #define MAINWINDOW_H
 
 #include <QtWidgets/QVBoxLayout>
-#include <QDesktopWidget>
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QMenuBar>
