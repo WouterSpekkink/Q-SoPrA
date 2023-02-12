@@ -1,4 +1,13 @@
 .ccls-cache
 .qmake.stash
 Test_Files
-
+include/.directory
+src/.directory
+.supp
+.dumbjump
+GTAGS
+GRTAGS
+GPATH
+Q-SoPrA
+.DirIcon
+.ccls-cache
