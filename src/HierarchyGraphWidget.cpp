@@ -261,7 +261,7 @@ HierarchyGraphWidget::HierarchyGraphWidget(QWidget *parent) : QDialog(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
-  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penStyleComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
@@ -3974,8 +3974,8 @@ void HierarchyGraphWidget::removeUnusedAttributes()
 
 void HierarchyGraphWidget::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+ QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void HierarchyGraphWidget::highlightText() 

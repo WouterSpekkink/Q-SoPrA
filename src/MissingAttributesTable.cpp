@@ -71,7 +71,7 @@ void MissingAttributesTable::updateTable()
 		 "ORDER BY ch_order");
   query->bindValue(":coder", _selectedCoder);
   query->exec();
-  model->setQuery(*query);
+  model->setQuery(std::move(*query));
   delete query;
   while (model->canFetchMore()) 
     {

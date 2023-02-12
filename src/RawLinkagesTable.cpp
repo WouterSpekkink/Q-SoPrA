@@ -89,7 +89,7 @@ RawLinkagesTable::RawLinkagesTable(QWidget *parent) : QWidget(parent)
           this, SLOT(resetHeader(int)));
   connect(tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)),
           this, SLOT(sortHeader(int)));
-  connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
+  connect(filterComboBox, SIGNAL(currentTextChanged(const QString &)),
           this, SLOT(setFilterColumn()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
   
@@ -147,8 +147,8 @@ void RawLinkagesTable::sortHeader(int header)
 
 void RawLinkagesTable::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  filter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  filter->setFilterRegularExpression(regExp);
   updateTable();
 }
 

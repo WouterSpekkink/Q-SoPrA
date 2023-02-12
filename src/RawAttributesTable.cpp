@@ -98,7 +98,7 @@ RawAttributesTable::RawAttributesTable(QWidget *parent) : QWidget(parent)
           this, SLOT(resetHeader(int)));
   connect(tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)),
           this, SLOT(sortHeader(int)));
-  connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
+  connect(filterComboBox, SIGNAL(currentTextChanged(const QString &)),
           this, SLOT(setFilterColumn()));
   connect(removeTextButton, SIGNAL(clicked()), this, SLOT(removeText()));
   connect(editAttributeButton, SIGNAL(clicked()), this, SLOT(editAttribute()));
@@ -533,8 +533,8 @@ void RawAttributesTable::sortHeader(int header)
 
 void RawAttributesTable::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  filter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  filter->setFilterRegularExpression(regExp);
   updateTable();
 }
 

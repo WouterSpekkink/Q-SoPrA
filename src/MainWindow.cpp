@@ -51,6 +51,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   missingRelationshipsTableWidget = new MissingRelationshipsTable(this);
   attributeCoverageTableWidget = new AttributeCoverageTable(this);
   relationshipCoverageTableWidget = new RelationshipCoverageTable(this);
+  systemGraphWidget = new SystemGraphWidget(this);
   
   // Some of these widgets need some pointers to each other to communicate properly.
   //  DataWidget *dw = qobject_cast<DataWidget*>(dataWidget);
@@ -61,6 +62,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   RelationshipsWidget *rw = qobject_cast<RelationshipsWidget*>(relationshipsWidget);
   OccurrenceGraphWidget *ogw = qobject_cast<OccurrenceGraphWidget*>(occurrenceGraphWidget);
   HierarchyGraphWidget *hgw = qobject_cast<HierarchyGraphWidget*>(hierarchyGraphWidget);
+  SystemGraphWidget *sgw = qobject_cast<SystemGraphWidget*>(systemGraphWidget);
   RawAttributesTable *rat = qobject_cast<RawAttributesTable*>(rawAttributesTableWidget);
   RawRelationshipsTable *rrt = qobject_cast<RawRelationshipsTable*>(rawRelationshipsTableWidget);
   CasingWidget *cw = qobject_cast<CasingWidget*>(casingWidget);
@@ -70,6 +72,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   ogw->setEventGraphWidget(egw);
   egw->setAttributesWidget(aw);
   egw->setRelationshipsWidget(rw);
+  egw->setSystemGraphWidget(sgw);
   hgw->setAttributesWidget(aw);
   hgw->setRelationshipsWidget(rw);
   rw->setNetworkGraphWidget(ngw);
@@ -85,7 +88,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   cw->setLinkagesWidget(lw);
   cw->setAttributesWidget(aw);
   cw->setRelationshipsWidget(rw);
-  
+
   QString sliderSheet = QString("QSlider::groove:horizontal { "
                                 "border: 1px solid #999999; "
                                 "height: 6px; "
@@ -148,11 +151,14 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
   stacked->addWidget(casingWidget); // 16
   stacked->addWidget(attributeCoverageTableWidget); //17
   stacked->addWidget(relationshipCoverageTableWidget); //18
+  stacked->addWidget(systemGraphWidget); // 19
 
   // We need only a few signals
   connect(egw, SIGNAL(seeHierarchy(AbstractNode *)),
           this, SLOT(switchToHierarchyView(AbstractNode *)));
   connect(hgw, SIGNAL(goToEventGraph()), this, SLOT(switchToEventGraphView()));
+  connect(egw, SIGNAL(seeSystem()), this, SLOT(switchToSystemGraphView()));
+  connect(sgw, SIGNAL(goToEventGraph()), this, SLOT(switchToEventGraphView()));
   
   // Some things related to positioning.
   QPointer<QWidget> centralWidget = new QWidget(this); 
@@ -1145,6 +1151,15 @@ void MainWindow::switchToHierarchyView(AbstractNode *selectedAbstractNode)
     hgw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
     hgw->setButtons();
   }
+}
+
+void MainWindow::switchToSystemGraphView()
+{
+  EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
+  egw->setComment();
+  showMenus(false);
+  menuBar->setEnabled(false);
+  stacked->setCurrentWidget(systemGraphWidget);
 }
 
 void MainWindow::switchToRawAttributesTableView() 
@@ -2153,6 +2168,7 @@ void MainWindow::exportAssignedEntityAttributes()
 
 void MainWindow::showMenus(bool status) 
 {
+  coderMenu->menuAction()->setVisible(status);
   optionsMenu->menuAction()->setVisible(status);
   toolMenu->menuAction()->setVisible(status);
   graphMenu->menuAction()->setVisible(status);

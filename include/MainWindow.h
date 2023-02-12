@@ -24,7 +24,6 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #define MAINWINDOW_H
 
 #include <QtWidgets/QVBoxLayout>
-#include <QDesktopWidget>
 #include <QMainWindow>
 #include <QStackedWidget>
 #include <QMenuBar>
@@ -56,6 +55,7 @@ along with Q-SoPrA.  If not, see <http://www.gnu.org/licenses/>.
 #include "CasingWidget.h"
 #include "AttributeCoverageTable.h"
 #include "RelationshipCoverageTable.h"
+#include "SystemGraphWidget.h"
 
 class MainWindow : public QMainWindow
 {
@@ -68,7 +68,7 @@ public:
 
   // Getter
   QPointer<QStackedWidget> getStacked();
-				       
+
 private slots:
   // Private member functions
   void createActions();
@@ -84,6 +84,7 @@ private slots:
   void switchToNetworkGraphView();
   void switchToOccurrenceGraphView();
   void switchToHierarchyView(AbstractNode *selectedAbstractNode);
+  void switchToSystemGraphView();
   void switchToRawAttributesTableView();
   void switchToRawRelationshipsTableView();
   void switchToRawLinkagesTableView();
@@ -145,6 +146,7 @@ private:
   QPointer<QWidget> missingRelationshipsTableWidget;
   QPointer<QWidget> attributeCoverageTableWidget;
   QPointer<QWidget> relationshipCoverageTableWidget;
+  QPointer<QWidget> systemGraphWidget;
   QPointer<QLabel> selectedCoderLabel;
 
   // Menus and actions

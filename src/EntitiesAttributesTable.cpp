@@ -85,7 +85,7 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
 	  this, SLOT(resetHeader(int)));
   connect(tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)),
 	  this, SLOT(sortHeader(int)));
-  connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
+  connect(filterComboBox, SIGNAL(currentTextChanged(const QString &)),
 	  this, SLOT(setFilterColumn()));
   connect(editValueButton, SIGNAL(clicked()), this, SLOT(editValue()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
@@ -314,8 +314,8 @@ void EntitiesAttributesTable::sortHeader(const int &header)
 
 void EntitiesAttributesTable::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  filter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  filter->setFilterRegularExpression(regExp);
 }
 
 void EntitiesAttributesTable::setFilterColumn() 
@@ -432,8 +432,8 @@ void EntitiesAttributesTable::exportMatrix(bool valued)
       temp.push_back(value);
       valueMap.insert(entity, temp);
     }
-  QList<QString> attributeList = attributeSet.toList();
-  QList<QString> entityList = entitySet.toList();
+  QList<QString> attributeList(attributeSet.begin(), attributeSet.end());
+  QList<QString> entityList(entitySet.begin(), entitySet.end());
   // Let's sort the attribute list alphabetically.
   std::sort(attributeList.begin(), attributeList.end(), stringSort);
   // And let's sort the entity list alphabetically.

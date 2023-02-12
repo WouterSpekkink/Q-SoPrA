@@ -78,7 +78,7 @@ void DeselectableTreeViewEntities::wheelEvent(QWheelEvent *event)
 void DeselectableTreeViewEntities::dropEvent(QDropEvent *event) 
 {
   setSortingEnabled(false);
-  QModelIndex targetIndex = indexAt(event->pos());
+  QModelIndex targetIndex = indexAt(event->position().toPoint());
   QString childName = selectionModel()->currentIndex().data().toString();
   QString targetName = "";
   if (dropIndicatorPosition() == QAbstractItemView::OnItem) 

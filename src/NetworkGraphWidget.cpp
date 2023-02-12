@@ -334,7 +334,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(removeAttributeButton, SIGNAL(clicked()), this, SLOT(removeAttribute()));
   connect(previousNodeButton, SIGNAL(clicked()), this, SLOT(previousDataItem()));
   connect(nextNodeButton, SIGNAL(clicked()), this, SLOT(nextDataItem()));
-  connect(typeComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPlotButton()));
+  connect(typeComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPlotButton()));
   connect(toggleGraphicsControlsButton, SIGNAL(clicked()), this, SLOT(toggleGraphicsControls()));
   connect(layoutButton, SIGNAL(clicked()), this, SLOT(makeLayout()));
   connect(toggleLegendButton, SIGNAL(clicked()), this, SLOT(toggleLegend()));
@@ -390,7 +390,7 @@ NetworkGraphWidget::NetworkGraphWidget(QWidget *parent) : QWidget(parent)
   connect(addEllipseButton, SIGNAL(clicked()), scene, SLOT(prepEllipseArea()));
   connect(addRectangleButton, SIGNAL(clicked()), scene, SLOT(prepRectArea()));
   connect(addTextButton, SIGNAL(clicked()), scene, SLOT(prepTextArea()));
-  connect(penStyleComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setPenStyle()));
+  connect(penStyleComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setPenStyle()));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), this, SLOT(setPenWidth()));
   connect(penStyleComboBox, SIGNAL(currentIndexChanged(int)), scene, SLOT(setPenStyle(int)));
   connect(penWidthSpinBox, SIGNAL(valueChanged(int)), scene, SLOT(setPenWidth(int)));
@@ -1258,8 +1258,8 @@ void NetworkGraphWidget::fixTree(QString entity)
 
 void NetworkGraphWidget::setFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void NetworkGraphWidget::previousDataItem() 
@@ -1920,8 +1920,8 @@ void NetworkGraphWidget::springLayout()
     }
     else if (node)
     {
-      qreal x = qrand() % 5000;
-      qreal y = qrand() % 5000;
+      qreal x = QRandomGenerator::global()->bounded(5000);
+      qreal y = QRandomGenerator::global()->bounded(5000);
       node->setPos(x, y);
       if (node->isVisible())
       {
@@ -2034,10 +2034,10 @@ void NetworkGraphWidget::springLayout()
           if (dist < 50)
           {
             overlapping = true;
-            QPointF displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
+            QPointF displacement = QPointF(QRandomGenerator::global()->bounded(100) - 50, QRandomGenerator::global()->bounded(100) - 50);
             first->setPos(firstPos + displacement);
             first->getLabel()->setNewPos(first->scenePos());
-            displacement = QPointF((qrand() % 100) - 50, (qrand() % 100) - 50);
+            displacement = QPointF(QRandomGenerator::global()->bounded(100) - 50, QRandomGenerator::global()->bounded(100) - 50);
             second->setPos(secondPos + displacement);
             second->getLabel()->setNewPos(second->scenePos());
           }
@@ -5436,7 +5436,8 @@ void NetworkGraphWidget::setWeightControls()
     {
       if (_presentTypes.contains(directed->getType()))
       {
-        QList<int> incidents = directed->getIncidents().toList();
+	QSet<int> incidentsSet = directed->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         int count = 0;
         if (directed->isFiltered())
@@ -5470,7 +5471,8 @@ void NetworkGraphWidget::setWeightControls()
     {
       if (_presentTypes.contains(undirected->getType()))
       {
-        QList<int> incidents = undirected->getIncidents().toList();
+	QSet<int> incidentsSet = undirected->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         int count = 0;
         QListIterator<int> it3(incidents);
@@ -5512,7 +5514,8 @@ void NetworkGraphWidget::updateWeightControls()
     {
       if (_presentTypes.contains(directed->getType()))
       {
-        QList<int> incidents = directed->getIncidents().toList();
+	QSet<int> incidentsSet = directed->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         int count = 0;
         if (directed->isFiltered())
@@ -5546,7 +5549,8 @@ void NetworkGraphWidget::updateWeightControls()
     {
       if (_presentTypes.contains(undirected->getType()))
       {
-        QList<int> incidents = undirected->getIncidents().toList();
+	QSet<int> incidentsSet = undirected->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         int count = 0;
         if (undirected->isFiltered())
@@ -5680,7 +5684,8 @@ void NetworkGraphWidget::exportEdges()
         QString source = directed->getStart()->getName();
         QString target = directed->getEnd()->getName();
         QString description = directed->getType();
-        QList<int> incidents = directed->getIncidents().toList();
+	QSet<int> incidentsSet = directed->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         int weight = 0;
         if (weightCheckBox->checkState() == Qt::Checked)
@@ -5720,7 +5725,8 @@ void NetworkGraphWidget::exportEdges()
         QString target = undirected->getEnd()->getName();
         QString description = undirected->getType();
         QString comment = undirected->getComment();
-        QList<int> incidents = undirected->getIncidents().toList();
+	QSet<int> incidentsSet = undirected->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         int weight = 0;
         if (weightCheckBox->checkState() == Qt::Checked)
@@ -5779,7 +5785,8 @@ void NetworkGraphWidget::exportRelationalEvents()
       DirectedEdge *directed = it.next();
       if (directed->isVisible())
       {
-        QList<int> incidents = directed->getIncidents().toList();
+	QSet<int> incidentsSet = directed->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         QListIterator<int> it2(incidents);
         while (it2.hasNext())
@@ -5795,7 +5802,8 @@ void NetworkGraphWidget::exportRelationalEvents()
       UndirectedEdge *undirected = it3.next();
       if (undirected->isVisible())
       {
-        QList<int> incidents = undirected->getIncidents().toList();
+	QSet<int> incidentsSet = undirected->getIncidents();
+        QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
         std::sort(incidents.begin(), incidents.end());
         QListIterator<int> it4(incidents);
         while (it4.hasNext())
@@ -7654,7 +7662,8 @@ void NetworkGraphWidget::setVisibility()
     }
     if (currentDirected->getName() != TRANSFORMED)
     {
-      QList<int> incidents = currentDirected->getIncidents().toList();
+      QSet<int> incidentsSet= currentDirected->getIncidents();
+      QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
       std::sort(incidents.begin(), incidents.end());
       int count = 0;
       if (currentDirected->isFiltered())
@@ -7802,7 +7811,8 @@ void NetworkGraphWidget::setVisibility()
     }
     if (currentUndirected->getName() != TRANSFORMED)
     {
-      QList<int> incidents = currentUndirected->getIncidents().toList();
+      QSet<int> incidentsSet = currentUndirected->getIncidents();
+      QList<int> incidents(incidentsSet.begin(), incidentsSet.end());
       std::sort(incidents.begin(), incidents.end());
       int count = 0;
       QListIterator<int> incIt(incidents);

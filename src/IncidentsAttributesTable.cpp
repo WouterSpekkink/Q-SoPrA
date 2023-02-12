@@ -91,7 +91,7 @@ IncidentsAttributesTable::IncidentsAttributesTable(QWidget *parent) : QWidget(pa
           this, SLOT(resetHeader(int)));
   connect(tableView->horizontalHeader(), SIGNAL(sectionDoubleClicked(int)),
           this, SLOT(sortHeader(int)));
-  connect(filterComboBox, SIGNAL(currentIndexChanged(const QString &)),
+  connect(filterComboBox, SIGNAL(currentTextChanged(const QString &)),
           this, SLOT(setFilterColumn()));
   connect(editValueButton, SIGNAL(clicked()), this, SLOT(editValue()));
   connect(exportTableButton, SIGNAL(clicked()), this, SLOT(exportTable()));
@@ -372,8 +372,8 @@ void IncidentsAttributesTable::sortHeader(int header)
 
 void IncidentsAttributesTable::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  filter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  filter->setFilterRegularExpression(regExp);
   updateTable();
 }
 
@@ -523,8 +523,8 @@ void IncidentsAttributesTable::exportMatrix(bool valued)
 	      valueMap.insert(incident, temp);
 	    }
     }
-    QList<QString> attributeList = attributeSet.toList();
-    QList<int> incidentList = incidentSet.toList();
+    QList<QString> attributeList(attributeSet.begin(), attributeSet.end()); 
+    QList<int> incidentList(incidentSet.begin(), incidentSet.end());
     // Let's sort the attribute list alphabetically.
     std::sort(attributeList.begin(), attributeList.end(), stringSort);
     // And let's sort the incident list numerically.

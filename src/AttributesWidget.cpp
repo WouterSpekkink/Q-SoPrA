@@ -144,7 +144,7 @@ AttributesWidget::AttributesWidget(QWidget *parent) : QWidget(parent)
   */
   attributesTreeView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-  connect(caseComboBox, SIGNAL(currentIndexChanged(const QString &)), this, SLOT(setCase()));
+  connect(caseComboBox, SIGNAL(currentTextChanged(const QString &)), this, SLOT(setCase()));
   connect(commentField, SIGNAL(textChanged()), this, SLOT(setCommentBool()));
   connect(previousIncidentButton, SIGNAL(clicked()), this, SLOT(previousIncident()));
   connect(nextIncidentButton, SIGNAL(clicked()), this, SLOT(nextIncident()));
@@ -986,8 +986,8 @@ void AttributesWidget::nextComment()
 
 void AttributesWidget::changeFilter(const QString &text) 
 {
-  QRegExp regExp(text, Qt::CaseInsensitive);
-  treeFilter->setFilterRegExp(regExp);
+  QRegularExpression regExp(text, QRegularExpression::CaseInsensitiveOption);
+  treeFilter->setFilterRegularExpression(regExp);
 }
 
 void AttributesWidget::newAttribute() 
