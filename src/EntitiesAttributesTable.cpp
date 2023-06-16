@@ -114,11 +114,18 @@ EntitiesAttributesTable::EntitiesAttributesTable(QWidget *parent) : QWidget(pare
 
 void EntitiesAttributesTable::updateTable() 
 {
-  attributesModel->query().exec();
-  while (attributesModel->canFetchMore()) 
-    {
-      attributesModel->fetchMore();
-    }
+  attributesModel->setQuery(
+      "SELECT attribute, entity_attributes.description, "
+      "entities.name, entities.description, value "
+      "FROM attributes_to_entities "
+      "INNER JOIN entities ON "
+      "entities.name = attributes_to_entities.entity "
+      "INNER JOIN entity_attributes ON "
+      "entity_attributes.name = attributes_to_entities.attribute "
+      "ORDER BY attribute ASC");
+  while (attributesModel->canFetchMore()) {
+    attributesModel->fetchMore();
+  }
 }
 
 void EntitiesAttributesTable::resetHeader(const int &header) 

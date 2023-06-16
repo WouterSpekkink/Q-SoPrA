@@ -682,7 +682,9 @@ void Linkage::calculate() {
   qreal cY = _height * (dX / distance) + mY;
   _controlPoint = QPointF(cX, cY);
   _ghostLine = QLineF(_controlPoint, _newLine.p2());
-  _ghostLine.setLength(_ghostLine.length() - 28);
+  if (_ghostLine.length() > 28) {
+        _ghostLine.setLength(_ghostLine.length() - 28);
+  }
   double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
   if (_ghostLine.dy() >= 0)
     {
@@ -696,7 +698,9 @@ void Linkage::calculate() {
   setLine(_newLine);
   _arrowHead.clear();
   _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
-  _ghostLine.setLength(_ghostLine.length() - 2);
+  if (_ghostLine.length() > 2) {
+    _ghostLine.setLength(_ghostLine.length() - 2);
+  }
   prepareGeometryChange();
 }
 
