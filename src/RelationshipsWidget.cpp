@@ -405,7 +405,6 @@ void RelationshipsWidget::collectCase()
   while (query->next())
   {
     incidents.insert(query->value(0).toInt());
-    query->value(0).toInt();
   }
   query->prepare("SELECT ch_order FROM incidents "
                  "WHERE id = :id");
@@ -418,6 +417,7 @@ void RelationshipsWidget::collectCase()
     query->first();
     _caseIncidents.insert(query->value(0).toInt());
   }
+  delete query;
 }
 
 void RelationshipsWidget::retrieveData()

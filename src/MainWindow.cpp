@@ -962,6 +962,7 @@ void MainWindow::switchToAttributeView()
     const QModelIndex index;
     aw->attributesTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
     aw->setButtons();
+    aw->setCase();
   }
 }
 
@@ -986,6 +987,7 @@ void MainWindow::switchToRelationshipView()
     const QModelIndex index;
     rw->relationshipsTreeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::Select);
     rw->setButtons();
+    rw->setCase();
   }
 }
 
@@ -1006,6 +1008,7 @@ void MainWindow::switchToLinkageView()
     EventGraphWidget *egw = qobject_cast<EventGraphWidget*>(stacked->widget(5));
     egw->setComment();
     stacked->setCurrentWidget(linkagesWidget);
+    lw->setCase();
   }
 }
 
