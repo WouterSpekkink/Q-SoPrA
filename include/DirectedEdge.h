@@ -56,6 +56,7 @@ class DirectedEdge : public QGraphicsLineItem
     void insertIncidents(const QSet<int> &incidents);
     void insertIncident(const int &incident);
     void setAntialiasing(bool state);
+    void setLoopAngle(qreal thetaRad);     
   
     // Getters;
     QColor getColor();
@@ -72,6 +73,11 @@ class DirectedEdge : public QGraphicsLineItem
     // New function for correct drawing
     void updatePosition();
 
+    // Function for correct ellipse drawing
+    static QRectF ellipseRectThroughAnchor(const QPointF& anchor,
+                                           qreal rx, qreal ry,
+                                           qreal thetaRad);
+
     // Type check
     enum {Type = UserType + 4};
     int type() const;
@@ -81,7 +87,7 @@ class DirectedEdge : public QGraphicsLineItem
     void calculate();
   
   protected:
-    // Override of the pain function
+    // Override of the paint function
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0) override;
 
   
@@ -103,6 +109,7 @@ class DirectedEdge : public QGraphicsLineItem
     bool _massHidden;
     qreal _penWidth;
     bool _antialiasing;
+    qreal _loopTheta;
 
     // Private data set
     QSet<int> _incidents;

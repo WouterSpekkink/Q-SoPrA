@@ -33,10 +33,13 @@
 */
 
 #include "../include/DirectedEdge.h"
-#include <math.h>
+#include <cmath>
+#include <QtMath> 
 #include <QPen>
 #include <QPainter>
 #include <QtCore>
+
+constexpr qreal PI = 3.14159265358979323846;
 
 DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
                            QString name, QGraphicsItem *parent)
@@ -53,47 +56,62 @@ DirectedEdge::DirectedEdge(NetworkNode *start, NetworkNode *end, QString type,
   _massHidden = false;
   _comment = "";
   _antialiasing = true;
+  _loopTheta = 0.0;
   setFlag(QGraphicsItem::ItemSendsGeometryChanges);
 }
 
 QRectF DirectedEdge::boundingRect() const 
 {
-  // If self-loop
-  if (_start == _end)
-  {
-    return _strokePath.boundingRect().marginsAdded(QMarginsF(5.0,5.0,5.0,5.0));
+  if (_start == _end) {
+    const qreal m = qMax<qreal>(8.0, _penWidth + 4.0);  // smaller than before
+    return _strokePath.boundingRect().marginsAdded(QMarginsF(m, m, m, m));
   }
-  else
-  {
-    return _strokePath.controlPointRect().marginsAdded(QMarginsF(5.0,5.0,5.0,5.0));
-  }
+  return _strokePath.controlPointRect().marginsAdded(QMarginsF(5.0, 5.0, 5.0, 5.0));
 }
 
-void DirectedEdge::updatePosition() 
+QRectF DirectedEdge::ellipseRectThroughAnchor(const QPointF& anchor,
+                                              qreal rx, qreal ry,
+                                              qreal thetaRad)
+{
+    const qreal cx = anchor.x() - rx * std::cos(thetaRad);
+    const qreal cy = anchor.y() - ry * std::sin(thetaRad);
+    return QRectF(cx - rx, cy - ry, 2*rx, 2*ry);
+}
+
+void DirectedEdge::updatePosition()
 {
   QPainterPath myPath;
+  if (_start == _end) {
+    constexpr qreal NODE_RADIUS = 10.0;    // node’s visual radius
+    constexpr qreal MIN_GAP = 1.5;         // small offset from node edge
+    constexpr qreal SELFLOOP_SCALE = 0.15; 
+
+    const qreal theta = _loopTheta;
+    const qreal r =
+        NODE_RADIUS + MIN_GAP + SELFLOOP_SCALE * qMax<qreal>(0.0, _height / 2.0);
+
+    const QPointF nodeCenter =
+        _start->mapToScene(_start->boundingRect().center());
+
+    prepareGeometryChange();
+    QPainterPath myPath;
+    myPath.addEllipse(ellipseRectThroughAnchor(nodeCenter, r, r, theta));
+    _strokePath = myPath;
+    return;
+  }
+  // non self-loop
   myPath.moveTo(_start->pos());
-  // In case we have a self-loop
-  if (_start == _end)
-  {
-    myPath.addEllipse(QPointF(_start->pos().x(), _start->pos().y() + 20.0),
-                      _height / 2, _height / 2);
-  }
-  else
-  {
-    calculate();
-    myPath.quadTo(_controlPoint, _ghostLine.p2());
-  }
+  calculate();
+  myPath.quadTo(_controlPoint, _ghostLine.p2());
   _strokePath = myPath;
 }
 
 void DirectedEdge::calculate() 
 {
-  // In case we have a self-loop
   // Calculate the distance between the two nodes
   qreal dX = _end->pos().x() - _start->pos().x();
   qreal dY = _end->pos().y() - _start->pos().y();
-  qreal distance = sqrt(pow(dX, 2) + pow(dY, 2));
+  qreal distance = std::hypot(dX, dY);
   // We 'imagine' a line between the two nodes but reduce its length
   QLineF newLine = QLineF(_start->pos(), _end->pos());
   newLine.setLength(newLine.length() - 18 - (_penWidth - 2.0f));
@@ -112,16 +130,15 @@ void DirectedEdge::calculate()
     _ghostLine.setLength(_ghostLine.length() - 18);
   }
   // Now we make our arrow
-  double angle = ::acos(_ghostLine.dx() / _ghostLine.length());
-  if (_ghostLine.dy() >= 0)
-  {
-    angle = (Pi * 2) - angle;
+  double angle = std::acos(_ghostLine.dx() / _ghostLine.length());
+  if (_ghostLine.dy() >= 0) {
+    angle = (2 * PI) - angle;
   }
   qreal arrowSize = 10 + _penWidth;
-  _arrowP1 = _ghostLine.p2() - QPointF(sin(angle + Pi /3) * arrowSize,
-                                       cos(angle + Pi / 3) * arrowSize);
-  _arrowP2 = _ghostLine.p2() - QPointF(sin(angle + Pi - Pi / 3) * arrowSize,
-                                       cos(angle + Pi - Pi / 3) * arrowSize);
+  _arrowP1 = _ghostLine.p2() - QPointF(std::sin(angle + PI/3) * arrowSize,
+				       std::cos(angle + PI/3) * arrowSize);
+  _arrowP2 = _ghostLine.p2() - QPointF(std::sin(angle + PI - PI/3) * arrowSize,
+				       std::cos(angle + PI - PI/3) * arrowSize);
   _arrowHead.clear();
   _arrowHead << _ghostLine.p2() << _arrowP1 << _arrowP2;
   // I believe this part is to prevent an error
@@ -132,33 +149,46 @@ void DirectedEdge::calculate()
   prepareGeometryChange();
 }
 
-void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *) 
+void DirectedEdge::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)
 {
   painter->setRenderHint(QPainter::Antialiasing, _antialiasing);
-  QPen myPen = QPen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
-  painter->setPen(myPen);
+
+  QPen edgePen(_color, _penWidth, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+  painter->setPen(edgePen);
   painter->setBrush(_color);
+
   QPainterPath myPath;
+  if (_start == _end) {
+    constexpr qreal NODE_RADIUS = 10.0;
+    constexpr qreal MIN_GAP = 1.5;
+    constexpr qreal SELFLOOP_SCALE = 0.15;
+
+    const qreal theta = _loopTheta;
+    const qreal r =
+        NODE_RADIUS + MIN_GAP + SELFLOOP_SCALE * qMax<qreal>(0.0, _height / 2.0);
+
+    const QPointF nodeCenter =
+        _start->mapToScene(_start->boundingRect().center());
+
+    QPainterPath myPath;
+    myPath.addEllipse(
+        DirectedEdge::ellipseRectThroughAnchor(nodeCenter, r, r, theta));
+    _strokePath = myPath;
+    painter->strokePath(myPath, edgePen);
+    return;
+  }
+  // non self-loop
   myPath.moveTo(_start->pos());
-  // When we have a self-loop
-  if (_start == _end)
-  {
-    prepareGeometryChange();
-    myPath.addEllipse(QPointF(_start->pos().x(), _start->pos().y() + 20.0),
-                      _height / 2, _height / 2);
-    _strokePath = myPath;
-    painter->strokePath(myPath, myPen);
-  }
-  else
-  {
-    calculate();
-    myPath.quadTo(_controlPoint, _ghostLine.p2());
-    _strokePath = myPath;
-    painter->strokePath(myPath, myPen);
-    myPen.setWidth(1);
-    painter->setPen(myPen);
-    painter->drawPolygon(_arrowHead);
-  }
+  calculate();
+  myPath.quadTo(_controlPoint, _ghostLine.p2());
+  _strokePath = myPath;
+
+  painter->strokePath(myPath, edgePen);
+
+  QPen arrowPen(_color, 1.0, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
+  painter->setPen(arrowPen);
+  painter->setBrush(_color);
+  painter->drawPolygon(_arrowHead);
 }
 
 QPainterPath DirectedEdge::shape() const
@@ -286,4 +316,9 @@ QSet<int> DirectedEdge::getIncidents()
 void DirectedEdge::setAntialiasing(bool state)
 {
   _antialiasing = state;
+}
+
+void DirectedEdge::setLoopAngle(qreal thetaRad)
+{
+  _loopTheta = thetaRad; 
 }
