@@ -1,7 +1,7 @@
 /*
 
 Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+Copyright (C) 2025 Wouter Spekkink  
 
 This file is part of Q-SoPrA.
 
@@ -63,7 +63,7 @@ private slots:
   void sortHeader(int header);/*
 
 Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+Copyright (C) 2025 Wouter Spekkink  
 
 This file is part of Q-SoPrA.
 
