@@ -1,7 +1,7 @@
 
 /*
 Qualitative Social Process Analysis (Q-SoPrA)
-Copyright (C) 2019 University of Manchester  
+Copyright (C) 2025 Wouter Spekkink  
 This file is part of Q-SoPrA.
 
 Q-SoPrA is free software: you can redistribute it and/or modify
